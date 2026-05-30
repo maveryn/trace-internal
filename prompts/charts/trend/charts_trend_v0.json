@@ -112,7 +112,7 @@
       "Count the local {turning_point_plural} in displayed order. A local {turning_point_type} is {turning_point_comparison} both adjacent labels.",
       "How many labels are local {turning_point_plural} when you follow the chart in displayed order?",
       "Determine the number of local {turning_point_plural}. Each one is {turning_point_comparison} the labels immediately before and after it in displayed order.",
-      "Find how many local {turning_point_plural} the ordered chart contains."
+      "Find how many local {turning_point_plural} the ordered chart contains in displayed order."
     ],
     "longest_monotone_streak": [
       "What is the length of the longest strictly {streak_direction} streak of consecutive labels in displayed order? Count labels in the streak.",
@@ -122,16 +122,16 @@
       "Compute the length of the longest strictly {streak_direction} run of consecutive labels."
     ],
     "endpoint_change_value": [
-      "What is the {endpoint_change_instruction} from {start_label} to {end_label}?",
-      "Using {start_label} as the first endpoint and {end_label} as the second endpoint, compute the requested {endpoint_change_kind} change value.",
-      "Read the endpoint values at {start_label} and {end_label}; what is the requested {endpoint_change_kind} change?",
-      "Compute the requested endpoint-change value from {start_label} to {end_label}.",
-      "Use endpoint labels {start_label} and {end_label} to compute the requested {endpoint_change_kind} change value."
+      "What is the {endpoint_change_instruction} from \"{start_label}\" to \"{end_label}\"?",
+      "Using \"{start_label}\" as the first endpoint and \"{end_label}\" as the second endpoint, compute the requested {endpoint_change_kind} change value.",
+      "Read the endpoint values at \"{start_label}\" and \"{end_label}\"; what is the requested {endpoint_change_kind} change?",
+      "Compute the requested endpoint-change value from \"{start_label}\" to \"{end_label}\".",
+      "Use endpoint labels \"{start_label}\" and \"{end_label}\" to compute the requested {endpoint_change_kind} change value."
     ],
     "interval_rate_value": [
-      "What is the average signed change per step from {start_label} through {end_label}?",
-      "Compute (value at {end_label} minus value at {start_label}) divided by the number of steps between the endpoint labels.",
-      "Find the average per-label-step change over the interval from {start_label} to {end_label}.",
+      "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
+      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps between the endpoint labels.",
+      "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
       "Find the integer average rate of change across the displayed interval.",
       "Using the endpoint values and displayed step count, compute the average signed change per step."
     ],
@@ -171,30 +171,30 @@
       "Among the empty future labels, identify the first one whose continued linear-series value crosses below {threshold}."
     ],
     "absolute_change_between_labels": [
-      "What is the absolute change in value from {start_label} to {end_label}?",
-      "Find the absolute difference between the values at {start_label} and {end_label}.",
-      "How much did the value change in absolute terms from {start_label} to {end_label}?",
-      "Compute |value at {end_label} minus value at {start_label}|.",
-      "Find the nonnegative change between {start_label} and {end_label}."
+      "What is the absolute change in value from \"{start_label}\" to \"{end_label}\"?",
+      "Find the absolute difference between the values at \"{start_label}\" and \"{end_label}\".",
+      "How much did the value change in absolute terms from \"{start_label}\" to \"{end_label}\"?",
+      "Compute |value at \"{end_label}\" minus value at \"{start_label}\"|.",
+      "Find the nonnegative change between \"{start_label}\" and \"{end_label}\"."
     ],
     "signed_change_between_labels": [
-      "What is the signed change in value from {start_label} to {end_label}? Use value at {end_label} minus value at {start_label}.",
-      "Compute value at {end_label} minus value at {start_label}; keep the sign.",
-      "How much did the value change from {start_label} to {end_label}, using a negative answer for a decrease?",
-      "Find the signed endpoint difference from {start_label} to {end_label}.",
+      "What is the signed change in value from \"{start_label}\" to \"{end_label}\"? Use value at \"{end_label}\" minus value at \"{start_label}\".",
+      "Compute value at \"{end_label}\" minus value at \"{start_label}\"; keep the sign.",
+      "How much did the value change from \"{start_label}\" to \"{end_label}\", using a negative answer for a decrease?",
+      "Find the signed endpoint difference from \"{start_label}\" to \"{end_label}\".",
       "Find the change from the first endpoint to the second endpoint, preserving sign."
     ],
     "percent_change_between_labels": [
-      "What is the integer percentage change from {start_label} to {end_label}? Use ((end-start)/start)*100 and omit the percent sign.",
-      "Compute the percent change from {start_label} to {end_label}; use the integer percentage without a percent sign.",
-      "Using {start_label} as the base, what is the integer percent change at {end_label}?",
-      "Find 100 times the signed change divided by the value at {start_label}; omit the percent sign.",
+      "What is the integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100 and omit the percent sign.",
+      "Compute the percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign.",
+      "Using \"{start_label}\" as the base, what is the integer percent change at \"{end_label}\"?",
+      "Find 100 times the signed change divided by the value at \"{start_label}\"; omit the percent sign.",
       "Find the integer percentage change from the first endpoint to the second endpoint."
     ],
     "average_rate_over_interval": [
-      "What is the average signed change per step from {start_label} through {end_label}?",
-      "Compute (value at {end_label} minus value at {start_label}) divided by the number of steps between the endpoint labels.",
-      "Find the average per-label-step change over the interval from {start_label} to {end_label}.",
+      "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
+      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps between the endpoint labels.",
+      "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
       "Find the integer average rate of change across the displayed interval.",
       "Using the endpoint values and displayed step count, compute the average signed change per step."
     ]

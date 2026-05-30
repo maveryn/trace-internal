@@ -12,3 +12,7 @@
 2. Prompt lookup domain/group: `charts/three_d_bar`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence
+1. Evidence type: `point_set`.
+2. Each point marks the visible top/face of a 3D bar checked by the stated count condition.

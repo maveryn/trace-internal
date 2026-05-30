@@ -10,38 +10,9 @@ from trace.tasks.shared.config_defaults import group_default, resolve_required_i
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.name_assets import load_short_name_manifest
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.label_assets import resolve_chart_category_labels, resolve_chart_text_labels
 from .table_scene import SUPPORTED_TABLE_SCENE_VARIANTS, TableRenderParams
 
-
-_DEFAULT_HEADER_POOL: Tuple[str, ...] = (
-    "Age",
-    "Cost",
-    "Dist",
-    "Gain",
-    "Mass",
-    "Pts",
-    "Rate",
-    "Rank",
-    "Score",
-    "Temp",
-    "Time",
-    "Wins",
-)
-_DEFAULT_CATEGORY_HEADER_POOL: Tuple[str, ...] = (
-    "Group",
-    "Type",
-    "Tier",
-    "Plan",
-    "Region",
-)
-_DEFAULT_CATEGORY_VALUE_POOL: Tuple[str, ...] = (
-    "Core",
-    "Plus",
-    "Lite",
-    "Pro",
-    "Max",
-    "Base",
-)
 _TEMPORAL_YEAR_MIN: int = 2000
 _TEMPORAL_YEAR_MAX: int = 2026
 
@@ -600,12 +571,16 @@ def sample_numeric_column_headers(
 
     if int(count) <= 0:
         raise ValueError("numeric column count must be positive")
-    if int(count) > len(_DEFAULT_HEADER_POOL):
-        raise ValueError("numeric column count exceeds the supported header pool")
     rng = spawn_rng(int(instance_seed), str(namespace))
-    candidates = list(_DEFAULT_HEADER_POOL)
-    rng.shuffle(candidates)
-    return tuple(str(value) for value in candidates[: int(count)])
+    resolved = resolve_chart_text_labels(
+        rng,
+        count=int(count),
+        label_pool_kind="all",
+        min_chars=2,
+        max_chars=6,
+        allow_spaces=False,
+    )
+    return tuple(str(value) for value in resolved.labels)
 
 
 def sample_category_column_header(
@@ -616,7 +591,14 @@ def sample_category_column_header(
     """Sample one short categorical-column header."""
 
     rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(_DEFAULT_CATEGORY_HEADER_POOL[int(rng.randint(0, len(_DEFAULT_CATEGORY_HEADER_POOL) - 1))])
+    resolved = resolve_chart_category_labels(
+        rng,
+        count=1,
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    )
+    return str(resolved.labels[0])
 
 
 def sample_temporal_year_headers(
@@ -1026,15 +1008,25 @@ def build_counting_value_dataset_for_variant(
 
     if str(query_id) == "categorical_value_count":
         category_column = sample_category_column_header(instance_seed=int(instance_seed))
+        category_value_labels = tuple(
+            str(label)
+            for label in resolve_chart_category_labels(
+                spawn_rng(int(instance_seed), f"{task_id}.category_values"),
+                count=6,
+                min_chars=2,
+                max_chars=8,
+                allow_spaces=False,
+            ).labels
+        )
         target_category_index = int(resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=f"{task_id}:target_category",
-        )) % len(_DEFAULT_CATEGORY_VALUE_POOL)
-        target_category = str(_DEFAULT_CATEGORY_VALUE_POOL[int(target_category_index)])
+        )) % len(category_value_labels)
+        target_category = str(category_value_labels[int(target_category_index)])
         non_target_categories = [
             str(value)
-            for value in _DEFAULT_CATEGORY_VALUE_POOL
+            for value in category_value_labels
             if str(value) != str(target_category)
         ]
         if not non_target_categories:
@@ -1306,12 +1298,13 @@ def render_table_filter_condition(dataset: Mapping[str, Any]) -> str:
     """Render one concise human-readable filter condition phrase."""
 
     filter_variant = str(dataset["filter_variant"])
+    filter_column = str(dataset["filter_column"])
     if filter_variant == "above_threshold":
-        return f"{str(dataset['filter_column'])} is greater than {int(dataset['threshold_value'])}"
+        return f"\"{filter_column}\" is greater than {int(dataset['threshold_value'])}"
     if filter_variant == "below_threshold":
-        return f"{str(dataset['filter_column'])} is less than {int(dataset['threshold_value'])}"
+        return f"\"{filter_column}\" is less than {int(dataset['threshold_value'])}"
     return (
-        f"{str(dataset['filter_column'])} is from {int(dataset['interval_min'])} "
+        f"\"{filter_column}\" is from {int(dataset['interval_min'])} "
         f"to {int(dataset['interval_max'])} inclusive"
     )
 
@@ -1535,6 +1528,7 @@ def projected_table_bbox_evidence(
         for cell_trace in rendered_scene.cell_traces
     }
     return {
+        "type": "bbox_set",
         "bbox_set": [
             list(bbox_by_cell[str(cell_id)])
             for cell_id in requested
@@ -1563,6 +1557,7 @@ def projected_table_region_bbox_evidence(
         for header, bbox in rendered_scene.column_region_bboxes.items()
     }
     return {
+        "type": "bbox_set",
         "bbox_set": [
             *[
                 list(row_bbox_map[str(row_label)])

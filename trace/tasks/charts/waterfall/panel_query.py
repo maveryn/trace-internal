@@ -29,7 +29,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_rendering import draw_text_centered, load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -39,7 +40,12 @@ from ..shared.complexity import (
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
 from ..shared.labeled_chart_common import sample_chart_labels
 from ..shared.unanswerable import UNANSWERABLE_ANSWER, absence_proof, should_use_unanswerable_branch
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_waterfall_panel_query_base"
@@ -342,7 +348,11 @@ def _sample_steps(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[int
         local_rng = spawn_rng(int(instance_seed), "charts.waterfall.steps.retry", int(attempt))
         step_count = int(step_min) + int(local_rng.randrange(int(step_max) - int(step_min) + 1))
         start_value = int(local_rng.randint(int(start_min), int(start_max)))
-        labels = sample_chart_labels(count=int(step_count), instance_seed=int(instance_seed) + int(attempt) * 7919)
+        labels = sample_chart_labels(
+            count=int(step_count),
+            instance_seed=int(instance_seed) + int(attempt) * 7919,
+            namespace=f"{TASK_ID}.labels:{int(step_count)}",
+        )
         current = int(start_value)
         steps: List[_Step] = []
         has_positive = False
@@ -486,7 +496,7 @@ def _build_query(
             answer=str(crossing_step.label),
             answer_type="string",
             evidence_bar_ids=evidence,
-            evidence_extra_ids=("threshold_label", f"x_label:{crossing_step.step_id}"),
+            evidence_extra_ids=("threshold_label",),
             params={
                 **base_params,
                 "threshold_direction": str(direction),
@@ -573,12 +583,12 @@ def _draw_waterfall(
     value_font = load_font(int(render_params.value_font_size_px), bold=True)
     threshold_font = load_font(int(render_params.threshold_font_size_px), bold=True)
 
-    draw.text(
+    draw_text_traced(draw,
         (left, max(12, top - 48)),
         "Waterfall chart",
         font=title_font,
         fill=tuple(render_params.text_color_rgb),
-    )
+     role="readout", required=False,)
 
     y_axis_max = int(group_default(_RENDER_DEFAULTS, "y_axis_max", 100))
     y_axis_max = int(max(80, y_axis_max))
@@ -595,12 +605,12 @@ def _draw_waterfall(
         draw.line([left - int(render_params.tick_length_px), y, left, y], fill=tuple(render_params.axis_color_rgb), width=1)
         text = str(tick)
         bbox = draw.textbbox((0, 0), text, font=tick_font)
-        draw.text(
+        draw_text_traced(draw,
             (left - int(render_params.tick_length_px) - 8 - (bbox[2] - bbox[0]), y - (bbox[3] - bbox[1]) / 2),
             text,
             font=tick_font,
             fill=tuple(render_params.muted_text_rgb),
-        )
+         role="readout", required=False,)
     draw.line([left, bottom, right, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
     draw.line([left, top, left, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
 
@@ -803,7 +813,13 @@ class ChartsWaterfallPanelQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _draw_waterfall(background, dataset=dataset, render_params=render_params)
+        chart_font_family = sample_chart_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
+        )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _draw_waterfall(background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -907,6 +923,8 @@ class ChartsWaterfallPanelQueryTask:
                 "canvas_height": int(render_params.canvas_height),
                 "coord_space": "pixel",
                 "plot_bbox_px": list(rendered.plot_bbox_px),
+                "background_style": dict(background_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "y_axis_max": int(rendered.y_axis_max),
                 "threshold_value": rendered.threshold_value,
                 "layout_jitter": dict(render_params.layout_jitter_meta),
@@ -947,6 +965,7 @@ class ChartsWaterfallPanelQueryTask:
                 ),
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_boxes),
                 "bar_ids": list(dataset.query.evidence_bar_ids),
                 "extra_ids": list(dataset.query.evidence_extra_ids),

@@ -88,20 +88,7 @@ def _expected_answer(execution: dict, query_params: dict) -> int | str:
 def _expected_evidence_bboxes(trace: dict) -> list[list[float]]:
     render_map = trace["render_map"]
     execution = trace["execution_trace"]
-    expected: list[list[float]] = []
-    seen_headers: set[str] = set()
-    for key in execution["evidence_header_keys"]:
-        header_key = str(key)
-        if header_key in seen_headers:
-            continue
-        seen_headers.add(header_key)
-        if header_key.startswith("row:"):
-            expected.append(render_map["row_label_bboxes_px"][header_key])
-        else:
-            expected.append(render_map["column_label_bboxes_px"][header_key])
-    for cell_id in execution["evidence_cell_ids"]:
-        expected.append(render_map["cell_bboxes_px"][str(cell_id)])
-    return expected
+    return [render_map["cell_bboxes_px"][str(cell_id)] for cell_id in execution["evidence_cell_ids"]]
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
@@ -138,9 +125,11 @@ def test_chart_matrix_variants_match_contract(query_id: str) -> None:
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert out.evidence_gt.value == _expected_evidence_bboxes(trace)
     assert trace["projected_evidence"]["cell_ids"] == execution["evidence_cell_ids"]
-    assert trace["projected_evidence"]["header_keys"] == execution["evidence_header_keys"]
+    assert "header_keys" not in trace["projected_evidence"]
     assert execution["evidence_cell_ids"]
-    assert execution["evidence_header_keys"]
+    assert execution["support_header_keys"]
+    if query_id == "threshold_cell_count":
+        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
 
     for bbox in out.evidence_gt.value:
         _assert_bbox_inside_canvas(

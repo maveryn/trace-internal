@@ -67,25 +67,25 @@
   },
   "query_templates": {
     "threshold_count": [
-      "How many rows have a value {comparison_phrase} {threshold_value} in the {query_column} column?",
-      "Count the rows whose {query_column} value is {comparison_phrase} {threshold_value}.",
-      "How many entries in the {query_column} column are {comparison_phrase} {threshold_value}?",
-      "Determine how many rows show {query_column} {comparison_phrase} {threshold_value}.",
-      "Find the number of rows with {query_column} values {comparison_phrase} {threshold_value}."
+      "How many rows have a value {comparison_phrase} {threshold_value} in the \"{query_column}\" column?",
+      "Count the rows whose \"{query_column}\" value is {comparison_phrase} {threshold_value}.",
+      "How many entries in the \"{query_column}\" column are {comparison_phrase} {threshold_value}?",
+      "Determine how many rows show \"{query_column}\" {comparison_phrase} {threshold_value}.",
+      "Find the number of rows with \"{query_column}\" values {comparison_phrase} {threshold_value}."
     ],
     "in_interval": [
-      "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the {query_column} column?",
-      "Count the rows whose {query_column} value falls within [{interval_min}, {interval_max}], inclusive.",
-      "How many entries in the {query_column} column lie between {interval_min} and {interval_max}, inclusive?",
-      "Determine how many rows show {query_column} within the inclusive range [{interval_min}, {interval_max}].",
-      "Find the number of rows with {query_column} values in [{interval_min}, {interval_max}], inclusive."
+      "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the \"{query_column}\" column?",
+      "Count the rows whose \"{query_column}\" value falls within [{interval_min}, {interval_max}], inclusive.",
+      "How many entries in the \"{query_column}\" column lie between {interval_min} and {interval_max}, inclusive?",
+      "Determine how many rows show \"{query_column}\" within the inclusive range [{interval_min}, {interval_max}].",
+      "Find the number of rows with \"{query_column}\" values in [{interval_min}, {interval_max}], inclusive."
     ],
     "categorical_value_count": [
-      "How many rows have {target_category} in the {query_column} column?",
-      "Count the rows whose {query_column} entry is exactly {target_category}.",
-      "How many entries in the {query_column} column are {target_category}?",
-      "Determine how many rows show {query_column} equal to {target_category}.",
-      "Find the number of rows with {target_category} listed in the {query_column} column."
+      "How many rows have \"{target_category}\" in the \"{query_column}\" column?",
+      "Count the rows whose \"{query_column}\" entry is exactly \"{target_category}\".",
+      "How many entries in the \"{query_column}\" column are \"{target_category}\"?",
+      "Determine how many rows show \"{query_column}\" equal to \"{target_category}\".",
+      "Find the number of rows with \"{target_category}\" listed in the \"{query_column}\" column."
     ]
   },
   "allow_empty_task_templates": true

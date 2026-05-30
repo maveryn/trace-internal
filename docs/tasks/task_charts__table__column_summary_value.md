@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/table_statistics`
 4. Query id: sampled internally and recorded in `query_id`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the queried column or the selected filter/target cells.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.table.statistics.column_summary_value.ChartsTableColumnSummaryValueTask`

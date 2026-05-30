@@ -149,8 +149,8 @@ prompt:
     object_description_grouped_horizontal_bar: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category
     object_description_multi_line: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis
     object_description_grouped_lollipop: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis
-    evidence_hint_series_comparison_count: set "evidence" to an array of [x,y] pixel points for the two queried series marks in each category matching the requested strict comparison
-    json_example_series_comparison_count: '{"evidence":[[180,260],[180,190],[360,320],[360,240],[540,210],[540,280]],"answer":3}'
+    evidence_hint_series_comparison_count: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the two queried series marks in each category matching the requested strict comparison
+    json_example_series_comparison_count: '{"evidence":{"Q:Orly":[180,260],"Q:Vega":[180,190],"M:Orly":[360,320],"M:Vega":[360,240],"Z:Orly":[540,210],"Z:Vega":[540,280]},"answer":3}'
     json_example_answer_only_series_comparison_count: '{"answer":3}'
   task_overrides:
     charts_multiseries_comparison_query_base:
@@ -161,16 +161,16 @@ prompt:
       answer_hint: set "answer" to the category label with the requested extremum as a string
       answer_hint_count: set "answer" to the number of category labels satisfying the requested series comparison as an integer
       answer_hint_label: set "answer" to the category label with the requested extremum as a string
-      evidence_hint_ranked_directional_change: set "evidence" to an array of [x,y] pixel points for the winning category's two queried series marks
-      evidence_hint_ranked_absolute_gap: set "evidence" to an array of [x,y] pixel points for the winning category's two queried series marks
-      evidence_hint_ranked_series_share: set "evidence" to an array of [x,y] pixel points for every series mark in the winning category
-      evidence_hint_ranked_pair_ratio: set "evidence" to an array of [x,y] pixel points for the winning category's numerator and denominator series marks
-      evidence_hint_category_total_extremum: set "evidence" to an array of [x,y] pixel points for every series mark in the answer category
-      json_example_ranked_directional_change: '{"evidence":[[260,320],[260,180]],"answer":"Q"}'
-      json_example_ranked_absolute_gap: '{"evidence":[[260,340],[260,160]],"answer":"M"}'
-      json_example_ranked_series_share: '{"evidence":[[300,240],[300,320],[300,400]],"answer":"Q"}'
-      json_example_ranked_pair_ratio: '{"evidence":[[300,180],[300,300]],"answer":"M"}'
-      json_example_category_total_extremum: '{"evidence":[[300,220],[300,310],[300,390]],"answer":"Q"}'
+      evidence_hint_ranked_directional_change: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's two queried series marks
+      evidence_hint_ranked_absolute_gap: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's two queried series marks
+      evidence_hint_ranked_series_share: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for every series mark in the answer category
+      evidence_hint_ranked_pair_ratio: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's numerator and denominator series marks
+      evidence_hint_category_total_extremum: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for every series mark in the answer category
+      json_example_ranked_directional_change: '{"evidence":{"Q:Orly":[260,320],"Q:Vega":[260,180]},"answer":"Q"}'
+      json_example_ranked_absolute_gap: '{"evidence":{"M:Orly":[260,340],"M:Vega":[260,160]},"answer":"M"}'
+      json_example_ranked_series_share: '{"evidence":{"Q:Orly":[300,240],"Q:Vega":[300,320],"Q:Tana":[300,400]},"answer":"Q"}'
+      json_example_ranked_pair_ratio: '{"evidence":{"M:Orly":[300,180],"M:Vega":[300,300]},"answer":"M"}'
+      json_example_category_total_extremum: '{"evidence":{"Q:Orly":[300,220],"Q:Vega":[300,310],"Q:Tana":[300,390]},"answer":"Q"}'
       json_example_answer_only_ranked_directional_change: '{"answer":"Q"}'
       json_example_answer_only_ranked_absolute_gap: '{"answer":"M"}'
       json_example_answer_only_ranked_series_share: '{"answer":"Q"}'
@@ -178,6 +178,6 @@ prompt:
       json_example_answer_only_category_total_extremum: '{"answer":"Q"}'
       task_key_conditional_gap: conditional_gap_value_query
       answer_hint_conditional_gap_value: set "answer" to the requested filtered absolute-gap value as an integer
-      evidence_hint_conditional_gap_value: set "evidence" to an array of [x,y] pixel points for the condition-pair marks and target-gap marks in every category included by the condition
-      json_example_conditional_gap_value: '{"evidence":[[160,310],[160,250],[160,190],[160,280],[300,330],[300,260],[300,210],[300,300]],"answer":24}'
+      evidence_hint_conditional_gap_value: set "evidence" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the condition-pair marks and target-gap marks in every category included by the condition
+      json_example_conditional_gap_value: '{"evidence":{"Q:Orly":[160,310],"Q:Vega":[160,250],"Q:Tana":[160,190],"Q:Mira":[160,280],"M:Orly":[300,330],"M:Vega":[300,260],"M:Tana":[300,210],"M:Mira":[300,300]},"answer":24}'
       json_example_answer_only_conditional_gap_value: '{"answer":24}'

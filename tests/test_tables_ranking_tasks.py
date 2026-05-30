@@ -45,10 +45,12 @@ def test_table_ranking_label_variants_match_contract() -> None:
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
+        assert str(render["font_assets"]["table_font_family"]).strip()
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
         assert len(evidence_bboxes) == 1
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
         assert evidence_bboxes[0] == [
             float(value) for value in trace["render_map"]["column_region_bboxes_px"][query_column]

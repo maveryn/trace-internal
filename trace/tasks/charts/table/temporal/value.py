@@ -18,6 +18,7 @@ from trace.tasks.shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from trace.tasks.shared.text_rendering import temporary_default_font_family
 from trace.tasks.charts.table.shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
@@ -28,7 +29,12 @@ from trace.tasks.charts.table.shared.table_common import (
     table_render_style_spec,
 )
 from trace.tasks.charts.table.shared.table_scene import render_table_scene
-from trace.tasks.charts.table.shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
+from trace.tasks.charts.table.shared.visual_defaults import (
+    load_table_background_defaults,
+    load_table_noise_defaults,
+    sample_table_font_family,
+    table_font_asset_metadata,
+)
 
 
 TASK_ID = "task_charts__table__temporal_row_interval_difference_value"
@@ -112,14 +118,20 @@ class ChartsTableTemporalValueTaskBase:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_table_scene(
-            background,
-            scene_variant=str(scene_variant),
-            row_labels=list(dataset["row_labels"]),
-            column_headers=list(dataset["column_headers"]),
-            values_by_row=dict(dataset["values_by_row"]),
-            render_params=render_params,
+        table_font_family = sample_table_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.table_font",
+            params=params,
         )
+        with temporary_default_font_family(str(table_font_family)):
+            rendered_scene = render_table_scene(
+                background,
+                scene_variant=str(scene_variant),
+                row_labels=list(dataset["row_labels"]),
+                column_headers=list(dataset["column_headers"]),
+                values_by_row=dict(dataset["values_by_row"]),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -247,6 +259,7 @@ class ChartsTableTemporalValueTaskBase:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": table_font_asset_metadata(str(table_font_family)),
                 "table_bbox_px": list(rendered_scene.table_bbox_px),
                 "table_style": table_render_style_spec(render_params),
                 "text_style": {

@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/composition`
 4. Query id: `conditioned_panel_sum_from_percent`, `top_k_by_segment_then_sum_other_segment_count`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `keyed_point_map` over the rank/condition, target, and total labels needed for the selected panels.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.small_multiples_aggregate_value.ChartsCompositionSmallMultiplesAggregateValuePublicTask`

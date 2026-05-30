@@ -85,14 +85,14 @@ prompt:
     object_description_single_radar_multi_profile: one radar chart with the same metric spokes for two colored profile polygons. The legend names the two profiles
     answer_hint_label: set "answer" to the exact visible panel label as a string
     answer_hint_count: set "answer" to the count as an integer
-    evidence_hint_highlighted_metric_threshold_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for highlighted-metric vertices that are above the threshold
-    evidence_hint_threshold_metric_count_for_panel: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the vertices in the queried panel that are above the threshold
-    evidence_hint_profile_advantage_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for each metric where the first named profile is greater than the second named profile
-    evidence_hint_matching_condition_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for vertices above the threshold in every matching panel
-    json_example_highlighted_metric_threshold_panel_count: '{"evidence":[[210,220,224,234],[750,244,764,258],[1290,230,1304,244]],"answer":3}'
-    json_example_threshold_metric_count_for_panel: '{"evidence":[[512,356,526,370],[588,420,602,434],[474,488,488,502]],"answer":3}'
-    json_example_profile_advantage_count: '{"evidence":[[650,244,664,258],[622,270,636,284],[744,430,758,444],[708,408,722,422]],"answer":2}'
-    json_example_matching_condition_panel_count: '{"evidence":[[220,210,234,224],[270,302,284,316],[520,198,534,212],[590,276,604,290]],"answer":2}'
+    evidence_hint_highlighted_metric_threshold_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel whose highlighted metric is above the threshold
+    evidence_hint_threshold_metric_count_for_panel: set "evidence" to an array of [x,y] pixel points, one at each counted vertex in the queried panel
+    evidence_hint_profile_advantage_count: set "evidence" to an array of pixel-space point pairs [[x, y], [x, y]], one pair for each counted metric; put the first named profile point first in each pair
+    evidence_hint_matching_condition_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel satisfying the condition
+    json_example_highlighted_metric_threshold_panel_count: '{"evidence":[[160,130,432,390],[516,130,788,390],[872,130,1144,390]],"answer":3}'
+    json_example_threshold_metric_count_for_panel: '{"evidence":[[512,356],[588,420],[474,488]],"answer":3}'
+    json_example_profile_advantage_count: '{"evidence":[[[650,244],[622,270]],[[744,430],[708,408]]],"answer":2}'
+    json_example_matching_condition_panel_count: '{"evidence":[[160,130,432,390],[516,130,788,390]],"answer":2}'
     json_example_answer_only_highlighted_metric_threshold_panel_count: '{"answer":3}'
     json_example_answer_only_threshold_metric_count_for_panel: '{"answer":3}'
     json_example_answer_only_profile_advantage_count: '{"answer":2}'

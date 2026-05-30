@@ -598,11 +598,11 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         gap = int(execution["interval_gap"])
         internal_query_id = str(execution["internal_query_id"])
         evidence_labels = [str(label) for label in execution["ordered_evidence_labels"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        evidence_points = [list(point) for point in out.evidence_gt.value.values()]
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
+        assert out.evidence_gt.type == "keyed_point_map"
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -613,17 +613,23 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         assert int(delta) == int(end_value) - int(start_value)
         assert int(gap) == int(end_index) - int(start_index)
         assert evidence_labels == labels[int(start_index): int(end_index) + 1]
+        assert trace["projected_evidence"]["type"] == "keyed_point_map"
+        assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["pixel_keyed_point_map"] == out.evidence_gt.value
         assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
         assert "point_sequence" not in trace["projected_evidence"]
         assert "pixel_point_sequence" not in trace["projected_evidence"]
         assert "label_set" not in trace["projected_evidence"]
-        assert len(evidence_points) == len(evidence_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_points)
+        assert set(out.evidence_gt.value) == {"start_mark", "end_mark"}
+        assert len(evidence_points) == 2
+        assert len(trace["projected_evidence"]["pixel_point_set"]) == len(evidence_labels)
+        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
         for x_coord, y_coord in evidence_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
+        assert out.evidence_gt.value["start_mark"] == trace["projected_evidence"]["pixel_point_map"][str(execution["start_label"])]
+        assert out.evidence_gt.value["end_mark"] == trace["projected_evidence"]["pixel_point_map"][str(execution["end_label"])]
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
         assert str(execution["start_label"]) in str(out.prompt)
         assert str(execution["end_label"]) in str(out.prompt)
@@ -667,8 +673,8 @@ def test_chart_trend_interval_change_supports_scene_variants_and_rejects_incompa
 def test_chart_trend_interval_change_prompt_examples_match_selected_variant() -> None:
     task = ChartsTrendValueTask()
     expected = {
-        "endpoint_change_value": {"evidence": [[160, 420], [260, 360], [360, 300], [460, 220]], "answer": 20},
-        "interval_rate_value": {"evidence": [[200, 420], [300, 360], [400, 300], [500, 240]], "answer": 6},
+        "endpoint_change_value": {"evidence": {"start_mark": [160, 420], "end_mark": [460, 220]}, "answer": 20},
+        "interval_rate_value": {"evidence": {"start_mark": [200, 420], "end_mark": [500, 240]}, "answer": 6},
     }
     for index, query_id in enumerate(expected, start=16250):
         params = {"query_id": query_id}

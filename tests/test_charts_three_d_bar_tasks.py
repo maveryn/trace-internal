@@ -40,6 +40,11 @@ def test_three_d_bar_tasks_generate_default_query_outputs() -> None:
         assert output.answer_gt.type == "integer"
         assert output.evidence_gt.type == "point_set"
         assert output.evidence_gt.value
+        projected = output.trace_payload["projected_evidence"]
+        assert projected["type"] == "point_set"
+        assert projected["point_set"] == output.evidence_gt.value
+        assert projected["pixel_point_set"] == output.evidence_gt.value
+        assert output.trace_payload["render_spec"]["font_assets"]["chart_font_family"]
         assert output.trace_payload["render_map"]["bar_traces"]
 
 

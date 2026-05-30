@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/distribution`
 4. Query id: sampled internally and recorded in `query_id`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` containing one box around the winning violin body.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.distribution.violin_label.ChartsDistributionViolinDistributionFeatureLabelTask`

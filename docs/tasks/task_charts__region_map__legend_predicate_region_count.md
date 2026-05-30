@@ -12,3 +12,7 @@
 2. Prompt lookup domain/group: `charts/map`
 3. Generation is deterministic for the same seed, params, and task versions.
 4. Answers and evidence are verifier-backed by trace metadata, not image pixels.
+
+## Evidence
+1. Evidence type: `bbox_set`.
+2. Boxes mark the counted regions that satisfy the legend predicate.

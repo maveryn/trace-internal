@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/waterfall`
 4. Query id: `first_total_at_least_threshold`, `first_total_at_most_threshold`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the printed values and threshold marker used for the crossing; unanswerable cases use an empty set.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.waterfall.panel_query.ChartsWaterfallThresholdCrossingLabelTask`

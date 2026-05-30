@@ -13,12 +13,17 @@ generation:
       radar: 1.0
     rank_n_support: [1, 2, 3]
     condition_count_support: [1, 2, 3, 4, 5]
+    top_k_support: [2, 3, 4, 5, 6]
+    top_k_overlap_count_support: [1, 2, 3, 4, 5]
+    panel_condition_count_support: [1, 2, 3, 4, 5]
     query_id_weights:
       source_rank_target_value: 1.0
       source_rank_difference_value: 1.0
       dual_source_target_sum_value: 1.0
       dual_condition_count: 1.0
       panel_gap_extremum_category_label: 1.0
+      top_k_overlap_count: 1.0
+      category_panel_condition_count: 1.0
     rank_direction_weights:
       largest: 1.0
       smallest: 1.0
@@ -39,6 +44,8 @@ generation:
         line: 0.0
         donut: 0.0
         radar: 0.0
+    task_charts__dashboard__top_k_overlap_count:
+      category_count_min: 6
 
 rendering:
   shared:
@@ -114,12 +121,14 @@ prompt:
     answer_hint_count: set "answer" to the requested integer count
     answer_hint_label: set "answer" to the requested visible category label as a string
     unanswerable_instruction: If either named panel is not shown, answer exactly "unanswerable".
-    evidence_hint_value: set "evidence" to an array of [x0,y0,x1,y1] boxes around the chart marks or value labels used in the calculation
-    evidence_hint_count: set "evidence" to an array of [x0,y0,x1,y1] boxes for each counted category mark or label
-    evidence_hint_label: set "evidence" to an array of [x0,y0,x1,y1] boxes around the compared category marks in the two panels
-    json_example_value: '{"evidence":[[180,220,236,286],[860,260,924,318]],"answer":47}'
-    json_example_count: '{"evidence":[[190,240,246,292],[790,245,846,298]],"answer":3}'
-    json_example_label: '{"evidence":[[175,240,230,292],[805,250,862,306]],"answer":"C"}'
+    evidence_hint_source_rank_metric: set "evidence" to an object mapping "source_panel" and "target_panel" to [x,y] pixel points on the selected category marks in those panels
+    evidence_hint_dual_source_target_sum: set "evidence" to an object mapping "first_source_panel", "second_source_panel", "target_first_category", and "target_second_category" to [x,y] pixel points on the corresponding category marks
+    evidence_hint_count: set "evidence" to an array of [x,y] pixel points on each counted category mark
+    evidence_hint_label: set "evidence" to an object mapping "first_panel" and "second_panel" to [x,y] pixel points on the compared category marks; if the answer is "unanswerable", use an empty object
+    json_example_source_rank_metric: '{"evidence":{"source_panel":[180,220],"target_panel":[860,260]},"answer":47}'
+    json_example_dual_source_target_sum: '{"evidence":{"first_source_panel":[180,220],"second_source_panel":[410,250],"target_first_category":[760,260],"target_second_category":[880,300]},"answer":91}'
+    json_example_count: '{"evidence":[[190,240],[790,245],[845,298]],"answer":3}'
+    json_example_label: '{"evidence":{"first_panel":[175,240],"second_panel":[805,250]},"answer":"C"}'
     json_example_answer_only_value: '{"answer":47}'
     json_example_answer_only_count: '{"answer":3}'
     json_example_answer_only_label: '{"answer":"C"}'

@@ -24,7 +24,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_chart_complexity, normalize_int_with_bounds, resolve_chart_complexity_weights
 from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
@@ -33,10 +34,17 @@ from ..shared.labeled_chart_common import (
     sample_composition_with_sum,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.label_assets import resolve_chart_category_labels
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_composition_small_multiples_aggregate_value_base"
+SCENE_ID = "small_multiple"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "top_k_by_segment_then_sum_other_segment_count",
     "conditioned_panel_sum_from_percent",
@@ -72,7 +80,6 @@ _SCENE_VARIANT_LOADS: Dict[str, float] = {
     "small_multiple_pie": 0.48,
     "small_multiple_donut": 0.55,
 }
-_SEGMENT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G")
 _SEGMENT_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (54, 119, 196),
     (219, 107, 59),
@@ -108,6 +115,7 @@ class _RenderedSmallMultiples:
     panel_traces: Tuple[Dict[str, Any], ...]
     plot_bbox_px: Tuple[int, int, int, int]
     evidence_bbox_by_key: Dict[Tuple[str, str], List[float]]
+    total_bbox_by_panel: Dict[str, List[float]]
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -226,9 +234,14 @@ def _panel_labels(panel_count: int, *, instance_seed: int) -> Tuple[str, ...]:
 
 
 def _choose_segments(segment_count: int, *, instance_seed: int) -> Tuple[str, ...]:
-    labels = list(_SEGMENT_LABEL_POOL[: int(segment_count)])
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.segment_labels")
-    rng.shuffle(labels)
+    labels = resolve_chart_category_labels(
+        rng,
+        count=int(segment_count),
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    ).labels
     return tuple(str(label) for label in labels)
 
 
@@ -613,20 +626,90 @@ def _centered_text_bbox(
     )
 
 
+def _bbox_center_point(bbox: Sequence[float]) -> List[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
+def _evidence_map_key(role: str, panel: str, segment: str | None = None) -> str:
+    if segment is None:
+        return f"{str(role)}|{str(panel)}"
+    return f"{str(role)}|{str(panel)}|{str(segment)}"
+
+
+def _format_evidence_key_list(keys: Sequence[str]) -> str:
+    return ", ".join(f'"{str(key)}"' for key in keys)
+
+
+def _build_keyed_evidence_points(
+    *,
+    query_id: str,
+    dataset: _Dataset,
+    rendered_scene: _RenderedSmallMultiples,
+) -> Dict[str, List[float]]:
+    extras = dict(dataset.trace_extras)
+    points: Dict[str, List[float]] = {}
+
+    def add_segment(role: str, panel: str, segment: str) -> None:
+        bbox = rendered_scene.evidence_bbox_by_key.get((str(panel), str(segment)))
+        if bbox is None:
+            return
+        points[_evidence_map_key(str(role), str(panel), str(segment))] = _bbox_center_point(bbox)
+
+    def add_total(panel: str) -> None:
+        bbox = rendered_scene.total_bbox_by_panel.get(str(panel))
+        if bbox is None:
+            return
+        points[_evidence_map_key("total", str(panel))] = _bbox_center_point(bbox)
+
+    if str(query_id) == "top_k_by_segment_then_sum_other_segment_count":
+        rank_segment = str(extras["rank_segment"])
+        target_segment = str(extras["target_segment"])
+        for panel in extras.get("selected_panels", []):
+            add_segment("rank", str(panel), rank_segment)
+            add_segment("target", str(panel), target_segment)
+            add_total(str(panel))
+    elif str(query_id) == "conditioned_panel_sum_from_percent":
+        condition_segment = str(extras["condition_segment"])
+        target_segment = str(extras["target_segment"])
+        for panel in extras.get("selected_panels", []):
+            add_segment("condition", str(panel), condition_segment)
+            add_segment("target", str(panel), target_segment)
+            add_total(str(panel))
+    elif str(query_id) == "average_top_k_minus_average_bottom_k":
+        rank_segment = str(extras["rank_segment"])
+        target_segment = str(extras["target_segment"])
+        for panel in tuple(extras.get("top_panels", [])) + tuple(extras.get("bottom_panels", [])):
+            add_segment("rank", str(panel), rank_segment)
+            add_segment("target", str(panel), target_segment)
+    elif str(query_id) == "composition_shift_l1_distance":
+        start_panel = str(extras["start_panel"])
+        end_panel = str(extras["end_panel"])
+        for segment in dataset.segment_labels:
+            add_segment("start", start_panel, str(segment))
+            add_segment("end", end_panel, str(segment))
+    else:
+        raise ValueError(f"unsupported small-multiple query id: {query_id}")
+
+    return dict(points)
+
+
 def _draw_centered(draw: ImageDraw.ImageDraw, xy: Tuple[float, float], text: str, font: Any, fill: Tuple[int, int, int], *, stroke_width: int = 0, stroke_fill: Tuple[int, int, int] = (255, 255, 255)) -> List[float]:
     raw = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     width = float(raw[2] - raw[0])
     height = float(raw[3] - raw[1])
     left = float(xy[0]) - (width / 2.0) - float(raw[0])
     top = float(xy[1]) - (height / 2.0) - float(raw[1])
-    draw.text(
+    draw_text_traced(draw,
         (float(left), float(top)),
         str(text),
         font=font,
         fill=fill,
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=stroke_fill,
-    )
+     role="readout", required=False,)
     return [
         float(left + raw[0]),
         float(top + raw[1]),
@@ -717,6 +800,7 @@ def _render_small_multiples(
     entities: List[Dict[str, Any]] = []
     panel_traces: List[Dict[str, Any]] = []
     evidence_bbox_by_key: Dict[Tuple[str, str], List[float]] = {}
+    total_bbox_by_panel: Dict[str, List[float]] = {}
     segment_color_by_label = {
         str(label): _SEGMENT_COLORS[index % len(_SEGMENT_COLORS)]
         for index, label in enumerate(dataset.segment_labels)
@@ -731,7 +815,13 @@ def _render_small_multiples(
         y1 = float(y0 + cell_height)
         draw.rounded_rectangle((x0, y0, x1, y1), radius=8, fill=panel_fill, outline=grid_color, width=max(1, int(mark_outline_width_px)))
         _draw_centered(draw, ((x0 + x1) / 2.0, y0 + 23), str(panel.label), title_font, text_color)
-        _draw_centered(draw, ((x0 + x1) / 2.0, y0 + 51), f"Total {int(panel.total)}", subtitle_font, text_color)
+        total_bbox_by_panel[str(panel.label)] = _draw_centered(
+            draw,
+            ((x0 + x1) / 2.0, y0 + 51),
+            f"Total {int(panel.total)}",
+            subtitle_font,
+            text_color,
+        )
         radius = max(42.0, min(cell_width * 0.29, (cell_height - 78.0) * 0.43))
         center = ((x0 + x1) / 2.0, y0 + 63.0 + radius)
         pie_box = (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius)
@@ -803,7 +893,7 @@ def _render_small_multiples(
         x = float(legend_x0 + (index * item_width))
         color = segment_color_by_label[str(segment)]
         draw.rectangle((x, legend_y - 11, x + 26, legend_y + 15), fill=color, outline=(80, 84, 92), width=1)
-        draw.text((x + 34, legend_y - 12), f"Segment {segment}", font=legend_font, fill=text_color)
+        draw_text_traced(draw,(x + 34, legend_y - 12), f"Segment {segment}", font=legend_font, fill=text_color, role="readout", required=False)
 
     return _RenderedSmallMultiples(
         image=image,
@@ -811,6 +901,7 @@ def _render_small_multiples(
         panel_traces=tuple(panel_traces),
         plot_bbox_px=tuple(int(value) for value in plot_bbox),
         evidence_bbox_by_key=dict(evidence_bbox_by_key),
+        total_bbox_by_panel=dict(total_bbox_by_panel),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
@@ -866,19 +957,31 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = _render_small_multiples(
-            base_image=background,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            params=params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = _render_small_multiples(
+                base_image=background,
+                dataset=dataset,
+                scene_variant=str(scene_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
+        evidence_points_by_key = _build_keyed_evidence_points(
+            query_id=str(query_id),
+            dataset=dataset,
+            rendered_scene=rendered_scene,
+        )
+        evidence_key_list = _format_evidence_key_list(list(evidence_points_by_key.keys()))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -908,7 +1011,9 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"]).format(
+            evidence_key_list=str(evidence_key_list)
+        )
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
@@ -950,20 +1055,9 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             }
             for panel in dataset.panels
         ]
-        bbox_set = [
-            list(rendered_scene.evidence_bbox_by_key[(str(panel), str(segment))])
-            for panel, segment in dataset.evidence_keys
-            if (str(panel), str(segment)) in rendered_scene.evidence_bbox_by_key
-        ]
-        evidence_points = [
-            [
-                round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-                round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-            ]
-            for bbox in bbox_set
-        ]
+        point_set = [list(point) for point in evidence_points_by_key.values()]
         answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
-        evidence_gt = TypedValue(type="point_set", value=evidence_points)
+        evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points_by_key))
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
                 "scene_kind": f"chart_{str(scene_variant)}_composition_small_multiples",
@@ -1011,6 +1105,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "layout_jitter": dict(rendered_scene.layout_jitter_meta),
                 "plot_bbox_px": list(rendered_scene.plot_bbox_px),
                 "small_multiple_layout": "grid",
@@ -1023,6 +1118,10 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                     f"{panel}:{segment}": list(bbox)
                     for (panel, segment), bbox in rendered_scene.evidence_bbox_by_key.items()
                 },
+                "total_bbox_by_panel": {
+                    str(panel): list(bbox)
+                    for panel, bbox in rendered_scene.total_bbox_by_panel.items()
+                },
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -1030,6 +1129,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "answer_value": int(dataset.answer_value),
                 "evidence_values": [int(value) for value in dataset.evidence_values],
                 "evidence_keys": [[str(panel), str(segment)] for panel, segment in dataset.evidence_keys],
+                "evidence_point_keys": list(evidence_points_by_key.keys()),
                 "segment_labels": [str(label) for label in dataset.segment_labels],
                 "panels": panels_trace,
                 "question_format": "numeric_open",
@@ -1042,12 +1142,15 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
                 "evidence_values": [int(value) for value in dataset.evidence_values],
+                "evidence_point_keys": list(evidence_points_by_key.keys()),
                 "calculation": dict(extras),
             },
             "projected_evidence": {
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
-                "bbox_set": list(bbox_set),
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(evidence_points_by_key),
+                "pixel_keyed_point_map": dict(evidence_points_by_key),
+                "point_set": list(point_set),
+                "pixel_point_set": list(point_set),
             },
         }
         complexity = build_chart_complexity(
@@ -1067,6 +1170,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

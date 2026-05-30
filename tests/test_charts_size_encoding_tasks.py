@@ -68,7 +68,8 @@ def test_chart_size_encoding_variants_match_contract(query_id: str) -> None:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_set"
+    expected_evidence_type = "keyed_bbox_map" if query_id == "reference_size_neighbor_label" else "bbox_set"
+    assert out.evidence_gt.type == expected_evidence_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "size_encoded_label_comparison"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
@@ -80,9 +81,19 @@ def test_chart_size_encoding_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution, query_params)
     assert str(out.answer_gt.value) == expected_answer
     assert str(execution["answer_label"]) == expected_answer
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == expected_evidence_type
+    if expected_evidence_type == "bbox_set":
+        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        evidence_boxes = [list(bbox) for bbox in out.evidence_gt.value]
+    else:
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+        assert set(out.evidence_gt.value) == {"reference_item", "answer_item"}
+        evidence_boxes = [list(bbox) for bbox in out.evidence_gt.value.values()]
+    assert str(render["font_assets"]["font_asset_version"])
+    assert str(render["font_assets"]["chart_font_family"])
 
-    for bbox in out.evidence_gt.value:
+    for bbox in evidence_boxes:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -91,7 +102,13 @@ def test_chart_size_encoding_variants_match_contract(query_id: str) -> None:
 
     evidence_item_ids = [str(item_id) for item_id in trace["projected_evidence"]["evidence_item_ids"]]
     expected_item_boxes = [render_map["item_bboxes_px"][item_id] for item_id in evidence_item_ids]
-    assert out.evidence_gt.value == expected_item_boxes
+    if expected_evidence_type == "bbox_set":
+        assert out.evidence_gt.value == expected_item_boxes
+    else:
+        assert out.evidence_gt.value == {
+            "reference_item": expected_item_boxes[0],
+            "answer_item": expected_item_boxes[1],
+        }
 
     if query_id == "category_total_extremum_label":
         assert str(out.answer_gt.value) in execution["categories"]
@@ -121,7 +138,11 @@ def test_chart_size_encoding_prompt_examples_match_contract() -> None:
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["answer"], str)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        if query_id == "reference_size_neighbor_label":
+            assert isinstance(answer_and_evidence["evidence"], dict)
+            assert set(answer_and_evidence["evidence"]) == {"reference_item", "answer_item"}
+        else:
+            assert isinstance(answer_and_evidence["evidence"], list)
         assert isinstance(answer_only["answer"], str)
 
 

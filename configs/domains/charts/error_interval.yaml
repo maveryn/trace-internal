@@ -108,7 +108,7 @@ prompt:
     object_description_horizontal_forest: a horizontal interval chart with labeled categories, point estimates, and lower-to-upper interval whiskers
     object_description_vertical_dot_whisker: a vertical dot-and-whisker interval chart with labeled categories and printed interval endpoints
     object_description_bar_with_error: a bar chart with error bars, labeled categories, and printed interval endpoints
-    evidence_hint: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the interval mark or marks used for the answer
+    evidence_hint: set "evidence" to an array of [x0, y0, x1, y1] boxes around the interval mark or marks used for the answer
     answer_hint_count: set "answer" to the requested integer count
     answer_hint_label: set "answer" to the requested category label as a string
     json_example_reference_count: '{"evidence":[[220,260,520,292],[220,430,540,462]],"answer":2}'

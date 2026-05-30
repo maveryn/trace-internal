@@ -25,11 +25,7 @@ generation:
     balanced_query_id_sampling: true
     balanced_threshold_direction_sampling: true
     balanced_scene_variant_sampling: true
-    balanced_marker_render_variant_sampling: true
     balanced_marker_extremum_direction_sampling: true
-    marker_render_variant_weights:
-      proportional_bubble: 1.0
-      unit_bubble_count: 1.0
     marker_extremum_direction_weights:
       largest: 1.0
       smallest: 1.0
@@ -60,20 +56,37 @@ generation:
         continent_region_count: 1.0
         continent_category_region_count: 1.0
         continent_threshold_region_count: 1.0
-    task_charts__region_map__border_neighbor_count:
-      scene_variant: geographic_region_map
-      geographic_map_variant: world_countries
-      geographic_selected_region_count_min: 8
-      geographic_selected_region_count_max: 12
+    task_charts__region_map__named_region_set_total_value:
+      query_id_weights:
+        named_region_set_total_value: 1.0
+      scene_variant_weights:
+        synthetic_region_map: 1.0
+        geographic_region_map: 1.0
+      region_row_count_min: 4
+      region_row_count_max: 6
+      region_col_count_min: 4
+      region_col_count_max: 6
+      region_count_min: 12
+      region_count_max: 18
+      geographic_selected_region_count_min: 10
+      geographic_selected_region_count_max: 16
       legend_bin_count_min: 3
       legend_bin_count_max: 5
-      count_answer_min: 2
-      count_answer_max: 7
-      border_min_shared_length_deg: 1.0
-      border_reference_min_area_sqdeg: 60.0
-      border_neighbor_min_area_sqdeg: 8.0
+      region_set_size_min: 3
+      region_set_size_max: 5
+    task_charts__region_map__group_filtered_region_value:
+      scene_variant: geographic_region_map
+      geographic_map_variant: world_countries
+      geographic_selected_region_count_min: 16
+      geographic_selected_region_count_max: 24
+      legend_bin_count_min: 4
+      legend_bin_count_max: 5
+      group_filtered_target_count_min: 2
+      group_filtered_target_count_max: 5
+      group_filtered_same_group_distractor_count_min: 1
+      group_filtered_same_group_distractor_count_max: 3
       query_id_weights:
-        border_neighbor_count: 1.0
+        group_filtered_region_value: 1.0
     task_charts__region_map__adjacent_condition_count:
       query_id_weights:
         adjacent_same_category_count: 1.0
@@ -168,13 +181,9 @@ rendering:
       violet: 1.0
       gold: 1.0
       ink: 1.0
-    marker_unit_radius_px: 6
     marker_min_radius_px: 8
     marker_max_radius_px: 22
   task_overrides:
-    task_charts__region_map__border_neighbor_count:
-      legend_position_weights:
-        none: 1.0
     task_charts__region_map__adjacent_condition_count:
       region_gap_px: 0
 
@@ -195,19 +204,23 @@ prompt:
     object_description_synthetic_region_map: a synthetic map with colored regions and a legend
     object_description_geographic_region_map: a geographic map with selected regions colored by value and a legend
     object_description_geographic_categorical_map: a geographic map with selected regions colored by category and a category legend
-    object_description_geographic_border_map: a world map with one highlighted country
+    object_description_region_value_map: a map with colored regions, visible region labels, visible integer values, and a legend
+    object_description_geographic_group_value_map: a world map with selected countries colored by value, visible integer values, and a legend
     object_description_marker_map: a map with marker bubbles over selected regions
     answer_hint_count: set "answer" to the requested number of regions as an integer
     answer_hint_label: set "answer" to the exact visible region label as a string
+    answer_hint_value: set "answer" to the requested total as an integer
     evidence_hint_region_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the counted regions
-    evidence_hint_marker: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around the marker bubbles used for the answer
+    evidence_hint_region_value: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the regions included in the total
+    evidence_hint_marker: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes, one around each answer marker bubble
     json_example_numeric_threshold_region_count: '{"evidence":[[140,190,230,260],[340,188,430,258],[442,272,532,342]],"answer":3}'
     json_example_numeric_interval_region_count: '{"evidence":[[150,210,236,284],[260,218,346,292],[374,222,460,296],[486,230,572,304]],"answer":4}'
     json_example_categorical_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
     json_example_continent_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
     json_example_continent_category_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
     json_example_continent_threshold_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
-    json_example_border_neighbor_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_named_region_set_total_value: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":126}'
+    json_example_group_filtered_region_value: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":144}'
     json_example_adjacent_same_category_count: '{"evidence":[[132,182,218,250],[252,178,338,246]],"answer":2}'
     json_example_adjacent_category_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
     json_example_adjacent_numeric_threshold_count: '{"evidence":[[132,182,218,250],[252,178,338,246]],"answer":2}'
@@ -219,7 +232,8 @@ prompt:
     json_example_answer_only_continent_region_count: '{"answer":3}'
     json_example_answer_only_continent_category_region_count: '{"answer":3}'
     json_example_answer_only_continent_threshold_region_count: '{"answer":3}'
-    json_example_answer_only_border_neighbor_count: '{"answer":3}'
+    json_example_answer_only_named_region_set_total_value: '{"answer":126}'
+    json_example_answer_only_group_filtered_region_value: '{"answer":144}'
     json_example_answer_only_adjacent_same_category_count: '{"answer":2}'
     json_example_answer_only_adjacent_category_count: '{"answer":3}'
     json_example_answer_only_adjacent_numeric_threshold_count: '{"answer":2}'

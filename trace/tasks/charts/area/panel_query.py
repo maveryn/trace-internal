@@ -11,7 +11,6 @@ from PIL import Image, ImageDraw
 from ....core.seed import hash64, spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -23,6 +22,7 @@ from ...shared.config_defaults import (
     resolve_required_int_bounds,
     split_generation_rendering_prompt_defaults,
 )
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,14 +30,17 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_rendering import draw_text_centered, load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
+from ..shared.information_style import make_chart_information_background, resolve_chart_information_style
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import sample_chart_labels
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import load_chart_noise_defaults
 
 
 TASK_ID = "charts_area_panel_query_base"
@@ -54,19 +57,8 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="area")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="area", apply_prob=0.0)
 
-_CATEGORY_LABELS: Tuple[str, ...] = (
-    "Orion",
-    "Lyra",
-    "Vega",
-    "Mira",
-    "Nova",
-    "Rhea",
-    "Tara",
-    "Zane",
-)
 _QUERY_REASONING_LOAD: Dict[str, float] = {
     "interval_area_value": 0.78,
     "stacked_band_interval_sum_value": 0.62,
@@ -124,6 +116,34 @@ def _as_rgb(value: Sequence[int] | None, fallback: Tuple[int, int, int]) -> Tupl
     if value is None or len(value) < 3:
         return tuple(int(channel) for channel in fallback)
     return tuple(max(0, min(255, int(channel))) for channel in value[:3])
+
+
+def _semantic_palette(params: Mapping[str, Any]) -> Tuple[Tuple[int, int, int], ...]:
+    raw_palette = params.get("series_palette_rgb", group_default(_RENDER_DEFAULTS, "series_palette_rgb", _DEFAULT_PALETTE))
+    if isinstance(raw_palette, Sequence):
+        colors = tuple(
+            _as_rgb(item, _DEFAULT_PALETTE[index % len(_DEFAULT_PALETTE)])
+            for index, item in enumerate(raw_palette)
+            if isinstance(item, Sequence)
+        )
+        if colors:
+            return colors
+    return tuple(tuple(int(channel) for channel in color) for color in _DEFAULT_PALETTE)
+
+
+def _params_with_information_style(params: Mapping[str, Any], style: Any) -> Dict[str, Any]:
+    styled = dict(params)
+    styled.update(
+        {
+            "axis_color_rgb": list(style.axis_rgb),
+            "grid_color_rgb": list(style.grid_rgb),
+            "plot_fill_rgb": list(style.surface_rgb),
+            "text_color_rgb": list(style.text_rgb),
+            "text_stroke_rgb": list(style.text_stroke_rgb),
+            "legend_border_rgb": list(style.panel_border_rgb),
+        }
+    )
+    return styled
 
 
 def _int_default(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -296,8 +316,9 @@ def _render_area_panel(
     query_points: Sequence[Tuple[str, str]],
     instance_seed: int,
     params: Mapping[str, Any],
+    render_params: _AreaRenderParams | None = None,
 ) -> _RenderedAreaPanel:
-    render_params = _render_params(params, instance_seed=int(instance_seed))
+    render_params = render_params or _render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     plot_left = int(render_params.plot_margin_left_px)
@@ -440,36 +461,48 @@ def _render_area_panel(
             )
         for index, x_label in enumerate(x_label_list):
             center_y_value = float(lower[index]) + 0.5 * float(values[index])
-            center = (
+            band_center = (
                 float(x_centers[index]),
                 _y_for_value(center_y_value, plot_top=plot_top, plot_bottom=plot_bottom, y_axis_max=int(y_axis_max)),
             )
             point_y = _y_for_value(float(upper[index]), plot_top=plot_top, plot_bottom=plot_bottom, y_axis_max=int(y_axis_max))
             radius = float(render_params.point_radius_px)
+            mark_center = tuple(float(value) for value in band_center)
+            value_center = tuple(float(value) for value in band_center)
+            point_bbox: List[float] | None = None
             if not bool(stacked):
+                mark_center = (float(x_centers[index]), float(point_y))
+                value_center = (float(x_centers[index]), float(point_y - 20.0))
+                point_bbox = _round_bbox(
+                    (
+                        float(mark_center[0] - radius),
+                        float(mark_center[1] - radius),
+                        float(mark_center[0] + radius),
+                        float(mark_center[1] + radius),
+                    )
+                )
                 draw.ellipse(
                     (
-                        float(center[0] - radius),
-                        float(point_y - radius),
-                        float(center[0] + radius),
-                        float(point_y + radius),
+                        float(mark_center[0] - radius),
+                        float(mark_center[1] - radius),
+                        float(mark_center[0] + radius),
+                        float(mark_center[1] + radius),
                     ),
                     fill=render_params.plot_fill_rgb,
                     outline=outline_rgb,
                     width=max(1, int(render_params.area_outline_width_px) - 1),
                 )
-                center = (float(center[0]), float(point_y - 20.0))
             text = str(int(values[index]))
             draw_text_centered(
                 draw,
                 text=text,
-                center=center,
+                center=value_center,
                 font=value_font,
                 fill=render_params.text_color_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
                 stroke_width=int(render_params.label_stroke_width_px),
             )
-            text_bbox = _text_bbox(draw, text=text, center=center, font=value_font)
+            text_bbox = _text_bbox(draw, text=text, center=value_center, font=value_font)
             segment_bbox = [
                 round(float(x_centers[index] - 0.5 * max(20.0, x_step * 0.55)), 3),
                 round(float(_y_for_value(float(upper[index]), plot_top=plot_top, plot_bottom=plot_bottom, y_axis_max=int(y_axis_max))), 3),
@@ -485,10 +518,11 @@ def _render_area_panel(
                 "value": int(values[index]),
                 "lower_value": int(lower[index]),
                 "upper_value": int(upper[index]),
-                "mark_center_px": [round(float(center[0]), 3), round(float(center[1]), 3)],
-                "mark_bbox_px": list(segment_bbox),
-                "value_center_px": [round(float(center[0]), 3), round(float(center[1]), 3)],
+                "mark_center_px": [round(float(mark_center[0]), 3), round(float(mark_center[1]), 3)],
+                "mark_bbox_px": list(point_bbox if point_bbox is not None else segment_bbox),
+                "value_center_px": [round(float(value_center[0]), 3), round(float(value_center[1]), 3)],
                 "value_bbox_px": list(text_bbox),
+                "band_segment_bbox_px": list(segment_bbox),
                 "queried": bool((str(series_label), str(x_label)) in query_set),
                 "fill_rgb": [int(channel) for channel in fill_rgb],
                 "outline_rgb": [int(channel) for channel in outline_rgb],
@@ -541,14 +575,14 @@ def _render_area_panel(
             swatch_bbox = (legend_left, row_y, legend_left + swatch, row_y + swatch)
             draw.rectangle(swatch_bbox, fill=fill_rgb, outline=tuple(max(0, int(channel * 0.58)) for channel in fill_rgb), width=2)
             text_center = (legend_left + swatch + 12 + 52, row_y + swatch * 0.5)
-            draw.text(
+            draw_text_traced(draw,
                 (legend_left + swatch + 12, row_y - 1),
                 str(series_label),
                 font=legend_font,
                 fill=render_params.text_color_rgb,
                 stroke_width=1,
                 stroke_fill=render_params.text_stroke_rgb,
-            )
+             role="readout", required=False,)
             text_bbox = draw.textbbox((legend_left + swatch + 12, row_y - 1), str(series_label), font=legend_font)
             legend_trace = {
                 "entity_id": f"legend_{series_index}",
@@ -670,12 +704,17 @@ def _sample_categories(
         fallback_max=4,
         context=f"generation defaults for {TASK_ID}",
     )
-    cat_max = min(int(cat_max), len(_CATEGORY_LABELS))
     rng = spawn_rng(int(instance_seed), "charts.area.categories")
     count = int(rng.randint(int(cat_min), int(cat_max)))
-    labels = list(_CATEGORY_LABELS)
-    rng.shuffle(labels)
-    return tuple(str(label) for label in labels[:count]), (int(cat_min), int(cat_max))
+    label_max_chars = int(params.get("category_label_max_chars", group_default(_GEN_DEFAULTS, "category_label_max_chars", 6)))
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=int(label_max_chars),
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels), (int(cat_min), int(cat_max))
 
 
 def _trapezoid_interval_area(values: Sequence[int], start_index: int, end_index: int) -> int:
@@ -726,7 +765,11 @@ class ChartsAreaPanelQueryTask:
         if query_id not in set(SUPPORTED_QUERY_IDS):
             raise ValueError(f"unsupported area query_id: {query_id}")
         point_count, point_count_range = _sample_point_count(params, instance_seed=int(instance_seed))
-        x_labels = sample_chart_labels(count=int(point_count), instance_seed=int(instance_seed))
+        x_labels = sample_chart_labels(
+            count=int(point_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.labels:{str(query_id)}:{int(point_count)}",
+        )
         start_index, end_index, interval_span_range = _sample_interval(
             point_count=int(point_count),
             params=params,
@@ -841,23 +884,42 @@ class ChartsAreaPanelQueryTask:
             stacked = True
             object_description = str(prompt_defaults["object_description_stacked_area"])
 
-        background, background_meta = make_background_canvas(
-            canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", 1060))),
-            canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", 680))),
+        information_style, information_style_meta = resolve_chart_information_style(
             instance_seed=int(instance_seed),
             params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            scene_id=SCENE_ID,
+            task_group=self.task_group,
+            protected_colors=_semantic_palette(params),
         )
-        rendered = _render_area_panel(
-            background,
-            x_labels=x_labels,
-            series_labels=series_labels,
-            series_values=series_values,
-            stacked=bool(stacked),
-            query_points=evidence_pairs,
+        render_style_params = _params_with_information_style(params, information_style)
+        area_render_params = _render_params(render_style_params, instance_seed=int(instance_seed))
+        background, background_meta = make_chart_information_background(
+            canvas_width=int(area_render_params.canvas_width),
+            canvas_height=int(area_render_params.canvas_height),
+            style=information_style,
             instance_seed=int(instance_seed),
-            params=params,
+            namespace=f"charts.{self.task_group}.{SCENE_ID}.information_scene_background",
         )
+        chart_font_family = sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_area_panel(
+                background,
+                x_labels=x_labels,
+                series_labels=series_labels,
+                series_values=series_values,
+                stacked=bool(stacked),
+                query_points=evidence_pairs,
+                instance_seed=int(instance_seed),
+                params=render_style_params,
+                render_params=area_render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -870,11 +932,6 @@ class ChartsAreaPanelQueryTask:
         }
         evidence_points = [
             list(trace_by_pair[(str(series), str(label))]["mark_center_px"])
-            for series, label in evidence_pairs
-            if (str(series), str(label)) in trace_by_pair
-        ]
-        evidence_bboxes = [
-            list(trace_by_pair[(str(series), str(label))]["mark_bbox_px"])
             for series, label in evidence_pairs
             if (str(series), str(label)) in trace_by_pair
         ]
@@ -936,12 +993,28 @@ class ChartsAreaPanelQueryTask:
                 "canvas_height": int(rendered.image.size[1]),
                 "coord_space": "pixel",
                 "scene_variant": "stacked_area" if bool(stacked) else "area",
+                "information_scene_style": dict(information_style_meta),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "y_axis_max": int(rendered.y_axis_max),
                 "y_ticks": [int(tick) for tick in rendered.y_ticks],
-                "layout_jitter": dict(_render_params(params, instance_seed=int(instance_seed)).layout_jitter_meta),
+                "layout_jitter": dict(area_render_params.layout_jitter_meta),
+                "text_style": {
+                    "label_font_size_px": int(area_render_params.label_font_size_px),
+                    "tick_font_size_px": int(area_render_params.tick_font_size_px),
+                    "value_font_size_px": int(area_render_params.value_font_size_px),
+                    "legend_font_size_px": int(area_render_params.legend_font_size_px),
+                    "label_stroke_width_px": int(area_render_params.label_stroke_width_px),
+                    "font_asset_version": str(font_asset_version()),
+                    "chart_font_family": str(chart_font_family),
+                    "chart_font_exclude_tags": [],
+                },
+                "axis_style": {
+                    "axis_line_width_px": int(area_render_params.axis_line_width_px),
+                    "grid_line_width_px": int(area_render_params.grid_line_width_px),
+                    "tick_length_px": int(area_render_params.tick_length_px),
+                },
             },
             "render_map": {
                 "image_id": "img0",
@@ -958,12 +1031,13 @@ class ChartsAreaPanelQueryTask:
                 **dict(query_params),
             },
             "witness_symbolic": {
-                "type": "area_chart_values",
-                "evidence_pairs": [[str(series), str(label)] for series, label in evidence_pairs],
+                "type": "point_set",
+                "count": int(len(evidence_points)),
             },
             "projected_evidence": {
+                "type": "point_set",
                 "point_set": list(evidence_points),
-                "bbox_set": list(evidence_bboxes),
+                "pixel_point_set": list(evidence_points),
             },
         }
         visual_count = int(point_count) * max(1, len(series_labels))

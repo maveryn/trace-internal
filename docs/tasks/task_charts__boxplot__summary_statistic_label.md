@@ -6,6 +6,10 @@
 3. Source implementation domain/group: `charts/distribution`
 4. Query id: `iqr_extremum_label`, `median_reference_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Answer type: `string`, the exact visible boxplot label.
+7. Evidence type:
+   - `median_reference_label`: `keyed_point_map` with keys `reference_boxplot` and `answer_boxplot`.
+   - `iqr_extremum_label`: `point_set` with one point at the winning boxplot center.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.distribution.boxplot_label.ChartsDistributionBoxplotSummaryLabelTask`

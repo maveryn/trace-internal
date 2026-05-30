@@ -31,7 +31,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -39,11 +39,18 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_flow_radial_sankey_base"
+SCENE_ID = "radial_sankey"
 TRANSFER_TOTAL_QUERY_IDS: Tuple[str, ...] = (
     "source_to_targets_total",
     "sources_to_target_total",
@@ -56,8 +63,6 @@ DOMINANT_ENDPOINT_QUERY_IDS: Tuple[str, ...] = (
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = TRANSFER_TOTAL_QUERY_IDS + DOMINANT_ENDPOINT_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("radial_chord_sankey",)
 
-_SOURCE_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-_TARGET_LABEL_POOL: Tuple[str, ...] = ("V", "W", "X", "Y", "Z", "U")
 _TITLE_OPTIONS: Tuple[str, ...] = (
     "Radial Transfer Map",
     "Circular Flow Summary",
@@ -519,8 +524,17 @@ def _node_specs(labels: Sequence[str], *, prefix: str, role: str) -> List[Dict[s
 
 
 def _sample_nodes(rng, *, source_count: int, target_count: int) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    source_labels = [str(label) for label in rng.sample(list(_SOURCE_LABEL_POOL), int(source_count))]
-    target_labels = [str(label) for label in rng.sample(list(_TARGET_LABEL_POOL), int(target_count))]
+    labels = list(
+        resolve_chart_entity_labels(
+            rng,
+            count=int(source_count) + int(target_count),
+            min_chars=2,
+            max_chars=6,
+            allow_spaces=False,
+        ).labels
+    )
+    source_labels = [str(label) for label in labels[: int(source_count)]]
+    target_labels = [str(label) for label in labels[int(source_count) : int(source_count) + int(target_count)]]
     return (
         _node_specs(source_labels, prefix="source", role="source"),
         _node_specs(target_labels, prefix="target", role="target"),
@@ -1368,17 +1382,23 @@ class ChartsFlowRadialSankeyTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = _render_radial_sankey(
-            background,
-            scene_title=str(dataset["scene_title"]),
-            sources=list(dataset["sources"]),
-            targets=list(dataset["targets"]),
-            links=list(dataset["links"]),
-            render_params=render_params,
-            value_min=int(dataset["value_min"]),
-            value_max=int(dataset["value_max"]),
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = _render_radial_sankey(
+                background,
+                scene_title=str(dataset["scene_title"]),
+                sources=list(dataset["sources"]),
+                targets=list(dataset["targets"]),
+                links=list(dataset["links"]),
+                render_params=render_params,
+                value_min=int(dataset["value_min"]),
+                value_max=int(dataset["value_max"]),
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1449,10 +1469,11 @@ class ChartsFlowRadialSankeyTask:
             list(rendered_scene.link_label_bbox_map[str(link_id)])
             for link_id in evidence_link_ids
         ] + [
-            list(rendered_scene.node_label_bbox_map[str(node_id)])
+            list(rendered_scene.node_bbox_map[str(node_id)])
             for node_id in evidence_node_ids
         ]
         projected_evidence = {
+            "type": "bbox_set",
             "bbox_set": list(evidence_bboxes),
             "pixel_bbox_set": list(evidence_bboxes),
             "link_ids": list(evidence_link_ids),
@@ -1461,8 +1482,8 @@ class ChartsFlowRadialSankeyTask:
                 str(link_id): list(rendered_scene.link_label_bbox_map[str(link_id)])
                 for link_id in evidence_link_ids
             },
-            "node_label_bbox_map": {
-                str(node_id): list(rendered_scene.node_label_bbox_map[str(node_id)])
+            "node_bbox_map": {
+                str(node_id): list(rendered_scene.node_bbox_map[str(node_id)])
                 for node_id in evidence_node_ids
             },
         }
@@ -1552,6 +1573,8 @@ class ChartsFlowRadialSankeyTask:
                 "target_node_fill_rgb": list(render_params.target_node_fill_rgb),
                 "ring_line_rgb": list(render_params.ring_line_rgb),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "background_style": dict(background_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {
@@ -1624,6 +1647,7 @@ class ChartsFlowRadialSankeyTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
             query_id=str(query_id),
         )
 

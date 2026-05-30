@@ -38,12 +38,14 @@ def test_table_statistics_column_summary_value_variants_match_contract() -> None
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
+        assert str(render["font_assets"]["table_font_family"]).strip()
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
         assert len(row_labels) == int(execution["row_count"])
         assert len(column_headers) == int(execution["numeric_column_count"])
         assert len(evidence_bboxes) == 1
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
 
         query_column = str(execution["query_column"])
@@ -132,6 +134,7 @@ def test_table_statistics_filtered_subset_value_variants_match_contract() -> Non
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
+        assert str(render["font_assets"]["table_font_family"]).strip()
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
@@ -139,6 +142,7 @@ def test_table_statistics_filtered_subset_value_variants_match_contract() -> Non
         assert list(execution["selected_row_count_range"]) == [6, 7]
         assert 6 <= len(selected_row_indices) <= int(execution["row_count"]) - 1
         assert len(evidence_bboxes) == (2 * len(selected_row_indices)) == len(expected_cell_ids)
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
 
         filter_values = [int(values_by_row[str(row_label)][filter_column]) for row_label in row_labels]

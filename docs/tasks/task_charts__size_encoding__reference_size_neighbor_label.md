@@ -12,3 +12,8 @@
 2. Prompt lookup domain/group: `charts/size_encoding`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence
+1. Public evidence type: `keyed_bbox_map`.
+2. Required keys are `reference_item` and `answer_item`.
+3. Each value is the bbox around the corresponding visible item mark and label.

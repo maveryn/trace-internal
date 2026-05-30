@@ -26,9 +26,10 @@ from ...shared.prompt_variants import (
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_chart_complexity, normalize_int_with_bounds, resolve_chart_complexity_weights
+from ..shared.label_assets import resolve_chart_category_labels
 from ..shared.labeled_chart_common import (
-    CHART_LABEL_POOL_UP_TO_25,
     LabeledChartDefaults,
     balanced_choice_from_values,
     resolve_chart_axis_variant,
@@ -155,6 +156,7 @@ class _RenderedShareChart:
     chart_traces: Tuple[Dict[str, Any], ...]
     category_traces: Tuple[Dict[str, Any], ...]
     evidence_bbox_by_label: Dict[str, List[float]]
+    evidence_point_by_label: Dict[str, List[float]]
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -375,11 +377,16 @@ def _sample_categories(
     value_max: int,
     instance_seed: int,
 ) -> Tuple[_CategorySpec, ...]:
-    if int(category_count) > len(CHART_LABEL_POOL_UP_TO_25):
-        raise ValueError("category_count exceeds available chart label support")
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.categories")
-    labels = [str(label) for label in rng.sample(list(CHART_LABEL_POOL_UP_TO_25), k=int(category_count))]
-    rng.shuffle(labels)
+    labels = list(
+        resolve_chart_category_labels(
+            rng,
+            count=int(category_count),
+            min_chars=2,
+            max_chars=8,
+            allow_spaces=False,
+        ).labels
+    )
     value_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.values")
     values = sample_composition_with_sum(
         value_rng,
@@ -404,11 +411,16 @@ def _sample_ranked_categories(
     top_rank_count = 7
     if int(category_count) < top_rank_count + 1:
         raise ValueError("ranked share task requires at least 8 categories")
-    if int(category_count) > len(CHART_LABEL_POOL_UP_TO_25):
-        raise ValueError("category_count exceeds available chart label support")
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.ranked.categories")
-    labels = [str(label) for label in rng.sample(list(CHART_LABEL_POOL_UP_TO_25), k=int(category_count))]
-    rng.shuffle(labels)
+    labels = list(
+        resolve_chart_category_labels(
+            rng,
+            count=int(category_count),
+            min_chars=2,
+            max_chars=8,
+            allow_spaces=False,
+        ).labels
+    )
     top_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.ranked.top_values")
     rest_count = int(category_count) - int(top_rank_count)
     top_values: List[int] | None = None
@@ -1223,6 +1235,19 @@ def _evidence_value_for_label(
     return int(values_by_label[str(label)])
 
 
+def _public_evidence_key(label: str) -> str:
+    if str(label) == "__total__":
+        return "total_count"
+    if str(label) == "__known_count__":
+        return "known_count"
+    return str(label)
+
+
+def _bbox_center(bbox: Sequence[float]) -> List[float]:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return [(float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0]
+
+
 def _build_dataset(
     *,
     query_id: str,
@@ -1501,8 +1526,8 @@ def _build_dataset(
             selected = tuple(str(category.label) for category in selected_categories)
             evidence_prefix = (str(anchor_label),)
             positional_instruction = (
-                f"Starting at category {anchor_label} and moving {order_direction}, use the segments "
-                f"{_format_offset_list(selected_offsets)} away from that anchor. Do not include category {anchor_label}."
+                f"Starting at category \"{anchor_label}\" and moving {order_direction}, use the segments "
+                f"{_format_offset_list(selected_offsets)} away from that anchor. Do not include category \"{anchor_label}\"."
             )
             extras.update(
                 {
@@ -1531,7 +1556,7 @@ def _build_dataset(
             selected = tuple(str(category.label) for category in selected_categories)
             evidence_prefix = (str(anchor_label),)
             positional_instruction = (
-                f"Find the segment opposite category {anchor_label}, then also use the segment immediately "
+                f"Find the segment opposite category \"{anchor_label}\", then also use the segment immediately "
                 f"{order_direction} from that opposite segment."
             )
             extras.update(
@@ -1661,7 +1686,7 @@ def _build_dataset(
                     **dict(part_whole_query_extras),
                 }
             )
-            evidence_labels = ("__total__", *tuple(str(label) for label in selected))
+            evidence_labels = tuple(str(label) for label in selected)
         elif str(query_id) in {"excluded_share_to_remaining_count", "chart_order_remaining_count"}:
             remaining_share = int(100 - int(selected_share))
             answer_value = _count_from_share(int(total_count), int(remaining_share))
@@ -1681,7 +1706,7 @@ def _build_dataset(
                 }
             )
             if str(query_id) == "chart_order_remaining_count":
-                evidence_labels = ("__total__", *tuple(str(label) for label in selected))
+                evidence_labels = tuple(str(label) for label in selected)
             else:
                 evidence_labels = (
                     "__total__",
@@ -1753,14 +1778,14 @@ def _draw_text(
     stroke_width: int = 0,
     stroke_fill: Tuple[int, int, int] = (255, 255, 255),
 ) -> List[float]:
-    draw.text(
+    draw_text_traced(draw,
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
         fill=fill,
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=stroke_fill,
-    )
+     role="readout", required=False,)
     raw = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     return [
         float(xy[0]) + float(raw[0]),
@@ -2250,10 +2275,18 @@ def _render_share_chart(
     row_height = float(row_area_bottom - row_area_top) / float(max(1, rows_per_column))
     swatch_size = min(22.0, max(14.0, float(row_height) * 0.58))
     evidence_bbox_by_label: Dict[str, List[float]] = {}
+    evidence_point_by_label: Dict[str, List[float]] = {}
+    for trace in chart_traces:
+        label = str(trace["label"])
+        if trace.get("slice_center_px") is not None:
+            evidence_point_by_label[label] = [float(value) for value in trace["slice_center_px"]]
+        elif trace.get("segment_bbox_px") is not None:
+            evidence_point_by_label[label] = _bbox_center(trace["segment_bbox_px"])
     category_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
     if total_bbox is not None:
         evidence_bbox_by_label["__total__"] = list(total_bbox)
+        evidence_point_by_label["__total__"] = _bbox_center(total_bbox)
         entities.append(
             {
                 "entity_id": "__total__",
@@ -2267,6 +2300,7 @@ def _render_share_chart(
         )
     if known_count_bbox is not None:
         evidence_bbox_by_label["__known_count__"] = list(known_count_bbox)
+        evidence_point_by_label["__known_count__"] = _bbox_center(known_count_bbox)
         entities.append(
             {
                 "entity_id": "__known_count__",
@@ -2340,6 +2374,7 @@ def _render_share_chart(
             "table_row_index": int(row_index),
             "row_bbox_px": list(full_row_bbox),
             "evidence_bbox_px": list(evidence_bbox),
+            "chart_evidence_point_px": list(evidence_point_by_label.get(str(category.label), [])),
             "label_bbox_px": list(label_bbox),
             "value_bbox_px": list(value_bbox),
         }
@@ -2369,6 +2404,7 @@ def _render_share_chart(
         chart_traces=tuple(dict(trace) for trace in chart_traces),
         category_traces=tuple(dict(trace) for trace in category_traces),
         evidence_bbox_by_label=dict(evidence_bbox_by_label),
+        evidence_point_by_label=dict(evidence_point_by_label),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
@@ -2516,8 +2552,19 @@ class ChartsCompositionShareArithmeticValueTask:
             for label in dataset.evidence_labels
             if str(label) in rendered_scene.evidence_bbox_by_label
         ]
+        evidence_points = [
+            list(rendered_scene.evidence_point_by_label[str(label)])
+            for label in dataset.evidence_labels
+            if str(label) in rendered_scene.evidence_point_by_label
+        ]
+        evidence_keyed_points = {
+            _public_evidence_key(str(label)): list(rendered_scene.evidence_point_by_label[str(label)])
+            for label in dataset.evidence_labels
+            if str(label) in rendered_scene.evidence_point_by_label
+        }
+        evidence_keys = [_public_evidence_key(str(label)) for label in dataset.evidence_labels]
         answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_keyed_points))
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
                 "scene_kind": f"chart_{str(scene_variant)}_composition_share_arithmetic",
@@ -2541,6 +2588,7 @@ class ChartsCompositionShareArithmeticValueTask:
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "category_count": int(extras["category_count"]),
                     "evidence_labels": [str(label) for label in dataset.evidence_labels],
+                    "evidence_keys": [str(key) for key in evidence_keys],
                 },
             },
             "render_spec": {
@@ -2566,6 +2614,10 @@ class ChartsCompositionShareArithmeticValueTask:
                     str(label): list(bbox)
                     for label, bbox in rendered_scene.evidence_bbox_by_label.items()
                 },
+                "evidence_point_by_label": {
+                    str(label): list(point)
+                    for label, point in rendered_scene.evidence_point_by_label.items()
+                },
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -2583,6 +2635,7 @@ class ChartsCompositionShareArithmeticValueTask:
                     for category in dataset.categories
                 ],
                 "evidence_labels": [str(label) for label in dataset.evidence_labels],
+                "evidence_keys": [str(key) for key in evidence_keys],
                 "evidence_values": [int(value) for value in evidence_values],
                 "question_format": "numeric_open",
                 "query_id_probabilities": dict(query_id_probabilities),
@@ -2597,8 +2650,14 @@ class ChartsCompositionShareArithmeticValueTask:
                 "calculation": dict(extras),
             },
             "projected_evidence": {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "point_set": list(evidence_points),
+                "pixel_point_set": list(evidence_points),
                 "bbox_set": list(evidence_bboxes),
                 "evidence_labels": [str(label) for label in dataset.evidence_labels],
+                "evidence_keys": [str(key) for key in evidence_keys],
             },
         }
         complexity = build_chart_complexity(

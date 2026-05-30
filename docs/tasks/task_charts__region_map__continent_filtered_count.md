@@ -12,3 +12,7 @@
 2. Prompt lookup domain/group: `charts/map`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence
+1. Evidence type: `bbox_set`.
+2. Boxes mark the counted world-map regions that satisfy the continent and optional legend condition.

@@ -10,6 +10,7 @@ generation:
     stacked_value_max: 16
     category_count_min: 3
     category_count_max: 4
+    category_label_max_chars: 6
     dominance_margin_min: 4
   task_overrides:
     task_charts__area__interval_area_value:
@@ -78,8 +79,8 @@ prompt:
     object_description_single_area: one filled area chart with labeled x-axis positions and numeric values shown at the points
     object_description_stacked_area: one stacked area chart with colored category bands, numeric band values, and a legend
     evidence_hint_interval_area_value: set "evidence" to an array of [x,y] pixel points for every point value from the first queried x-axis label through the second queried x-axis label
-    evidence_hint_stacked_band_interval_sum_value: set "evidence" to an array of [x,y] pixel points for the queried category's band-value labels from the first queried x-axis label through the second queried x-axis label
-    evidence_hint_stacked_dominance_label: set "evidence" to an array of [x,y] pixel points for all category band-value labels in the queried x-axis interval
+    evidence_hint_stacked_band_interval_sum_value: set "evidence" to an array of [x,y] pixel points for the queried category's band-value points from the first queried x-axis label through the second queried x-axis label
+    evidence_hint_stacked_dominance_label: set "evidence" to an array of [x,y] pixel points for all category band-value points in the queried x-axis interval
     json_example_interval_area_value: '{"evidence":[[180,420],[280,360],[380,300],[480,260]],"answer":72}'
     json_example_stacked_band_interval_sum_value: '{"evidence":[[220,380],[330,340],[440,310]],"answer":36}'
     json_example_stacked_dominance_label: '{"evidence":[[210,420],[210,350],[210,280],[330,390],[330,330],[330,260]],"answer":"Orion"}'

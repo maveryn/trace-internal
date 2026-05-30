@@ -129,7 +129,7 @@ def test_chart_composition_variants_match_contract(query_id: str, scene_variant:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.type == "keyed_point_map"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["scene_variant"]) == str(scene_variant)
     assert str(render["scene_variant"]) == str(scene_variant)
@@ -141,17 +141,16 @@ def test_chart_composition_variants_match_contract(query_id: str, scene_variant:
     assert int(out.answer_gt.value) == int(execution["answer_value"])
     assert int(out.answer_gt.value) == _expected_answer(execution)
     assert "integer_list" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["point_set"] == list(out.evidence_gt.value)
-    assert trace["projected_evidence"]["pixel_point_set"] == list(out.evidence_gt.value)
-    assert len(out.evidence_gt.value) == len(execution["evidence_keys"])
-    assert len(trace["projected_evidence"]["bbox_set"]) == len(execution["evidence_keys"])
-    for x_coord, y_coord in out.evidence_gt.value:
+    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+    assert trace["projected_evidence"]["keyed_point_map"] == dict(out.evidence_gt.value)
+    assert trace["projected_evidence"]["pixel_keyed_point_map"] == dict(out.evidence_gt.value)
+    assert len(out.evidence_gt.value) == len(execution["evidence_point_keys"])
+    for x_coord, y_coord in out.evidence_gt.value.values():
         assert 0 <= float(x_coord) <= int(render["canvas_width"])
         assert 0 <= float(y_coord) <= int(render["canvas_height"])
-    assert all(
-        8.0 <= float(bbox[2]) - float(bbox[0]) <= 42.0 and 8.0 <= float(bbox[3]) - float(bbox[1]) <= 28.0
-        for bbox in trace["projected_evidence"]["bbox_set"]
-    )
+    assert {tuple(point) for point in trace["projected_evidence"]["point_set"]} == {
+        tuple(point) for point in out.evidence_gt.value.values()
+    }
     assert len(trace["scene_ir"]["entities"]) == int(execution["panel_count"]) * int(execution["segment_count"])
     assert str(trace["query_spec"]["query_id"]) == str(query_id)
     _assert_normalized_complexity(out)
@@ -199,26 +198,48 @@ def test_chart_composition_decouples_count_axes_from_variant_axes() -> None:
 def test_chart_composition_prompt_examples_match_selected_variant() -> None:
     task = ChartsCompositionSmallMultiplesAggregateValueTask()
     expected = {
-        "top_k_by_segment_then_sum_other_segment_count": {"evidence": [[260, 280], [520, 300]], "answer": 780},
+        "top_k_by_segment_then_sum_other_segment_count": {
+            "evidence": {
+                "rank|2020|A": [230, 250],
+                "target|2020|B": [260, 280],
+                "total|2020": [245, 110],
+                "rank|2021|A": [500, 255],
+                "target|2021|B": [520, 300],
+                "total|2021": [505, 112],
+            },
+            "answer": 780,
+        },
         "conditioned_panel_sum_from_percent": {
-            "evidence": [[240, 290], [480, 310], [720, 330]],
+            "evidence": {
+                "condition|2020|A": [210, 260],
+                "target|2020|B": [240, 290],
+                "total|2020": [225, 110],
+                "condition|2021|A": [450, 280],
+                "target|2021|B": [480, 310],
+                "total|2021": [465, 112],
+            },
             "answer": 720,
         },
         "average_top_k_minus_average_bottom_k": {
-            "evidence": [[240, 260], [480, 280], [720, 360], [960, 380]],
+            "evidence": {
+                "rank|2020|A": [220, 240],
+                "target|2020|B": [240, 260],
+                "rank|2021|A": [460, 260],
+                "target|2021|B": [480, 280],
+                "rank|2022|A": [700, 340],
+                "target|2022|B": [720, 360],
+                "rank|2023|A": [940, 360],
+                "target|2023|B": [960, 380],
+            },
             "answer": 20,
         },
         "composition_shift_l1_distance": {
-            "evidence": [
-                [240, 250],
-                [240, 310],
-                [240, 370],
-                [240, 430],
-                [620, 250],
-                [620, 310],
-                [620, 370],
-                [620, 430],
-            ],
+            "evidence": {
+                "start|2020|A": [240, 250],
+                "end|2023|A": [620, 250],
+                "start|2020|B": [240, 310],
+                "end|2023|B": [620, 310],
+            },
             "answer": 28,
         },
     }
@@ -494,7 +515,7 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_point_map"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["scene_variant"]) == str(scene_variant)
     assert str(render["scene_variant"]) == str(scene_variant)
@@ -518,30 +539,26 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
     assert execution["table_order_labels"] == sorted(execution["chart_order_labels"])
     assert int(out.answer_gt.value) == int(execution["answer_value"])
     assert int(out.answer_gt.value) == _expected_share_arithmetic_answer(execution)
-    assert trace["projected_evidence"]["bbox_set"] == list(out.evidence_gt.value)
-    assert len(out.evidence_gt.value) == len(execution["evidence_labels"])
+    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+    assert trace["projected_evidence"]["keyed_point_map"] == dict(out.evidence_gt.value)
+    assert trace["projected_evidence"]["pixel_keyed_point_map"] == dict(out.evidence_gt.value)
+    assert len(out.evidence_gt.value) == len(execution["evidence_keys"])
+    assert set(out.evidence_gt.value) == set(execution["evidence_keys"])
+    assert len(trace["projected_evidence"]["point_set"]) == len(execution["evidence_labels"])
+    assert len(trace["projected_evidence"]["bbox_set"]) == len(execution["evidence_labels"])
     assert len(execution["evidence_values"]) == len(execution["evidence_labels"])
-    for label, bbox in zip(execution["evidence_labels"], out.evidence_gt.value):
-        assert 0 <= float(bbox[0]) < float(bbox[2]) <= int(render["canvas_width"])
-        assert 0 <= float(bbox[1]) < float(bbox[3]) <= int(render["canvas_height"])
-        is_special_evidence = str(label).startswith("__")
-        min_width = 120.0 if is_special_evidence else 300.0
-        assert float(bbox[2]) - float(bbox[0]) >= float(min_width)
-        min_row_height = 12.0 if is_special_evidence else 18.0
-        max_row_height = (
-            64.0
-            if query_id
-            in {
-                "contiguous_chart_order_sum",
-                "chart_order_adjacent_transfer_gap",
-                "chart_order_share_to_count",
-                "chart_order_remaining_count",
-                "sector_share_to_angle",
-                "positional_segment_share_sum",
-            }
-            else 55.0
-        )
-        assert float(min_row_height) <= float(bbox[3]) - float(bbox[1]) <= float(max_row_height)
+    for label, key in zip(execution["evidence_labels"], execution["evidence_keys"]):
+        point = out.evidence_gt.value[str(key)]
+        assert len(point) == 2
+        assert 0 <= float(point[0]) <= int(render["canvas_width"])
+        assert 0 <= float(point[1]) <= int(render["canvas_height"])
+        if not str(label).startswith("__"):
+            matching_trace = next(item for item in trace["render_map"]["chart_traces"] if str(item["label"]) == str(label))
+            if "slice_center_px" in matching_trace:
+                assert [float(value) for value in point] == [float(value) for value in matching_trace["slice_center_px"]]
+            else:
+                x0, y0, x1, y1 = [float(value) for value in matching_trace["segment_bbox_px"]]
+                assert [float(value) for value in point] == [(x0 + x1) / 2.0, (y0 + y1) / 2.0]
     assert len(trace["scene_ir"]["entities"]) >= int(execution["category_count"]) * 2
     assert str(trace["query_spec"]["query_id"]) == str(query_id)
     _assert_normalized_complexity(out)
@@ -597,27 +614,51 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
     task = ChartsCompositionShareArithmeticValueTask()
     expected = {
         "contiguous_chart_order_sum": {
-            "evidence": [[790, 180, 1220, 210], [790, 270, 1220, 300], [790, 360, 1220, 390], [790, 510, 1220, 540]],
+            "evidence": {
+                "Aster": [565, 236],
+                "Birch": [716, 314],
+                "Cedar": [680, 472],
+                "Dune": [518, 436],
+            },
             "answer": 42,
         },
         "positional_segment_share_sum": {
-            "evidence": [[790, 150, 1220, 180], [790, 270, 1220, 300], [790, 450, 1220, 480]],
+            "evidence": {
+                "Teal": [620, 235],
+                "Birch": [735, 365],
+                "Valley": [548, 500],
+            },
             "answer": 31,
         },
         "chart_order_share_to_count": {
-            "evidence": [[42, 72, 210, 96], [790, 180, 1220, 210], [790, 270, 1220, 300], [790, 360, 1220, 390]],
+            "evidence": {
+                "Aster": [565, 236],
+                "Birch": [716, 314],
+                "Cedar": [680, 472],
+            },
             "answer": 600,
         },
         "chart_order_remaining_count": {
-            "evidence": [[42, 72, 210, 96], [790, 180, 1220, 210], [790, 270, 1220, 300], [790, 360, 1220, 390]],
+            "evidence": {
+                "Aster": [565, 236],
+                "Birch": [716, 314],
+                "Cedar": [680, 472],
+            },
             "answer": 900,
         },
         "sector_share_to_angle": {
-            "evidence": [[790, 180, 1220, 210], [790, 270, 1220, 300], [790, 360, 1220, 390]],
+            "evidence": {
+                "Aster": [565, 236],
+                "Birch": [716, 314],
+                "Cedar": [680, 472],
+            },
             "answer": 108,
         },
         "chart_order_adjacent_transfer_gap": {
-            "evidence": [[790, 180, 1220, 210], [790, 390, 1220, 420]],
+            "evidence": {
+                "Ruby": [590, 250],
+                "Crimson": [740, 380],
+            },
             "answer": 13,
         },
     }

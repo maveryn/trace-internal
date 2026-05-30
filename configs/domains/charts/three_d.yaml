@@ -111,7 +111,7 @@ prompt:
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint_label: set "answer" to the requested chart label as a string
     answer_hint_count: set "answer" to the requested count as an integer
-    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around the supporting point, surface cell, panel, or counted points
+    evidence_hint: 'set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around only the supporting witness marks: the answer panel for panel questions, the answer point marker for nearest-point questions, the answer surface-cell marker for surface extrema, or the first and last point markers for series-trend questions'
     json_example_label: '{"evidence":[[330,210,356,236]],"answer":"K"}'
     json_example_count: '{"evidence":[[220,360,238,378],[310,296,328,314]],"answer":2}'
     json_example_answer_only_label: '{"answer":"K"}'

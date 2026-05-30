@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
@@ -11,20 +12,22 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.chart_scene import render_multiseries_chart_scene, value_axis_render_metadata
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
+from ..shared.label_assets import resolve_chart_category_labels
 from ..shared.labeled_chart_common import (
-    CHART_LABEL_POOL_UP_TO_25,
     resolve_chart_axis_variant,
     resolve_chart_render_params_for_task,
 )
@@ -139,6 +142,49 @@ _FAMILY_RANGE_KEYS: Tuple[str, ...] = (
     "value_min",
     "value_max",
 )
+
+
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    """Sample the shared chart text font for this multiseries render."""
+
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
+
+
+def _keyed_points_from_projection(evidence_projection: Mapping[str, Any]) -> Dict[str, list[float]]:
+    """Normalize projected category/series mark centers into keyed point-map evidence."""
+
+    return {
+        str(key): [float(point[0]), float(point[1])]
+        for key, point in dict(evidence_projection.get("pixel_point_map", {})).items()
+    }
+
+
+def _projected_keyed_point_evidence(
+    evidence_projection: Mapping[str, Any],
+    keyed_points: Mapping[str, list[float]],
+) -> Dict[str, Any]:
+    """Build the public projected-evidence payload for keyed mark witnesses."""
+
+    point_set = [[float(point[0]), float(point[1])] for point in evidence_projection.get("pixel_point_set", [])]
+    return {
+        "type": "keyed_point_map",
+        "keyed_point_map": {str(key): list(point) for key, point in keyed_points.items()},
+        "pixel_keyed_point_map": {str(key): list(point) for key, point in keyed_points.items()},
+        "point_set": list(point_set),
+        "pixel_point_set": list(point_set),
+        "bbox_set": [list(bbox) for bbox in evidence_projection.get("bbox_set", [])],
+        "pixel_point_map": {str(key): list(point) for key, point in keyed_points.items()},
+    }
 
 
 def _ordinal(value: int) -> str:
@@ -674,7 +720,16 @@ def _balanced_answer_label_target(
         if sampling_index is not None
         else abs(int(instance_seed or 0))
     )
-    pool = [str(label) for label in CHART_LABEL_POOL_UP_TO_25]
+    pool = [
+        str(label)
+        for label in resolve_chart_category_labels(
+            random.Random(73_009 + int(variant_index)),
+            count=25,
+            min_chars=2,
+            max_chars=6,
+            allow_spaces=False,
+        ).labels
+    ]
     return str(pool[(int(occurrence_index) + int(variant_index)) % len(pool)])
 
 
@@ -843,13 +898,15 @@ class ChartsMultiseriesComparisonQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_multiseries_chart_scene(
-            background,
-            scene_variant=str(scene_variant),
-            marks=marks,
-            render_params=render_params,
-            instance_seed=int(instance_seed),
-        )
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_multiseries_chart_scene(
+                background,
+                scene_variant=str(scene_variant),
+                marks=marks,
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -915,8 +972,8 @@ class ChartsMultiseriesComparisonQueryTask:
             evidence_labels,
             evidence_series_by_category,
         )
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=evidence_points)
+        evidence_points = _keyed_points_from_projection(evidence_projection)
+        evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points))
 
         trace_payload = {
             "scene_ir": {
@@ -1008,6 +1065,10 @@ class ChartsMultiseriesComparisonQueryTask:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
                     "label_font_size_px": int(render_params.label_font_size_px),
@@ -1102,8 +1163,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 "filtered_category_labels": list(evidence_labels),
             },
             "projected_evidence": {
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                **_projected_keyed_point_evidence(evidence_projection, evidence_points),
             },
         }
 
@@ -1348,13 +1408,15 @@ class ChartsMultiseriesComparisonQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_multiseries_chart_scene(
-            background,
-            scene_variant=str(scene_variant),
-            marks=marks,
-            render_params=render_params,
-            instance_seed=int(instance_seed),
-        )
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_multiseries_chart_scene(
+                background,
+                scene_variant=str(scene_variant),
+                marks=marks,
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1456,8 +1518,8 @@ class ChartsMultiseriesComparisonQueryTask:
                 evidence_labels,
                 trace_extras["queried_series_labels"],
             )
-            evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-            evidence_gt = TypedValue(type="point_set", value=evidence_points)
+            evidence_points = _keyed_points_from_projection(evidence_projection)
+            evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points))
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": f"chart_{str(scene_variant)}_multiseries",
@@ -1504,6 +1566,10 @@ class ChartsMultiseriesComparisonQueryTask:
                     "scene_variant": str(scene_variant),
                     "background_style": dict(background_meta),
                     "post_image_noise": dict(post_noise_meta),
+                    "font_assets": {
+                        "asset_version": font_asset_version(),
+                        "chart_font_family": str(chart_font_family),
+                    },
                     "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                     "text_style": {
                         "label_font_size_px": int(render_params.label_font_size_px),
@@ -1561,8 +1627,7 @@ class ChartsMultiseriesComparisonQueryTask:
                     "labels": list(evidence_labels),
                 },
                 "projected_evidence": {
-                    "point_set": list(evidence_points),
-                    **dict(evidence_projection),
+                    **_projected_keyed_point_evidence(evidence_projection, evidence_points),
                 },
             }
             complexity = build_chart_complexity(
@@ -1641,8 +1706,8 @@ class ChartsMultiseriesComparisonQueryTask:
             [str(answer_label)],
             evidence_series_labels,
         )
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=evidence_points)
+        evidence_points = _keyed_points_from_projection(evidence_projection)
+        evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points))
 
         optional_trace_keys = (
             "left_series_label",
@@ -1753,6 +1818,10 @@ class ChartsMultiseriesComparisonQueryTask:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
                     "label_font_size_px": int(render_params.label_font_size_px),
@@ -1833,8 +1902,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 "answer_label": str(answer_label),
             },
             "projected_evidence": {
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                **_projected_keyed_point_evidence(evidence_projection, evidence_points),
             },
         }
 

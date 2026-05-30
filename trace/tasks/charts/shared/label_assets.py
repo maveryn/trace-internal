@@ -14,6 +14,9 @@ from ...shared.name_assets import load_label_manifest
 
 CHART_LABEL_POOL_UP_TO_25: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNPQRSTUVWXYZ")
 CHART_NAMED_LABEL_MIN_BUCKET_SIZE = 20
+CHART_COMPACT_ID_FIRST_CHARS: Tuple[str, ...] = tuple("ABCDEFGHJKLMNPQRSTUVWXYZ")
+CHART_COMPACT_ID_DIGITS: Tuple[str, ...] = tuple("23456789")
+CHART_COMPACT_ID_ALPHANUM: Tuple[str, ...] = CHART_COMPACT_ID_FIRST_CHARS + CHART_COMPACT_ID_DIGITS
 
 CHART_ENTITY_LABEL_BUCKET_MANIFESTS: Mapping[str, str] = {
     "people_first": "people/first_names_ssa.txt",
@@ -87,6 +90,81 @@ def _dedupe_preserve_order(values: Sequence[str], *, lowercase: bool) -> Tuple[s
         seen.add(label)
         labels.append(label)
     return tuple(labels)
+
+
+@lru_cache(maxsize=16)
+def _compact_chart_id_pool(*, min_chars: int, max_chars: int) -> Tuple[str, ...]:
+    """Return a large synthetic pool for dense chart identifiers.
+
+    Dense categorical axes are layout-constrained and do not need semantic
+    names. Use short unambiguous IDs instead of repeatedly sampling from the
+    tiny short-word category buckets.
+    """
+
+    lower = max(1, int(min_chars))
+    upper = max(lower, min(4, int(max_chars)))
+    labels: list[str] = []
+    if lower <= 1 <= upper:
+        labels.extend(str(char) for char in CHART_COMPACT_ID_FIRST_CHARS)
+    if lower <= 2 <= upper:
+        labels.extend(
+            f"{first}{digit}"
+            for first in CHART_COMPACT_ID_FIRST_CHARS
+            for digit in CHART_COMPACT_ID_DIGITS
+        )
+    if lower <= 3 <= upper:
+        labels.extend(
+            f"{first}{second}{digit}"
+            for first in CHART_COMPACT_ID_FIRST_CHARS
+            for second in CHART_COMPACT_ID_FIRST_CHARS
+            for digit in CHART_COMPACT_ID_DIGITS
+        )
+    if lower <= 4 <= upper:
+        labels.extend(
+            f"{first}{digit_a}{second}{digit_b}"
+            for first in CHART_COMPACT_ID_FIRST_CHARS
+            for digit_a in CHART_COMPACT_ID_DIGITS
+            for second in CHART_COMPACT_ID_FIRST_CHARS
+            for digit_b in CHART_COMPACT_ID_DIGITS
+        )
+    return tuple(labels)
+
+
+def resolve_chart_compact_axis_labels(
+    rng: random.Random,
+    *,
+    count: int,
+    min_chars: int = 2,
+    max_chars: int = 4,
+) -> ResolvedChartLabels:
+    """Resolve short synthetic identifiers for dense chart axes and marks."""
+
+    count = int(count)
+    if count <= 0:
+        raise ValueError("count must be positive")
+    pool = _compact_chart_id_pool(min_chars=int(min_chars), max_chars=int(max_chars))
+    if len(pool) < int(count):
+        raise ValueError("compact chart id pool is too small for requested count")
+    labels = tuple(str(label) for label in rng.sample(list(pool), k=count))
+    return ResolvedChartLabels(
+        labels=tuple(labels),
+        label_variant="compact_id",
+        label_pool_kind="synthetic",
+        label_source_kind="synthetic_compact_id",
+        label_bucket="dense_axis_compact_id",
+        label_manifest="",
+        label_filter={
+            "min_chars": int(min_chars),
+            "max_chars": int(max_chars),
+            "allow_spaces": False,
+            "allow_punctuation": False,
+            "ascii_only": True,
+            "compact_length": True,
+            "lowercase": False,
+            "min_bucket_size": int(count),
+        },
+        label_bucket_probabilities={"dense_axis_compact_id": 1.0},
+    )
 
 
 @lru_cache(maxsize=512)
@@ -295,6 +373,9 @@ def resolve_chart_entity_labels(
 __all__ = [
     "CHART_ALL_LABEL_BUCKET_MANIFESTS",
     "CHART_CATEGORY_LABEL_BUCKET_MANIFESTS",
+    "CHART_COMPACT_ID_ALPHANUM",
+    "CHART_COMPACT_ID_DIGITS",
+    "CHART_COMPACT_ID_FIRST_CHARS",
     "CHART_ENTITY_LABEL_BUCKET_MANIFESTS",
     "CHART_LABEL_POOL_UP_TO_25",
     "CHART_NAMED_LABEL_MIN_BUCKET_SIZE",
@@ -303,6 +384,7 @@ __all__ = [
     "SUPPORTED_CHART_LABEL_VARIANTS",
     "default_chart_label_bucket_weights",
     "resolve_chart_category_labels",
+    "resolve_chart_compact_axis_labels",
     "resolve_chart_entity_labels",
     "resolve_chart_text_labels",
 ]

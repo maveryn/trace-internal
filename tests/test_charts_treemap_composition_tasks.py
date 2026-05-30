@@ -28,13 +28,15 @@ def test_treemap_tasks_generate_default_query_outputs() -> None:
             params={},
             max_attempts=160,
         )
-        assert output.query_id == "default"
-        assert output.scene_id == "treemap_part_whole"
         assert output.query_id in allowed_query_ids
+        assert output.scene_id == "treemap"
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
         assert output.answer_gt.type == "integer"
         assert output.evidence_gt.type == "bbox_set"
         assert output.evidence_gt.value
+        assert output.trace_payload["projected_evidence"]["type"] == "bbox_set"
+        assert output.trace_payload["projected_evidence"]["bbox_set"] == output.evidence_gt.value
+        assert str(output.trace_payload["render_spec"]["font_assets"]["chart_font_family"]).strip()
         assert output.trace_payload["render_spec"]["value_source"] == "printed_leaf_values"
         assert output.trace_payload["render_map"]["leaf_traces"]
         assert output.trace_payload["render_map"]["parent_traces"]
@@ -50,9 +52,9 @@ def test_treemap_tasks_generate_each_query_branch() -> None:
                 params={"query_id": query_id},
                 max_attempts=200,
             )
-            assert output.query_id == "default"
-            assert output.scene_id == "treemap_part_whole"
             assert output.query_id == query_id
+            assert output.scene_id == "treemap"
             assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id
             assert output.evidence_gt.value
+            assert output.trace_payload["projected_evidence"]["type"] == "bbox_set"
             seed_index += 1

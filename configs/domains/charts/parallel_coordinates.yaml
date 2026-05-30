@@ -65,11 +65,13 @@ prompt:
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_parallel_coordinates: a parallel-coordinates chart. Each colored profile line is labeled at the ends and crosses the vertical metric axes; larger metric values are higher on each axis
-    answer_hint_label: set "answer" to the exact profile letter as a string
+    answer_hint_label: set "answer" to the exact visible profile label as a string
     answer_hint_count: set "answer" to the count as an integer
-    evidence_hint_label: set "evidence" to an array containing one [x0,y0,x1,y1] pixel box around the supporting profile segment
-    evidence_hint_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around the supporting profile segments
-    json_example_label: '{"evidence":[[240,180,430,360]],"answer":"C"}'
-    json_example_count: '{"evidence":[[220,170,420,320],[220,380,420,520]],"answer":2}'
-    json_example_answer_only_label: '{"answer":"C"}'
+    evidence_hint_label: set "evidence" to an object mapping the supporting profile label to an [x,y] pixel point on its segment between the two named axes
+    evidence_hint_condition_count: set "evidence" to an object mapping each matching profile label to an [x,y] pixel point on its segment between the two named axes
+    evidence_hint_crossing_count: set "evidence" to an array of [x,y] pixel points, one point at each counted line crossing between the two named axes
+    json_example_label: '{"evidence":{"K7":[335,270]},"answer":"K7"}'
+    json_example_condition_count: '{"evidence":{"A":[320,210],"D":[320,390]},"answer":2}'
+    json_example_crossing_count: '{"evidence":[[310,260],[420,340]],"answer":2}'
+    json_example_answer_only_label: '{"answer":"K7"}'
     json_example_answer_only_count: '{"answer":2}'

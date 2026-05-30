@@ -30,6 +30,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -101,6 +102,7 @@ class _Query:
     answer_type: str
     evidence_candle_ids: Tuple[str, ...]
     evidence_label_ids: Tuple[str, ...]
+    evidence_roles: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -325,7 +327,11 @@ def _sample_candles(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[_
     for attempt in range(250):
         rng = spawn_rng(int(instance_seed), "charts.candlestick.candles.retry", int(attempt))
         candle_count = int(candle_min) + int(rng.randrange(int(candle_max) - int(candle_min) + 1))
-        labels = sample_chart_labels(count=int(candle_count), instance_seed=int(hash64(int(instance_seed), "candlestick.labels", int(attempt))))
+        labels = sample_chart_labels(
+            count=int(candle_count),
+            instance_seed=int(hash64(int(instance_seed), "candlestick.labels", int(attempt))),
+            namespace=f"{TASK_ID}.labels:{int(candle_count)}",
+        )
         body_sizes = list(range(int(body_min), int(body_max) + 1))
         rng.shuffle(body_sizes)
         body_sizes = body_sizes[: int(candle_count)]
@@ -410,15 +416,18 @@ def _build_query(
         if str(range_kind) == "wick":
             value_ids = (f"{target.candle_id}:high", f"{target.candle_id}:low")
             range_phrase = "high-low wick range"
+            evidence_roles = ("answer_wick",)
         else:
             value_ids = (f"{target.candle_id}:open", f"{target.candle_id}:close")
             range_phrase = "open-close body size"
+            evidence_roles = ("answer_body",)
         return _Query(
             query_id=str(query_id),
             answer=str(target.label),
             answer_type="string",
             evidence_candle_ids=(str(target.candle_id),),
             evidence_label_ids=(f"x_label:{target.candle_id}", *value_ids),
+            evidence_roles=tuple(evidence_roles),
             params={
                 **base_params,
                 "range_kind": str(range_kind),
@@ -470,6 +479,7 @@ def _build_query(
                         f"{candidate.candle_id}:open",
                         f"{candidate.candle_id}:close",
                     ),
+                    evidence_roles=("target_body",),
                     params={
                         **base_params,
                         "target_candle_id": str(candidate.candle_id),
@@ -534,12 +544,12 @@ def _draw_candlesticks(
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     value_font = load_font(int(render_params.value_font_size_px), bold=True)
-    draw.text(
+    draw_text_traced(draw,
         (left, max(12, top - 50)),
         "OHLC candlestick chart",
         font=title_font,
         fill=tuple(render_params.text_color_rgb),
-    )
+     role="readout", required=False,)
 
     y_min = int(render_params.y_axis_min)
     y_max = int(render_params.y_axis_max)
@@ -556,12 +566,12 @@ def _draw_candlesticks(
         draw.line([left - int(render_params.tick_length_px), y, left, y], fill=tuple(render_params.axis_color_rgb), width=1)
         text = str(tick)
         bbox = draw.textbbox((0, 0), text, font=tick_font)
-        draw.text(
+        draw_text_traced(draw,
             (left - int(render_params.tick_length_px) - 8 - (bbox[2] - bbox[0]), y - (bbox[3] - bbox[1]) / 2),
             text,
             font=tick_font,
             fill=tuple(render_params.muted_text_rgb),
-        )
+         role="readout", required=False,)
     draw.line([left, bottom, right, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
     draw.line([left, top, left, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
 
@@ -672,12 +682,18 @@ def _draw_candlesticks(
 
 def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -> Dict[str, Any]:
     is_label = str(dataset.query.answer_type) == "string"
+    evidence_hint_key = f"evidence_hint_{str(dataset.query.query_id)}"
     slots: Dict[str, Any] = {
         "object_description": str(prompt_defaults["object_description_candlestick"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults["answer_hint_label" if is_label else "answer_hint_value"]),
-        "evidence_hint": str(prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_value"]),
+        "evidence_hint": str(
+            prompt_defaults.get(
+                evidence_hint_key,
+                prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_value"],
+            )
+        ),
         "json_example": str(prompt_defaults["json_example_label" if is_label else "json_example_value"]),
         "json_example_answer_only": str(prompt_defaults["json_example_answer_only_label" if is_label else "json_example_answer_only_value"]),
     }
@@ -747,6 +763,9 @@ class ChartsCandlestickOHLCQueryTask:
                 "answer_hint_label",
                 "evidence_hint_value",
                 "evidence_hint_label",
+                "evidence_hint_wick_range_extremum_label",
+                "evidence_hint_body_range_extremum_label",
+                "evidence_hint_close_after_body_change_value",
                 "json_example_value",
                 "json_example_label",
                 "json_example_answer_only_value",
@@ -769,18 +788,11 @@ class ChartsCandlestickOHLCQueryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_boxes: List[BBox] = []
-        for candle_id in dataset.query.evidence_candle_ids:
-            evidence_boxes.append(list(rendered.body_bboxes_px[str(candle_id)]))
-        for label_id in dataset.query.evidence_label_ids:
-            if str(label_id).startswith("x_label:"):
-                candle_id = str(label_id).split(":", 1)[1]
-                evidence_boxes.append(list(rendered.x_label_bboxes_px[str(candle_id)]))
-            elif str(label_id).endswith(":body_values"):
-                candle_id = str(label_id).split(":", 1)[0]
-                evidence_boxes.append(list(rendered.value_label_bboxes_px[f"{candle_id}:open"]))
-                evidence_boxes.append(list(rendered.value_label_bboxes_px[f"{candle_id}:close"]))
+        for role, candle_id in zip(dataset.query.evidence_roles, dataset.query.evidence_candle_ids):
+            if str(role).endswith("_wick"):
+                evidence_boxes.append(list(rendered.wick_bboxes_px[str(candle_id)]))
             else:
-                evidence_boxes.append(list(rendered.value_label_bboxes_px[str(label_id)]))
+                evidence_boxes.append(list(rendered.body_bboxes_px[str(candle_id)]))
 
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
@@ -815,7 +827,8 @@ class ChartsCandlestickOHLCQueryTask:
                     "query_id": str(dataset.query.query_id),
                     "answer": answer_value,
                     "evidence_candle_ids": list(dataset.query.evidence_candle_ids),
-                    "evidence_label_ids": list(dataset.query.evidence_label_ids),
+                    "support_label_ids": list(dataset.query.evidence_label_ids),
+                    "evidence_roles": list(dataset.query.evidence_roles),
                 },
             },
             "query_spec": {
@@ -854,19 +867,22 @@ class ChartsCandlestickOHLCQueryTask:
                 "candle_count": int(len(dataset.candles)),
                 "candles": list(candle_rows),
                 "evidence_candle_ids": list(dataset.query.evidence_candle_ids),
-                "evidence_label_ids": list(dataset.query.evidence_label_ids),
+                "support_label_ids": list(dataset.query.evidence_label_ids),
+                "evidence_roles": list(dataset.query.evidence_roles),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
                 "type": "candlestick_ohlc_witness",
                 "candle_ids": list(dataset.query.evidence_candle_ids),
-                "label_ids": list(dataset.query.evidence_label_ids),
+                "roles": list(dataset.query.evidence_roles),
+                "support_label_ids": list(dataset.query.evidence_label_ids),
                 "answer": answer_value,
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_boxes),
                 "candle_ids": list(dataset.query.evidence_candle_ids),
-                "label_ids": list(dataset.query.evidence_label_ids),
+                "roles": list(dataset.query.evidence_roles),
             },
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),

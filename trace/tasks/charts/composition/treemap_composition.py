@@ -29,17 +29,23 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_composition_treemap_base"
-SCENE_ID = "treemap_part_whole"
+SCENE_ID = "treemap"
 
 GROUP_TOTAL_QUERY_IDS: Tuple[str, ...] = ("treemap_group_total_value",)
 REPEATED_LEAF_QUERY_IDS: Tuple[str, ...] = (
@@ -189,10 +195,6 @@ def _bbox(values: Sequence[float]) -> BBox:
 
 def _font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
     return load_font(max(8, int(size)), bold=bool(bold))
-
-
-def _quote(value: str) -> str:
-    return f'"{str(value)}"'
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -512,18 +514,18 @@ def _draw_label_value(
     value_text = str(int(value))
     if height >= 54 and width >= 86:
         label_xy = (x0 + 8, y0 + 11)
-        draw.text(label_xy, label_text, font=label_font, fill=muted_text, anchor="la", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)))
+        draw_text_traced(draw,label_xy, label_text, font=label_font, fill=muted_text, anchor="la", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
         value_xy = (x0 + 8, y0 + 33)
-        draw.text(value_xy, value_text, font=value_font, fill=text_color, anchor="la", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)))
+        draw_text_traced(draw,value_xy, value_text, font=value_font, fill=text_color, anchor="la", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
         return _text_bbox(draw, value_xy, value_text, font=value_font, anchor="la", stroke_width=stroke_width)
     if height >= 28 and width >= 118:
         label_xy = (x0 + 7, (y0 + y1) / 2.0)
         value_xy = (x1 - 7, (y0 + y1) / 2.0)
-        draw.text(label_xy, label_text, font=label_font, fill=muted_text, anchor="lm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)))
-        draw.text(value_xy, value_text, font=value_font, fill=text_color, anchor="rm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)))
+        draw_text_traced(draw,label_xy, label_text, font=label_font, fill=muted_text, anchor="lm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
+        draw_text_traced(draw,value_xy, value_text, font=value_font, fill=text_color, anchor="rm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
         return _text_bbox(draw, value_xy, value_text, font=value_font, anchor="rm", stroke_width=stroke_width)
     value_xy = ((x0 + x1) / 2.0, (y0 + y1) / 2.0)
-    draw.text(value_xy, value_text, font=value_font, fill=text_color, anchor="mm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)))
+    draw_text_traced(draw,value_xy, value_text, font=value_font, fill=text_color, anchor="mm", stroke_fill=stroke, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
     return _text_bbox(draw, value_xy, value_text, font=value_font, anchor="mm", stroke_width=stroke_width)
 
 
@@ -555,7 +557,7 @@ def _render_treemap(
         outline=_lighten(rp.panel_border_rgb, 0.35),
         width=2,
     )
-    draw.text(
+    draw_text_traced(draw,
         (rp.canvas_width / 2.0, 32),
         str(dataset.title),
         font=title_font,
@@ -563,14 +565,14 @@ def _render_treemap(
         anchor="mm",
         stroke_fill=rp.text_stroke_rgb,
         stroke_width=1,
-    )
-    draw.text(
+     role="readout", required=False,)
+    draw_text_traced(draw,
         (chart_bbox[0], chart_bbox[1] - 22),
         f"Parent: {dataset.parent_axis}    Child: {dataset.leaf_axis}",
         font=note_font,
         fill=rp.muted_text_rgb,
         anchor="la",
-    )
+     role="readout", required=False,)
     leaves_by_id = {str(leaf.leaf_id): leaf for leaf in dataset.leaves}
     parent_rects = _slice_rects(
         [(str(parent.parent_id), int(parent.value)) for parent in dataset.parents],
@@ -589,7 +591,7 @@ def _render_treemap(
         header_rect = (parent_rect[0], parent_rect[1], parent_rect[2], min(parent_rect[3], parent_rect[1] + header_h))
         draw.rectangle(header_rect, fill=_darken(parent.color_rgb, 0.10), outline=rp.panel_border_rgb, width=1)
         parent_text = _truncate(str(parent.label), max_chars=max(5, int((parent_rect[2] - parent_rect[0]) // 9)))
-        draw.text(
+        draw_text_traced(draw,
             (header_rect[0] + 7, (header_rect[1] + header_rect[3]) / 2.0),
             parent_text,
             font=parent_font,
@@ -597,7 +599,7 @@ def _render_treemap(
             anchor="lm",
             stroke_fill=_darken(parent.color_rgb, 0.35),
             stroke_width=1,
-        )
+         role="readout", required=False,)
         leaf_area = (parent_rect[0], header_rect[3], parent_rect[2], parent_rect[3])
         leaf_rects = _slice_rects(
             [(str(leaf_id), int(leaves_by_id[str(leaf_id)].value)) for leaf_id in parent.leaf_ids],
@@ -771,7 +773,13 @@ class ChartsCompositionTreemapTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_treemap(background, dataset=dataset, params=params, instance_seed=int(instance_seed))
+        chart_font_family = sample_chart_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
+        )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_treemap(background, dataset=dataset, params=params, instance_seed=int(instance_seed))
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -781,8 +789,8 @@ class ChartsCompositionTreemapTask:
         query_trace = dict(dataset.query.trace)
         slots = {
             "object_description": str(prompt_defaults["object_description_treemap"]),
-            "parent_label": _quote(str(query_trace.get("parent_label", ""))),
-            "leaf_label": _quote(str(query_trace.get("leaf_label", ""))),
+            "parent_label": str(query_trace.get("parent_label", "")),
+            "leaf_label": str(query_trace.get("leaf_label", "")),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "evidence_hint": str(prompt_defaults[_evidence_hint_key(str(query_id))]),
@@ -855,6 +863,7 @@ class ChartsCompositionTreemapTask:
                 "scene_variant": "treemap_composition",
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "chart_bbox_px": list(rendered.chart_bbox_px),
                 **dict(rendered.render_meta),
             },
@@ -885,6 +894,7 @@ class ChartsCompositionTreemapTask:
                 "calculation": dict(query_trace),
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_bboxes),
                 "evidence_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.evidence_leaf_ids],
             },

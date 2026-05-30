@@ -9,6 +9,7 @@ import pytest
 from tests.helpers import assert_counter_support_within, extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.tasks.charts.flow.sankey_path_value import (
+    NODE_SIDE_TOTAL_QUERY_IDS,
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_QUERY_IDS,
     ChartsFlowSankeyPathValueTask,
@@ -94,7 +95,7 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["scene_variant"]) == "three_column_sankey"
-    expected_question_format = "sankey_node_side_total_value" if query_id.endswith("_total_flow") and query_id != "source_to_target_total_flow" else "sankey_path_value"
+    expected_question_format = "sankey_node_side_total_value" if query_id in NODE_SIDE_TOTAL_QUERY_IDS else "sankey_path_value"
     assert str(execution["question_format"]) == expected_question_format
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 2 <= int(execution["source_count"]) <= 3
@@ -122,12 +123,16 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution)
     assert int(out.answer_gt.value) == int(expected_answer)
     assert int(execution["answer_value"]) == int(expected_answer)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
     evidence_segment_ids = [str(segment_id) for segment_id in execution["evidence_segment_ids"]]
-    expected_bboxes = [render_map["segment_label_bboxes_px"][segment_id] for segment_id in evidence_segment_ids]
-    assert out.evidence_gt.value == expected_bboxes
     assert trace["projected_evidence"]["segment_ids"] == evidence_segment_ids
+    expected_bboxes = [render_map["segment_label_bboxes_px"][segment_id] for segment_id in evidence_segment_ids]
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.value == expected_bboxes
+    assert trace["render_spec"]["font_assets"]["chart_font_family"]
+    assert "background_style" in trace["render_spec"]
     for bbox in out.evidence_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
@@ -143,6 +148,7 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
         labels = {(str(path["source_label"]), str(path["target_label"])) for path in execution["query_path_details"]}
         assert len(labels) == 1
         assert len(evidence_segment_ids) == 2 * len(execution["query_path_ids"])
+        assert len(out.evidence_gt.value) == len(evidence_segment_ids)
     elif query_id == "source_outgoing_total_flow":
         assert 2 <= len(execution["query_path_ids"]) <= 3
         labels = {str(path["source_label"]) for path in execution["query_path_details"]}
@@ -245,6 +251,7 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_id: str) -> None
     render_map = trace["render_map"]
 
     assert out.query_id == query_id
+    assert out.scene_id == "radial_sankey"
     expected_type = "integer" if query_id in TRANSFER_TOTAL_QUERY_IDS else "string"
     assert out.answer_gt.type == expected_type
     assert out.evidence_gt.type == "bbox_set"
@@ -282,12 +289,15 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_id: str) -> None
     expected_answer = _expected_radial_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer_value"] == expected_answer
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["font_assets"]["chart_font_family"]
 
     evidence_link_ids = [str(link_id) for link_id in execution["evidence_link_ids"]]
     evidence_node_ids = [str(node_id) for node_id in execution["evidence_node_ids"]]
     expected_bboxes = [render_map["link_label_bboxes_px"][link_id] for link_id in evidence_link_ids]
-    expected_bboxes += [render_map["node_label_bboxes_px"][node_id] for node_id in evidence_node_ids]
+    expected_bboxes += [render_map["node_bboxes_px"][node_id] for node_id in evidence_node_ids]
     assert out.evidence_gt.value == expected_bboxes
 
     if query_id == "source_to_targets_total":

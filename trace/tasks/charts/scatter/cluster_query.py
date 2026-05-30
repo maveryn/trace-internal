@@ -21,6 +21,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -28,7 +29,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -36,6 +38,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -64,26 +67,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="scatter")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="scatter", apply_prob=0.0)
 
-_CLUSTER_LABEL_POOL: Tuple[str, ...] = (
-    "G",
-    "H",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "cluster_trend_direction_label": 0.62,
     "cluster_separation_extremum_label": 0.68,
@@ -282,6 +265,20 @@ def _resolve_spread_extremum(params: Mapping[str, Any], *, instance_seed: int) -
     )
 
 
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
+
+
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
@@ -299,9 +296,14 @@ def _support_sampling_params(
 
 def _sample_cluster_labels(*, cluster_count: int, instance_seed: int) -> Tuple[str, ...]:
     label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.cluster_labels")
-    labels = list(_CLUSTER_LABEL_POOL)
-    label_rng.shuffle(labels)
-    return tuple(str(label) for label in labels[: int(cluster_count)])
+    labels = resolve_chart_entity_labels(
+        label_rng,
+        count=int(cluster_count),
+        min_chars=2,
+        max_chars=6,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
 def _target_answer_label(params: Mapping[str, Any], *, instance_seed: int, labels: Sequence[str]) -> str:
@@ -739,11 +741,11 @@ def _draw_text_box(
     stroke_width: int = 0,
 ) -> List[float]:
     try:
-        draw.text((float(xy[0]), float(xy[1])), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=int(stroke_width))
+        draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=int(stroke_width), role="readout", required=False)
         box = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=int(stroke_width))
         return _bbox(box)
     except Exception:
-        draw.text((float(xy[0]), float(xy[1])), str(text), font=font, fill=fill)
+        draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), font=font, fill=fill, role="readout", required=False)
         width, height = draw.textsize(str(text), font=font)
         return _bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
 
@@ -789,8 +791,8 @@ def _render_scatter(
         draw.line([plot_bbox[0], y, plot_bbox[2], y], fill=render_params.grid_color_rgb, width=int(render_params.grid_line_width_px))
         draw.line([x, plot_bbox[3], x, plot_bbox[3] + render_params.tick_length_px], fill=render_params.axis_color_rgb, width=1)
         draw.line([plot_bbox[0] - render_params.tick_length_px, y, plot_bbox[0], y], fill=render_params.axis_color_rgb, width=1)
-        draw.text((x, plot_bbox[3] + 12), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="mt")
-        draw.text((plot_bbox[0] - 13, y), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="rm")
+        draw_text_traced(draw,(x, plot_bbox[3] + 12), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="mt", role="readout", required=False)
+        draw_text_traced(draw,(plot_bbox[0] - 13, y), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="rm", role="readout", required=False)
 
     title_bbox = _draw_text_box(
         draw,
@@ -893,7 +895,7 @@ def _render_scatter(
         swatch = [legend_left, y, legend_left + legend_swatch_size, y + legend_swatch_size]
         draw.rounded_rectangle(swatch, radius=7, fill=cluster.color_rgb, outline=(255, 255, 255), width=2)
         letter_center = ((swatch[0] + swatch[2]) / 2.0, (swatch[1] + swatch[3]) / 2.0 + 1.0)
-        draw.text(
+        draw_text_traced(draw,
             letter_center,
             str(cluster.cluster_label),
             font=legend_letter_font,
@@ -901,7 +903,7 @@ def _render_scatter(
             anchor="mm",
             stroke_width=1,
             stroke_fill=(0, 0, 0),
-        )
+         role="readout", required=False,)
         text_box = _draw_text_box(
             draw,
             f"Cluster {cluster.cluster_label}",
@@ -965,7 +967,7 @@ class ChartsScatterClusterQueryTask:
         cluster_max = _gen_int(params, "cluster_count_max", 8)
         cluster_count_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.cluster_count")
         cluster_count = int(cluster_count_rng.randint(int(cluster_min), int(cluster_max)))
-        cluster_count = max(4, min(8, int(cluster_count), len(_CLUSTER_LABEL_POOL)))
+        cluster_count = max(4, min(8, int(cluster_count)))
         labels = _sample_cluster_labels(cluster_count=int(cluster_count), instance_seed=int(instance_seed))
         points_min = _gen_int(params, "points_per_cluster_min", 8)
         points_max = _gen_int(params, "points_per_cluster_max", 12)
@@ -1032,7 +1034,9 @@ class ChartsScatterClusterQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_scatter(background, dataset=dataset, render_params=render_params)
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_scatter(background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1076,11 +1080,21 @@ class ChartsScatterClusterQueryTask:
             if str(cluster.cluster_label) in set(evidence_cluster_labels)
             for point in cluster.points
         ]
-        evidence_bboxes = [list(rendered.cluster_bboxes[str(label)]) for label in evidence_cluster_labels]
+        evidence_bbox_map: Dict[str, List[float]] = {
+            "answer_cluster": list(rendered.cluster_bboxes[str(dataset.query.answer_label)])
+        }
+        if str(dataset.query.query_id) == "cluster_separation_extremum_label":
+            reference_label = str(dataset.query.trace["reference_cluster_label"])
+            evidence_bbox_map = {
+                "reference_cluster": list(rendered.cluster_bboxes[str(reference_label)]),
+                "answer_cluster": list(rendered.cluster_bboxes[str(dataset.query.answer_label)]),
+            }
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=str(dataset.query.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
         projected_evidence = {
-            "bbox_set": list(evidence_bboxes),
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_bbox_map),
+            "pixel_keyed_bbox_map": dict(evidence_bbox_map),
             "point_ids": list(evidence_point_ids),
             "cluster_labels": list(evidence_cluster_labels),
             "cluster_bboxes": {
@@ -1151,6 +1165,8 @@ class ChartsScatterClusterQueryTask:
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "point_radius_px": int(render_params.point_radius_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_asset_version": font_asset_version(),
+                "chart_font_family": str(chart_font_family),
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

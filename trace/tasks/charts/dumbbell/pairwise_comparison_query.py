@@ -22,6 +22,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,6 +31,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -37,6 +39,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -65,32 +68,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="dumbbell")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="dumbbell", apply_prob=0.0)
 
-_ROW_LABEL_POOL: Tuple[str, ...] = (
-    "Atlas",
-    "Beacon",
-    "Cedar",
-    "Delta",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Iris",
-    "Juno",
-    "Kite",
-    "Lumen",
-    "Maple",
-    "Nova",
-    "Orion",
-    "Pioneer",
-)
-_SERIES_NAME_PAIRS: Tuple[Tuple[str, str], ...] = (
-    ("North", "South"),
-    ("Plan A", "Plan B"),
-    ("Before", "After"),
-    ("Group X", "Group Y"),
-    ("Urban", "Rural"),
-    ("Baseline", "Current"),
-)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "gap_rank_row_label": 0.68,
     "side_winner_count": 0.70,
@@ -163,6 +140,7 @@ class _RenderParams:
     text_stroke_rgb: RGB
     series_a_rgb: RGB
     series_b_rgb: RGB
+    font_family: str
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -348,6 +326,15 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
         text_stroke_rgb=_render_rgb(params, "text_stroke_rgb", (255, 255, 255)),
         series_a_rgb=_render_rgb(params, "series_a_rgb", (38, 101, 176)),
         series_b_rgb=_render_rgb(params, "series_b_rgb", (213, 92, 72)),
+        font_family=sample_font_family(
+            role="readout",
+            instance_seed=_render_style_seed(params),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        ),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
@@ -528,17 +515,24 @@ def _build_dataset(
         low=int(row_min),
         high=int(row_max),
     )
-    if int(row_count) > len(_ROW_LABEL_POOL):
-        raise ValueError("row_count exceeds label-pool size")
-
     label_rng = spawn_rng(instance_seed, f"{TASK_ID}.labels")
-    labels = list(_ROW_LABEL_POOL)
-    label_rng.shuffle(labels)
-    labels = labels[: int(row_count)]
-    series_a_name, series_b_name = _SERIES_NAME_PAIRS[
-        resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.series_pair")
-        % len(_SERIES_NAME_PAIRS)
-    ]
+    labels = list(
+        resolve_chart_entity_labels(
+            label_rng,
+            count=int(row_count),
+            min_chars=2,
+            max_chars=7,
+            allow_spaces=False,
+        ).labels
+    )
+    series_rng = spawn_rng(instance_seed, f"{TASK_ID}.series_labels")
+    series_a_name, series_b_name = resolve_chart_entity_labels(
+        series_rng,
+        count=2,
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
 
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
@@ -692,11 +686,26 @@ def _draw_centered_text(
     height = float(box[3] - box[1])
     x = float(xy[0]) - (width / 2.0)
     y = float(xy[1]) - (height / 2.0)
-    draw.text((x, y), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=max(0, int(stroke_width)))
+    draw_text_traced(draw,(x, y), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=max(0, int(stroke_width)), role="readout", required=False)
     return _bbox([x, y, x + width, y + height])
 
 
-def _render_dumbbell(background: Image.Image, *, dataset: _Dataset, render_params: _RenderParams) -> _Rendered:
+_TITLE_OPTIONS: Tuple[Tuple[str, str], ...] = (
+    ("Paired Dot Comparison", "Horizontal positions encode values; each row compares the two legend series."),
+    ("Series Gap Review", "Each connector shows the distance between paired values on one row."),
+    ("Matched Value Scan", "Two colored dots share a row label and use the same horizontal axis."),
+    ("Pairwise Difference Board", "Read each row by comparing the two dot positions against the shared scale."),
+    ("Dumbbell Summary", "The gray segment links the two series values for each category row."),
+)
+
+
+def _render_dumbbell(
+    background: Image.Image,
+    *,
+    dataset: _Dataset,
+    render_params: _RenderParams,
+    instance_seed: int,
+) -> _Rendered:
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     width, height = image.size
@@ -710,19 +719,22 @@ def _render_dumbbell(background: Image.Image, *, dataset: _Dataset, render_param
     draw.rounded_rectangle(panel_bbox, radius=8, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=1)
     draw.rectangle([left, top, right, bottom], fill=render_params.plot_fill_rgb)
 
-    title_font = load_font(render_params.title_font_size_px, bold=True)
-    subtitle_font = load_font(render_params.subtitle_font_size_px, bold=False)
-    label_font = load_font(render_params.label_font_size_px, bold=True)
-    tick_font = load_font(render_params.tick_font_size_px, bold=False)
-    legend_font = load_font(render_params.legend_font_size_px, bold=True)
+    title_font = load_font(render_params.title_font_size_px, bold=True, font_family=render_params.font_family)
+    subtitle_font = load_font(render_params.subtitle_font_size_px, bold=False, font_family=render_params.font_family)
+    label_font = load_font(render_params.label_font_size_px, bold=True, font_family=render_params.font_family)
+    tick_font = load_font(render_params.tick_font_size_px, bold=False, font_family=render_params.font_family)
+    legend_font = load_font(render_params.legend_font_size_px, bold=True, font_family=render_params.font_family)
 
-    draw.text((panel_margin + 22, 48), "Paired Dot Comparison", font=title_font, fill=render_params.text_color_rgb)
-    draw.text(
+    header_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.header_text")
+    title_text, subtitle_text = _TITLE_OPTIONS[int(header_rng.randrange(len(_TITLE_OPTIONS)))]
+    draw_text_traced(draw, (panel_margin + 22, 48), title_text, font=title_font, fill=render_params.text_color_rgb, role="readout", required=False)
+    draw_text_traced(
+        draw,
         (panel_margin + 24, 82),
-        "Horizontal positions encode values; each row compares the two legend series.",
+        subtitle_text,
         font=subtitle_font,
         fill=render_params.muted_text_rgb,
-    )
+     role="readout", required=False,)
 
     def x_px(value: float) -> float:
         return left + ((float(value) / 100.0) * (right - left))
@@ -756,14 +768,14 @@ def _render_dumbbell(background: Image.Image, *, dataset: _Dataset, render_param
         y = top + (float(index) * row_gap)
         draw.line([left, y, right, y], fill=render_params.row_line_rgb, width=render_params.row_line_width_px)
         label_bbox = _text_bbox(draw, (panel_margin + 28, y - 10), row.label, label_font, stroke_width=1)
-        draw.text(
+        draw_text_traced(draw,
             (panel_margin + 28, y - 10),
             row.label,
             font=label_font,
             fill=render_params.text_color_rgb,
             stroke_fill=render_params.text_stroke_rgb,
             stroke_width=1,
-        )
+         role="readout", required=False,)
         row_label_bboxes[row.row_id] = list(label_bbox)
 
         xa = x_px(float(row.value_a))
@@ -779,7 +791,7 @@ def _render_dumbbell(background: Image.Image, *, dataset: _Dataset, render_param
         draw.ellipse(point_b_bbox, fill=render_params.series_b_rgb, outline=(255, 255, 255), width=render_params.point_outline_width_px)
         point_bboxes[f"{row.row_id}:series_a"] = list(point_a_bbox)
         point_bboxes[f"{row.row_id}:series_b"] = list(point_b_bbox)
-        row_pair_bboxes[row.row_id] = _bbox_union([label_bbox, connector_box, point_a_bbox, point_b_bbox], padding=8)
+        row_pair_bboxes[row.row_id] = _bbox_union([connector_box, point_a_bbox, point_b_bbox], padding=8)
         entities.append(
             {
                 "entity_id": row.row_id,
@@ -805,7 +817,7 @@ def _render_dumbbell(background: Image.Image, *, dataset: _Dataset, render_param
         draw.ellipse(dot_bbox, fill=color, outline=(255, 255, 255), width=2)
         text_xy = (legend_x + 26, y)
         text_bbox = _text_bbox(draw, text_xy, name, legend_font)
-        draw.text(text_xy, name, font=legend_font, fill=render_params.text_color_rgb)
+        draw_text_traced(draw,text_xy, name, font=legend_font, fill=render_params.text_color_rgb, role="readout", required=False)
         legend_bboxes[f"series_{idx}"] = _bbox_union([dot_bbox, text_bbox], padding=2)
 
     return _Rendered(
@@ -907,7 +919,12 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_dumbbell(background, dataset=dataset, render_params=render_params)
+        rendered = _render_dumbbell(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            instance_seed=int(instance_seed),
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1011,6 +1028,10 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "point_radius_px": int(render_params.point_radius_px),
                 "connector_width_px": int(render_params.connector_width_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(render_params.font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

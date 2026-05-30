@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/table_temporal`
 4. Query id: `absolute_difference_between_rows_over_year_interval`, `sum_absolute_differences_between_rows_over_year_interval`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the queried year cells from both rows.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.table.temporal.value.ChartsTableTemporalRowIntervalDifferenceValueTask`

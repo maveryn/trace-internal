@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/composition`
 4. Query id: sampled internally and recorded in `query_id`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over printed matching child value labels across parent rectangles.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.treemap_composition.ChartsCompositionTreemapRepeatedLeafAggregateValueTask`

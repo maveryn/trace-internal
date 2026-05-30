@@ -30,6 +30,18 @@ def _assert_normalized_complexity(out: object) -> None:
     )
 
 
+def _evidence_point_values(out: object) -> list[list[float]]:
+    return [list(point) for point in out.evidence_gt.value.values()]
+
+
+def _assert_keyed_point_evidence(out: object) -> None:
+    projected = out.trace_payload["projected_evidence"]
+    assert out.evidence_gt.type == "keyed_point_map"
+    assert projected["type"] == "keyed_point_map"
+    assert projected["keyed_point_map"] == out.evidence_gt.value
+    assert projected["pixel_keyed_point_map"] == out.evidence_gt.value
+
+
 def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     cases = (
@@ -52,7 +64,7 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
         series_labels = [str(label) for label in execution["series_labels"]]
         query_pair = [str(label) for label in execution["queried_series_labels"]]
         evidence_labels = [str(label) for label in execution["evidence_labels"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        evidence_points = _evidence_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -63,7 +75,7 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
+        _assert_keyed_point_evidence(out)
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
@@ -152,7 +164,14 @@ def test_chart_multiseries_grouped_horizontal_bar_evidence_uses_value_endpoint()
 def test_chart_multiseries_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "evidence": [[180, 260], [180, 190], [360, 320], [360, 240], [540, 210], [540, 280]],
+        "evidence": {
+            "Q:Orly": [180, 260],
+            "Q:Vega": [180, 190],
+            "M:Orly": [360, 320],
+            "M:Vega": [360, 240],
+            "Z:Orly": [540, 210],
+            "Z:Vega": [540, 280],
+        },
         "answer": 3,
     }
     for index, comparison in enumerate(("greater_than", "less_than"), start=11040):
@@ -260,7 +279,7 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         query_pair = [str(label) for label in execution["queried_series_labels"]]
         answer_label = str(out.answer_gt.value)
         evidence_values = [int(value) for value in execution["evidence_values"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        evidence_points = _evidence_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -272,7 +291,7 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         assert str(out.query_id) == str(query_id)
         assert str(execution["internal_query_id"]).startswith("ranked_")
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "point_set"
+        _assert_keyed_point_evidence(out)
         assert len(evidence_values) == 3
         assert len(evidence_points) == 2
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -337,8 +356,14 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
 def test_chart_multiseries_extremum_delta_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "directional_change": {"evidence": [[260, 320], [260, 180]], "answer": "Q"},
-        "absolute_gap": {"evidence": [[260, 340], [260, 160]], "answer": "M"},
+        "directional_change": {
+            "evidence": {"Q:Orly": [260, 320], "Q:Vega": [260, 180]},
+            "answer": "Q",
+        },
+        "absolute_gap": {
+            "evidence": {"M:Orly": [260, 340], "M:Vega": [260, 160]},
+            "answer": "M",
+        },
     }
     params_by_measure = {
         "directional_change": {"change_direction": "increase"},
@@ -428,7 +453,7 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         series_labels = [str(label) for label in execution["series_labels"]]
         answer_label = str(out.answer_gt.value)
         evidence_values = [int(value) for value in execution["evidence_values"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        evidence_points = _evidence_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -439,7 +464,7 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "point_set"
+        _assert_keyed_point_evidence(out)
         assert len(evidence_values) == 3
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -517,8 +542,18 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
 def test_chart_multiseries_extremum_ratio_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "series_share": {"evidence": [[300, 240], [300, 320], [300, 400]], "answer": "Q"},
-        "pair_ratio": {"evidence": [[300, 180], [300, 300]], "answer": "M"},
+        "series_share": {
+            "evidence": {
+                "Q:Orly": [300, 240],
+                "Q:Vega": [300, 320],
+                "Q:Tana": [300, 400],
+            },
+            "answer": "Q",
+        },
+        "pair_ratio": {
+            "evidence": {"M:Orly": [300, 180], "M:Vega": [300, 300]},
+            "answer": "M",
+        },
     }
     for index, ratio_measure in enumerate(expected, start=11240):
         out = task.generate(
@@ -622,6 +657,7 @@ def test_chart_multiseries_category_total_extremum_matches_contract() -> None:
         assert execution["category_totals_by_category"] == totals_by_category
         assert 6 <= int(execution["category_count"]) <= 10
         assert 3 <= int(execution["series_count"]) <= 5
+        _assert_keyed_point_evidence(out)
         assert len(out.evidence_gt.value) == int(execution["series_count"])
         assert str(render["scene_variant"]) == str(scene_variant)
         _assert_normalized_complexity(out)
@@ -665,7 +701,7 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
+        _assert_keyed_point_evidence(out)
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
@@ -679,7 +715,7 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
         assert set(execution["condition_series_labels"]).isdisjoint(set(execution["target_series_labels"]))
         assert set(filtered_labels).issubset(set(category_labels))
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"]) * int(execution["series_count"])
-        assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["point_set"] == _evidence_point_values(out)
         assert len(out.evidence_gt.value) == 4 * len(filtered_labels)
         assert len(trace["projected_evidence"]["bbox_set"]) == 4 * len(filtered_labels)
         for series_label in (condition_left, condition_right, target_left, target_right):
@@ -724,7 +760,16 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
 def test_chart_multiseries_conditional_gap_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "evidence": [[160, 310], [160, 250], [160, 190], [160, 280], [300, 330], [300, 260], [300, 210], [300, 300]],
+        "evidence": {
+            "Q:Orly": [160, 310],
+            "Q:Vega": [160, 250],
+            "Q:Tana": [160, 190],
+            "Q:Mira": [160, 280],
+            "M:Orly": [300, 330],
+            "M:Vega": [300, 260],
+            "M:Tana": [300, 210],
+            "M:Mira": [300, 300],
+        },
         "answer": 24,
     }
     for index, query_id in enumerate(

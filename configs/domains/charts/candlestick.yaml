@@ -64,12 +64,15 @@ prompt:
     answer_hint_value: set "answer" to the requested integer value
     answer_hint_label: set "answer" to the exact period label as a string
     object_description_candlestick: a candlestick OHLC chart with labeled periods; each candle has printed O, H, L, and C values for open, high, low, and close
-    evidence_hint_value: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the candle body and printed values needed for the computation
-    evidence_hint_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the answer candle, its period label, and the printed values needed for the comparison
-    json_example_value: '{"evidence":[[240,220,284,340],[202,295,236,314],[286,241,323,260]],"answer":4}'
-    json_example_label: '{"evidence":[[520,180,564,330],[508,640,532,662],[500,150,538,169],[502,352,540,371]],"answer":"K"}'
-    json_example_answer_only_value: '{"answer":4}'
-    json_example_answer_only_label: '{"answer":"K"}'
+    evidence_hint_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
+    evidence_hint_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle mark
+    evidence_hint_wick_range_extremum_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle wick
+    evidence_hint_body_range_extremum_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle body
+    evidence_hint_close_after_body_change_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
+    json_example_value: '{"evidence":[[240,220,284,340]],"answer":42}'
+    json_example_label: '{"evidence":[[520,180,564,330]],"answer":"K4"}'
+    json_example_answer_only_value: '{"answer":42}'
+    json_example_answer_only_label: '{"answer":"K4"}'
 
 complexity:
   shared:

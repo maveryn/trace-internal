@@ -22,6 +22,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,6 +31,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -37,6 +39,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.unanswerable import (
     UNANSWERABLE_ANSWER,
@@ -108,37 +111,6 @@ _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "threshold_cell_count": 0.62,
 }
 
-_SHORT_LABELS: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNPQRSTUVWXYZ")
-_ROW_NAME_POOL: Tuple[str, ...] = (
-    "Atlas",
-    "Beacon",
-    "Cedar",
-    "Delta",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Iris",
-    "Juno",
-    "Kite",
-    "Lumen",
-)
-_COL_NAME_POOL: Tuple[str, ...] = (
-    "M1",
-    "M2",
-    "M3",
-    "M4",
-    "M5",
-    "M6",
-    "M7",
-    "M8",
-    "M9",
-    "M10",
-    "M11",
-    "M12",
-)
-_MISSING_ROW_LABEL_POOL: Tuple[str, ...] = ("Ridge", "Tango", "Vale", "Zenith", "North", "South")
-_MISSING_COLUMN_LABEL_POOL: Tuple[str, ...] = ("N1", "N2", "N3", "QX", "QY", "QZ")
 _SCENE_TITLES: Dict[str, Tuple[str, ...]] = {
     "confusion_matrix_counts": ("Model Confusion Matrix", "Actual vs Predicted Counts"),
     "annotated_heatmap_table": ("Annotated Metric Matrix", "Category Score Matrix"),
@@ -177,6 +149,7 @@ class _MatrixRenderParams:
     layout_offset_x_px: int
     layout_offset_y_px: int
     layout_jitter_meta: Dict[str, Any]
+    font_family: str
 
 
 @dataclass(frozen=True)
@@ -252,6 +225,15 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _MatrixRenderParams:
         layout_offset_x_px=int(jitter_left) - int(outer),
         layout_offset_y_px=int(jitter_top) - int(outer),
         layout_jitter_meta=dict(layout_jitter_meta),
+        font_family=sample_font_family(
+            role="readout",
+            instance_seed=_render_style_seed(params),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        ),
     )
 
 
@@ -474,27 +456,40 @@ def _column_size_support(params: Mapping[str, Any]) -> Tuple[int, int]:
     return int(col_min), int(col_max)
 
 
-def _label_list(prefix: str, count: int) -> List[str]:
-    if str(prefix) == "letter":
-        return [str(label) for label in _SHORT_LABELS[: int(count)]]
-    return [f"{prefix}{index + 1}" for index in range(int(count))]
+def _sample_matrix_labels(*, count: int, instance_seed: int, namespace: str) -> List[str]:
+    labels = resolve_chart_entity_labels(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.{namespace}.labels"),
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return [str(label) for label in labels]
 
 
-def _labels_for_scene(scene_variant: str, row_count: int, column_count: int) -> Tuple[List[str], List[str]]:
+def _labels_for_scene(scene_variant: str, row_count: int, column_count: int, *, instance_seed: int) -> Tuple[List[str], List[str]]:
     if str(scene_variant) == "confusion_matrix_counts":
-        labels = _label_list("C", int(row_count))
+        labels = _sample_matrix_labels(count=int(row_count), instance_seed=int(instance_seed), namespace="confusion")
         return labels, list(labels)
     if str(scene_variant) == "annotated_heatmap_table":
-        return list(_ROW_NAME_POOL[: int(row_count)]), list(_COL_NAME_POOL[: int(column_count)])
+        labels = _sample_matrix_labels(
+            count=int(row_count) + int(column_count),
+            instance_seed=int(instance_seed),
+            namespace="annotated_heatmap",
+        )
+        return list(labels[: int(row_count)]), list(labels[int(row_count) : int(row_count) + int(column_count)])
     if str(scene_variant) == "correlation_matrix_signed":
-        labels = _label_list("V", int(row_count))
+        labels = _sample_matrix_labels(count=int(row_count), instance_seed=int(instance_seed), namespace="correlation")
         return labels, list(labels)
     if str(scene_variant) == "triangular_pairwise_matrix":
-        labels = _label_list("P", int(row_count))
+        labels = _sample_matrix_labels(count=int(row_count), instance_seed=int(instance_seed), namespace="triangular")
         return labels, list(labels)
-    row_labels = [f"G{(index // 3) + 1}-{(index % 3) + 1}" for index in range(int(row_count))]
-    column_labels = [f"B{(index // 3) + 1}-{(index % 3) + 1}" for index in range(int(column_count))]
-    return row_labels, column_labels
+    labels = _sample_matrix_labels(
+        count=int(row_count) + int(column_count),
+        instance_seed=int(instance_seed),
+        namespace="clustered_block",
+    )
+    return list(labels[: int(row_count)]), list(labels[int(row_count) : int(row_count) + int(column_count)])
 
 
 def _interpolate_rgb(a: Tuple[int, int, int], b: Tuple[int, int, int], t: float) -> Tuple[int, int, int]:
@@ -727,7 +722,13 @@ def _choose_unanswerable_axis_extremum(
     if str(query_axis) == "row":
         missing_label = choose_missing_label(
             visible_labels=row_labels,
-            candidate_labels=tuple(_ROW_NAME_POOL) + _MISSING_ROW_LABEL_POOL,
+            candidate_labels=resolve_chart_entity_labels(
+                spawn_rng(int(instance_seed), f"{TASK_ID}.missing_row_candidates"),
+                count=max(16, len(row_labels) + 8),
+                min_chars=2,
+                max_chars=7,
+                allow_spaces=False,
+            ).labels,
             fallback_prefix="Row ",
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.missing_row",
@@ -738,7 +739,13 @@ def _choose_unanswerable_axis_extremum(
     else:
         missing_label = choose_missing_label(
             visible_labels=column_labels,
-            candidate_labels=tuple(_COL_NAME_POOL) + _MISSING_COLUMN_LABEL_POOL,
+            candidate_labels=resolve_chart_entity_labels(
+                spawn_rng(int(instance_seed), f"{TASK_ID}.missing_column_candidates"),
+                count=max(16, len(column_labels) + 8),
+                min_chars=2,
+                max_chars=7,
+                allow_spaces=False,
+            ).labels,
             fallback_prefix="Column ",
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.missing_column",
@@ -890,7 +897,12 @@ def _construct_dataset(
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.column_count",
         )
-    row_labels, column_labels = _labels_for_scene(str(scene_variant), int(row_count), int(column_count))
+    row_labels, column_labels = _labels_for_scene(
+        str(scene_variant),
+        int(row_count),
+        int(column_count),
+        instance_seed=int(instance_seed),
+    )
     values, scene_meta = _generate_values(
         scene_variant=str(scene_variant),
         row_count=int(row_count),
@@ -985,14 +997,14 @@ def _draw_centered_text(
     x1, y1, x2, y2 = [float(value) for value in box]
     width, height = _text_bbox(draw, str(text), font)
     xy = (float(x1 + ((x2 - x1 - width) / 2.0)), float(y1 + ((y2 - y1 - height) / 2.0) - 1.0))
-    draw.text(
+    draw_text_traced(draw,
         xy,
         str(text),
         font=font,
         fill=fill,
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=stroke_fill if stroke_fill is not None else fill,
-    )
+     role="readout", required=False,)
 
 
 def _draw_rotated_text(
@@ -1009,12 +1021,12 @@ def _draw_rotated_text(
     patch = Image.new("RGBA", (patch_h, patch_w), (255, 255, 255, 0))
     draw = ImageDraw.Draw(patch)
     width, height = _text_bbox(draw, str(text), font)
-    draw.text(
+    draw_text_traced(draw,
         ((patch_h - width) / 2.0, (patch_w - height) / 2.0),
         str(text),
         font=font,
         fill=fill + (255,),
-    )
+     role="readout", required=False,)
     rotated = patch.rotate(90, expand=True)
     image.alpha_composite(rotated, (x1, y1))
 
@@ -1053,7 +1065,7 @@ def _render_matrix(
         panel_bbox[2] - p.panel_padding_px,
         panel_bbox[1] + p.panel_padding_px + p.title_band_height_px,
     )
-    title_font = load_font(p.title_font_size_px, bold=True)
+    title_font = load_font(p.title_font_size_px, bold=True, font_family=p.font_family)
     _draw_centered_text(draw, box=title_bbox, text=str(scene_title), font=title_font, fill=p.title_rgb)
 
     row_count = len(row_labels)
@@ -1071,7 +1083,6 @@ def _render_matrix(
     matrix_height = (cell_h * row_count) + (gap * (row_count - 1))
     matrix_bbox = (matrix_left, matrix_top, matrix_left + matrix_width, matrix_top + matrix_height)
 
-    header_font = load_font(p.header_font_size_px, bold=True)
     cell_bbox_map: Dict[str, List[float]] = {}
     row_label_bbox_map: Dict[str, List[float]] = {}
     column_label_bbox_map: Dict[str, List[float]] = {}
@@ -1079,7 +1090,7 @@ def _render_matrix(
 
     row_axis_box = (panel_bbox[0] + 10, matrix_top, panel_bbox[0] + p.panel_padding_px + 24, matrix_bbox[3])
     col_axis_box = (matrix_left, title_bbox[3], matrix_bbox[2], title_bbox[3] + 28)
-    axis_font = load_font(18, bold=True)
+    axis_font = load_font(18, bold=True, font_family=p.font_family)
     _draw_centered_text(draw, box=col_axis_box, text=str(scene_meta.get("column_axis_title", "Column")), font=axis_font, fill=p.header_text_rgb)
     _draw_rotated_text(image, box=row_axis_box, text=str(scene_meta.get("row_axis_title", "Row")), font=axis_font, fill=p.header_text_rgb)
 
@@ -1087,7 +1098,15 @@ def _render_matrix(
         y1 = matrix_top + (r * (cell_h + gap))
         bbox = (panel_bbox[0] + p.panel_padding_px, y1, matrix_left - 8, y1 + cell_h)
         row_label_bbox_map[_row_header_key(r)] = _round_bbox(bbox)
-        row_font = fit_font_to_box(draw, text=str(label), max_width=bbox[2] - bbox[0], max_height=bbox[3] - bbox[1], bold=True, max_size_px=p.header_font_size_px)
+        row_font = fit_font_to_box(
+            draw,
+            text=str(label),
+            max_width=bbox[2] - bbox[0],
+            max_height=bbox[3] - bbox[1],
+            bold=True,
+            max_size_px=p.header_font_size_px,
+            font_family=p.font_family,
+        )
         _draw_centered_text(draw, box=bbox, text=str(label), font=row_font, fill=p.header_text_rgb)
         entities.append(
             {
@@ -1106,7 +1125,15 @@ def _render_matrix(
         x1 = matrix_left + (c * (cell_w + gap))
         bbox = (x1, title_bbox[3] + 28, x1 + cell_w, matrix_top - 6)
         column_label_bbox_map[_column_header_key(c)] = _round_bbox(bbox)
-        col_font = fit_font_to_box(draw, text=str(label), max_width=bbox[2] - bbox[0], max_height=bbox[3] - bbox[1], bold=True, max_size_px=p.header_font_size_px)
+        col_font = fit_font_to_box(
+            draw,
+            text=str(label),
+            max_width=bbox[2] - bbox[0],
+            max_height=bbox[3] - bbox[1],
+            bold=True,
+            max_size_px=p.header_font_size_px,
+            font_family=p.font_family,
+        )
         if str(header_layout) == "top_rotated_columns":
             _draw_rotated_text(image, box=bbox, text=str(label), font=col_font, fill=p.header_text_rgb)
         else:
@@ -1163,6 +1190,7 @@ def _render_matrix(
                     min_size_px=9,
                     max_size_px=p.cell_font_size_px,
                     fill_ratio=0.72,
+                    font_family=p.font_family,
                 )
                 text_fill = _text_rgb_for_fill(fill)
                 _draw_centered_text(
@@ -1205,7 +1233,7 @@ def _render_matrix(
         matrix_bbox[2],
         panel_bbox[3] - p.panel_padding_px,
     )
-    legend_font = load_font(p.legend_font_size_px, bold=False)
+    legend_font = load_font(p.legend_font_size_px, bold=False, font_family=p.font_family)
     legend_text = "Cell color encodes the printed value; use the printed numbers as the source of truth."
     _draw_centered_text(draw, box=legend_bbox, text=legend_text, font=legend_font, fill=p.legend_text_rgb)
     return _RenderedMatrix(
@@ -1234,22 +1262,9 @@ def _evidence_bboxes(
     evidence_cell_ids: Sequence[str],
     evidence_header_keys: Sequence[str],
 ) -> Tuple[List[List[float]], List[Dict[str, Any]]]:
+    del evidence_header_keys
     bboxes: List[List[float]] = []
     entries: List[Dict[str, Any]] = []
-    seen_headers: set[str] = set()
-    for key in evidence_header_keys:
-        header_key = str(key)
-        if header_key in seen_headers:
-            continue
-        seen_headers.add(header_key)
-        if header_key.startswith("row:"):
-            bbox = list(rendered_scene.row_label_bbox_map[header_key])
-            role = "row_header"
-        else:
-            bbox = list(rendered_scene.column_label_bbox_map[header_key])
-            role = "column_header"
-        bboxes.append(list(bbox))
-        entries.append({"role": role, "id": header_key, "bbox": list(bbox)})
     for cell_id in evidence_cell_ids:
         bbox = list(rendered_scene.cell_bbox_map[str(cell_id)])
         bboxes.append(list(bbox))
@@ -1428,17 +1443,16 @@ class ChartsMatrixCellQueryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_cell_ids = [str(cell_id) for cell_id in dataset["evidence_cell_ids"]]
-        evidence_header_keys = [str(key) for key in dataset["evidence_header_keys"]]
+        support_header_keys = [str(key) for key in dataset["evidence_header_keys"]]
         evidence_bboxes, evidence_entries = _evidence_bboxes(
             rendered_scene=rendered_scene,
             evidence_cell_ids=evidence_cell_ids,
-            evidence_header_keys=evidence_header_keys,
+            evidence_header_keys=support_header_keys,
         )
         projected_evidence = {
             "bbox_set": list(evidence_bboxes),
             "entries": [dict(entry) for entry in evidence_entries],
             "cell_ids": list(evidence_cell_ids),
-            "header_keys": list(evidence_header_keys),
         }
         answer_gt = TypedValue(type=str(dataset["answer_type"]), value=dataset["answer_value"])
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
@@ -1494,7 +1508,7 @@ class ChartsMatrixCellQueryTask:
                     "answer_row_index": int(dataset["answer_row_index"]),
                     "answer_column_index": int(dataset["answer_column_index"]),
                     "evidence_cell_ids": list(evidence_cell_ids),
-                    "evidence_header_keys": list(evidence_header_keys),
+                    "support_header_keys": list(support_header_keys),
                     "answerability": "unanswerable" if bool(dataset["is_unanswerable"]) else "answerable",
                     **({"absence_proof": dict(dataset["absence_proof"])} if bool(dataset["is_unanswerable"]) else {}),
                 },
@@ -1519,6 +1533,10 @@ class ChartsMatrixCellQueryTask:
                 "value_min": int(dataset["value_min"]),
                 "value_max": int(dataset["value_max"]),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(render_params.font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {
@@ -1550,7 +1568,7 @@ class ChartsMatrixCellQueryTask:
                 "answer_row_index": int(dataset["answer_row_index"]),
                 "answer_column_index": int(dataset["answer_column_index"]),
                 "evidence_cell_ids": list(evidence_cell_ids),
-                "evidence_header_keys": list(evidence_header_keys),
+                "support_header_keys": list(support_header_keys),
                 "query_axis": str(query_axis),
                 "extremum_direction": str(extremum_direction),
                 "comparison": str(comparison),
@@ -1563,7 +1581,7 @@ class ChartsMatrixCellQueryTask:
             "witness_symbolic": {
                 "type": "matrix_cell_witness",
                 "candidate_cell_ids": list(evidence_cell_ids),
-                "header_keys": list(evidence_header_keys),
+                "support_header_keys": list(support_header_keys),
                 "answer_value": dataset["answer_value"],
                 "answer_row_index": int(dataset["answer_row_index"]),
                 "answer_column_index": int(dataset["answer_column_index"]),

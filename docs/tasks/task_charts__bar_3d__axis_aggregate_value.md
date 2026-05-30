@@ -12,3 +12,7 @@
 2. Prompt lookup domain/group: `charts/three_d_bar`
 3. Generation is deterministic for the same seed, params, and task versions.
 4. Answers and evidence are verifier-backed by trace metadata, not image pixels.
+
+## Evidence
+1. Evidence type: `point_set`.
+2. Each point marks the visible top/face of a 3D bar used in the requested aggregate or gap.

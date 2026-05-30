@@ -28,7 +28,16 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import (
+    LARGE_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    draw_centered_readable_text,
+    draw_readable_text,
+    resolve_readable_text_style,
+    text_legibility_summary,
+)
+from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -36,8 +45,14 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_category_labels, resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_size_encoding_comparison_label_base"
@@ -74,59 +89,6 @@ _SCENE_VARIANT_LOADS: Dict[str, float] = {
     "packed_bubble_cloud": 0.40,
     "small_multiple_bubble_cloud": 0.72,
 }
-
-_CATEGORY_POOL: Tuple[str, ...] = (
-    "Coastal",
-    "Metro",
-    "Highland",
-    "Campus",
-    "Market",
-    "Harbor",
-    "Forest",
-    "Desert",
-)
-_ITEM_LABEL_POOL: Tuple[str, ...] = (
-    "Aero",
-    "Bela",
-    "Cair",
-    "Dove",
-    "Eden",
-    "Fenn",
-    "Gala",
-    "Holt",
-    "Ibis",
-    "Juno",
-    "Kora",
-    "Luma",
-    "Mica",
-    "Nori",
-    "Opal",
-    "Pine",
-    "Quay",
-    "Rune",
-    "Sage",
-    "Tide",
-    "Vale",
-    "Wisp",
-    "Xeno",
-    "Yara",
-    "Zest",
-    "Argo",
-    "Brio",
-    "Cove",
-    "Dusk",
-    "Echo",
-    "Flux",
-    "Glen",
-    "Haze",
-    "Isle",
-    "Jade",
-    "Kite",
-    "Lark",
-    "Muse",
-    "Nova",
-    "Oren",
-)
 
 BBox = Tuple[float, float, float, float]
 RGB = Tuple[int, int, int]
@@ -290,15 +252,27 @@ def _center_text(
     height = float(bbox0[3] - bbox0[1])
     x = float(center[0]) - (width / 2.0) - float(bbox0[0])
     y = float(center[1]) - (height / 2.0) - float(bbox0[1])
-    draw.text(
+    draw_text_traced(draw,
         (x, y),
         str(text),
         font=font,
         fill=tuple(int(channel) for channel in fill),
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=tuple(int(channel) for channel in (stroke_fill or resolve_text_stroke_fill(fill))),
-    )
+     role="readout", required=False,)
     return [float(value) for value in _text_bbox(draw, (x, y), str(text), font, stroke_width=stroke_width)]
+
+
+def _union_bboxes(boxes: Sequence[Sequence[float]]) -> List[float]:
+    valid = [tuple(float(value) for value in box[:4]) for box in boxes if len(box) >= 4]
+    if not valid:
+        return [0.0, 0.0, 0.0, 0.0]
+    return [
+        min(box[0] for box in valid),
+        min(box[1] for box in valid),
+        max(box[2] for box in valid),
+        max(box[3] for box in valid),
+    ]
 
 
 def _format_bbox(bbox: Sequence[float]) -> List[float]:
@@ -343,19 +317,27 @@ def _outside_extreme_count(*, items: Sequence[_Item], winner: _Item, direction: 
 
 
 def _sample_categories(*, count: int, instance_seed: int) -> Tuple[str, ...]:
-    values = list(_CATEGORY_POOL)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.categories")
-    rng.shuffle(values)
-    return tuple(str(value) for value in values[: int(count)])
+    values = resolve_chart_category_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(value) for value in values)
 
 
 def _sample_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
-    values = list(_ITEM_LABEL_POOL)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.item_labels")
-    rng.shuffle(values)
-    if int(count) > len(values):
-        raise ValueError("item label pool is too small for requested count")
-    return tuple(str(value) for value in values[: int(count)])
+    values = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=6,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(value) for value in values)
 
 
 def _panel_labels(panel_count: int, *, instance_seed: int) -> Tuple[str, ...]:
@@ -706,10 +688,12 @@ def _draw_legend(
     colors: Mapping[str, RGB],
     bbox: BBox,
     params: Mapping[str, Any],
-) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]]]:
+    text_style,
+) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
     x1, y1, x2, y2 = (float(value) for value in bbox)
     font = load_font(_resolve_int(params, "legend_font_size_px", 18), bold=False)
     entities: List[Dict[str, Any]] = []
+    text_records: List[Dict[str, Any]] = []
     bboxes: Dict[str, List[float]] = {}
     column_w = max(80.0, (x2 - x1) / max(1, len(categories)))
     for index, category in enumerate(categories):
@@ -719,7 +703,17 @@ def _draw_legend(
         swatch = [left, cy - 8, left + 18, cy + 10]
         draw.rounded_rectangle(swatch, radius=4, fill=color, outline=_darken(color, 0.62), width=1)
         text_xy = (left + 26, cy - 12)
-        draw.text(text_xy, str(category), font=font, fill=(52, 60, 76))
+        text_records.append(
+            draw_readable_text(
+                draw,
+                xy=text_xy,
+                text=str(category),
+                font=font,
+                style=text_style,
+                stroke_width=1,
+                extra_metadata={"category": str(category), "source": "size_encoding_legend"},
+            )
+        )
         text_box = _text_bbox(draw, text_xy, str(category), font)
         full_box = [
             float(min(swatch[0], text_box[0])),
@@ -736,7 +730,7 @@ def _draw_legend(
                 "attrs": {"category": str(category), "fill_rgb": list(color)},
             }
         )
-    return entities, bboxes
+    return entities, bboxes, text_records
 
 
 def _draw_word_cloud(
@@ -748,9 +742,11 @@ def _draw_word_cloud(
     params: Mapping[str, Any],
     instance_seed: int,
     circular: bool,
-) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]]]:
+    text_style,
+) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
     item_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
+    text_records: List[Dict[str, Any]] = []
     value_min, value_max = _value_scale(items)
     min_font = _resolve_int(params, "min_word_font_size_px", 18)
     max_font = _resolve_int(params, "max_word_font_size_px", 52)
@@ -770,23 +766,45 @@ def _draw_word_cloud(
         font = fit_font_to_box(
             draw,
             text=str(item.label),
-            max_width=float(cell_w) * 0.96,
+            max_width=float(cell_w) * 0.78,
             max_height=float(cell_h) * 0.90,
             bold=True,
             min_size_px=max(8, int(min_font) - 6),
             max_size_px=max(int(min_font), int(target_font)),
             fill_ratio=0.95,
         )
-        color = _darken(category_colors[str(item.category)], 0.78)
-        bbox_px = _center_text(
+        text_box0 = _text_bbox(draw, (0.0, 0.0), str(item.label), font, stroke_width=stroke_width)
+        text_w = float(text_box0[2] - text_box0[0])
+        marker_d = max(8.0, min(18.0, float(getattr(font, "size", target_font)) * 0.42))
+        marker_gap = max(5.0, float(getattr(font, "size", target_font)) * 0.18)
+        group_w = float(marker_d + marker_gap + text_w)
+        marker_left = float(cx - (group_w / 2.0))
+        marker_bbox = [
+            marker_left,
+            float(cy - (marker_d / 2.0)),
+            float(marker_left + marker_d),
+            float(cy + (marker_d / 2.0)),
+        ]
+        marker_color = category_colors[str(item.category)]
+        draw.rounded_rectangle(
+            marker_bbox,
+            radius=max(2, int(round(marker_d / 2.0))),
+            fill=marker_color,
+            outline=_darken(marker_color, 0.55),
+            width=1,
+        )
+        text_center_x = float(marker_bbox[2] + marker_gap + (text_w / 2.0))
+        text_record = draw_centered_readable_text(
             draw,
-            center=(float(cx), float(cy)),
+            center=(float(text_center_x), float(cy)),
             text=str(item.label),
             font=font,
-            fill=color,
+            style=text_style,
             stroke_width=stroke_width,
-            stroke_fill=(255, 255, 255),
+            extra_metadata={"item_id": str(item.item_id), "source": "size_encoding_word_item"},
         )
+        text_records.append(text_record)
+        bbox_px = _union_bboxes((marker_bbox, text_record["bbox_px"]))
         padded = [bbox_px[0] - 3, bbox_px[1] - 3, bbox_px[2] + 3, bbox_px[3] + 3]
         item_bboxes[str(item.item_id)] = _format_bbox(padded)
         entities.append(
@@ -800,10 +818,12 @@ def _draw_word_cloud(
                     "panel": str(item.panel),
                     "value": int(item.value),
                     "font_size_px": int(getattr(font, "size", target_font)),
+                    "category_marker_rgb": list(marker_color),
+                    "text_color_policy": "nonsemantic_readable_ink",
                 },
             }
         )
-    return entities, item_bboxes
+    return entities, item_bboxes, text_records
 
 
 def _draw_bubbles(
@@ -814,9 +834,11 @@ def _draw_bubbles(
     category_colors: Mapping[str, RGB],
     params: Mapping[str, Any],
     instance_seed: int,
-) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]]]:
+    text_styles: Mapping[str, Any],
+) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
     item_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
+    text_records: List[Dict[str, Any]] = []
     value_min, value_max = _value_scale(items)
     stroke_width = _resolve_int(params, "bubble_label_stroke_width_px", 1)
     cells = _cell_centers(
@@ -832,7 +854,7 @@ def _draw_bubbles(
         min_r = max(10.0, max_r * 0.42)
         radius = min_r + ((max_r - min_r) * math.sqrt(float(frac)))
         color = category_colors[str(item.category)]
-        fill = _lighten(color, 0.12)
+        fill = _lighten(color, 0.25)
         outline = _darken(color, 0.55)
         circle = [float(cx - radius), float(cy - radius), float(cx + radius), float(cy + radius)]
         draw.ellipse(circle, fill=fill, outline=outline, width=2)
@@ -846,14 +868,16 @@ def _draw_bubbles(
             max_size_px=_resolve_int(params, "bubble_label_font_size_px", 19),
             fill_ratio=0.92,
         )
-        _center_text(
-            draw,
-            center=(float(cx), float(cy)),
-            text=str(item.label),
-            font=font,
-            fill=(38, 44, 58),
-            stroke_width=stroke_width,
-            stroke_fill=(255, 255, 255),
+        text_records.append(
+            draw_centered_readable_text(
+                draw,
+                center=(float(cx), float(cy)),
+                text=str(item.label),
+                font=font,
+                style=text_styles[str(item.category)],
+                stroke_width=stroke_width,
+                extra_metadata={"item_id": str(item.item_id), "source": "size_encoding_bubble_item"},
+            )
         )
         item_bboxes[str(item.item_id)] = _format_bbox(circle)
         entities.append(
@@ -870,7 +894,7 @@ def _draw_bubbles(
                 },
             }
         )
-    return entities, item_bboxes
+    return entities, item_bboxes, text_records
 
 
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
@@ -931,20 +955,96 @@ def _render_dataset(
     panel_border = _resolve_rgb(params, "panel_border_rgb", (196, 204, 216))
     category_palette = _category_palette(params, len(dataset.categories))
     category_colors = {str(category): category_palette[index] for index, category in enumerate(dataset.categories)}
+    background_rgb = tuple(int(channel) for channel in image.getpixel((0, 0))[:3])
+    word_text_surfaces: Tuple[RGB, ...] = (tuple(panel_fill), background_rgb)
+    title_text_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.title_text",
+        role="read_required_chart_title",
+        surface_rgbs=(background_rgb, tuple(panel_fill)),
+        preferred_rgbs=(title_rgb,),
+        min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    subtitle_text_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.subtitle_text",
+        role="read_required_chart_subtitle",
+        surface_rgbs=(background_rgb, tuple(panel_fill)),
+        preferred_rgbs=(subtitle_rgb, title_rgb),
+        min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+        min_lab_distance=28.0,
+        required=True,
+    )
+    word_text_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.word_text",
+        role="read_required_size_encoding_word_label",
+        surface_rgbs=word_text_surfaces,
+        preferred_rgbs=((38, 44, 58), title_rgb),
+        min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    bubble_text_styles = {
+        str(category): resolve_readable_text_style(
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.bubble_text.{category}",
+            role="read_required_size_encoding_bubble_label",
+            surface_rgbs=(_lighten(color, 0.25),),
+            preferred_rgbs=((38, 44, 58), title_rgb),
+            min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+            min_lab_distance=28.0,
+            required=True,
+        )
+        for category, color in category_colors.items()
+    }
+    secondary_text_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.secondary_text",
+        role="read_required_size_encoding_secondary_label",
+        surface_rgbs=(background_rgb, tuple(panel_fill)),
+        preferred_rgbs=((50, 58, 74), subtitle_rgb),
+        min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+        min_lab_distance=28.0,
+        required=True,
+    )
+    text_records: List[Dict[str, Any]] = []
 
     title_font = load_font(_resolve_int(params, "title_font_size_px", 28), bold=True)
     subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
-    draw.text((margin_left, 24 + int(layout_jitter_meta.get("dy_px", 0))), "Size-Encoded Category Chart", font=title_font, fill=title_rgb)
-    draw.text((margin_left, 58 + int(layout_jitter_meta.get("dy_px", 0))), "Relative size shows value; colors show category.", font=subtitle_font, fill=subtitle_rgb)
+    text_records.append(
+        draw_readable_text(
+            draw,
+            xy=(margin_left, 24 + int(layout_jitter_meta.get("dy_px", 0))),
+            text="Size-Encoded Category Chart",
+            font=title_font,
+            style=title_text_style,
+            stroke_width=1,
+            extra_metadata={"source": "size_encoding_title"},
+        )
+    )
+    text_records.append(
+        draw_readable_text(
+            draw,
+            xy=(margin_left, 58 + int(layout_jitter_meta.get("dy_px", 0))),
+            text="Relative size shows value; marker colors show category.",
+            font=subtitle_font,
+            style=subtitle_text_style,
+            stroke_width=1,
+            extra_metadata={"source": "size_encoding_subtitle"},
+        )
+    )
 
     legend_bbox = (float(margin_left), float(title_band + int(layout_jitter_meta.get("dy_px", 0))), float(canvas_width - margin_right), float(title_band + legend_height + int(layout_jitter_meta.get("dy_px", 0))))
-    legend_entities, legend_bboxes = _draw_legend(
+    legend_entities, legend_bboxes, legend_text_records = _draw_legend(
         draw,
         categories=dataset.categories,
         colors=category_colors,
         bbox=legend_bbox,
         params=params,
+        text_style=secondary_text_style,
     )
+    text_records.extend(legend_text_records)
     plot_bbox = [
         float(margin_left),
         float(title_band + legend_height + 16 + int(layout_jitter_meta.get("dy_px", 0))),
@@ -969,7 +1069,17 @@ def _render_dataset(
         )
         if len(dataset.panels) > 1:
             title_xy = (px1 + 14, py1 + 10)
-            draw.text(title_xy, str(panel), font=panel_title_font, fill=(50, 58, 74))
+            text_records.append(
+                draw_readable_text(
+                    draw,
+                    xy=title_xy,
+                    text=str(panel),
+                    font=panel_title_font,
+                    style=secondary_text_style,
+                    stroke_width=1,
+                    extra_metadata={"panel": str(panel), "source": "size_encoding_panel_title"},
+                )
+            )
             title_bbox = _format_bbox(_text_bbox(draw, title_xy, str(panel), panel_title_font))
             panel_title_bboxes[str(panel)] = title_bbox
             content_top = py1 + 40
@@ -984,16 +1094,17 @@ def _render_dataset(
         )
         panel_items = [item for item in dataset.items if str(item.panel) == str(panel)]
         if str(scene_variant) == "packed_bubble_cloud" or str(scene_variant) == "small_multiple_bubble_cloud":
-            rendered_entities, rendered_bboxes = _draw_bubbles(
+            rendered_entities, rendered_bboxes, rendered_text_records = _draw_bubbles(
                 draw,
                 items=panel_items,
                 bbox=content_bbox,
                 category_colors=category_colors,
                 params=params,
                 instance_seed=int(instance_seed) + int(panel_index),
+                text_styles=bubble_text_styles,
             )
         else:
-            rendered_entities, rendered_bboxes = _draw_word_cloud(
+            rendered_entities, rendered_bboxes, rendered_text_records = _draw_word_cloud(
                 draw,
                 items=panel_items,
                 bbox=content_bbox,
@@ -1001,9 +1112,11 @@ def _render_dataset(
                 params=params,
                 instance_seed=int(instance_seed) + int(panel_index),
                 circular=str(scene_variant) == "circle_word_cloud",
+                text_style=word_text_style,
             )
         entities.extend(rendered_entities)
         item_bboxes.update(rendered_bboxes)
+        text_records.extend(rendered_text_records)
         entities.append(
             {
                 "entity_id": f"panel_{str(panel)}",
@@ -1031,6 +1144,19 @@ def _render_dataset(
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(layout_jitter_meta),
             "category_colors_rgb": {str(key): list(value) for key, value in category_colors.items()},
+            "category_color_policy": "category is encoded by swatches, bubble fills, or word markers; glyph text color is nonsemantic",
+            "text_legibility": {
+                **text_legibility_summary(
+                    (
+                        title_text_style,
+                        subtitle_text_style,
+                        secondary_text_style,
+                        word_text_style,
+                        *tuple(bubble_text_styles.values()),
+                    )
+                ),
+                "drawn_text_records": list(text_records),
+            },
             "panel_bboxes_px": {str(panel): _format_bbox(bbox) for panel, bbox in zip(dataset.panels, panel_bboxes)},
         },
     )
@@ -1052,6 +1178,46 @@ def _evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> List[List[float]
         if bbox is not None:
             boxes.append(list(bbox))
     return boxes
+
+
+def _evidence_for_query(
+    dataset: _Dataset,
+    rendered: _Rendered,
+) -> Tuple[str, List[List[float]] | Dict[str, List[float]], Dict[str, Any]]:
+    """Return public evidence payload and projection metadata for one query."""
+
+    bbox_set = _evidence_bboxes(dataset, rendered)
+    if str(dataset.query.query_id) != "reference_size_neighbor_label":
+        return (
+            "bbox_set",
+            [list(bbox) for bbox in bbox_set],
+            {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in bbox_set],
+            },
+        )
+
+    item_ids = [str(item_id) for item_id in dataset.query.evidence_item_ids]
+    if len(item_ids) < 2:
+        raise RuntimeError("reference_size_neighbor_label requires reference and answer evidence items")
+    reference_bbox = rendered.item_bboxes.get(item_ids[0])
+    answer_bbox = rendered.item_bboxes.get(item_ids[1])
+    if reference_bbox is None or answer_bbox is None:
+        raise RuntimeError("missing reference-neighbor evidence item bbox")
+    keyed = {
+        "reference_item": list(reference_bbox),
+        "answer_item": list(answer_bbox),
+    }
+    return (
+        "keyed_bbox_map",
+        dict(keyed),
+        {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(keyed),
+            "pixel_keyed_bbox_map": dict(keyed),
+            "bbox_set": list(keyed.values()),
+        },
+    )
 
 
 class ChartsSizeEncodingComparisonLabelTask:
@@ -1091,13 +1257,20 @@ class ChartsSizeEncodingComparisonLabelTask:
         if dataset is None:
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
-        rendered = _render_dataset(
-            dataset,
-            scene_variant=str(scene_variant),
-            params=params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
-        evidence_boxes = _evidence_bboxes(dataset, rendered)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_dataset(
+                dataset,
+                scene_variant=str(scene_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+            )
+        evidence_type, evidence_value, projected_evidence = _evidence_for_query(dataset, rendered)
+        evidence_boxes = [list(bbox) for bbox in projected_evidence.get("bbox_set", [])]
         if not evidence_boxes:
             raise RuntimeError(f"{self.task_id} produced empty evidence")
 
@@ -1156,7 +1329,7 @@ class ChartsSizeEncodingComparisonLabelTask:
         category_by_label = {str(item.label): str(item.category) for item in dataset.items}
         panel_by_label = {str(item.label): str(item.panel) for item in dataset.items}
         evidence_labels = [str(items_by_id[item_id].label) for item_id in dataset.query.evidence_item_ids if item_id in items_by_id]
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_boxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
         answer_gt = TypedValue(type="string", value=str(dataset.query.answer))
 
         trace_payload = {
@@ -1202,6 +1375,7 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 **dict(rendered.render_meta),
             },
             "render_map": {
@@ -1240,7 +1414,7 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "answer": str(dataset.query.answer),
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_boxes],
+                **dict(projected_evidence),
                 "evidence_item_ids": list(dataset.query.evidence_item_ids),
                 "evidence_panel_labels": list(dataset.query.evidence_panel_labels),
                 "evidence_category_labels": list(dataset.query.evidence_category_labels),
@@ -1278,6 +1452,7 @@ class ChartsSizeEncodingComparisonLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id="size_encoding",
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

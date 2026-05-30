@@ -47,6 +47,7 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
+            assert str(render["font_assets"]["table_font_family"]).strip()
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
             assert 10 <= int(execution["row_count"]) <= 20
             assert 8 <= int(execution["numeric_column_count"]) <= 16
@@ -61,6 +62,7 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             assert [int(year) for year in query_years] == sorted(int(year) for year in query_years)
             assert 4 <= len(query_years) <= 5
             assert len(evidence_bboxes) == len(query_cells) == len(supporting_cell_ids)
+            assert trace["projected_evidence"]["type"] == "bbox_set"
             assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
 
             row_a = str(execution["query_row_label_a"])

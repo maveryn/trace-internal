@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Mapping, Sequence
 
+from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.visual_defaults import (
     default_noise_fallback,
     load_task_group_background_defaults,
@@ -53,8 +54,41 @@ def load_table_noise_defaults(*, task_group: str, apply_prob: float) -> Dict[str
     )
 
 
+def sample_table_font_family(
+    *,
+    instance_seed: int,
+    namespace: str,
+    params: Mapping[str, Any],
+    exclude_tags: Sequence[str] = ("display",),
+) -> str:
+    """Sample one table text font family from the shared vendored font pool."""
+
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+            params=params,
+            exclude_tags=tuple(str(tag) for tag in exclude_tags),
+            explicit_key="table_font_family",
+            weights_key="table_font_family_weights",
+        )
+    )
+
+
+def table_font_asset_metadata(table_font_family: str) -> Dict[str, str]:
+    """Return trace metadata for the sampled table text font."""
+
+    return {
+        "font_asset_version": str(font_asset_version()),
+        "table_font_family": str(table_font_family),
+    }
+
+
 __all__ = [
     "load_table_background_defaults",
     "load_table_noise_defaults",
+    "sample_table_font_family",
     "solid_light_background_fallback",
+    "table_font_asset_metadata",
 ]

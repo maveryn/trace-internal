@@ -22,6 +22,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -29,7 +30,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -37,11 +39,13 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
 TASK_ID = "charts_radar_query_base"
+SCENE_ID = "radar"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "highlighted_metric_threshold_panel_count",
     "threshold_metric_count_for_panel",
@@ -69,23 +73,7 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="radar")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="radar", apply_prob=0.0)
 
-_METRIC_LABEL_POOL: Tuple[str, ...] = (
-    "Speed",
-    "Quality",
-    "Reach",
-    "Safety",
-    "Cost",
-    "Yield",
-    "Growth",
-    "Reliability",
-    "Access",
-    "Coverage",
-    "Stability",
-    "Capacity",
-)
-_AXIS_METRIC_LABEL_POOL: Tuple[str, ...] = ("M1", "M2", "M3", "M4", "M5", "M6", "M7")
 _PANEL_LABELS: Tuple[str, ...] = tuple("ABCDEFGH")
-_PROFILE_LABELS: Tuple[str, str] = ("Profile A", "Profile B")
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "highlighted_metric_threshold_panel_count": 0.56,
     "threshold_metric_count_for_panel": 0.58,
@@ -99,6 +87,7 @@ _SCENE_LOAD_BY_VARIANT: Dict[str, float] = {
 
 BBox = Tuple[float, float, float, float]
 RGB = Tuple[int, int, int]
+Point = List[float]
 
 
 @dataclass(frozen=True)
@@ -160,6 +149,20 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
         axis_namespace="query_id",
+    )
+
+
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
     )
 
 
@@ -248,14 +251,15 @@ def _center_text(
         width, height = draw.textsize(str(text), font=font)
         x = float(center[0]) - (0.5 * float(width))
         y = float(center[1]) - (0.5 * float(height))
-    draw.text(
+    draw_text_traced(
+        draw,
         (float(x), float(y)),
         str(text),
         font=font,
         fill=fill,
         stroke_fill=stroke_fill,
         stroke_width=max(0, int(stroke_width)),
-    )
+     role="readout", required=False,)
     return _text_bbox(draw, (float(x), float(y)), str(text), font, stroke_width=max(0, int(stroke_width)))
 
 
@@ -340,7 +344,7 @@ def _axis_metric_count(params: Mapping[str, Any], *, min_required: int = 1, inst
     low = _resolve_gen_int(params, "axis_metric_count_min", _resolve_gen_int(params, "metric_count_min", 5))
     high = _resolve_gen_int(params, "axis_metric_count_max", _resolve_gen_int(params, "metric_count_max", 7))
     low = max(int(low), int(min_required))
-    high = min(len(_AXIS_METRIC_LABEL_POOL), int(high))
+    high = int(high)
     if int(low) > int(high):
         raise ValueError("axis metric count support is too small for requested query")
     return _balanced_choice(
@@ -399,13 +403,18 @@ def _target_count_support(params: Mapping[str, Any], *, upper: int) -> List[int]
 
 def _sample_metrics(count: int, *, instance_seed: int) -> Tuple[str, ...]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.metric_labels:{int(count)}")
-    labels = list(_METRIC_LABEL_POOL)
-    rng.shuffle(labels)
-    return tuple(str(label) for label in labels[: int(count)])
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
-def _sample_axis_metrics(count: int) -> Tuple[str, ...]:
-    return tuple(str(label) for label in _AXIS_METRIC_LABEL_POOL[: int(count)])
+def _sample_axis_metrics(count: int, *, instance_seed: int) -> Tuple[str, ...]:
+    return _sample_metrics(int(count), instance_seed=int(instance_seed) + 101)
 
 
 def _value_bounds(params: Mapping[str, Any]) -> Tuple[int, int]:
@@ -461,7 +470,7 @@ def _build_highlighted_metric_threshold_dataset(params: Mapping[str, Any], *, in
     )
     threshold = _threshold(non_answer_params, instance_seed=int(instance_seed))
     metric_count = _axis_metric_count(non_answer_params, min_required=5, instance_seed=int(instance_seed))
-    metrics = _sample_axis_metrics(int(metric_count))
+    metrics = _sample_axis_metrics(int(metric_count), instance_seed=int(instance_seed))
     metric_index = _choice_index(
         non_answer_params,
         instance_seed=int(instance_seed),
@@ -621,6 +630,13 @@ def _build_profile_advantage_dataset(params: Mapping[str, Any], *, instance_seed
     )
     metric_count = _metric_count(non_answer_params, min_required=int(target_count) + 1, instance_seed=int(instance_seed))
     metrics = _sample_metrics(int(metric_count), instance_seed=int(instance_seed))
+    profile_labels = resolve_chart_entity_labels(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.profile_advantage.profile_labels"),
+        count=2,
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.profile_advantage")
     metric_indices = list(range(len(metrics)))
     rng.shuffle(metric_indices)
@@ -643,15 +659,15 @@ def _build_profile_advantage_dataset(params: Mapping[str, Any], *, instance_seed
     panel = _Panel(
         panel_label="",
         profiles=(
-            _Profile(profile_label=_PROFILE_LABELS[0], values=dict(values_a), color_rgb=tuple(palette[0])),
-            _Profile(profile_label=_PROFILE_LABELS[1], values=dict(values_b), color_rgb=tuple(palette[1])),
+            _Profile(profile_label=str(profile_labels[0]), values=dict(values_a), color_rgb=tuple(palette[0])),
+            _Profile(profile_label=str(profile_labels[1]), values=dict(values_b), color_rgb=tuple(palette[1])),
         ),
     )
     evidence_ids: List[str] = []
     for metric in metrics:
         if int(values_a[str(metric)]) > int(values_b[str(metric)]):
-            evidence_ids.append(f"|{_PROFILE_LABELS[0]}|{str(metric)}")
-            evidence_ids.append(f"|{_PROFILE_LABELS[1]}|{str(metric)}")
+            evidence_ids.append(f"|{str(profile_labels[0])}|{str(metric)}")
+            evidence_ids.append(f"|{str(profile_labels[1])}|{str(metric)}")
     query = _Query(
         query_id="profile_advantage_count",
         scene_variant="single_radar_multi_profile",
@@ -659,22 +675,22 @@ def _build_profile_advantage_dataset(params: Mapping[str, Any], *, instance_seed
         answer_type="integer",
         metric_label="",
         panel_label="",
-        profile_a_label=str(_PROFILE_LABELS[0]),
-        profile_b_label=str(_PROFILE_LABELS[1]),
+        profile_a_label=str(profile_labels[0]),
+        profile_b_label=str(profile_labels[1]),
         threshold_value=0,
         minimum_metric_count=0,
         evidence_point_ids=tuple(evidence_ids),
         trace={
-            "profile_a_label": str(_PROFILE_LABELS[0]),
-            "profile_b_label": str(_PROFILE_LABELS[1]),
+            "profile_a_label": str(profile_labels[0]),
+            "profile_b_label": str(profile_labels[1]),
             "advantage_metric_labels": [
                 str(metric)
                 for metric in metrics
                 if int(values_a[str(metric)]) > int(values_b[str(metric)])
             ],
             "values_by_profile": {
-                str(_PROFILE_LABELS[0]): dict(values_a),
-                str(_PROFILE_LABELS[1]): dict(values_b),
+                str(profile_labels[0]): dict(values_a),
+                str(profile_labels[1]): dict(values_b),
             },
         },
     )
@@ -857,7 +873,7 @@ def _draw_radar_panel(
     if bool(show_title) and str(panel.panel_label):
         title_text = f"Panel {str(panel.panel_label)}"
         title_xy = (float(x1) + 14.0, float(y1) + 10.0)
-        draw.text(title_xy, title_text, font=panel_title_font, fill=text_rgb)
+        draw_text_traced(draw, title_xy, title_text, font=panel_title_font, fill=text_rgb, role="readout", required=False)
         title_bbox = _text_bbox(draw, title_xy, title_text, panel_title_font)
         title_height = 34.0
 
@@ -994,7 +1010,7 @@ def _draw_legend(
         swatch = [x, y + 5.0, x + 24.0, y + 19.0]
         draw.rounded_rectangle(swatch, radius=4, fill=profile.color_rgb, outline=(255, 255, 255), width=1)
         label_xy = (x + 32.0, y)
-        draw.text(label_xy, str(profile.profile_label), font=font, fill=text_rgb)
+        draw_text_traced(draw, label_xy, str(profile.profile_label), font=font, fill=text_rgb, role="readout", required=False)
         text_box = _text_bbox(draw, label_xy, str(profile.profile_label), font)
         legend_bboxes[str(profile.profile_label)] = _bbox([swatch[0], swatch[1], text_box[2], text_box[3]])
         x = float(text_box[2]) + 42.0
@@ -1035,9 +1051,21 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     title_font = load_font(_resolve_int(params, "title_font_size_px", 30), bold=True)
     subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
 
-    draw.text((float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))), "Radar Profile Charts", font=title_font, fill=text_rgb)
+    draw_text_traced(
+        draw,
+        (float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))),
+        "Radar Profile Charts",
+        font=title_font,
+        fill=text_rgb,
+     role="readout", required=False,)
     subtitle = "Compare radial profile vertices against metric spokes and ring values."
-    draw.text((float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))), subtitle, font=subtitle_font, fill=muted_rgb)
+    draw_text_traced(
+        draw,
+        (float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))),
+        subtitle,
+        font=subtitle_font,
+        fill=muted_rgb,
+     role="readout", required=False,)
 
     entities: List[Dict[str, Any]] = []
     point_bboxes: Dict[str, List[float]] = {}
@@ -1138,13 +1166,58 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     )
 
 
-def _evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> List[List[float]]:
-    boxes: List[List[float]] = []
-    for point_id in dataset.query.evidence_point_ids:
-        bbox = rendered.point_bboxes.get(str(point_id))
-        if bbox is not None:
-            boxes.append(list(bbox))
-    return boxes
+def _point_center_from_bbox(bbox: Sequence[float]) -> Point:
+    if len(bbox) != 4:
+        raise ValueError(f"expected bbox with 4 values, got {bbox}")
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 2),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 2),
+    ]
+
+
+def _point_for_id(rendered: _Rendered, point_id: str) -> Point:
+    bbox = rendered.point_bboxes.get(str(point_id))
+    if bbox is None:
+        raise KeyError(f"missing radar point bbox for {point_id}")
+    return _point_center_from_bbox(bbox)
+
+
+def _evidence_for_query(dataset: _Dataset, rendered: _Rendered) -> Tuple[str, List[Any], Dict[str, Any]]:
+    query_id = str(dataset.query.query_id)
+    if query_id in {"highlighted_metric_threshold_panel_count", "matching_condition_panel_count"}:
+        panel_labels = [str(value) for value in dataset.query.trace.get("matching_panel_labels", [])]
+        boxes = [list(rendered.panel_bboxes[str(label)]) for label in panel_labels]
+        return "bbox_set", list(boxes), {
+            "type": "bbox_set",
+            "bbox_set": list(boxes),
+            "evidence_panel_labels": list(panel_labels),
+            "evidence_point_ids": list(dataset.query.evidence_point_ids),
+        }
+    if query_id == "threshold_metric_count_for_panel":
+        points = [_point_for_id(rendered, str(point_id)) for point_id in dataset.query.evidence_point_ids]
+        return "point_set", list(points), {
+            "type": "point_set",
+            "point_set": list(points),
+            "pixel_point_set": list(points),
+            "evidence_point_ids": list(dataset.query.evidence_point_ids),
+            "evidence_metric_labels": list(dataset.query.trace.get("matching_metric_labels", [])),
+        }
+    if query_id == "profile_advantage_count":
+        point_ids = [str(value) for value in dataset.query.evidence_point_ids]
+        if len(point_ids) % 2 != 0:
+            raise ValueError("profile_advantage_count evidence must contain paired profile points")
+        pairs = [
+            [_point_for_id(rendered, point_ids[index]), _point_for_id(rendered, point_ids[index + 1])]
+            for index in range(0, len(point_ids), 2)
+        ]
+        return "point_pair_set", list(pairs), {
+            "type": "point_pair_set",
+            "point_pair_set": list(pairs),
+            "pixel_point_pair_set": list(pairs),
+            "evidence_point_ids": list(point_ids),
+            "advantage_metric_labels": list(dataset.query.trace.get("advantage_metric_labels", [])),
+        }
+    raise ValueError(f"unsupported radar evidence query_id: {query_id}")
 
 
 class ChartsRadarMultiplotQueryTask:
@@ -1172,9 +1245,11 @@ class ChartsRadarMultiplotQueryTask:
         if dataset is None:
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
-        rendered = _render_dataset(dataset, params=params, instance_seed=int(instance_seed))
-        evidence_boxes = _evidence_bboxes(dataset, rendered)
-        if not evidence_boxes:
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_dataset(dataset, params=params, instance_seed=int(instance_seed))
+        evidence_type, evidence_value, projected_evidence = _evidence_for_query(dataset, rendered)
+        if not evidence_value:
             raise RuntimeError(f"{self.task_id} produced empty evidence")
 
         prompt_defaults = required_group_defaults(
@@ -1233,7 +1308,7 @@ class ChartsRadarMultiplotQueryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=dataset.query.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_boxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=list(evidence_value))
         values_by_panel_profile = {
             str(panel.panel_label): {
                 str(profile.profile_label): dict(profile.values)
@@ -1273,6 +1348,10 @@ class ChartsRadarMultiplotQueryTask:
                 "coord_space": "pixel",
                 "scene_variant": str(dataset.query.scene_variant),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
+                "font_assets": {
+                    "font_asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 **dict(rendered.render_meta),
             },
             "render_map": {
@@ -1303,10 +1382,7 @@ class ChartsRadarMultiplotQueryTask:
                 "point_ids": list(dataset.query.evidence_point_ids),
                 "answer": dataset.query.answer,
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_boxes],
-                "evidence_point_ids": list(dataset.query.evidence_point_ids),
-            },
+            "projected_evidence": dict(projected_evidence),
         }
 
         visual_max = max(
@@ -1337,6 +1413,7 @@ class ChartsRadarMultiplotQueryTask:
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
+            scene_id=SCENE_ID,
         )
 
 

@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.color_distance import sample_color_palette_with_distance_constraints
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
-from ...shared.name_assets import load_short_name_manifest
 from ...shared.named_colors import darken_color
 from .chart_scene import MultiSeriesChartMarkSpec
+from .label_assets import resolve_chart_entity_labels
 from .labeled_chart_common import (
     LabeledChartDefaults,
     balanced_choice_from_values,
@@ -27,8 +27,6 @@ SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "multi_line",
     "grouped_lollipop",
 )
-
-_SERIES_NAME_MANIFEST = "series_legend_names_random_name_2to4.txt"
 
 
 @dataclass(frozen=True)
@@ -86,15 +84,17 @@ def resolve_series_count_bounds(
 def sample_series_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
     """Sample one randomized series-label tuple."""
 
-    pool = load_short_name_manifest(_SERIES_NAME_MANIFEST)
     if int(count) <= 0:
         raise ValueError("series count must be positive")
-    if int(count) > len(pool):
-        raise ValueError("series count exceeds the supported label pool")
     rng = spawn_rng(int(instance_seed), "charts.multiseries.series_labels")
-    candidates = list(pool)
-    rng.shuffle(candidates)
-    return tuple(str(value) for value in candidates[: int(count)])
+    resolved = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=4,
+        allow_spaces=False,
+    )
+    return tuple(str(value).title() for value in resolved.labels)
 
 
 def resolve_multiseries_chart_colors(
@@ -358,7 +358,13 @@ def build_pairwise_comparison_count_dataset(
         namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    category_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_pair")
     pair_candidates = [
@@ -660,7 +666,13 @@ def build_delta_extremum_label_dataset(
         namespace=f"{task_id}.answer_rank:{str(query_id)}",
     )
 
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    category_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_pair")
     pair_candidates = [
@@ -922,7 +934,13 @@ def build_ratio_extremum_label_dataset(
         namespace=f"{task_id}.answer_rank:{str(query_id)}",
     )
 
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    category_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_series:{str(query_id)}")
     if bool(is_share_variant):
@@ -1168,7 +1186,13 @@ def build_category_total_extremum_label_dataset(
         namespace=f"{task_id}.answer_rank:{str(query_id)}:{str(extremum_direction)}",
     )
 
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    category_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     total_rng = spawn_rng(int(instance_seed), f"{task_id}.category_totals:{str(query_id)}")
     category_totals = total_rng.sample(
@@ -1506,7 +1530,13 @@ def build_conditional_gap_value_dataset(
         extremum_direction=extremum_direction,
     )
 
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    category_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_series")
     query_series = list(series_labels)

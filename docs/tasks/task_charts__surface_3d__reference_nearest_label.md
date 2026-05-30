@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/three_d`
 4. Query id: `reference_nearest_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the supporting 3D point marker.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.three_d.panel_query.ChartsThreeDReferenceNearestLabelTask`

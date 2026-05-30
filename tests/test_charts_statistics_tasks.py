@@ -401,7 +401,7 @@ def test_point_set_evidence_type_is_registered_for_chart_label_tasks() -> None:
     assert registry.validate_evidence_type("point_set") is True
 
 
-def test_chart_statistics_labels_use_random_uppercase_subset() -> None:
+def test_chart_statistics_labels_use_compact_dense_axis_ids() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     out = task.generate(
         9100,
@@ -412,7 +412,8 @@ def test_chart_statistics_labels_use_random_uppercase_subset() -> None:
     labels = [str(label) for label in out.trace_payload["execution_trace"]["labels"]]
     assert len(labels) >= 10
     assert len(labels) == len(set(labels))
-    assert all(label.isalpha() and label.isupper() for label in labels)
+    assert all(2 <= len(label) <= 4 for label in labels)
+    assert all(label.isascii() and label.isalnum() for label in labels)
     assert set(labels) != set(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"])
 
 

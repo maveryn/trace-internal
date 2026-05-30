@@ -43,8 +43,14 @@
       "continent_label",
       "threshold_phrase"
     ],
-    "query:border_neighbor_count": [
-      "region_noun"
+    "query:named_region_set_total_value": [
+      "region_set_name",
+      "region_set_label_list"
+    ],
+    "query:group_filtered_region_value": [
+      "region_noun",
+      "continent_label",
+      "threshold_phrase"
     ],
     "query:adjacent_same_category_count": [
       "region_noun"
@@ -131,32 +137,39 @@
       "From the map legend, count {region_noun} in category \"{category_label}\"."
     ],
     "continent_region_count": [
-      "How many colored {region_noun} are in {continent_label}?",
-      "Count the colored {region_noun} located in {continent_label}.",
-      "Using the world map, how many colored {region_noun} are in {continent_label}?",
-      "What number of colored {region_noun} fall within {continent_label}?",
-      "From the map, count the colored {region_noun} in {continent_label}."
+      "How many colored {region_noun} are in \"{continent_label}\"?",
+      "Count the colored {region_noun} located in \"{continent_label}\".",
+      "Using the world map, how many colored {region_noun} are in \"{continent_label}\"?",
+      "What number of colored {region_noun} fall within \"{continent_label}\"?",
+      "From the map, count the colored {region_noun} in \"{continent_label}\"."
     ],
     "continent_category_region_count": [
-      "How many {region_noun} in {continent_label} are in the \"{category_label}\" category?",
-      "Count the {region_noun} located in {continent_label} and assigned to \"{category_label}\".",
-      "Using the category legend, how many {region_noun} in {continent_label} fall under \"{category_label}\"?",
-      "What number of {region_noun} are both in {continent_label} and in category \"{category_label}\"?",
-      "From the map legend, count {region_noun} in {continent_label} with category \"{category_label}\"."
+      "How many {region_noun} in \"{continent_label}\" are in the \"{category_label}\" category?",
+      "Count the {region_noun} located in \"{continent_label}\" and assigned to \"{category_label}\".",
+      "Using the category legend, how many {region_noun} in \"{continent_label}\" fall under \"{category_label}\"?",
+      "What number of {region_noun} are both in \"{continent_label}\" and in category \"{category_label}\"?",
+      "From the map legend, count {region_noun} in \"{continent_label}\" with category \"{category_label}\"."
     ],
     "continent_threshold_region_count": [
-      "How many {region_noun} in {continent_label} have values {threshold_phrase}?",
-      "Count the {region_noun} located in {continent_label} with values {threshold_phrase}.",
-      "Using the value legend, how many {region_noun} in {continent_label} are {threshold_phrase}?",
-      "What number of {region_noun} are both in {continent_label} and in value bins {threshold_phrase}?",
-      "From the map legend, count {region_noun} in {continent_label} whose values are {threshold_phrase}."
+      "How many {region_noun} in \"{continent_label}\" have values {threshold_phrase}?",
+      "Count the {region_noun} located in \"{continent_label}\" with values {threshold_phrase}.",
+      "Using the value legend, how many {region_noun} in \"{continent_label}\" are {threshold_phrase}?",
+      "What number of {region_noun} are both in \"{continent_label}\" and in value bins {threshold_phrase}?",
+      "From the map legend, count {region_noun} in \"{continent_label}\" whose values are {threshold_phrase}."
     ],
-    "border_neighbor_count": [
-      "How many {region_noun} share a land border with the highlighted country? Do not count the highlighted country itself.",
-      "Count the {region_noun} that touch the highlighted country by land border. Do not include the highlighted country.",
-      "Using the highlighted country as the reference, how many {region_noun} share a land border with it?",
-      "What number of {region_noun} have a land border with the highlighted country?",
-      "From the map, count the {region_noun} directly bordering the highlighted country."
+    "named_region_set_total_value": [
+      "For \"{region_set_name}\" ({region_set_label_list}), what is the total of the visible integer values?",
+      "Sum the visible values for the \"{region_set_name}\" regions: {region_set_label_list}.",
+      "Using the visible region labels, what is the combined value for \"{region_set_name}\": {region_set_label_list}?",
+      "What total do you get after adding the visible values for \"{region_set_name}\" ({region_set_label_list})?",
+      "Add the integer values printed in regions {region_set_label_list} for \"{region_set_name}\"."
+    ],
+    "group_filtered_region_value": [
+      "What is the total visible value of {region_noun} in \"{continent_label}\" with values {threshold_phrase}?",
+      "Sum the printed values for {region_noun} located in \"{continent_label}\" whose values are {threshold_phrase}.",
+      "Using the world map, add the values for {region_noun} in \"{continent_label}\" that are {threshold_phrase}.",
+      "What combined value comes from {region_noun} in \"{continent_label}\" with values {threshold_phrase}?",
+      "From the visible values, total the {region_noun} in \"{continent_label}\" that satisfy {threshold_phrase}."
     ],
     "adjacent_same_category_count": [
       "How many colored {region_noun} touching the highlighted region by edge or corner have the same category as the highlighted region?",

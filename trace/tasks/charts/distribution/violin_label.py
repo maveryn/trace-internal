@@ -17,6 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.chart_scene import render_violin_scene
 from ..shared.complexity import (
     build_chart_complexity,
@@ -33,7 +34,12 @@ from ..shared.distribution_chart_common import (
     resolve_chart_render_params_for_task,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 QueryVariant = str
@@ -125,11 +131,17 @@ class ChartsDistributionViolinLabelTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_violin_scene(
-            background,
-            violins=violins,
-            render_params=render_params,
+        chart_font_family = sample_chart_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_violin_scene(
+                background,
+                violins=violins,
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -174,7 +186,7 @@ class ChartsDistributionViolinLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
+        answer_gt = TypedValue(type="string", value=str(answer_label))
         evidence_projection = projected_mark_evidence(rendered_scene, [str(answer_label)])
         evidence_bboxes = [list(bbox) for bbox in evidence_projection["bbox_set"]]
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
@@ -248,6 +260,7 @@ class ChartsDistributionViolinLabelTask:
                 "scene_variant": SCENE_VARIANT,
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
                     "label_font_size_px": int(render_params.label_font_size_px),
@@ -324,8 +337,8 @@ class ChartsDistributionViolinLabelTask:
                 "value": [str(answer_label)],
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_bboxes),
-                **dict(evidence_projection),
             },
         }
 

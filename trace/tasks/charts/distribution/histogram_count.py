@@ -12,11 +12,13 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.output_metadata import default_task_versions
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.chart_scene import render_histogram_scene, value_axis_render_metadata
 from ..shared.complexity import (
     build_chart_complexity,
@@ -248,11 +250,21 @@ class ChartsDistributionHistogramCountTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_histogram_scene(
-            background,
-            bins=bins,
-            render_params=render_params,
+        chart_font_family = sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_histogram_scene(
+                background,
+                bins=bins,
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -387,6 +399,10 @@ class ChartsDistributionHistogramCountTask:
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "tick_font_size_px": int(render_params.tick_font_size_px),
                     "label_stroke_width_px": int(render_params.label_stroke_width_px),
+                },
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
                 },
                 "axis_style": {
                     "axis_line_width_px": int(render_params.axis_line_width_px),

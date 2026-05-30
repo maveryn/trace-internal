@@ -23,6 +23,7 @@ from ...shared.config_defaults import (
 )
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,7 +31,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -38,6 +40,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -45,12 +48,17 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 TASK_ID = "charts_radial_progress_base"
 SCENE_ID = "radial_progress"
 
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+CONDITION_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "at_least_threshold_count",
     "below_threshold_count",
     "within_range_count",
     "remaining_at_least_threshold_count",
 )
+REMAINING_EXTREMUM_QUERY_IDS: Tuple[str, ...] = (
+    "highest_remaining_label",
+    "lowest_remaining_label",
+)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = CONDITION_COUNT_QUERY_IDS + REMAINING_EXTREMUM_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "full_progress_rings",
     "semicircle_gauges",
@@ -71,35 +79,14 @@ _QUERY_LOADS: Dict[str, float] = {
     "below_threshold_count": 0.52,
     "within_range_count": 0.68,
     "remaining_at_least_threshold_count": 0.64,
+    "highest_remaining_label": 0.50,
+    "lowest_remaining_label": 0.50,
 }
 _SCENE_LOADS: Dict[str, float] = {
     "full_progress_rings": 0.52,
     "semicircle_gauges": 0.58,
     "segmented_radial_bars": 0.66,
 }
-
-_LABEL_POOL: Tuple[str, ...] = (
-    "Aster",
-    "Briar",
-    "Cedar",
-    "Dune",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Ivory",
-    "Juniper",
-    "Kestrel",
-    "Lagoon",
-    "Meadow",
-    "Nimbus",
-    "Orchid",
-    "Prairie",
-    "Quartz",
-    "Ripple",
-    "Summit",
-    "Tundra",
-)
 
 RGB = Tuple[int, int, int]
 BBox = List[float]
@@ -116,7 +103,7 @@ class _ProgressItem:
 @dataclass(frozen=True)
 class _Query:
     query_id: str
-    answer: int
+    answer: int | str
     answer_type: str
     evidence_item_ids: Tuple[str, ...]
     params: Dict[str, Any]
@@ -253,9 +240,28 @@ def _sample_int_range(
 
 def _choose_labels(*, count: int, instance_seed: int) -> List[str]:
     rng = spawn_rng(int(instance_seed), "charts.radial_progress.labels")
-    labels = list(_LABEL_POOL)
-    rng.shuffle(labels)
-    return labels[: int(count)]
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return [str(label) for label in labels]
+
+
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
 
 
 def _palette(params: Mapping[str, Any], *, count: int, instance_seed: int) -> List[RGB]:
@@ -305,7 +311,7 @@ def _construct_condition_values(
     answer_count: int,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> Tuple[List[int], Tuple[int, ...], Dict[str, Any]]:
+) -> Tuple[List[int], Tuple[str, ...], Dict[str, Any]]:
     rng = spawn_rng(int(instance_seed), f"charts.radial_progress.values.{query_id}")
     support = _value_support(params)
     target_indices = tuple(sorted(rng.sample(range(int(item_count)), k=int(answer_count))))
@@ -377,6 +383,39 @@ def _construct_condition_values(
     return values, tuple(str(f"i{index}") for index in target_indices), dict(query_params)
 
 
+def _construct_extremum_values(
+    *,
+    query_id: str,
+    item_count: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> Tuple[List[int], Tuple[str, ...], Dict[str, Any]]:
+    rng = spawn_rng(int(instance_seed), f"charts.radial_progress.extremum_values.{query_id}")
+    support = list(_value_support(params))
+    if len(support) < int(item_count):
+        raise ValueError("radial progress extremum queries require enough distinct values to avoid ties")
+
+    values = [int(value) for value in rng.sample(support, k=int(item_count))]
+    if str(query_id) == "highest_remaining_label":
+        target_index = min(range(int(item_count)), key=lambda index: int(values[index]))
+        extremum_phrase = "the most remaining progress"
+    elif str(query_id) == "lowest_remaining_label":
+        target_index = max(range(int(item_count)), key=lambda index: int(values[index]))
+        extremum_phrase = "the least remaining progress"
+    else:
+        raise ValueError(f"unsupported radial progress extremum query: {query_id}")
+
+    return (
+        values,
+        (f"i{int(target_index)}",),
+        {
+            "extremum_phrase": str(extremum_phrase),
+            "target_value": int(values[int(target_index)]),
+            "target_remaining": int(100 - int(values[int(target_index)])),
+        },
+    )
+
+
 def _construct_dataset(
     *,
     query_id: str,
@@ -395,28 +434,56 @@ def _construct_dataset(
         instance_seed=int(instance_seed),
         namespace="charts.radial_progress.item_count",
     )
-    max_answer = min(
-        int(item_count) - 1,
-        int(params.get("answer_count_max", group_default(_GEN_DEFAULTS, "answer_count_max", 5))),
-    )
-    min_answer = int(params.get("answer_count_min", group_default(_GEN_DEFAULTS, "answer_count_min", 1)))
-    answer_support = list(range(max(1, min_answer), max(1, int(max_answer)) + 1))
-    answer_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"charts.radial_progress.answer_count.{query_id}")) % len(answer_support)
-    answer_count = int(answer_support[int(answer_index)])
-
     labels = _choose_labels(count=int(item_count), instance_seed=int(instance_seed))
     colors = _palette(params, count=int(item_count), instance_seed=int(instance_seed))
-    values, evidence_item_ids, query_params = _construct_condition_values(
-        query_id=str(query_id),
-        item_count=int(item_count),
-        answer_count=int(answer_count),
-        params=params,
-        instance_seed=int(instance_seed),
-    )
+
+    if str(query_id) in CONDITION_COUNT_QUERY_IDS:
+        max_answer = min(
+            int(item_count) - 1,
+            int(params.get("answer_count_max", group_default(_GEN_DEFAULTS, "answer_count_max", 5))),
+        )
+        min_answer = int(params.get("answer_count_min", group_default(_GEN_DEFAULTS, "answer_count_min", 1)))
+        answer_support = list(range(max(1, min_answer), max(1, int(max_answer)) + 1))
+        answer_index = abs(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"charts.radial_progress.answer_count.{query_id}",
+            )
+        ) % len(answer_support)
+        answer_count = int(answer_support[int(answer_index)])
+        values, evidence_item_ids, query_params = _construct_condition_values(
+            query_id=str(query_id),
+            item_count=int(item_count),
+            answer_count=int(answer_count),
+            params=params,
+            instance_seed=int(instance_seed),
+        )
+        answer: int | str = int(answer_count)
+        answer_type = "integer"
+        query_params.update({"answer_count_probabilities": _support_probability_map(answer_support)})
+    elif str(query_id) in REMAINING_EXTREMUM_QUERY_IDS:
+        values, evidence_item_ids, query_params = _construct_extremum_values(
+            query_id=str(query_id),
+            item_count=int(item_count),
+            params=params,
+            instance_seed=int(instance_seed),
+        )
+        target_index = int(str(evidence_item_ids[0]).removeprefix("i"))
+        answer = str(labels[int(target_index)])
+        answer_type = "string"
+        query_params.update(
+            {
+                "label_support": [str(label) for label in labels],
+                "target_label": str(answer),
+            }
+        )
+    else:
+        raise ValueError(f"unsupported radial progress query: {query_id}")
+
     query_params.update(
         {
             "item_count_probabilities": dict(item_count_probabilities),
-            "answer_count_probabilities": _support_probability_map(answer_support),
         }
     )
     items = tuple(
@@ -433,8 +500,8 @@ def _construct_dataset(
     title_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.radial_progress.title")) % len(title_options)
     query = _Query(
         query_id=str(query_id),
-        answer=int(answer_count),
-        answer_type="integer",
+        answer=answer,
+        answer_type=str(answer_type),
         evidence_item_ids=tuple(str(value) for value in evidence_item_ids),
         params=dict(query_params),
     )
@@ -497,7 +564,8 @@ def _draw_text(
     anchor: str = "mm",
     stroke_width: int = 1,
 ) -> BBox:
-    draw.text(
+    draw_text_traced(
+        draw,
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
@@ -505,7 +573,7 @@ def _draw_text(
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=tuple(stroke_fill),
         anchor=str(anchor),
-    )
+     role="readout", required=False,)
     bbox = draw.textbbox(
         (float(xy[0]), float(xy[1])),
         str(text),
@@ -825,7 +893,12 @@ def _render_chart(
     )
 
 
-def _json_examples(*, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(*, prompt_defaults: Mapping[str, Any], answer_type: str) -> Tuple[str, str]:
+    if str(answer_type) == "string":
+        return (
+            str(prompt_defaults["json_example_remaining_extremum_label"]),
+            str(prompt_defaults["json_example_answer_only_remaining_extremum_label"]),
+        )
     return (
         str(prompt_defaults["json_example_condition_count"]),
         str(prompt_defaults["json_example_answer_only_condition_count"]),
@@ -833,9 +906,15 @@ def _json_examples(*, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
 
 
 def _query_slots(query_id: str, qparams: Mapping[str, Any]) -> Dict[str, Any]:
+    if str(query_id) in REMAINING_EXTREMUM_QUERY_IDS:
+        return {
+            "extremum_phrase": str(qparams["extremum_phrase"]),
+            "range_phrase": "",
+            "threshold_phrase": "",
+        }
     if str(query_id) == "within_range_count":
-        return {"range_phrase": str(qparams["range_phrase"]), "threshold_phrase": ""}
-    return {"threshold_phrase": str(qparams["threshold_phrase"]), "range_phrase": ""}
+        return {"range_phrase": str(qparams["range_phrase"]), "threshold_phrase": "", "extremum_phrase": ""}
+    return {"threshold_phrase": str(qparams["threshold_phrase"]), "range_phrase": "", "extremum_phrase": ""}
 
 
 class ChartsRadialProgressChartTask:
@@ -871,12 +950,14 @@ class ChartsRadialProgressChartTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_chart(
-            background=background,
-            dataset=dataset,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_chart(
+                background=background,
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -890,34 +971,43 @@ class ChartsRadialProgressChartTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
+                "task_key_remaining_extremum",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
+                "answer_hint_label",
                 "evidence_hint",
+                "evidence_hint_label",
                 "object_description_full_progress_rings",
                 "object_description_semicircle_gauges",
                 "object_description_segmented_radial_bars",
                 "json_example_condition_count",
                 "json_example_answer_only_condition_count",
+                "json_example_remaining_extremum_label",
+                "json_example_answer_only_remaining_extremum_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _json_examples(prompt_defaults=prompt_defaults)
+        is_label_answer = str(dataset.query.answer_type) == "string"
+        json_example, json_example_answer_only = _json_examples(
+            prompt_defaults=prompt_defaults,
+            answer_type=str(dataset.query.answer_type),
+        )
         qparams = dict(dataset.query.params)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            task_key=str(prompt_defaults["task_key_remaining_extremum"] if is_label_answer else prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{dataset.scene_variant}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "answer_hint": str(prompt_defaults["answer_hint_label"] if is_label_answer else prompt_defaults["answer_hint"]),
+                "evidence_hint": str(prompt_defaults["evidence_hint_label"] if is_label_answer else prompt_defaults["evidence_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 **_query_slots(str(query_id), qparams),
@@ -928,7 +1018,8 @@ class ChartsRadialProgressChartTask:
 
         evidence_item_ids = [str(value) for value in dataset.query.evidence_item_ids]
         evidence_bboxes = [list(rendered.item_bboxes_px[str(item_id)]) for item_id in evidence_item_ids]
-        answer_gt = TypedValue(type=str(dataset.query.answer_type), value=int(dataset.query.answer))
+        answer_value: int | str = str(dataset.query.answer) if is_label_answer else int(dataset.query.answer)
+        answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         item_by_id = {item.item_id: item for item in dataset.items}
@@ -952,9 +1043,11 @@ class ChartsRadialProgressChartTask:
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "item_count": int(len(dataset.items)),
-            "answer_value": int(dataset.query.answer),
+            "answer_value": answer_value,
             **dict(qparams),
         }
+        question_format = "radial_progress_extremum_remaining_label" if is_label_answer else "radial_progress_condition_count"
+        witness_type = "radial_progress_extremum_remaining_label_witness" if is_label_answer else "radial_progress_condition_count_witness"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": SCENE_ID,
@@ -962,7 +1055,7 @@ class ChartsRadialProgressChartTask:
                 "relations": {
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "answer_value": int(dataset.query.answer),
+                    "answer_value": answer_value,
                     "evidence_item_ids": list(evidence_item_ids),
                 },
             },
@@ -980,6 +1073,10 @@ class ChartsRadialProgressChartTask:
                 "canvas_height": int(image.size[1]),
                 "category_labels": [str(item.label) for item in dataset.items],
                 "render_meta": dict(rendered.render_meta),
+                "font_assets": {
+                    "font_asset_version": str(font_asset_version()),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {
@@ -989,23 +1086,24 @@ class ChartsRadialProgressChartTask:
             },
             "execution_trace": {
                 "query_id": str(query_id),
-                "question_format": "radial_progress_condition_count",
+                "question_format": str(question_format),
                 "scene_variant": str(scene_variant),
                 "item_count": int(len(dataset.items)),
                 "items": [dict(entity) for entity in rendered.entities],
                 "label_to_value": dict(label_to_value),
-                "answer_value": int(dataset.query.answer),
+                "answer_value": answer_value,
                 "answer_type": str(dataset.query.answer_type),
                 "evidence_item_ids": list(evidence_item_ids),
                 "evidence_labels": list(evidence_labels),
                 **dict(qparams),
             },
             "witness_symbolic": {
-                "type": "radial_progress_condition_count_witness",
-                "answer_value": int(dataset.query.answer),
+                "type": str(witness_type),
+                "answer_value": answer_value,
                 "evidence_item_ids": list(evidence_item_ids),
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_bboxes),
                 "bbox_map": {str(item_id): list(rendered.item_bboxes_px[str(item_id)]) for item_id in evidence_item_ids},
                 "item_ids": list(evidence_item_ids),
@@ -1035,12 +1133,24 @@ class ChartsRadialProgressConditionCountTask(MergedChartQueryVariantTaskMixin, C
 
     task_id = "task_charts__radial_progress__condition_count"
     default_dataset_enabled = True
-    allowed_query_ids = SUPPORTED_QUERY_IDS
+    allowed_query_ids = CONDITION_COUNT_QUERY_IDS
+
+
+@register_task
+class ChartsRadialProgressExtremumRemainingLabelTask(MergedChartQueryVariantTaskMixin, ChartsRadialProgressChartTask):
+    """Select the progress widget label with most or least remaining progress."""
+
+    task_id = "task_charts__radial_progress__extremum_remaining_label"
+    default_dataset_enabled = True
+    allowed_query_ids = REMAINING_EXTREMUM_QUERY_IDS
 
 
 __all__ = [
     "ChartsRadialProgressChartTask",
     "ChartsRadialProgressConditionCountTask",
+    "ChartsRadialProgressExtremumRemainingLabelTask",
+    "CONDITION_COUNT_QUERY_IDS",
+    "REMAINING_EXTREMUM_QUERY_IDS",
     "SUPPORTED_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
 ]

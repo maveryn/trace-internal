@@ -24,6 +24,18 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= y0 < y1 <= height
 
 
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
+
+
+def _bbox_center(bbox: list[float]) -> list[float]:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return [round((x0 + x1) * 0.5, 3), round((y0 + y1) * 0.5, 3)]
+
+
 def _expected_answer(execution: dict) -> str | int:
     variant = str(execution["query_id"])
 
@@ -64,7 +76,8 @@ def test_charts_scientific_variants_match_contract(query_id: str) -> None:
     render_map = trace["render_map"]
 
     assert out.query_id == query_id
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.scene_id == "curve_panels"
+    assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "curve_panels_subplot_query"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
@@ -79,23 +92,30 @@ def test_charts_scientific_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["font_assets"]["chart_font_family"]
 
-    for bbox in out.evidence_gt.value:
-        _assert_bbox_inside_canvas(
-            [float(value) for value in bbox],
+    for point in out.evidence_gt.value:
+        _assert_point_inside_canvas(
+            [float(value) for value in point],
             width=int(render["canvas_width"]),
             height=int(render["canvas_height"]),
         )
 
-    expected_boxes = []
     for panel_label in trace["projected_evidence"]["panel_labels"]:
-        expected_boxes.append(render_map["panel_bboxes_px"][str(panel_label)])
+        _assert_bbox_inside_canvas(
+            render_map["panel_bboxes_px"][str(panel_label)],
+            width=int(render["canvas_width"]),
+            height=int(render["canvas_height"]),
+        )
+    expected_points = []
     for point_id in trace["projected_evidence"]["point_ids"]:
-        expected_boxes.append(render_map["point_bboxes_px"][str(point_id)])
+        expected_points.append(_bbox_center(render_map["point_bboxes_px"][str(point_id)]))
     for intersection_id in trace["projected_evidence"]["intersection_ids"]:
-        expected_boxes.append(render_map["intersection_bboxes_px"][str(intersection_id)])
-    assert out.evidence_gt.value == expected_boxes
+        expected_points.append(_bbox_center(render_map["intersection_bboxes_px"][str(intersection_id)]))
+    assert out.evidence_gt.value == expected_points
 
     if query_id == "threshold_series_count":
         assert out.answer_gt.type == "integer"
@@ -157,7 +177,7 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
             earliest_answers[str(execution["answer"])] += 1
 
     assert set(variants) == set(SUPPORTED_QUERY_IDS)
-    assert set(curve_answers) == {"M1", "M2", "M3", "M4", "M5", "M6"}
+    assert len(curve_answers) >= 20
     assert set(threshold_answers).issubset({1, 2, 3, 4, 5, 6})
     assert {1, 2, 3, 4}.issubset(set(threshold_answers))
     assert {"A", "B", "C", "D"}.issubset(set(delta_answers))
@@ -225,7 +245,6 @@ def test_scientific_curve_at_x_public_task_uses_calibrated_density() -> None:
     out = task.generate(2026052301, params={}, max_attempts=120)
     execution = out.trace_payload["execution_trace"]
 
-    assert out.query_id == "default"
     assert out.query_id == "curve_at_x_extremum_label"
     assert 6 <= int(execution["panel_count"]) <= 8
     assert int(execution["method_count"]) == 6

@@ -81,18 +81,18 @@
   },
   "query_templates": {
     "interval_mass": [
-      "What is the total count {interval_relation_phrase} the value interval {query_interval_label}?",
-      "Sum the bar counts {interval_relation_phrase} the value interval {query_interval_label}.",
-      "Compute the total count {interval_relation_phrase} {query_interval_label}.",
-      "How many items fall {interval_relation_phrase} the interval {query_interval_label}?",
-      "Find the total count for bars {interval_relation_phrase} {query_interval_label}."
+      "What is the total count {interval_relation_phrase} the value interval \"{query_interval_label}\"?",
+      "Sum the bar counts {interval_relation_phrase} the value interval \"{query_interval_label}\".",
+      "Compute the total count {interval_relation_phrase} \"{query_interval_label}\".",
+      "How many items fall {interval_relation_phrase} the interval \"{query_interval_label}\"?",
+      "Find the total count for bars {interval_relation_phrase} \"{query_interval_label}\"."
     ],
     "bin_count_between_values": [
-      "How many histogram bars lie inside the value interval {query_interval_label}?",
-      "Count the histogram bars covered by the value interval {query_interval_label}.",
-      "Determine how many x-axis values fall inside {query_interval_label}.",
-      "What is the count of bars in the value interval {query_interval_label}?",
-      "Find how many histogram bars fall inside {query_interval_label}."
+      "How many histogram bars lie inside the value interval \"{query_interval_label}\"?",
+      "Count the histogram bars covered by the value interval \"{query_interval_label}\".",
+      "Determine how many x-axis values fall inside \"{query_interval_label}\".",
+      "What is the count of bars in the value interval \"{query_interval_label}\"?",
+      "Find how many histogram bars fall inside \"{query_interval_label}\"."
     ],
     "rank_item_bin_label": [
       "If the histogram counts are expanded from left to right, which x-axis value contains item number {target_rank}?",
@@ -102,11 +102,11 @@
       "Scan the histogram cumulatively from left to right. Which x-axis value contains item {target_rank}?"
     ],
     "median_reference_label": [
-      "Using label {reference_label} as the reference, which label has the median furthest {median_reference_direction_word} {reference_label}'s {reference_quartile_name}?",
-      "Find the boxplot label whose median is the greatest amount {median_reference_direction_word} label {reference_label}'s {reference_quartile_name}.",
+      "Using label \"{reference_label}\" as the reference, which label has the median furthest {median_reference_direction_word} the {reference_quartile_name} for \"{reference_label}\"?",
+      "Find the boxplot label whose median is the greatest amount {median_reference_direction_word} the {reference_quartile_name} for label \"{reference_label}\".",
       "Determine which labeled boxplot has the largest positive gap {median_reference_gap_phrase}.",
-      "Relative to label {reference_label}'s {reference_quartile_name}, which label has the median furthest {median_reference_direction_word} it?",
-      "Identify the boxplot label whose median sits furthest {median_reference_direction_word} label {reference_label}'s {reference_quartile_name}."
+      "Relative to the {reference_quartile_name} for label \"{reference_label}\", which label has the median furthest {median_reference_direction_word} it?",
+      "Identify the boxplot label whose median sits furthest {median_reference_direction_word} the {reference_quartile_name} for label \"{reference_label}\"."
     ],
     "iqr_extremum_label": [
       "Which label has the {extremum_direction} interquartile range?",

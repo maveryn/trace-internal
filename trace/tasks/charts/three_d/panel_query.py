@@ -25,11 +25,18 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_chart_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_chart_complexity_weights
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_three_d_panel_query_base"
@@ -47,8 +54,6 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 )
 _SUPPORTED_EXTREMA: Tuple[str, ...] = ("highest", "lowest")
 _SUPPORTED_TRENDS: Tuple[str, ...] = ("increase", "decrease")
-_LABEL_POOL: Tuple[str, ...] = tuple("ABCDEFGHJKLMNPQRSTUVWXYZ")
-_Y_CATEGORY_POOL: Tuple[str, ...] = ("G1", "G2", "G3", "G4", "G5", "G6")
 _TIME_POOL: Tuple[int, ...] = (2018, 2019, 2020, 2021, 2022, 2023, 2024)
 _PALETTE: Tuple[Tuple[int, int, int], ...] = (
     (42, 104, 178),
@@ -223,7 +228,7 @@ def _draw_text(
     kwargs: Dict[str, Any] = {}
     if anchor is not None:
         kwargs["anchor"] = str(anchor)
-    draw.text(
+    draw_text_traced(draw,
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
@@ -231,7 +236,7 @@ def _draw_text(
         stroke_fill=stroke_fill,
         stroke_width=max(0, int(stroke_width)),
         **kwargs,
-    )
+     role="readout", required=False,)
     if anchor is None:
         return _text_bbox(draw, xy, str(text), font, stroke_width=max(0, int(stroke_width)))
     try:
@@ -377,9 +382,14 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
 
 def _sample_labels(count: int, *, instance_seed: int, namespace: str) -> Tuple[str, ...]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{namespace}.labels")
-    labels = list(_LABEL_POOL)
-    rng.shuffle(labels)
-    return tuple(str(label) for label in labels[: int(count)])
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=6,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
 def _value_to_unit(value: float, value_range: Tuple[float, float]) -> float:
@@ -950,7 +960,7 @@ def _dataset_surface_extremum(params: Mapping[str, Any], *, instance_seed: int) 
     y_count = _balanced_int(low=_gen_int(params, "surface_y_count_min", 4), high=_gen_int(params, "surface_y_count_max", 6), params=params, instance_seed=instance_seed, namespace="surface.y_count")
     extremum, extremum_probabilities = _resolve_extremum(params, instance_seed=instance_seed)
     x_labels = _sample_labels(int(x_count), instance_seed=instance_seed, namespace="surface.x")
-    y_labels = tuple(_Y_CATEGORY_POOL[: int(y_count)])
+    y_labels = _sample_labels(int(y_count), instance_seed=instance_seed, namespace="surface.y")
     target_y = str(_balanced_choice(y_labels, params=params, instance_seed=instance_seed, namespace="surface.target_y"))
     answer_x = str(_balanced_choice(x_labels, params=params, instance_seed=instance_seed, namespace=f"surface.answer_x:{target_y}:{extremum}"))
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.surface.values")
@@ -1062,7 +1072,10 @@ def _dataset_series_trend(params: Mapping[str, Any], *, instance_seed: int) -> _
             scene_variant="three_d_scatter",
             answer=str(answer_label),
             answer_type="string",
-            evidence_point_ids=tuple(f"series_{answer_label}_{index}" for index in range(int(time_count))),
+            evidence_point_ids=(
+                f"series_{answer_label}_0",
+                f"series_{answer_label}_{int(time_count) - 1}",
+            ),
             trace={
                 "trend_direction": str(trend_direction),
                 "trend_direction_probabilities": dict(trend_probabilities),
@@ -1164,6 +1177,7 @@ def _projected_evidence(dataset: _Dataset, rendered: _Rendered) -> Dict[str, Any
         if str(panel_label) in rendered.panel_bboxes_px:
             boxes.append(list(rendered.panel_bboxes_px[str(panel_label)]))
     return {
+        "type": "bbox_set",
         "bbox_set": list(boxes),
         "point_ids": [str(value) for value in dataset.query.evidence_point_ids],
         "surface_cell_ids": [str(value) for value in dataset.query.evidence_cell_ids],
@@ -1214,7 +1228,13 @@ class ChartsThreeDPanelQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_dataset(background, dataset=dataset, params=render_params)
+        chart_font_family = sample_chart_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
+        )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_dataset(background, dataset=dataset, params=render_params)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1304,6 +1324,7 @@ class ChartsThreeDPanelQueryTask:
                 "scene_variant": str(dataset.scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "axis_labels": {

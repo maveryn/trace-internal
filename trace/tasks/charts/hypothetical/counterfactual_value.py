@@ -19,6 +19,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.chart_scene import render_labeled_chart_scene, value_axis_render_metadata
 from ..shared.complexity import build_chart_complexity, normalize_int_with_bounds, resolve_chart_complexity_weights
 from ..shared.labeled_chart_common import (
@@ -39,7 +40,12 @@ from ..shared.labeled_chart_common import (
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
 from ..shared.information_style import prepare_chart_information_scene
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_hypothetical_counterfactual_value_base"
@@ -261,7 +267,7 @@ def _values_from_label_map(labels: Sequence[str], values_by_label: Mapping[str, 
 
 
 def _format_labels(labels: Sequence[str]) -> str:
-    ordered = [str(label) for label in labels]
+    ordered = [f'"{str(label)}"' for label in labels]
     if not ordered:
         return ""
     if len(ordered) == 1:
@@ -550,7 +556,13 @@ def _build_counterfactual_dataset(
         query_id=str(query_id),
         instance_seed=int(instance_seed),
     )
-    labels = tuple(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = tuple(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.labels:{str(query_id)}:{int(mark_count)}",
+        )
+    )
     builders = {
         "remaining_mean_after_removal": _build_remaining_mean_after_removal,
         "target_share_after_removal": _build_target_share_after_removal,
@@ -632,13 +644,19 @@ class ChartsHypotheticalCounterfactualValueTask:
             task_group=self.task_group,
             render_params=render_params,
         )
-        rendered_scene = render_labeled_chart_scene(
-            background,
-            scene_variant=str(scene_variant),
-            marks=marks,
-            render_params=render_params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_labeled_chart_scene(
+                background,
+                scene_variant=str(scene_variant),
+                marks=marks,
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -757,6 +775,7 @@ class ChartsHypotheticalCounterfactualValueTask:
                     "grid_line_width_px": int(render_params.grid_line_width_px),
                     "tick_length_px": int(render_params.tick_length_px),
                 },
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "mark_style": {
                     "sampling_policy": str(mark_style["sampling_policy"]),
                     "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),
@@ -806,6 +825,7 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "calculation": dict(extras),
             },
             "projected_evidence": {
+                "type": "point_set",
                 "point_set": list(evidence_points),
                 **dict(evidence_projection),
             },
@@ -828,6 +848,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id="single_series",
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

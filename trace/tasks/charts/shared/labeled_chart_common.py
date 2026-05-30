@@ -13,7 +13,6 @@ from ...shared.color_distance import (
 )
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
-from ...shared.labeling import LABEL_POOL_SAFE_UPPER, assign_random_shuffled_labels
 from ...shared.named_colors import darken_color
 from ...shared.render_variation import apply_layout_jitter_to_margins
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
@@ -24,13 +23,13 @@ from .chart_scene import (
     SUPPORTED_CHART_SCENE_VARIANTS,
     resolve_chart_render_params,
 )
+from .label_assets import resolve_chart_compact_axis_labels
 
 
 StatisticKind = str
 SceneVariant = str
 SUPPORTED_LABELED_CHART_SCENE_VARIANTS: Tuple[str, ...] = tuple(SUPPORTED_CHART_SCENE_VARIANTS)
 PIE_LIKE_SCENE_VARIANTS = frozenset({"pie", "donut"})
-CHART_LABEL_POOL_UP_TO_25: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNPQRSTUVWXYZ")
 
 
 @dataclass(frozen=True)
@@ -102,8 +101,19 @@ def projected_mark_evidence(
         mark_trace = by_label.get(str(label))
         if mark_trace is None:
             continue
-        center = [float(value) for value in mark_trace["mark_center_px"]]
         bbox = [float(value) for value in mark_trace["mark_bbox_px"]]
+        if str(rendered_scene.scene_variant) == "bar":
+            center = [
+                0.5 * (float(bbox[0]) + float(bbox[2])),
+                float(bbox[1]),
+            ]
+        elif str(rendered_scene.scene_variant) == "horizontal_bar":
+            center = [
+                float(bbox[2]),
+                0.5 * (float(bbox[1]) + float(bbox[3])),
+            ]
+        else:
+            center = [float(value) for value in mark_trace["mark_center_px"]]
         pixel_point_map[str(label)] = list(center)
         pixel_point_set.append(list(center))
         bbox_set.append(list(bbox))
@@ -278,14 +288,28 @@ def shuffle_values(values: Sequence[int], *, instance_seed: int, namespace: str)
     return ordered
 
 
-def sample_chart_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
-    """Sample one randomized non-prefix label list for the chart marks."""
+def sample_chart_labels(
+    *,
+    count: int,
+    instance_seed: int,
+    namespace: str = "charts.labels",
+    max_chars: int = 4,
+) -> Tuple[str, ...]:
+    """Sample one randomized compact label list for chart marks.
 
-    label_rng = spawn_rng(int(instance_seed), "charts.labels")
-    label_pool = LABEL_POOL_SAFE_UPPER
-    if int(count) > len(LABEL_POOL_SAFE_UPPER):
-        label_pool = CHART_LABEL_POOL_UP_TO_25
-    return assign_random_shuffled_labels(label_rng, object_count=int(count), label_pool=label_pool)
+    Most labeled chart scenes use this helper for visible axis/category labels.
+    Keep labels short for dense chart layouts and draw from a large synthetic
+    ID pool so random fonts do not make words collide on crowded axes.
+    """
+
+    label_rng = spawn_rng(int(instance_seed), str(namespace))
+    resolved = resolve_chart_compact_axis_labels(
+        label_rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=int(max_chars),
+    )
+    return tuple(str(label) for label in resolved.labels)
 
 
 def normalize_rgb(value: Sequence[int]) -> Tuple[int, int, int]:
@@ -837,7 +861,13 @@ def build_summary_statistics_dataset_for_variant(
             instance_seed=int(instance_seed),
             namespace=f"{task_id}.target_answer:{str(statistic_kind)}:{int(rank_n)}",
         )
-        labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+        labels = list(
+            sample_chart_labels(
+                count=int(mark_count),
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}.labels:{str(statistic_kind)}:{int(mark_count)}",
+            )
+        )
         values = build_values_for_nth_rank(
             int(target_answer),
             count=int(mark_count),
@@ -918,7 +948,13 @@ def build_summary_statistics_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}.mark_count:{str(statistic_kind)}:{int(target_answer)}",
     )
-    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(statistic_kind)}:{int(mark_count)}",
+        )
+    )
 
     values = build_values_for_median(
         int(target_answer),
@@ -1059,7 +1095,13 @@ def build_value_count_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}.mark_count:{str(count_variant)}:{int(target_answer)}",
     )
-    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(count_variant)}:{int(mark_count)}",
+        )
+    )
     if pie_like:
         values, query_trace = _find_pie_count_query(
             count_variant=str(count_variant),
@@ -1672,7 +1714,13 @@ def build_trend_structure_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}.values:{str(trend_variant)}:{int(target_answer)}",
     )
-    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(trend_variant)}:{int(mark_count)}",
+        )
+    )
     ordered_evidence_labels = [str(labels[int(index)]) for index in evidence_indices]
     evidence_labels = sorted_labels(ordered_evidence_labels)
 
@@ -1841,6 +1889,28 @@ def _decouple_sample_cursor_after_query_id(
     return decoupled
 
 
+def _seed_cycled_choice_from_values(
+    values: Sequence[int],
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> int:
+    """Select support values with a compact seed cycle when no sample cursor exists."""
+
+    ordered = [int(value) for value in values]
+    if not ordered:
+        raise ValueError(f"no feasible values for {namespace}")
+    if params.get("_sample_cursor") is not None:
+        return balanced_choice_from_values(
+            ordered,
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        )
+    return int(ordered[abs(int(instance_seed)) % len(ordered)])
+
+
 def _build_projected_threshold_crossing_values(
     *,
     crossing_variant: str,
@@ -1969,7 +2039,13 @@ def build_trend_threshold_crossing_dataset_for_variant(
             instance_seed=int(instance_seed),
             namespace=f"{task_id}.crossing_index:{str(crossing_variant)}:{int(mark_count)}",
         )
-        labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+        labels = list(
+            sample_chart_labels(
+                count=int(mark_count),
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}.labels:{str(crossing_variant)}:{int(mark_count)}",
+            )
+        )
         values = _build_direct_threshold_crossing_values(
             crossing_variant=str(crossing_variant),
             mark_count=int(mark_count),
@@ -2011,7 +2087,7 @@ def build_trend_threshold_crossing_dataset_for_variant(
         gen_defaults=gen_defaults,
     )
     support_params = _decouple_sample_cursor_after_query_id(params, gen_defaults=gen_defaults)
-    observed_count = balanced_choice_from_values(
+    observed_count = _seed_cycled_choice_from_values(
         [int(value) for value in range(int(observed_min), int(observed_max) + 1)],
         params=support_params,
         instance_seed=int(instance_seed),
@@ -2036,7 +2112,13 @@ def build_trend_threshold_crossing_dataset_for_variant(
         namespace=f"{task_id}.projection_step:{str(crossing_variant)}:{int(projection_count)}",
     )
     total_count = int(observed_count) + int(projection_count)
-    labels = list(sample_chart_labels(count=int(total_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(total_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:projected:{str(crossing_variant)}:{int(total_count)}",
+        )
+    )
     values, projection_delta, overshoot = _build_projected_threshold_crossing_values(
         crossing_variant=str(crossing_variant),
         observed_count=int(observed_count),
@@ -2337,7 +2419,13 @@ def build_trend_interval_change_dataset_for_variant(
     values = [int(rng.randint(int(value_min), int(value_max))) for _ in range(int(mark_count))]
     values[int(start_index)] = int(start_value)
     values[int(end_index)] = int(end_value)
-    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(interval_variant)}:{int(mark_count)}",
+        )
+    )
     ordered_evidence_labels = [str(labels[index]) for index in range(int(start_index), int(end_index) + 1)]
     evidence_labels = list(ordered_evidence_labels)
     trace_extras: Dict[str, Any] = {
@@ -2440,7 +2528,13 @@ def build_value_readout_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}.mark_count:{str(readout_variant)}:{int(target_answer)}",
     )
-    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(mark_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(readout_variant)}:{int(mark_count)}",
+        )
+    )
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_labels:{str(readout_variant)}")
     query_indices = list(range(int(mark_count)))
     query_rng.shuffle(query_indices)

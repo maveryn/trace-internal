@@ -23,6 +23,7 @@ from ...shared.config_defaults import (
 )
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_rounded_rect
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,7 +31,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -38,6 +40,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_category_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -74,35 +77,6 @@ _SCENE_VARIANT_LOADS: Dict[str, float] = {
     "waffle_grid_blocks": 0.38,
     "pictogram_rows": 0.54,
 }
-
-_CATEGORY_LABEL_POOL: Tuple[str, ...] = (
-    "Aster",
-    "Briar",
-    "Cedar",
-    "Dune",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Ivory",
-    "Juniper",
-    "Kestrel",
-    "Lagoon",
-    "Meadow",
-    "Nimbus",
-    "Orchid",
-    "Prairie",
-    "Quartz",
-    "Ripple",
-    "Summit",
-    "Tundra",
-    "Umber",
-    "Vale",
-    "Willow",
-    "Xylo",
-    "Yarrow",
-    "Zephyr",
-)
 
 RGB = Tuple[int, int, int]
 BBox = List[float]
@@ -256,6 +230,20 @@ def _resolve_glyph(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[st
     )
 
 
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
+
+
 def _sample_balanced_int(
     *,
     params: Mapping[str, Any],
@@ -347,7 +335,15 @@ def _resolve_categories(
     instance_seed: int,
 ) -> Tuple[_Category, ...]:
     rng = spawn_rng(int(instance_seed), "charts.pictogram.labels")
-    labels = list(rng.sample(list(_CATEGORY_LABEL_POOL), k=len(mark_counts)))
+    labels = list(
+        resolve_chart_category_labels(
+            rng,
+            count=len(mark_counts),
+            min_chars=2,
+            max_chars=8,
+            allow_spaces=False,
+        ).labels
+    )
     palette = _category_palette(params)
     categories: List[_Category] = []
     for index, mark_count in enumerate(mark_counts):
@@ -777,12 +773,13 @@ def _render_chart(
     glyph_for_legend = "square" if str(dataset.scene_variant) == "waffle_grid_blocks" else str(dataset.glyph_name)
     _draw_glyph(draw, glyph=glyph_for_legend, bbox=sample_box, fill=sample_color, outline=render_params.mark_outline_rgb, width=2)
     legend_text = f"1 mark = {dataset.unit_scale} units"
-    draw.text(
+    draw_text_traced(
+        draw,
         (sample_box[2] + 16.0, legend_y0 + (legend_y1 - legend_y0) * 0.32),
         legend_text,
         font=legend_font,
         fill=render_params.text_rgb,
-    )
+     role="readout", required=False,)
 
     top = float(legend_y1 + 20.0)
     bottom = float(height - render_params.outer_margin_px)
@@ -900,6 +897,37 @@ def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tupl
     )
 
 
+def _evidence_for_query(
+    *,
+    query_id: str,
+    evidence_category_ids: Sequence[str],
+    category_id_to_label: Mapping[str, str],
+    category_bboxes_px: Mapping[str, BBox],
+) -> Tuple[str, Dict[str, BBox] | List[BBox], Dict[str, Any]]:
+    ids = [str(value) for value in evidence_category_ids]
+    if str(query_id) in {"category_total_value", "group_difference_value"}:
+        keyed = {
+            str(category_id_to_label[str(category_id)]): list(category_bboxes_px[str(category_id)])
+            for category_id in ids
+        }
+        return "keyed_bbox_map", dict(keyed), {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(keyed),
+            "pixel_keyed_bbox_map": dict(keyed),
+            "bbox_set": list(keyed.values()),
+            "category_ids": list(ids),
+            "category_labels": list(keyed.keys()),
+        }
+    boxes = [list(category_bboxes_px[str(category_id)]) for category_id in ids]
+    labels = [str(category_id_to_label[str(category_id)]) for category_id in ids]
+    return "bbox_set", list(boxes), {
+        "type": "bbox_set",
+        "bbox_set": list(boxes),
+        "category_ids": list(ids),
+        "category_labels": list(labels),
+    }
+
+
 class ChartsPictogramChartTask:
     """Answer quantity questions from repeated marks in a pictogram/waffle chart."""
 
@@ -932,12 +960,14 @@ class ChartsPictogramChartTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_chart(
-            background=background,
-            dataset=dataset,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_chart(
+                background=background,
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -954,7 +984,9 @@ class ChartsPictogramChartTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "evidence_hint_category_total_value",
+                "evidence_hint_group_difference_value",
+                "evidence_hint_threshold_count",
                 "object_description_waffle_grid_blocks",
                 "object_description_pictogram_rows",
                 "json_example_category_total_value",
@@ -982,7 +1014,7 @@ class ChartsPictogramChartTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "unit_scale": int(dataset.unit_scale),
@@ -996,13 +1028,18 @@ class ChartsPictogramChartTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_category_ids = [str(value) for value in dataset.query.evidence_category_ids]
-        evidence_bboxes = [list(rendered.category_bboxes_px[str(category_id)]) for category_id in evidence_category_ids]
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=int(dataset.query.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         totals_by_category = {category.label: int(category.total) for category in dataset.categories}
         mark_counts_by_category = {category.label: int(category.mark_count) for category in dataset.categories}
         category_id_to_label = {category.category_id: str(category.label) for category in dataset.categories}
         evidence_labels = [str(category_id_to_label[category_id]) for category_id in evidence_category_ids]
+        evidence_type, evidence_value, projected_evidence = _evidence_for_query(
+            query_id=str(query_id),
+            evidence_category_ids=evidence_category_ids,
+            category_id_to_label=category_id_to_label,
+            category_bboxes_px=rendered.category_bboxes_px,
+        )
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
 
         visual_scan = clamp_unit_interval(
             0.55 * normalize_int_with_bounds(len(dataset.categories), [6, 10])
@@ -1058,6 +1095,10 @@ class ChartsPictogramChartTask:
                 "unit_scale": int(dataset.unit_scale),
                 "glyph_name": str(dataset.glyph_name),
                 "category_labels": [str(category.label) for category in dataset.categories],
+                "font_assets": {
+                    "font_asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "render_meta": dict(rendered.render_meta),
                 "post_image_noise": dict(post_noise_meta),
             },
@@ -1088,12 +1129,7 @@ class ChartsPictogramChartTask:
                 "answer_value": int(dataset.query.answer),
                 "evidence_category_ids": list(evidence_category_ids),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-                "bbox_map": {str(category_id): list(rendered.category_bboxes_px[str(category_id)]) for category_id in evidence_category_ids},
-                "category_ids": list(evidence_category_ids),
-                "category_labels": list(evidence_labels),
-            },
+            "projected_evidence": dict(projected_evidence),
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }

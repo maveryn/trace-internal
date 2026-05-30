@@ -15,7 +15,6 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.bbox_projection import bbox_union_raw as _bbox_union
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -30,7 +29,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -38,11 +38,18 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_curve_panels_subplot_query_base"
+SCENE_ID = "curve_panels"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "curve_at_x_extremum_label",
     "threshold_series_count",
@@ -62,7 +69,6 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="scie
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="scientific", apply_prob=0.0)
 
 _PANEL_LABELS: Tuple[str, ...] = tuple("ABCDEFGHI")
-_METHOD_LABELS: Tuple[str, ...] = ("M1", "M2", "M3", "M4", "M5", "M6")
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "curve_at_x_extremum_label": 0.54,
     "threshold_series_count": 0.58,
@@ -202,14 +208,14 @@ def _center_text(
         width, height = draw.textsize(str(text), font=font)
         x = float(center[0]) - (0.5 * float(width))
         y = float(center[1]) - (0.5 * float(height))
-    draw.text(
+    draw_text_traced(draw,
         (float(x), float(y)),
         str(text),
         font=font,
         fill=fill,
         stroke_fill=stroke_fill,
         stroke_width=max(0, int(stroke_width)),
-    )
+     role="readout", required=False,)
     return _text_bbox(draw, (float(x), float(y)), str(text), font, stroke_width=max(0, int(stroke_width)))
 
 
@@ -371,7 +377,7 @@ def _method_count(params: Mapping[str, Any], *, instance_seed: int, min_required
         context=f"generation defaults for {TASK_ID}",
     )
     low = max(3, int(min_required), int(low))
-    high = min(len(_METHOD_LABELS), int(high))
+    high = int(high)
     if int(low) > int(high):
         raise ValueError("method_count support is empty")
     return int(
@@ -394,7 +400,18 @@ def _method_count_max(params: Mapping[str, Any]) -> int:
         fallback_max=5,
         context=f"generation defaults for {TASK_ID}",
     )
-    return min(len(_METHOD_LABELS), max(3, int(high)))
+    return max(3, int(high))
+
+
+def _method_labels_for_seed(*, count: int, instance_seed: int) -> Tuple[str, ...]:
+    labels = resolve_chart_entity_labels(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.method_labels"),
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
 def _x_values(params: Mapping[str, Any], *, instance_seed: int, min_required: int = 4) -> Tuple[int, ...]:
@@ -555,21 +572,22 @@ def _common_axes(
         int(y_max),
         int(panel_count),
         tuple(_PANEL_LABELS[: int(panel_count)]),
-        tuple(_METHOD_LABELS[: int(method_count)]),
+        _method_labels_for_seed(count=int(method_count), instance_seed=int(instance_seed)),
     )
 
 
 def _build_curve_at_x_dataset(params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
     non_answer_params = _without_sample_cursor(params)
+    method_answer_support = _method_labels_for_seed(count=_method_count_max(params), instance_seed=int(instance_seed))
     answer_method = str(
         _balanced_choice(
-            _METHOD_LABELS,
+            method_answer_support,
             params,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.curve_at_x.answer",
         )
     )
-    min_method_count = max(3, int(_METHOD_LABELS.index(str(answer_method))) + 1)
+    min_method_count = max(3, int(method_answer_support.index(str(answer_method))) + 1)
     panel_count = _panel_count(non_answer_params, instance_seed=int(instance_seed))
     method_count = _method_count(non_answer_params, instance_seed=int(instance_seed), min_required=int(min_method_count))
     x_values = _x_values(non_answer_params, instance_seed=int(instance_seed))
@@ -578,7 +596,7 @@ def _build_curve_at_x_dataset(params: Mapping[str, Any], *, instance_seed: int) 
     if int(y_min) >= int(y_max):
         raise ValueError("y_value_min must be lower than y_value_max")
     panel_labels = tuple(_PANEL_LABELS[: int(panel_count)])
-    method_labels = tuple(_METHOD_LABELS[: int(method_count)])
+    method_labels = _method_labels_for_seed(count=int(method_count), instance_seed=int(instance_seed))
     colors = _palette(params)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.curve_at_x")
     query_panel = str(
@@ -669,7 +687,7 @@ def _build_threshold_count_dataset(params: Mapping[str, Any], *, instance_seed: 
     if int(y_min) >= int(y_max):
         raise ValueError("y_value_min must be lower than y_value_max")
     panel_labels = tuple(_PANEL_LABELS[: int(panel_count)])
-    method_labels = tuple(_METHOD_LABELS[: int(method_count)])
+    method_labels = _method_labels_for_seed(count=int(method_count), instance_seed=int(instance_seed))
     colors = _palette(params)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.threshold_count")
     query_panel = str(
@@ -779,7 +797,7 @@ def _build_cross_panel_delta_dataset(params: Mapping[str, Any], *, instance_seed
     if int(y_min) >= int(y_max):
         raise ValueError("y_value_min must be lower than y_value_max")
     panel_labels = tuple(_PANEL_LABELS[: int(panel_count)])
-    method_labels = tuple(_METHOD_LABELS[: int(method_count)])
+    method_labels = _method_labels_for_seed(count=int(method_count), instance_seed=int(instance_seed))
     colors = _palette(params)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.cross_panel_delta")
     method_label = str(
@@ -1048,7 +1066,7 @@ def _build_earliest_maximum_dataset(params: Mapping[str, Any], *, instance_seed:
     if int(y_min) >= int(y_max):
         raise ValueError("y_value_min must be lower than y_value_max")
     panel_labels = tuple(_PANEL_LABELS[: int(panel_count)])
-    method_labels = tuple(_METHOD_LABELS[: int(method_count)])
+    method_labels = _method_labels_for_seed(count=int(method_count), instance_seed=int(instance_seed))
     colors = _palette(params)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.earliest_max")
     method_label = str(
@@ -1224,7 +1242,7 @@ def _draw_legend(
         swatch = [x, y + 5.0, x + 24.0, y + 18.0]
         draw.rounded_rectangle(swatch, radius=3, fill=color, outline=(255, 255, 255), width=1)
         text_xy = (x + 31.0, y)
-        draw.text(text_xy, str(method), font=font, fill=text_rgb)
+        draw_text_traced(draw,text_xy, str(method), font=font, fill=text_rgb, role="readout", required=False)
         text_box = _text_bbox(draw, text_xy, str(method), font)
         bboxes[str(method)] = _bbox([swatch[0], swatch[1], text_box[2], text_box[3]])
         x = float(text_box[2]) + 28.0
@@ -1260,7 +1278,7 @@ def _draw_panel(
     )
     title_text = f"Panel {str(panel.panel_label)}"
     title_xy = (x1 + 12.0, y1 + 7.0)
-    draw.text(title_xy, title_text, font=panel_title_font, fill=text_rgb)
+    draw_text_traced(draw,title_xy, title_text, font=panel_title_font, fill=text_rgb, role="readout", required=False)
 
     left_pad = 48.0
     right_pad = 18.0
@@ -1281,7 +1299,7 @@ def _draw_panel(
             plot_bbox=plot_bbox,
         )
         draw.line([px1, sy, px2, sy], fill=grid_rgb, width=_resolve_int(params, "grid_line_width_px", 1))
-        draw.text((px1 - 34.0, sy - 7.0), str(tick), font=tick_font, fill=muted_rgb)
+        draw_text_traced(draw,(px1 - 34.0, sy - 7.0), str(tick), font=tick_font, fill=muted_rgb, role="readout", required=False)
 
     tick_stride = max(1, int(math.ceil(float(len(dataset.x_values)) / 6.0)))
     x_ticks_to_draw = list(dataset.x_values[::tick_stride])
@@ -1329,7 +1347,7 @@ def _draw_panel(
             fill=threshold_rgb,
             width=2,
         )
-        draw.text((px2 - 44.0, threshold_y - 18.0), f"y={dataset.query.threshold_value}", font=tick_font, fill=threshold_rgb)
+        draw_text_traced(draw,(px2 - 44.0, threshold_y - 18.0), f"y={dataset.query.threshold_value}", font=tick_font, fill=threshold_rgb, role="readout", required=False)
 
     point_radius = float(_resolve_int(params, "point_radius_px", 5))
     point_bboxes: Dict[str, List[float]] = {}
@@ -1408,8 +1426,8 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     title_font = load_font(_resolve_int(params, "title_font_size_px", 30), bold=True)
     subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
 
-    draw.text((float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))), "Scientific Multi-Panel Figure", font=title_font, fill=text_rgb)
-    draw.text((float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))), "Synthetic method curves arranged as labeled scientific subplots.", font=subtitle_font, fill=muted_rgb)
+    draw_text_traced(draw,(float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))), "Scientific Multi-Panel Figure", font=title_font, fill=text_rgb, role="readout", required=False)
+    draw_text_traced(draw,(float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))), "Synthetic method curves arranged as labeled scientific subplots.", font=subtitle_font, fill=muted_rgb, role="readout", required=False)
     method_labels = tuple(curve.method_label for curve in dataset.panels[0].curves)
     legend_bboxes = _draw_legend(
         draw,
@@ -1515,21 +1533,24 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     )
 
 
-def _evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> List[List[float]]:
-    boxes: List[List[float]] = []
-    for panel_label in dataset.query.evidence_panel_labels:
-        panel_box = rendered.panel_bboxes.get(str(panel_label))
-        if panel_box is not None:
-            boxes.append(list(panel_box))
+def _bbox_center(bbox: Sequence[float]) -> List[float]:
+    if len(bbox) < 4:
+        raise ValueError("bbox must have at least four coordinates")
+    x0, y0, x1, y1 = [float(value) for value in bbox[:4]]
+    return [round((x0 + x1) * 0.5, 3), round((y0 + y1) * 0.5, 3)]
+
+
+def _evidence_points(dataset: _Dataset, rendered: _Rendered) -> List[List[float]]:
+    points: List[List[float]] = []
     for point_id in dataset.query.evidence_point_ids:
         point_box = rendered.point_bboxes.get(str(point_id))
         if point_box is not None:
-            boxes.append(list(point_box))
+            points.append(_bbox_center(point_box))
     for intersection_id in dataset.query.evidence_intersection_ids:
         intersection_box = rendered.intersection_bboxes.get(str(intersection_id))
         if intersection_box is not None:
-            boxes.append(list(intersection_box))
-    return boxes
+            points.append(_bbox_center(intersection_box))
+    return points
 
 
 def _values_by_panel_method(dataset: _Dataset) -> Dict[str, Dict[str, List[int]]]:
@@ -1573,9 +1594,15 @@ class ChartsScientificMultipanelSubplotQueryTask:
         if dataset is None:
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
-        rendered = _render_dataset(dataset, params=params, instance_seed=int(instance_seed))
-        evidence_boxes = _evidence_bboxes(dataset, rendered)
-        if not evidence_boxes:
+        chart_font_family = sample_chart_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
+        )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_dataset(dataset, params=params, instance_seed=int(instance_seed))
+        evidence_points = _evidence_points(dataset, rendered)
+        if not evidence_points and str(dataset.query.query_id) != "curve_intersection_count":
             raise RuntimeError(f"{self.task_id} produced empty evidence")
 
         prompt_defaults = required_group_defaults(
@@ -1638,7 +1665,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=dataset.query.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_boxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
         values_by_panel_method = _values_by_panel_method(dataset)
         method_labels = [str(curve.method_label) for curve in dataset.panels[0].curves]
         trace_payload = {
@@ -1676,6 +1703,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "coord_space": "pixel",
                 "scene_variant": str(dataset.scene_variant),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 **dict(rendered.render_meta),
             },
             "render_map": {
@@ -1714,7 +1742,9 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "answer": dataset.query.answer,
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_boxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
                 "panel_labels": list(dataset.query.evidence_panel_labels),
                 "point_ids": list(dataset.query.evidence_point_ids),
                 "intersection_ids": list(dataset.query.evidence_intersection_ids),
@@ -1741,6 +1771,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
             query_id=str(dataset.query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

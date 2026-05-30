@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/composition`
 4. Query id: `average_top_k_minus_average_bottom_k`, `composition_shift_l1_distance`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `keyed_point_map` over the role-bound segment percentage labels used in the comparison.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.small_multiples_aggregate_value.ChartsCompositionSmallMultiplesDifferenceValuePublicTask`

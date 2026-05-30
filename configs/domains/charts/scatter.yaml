@@ -86,10 +86,10 @@ rendering:
       - [109, 125, 55]
   task_overrides:
     charts_scatter_series_readout_base:
-      readout_canvas_width: 1280
+      readout_canvas_width: 1440
       readout_canvas_height: 820
       readout_plot_margin_left_px: 112
-      readout_plot_margin_right_px: 250
+      readout_plot_margin_right_px: 370
       readout_plot_margin_top_px: 78
       readout_plot_margin_bottom_px: 126
       readout_point_radius_px: 8
@@ -98,6 +98,7 @@ rendering:
       readout_value_font_size_px: 16
       readout_legend_font_size_px: 21
       readout_title_font_size_px: 26
+      readout_legend_gap_px: 80
       series_palette_rgb:
         - [45, 103, 178]
         - [211, 86, 70]
@@ -126,8 +127,8 @@ prompt:
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested cluster label as a string
-    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes surrounding the supporting cluster or cluster pair
-    json_example: '{"evidence":[[220,360,340,455]],"answer":"K"}'
+    evidence_hint: set "evidence" to an object mapping "answer_cluster" to the [x0,y0,x1,y1] box around the answer cluster hull; for closest/farthest-from questions, also include "reference_cluster"
+    json_example: '{"evidence":{"reference_cluster":[120,260,245,350],"answer_cluster":[220,360,340,455]},"answer":"K"}'
     json_example_answer_only: '{"answer":"K"}'
     object_description_single_scatter: a scatter plot with several colored point clusters and a matching legend
   task_overrides:
@@ -140,9 +141,9 @@ prompt:
       answer_hint_x_label: set "answer" to the requested x-axis label as a string
       answer_hint_y_value: set "answer" to the requested integer value
       unanswerable_instruction: If the requested series is not shown in the legend, answer exactly "unanswerable".
-      evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around the supporting point/value labels and shared x-axis label
-      json_example_x_label: '{"evidence":[[420,250,458,284],[398,692,444,713]],"answer":"2016"}'
-      json_example_y_value: '{"evidence":[[420,250,458,284]],"answer":63}'
+      evidence_hint: set "evidence" to an object mapping each evidence role to an [x0,y0,x1,y1] bounding box around the supporting point/value readout or shared x-axis label; if the answer is "unanswerable", use an empty object
+      json_example_x_label: '{"evidence":{"target_point_readout":[420,250,458,284],"x_axis_label":[398,692,444,713]},"answer":"2016"}'
+      json_example_y_value: '{"evidence":{"target_point_readout":[420,250,458,284],"comparison_point_readout":[520,310,558,344],"x_axis_label":[498,692,544,713]},"answer":63}'
       json_example_answer_only_x_label: '{"answer":"2016"}'
       json_example_answer_only_y_value: '{"answer":63}'
       object_description_scatter_series_readout: a multi-series scatter plot with labeled points and a legend

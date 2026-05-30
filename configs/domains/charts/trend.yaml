@@ -147,16 +147,16 @@ prompt:
     object_description_lollipop: an ordered labeled lollipop chart where point labels identify y-values from left to right
     evidence_hint_turning_point_count: set "evidence" to an array of [x,y] pixel points for all local turning points matching the requested type
     evidence_hint_longest_monotone_streak: set "evidence" to an array of [x,y] pixel points for all marks in the unique longest strictly monotone streak matching the requested direction
-    evidence_hint_endpoint_change_value: set "evidence" to an array of [x,y] pixel points for every mark from the first queried label through the second queried label
-    evidence_hint_interval_rate_value: set "evidence" to an array of [x,y] pixel points for every mark from the first queried label through the second queried label
-    evidence_hint_first_crosses_above_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark
-    evidence_hint_first_crosses_below_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark
-    evidence_hint_linear_projection_crosses_above: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label
-    evidence_hint_linear_projection_crosses_below: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label
+    evidence_hint_endpoint_change_value: set "evidence" to an object mapping "start_mark" and "end_mark" to [x,y] pixel points at the centers of the two endpoint marks
+    evidence_hint_interval_rate_value: set "evidence" to an object mapping "start_mark" and "end_mark" to [x,y] pixel points at the centers of the two endpoint marks
+    evidence_hint_first_crosses_above_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark; if the answer is "unanswerable", use an empty array
+    evidence_hint_first_crosses_below_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark; if the answer is "unanswerable", use an empty array
+    evidence_hint_linear_projection_crosses_above: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label; if the answer is "unanswerable", use an empty array
+    evidence_hint_linear_projection_crosses_below: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label; if the answer is "unanswerable", use an empty array
     json_example_turning_point_count: '{"evidence":[[220,180],[520,210]],"answer":2}'
     json_example_longest_monotone_streak: '{"evidence":[[180,420],[300,350],[420,260],[540,170]],"answer":4}'
-    json_example_endpoint_change_value: '{"evidence":[[160,420],[260,360],[360,300],[460,220]],"answer":20}'
-    json_example_interval_rate_value: '{"evidence":[[200,420],[300,360],[400,300],[500,240]],"answer":6}'
+    json_example_endpoint_change_value: '{"evidence":{"start_mark":[160,420],"end_mark":[460,220]},"answer":20}'
+    json_example_interval_rate_value: '{"evidence":{"start_mark":[200,420],"end_mark":[500,240]},"answer":6}'
     json_example_first_crosses_above_threshold: '{"evidence":[[160,420],[260,360],[360,240]],"answer":"C"}'
     json_example_first_crosses_below_threshold: '{"evidence":[[180,180],[280,260],[380,390]],"answer":"F"}'
     json_example_linear_projection_crosses_above: '{"evidence":[[300,320],[420,260],[540,180]],"answer":"M"}'

@@ -112,25 +112,25 @@ prompt:
     scene_key: combo_mark
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_bar_line_shared_axis: a combo chart where vertical bars show {primary_name} and the overlaid line shows {line_name} on the same value axis. Each category has printed {primary_name} and {line_name} values
-    object_description_bar_line_dual_axis: a combo chart where vertical bars show {primary_name} on the left axis and the overlaid line shows {line_name} on the right axis. Each category has printed {primary_name} and {line_name} values
-    object_description_stacked_bar_line: a combo chart where each stacked bar's printed total shows {primary_name} and the overlaid line shows {line_name}. Each category has printed {primary_name} total and {line_name} values
-    object_description_grouped_bar_line: a combo chart where each grouped bar pair's printed total shows {primary_name} and the overlaid line shows {line_name}. Each category has printed {primary_name} total and {line_name} values
-    object_description_area_line_overlay: a combo chart where the filled area shows {primary_name} and the overlaid line shows {line_name}. Each category has printed {primary_name} and {line_name} values
+    object_description_bar_line_shared_axis: a combo chart where vertical bars show "{primary_name}" and the overlaid line shows "{line_name}" on the same value axis. Each category has printed "{primary_name}" and "{line_name}" values
+    object_description_bar_line_dual_axis: a combo chart where vertical bars show "{primary_name}" on the left axis and the overlaid line shows "{line_name}" on the right axis. Each category has printed "{primary_name}" and "{line_name}" values
+    object_description_stacked_bar_line: a combo chart where each stacked bar's printed total shows "{primary_name}" and the overlaid line shows "{line_name}". Each category has printed "{primary_name}" total and "{line_name}" values
+    object_description_grouped_bar_line: a combo chart where each grouped bar pair's printed total shows "{primary_name}" and the overlaid line shows "{line_name}". Each category has printed "{primary_name}" total and "{line_name}" values
+    object_description_area_line_overlay: a combo chart where the filled area shows "{primary_name}" and the overlaid line shows "{line_name}". Each category has printed "{primary_name}" and "{line_name}" values
     answer_hint_value_integer: set "answer" to the requested value as an integer
     answer_hint_category_label_extremum: set "answer" to the category label with the requested extremum as a string
     answer_hint_matching_category_count: set "answer" to the number of matching category labels as an integer
     answer_hint_category_label: set "answer" to the requested category label as a string
-    evidence_hint_needed_chart_marks: set "evidence" to an array of [x,y] pixel points for every chart mark needed to compute the answer
-    evidence_hint_matching_category_marks: set "evidence" to an array of [x,y] pixel points for the primary and line marks at every matching category label
-    evidence_hint_candidate_category_marks: set "evidence" to an array of [x,y] pixel points for the primary and line marks at every candidate category label
-    json_example_cross_mark_difference_query: '{"evidence":[[180,260],[180,190]],"answer":12}'
+    evidence_hint_needed_chart_marks: set "evidence" to an object using keys of the form "<category>.primary" and "<category>.line", where "primary" is the non-line mark and "line" is the overlaid line mark; each value must be a [x, y] pixel-space point
+    evidence_hint_matching_category_marks: set "evidence" to an object using keys of the form "<category>.primary" and "<category>.line" for every matching category; each value must be a [x, y] pixel-space point
+    evidence_hint_answer_category_marks: set "evidence" to an object using keys of the form "<answer category>.primary" and "<answer category>.line"; each value must be a [x, y] pixel-space point
+    json_example_cross_mark_difference_query: '{"evidence":{"Media.primary":[180,260],"Media.line":[180,190]},"answer":12}'
     json_example_answer_only_cross_mark_difference_query: '{"answer":12}'
-    json_example_conditioned_extremum_query: '{"evidence":[[180,260],[180,190],[360,220],[360,170]],"answer":"Cedar"}'
+    json_example_conditioned_extremum_query: '{"evidence":{"Media.primary":[180,260],"Media.line":[180,190]},"answer":"Media"}'
     json_example_answer_only_conditioned_extremum_query: '{"answer":"Cedar"}'
-    json_example_dual_condition_count_query: '{"evidence":[[180,260],[180,190],[360,220],[360,170]],"answer":2}'
+    json_example_dual_condition_count_query: '{"evidence":{"Media.primary":[180,260],"Media.line":[180,190],"Retail.primary":[360,220],"Retail.line":[360,170]},"answer":2}'
     json_example_answer_only_dual_condition_count_query: '{"answer":2}'
-    json_example_interval_change_comparison_query: '{"evidence":[[180,260],[180,190],[520,220],[520,170]],"answer":14}'
+    json_example_interval_change_comparison_query: '{"evidence":{"Media.primary":[180,260],"Media.line":[180,190],"Retail.primary":[520,220],"Retail.line":[520,170]},"answer":14}'
     json_example_answer_only_interval_change_comparison_query: '{"answer":14}'
-    json_example_gap_extremum_label_query: '{"evidence":[[180,260],[180,190],[360,220],[360,170]],"answer":"Cedar"}'
+    json_example_gap_extremum_label_query: '{"evidence":{"Media.primary":[180,260],"Media.line":[180,190]},"answer":"Media"}'
     json_example_answer_only_gap_extremum_label_query: '{"answer":"Cedar"}'

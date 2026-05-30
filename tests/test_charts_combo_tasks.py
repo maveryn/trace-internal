@@ -34,13 +34,38 @@ def test_combo_tasks_generate_default_public_variant() -> None:
             max_attempts=160,
         )
         assert output.scene_id == "combo_mark"
-        assert output.query_id == "default"
         assert output.query_id
         assert output.answer_gt.value is not None
-        assert output.evidence_gt.type == "point_set"
+        assert output.evidence_gt.type == "keyed_point_map"
         assert output.evidence_gt.value
+        assert all(
+            str(key).endswith((".primary", ".line"))
+            and not str(key).startswith(("target_", "candidate_", "matching_", "start_", "end_"))
+            for key in output.evidence_gt.value
+        )
+        assert output.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
+        assert output.trace_payload["projected_evidence"]["keyed_point_map"] == output.evidence_gt.value
         assert output.image.size[0] > 0
         assert output.image.size[1] > 0
+
+
+def test_combo_label_answer_tasks_use_only_answer_mark_evidence() -> None:
+    for offset, task_id in enumerate(
+        (
+            "task_charts__combo_mark__conditioned_extremum_label",
+            "task_charts__combo_mark__gap_extremum_label",
+        )
+    ):
+        output = create_task(task_id).generate(
+            2026052810 + offset,
+            params={},
+            max_attempts=200,
+        )
+        assert output.answer_gt.type == "string"
+        assert output.evidence_gt.type == "keyed_point_map"
+        assert len(output.evidence_gt.value) == 2
+        assert set(str(key).split(".", 1)[0] for key in output.evidence_gt.value) == {str(output.answer_gt.value)}
+        assert {str(key).split(".", 1)[1] for key in output.evidence_gt.value} == {"primary", "line"}
 
 
 def test_combo_cross_mark_difference_uses_calibrated_signed_queries() -> None:

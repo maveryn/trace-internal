@@ -6,6 +6,11 @@
 3. Source implementation domain/group: `charts/trend`
 4. Query id: `turning_point_count`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `point_set`.
+
+## Evidence
+Prompt-facing evidence is a homogeneous `point_set` over every matching local
+turning point. Evidence cardinality equals the integer answer.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.trend.value.ChartsTrendTurningPointCountTask`

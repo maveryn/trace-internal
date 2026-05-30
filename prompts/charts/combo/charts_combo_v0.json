@@ -187,144 +187,144 @@
   },
   "query_templates": {
     "primary_minus_line_at_label": [
-      "At category \"{target_label}\", what is the {primary_name} value minus the {line_name} line value?",
-      "For \"{target_label}\", subtract the {line_name} line value from the {primary_name} value. What is the result?",
-      "Using category \"{target_label}\", compute {primary_name} minus {line_name}.",
-      "What is the difference {primary_name} - {line_name} at \"{target_label}\"?",
-      "At \"{target_label}\", what value do you get after subtracting {line_name} from {primary_name}?"
+      "At category \"{target_label}\", what is the \"{primary_name}\" value minus the \"{line_name}\" line value?",
+      "For \"{target_label}\", subtract the \"{line_name}\" line value from the \"{primary_name}\" value. What is the result?",
+      "Using category \"{target_label}\", compute \"{primary_name}\" minus \"{line_name}\".",
+      "What is the difference \"{primary_name}\" - \"{line_name}\" at \"{target_label}\"?",
+      "At \"{target_label}\", what value do you get after subtracting \"{line_name}\" from \"{primary_name}\"?"
     ],
     "line_minus_primary_at_label": [
-      "At category \"{target_label}\", what is the {line_name} line value minus the {primary_name} value?",
-      "For \"{target_label}\", subtract the {primary_name} value from the {line_name} line value. What is the result?",
-      "Using category \"{target_label}\", compute {line_name} minus {primary_name}.",
-      "What is the difference {line_name} - {primary_name} at \"{target_label}\"?",
-      "At \"{target_label}\", what value do you get after subtracting {primary_name} from {line_name}?"
+      "At category \"{target_label}\", what is the \"{line_name}\" line value minus the \"{primary_name}\" value?",
+      "For \"{target_label}\", subtract the \"{primary_name}\" value from the \"{line_name}\" line value. What is the result?",
+      "Using category \"{target_label}\", compute \"{line_name}\" minus \"{primary_name}\".",
+      "What is the difference \"{line_name}\" - \"{primary_name}\" at \"{target_label}\"?",
+      "At \"{target_label}\", what value do you get after subtracting \"{primary_name}\" from \"{line_name}\"?"
     ],
     "absolute_gap_at_label": [
-      "At category \"{target_label}\", what is the absolute difference between {primary_name} and {line_name}?",
-      "For \"{target_label}\", compute the absolute gap between the {primary_name} value and the {line_name} line value.",
-      "What is the nonnegative gap between {primary_name} and {line_name} at \"{target_label}\"?",
-      "Using \"{target_label}\", find the absolute value of {primary_name} minus {line_name}.",
-      "At \"{target_label}\", how far apart are the {primary_name} and {line_name} values?"
+      "At category \"{target_label}\", what is the absolute difference between \"{primary_name}\" and \"{line_name}\"?",
+      "For \"{target_label}\", compute the absolute gap between the \"{primary_name}\" value and the \"{line_name}\" line value.",
+      "What is the nonnegative gap between \"{primary_name}\" and \"{line_name}\" at \"{target_label}\"?",
+      "Using \"{target_label}\", find the absolute value of \"{primary_name}\" minus \"{line_name}\".",
+      "At \"{target_label}\", how far apart are the \"{primary_name}\" and \"{line_name}\" values?"
     ],
     "larger_minus_smaller_at_label": [
-      "At category \"{target_label}\", subtract the smaller of {primary_name} and {line_name} from the larger one. What is the result?",
-      "For \"{target_label}\", what is the larger value minus the smaller value across {primary_name} and {line_name}?",
-      "Using \"{target_label}\", compute the larger-minus-smaller gap between {primary_name} and {line_name}.",
+      "At category \"{target_label}\", subtract the smaller of \"{primary_name}\" and \"{line_name}\" from the larger one. What is the result?",
+      "For \"{target_label}\", what is the larger value minus the smaller value across \"{primary_name}\" and \"{line_name}\"?",
+      "Using \"{target_label}\", compute the larger-minus-smaller gap between \"{primary_name}\" and \"{line_name}\".",
       "What is the positive gap between the two printed values at \"{target_label}\"?",
       "At \"{target_label}\", how much larger is the larger value than the smaller value?"
     ],
     "max_line_where_primary_above_threshold": [
-      "Among categories where {primary_name} is above {threshold_value}, which category has the highest {line_name} line value?",
-      "First keep only categories with {primary_name} greater than {threshold_value}. Which remaining category has the maximum {line_name} value?",
-      "Filter to categories where {primary_name} exceeds {threshold_value}; what category has the largest {line_name} line value?",
-      "For categories with {primary_name} above {threshold_value}, identify the category with the highest {line_name}.",
-      "Which category has the greatest {line_name} value among those whose {primary_name} value is above {threshold_value}?"
+      "Among categories where \"{primary_name}\" is above {threshold_value}, which category has the highest \"{line_name}\" line value?",
+      "First keep only categories with \"{primary_name}\" greater than {threshold_value}. Which remaining category has the maximum \"{line_name}\" value?",
+      "Filter to categories where \"{primary_name}\" exceeds {threshold_value}; what category has the largest \"{line_name}\" line value?",
+      "For categories with \"{primary_name}\" above {threshold_value}, identify the category with the highest \"{line_name}\".",
+      "Which category has the greatest \"{line_name}\" value among those whose \"{primary_name}\" value is above {threshold_value}?"
     ],
     "min_line_where_primary_above_threshold": [
-      "Among categories where {primary_name} is above {threshold_value}, which category has the lowest {line_name} line value?",
-      "First keep only categories with {primary_name} greater than {threshold_value}. Which remaining category has the minimum {line_name} value?",
-      "Filter to categories where {primary_name} exceeds {threshold_value}; what category has the smallest {line_name} line value?",
-      "For categories with {primary_name} above {threshold_value}, identify the category with the lowest {line_name}.",
-      "Which category has the least {line_name} value among those whose {primary_name} value is above {threshold_value}?"
+      "Among categories where \"{primary_name}\" is above {threshold_value}, which category has the lowest \"{line_name}\" line value?",
+      "First keep only categories with \"{primary_name}\" greater than {threshold_value}. Which remaining category has the minimum \"{line_name}\" value?",
+      "Filter to categories where \"{primary_name}\" exceeds {threshold_value}; what category has the smallest \"{line_name}\" line value?",
+      "For categories with \"{primary_name}\" above {threshold_value}, identify the category with the lowest \"{line_name}\".",
+      "Which category has the least \"{line_name}\" value among those whose \"{primary_name}\" value is above {threshold_value}?"
     ],
     "max_primary_where_line_below_threshold": [
-      "Among categories where {line_name} is below {threshold_value}, which category has the highest {primary_name} value?",
-      "First keep only categories with {line_name} less than {threshold_value}. Which remaining category has the maximum {primary_name} value?",
-      "Filter to categories where {line_name} is under {threshold_value}; what category has the largest {primary_name} value?",
-      "For categories with {line_name} below {threshold_value}, identify the category with the highest {primary_name}.",
-      "Which category has the greatest {primary_name} value among those whose {line_name} value is below {threshold_value}?"
+      "Among categories where \"{line_name}\" is below {threshold_value}, which category has the highest \"{primary_name}\" value?",
+      "First keep only categories with \"{line_name}\" less than {threshold_value}. Which remaining category has the maximum \"{primary_name}\" value?",
+      "Filter to categories where \"{line_name}\" is under {threshold_value}; what category has the largest \"{primary_name}\" value?",
+      "For categories with \"{line_name}\" below {threshold_value}, identify the category with the highest \"{primary_name}\".",
+      "Which category has the greatest \"{primary_name}\" value among those whose \"{line_name}\" value is below {threshold_value}?"
     ],
     "min_primary_where_line_below_threshold": [
-      "Among categories where {line_name} is below {threshold_value}, which category has the lowest {primary_name} value?",
-      "First keep only categories with {line_name} less than {threshold_value}. Which remaining category has the minimum {primary_name} value?",
-      "Filter to categories where {line_name} is under {threshold_value}; what category has the smallest {primary_name} value?",
-      "For categories with {line_name} below {threshold_value}, identify the category with the lowest {primary_name}.",
-      "Which category has the least {primary_name} value among those whose {line_name} value is below {threshold_value}?"
+      "Among categories where \"{line_name}\" is below {threshold_value}, which category has the lowest \"{primary_name}\" value?",
+      "First keep only categories with \"{line_name}\" less than {threshold_value}. Which remaining category has the minimum \"{primary_name}\" value?",
+      "Filter to categories where \"{line_name}\" is under {threshold_value}; what category has the smallest \"{primary_name}\" value?",
+      "For categories with \"{line_name}\" below {threshold_value}, identify the category with the lowest \"{primary_name}\".",
+      "Which category has the least \"{primary_name}\" value among those whose \"{line_name}\" value is below {threshold_value}?"
     ],
     "primary_above_and_line_above": [
-      "How many categories have {primary_name} above {primary_threshold_value} and {line_name} above {line_threshold_value}?",
-      "Count the categories where {primary_name} is greater than {primary_threshold_value} and {line_name} is greater than {line_threshold_value}.",
-      "What is the number of categories satisfying both: {primary_name} > {primary_threshold_value} and {line_name} > {line_threshold_value}?",
-      "How many category labels meet both above-threshold conditions for {primary_name} and {line_name}?",
-      "Count categories with {primary_name} above {primary_threshold_value} while {line_name} is also above {line_threshold_value}."
+      "How many categories have \"{primary_name}\" above {primary_threshold_value} and \"{line_name}\" above {line_threshold_value}?",
+      "Count the categories where \"{primary_name}\" is greater than {primary_threshold_value} and \"{line_name}\" is greater than {line_threshold_value}.",
+      "What is the number of categories satisfying both: \"{primary_name}\" > {primary_threshold_value} and \"{line_name}\" > {line_threshold_value}?",
+      "How many category labels meet both above-threshold conditions for \"{primary_name}\" and \"{line_name}\"?",
+      "Count categories with \"{primary_name}\" above {primary_threshold_value} while \"{line_name}\" is also above {line_threshold_value}."
     ],
     "primary_above_and_line_below": [
-      "How many categories have {primary_name} above {primary_threshold_value} and {line_name} below {line_threshold_value}?",
-      "Count the categories where {primary_name} is greater than {primary_threshold_value} and {line_name} is less than {line_threshold_value}.",
-      "What is the number of categories satisfying both: {primary_name} > {primary_threshold_value} and {line_name} < {line_threshold_value}?",
-      "How many category labels have high {primary_name} and low {line_name} by those thresholds?",
-      "Count categories with {primary_name} above {primary_threshold_value} while {line_name} is below {line_threshold_value}."
+      "How many categories have \"{primary_name}\" above {primary_threshold_value} and \"{line_name}\" below {line_threshold_value}?",
+      "Count the categories where \"{primary_name}\" is greater than {primary_threshold_value} and \"{line_name}\" is less than {line_threshold_value}.",
+      "What is the number of categories satisfying both: \"{primary_name}\" > {primary_threshold_value} and \"{line_name}\" < {line_threshold_value}?",
+      "How many category labels have high \"{primary_name}\" and low \"{line_name}\" by those thresholds?",
+      "Count categories with \"{primary_name}\" above {primary_threshold_value} while \"{line_name}\" is below {line_threshold_value}."
     ],
     "primary_below_and_line_above": [
-      "How many categories have {primary_name} below {primary_threshold_value} and {line_name} above {line_threshold_value}?",
-      "Count the categories where {primary_name} is less than {primary_threshold_value} and {line_name} is greater than {line_threshold_value}.",
-      "What is the number of categories satisfying both: {primary_name} < {primary_threshold_value} and {line_name} > {line_threshold_value}?",
-      "How many category labels have low {primary_name} and high {line_name} by those thresholds?",
-      "Count categories with {primary_name} below {primary_threshold_value} while {line_name} is above {line_threshold_value}."
+      "How many categories have \"{primary_name}\" below {primary_threshold_value} and \"{line_name}\" above {line_threshold_value}?",
+      "Count the categories where \"{primary_name}\" is less than {primary_threshold_value} and \"{line_name}\" is greater than {line_threshold_value}.",
+      "What is the number of categories satisfying both: \"{primary_name}\" < {primary_threshold_value} and \"{line_name}\" > {line_threshold_value}?",
+      "How many category labels have low \"{primary_name}\" and high \"{line_name}\" by those thresholds?",
+      "Count categories with \"{primary_name}\" below {primary_threshold_value} while \"{line_name}\" is above {line_threshold_value}."
     ],
     "primary_between_and_line_above": [
-      "How many categories have {primary_name} from {lower_threshold_value} through {upper_threshold_value}, inclusive, and {line_name} above {line_threshold_value}?",
-      "Count categories whose {primary_name} value is between {lower_threshold_value} and {upper_threshold_value}, inclusive, while {line_name} is greater than {line_threshold_value}.",
-      "What is the number of categories satisfying {lower_threshold_value} <= {primary_name} <= {upper_threshold_value} and {line_name} > {line_threshold_value}?",
-      "How many category labels meet the {primary_name} interval condition and the {line_name} above-threshold condition?",
-      "Count categories with {primary_name} in [{lower_threshold_value}, {upper_threshold_value}] and {line_name} above {line_threshold_value}."
+      "How many categories have \"{primary_name}\" from {lower_threshold_value} through {upper_threshold_value}, inclusive, and \"{line_name}\" above {line_threshold_value}?",
+      "Count categories whose \"{primary_name}\" value is between {lower_threshold_value} and {upper_threshold_value}, inclusive, while \"{line_name}\" is greater than {line_threshold_value}.",
+      "What is the number of categories satisfying {lower_threshold_value} <= \"{primary_name}\" <= {upper_threshold_value} and \"{line_name}\" > {line_threshold_value}?",
+      "How many category labels meet the \"{primary_name}\" interval condition and the \"{line_name}\" above-threshold condition?",
+      "Count categories with \"{primary_name}\" in [{lower_threshold_value}, {upper_threshold_value}] and \"{line_name}\" above {line_threshold_value}."
     ],
     "line_change_minus_primary_change": [
-      "From \"{start_label}\" to \"{end_label}\", what is the {line_name} change minus the {primary_name} change?",
-      "Compute the change in {line_name} from \"{start_label}\" to \"{end_label}\", then subtract the {primary_name} change over the same interval.",
-      "Between \"{start_label}\" and \"{end_label}\", what is ({line_name} change) - ({primary_name} change)?",
-      "Using the two endpoint categories, subtract the {primary_name} interval change from the {line_name} interval change.",
-      "What is the difference between the {line_name} change and the {primary_name} change from \"{start_label}\" to \"{end_label}\"?"
+      "From \"{start_label}\" to \"{end_label}\", what is the \"{line_name}\" change minus the \"{primary_name}\" change?",
+      "Compute the change in \"{line_name}\" from \"{start_label}\" to \"{end_label}\", then subtract the \"{primary_name}\" change over the same interval.",
+      "Between \"{start_label}\" and \"{end_label}\", what is (\"{line_name}\" change) - (\"{primary_name}\" change)?",
+      "Using the two endpoint categories, subtract the \"{primary_name}\" interval change from the \"{line_name}\" interval change.",
+      "What is the difference between the \"{line_name}\" change and the \"{primary_name}\" change from \"{start_label}\" to \"{end_label}\"?"
     ],
     "primary_change_minus_line_change": [
-      "From \"{start_label}\" to \"{end_label}\", what is the {primary_name} change minus the {line_name} change?",
-      "Compute the change in {primary_name} from \"{start_label}\" to \"{end_label}\", then subtract the {line_name} change over the same interval.",
-      "Between \"{start_label}\" and \"{end_label}\", what is ({primary_name} change) - ({line_name} change)?",
-      "Using the two endpoint categories, subtract the {line_name} interval change from the {primary_name} interval change.",
-      "What is the difference between the {primary_name} change and the {line_name} change from \"{start_label}\" to \"{end_label}\"?"
+      "From \"{start_label}\" to \"{end_label}\", what is the \"{primary_name}\" change minus the \"{line_name}\" change?",
+      "Compute the change in \"{primary_name}\" from \"{start_label}\" to \"{end_label}\", then subtract the \"{line_name}\" change over the same interval.",
+      "Between \"{start_label}\" and \"{end_label}\", what is (\"{primary_name}\" change) - (\"{line_name}\" change)?",
+      "Using the two endpoint categories, subtract the \"{line_name}\" interval change from the \"{primary_name}\" interval change.",
+      "What is the difference between the \"{primary_name}\" change and the \"{line_name}\" change from \"{start_label}\" to \"{end_label}\"?"
     ],
     "absolute_change_gap": [
-      "From \"{start_label}\" to \"{end_label}\", what is the absolute difference between the {primary_name} change and the {line_name} change?",
+      "From \"{start_label}\" to \"{end_label}\", what is the absolute difference between the \"{primary_name}\" change and the \"{line_name}\" change?",
       "Compute both interval changes from \"{start_label}\" to \"{end_label}\". What is the nonnegative gap between those changes?",
-      "Between \"{start_label}\" and \"{end_label}\", how far apart are the {primary_name} change and {line_name} change?",
-      "What is the absolute value of ({primary_name} change - {line_name} change) over the interval from \"{start_label}\" to \"{end_label}\"?",
+      "Between \"{start_label}\" and \"{end_label}\", how far apart are the \"{primary_name}\" change and \"{line_name}\" change?",
+      "What is the absolute value of (\"{primary_name}\" change - \"{line_name}\" change) over the interval from \"{start_label}\" to \"{end_label}\"?",
       "Using the endpoint values, find the absolute gap between the two series changes."
     ],
     "larger_change_minus_smaller_change": [
-      "From \"{start_label}\" to \"{end_label}\", subtract the smaller interval change from the larger interval change across {primary_name} and {line_name}. What is the result?",
+      "From \"{start_label}\" to \"{end_label}\", subtract the smaller interval change from the larger interval change across \"{primary_name}\" and \"{line_name}\". What is the result?",
       "Compute both interval changes. What is the larger change minus the smaller change from \"{start_label}\" to \"{end_label}\"?",
       "Between \"{start_label}\" and \"{end_label}\", what is the larger-minus-smaller gap between the two changes?",
       "Using the interval endpoints, how much larger is the larger change than the smaller change?",
-      "What positive gap separates the {primary_name} change and {line_name} change over this interval?"
+      "What positive gap separates the \"{primary_name}\" change and \"{line_name}\" change over this interval?"
     ],
     "largest_absolute_gap_label": [
-      "Which category has the largest absolute gap between {primary_name} and {line_name}?",
-      "Find the category where the {primary_name} value and {line_name} value are farthest apart.",
-      "Across all categories, which label has the greatest nonnegative difference between {primary_name} and {line_name}?",
+      "Which category has the largest absolute gap between \"{primary_name}\" and \"{line_name}\"?",
+      "Find the category where the \"{primary_name}\" value and \"{line_name}\" value are farthest apart.",
+      "Across all categories, which label has the greatest nonnegative difference between \"{primary_name}\" and \"{line_name}\"?",
       "Which category shows the maximum absolute difference between the two printed values?",
-      "Identify the category with the widest gap between {primary_name} and {line_name}."
+      "Identify the category with the widest gap between \"{primary_name}\" and \"{line_name}\"."
     ],
     "smallest_nonzero_absolute_gap_label": [
-      "Which category has the smallest nonzero absolute gap between {primary_name} and {line_name}?",
-      "Ignoring exact ties, find the category where {primary_name} and {line_name} are closest together.",
-      "Across categories with unequal values, which label has the smallest nonnegative difference between {primary_name} and {line_name}?",
+      "Which category has the smallest nonzero absolute gap between \"{primary_name}\" and \"{line_name}\"?",
+      "Ignoring exact ties, find the category where \"{primary_name}\" and \"{line_name}\" are closest together.",
+      "Across categories with unequal values, which label has the smallest nonnegative difference between \"{primary_name}\" and \"{line_name}\"?",
       "Which category shows the minimum positive gap between the two printed values?",
-      "Identify the category with the narrowest nonzero gap between {primary_name} and {line_name}."
+      "Identify the category with the narrowest nonzero gap between \"{primary_name}\" and \"{line_name}\"."
     ],
     "largest_primary_over_line_gap_label": [
-      "Among categories where {primary_name} is greater than {line_name}, which category has the largest gap?",
-      "Find the category where {primary_name} exceeds {line_name} by the greatest amount.",
-      "Looking only at categories with {primary_name} above {line_name}, which label has the widest difference?",
-      "Which category has the largest positive value of {primary_name} minus {line_name}?",
-      "Identify the category where {primary_name} is most above {line_name}."
+      "Among categories where \"{primary_name}\" is greater than \"{line_name}\", which category has the largest gap?",
+      "Find the category where \"{primary_name}\" exceeds \"{line_name}\" by the greatest amount.",
+      "Looking only at categories with \"{primary_name}\" above \"{line_name}\", which label has the widest difference?",
+      "Which category has the largest positive value of \"{primary_name}\" minus \"{line_name}\"?",
+      "Identify the category where \"{primary_name}\" is most above \"{line_name}\"."
     ],
     "largest_line_over_primary_gap_label": [
-      "Among categories where {line_name} is greater than {primary_name}, which category has the largest gap?",
-      "Find the category where {line_name} exceeds {primary_name} by the greatest amount.",
-      "Looking only at categories with {line_name} above {primary_name}, which label has the widest difference?",
-      "Which category has the largest positive value of {line_name} minus {primary_name}?",
-      "Identify the category where {line_name} is most above {primary_name}."
+      "Among categories where \"{line_name}\" is greater than \"{primary_name}\", which category has the largest gap?",
+      "Find the category where \"{line_name}\" exceeds \"{primary_name}\" by the greatest amount.",
+      "Looking only at categories with \"{line_name}\" above \"{primary_name}\", which label has the widest difference?",
+      "Which category has the largest positive value of \"{line_name}\" minus \"{primary_name}\"?",
+      "Identify the category where \"{line_name}\" is most above \"{primary_name}\"."
     ]
   }
 }

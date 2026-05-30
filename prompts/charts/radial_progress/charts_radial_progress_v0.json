@@ -8,6 +8,13 @@
       "",
       "",
       ""
+    ],
+    "radial_progress_remaining_extremum_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -25,6 +32,12 @@
     ],
     "query:remaining_at_least_threshold_count": [
       "threshold_phrase"
+    ],
+    "query:highest_remaining_label": [
+      "extremum_phrase"
+    ],
+    "query:lowest_remaining_label": [
+      "extremum_phrase"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",
@@ -91,6 +104,20 @@
       "Using the radial progress scale, how many widgets still have {threshold_phrase}?",
       "How many displayed progress indicators meet the remaining-progress condition {threshold_phrase}?",
       "From the progress arcs, count widgets whose unfilled portion is {threshold_phrase}."
+    ],
+    "highest_remaining_label": [
+      "Which visible label has {extremum_phrase}?",
+      "Find the progress widget with {extremum_phrase}. What is its visible label?",
+      "Using the progress arcs, which visible label corresponds to {extremum_phrase}?",
+      "Among the displayed progress widgets, which label has {extremum_phrase}?",
+      "Read the progress indicators and give the label for the widget with {extremum_phrase}."
+    ],
+    "lowest_remaining_label": [
+      "Which visible label has {extremum_phrase}?",
+      "Find the progress widget with {extremum_phrase}. What is its visible label?",
+      "Using the progress arcs, which visible label corresponds to {extremum_phrase}?",
+      "Among the displayed progress widgets, which label has {extremum_phrase}?",
+      "Read the progress indicators and give the label for the widget with {extremum_phrase}."
     ]
   },
   "allow_empty_task_templates": true

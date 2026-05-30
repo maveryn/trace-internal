@@ -71,11 +71,11 @@
       "What is the mean after removing labels {removed_labels_text} from the display?"
     ],
     "target_share_after_removal": [
-      "If labels {removed_labels_text} were removed, what percent of the remaining total is label {target_label}?",
-      "Remove labels {removed_labels_text}. What integer percent of the remaining sum comes from label {target_label}?",
-      "After excluding {removed_labels_text}, compute label {target_label}'s share of the remaining total as a percent.",
-      "Ignoring labels {removed_labels_text}, what percent of the remaining total is contributed by {target_label}?",
-      "What is the integer percent share of label {target_label} after removing {removed_labels_text}?"
+      "If labels {removed_labels_text} were removed, what percent of the remaining total is label \"{target_label}\"?",
+      "Remove labels {removed_labels_text}. What integer percent of the remaining sum comes from label \"{target_label}\"?",
+      "After excluding {removed_labels_text}, compute the share of label \"{target_label}\" in the remaining total as a percent.",
+      "Ignoring labels {removed_labels_text}, what percent of the remaining total is contributed by \"{target_label}\"?",
+      "What is the integer percent share of label \"{target_label}\" after removing {removed_labels_text}?"
     ],
     "baseline_from_aggregate_percent_change": [
       "The combined value of labels {aggregate_labels_text} is {percent_value}% higher than a baseline. What is the baseline?",

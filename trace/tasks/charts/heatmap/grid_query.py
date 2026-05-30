@@ -30,8 +30,10 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -39,6 +41,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.unanswerable import (
     UNANSWERABLE_ANSWER,
@@ -76,58 +79,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="heatmap")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="heatmap", apply_prob=0.0)
 
-_ROW_LABEL_POOL: Tuple[str, ...] = (
-    "Basil",
-    "Cedar",
-    "Delta",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Iris",
-    "Juno",
-    "Kite",
-    "Lumen",
-    "Mesa",
-    "Nadir",
-    "Orly",
-    "Pulse",
-    "Quarry",
-)
-_COLUMN_LABEL_POOL: Tuple[str, ...] = (
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-    "P13",
-    "P14",
-    "P15",
-    "P16",
-)
-_MISSING_ROW_LABEL_POOL: Tuple[str, ...] = (
-    "Ridge",
-    "Tango",
-    "Vale",
-    "Zenith",
-    "North",
-    "South",
-)
-_MISSING_COLUMN_LABEL_POOL: Tuple[str, ...] = (
-    "Qtr A",
-    "Qtr B",
-    "Qtr C",
-    "Cycle X",
-    "Cycle Y",
-    "Cycle Z",
-)
 _MISSING_CONDITION_PHRASES: Tuple[str, ...] = (
     "purple-coded",
     "black-striped",
@@ -203,6 +154,7 @@ class _HeatmapRenderParams:
     layout_offset_x_px: int
     layout_offset_y_px: int
     layout_jitter_meta: Dict[str, Any]
+    font_family: str
 
 
 @dataclass(frozen=True)
@@ -276,6 +228,15 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _HeatmapRenderParams:
         layout_offset_x_px=int(jitter_left) - int(outer),
         layout_offset_y_px=int(jitter_top) - int(outer),
         layout_jitter_meta=dict(layout_jitter_meta),
+        font_family=sample_font_family(
+            role="readout",
+            instance_seed=_render_style_seed(params),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        ),
     )
 
 
@@ -484,8 +445,17 @@ def _labels_for_scene(
 ) -> Tuple[List[str], List[str]]:
     if str(scene_variant) == "calendar_heatmap":
         return [f"Week {index + 1}" for index in range(int(row_count))], list(_WEEKDAY_LABELS[: int(column_count)])
-    rows = list(rng.sample(list(_ROW_LABEL_POOL), int(row_count)))
-    columns = list(_COLUMN_LABEL_POOL[: int(column_count)])
+    labels = list(
+        resolve_chart_entity_labels(
+            rng,
+            count=int(row_count) + int(column_count),
+            min_chars=2,
+            max_chars=7,
+            allow_spaces=False,
+        ).labels
+    )
+    rows = labels[: int(row_count)]
+    columns = labels[int(row_count) : int(row_count) + int(column_count)]
     return [str(label) for label in rows], [str(label) for label in columns]
 
 
@@ -826,7 +796,13 @@ def _candidate_for_unanswerable_query(
         if str(query_axis) == "row":
             missing_label = choose_missing_label(
                 visible_labels=row_labels,
-                candidate_labels=tuple(_ROW_LABEL_POOL) + _MISSING_ROW_LABEL_POOL,
+                candidate_labels=resolve_chart_entity_labels(
+                    spawn_rng(int(instance_seed), f"{TASK_ID}.axis_cell_missing_row_candidates"),
+                    count=max(16, len(row_labels) + 8),
+                    min_chars=2,
+                    max_chars=7,
+                    allow_spaces=False,
+                ).labels,
                 fallback_prefix="Row ",
                 instance_seed=int(instance_seed),
                 namespace=f"{TASK_ID}.axis_cell_missing_row",
@@ -855,7 +831,13 @@ def _candidate_for_unanswerable_query(
             }
         missing_label = choose_missing_label(
             visible_labels=column_labels,
-            candidate_labels=tuple(_COLUMN_LABEL_POOL) + _MISSING_COLUMN_LABEL_POOL,
+            candidate_labels=resolve_chart_entity_labels(
+                spawn_rng(int(instance_seed), f"{TASK_ID}.axis_cell_missing_column_candidates"),
+                count=max(16, len(column_labels) + 8),
+                min_chars=2,
+                max_chars=7,
+                allow_spaces=False,
+            ).labels,
             fallback_prefix="Column ",
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.axis_cell_missing_column",
@@ -1032,6 +1014,7 @@ def _draw_text_in_box(
     *,
     font_size: int,
     fill: Tuple[int, int, int],
+    font_family: str | None = None,
     anchor: str = "center",
 ) -> None:
     x0, y0, x1, y1 = [float(value) for value in bbox]
@@ -1043,11 +1026,12 @@ def _draw_text_in_box(
         min_size_px=8,
         max_size_px=max(8, int(font_size)),
         fill_ratio=0.9,
+        font_family=font_family,
     )
     if str(anchor) == "left":
-        draw.text((x0, (y0 + y1) / 2.0), str(text), font=font, fill=fill, anchor="lm")
+        draw_text_traced(draw,(x0, (y0 + y1) / 2.0), str(text), font=font, fill=fill, anchor="lm", role="readout", required=False)
     else:
-        draw.text(((x0 + x1) / 2.0, (y0 + y1) / 2.0), str(text), font=font, fill=fill, anchor="mm")
+        draw_text_traced(draw,((x0 + x1) / 2.0, (y0 + y1) / 2.0), str(text), font=font, fill=fill, anchor="mm", role="readout", required=False)
 
 
 def _draw_signed_marker(
@@ -1081,7 +1065,7 @@ def _render_legend(
     palette: Sequence[Tuple[int, int, int]],
 ) -> None:
     x0, y0, x1, y1 = [float(value) for value in legend_bbox]
-    font = load_font(max(8, int(render_params.legend_font_size_px)))
+    font = load_font(max(8, int(render_params.legend_font_size_px)), font_family=render_params.font_family)
     label = "Legend"
     if str(scene_variant) == "signed_change_heatmap":
         label = "Legend: decrease to increase"
@@ -1089,7 +1073,7 @@ def _render_legend(
         label = "Legend: low to high activity"
     else:
         label = "Legend: low to high intensity"
-    draw.text((x0, y0 + 8), label, font=font, fill=render_params.legend_text_rgb, anchor="la")
+    draw_text_traced(draw,(x0, y0 + 8), label, font=font, fill=render_params.legend_text_rgb, anchor="la", role="readout", required=False)
     swatch_y0 = y0 + 34
     swatch_h = 20
     swatch_w = max(34.0, min(60.0, (x1 - x0 - 190.0) / float(max(1, len(palette)))))
@@ -1097,8 +1081,8 @@ def _render_legend(
     for index, color in enumerate(palette):
         sx0 = start_x + (float(index) * swatch_w)
         draw.rectangle([sx0, swatch_y0, sx0 + swatch_w, swatch_y0 + swatch_h], fill=tuple(color), outline=render_params.cell_border_rgb, width=1)
-    draw.text((start_x - 8, swatch_y0 + swatch_h / 2.0), "low", font=font, fill=render_params.legend_text_rgb, anchor="rm")
-    draw.text((start_x + (len(palette) * swatch_w) + 8, swatch_y0 + swatch_h / 2.0), "high", font=font, fill=render_params.legend_text_rgb, anchor="lm")
+    draw_text_traced(draw,(start_x - 8, swatch_y0 + swatch_h / 2.0), "low", font=font, fill=render_params.legend_text_rgb, anchor="rm", role="readout", required=False)
+    draw_text_traced(draw,(start_x + (len(palette) * swatch_w) + 8, swatch_y0 + swatch_h / 2.0), "high", font=font, fill=render_params.legend_text_rgb, anchor="lm", role="readout", required=False)
 
 
 def _render_heatmap(
@@ -1128,7 +1112,14 @@ def _render_heatmap(
         panel_bbox[2] - render_params.panel_padding_px,
         panel_bbox[1] + render_params.title_band_height_px,
     )
-    _draw_text_in_box(draw, str(scene_title), title_bbox, font_size=render_params.title_font_size_px, fill=render_params.title_rgb)
+    _draw_text_in_box(
+        draw,
+        str(scene_title),
+        title_bbox,
+        font_size=render_params.title_font_size_px,
+        fill=render_params.title_rgb,
+        font_family=render_params.font_family,
+    )
 
     grid_left = panel_bbox[0] + render_params.panel_padding_px + render_params.row_label_width_px
     grid_top = panel_bbox[1] + render_params.title_band_height_px + render_params.col_label_height_px
@@ -1141,7 +1132,6 @@ def _render_heatmap(
     cell_w = (grid_right - grid_left - (gap * float(max(0, column_count - 1)))) / float(max(1, column_count))
     cell_h = (grid_bottom - grid_top - (gap * float(max(0, row_count - 1)))) / float(max(1, row_count))
 
-    title_font = load_font(max(8, int(render_params.axis_font_size_px)))
     draw.rectangle(grid_bbox, outline=render_params.grid_border_rgb, width=2)
     palette = _value_palette(str(scene_variant))
     cell_bbox_map: Dict[str, List[float]] = {}
@@ -1177,6 +1167,7 @@ def _render_heatmap(
             label_bbox,
             font_size=render_params.axis_font_size_px,
             fill=render_params.axis_text_rgb,
+            font_family=render_params.font_family,
             anchor="left",
         )
         entities.append(
@@ -1202,6 +1193,7 @@ def _render_heatmap(
             label_bbox,
             font_size=render_params.axis_font_size_px,
             fill=render_params.axis_text_rgb,
+            font_family=render_params.font_family,
         )
         entities.append(
             {
@@ -1509,6 +1501,10 @@ class ChartsHeatmapGridQueryTask:
                 "heat_bin_count": int(dataset["heat_bin_count"]),
                 "cell_gap_px": int(render_params.cell_gap_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_assets": {
+                    "asset_version": font_asset_version(),
+                    "chart_font_family": str(render_params.font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

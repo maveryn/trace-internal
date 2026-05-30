@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/composition`
 4. Query id: sampled internally and recorded in `query_id`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the printed outer leaf value labels checked under the requested parent category.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.sunburst_hierarchy.ChartsCompositionSunburstConditionalLeafCountTask`

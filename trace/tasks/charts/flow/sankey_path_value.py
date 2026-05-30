@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -24,6 +24,7 @@ from ...shared.config_defaults import (
 )
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -31,7 +32,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -39,6 +40,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -56,9 +58,6 @@ NODE_SIDE_TOTAL_QUERY_IDS: Tuple[str, ...] = (
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = PATH_VALUE_QUERY_IDS + NODE_SIDE_TOTAL_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("three_column_sankey",)
 
-_SOURCE_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D")
-_MIDDLE_LABEL_POOL: Tuple[str, ...] = ("K", "L", "M", "N", "P")
-_TARGET_LABEL_POOL: Tuple[str, ...] = ("V", "W", "X", "Y")
 _TITLE_OPTIONS: Tuple[str, ...] = (
     "Program Flow Summary",
     "Budget Transfer Sankey",
@@ -868,6 +867,20 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
+
+
 def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
@@ -985,9 +998,20 @@ def _path_record(
 
 
 def _sample_labels(rng, *, source_count: int, middle_count: int, target_count: int) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-    source_labels = [str(label) for label in rng.sample(list(_SOURCE_LABEL_POOL), int(source_count))]
-    middle_labels = [str(label) for label in rng.sample(list(_MIDDLE_LABEL_POOL), int(middle_count))]
-    target_labels = [str(label) for label in rng.sample(list(_TARGET_LABEL_POOL), int(target_count))]
+    labels = list(
+        resolve_chart_entity_labels(
+            rng,
+            count=int(source_count) + int(middle_count) + int(target_count),
+            min_chars=2,
+            max_chars=6,
+            allow_spaces=False,
+        ).labels
+    )
+    source_labels = [str(label) for label in labels[: int(source_count)]]
+    middle_start = int(source_count)
+    target_start = int(source_count) + int(middle_count)
+    middle_labels = [str(label) for label in labels[middle_start:target_start]]
+    target_labels = [str(label) for label in labels[target_start : target_start + int(target_count)]]
     return (
         _node_specs(source_labels, prefix="source", column="source"),
         _node_specs(middle_labels, prefix="middle", column="middle"),
@@ -1471,17 +1495,19 @@ class ChartsFlowSankeyPathValueTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = _render_sankey(
-            background,
-            scene_title=str(dataset["scene_title"]),
-            sources=list(dataset["sources"]),
-            middles=list(dataset["middles"]),
-            targets=list(dataset["targets"]),
-            paths=list(dataset["paths"]),
-            render_params=render_params,
-            value_min=int(dataset["value_min"]),
-            value_max=int(dataset["value_max"]),
-        )
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = _render_sankey(
+                background,
+                scene_title=str(dataset["scene_title"]),
+                sources=list(dataset["sources"]),
+                middles=list(dataset["middles"]),
+                targets=list(dataset["targets"]),
+                paths=list(dataset["paths"]),
+                render_params=render_params,
+                value_min=int(dataset["value_min"]),
+                value_max=int(dataset["value_max"]),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1540,8 +1566,10 @@ class ChartsFlowSankeyPathValueTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_segment_ids = [str(segment_id) for segment_id in query["evidence_segment_ids"]]
+        answer_gt = TypedValue(type="integer", value=int(dataset["answer_value"]))
         evidence_bboxes = [list(rendered_scene.segment_label_bbox_map[str(segment_id)]) for segment_id in evidence_segment_ids]
         projected_evidence = {
+            "type": "bbox_set",
             "bbox_set": list(evidence_bboxes),
             "pixel_bbox_set": list(evidence_bboxes),
             "segment_ids": list(evidence_segment_ids),
@@ -1554,7 +1582,6 @@ class ChartsFlowSankeyPathValueTask:
                 for segment_id in evidence_segment_ids
             },
         }
-        answer_gt = TypedValue(type="integer", value=int(dataset["answer_value"]))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         evidence_scan = normalize_int_with_bounds(len(evidence_segment_ids), [2, 8])
@@ -1639,6 +1666,13 @@ class ChartsFlowSankeyPathValueTask:
                 "min_flow_width_px": int(render_params.min_flow_width_px),
                 "max_flow_width_px": int(render_params.max_flow_width_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "background_style": dict(background_meta),
+                "font_asset_version": font_asset_version(),
+                "chart_font_family": str(chart_font_family),
+                "font_assets": {
+                    "font_asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

@@ -307,6 +307,18 @@ def _median_rank_params_for_query(params: Mapping[str, Any], *, query_id: str) -
     return resolved
 
 
+def _median_rank_evidence_roles(query_id: str) -> Tuple[str, str]:
+    """Return role names for the two median-rank witnesses."""
+
+    if str(query_id) == "median_top_second_difference_value":
+        return ("highest_median_boxplot", "second_highest_median_boxplot")
+    if str(query_id) == "median_top_third_difference_value":
+        return ("highest_median_boxplot", "third_highest_median_boxplot")
+    if str(query_id) == "median_top_bottom_difference_value":
+        return ("highest_median_boxplot", "lowest_median_boxplot")
+    raise ValueError(f"unsupported median-rank query id: {query_id}")
+
+
 def _render_boxplot_public_output(
     *,
     task_id: str,
@@ -328,6 +340,7 @@ def _render_boxplot_public_output(
     reasoning_load: float,
     paired_boxplots: Tuple[Sequence[Any], Sequence[Any]] | None = None,
     slot_overrides: Mapping[str, Any] | None = None,
+    evidence_role_keys: Sequence[str] | None = None,
 ) -> TaskOutput:
     """Render a public boxplot task with default query_id and explicit query_id."""
 
@@ -391,7 +404,37 @@ def _render_boxplot_public_output(
 
     evidence_projection = projected_mark_evidence(rendered_scene, [str(label) for label in evidence_labels])
     evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-    evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+    role_keys = [str(key) for key in evidence_role_keys or ()]
+    use_keyed_evidence = bool(role_keys) and len(role_keys) == len(evidence_points)
+    if use_keyed_evidence:
+        keyed_points = {
+            str(role): list(point)
+            for role, point in zip(role_keys, evidence_points)
+        }
+        evidence_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
+        witness_symbolic = {
+            "type": "object_key_map",
+            "keys": {
+                str(role): str(label)
+                for role, label in zip(role_keys, evidence_labels)
+            },
+        }
+        projected_evidence = {
+            "type": "keyed_point_map",
+            "keyed_point_map": dict(keyed_points),
+            "pixel_keyed_point_map": dict(keyed_points),
+        }
+    else:
+        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        witness_symbolic = {
+            "type": "point_set",
+            "count": int(len(evidence_points)),
+        }
+        projected_evidence = {
+            "type": "point_set",
+            "point_set": list(evidence_points),
+            **dict(evidence_projection),
+        }
     label_centers = {
         str(mark["label"]): list(mark["label_center_px"])
         for mark in rendered_scene.mark_traces
@@ -484,14 +527,8 @@ def _render_boxplot_public_output(
                 if key not in {"sampling_policy", "mark_fill_rgb", "mark_outline_rgb"}
             },
         },
-        "witness_symbolic": {
-            "type": str(answer_gt.type),
-            "value": answer_gt.value,
-        },
-        "projected_evidence": {
-            "point_set": list(evidence_points),
-            **dict(evidence_projection),
-        },
+        "witness_symbolic": dict(witness_symbolic),
+        "projected_evidence": dict(projected_evidence),
     }
 
     complexity = build_chart_complexity(
@@ -649,7 +686,7 @@ class ChartsDistributionBoxplotLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
+        answer_gt = TypedValue(type="string", value=str(answer_label))
         projected_labels = (
             [str(trace_extras["reference_label"]), str(answer_label)]
             if "reference_label" in trace_extras
@@ -657,7 +694,36 @@ class ChartsDistributionBoxplotLabelTask:
         )
         evidence_projection = projected_mark_evidence(rendered_scene, projected_labels)
         evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        if str(query_id) == "median_reference_label":
+            role_keys = ("reference_boxplot", "answer_boxplot")
+            keyed_points = {
+                str(role): list(point)
+                for role, point in zip(role_keys, evidence_points)
+            }
+            evidence_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
+            witness_symbolic = {
+                "type": "object_key_map",
+                "keys": {
+                    str(role): str(label)
+                    for role, label in zip(role_keys, projected_labels)
+                },
+            }
+            projected_evidence = {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(keyed_points),
+                "pixel_keyed_point_map": dict(keyed_points),
+            }
+        else:
+            evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+            witness_symbolic = {
+                "type": "point_set",
+                "count": int(len(evidence_points)),
+            }
+            projected_evidence = {
+                "type": "point_set",
+                "point_set": list(evidence_points),
+                **dict(evidence_projection),
+            }
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -858,14 +924,8 @@ class ChartsDistributionBoxplotLabelTask:
                     if key not in {"sampling_policy", "mark_fill_rgb", "mark_outline_rgb"}
                 },
             },
-            "witness_symbolic": {
-                "type": "integer",
-                "value": int(evidence_value),
-            },
-            "projected_evidence": {
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
-            },
+            "witness_symbolic": dict(witness_symbolic),
+            "projected_evidence": dict(projected_evidence),
         }
 
         complexity = build_chart_complexity(
@@ -980,6 +1040,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
             render_defaults=_MEDIAN_RANK_RENDER_DEFAULTS,
             complexity_weights=_MEDIAN_RANK_COMPLEXITY_WEIGHTS,
             reasoning_load=0.74,
+            evidence_role_keys=_median_rank_evidence_roles(str(query_id)),
         )
 
 
@@ -1051,7 +1112,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             mark_style=mark_style,
             boxplots=boxplots,
             paired_boxplots=(before_boxplots, after_boxplots),
-            answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
+            answer_gt=TypedValue(type="string", value=str(answer_label)),
             evidence_labels=evidence_labels,
             trace_extras=trace_extras,
             query_id=str(query_id),
@@ -1061,6 +1122,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             render_defaults=_PAIRED_SHIFT_RENDER_DEFAULTS,
             complexity_weights=_PAIRED_SHIFT_COMPLEXITY_WEIGHTS,
             reasoning_load=float(_PAIRED_SHIFT_REASONING_LOAD_BY_VARIANT[str(query_id)]),
+            evidence_role_keys=("before_boxplot", "after_boxplot"),
         )
 
 

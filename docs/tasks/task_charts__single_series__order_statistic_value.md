@@ -6,6 +6,11 @@
 3. Source implementation domain/group: `charts/statistics`
 4. Query id: `order_statistic_value`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `point_set`.
+
+## Evidence
+Prompt-facing evidence is a one-point `point_set` at the center of the mark
+whose value is the requested order statistic.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.statistics.summary_query.ChartsSingleSeriesOrderStatisticValueTask`

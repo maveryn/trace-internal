@@ -76,9 +76,9 @@ prompt:
     unanswerable_instruction: If no contribution step satisfies the threshold rule, answer exactly "unanswerable".
     object_description_waterfall: a waterfall chart with a start bar, signed contribution bars, connector lines, and a final-total bar
     evidence_hint_value: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the printed values and step label needed for the computation
-    evidence_hint_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the printed values, threshold marker, and answer step label needed for the crossing
+    evidence_hint_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the printed values and threshold marker needed for the crossing; if the answer is "unanswerable", use an empty array
     json_example_value: '{"evidence":[[100,210,145,235],[250,300,295,326],[390,185,434,210]],"answer":57}'
-    json_example_label: '{"evidence":[[100,210,145,235],[250,300,295,326],[810,180,854,205],[248,640,276,664]],"answer":"R"}'
+    json_example_label: '{"evidence":[[100,210,145,235],[250,300,295,326],[810,180,854,205]],"answer":"R"}'
     json_example_answer_only_value: '{"answer":57}'
     json_example_answer_only_label: '{"answer":"R"}'
 

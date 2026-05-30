@@ -63,18 +63,18 @@
   },
   "query_templates": {
     "category_total_value": [
-      "Using the unit scale, what is the total for category {category_label}?",
-      "Read category {category_label}. What total value do its repeated marks represent?",
-      "For {category_label}, compute the total from its marks and the unit scale.",
-      "What integer total is represented by the marks in category {category_label}?",
-      "Use the legend scale to find the total for category {category_label}."
+      "Using the unit scale, what is the total for category \"{category_label}\"?",
+      "Read category \"{category_label}\". What total value do its repeated marks represent?",
+      "For \"{category_label}\", compute the total from its marks and the unit scale.",
+      "What integer total is represented by the marks in category \"{category_label}\"?",
+      "Use the legend scale to find the total for category \"{category_label}\"."
     ],
     "group_difference_value": [
-      "Using the unit scale, what is the absolute difference between categories {category_label_a} and {category_label_b}?",
-      "Compare {category_label_a} and {category_label_b}. What is the absolute difference in their totals?",
-      "From the repeated marks, compute the total difference between {category_label_a} and {category_label_b}.",
-      "How much larger is one of {category_label_a} and {category_label_b} than the other, in total value?",
-      "Use the legend scale to calculate the absolute total gap between {category_label_a} and {category_label_b}."
+      "Using the unit scale, what is the absolute difference between categories \"{category_label_a}\" and \"{category_label_b}\"?",
+      "Compare \"{category_label_a}\" and \"{category_label_b}\". What is the absolute difference in their totals?",
+      "From the repeated marks, compute the total difference between \"{category_label_a}\" and \"{category_label_b}\".",
+      "How much larger is one of \"{category_label_a}\" and \"{category_label_b}\" than the other, in total value?",
+      "Use the legend scale to calculate the absolute total gap between \"{category_label_a}\" and \"{category_label_b}\"."
     ],
     "threshold_count": [
       "Using the unit scale, how many categories have totals {threshold_phrase}?",

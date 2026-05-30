@@ -17,19 +17,22 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.render_variation import resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
+from ...shared.text_rendering import draw_text_centered, load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
+from ..shared.label_assets import resolve_chart_category_labels, resolve_chart_compact_axis_labels
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
@@ -72,35 +75,6 @@ _QUERY_REASONING_LOAD: Dict[str, float] = {
     "largest_primary_over_line_gap_label": 0.58,
     "largest_line_over_primary_gap_label": 0.58,
 }
-
-_LABEL_POOL: Tuple[str, ...] = (
-    "Aster",
-    "Beryl",
-    "Cedar",
-    "Dune",
-    "Elm",
-    "Flint",
-    "Grove",
-    "Harbor",
-    "Iris",
-    "Juniper",
-    "Keel",
-    "Lumen",
-    "Mica",
-    "Nori",
-    "Onyx",
-    "Pine",
-    "Quartz",
-    "Reed",
-)
-_METRIC_PAIRS: Tuple[Tuple[str, str], ...] = (
-    ("Revenue", "Target"),
-    ("Orders", "Forecast"),
-    ("Output", "Plan"),
-    ("Visits", "Goal"),
-    ("Demand", "Capacity"),
-    ("Actual", "Benchmark"),
-)
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "combo")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -155,6 +129,7 @@ class _RenderParams:
     grid_rgb: Tuple[int, int, int]
     text_rgb: Tuple[int, int, int]
     panel_rgb: Tuple[int, int, int]
+    layout_jitter_meta: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -216,13 +191,27 @@ def _axis_choice(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
     canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", 1080)))
     canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", 660)))
+    plot_left = int(params.get("plot_left_px", group_default(_RENDER_DEFAULTS, "plot_left_px", 86)))
+    plot_right_margin = int(params.get("plot_right_margin_px", group_default(_RENDER_DEFAULTS, "plot_right_margin_px", 176)))
+    plot_top = int(params.get("plot_top_px", group_default(_RENDER_DEFAULTS, "plot_top_px", 58)))
+    plot_bottom_margin = int(params.get("plot_bottom_margin_px", group_default(_RENDER_DEFAULTS, "plot_bottom_margin_px", 92)))
+    plot_left, plot_right_margin, plot_top, plot_bottom_margin, layout_jitter_meta = apply_layout_jitter_to_margins(
+        left_px=int(plot_left),
+        right_px=int(plot_right_margin),
+        top_px=int(plot_top),
+        bottom_px=int(plot_bottom_margin),
+        params=params,
+        defaults=_RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=TASK_ID,
+    )
     return _RenderParams(
         canvas_width=canvas_width,
         canvas_height=canvas_height,
-        plot_left=int(params.get("plot_left_px", group_default(_RENDER_DEFAULTS, "plot_left_px", 86))),
-        plot_right=int(canvas_width - int(params.get("plot_right_margin_px", group_default(_RENDER_DEFAULTS, "plot_right_margin_px", 176)))),
-        plot_top=int(params.get("plot_top_px", group_default(_RENDER_DEFAULTS, "plot_top_px", 58))),
-        plot_bottom=int(canvas_height - int(params.get("plot_bottom_margin_px", group_default(_RENDER_DEFAULTS, "plot_bottom_margin_px", 92)))),
+        plot_left=int(plot_left),
+        plot_right=int(canvas_width - int(plot_right_margin)),
+        plot_top=int(plot_top),
+        plot_bottom=int(canvas_height - int(plot_bottom_margin)),
         axis_width=resolve_render_int(params, _RENDER_DEFAULTS, "axis_line_width_px", 2, instance_seed=instance_seed, namespace=TASK_ID),
         grid_width=resolve_render_int(params, _RENDER_DEFAULTS, "grid_line_width_px", 1, instance_seed=instance_seed, namespace=TASK_ID),
         line_width=resolve_render_int(params, _RENDER_DEFAULTS, "line_width_px", 4, instance_seed=instance_seed, namespace=TASK_ID),
@@ -239,6 +228,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         grid_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "grid_color_rgb", (224, 228, 234), instance_seed=instance_seed, namespace=TASK_ID),
         text_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "text_color_rgb", (36, 42, 52), instance_seed=instance_seed, namespace=TASK_ID),
         panel_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "plot_fill_rgb", (255, 255, 255), instance_seed=instance_seed, namespace=TASK_ID),
+        layout_jitter_meta=dict(layout_jitter_meta),
     )
 
 
@@ -288,10 +278,10 @@ def _draw_axes(
         value = int(round(primary_axis_max * i / 4))
         y = _value_to_y(value, top=top, bottom=bottom, axis_max=primary_axis_max)
         draw.line((left, y, right, y), fill=p.grid_rgb, width=p.grid_width)
-        draw.text((left - 12, y), str(value), anchor="rm", font=tick_font, fill=p.text_rgb)
+        draw_text_traced(draw,(left - 12, y), str(value), anchor="rm", font=tick_font, fill=p.text_rgb, role="readout", required=False)
         if dual_axis:
             line_value = int(round(line_axis_max * i / 4))
-            draw.text((right + 12, y), str(line_value), anchor="lm", font=tick_font, fill=p.text_rgb)
+            draw_text_traced(draw,(right + 12, y), str(line_value), anchor="lm", font=tick_font, fill=p.text_rgb, role="readout", required=False)
     draw.line((left, top, left, bottom), fill=p.axis_rgb, width=p.axis_width)
     draw.line((left, bottom, right, bottom), fill=p.axis_rgb, width=p.axis_width)
     if dual_axis:
@@ -314,7 +304,7 @@ def _draw_legend(
     font = load_font(p.legend_font_size, bold=True)
     x0 = p.plot_right + 38
     y0 = p.plot_top + 24
-    draw.text((x0, y0), "Legend", font=font, fill=p.text_rgb)
+    draw_text_traced(draw,(x0, y0), "Legend", font=font, fill=p.text_rgb, role="readout", required=False)
     y = y0 + 34
     if scene_variant == "area_line_overlay":
         draw.rectangle((x0, y + 2, x0 + 28, y + 18), fill=p.area_rgb, outline=p.primary_rgb)
@@ -323,11 +313,11 @@ def _draw_legend(
         draw.rectangle((x0 + 15, y + 2, x0 + 28, y + 20), fill=p.primary_alt_rgb, outline=(55, 62, 72))
     else:
         draw.rectangle((x0, y + 2, x0 + 28, y + 20), fill=p.primary_rgb, outline=(55, 62, 72))
-    draw.text((x0 + 38, y), str(primary_name), font=font, fill=p.text_rgb)
+    draw_text_traced(draw,(x0 + 38, y), str(primary_name), font=font, fill=p.text_rgb, role="readout", required=False)
     y += 34
     draw.line((x0, y + 11, x0 + 30, y + 11), fill=p.line_rgb, width=p.line_width)
     draw.ellipse((x0 + 11, y + 2, x0 + 21, y + 12), fill=(255, 255, 255), outline=p.line_rgb, width=3)
-    draw.text((x0 + 38, y), str(line_name), font=font, fill=p.text_rgb)
+    draw_text_traced(draw,(x0 + 38, y), str(line_name), font=font, fill=p.text_rgb, role="readout", required=False)
 
 
 def _render_combo_scene(
@@ -454,9 +444,13 @@ def _render_combo_scene(
 
 
 def _sample_labels(rng, count: int) -> Tuple[str, ...]:
-    offset = int(rng.randrange(0, len(_LABEL_POOL)))
-    values = [_LABEL_POOL[(offset + idx) % len(_LABEL_POOL)] for idx in range(int(count))]
-    return tuple(values)
+    labels = resolve_chart_compact_axis_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=3,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
 def _sample_values(rng, *, count: int, low: int, high: int) -> Tuple[int, ...]:
@@ -464,8 +458,14 @@ def _sample_values(rng, *, count: int, low: int, high: int) -> Tuple[int, ...]:
 
 
 def _choose_metric_pair(instance_seed: int) -> Tuple[str, str]:
-    index = int(hash64(instance_seed, "charts.combo.metric_pair") % len(_METRIC_PAIRS))
-    return _METRIC_PAIRS[index]
+    labels = resolve_chart_category_labels(
+        spawn_rng(int(instance_seed), "charts.combo.metric_pair"),
+        count=2,
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    ).labels
+    return str(labels[0]), str(labels[1])
 
 
 def _unique_extremum(labels: Sequence[str], values: Sequence[int], *, mode: str) -> Tuple[str, int]:
@@ -478,16 +478,47 @@ def _unique_extremum(labels: Sequence[str], values: Sequence[int], *, mode: str)
     return str(winners[0]), int(target)
 
 
-def _indices_for_evidence(indices: Iterable[int], scene: _ComboScene, *, include_primary: bool, include_line: bool) -> Tuple[list[list[float]], list[str]]:
-    points: list[list[float]] = []
+def _indices_for_keyed_evidence(
+    indices: Iterable[int],
+    scene: _ComboScene,
+    *,
+    include_primary: bool,
+    include_line: bool,
+) -> Tuple[Dict[str, list[float]], list[str]]:
+    points: Dict[str, list[float]] = {}
     labels: list[str] = []
     for idx in indices:
+        category_label = str(scene.labels[int(idx)])
         if include_primary:
-            points.append([float(scene.primary_points[int(idx)][0]), float(scene.primary_points[int(idx)][1])])
+            points[f"{category_label}.primary"] = [
+                float(scene.primary_points[int(idx)][0]),
+                float(scene.primary_points[int(idx)][1]),
+            ]
             labels.append(f"{scene.primary_name}:{scene.labels[int(idx)]}")
         if include_line:
-            points.append([float(scene.line_points[int(idx)][0]), float(scene.line_points[int(idx)][1])])
+            points[f"{category_label}.line"] = [
+                float(scene.line_points[int(idx)][0]),
+                float(scene.line_points[int(idx)][1]),
+            ]
             labels.append(f"{scene.line_name}:{scene.labels[int(idx)]}")
+    return points, labels
+
+
+def _interval_keyed_evidence(start: int, end: int, scene: _ComboScene) -> Tuple[Dict[str, list[float]], list[str]]:
+    start_label = str(scene.labels[int(start)])
+    end_label = str(scene.labels[int(end)])
+    points = {
+        f"{start_label}.primary": [float(scene.primary_points[int(start)][0]), float(scene.primary_points[int(start)][1])],
+        f"{start_label}.line": [float(scene.line_points[int(start)][0]), float(scene.line_points[int(start)][1])],
+        f"{end_label}.primary": [float(scene.primary_points[int(end)][0]), float(scene.primary_points[int(end)][1])],
+        f"{end_label}.line": [float(scene.line_points[int(end)][0]), float(scene.line_points[int(end)][1])],
+    }
+    labels = [
+        f"{scene.primary_name}:{scene.labels[int(start)]}",
+        f"{scene.line_name}:{scene.labels[int(start)]}",
+        f"{scene.primary_name}:{scene.labels[int(end)]}",
+        f"{scene.line_name}:{scene.labels[int(end)]}",
+    ]
     return points, labels
 
 
@@ -616,7 +647,7 @@ def _resolve_query_answer(
     params: Mapping[str, Any],
     instance_seed: int,
     target_sampling_divisor: int,
-) -> Tuple[TypedValue, list[list[float]], Dict[str, Any], str, str, str, str]:
+) -> Tuple[TypedValue, Dict[str, list[float]], Dict[str, Any], str, str, str, str]:
     labels = scene.labels
     primary = scene.primary_values
     line = scene.line_values
@@ -642,7 +673,12 @@ def _resolve_query_answer(
             answer = abs(int(primary[idx]) - int(line[idx]))
         else:
             answer = max(int(primary[idx]), int(line[idx])) - min(int(primary[idx]), int(line[idx]))
-        evidence, evidence_labels = _indices_for_evidence([idx], scene, include_primary=True, include_line=True)
+        evidence, evidence_labels = _indices_for_keyed_evidence(
+            [idx],
+            scene,
+            include_primary=True,
+            include_line=True,
+        )
         prompt_slots["target_label"] = str(labels[idx])
         return (
             TypedValue(type="integer", value=int(answer)),
@@ -666,7 +702,12 @@ def _resolve_query_answer(
             mode = "max" if q.startswith("max_") else "min"
             answer, _ = _unique_extremum([labels[idx] for idx in candidate_indices], target_values, mode=mode)
             answer_index = labels.index(answer)
-            evidence, evidence_labels = _indices_for_evidence(candidate_indices, scene, include_primary=True, include_line=True)
+            evidence, evidence_labels = _indices_for_keyed_evidence(
+                [answer_index],
+                scene,
+                include_primary=True,
+                include_line=True,
+            )
             relation_phrase = "above"
         else:
             threshold = _select_threshold(line, rng=rng, above=False)
@@ -675,7 +716,12 @@ def _resolve_query_answer(
             mode = "max" if q.startswith("max_") else "min"
             answer, _ = _unique_extremum([labels[idx] for idx in candidate_indices], target_values, mode=mode)
             answer_index = labels.index(answer)
-            evidence, evidence_labels = _indices_for_evidence(candidate_indices, scene, include_primary=True, include_line=True)
+            evidence, evidence_labels = _indices_for_keyed_evidence(
+                [answer_index],
+                scene,
+                include_primary=True,
+                include_line=True,
+            )
             relation_phrase = "below"
         prompt_slots.update({"threshold_value": int(threshold), "threshold_relation": relation_phrase})
         return (
@@ -690,7 +736,7 @@ def _resolve_query_answer(
             "conditioned_extremum_query",
             q,
             "answer_hint_category_label_extremum",
-            evidence_hint_key,
+            "evidence_hint_answer_category_marks",
         )
     if q in {
         "primary_above_and_line_above",
@@ -712,7 +758,12 @@ def _resolve_query_answer(
             target_count=int(target_count),
         )
         prompt_slots.update(dict(extra))
-        evidence, evidence_labels = _indices_for_evidence(matching, scene, include_primary=True, include_line=True)
+        evidence, evidence_labels = _indices_for_keyed_evidence(
+            matching,
+            scene,
+            include_primary=True,
+            include_line=True,
+        )
         return (
             TypedValue(type="integer", value=int(len(matching))),
             evidence,
@@ -754,7 +805,7 @@ def _resolve_query_answer(
             answer = abs(int(line_change) - int(primary_change))
         else:
             answer = max(int(line_change), int(primary_change)) - min(int(line_change), int(primary_change))
-        evidence, evidence_labels = _indices_for_evidence([start, end], scene, include_primary=True, include_line=True)
+        evidence, evidence_labels = _interval_keyed_evidence(start, end, scene)
         prompt_slots.update({"start_label": str(labels[start]), "end_label": str(labels[end])})
         return (
             TypedValue(type="integer", value=int(answer)),
@@ -802,7 +853,12 @@ def _resolve_query_answer(
             raise ValueError("gap extremum tie")
         answer_index = int(winners[0])
         candidate_indices = [int(idx) for idx, _ in candidates]
-        evidence, evidence_labels = _indices_for_evidence(candidate_indices, scene, include_primary=True, include_line=True)
+        evidence, evidence_labels = _indices_for_keyed_evidence(
+            [answer_index],
+            scene,
+            include_primary=True,
+            include_line=True,
+        )
         return (
             TypedValue(type="string", value=str(labels[answer_index])),
             evidence,
@@ -818,7 +874,7 @@ def _resolve_query_answer(
             "gap_extremum_label_query",
             q,
             "answer_hint_category_label",
-            "evidence_hint_candidate_category_marks",
+            "evidence_hint_answer_category_marks",
         )
     raise ValueError(f"unsupported combo query id: {q}")
 
@@ -884,17 +940,26 @@ class ChartsComboPanelQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        scene = _render_combo_scene(
-            background,
-            labels=labels,
-            primary_values=primary_values,
-            line_values=line_values,
-            scene_variant=str(scene_variant),
-            primary_name=str(primary_name),
-            line_name=str(line_name),
-            params=params,
+        chart_font_family = sample_font_family(
+            role="readout",
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            scene = _render_combo_scene(
+                background,
+                labels=labels,
+                primary_values=primary_values,
+                line_values=line_values,
+                scene_variant=str(scene_variant),
+                primary_name=str(primary_name),
+                line_name=str(line_name),
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         answer_gt, evidence_points, query_trace, task_key, query_key, answer_hint_key, evidence_hint_key = _resolve_query_answer(
             task_query_ids=self.query_ids,
             query_id=str(query_id),
@@ -950,6 +1015,7 @@ class ChartsComboPanelQueryTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
+        render_params_for_trace = _render_params(params, instance_seed=int(instance_seed))
         query_params = {
             "query_id": str(query_id),
             "query_id_probabilities": dict(query_probabilities),
@@ -984,6 +1050,16 @@ class ChartsComboPanelQueryTask:
                 "plot_bbox": list(scene.plot_bbox),
                 "primary_axis_max": int(scene.primary_axis_max),
                 "line_axis_max": int(scene.line_axis_max),
+                "layout_jitter": dict(render_params_for_trace.layout_jitter_meta),
+                "text_style": {
+                    "tick_font_size_px": int(render_params_for_trace.tick_font_size),
+                    "label_font_size_px": int(render_params_for_trace.label_font_size),
+                    "value_font_size_px": int(render_params_for_trace.value_font_size),
+                    "legend_font_size_px": int(render_params_for_trace.legend_font_size),
+                    "font_asset_version": str(font_asset_version()),
+                    "chart_font_family": str(chart_font_family),
+                    "chart_font_exclude_tags": [],
+                },
                 "background": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
             },
@@ -1011,11 +1087,13 @@ class ChartsComboPanelQueryTask:
                 **dict(query_trace),
             },
             "witness_symbolic": {
-                "type": "combo_chart_marks",
-                "evidence_labels": list(query_trace.get("evidence_labels", [])),
+                "type": "keyed_point_map",
+                "count": int(len(evidence_points)),
             },
             "projected_evidence": {
-                "point_set": [list(point) for point in evidence_points],
+                "type": "keyed_point_map",
+                "keyed_point_map": {str(key): list(point) for key, point in evidence_points.items()},
+                "pixel_keyed_point_map": {str(key): list(point) for key, point in evidence_points.items()},
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1031,7 +1109,10 @@ class ChartsComboPanelQueryTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=TypedValue(type="point_set", value=[list(point) for point in evidence_points]),
+            evidence_gt=TypedValue(
+                type="keyed_point_map",
+                value={str(key): list(point) for key, point in evidence_points.items()},
+            ),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

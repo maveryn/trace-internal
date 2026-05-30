@@ -68,7 +68,7 @@ def test_chart_scatter_cluster_variants_match_contract(query_id: str) -> None:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "scatter_cluster_query"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
@@ -83,9 +83,13 @@ def test_chart_scatter_cluster_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution)
     assert str(out.answer_gt.value) == expected_answer
     assert str(execution["answer"]) == expected_answer
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert str(render["font_asset_version"])
+    assert str(render["chart_font_family"])
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.evidence_gt.value.values():
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -93,17 +97,20 @@ def test_chart_scatter_cluster_variants_match_contract(query_id: str) -> None:
         )
 
     evidence_clusters = [str(label) for label in trace["projected_evidence"]["cluster_labels"]]
-    expected_cluster_boxes = [render_map["cluster_bboxes_px"][label] for label in evidence_clusters]
-    assert out.evidence_gt.value == expected_cluster_boxes
 
     if query_id == "cluster_separation_extremum_label":
         assert len(evidence_clusters) == 2
         assert len(out.evidence_gt.value) == 2
         assert evidence_clusters[0] == execution["reference_cluster_label"]
         assert evidence_clusters[1] == expected_answer
+        assert out.evidence_gt.value == {
+            "reference_cluster": render_map["cluster_bboxes_px"][str(execution["reference_cluster_label"])],
+            "answer_cluster": render_map["cluster_bboxes_px"][expected_answer],
+        }
     else:
         assert len(out.evidence_gt.value) == 1
         assert evidence_clusters == [expected_answer]
+        assert out.evidence_gt.value == {"answer_cluster": render_map["cluster_bboxes_px"][expected_answer]}
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -122,7 +129,7 @@ def test_chart_scatter_prompt_examples_match_contract() -> None:
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["answer"], str)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_evidence["evidence"], dict)
         assert isinstance(answer_only["answer"], str)
         assert "from from" not in out.prompt
         assert "to to" not in out.prompt

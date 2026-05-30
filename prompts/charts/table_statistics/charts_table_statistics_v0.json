@@ -70,39 +70,39 @@
   },
   "query_templates": {
     "column_sum": [
-      "What is the sum of the values in the {query_column} column?",
-      "Find the total of all values in the {query_column} column.",
-      "Determine the column sum for {query_column}.",
-      "What total do you get when you add the values in {query_column}?",
-      "Compute the sum of the {query_column} column."
+      "What is the sum of the values in the \"{query_column}\" column?",
+      "Find the total of all values in the \"{query_column}\" column.",
+      "Determine the column sum for \"{query_column}\".",
+      "What total do you get when you add the values in \"{query_column}\"?",
+      "Compute the sum of the \"{query_column}\" column."
     ],
     "column_mean": [
-      "What is the mean of the values in the {query_column} column?",
-      "Find the average of all values in the {query_column} column.",
-      "Determine the column mean for {query_column}.",
-      "What average value does the {query_column} column have?",
-      "Compute the mean of the {query_column} column."
+      "What is the mean of the values in the \"{query_column}\" column?",
+      "Find the average of all values in the \"{query_column}\" column.",
+      "Determine the column mean for \"{query_column}\".",
+      "What average value does the \"{query_column}\" column have?",
+      "Compute the mean of the \"{query_column}\" column."
     ],
     "column_median": [
-      "What is the median of the values in the {query_column} column?",
-      "Find the median value in the {query_column} column.",
-      "Determine the column median for {query_column}.",
-      "What median value does the {query_column} column have?",
-      "Compute the median of the {query_column} column."
+      "What is the median of the values in the \"{query_column}\" column?",
+      "Find the median value in the \"{query_column}\" column.",
+      "Determine the column median for \"{query_column}\".",
+      "What median value does the \"{query_column}\" column have?",
+      "Compute the median of the \"{query_column}\" column."
     ],
     "filtered_column_sum": [
-      "Among rows where {filter_condition}, what is the sum of the values in the {query_target_column} column?",
-      "Filter to rows where {filter_condition}. What total do their {query_target_column} values have?",
-      "Using only rows where {filter_condition}, determine the sum of the {query_target_column} column.",
-      "What is the total of the {query_target_column} values for rows where {filter_condition}?",
-      "Compute the sum of {query_target_column} over rows where {filter_condition}."
+      "Among rows where {filter_condition}, what is the sum of the values in the \"{query_target_column}\" column?",
+      "Filter to rows where {filter_condition}. What total do their \"{query_target_column}\" values have?",
+      "Using only rows where {filter_condition}, determine the sum of the \"{query_target_column}\" column.",
+      "What is the total of the \"{query_target_column}\" values for rows where {filter_condition}?",
+      "Compute the sum of \"{query_target_column}\" over rows where {filter_condition}."
     ],
     "filtered_column_mean": [
-      "Among rows where {filter_condition}, what is the mean of the values in the {query_target_column} column?",
-      "Filter to rows where {filter_condition}. What average do their {query_target_column} values have?",
-      "Using only rows where {filter_condition}, determine the mean of the {query_target_column} column.",
-      "What is the average of the {query_target_column} values for rows where {filter_condition}?",
-      "Compute the mean of {query_target_column} over rows where {filter_condition}."
+      "Among rows where {filter_condition}, what is the mean of the values in the \"{query_target_column}\" column?",
+      "Filter to rows where {filter_condition}. What average do their \"{query_target_column}\" values have?",
+      "Using only rows where {filter_condition}, determine the mean of the \"{query_target_column}\" column.",
+      "What is the average of the \"{query_target_column}\" values for rows where {filter_condition}?",
+      "Compute the mean of \"{query_target_column}\" over rows where {filter_condition}."
     ]
   },
   "allow_empty_task_templates": true

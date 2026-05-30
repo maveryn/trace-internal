@@ -64,18 +64,18 @@
   },
   "query_templates": {
     "filtered_item_extremum_label": [
-      "Within category {category_label}, which item has the {extremum_phrase} size?",
-      "Looking only at category {category_label}, what item is visually {extremum_phrase}?",
-      "Among the {category_label} items, which label corresponds to the {extremum_phrase} item?",
-      "Filter to category {category_label}. Which item has the {extremum_phrase} displayed value?",
-      "For category {category_label}, name the item with the {extremum_phrase} visible size."
+      "Within category \"{category_label}\", which item has the {extremum_phrase} size?",
+      "Looking only at category \"{category_label}\", what item is visually {extremum_phrase}?",
+      "Among the \"{category_label}\" items, which label corresponds to the {extremum_phrase} item?",
+      "Filter to category \"{category_label}\". Which item has the {extremum_phrase} displayed value?",
+      "For category \"{category_label}\", name the item with the {extremum_phrase} visible size."
     ],
     "reference_size_neighbor_label": [
-      "Among other items in category {category_label}, which item is closest in size to {reference_label}?",
-      "Use category {category_label}. Excluding {reference_label}, what item has the most similar size to it?",
-      "Which other {category_label} item is nearest in displayed size to {reference_label}?",
-      "Compare {reference_label} with the other items in category {category_label}. Which one is closest in size?",
-      "In category {category_label}, find the item whose visible size most closely matches {reference_label}."
+      "Among other items in category \"{category_label}\", which item is closest in size to \"{reference_label}\"?",
+      "Use category \"{category_label}\". Excluding \"{reference_label}\", what item has the most similar size to it?",
+      "Which other \"{category_label}\" item is nearest in displayed size to \"{reference_label}\"?",
+      "Compare \"{reference_label}\" with the other items in category \"{category_label}\". Which one is closest in size?",
+      "In category \"{category_label}\", find the item whose visible size most closely matches \"{reference_label}\"."
     ],
     "category_total_extremum_label": [
       "Which category has the {extremum_phrase} total displayed size across all its items?",

@@ -12,3 +12,8 @@
 2. Prompt lookup domain/group: `charts/size_encoding`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence
+1. Public evidence type: `bbox_set`.
+2. The set contains exactly one bbox around the answer item mark and label.
+3. The category filter is grounded by the item's visible category marker in the same bbox; the category legend is not included as separate evidence.

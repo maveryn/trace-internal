@@ -12,3 +12,7 @@
 2. Prompt lookup domain/group: `charts/flow`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence
+1. Evidence type: `bbox_set`.
+2. Boxes mark the printed flow-value labels on the incoming or outgoing side used in the total.

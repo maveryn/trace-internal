@@ -210,28 +210,28 @@ prompt:
   task_overrides:
     charts_distribution_boxplot_label_base:
       task_key: boxplot_label_query
-      answer_hint: set "answer" to the single uppercase label of the requested boxplot
-      evidence_hint_median_reference_label: set "evidence" to an array of [x, y] pixel points at the centers of the reference boxplot and the winning boxplot
+      answer_hint: set "answer" to the exact visible boxplot label as a string
+      evidence_hint_median_reference_label: set "evidence" to an object with keys "reference_boxplot" and "answer_boxplot", each mapped to that boxplot's [x,y] pixel point
       evidence_hint_iqr_extremum_label: set "evidence" to an array of [x, y] pixel points at the center of the winning boxplot
-      json_example_median_reference_label: '{"evidence":[[240,300],[430,250]],"answer":"M"}'
-      json_example_iqr_extremum_label: '{"evidence":[[430,250]],"answer":"Q"}'
-      json_example_answer_only_median_reference_label: '{"answer":"M"}'
-      json_example_answer_only_iqr_extremum_label: '{"answer":"Q"}'
+      json_example_median_reference_label: '{"evidence":{"reference_boxplot":[240,300],"answer_boxplot":[430,250]},"answer":"Maple"}'
+      json_example_iqr_extremum_label: '{"evidence":[[430,250]],"answer":"Ivory"}'
+      json_example_answer_only_median_reference_label: '{"answer":"Maple"}'
+      json_example_answer_only_iqr_extremum_label: '{"answer":"Ivory"}'
     charts_distribution_violin_label_base:
       task_key: violin_label_query
-      answer_hint: set "answer" to the single uppercase label of the requested violin plot
+      answer_hint: set "answer" to the exact visible label string of the requested violin plot
       evidence_hint: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the winning violin plot
       json_example: '{"evidence":[[240,140,330,520]],"answer":"Q"}'
       json_example_answer_only: '{"answer":"Q"}'
     task_charts__boxplot__median_rank_difference_value:
       task_key: boxplot_median_rank_difference_query
       answer_hint: set "answer" to the median difference as an integer
-      evidence_hint: set "evidence" to an array of [x, y] pixel points at the centers of the two boxplots used in the difference, ordered higher-rank then lower-rank
-      json_example: '{"evidence":[[240,300],[430,250]],"answer":7}'
+      evidence_hint: set "evidence" to an object with role keys for the two ranked boxplots used in the difference, each mapped to that boxplot's [x,y] pixel point
+      json_example: '{"evidence":{"highest_median_boxplot":[240,300],"second_highest_median_boxplot":[430,250]},"answer":7}'
       json_example_answer_only: '{"answer":7}'
     task_charts__boxplot__paired_median_shift_label:
       task_key: boxplot_paired_median_shift_query
-      answer_hint: set "answer" to the single uppercase label
-      evidence_hint: set "evidence" to an array of [x, y] pixel points at the centers of the before and after boxplots for the winning label
-      json_example: '{"evidence":[[240,300],[305,250]],"answer":"M"}'
-      json_example_answer_only: '{"answer":"M"}'
+      answer_hint: set "answer" to the exact visible matched label as a string
+      evidence_hint: set "evidence" to an object with keys "before_boxplot" and "after_boxplot", each mapped to that winning label's [x,y] pixel point
+      json_example: '{"evidence":{"before_boxplot":[240,300],"after_boxplot":[305,250]},"answer":"Maple"}'
+      json_example_answer_only: '{"answer":"Maple"}'

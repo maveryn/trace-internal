@@ -6,6 +6,11 @@
 3. Source implementation domain/group: `charts/hypothetical`
 4. Query id: `baseline_from_aggregate_percent_change`, `remaining_mean_after_removal`, `target_share_after_removal`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `point_set`.
+
+## Evidence
+Prompt-facing evidence is a homogeneous `point_set` over the chart marks whose
+values participate in the counterfactual calculation.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.hypothetical.counterfactual_value.ChartsHypotheticalCounterfactualValuePublicTask`

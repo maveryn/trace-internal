@@ -6,6 +6,10 @@
 3. Source implementation domain/group: `charts/distribution`
 4. Query id: sampled internally and recorded in `query_id`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Answer type: `string`, the exact visible matched label.
+7. Evidence type: `keyed_point_map` with keys `before_boxplot` and `after_boxplot`.
+
+Prompt-facing evidence marks the before and after median witnesses for the winning label.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.distribution.boxplot_label.ChartsDistributionBoxplotPairedMedianShiftLabelTask`

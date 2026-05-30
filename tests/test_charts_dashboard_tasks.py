@@ -18,11 +18,11 @@ from trace.tasks.charts.dashboard.cross_panel_query import (
 )
 
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
-    assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x < width
+    assert 0 <= y < height
 
 
 def _value(execution: dict, panel_id: str, category_id: str) -> int:
@@ -80,6 +80,21 @@ def _expected_answer(execution: dict) -> int | str:
         labels = {str(category["category_id"]): str(category["label"]) for category in execution["categories"]}
         return labels[answer_category_id]
 
+    if variant == "top_k_overlap_count":
+        return len(execution["overlap_category_ids"])
+
+    if variant == "category_panel_condition_count":
+        category_id = str(execution["condition_category_id"])
+        threshold = int(execution["panel_threshold"])
+        comparison = str(execution["panel_condition_comparison"])
+        total = 0
+        for panel in execution["panels"]:
+            panel_id = str(panel["panel_id"])
+            value = _value(execution, panel_id, category_id)
+            match = value > threshold if comparison == "greater_than" else value < threshold
+            total += int(bool(match))
+        return int(total)
+
     raise AssertionError(f"unsupported variant: {variant}")
 
 
@@ -98,7 +113,15 @@ def test_chart_dashboard_variants_match_contract(query_id: str) -> None:
     assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(execution["question_format"]) == "dashboard_cross_panel_query"
-    assert out.evidence_gt.type == "bbox_set"
+    if query_id in {
+        "source_rank_target_value",
+        "source_rank_difference_value",
+        "dual_source_target_sum_value",
+        "panel_gap_extremum_category_label",
+    }:
+        assert out.evidence_gt.type == "keyed_point_map"
+    else:
+        assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 4 <= int(execution["category_count"]) <= 12
@@ -116,23 +139,50 @@ def test_chart_dashboard_variants_match_contract(query_id: str) -> None:
     else:
         assert out.answer_gt.type == "integer"
 
-    expected_bboxes = [
-        list(trace["render_map"]["support_bboxes_px"][str(panel_id)][str(category_id)])
+    expected_points = [
+        list(trace["render_map"]["support_points_px"][str(panel_id)][str(category_id)])
         for panel_id, category_id in execution["evidence_refs"]
     ]
-    assert out.evidence_gt.value == expected_bboxes
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["evidence_refs"]) == len(out.evidence_gt.value)
+    assert trace["projected_evidence"]["type"] == out.evidence_gt.type
+    assert len(trace["projected_evidence"]["evidence_refs"]) == len(expected_points)
 
-    for bbox in out.evidence_gt.value:
-        _assert_bbox_inside_canvas(
-            [float(value) for value in bbox],
-            width=int(render["canvas_width"]),
-            height=int(render["canvas_height"]),
-        )
+    if out.evidence_gt.type == "point_set":
+        assert out.evidence_gt.value == expected_points
+        assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+        for point in out.evidence_gt.value:
+            _assert_point_inside_canvas(
+                [float(value) for value in point],
+                width=int(render["canvas_width"]),
+                height=int(render["canvas_height"]),
+            )
+    else:
+        assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["pixel_keyed_point_map"] == out.evidence_gt.value
+        for point in out.evidence_gt.value.values():
+            _assert_point_inside_canvas(
+                [float(value) for value in point],
+                width=int(render["canvas_width"]),
+                height=int(render["canvas_height"]),
+            )
+        if query_id in {"source_rank_target_value", "source_rank_difference_value"}:
+            assert out.evidence_gt.value == {"source_panel": expected_points[0], "target_panel": expected_points[1]}
+        if query_id == "dual_source_target_sum_value":
+            assert out.evidence_gt.value == {
+                "first_source_panel": expected_points[0],
+                "second_source_panel": expected_points[1],
+                "target_first_category": expected_points[2],
+                "target_second_category": expected_points[3],
+            }
+        if query_id == "panel_gap_extremum_category_label" and expected_points:
+            assert out.evidence_gt.value == {"first_panel": expected_points[0], "second_panel": expected_points[1]}
 
     if query_id == "dual_condition_count":
         assert len(out.evidence_gt.value) == int(out.answer_gt.value) * 2
+    if query_id == "top_k_overlap_count":
+        assert len(out.evidence_gt.value) == int(out.answer_gt.value) * 2
+    if query_id == "category_panel_condition_count":
+        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
     if query_id == "panel_gap_extremum_category_label":
         assert len(out.evidence_gt.value) == 2
 
@@ -177,7 +227,7 @@ def test_chart_dashboard_balanced_sampling_covers_variants() -> None:
         duplicate_kind_instances += int(len(set(str(kind) for kind in execution["panel_kinds"])) < int(execution["panel_count"]))
         answer_types[str(out.answer_gt.type)] += 1
 
-    assert_counter_support_within(variants, SUPPORTED_QUERY_IDS, expected_per_key=20, tolerance=10)
+    assert_counter_support_within(variants, SUPPORTED_QUERY_IDS, expected_per_key=14, tolerance=7)
     assert set(category_counts).issubset({4, 5, 6, 7, 8, 9, 10, 11, 12})
     assert set(category_counts) == {4, 5, 6, 7, 8, 9, 10, 11, 12}
     assert set(panel_counts).issubset({4, 5, 6, 7, 8, 9})
@@ -205,6 +255,14 @@ def test_chart_dashboard_registered_and_group_config_loaded() -> None:
     assert (
         create_task("task_charts__dashboard__source_rank_metric_value").task_id
         == "task_charts__dashboard__source_rank_metric_value"
+    )
+    assert (
+        create_task("task_charts__dashboard__top_k_overlap_count").task_id
+        == "task_charts__dashboard__top_k_overlap_count"
+    )
+    assert (
+        create_task("task_charts__dashboard__category_panel_condition_count").task_id
+        == "task_charts__dashboard__category_panel_condition_count"
     )
 
     cfg = get_task_group_defaults("charts", "dashboard")

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Tuple
 
+from trace.core.seed import spawn_rng
 from trace.core.task_group_config import get_task_group_defaults
 from trace.core.types import TaskComplexity, TypedValue
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
 from trace.tasks.charts.shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
@@ -24,6 +26,7 @@ from trace.tasks.shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from trace.tasks.shared.text_rendering import temporary_default_font_family
 from trace.tasks.charts.table.shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
@@ -34,7 +37,12 @@ from trace.tasks.charts.table.shared.table_common import (
     table_render_style_spec,
 )
 from trace.tasks.charts.table.shared.table_scene import render_table_scene
-from trace.tasks.charts.table.shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
+from trace.tasks.charts.table.shared.visual_defaults import (
+    load_table_background_defaults,
+    load_table_noise_defaults,
+    sample_table_font_family,
+    table_font_asset_metadata,
+)
 
 
 TASK_ID = "task_charts__table__column_rank_label"
@@ -50,7 +58,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_table_background_defaults(task_group="ranking")
 POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="ranking", apply_prob=0.0)
-_MISSING_COLUMN_LABEL_POOL: Tuple[str, ...] = ("Metric X", "Metric Y", "Metric Z", "Field Q", "Field R")
 
 
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -181,7 +188,13 @@ class TablesRankingLabelTask:
             visible_columns = [str(header) for header in dataset["column_headers"]]
             missing_column = choose_missing_label(
                 visible_labels=visible_columns,
-                candidate_labels=_MISSING_COLUMN_LABEL_POOL,
+                candidate_labels=resolve_chart_entity_labels(
+                    spawn_rng(int(instance_seed), f"{TASK_ID}.missing_column_candidates"),
+                    count=max(16, len(visible_columns) + 8),
+                    min_chars=2,
+                    max_chars=7,
+                    allow_spaces=False,
+                ).labels,
                 fallback_prefix="Column ",
                 instance_seed=int(instance_seed),
                 namespace=f"{TASK_ID}.missing_column",
@@ -217,14 +230,20 @@ class TablesRankingLabelTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_table_scene(
-            background,
-            scene_variant=str(scene_variant),
-            row_labels=list(dataset["row_labels"]),
-            column_headers=list(dataset["column_headers"]),
-            values_by_row=dict(dataset["values_by_row"]),
-            render_params=render_params,
+        table_font_family = sample_table_font_family(
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.table_font",
+            params=params,
         )
+        with temporary_default_font_family(str(table_font_family)):
+            rendered_scene = render_table_scene(
+                background,
+                scene_variant=str(scene_variant),
+                row_labels=list(dataset["row_labels"]),
+                column_headers=list(dataset["column_headers"]),
+                values_by_row=dict(dataset["values_by_row"]),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -361,6 +380,7 @@ class TablesRankingLabelTask:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": table_font_asset_metadata(str(table_font_family)),
                 "table_bbox_px": list(rendered_scene.table_bbox_px),
                 "table_style": table_render_style_spec(render_params),
                 "text_style": {
@@ -414,6 +434,7 @@ class TablesRankingLabelTask:
                 "value": list(evidence_bboxes),
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_bboxes),
             },
         }

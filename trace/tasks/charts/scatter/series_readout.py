@@ -21,6 +21,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -28,7 +29,8 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -36,6 +38,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.unanswerable import (
     UNANSWERABLE_ANSWER,
@@ -71,19 +74,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="scatter")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="scatter", apply_prob=0.0)
 
-_SERIES_NAME_POOL: Tuple[str, ...] = (
-    "Orion",
-    "Nova",
-    "Atlas",
-    "Lyra",
-    "Vega",
-    "Helio",
-    "Aster",
-    "Ceres",
-    "Boreal",
-    "Solace",
-)
-_MISSING_SERIES_LABEL_POOL: Tuple[str, ...] = ("Nimbus", "Vector", "Quartz", "Tundra", "Zenith")
 _MONTH_LABELS: Tuple[str, ...] = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct")
 _MARKER_SHAPES: Tuple[str, ...] = ("circle", "square", "diamond", "triangle", "ring")
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
@@ -153,6 +143,7 @@ class _RenderParams:
     value_font_size_px: int
     legend_font_size_px: int
     title_font_size_px: int
+    legend_gap_px: int
     axis_color_rgb: RGB
     grid_color_rgb: RGB
     text_color_rgb: RGB
@@ -230,7 +221,7 @@ def _palette(params: Mapping[str, Any]) -> Tuple[RGB, ...]:
 
 def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
     margin_left = _resolve_int(params, "readout_plot_margin_left_px", 112)
-    margin_right = _resolve_int(params, "readout_plot_margin_right_px", 250)
+    margin_right = _resolve_int(params, "readout_plot_margin_right_px", 370)
     margin_top = _resolve_int(params, "readout_plot_margin_top_px", 78)
     margin_bottom = _resolve_int(params, "readout_plot_margin_bottom_px", 126)
     margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
@@ -244,7 +235,7 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
         namespace=f"{TASK_ID}.layout",
     )
     return _RenderParams(
-        canvas_width=_resolve_int(params, "readout_canvas_width", 1280),
+        canvas_width=_resolve_int(params, "readout_canvas_width", 1440),
         canvas_height=_resolve_int(params, "readout_canvas_height", 820),
         plot_margin_left_px=int(margin_left),
         plot_margin_right_px=int(margin_right),
@@ -259,6 +250,7 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
         value_font_size_px=_resolve_int(params, "readout_value_font_size_px", 16),
         legend_font_size_px=_resolve_int(params, "readout_legend_font_size_px", 21),
         title_font_size_px=_resolve_int(params, "readout_title_font_size_px", 26),
+        legend_gap_px=_resolve_int(params, "readout_legend_gap_px", 80),
         axis_color_rgb=_resolve_rgb(params, "axis_color_rgb", (65, 70, 78)),
         grid_color_rgb=_resolve_rgb(params, "grid_color_rgb", (224, 228, 235)),
         text_color_rgb=_resolve_rgb(params, "text_color_rgb", (35, 38, 45)),
@@ -284,6 +276,20 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
     )
 
 
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
+    )
+
+
 def _sample_x_axis(*, params: Mapping[str, Any], instance_seed: int, x_count: int) -> Tuple[str, Tuple[str, ...]]:
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.x_axis")
     axis_kinds = ("year", "month", "period")
@@ -299,9 +305,14 @@ def _sample_x_axis(*, params: Mapping[str, Any], instance_seed: int, x_count: in
 
 def _sample_series_labels(*, series_count: int, instance_seed: int) -> Tuple[str, ...]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.series_labels")
-    names = list(_SERIES_NAME_POOL)
-    rng.shuffle(names)
-    return tuple(str(value) for value in names[: int(series_count)])
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(series_count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(value) for value in labels)
 
 
 def _sample_y_matrix(*, series_count: int, x_count: int, params: Mapping[str, Any], instance_seed: int) -> List[List[int]]:
@@ -401,7 +412,13 @@ def _build_dataset(
     ):
         missing_series = choose_missing_label(
             visible_labels=series_labels,
-            candidate_labels=tuple(_SERIES_NAME_POOL) + _MISSING_SERIES_LABEL_POOL,
+            candidate_labels=resolve_chart_entity_labels(
+                spawn_rng(int(instance_seed), f"{TASK_ID}.missing_series_candidates"),
+                count=max(12, len(series_labels) + 6),
+                min_chars=2,
+                max_chars=7,
+                allow_spaces=False,
+            ).labels,
             fallback_prefix="Series ",
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.missing_series",
@@ -539,11 +556,11 @@ def _draw_text(
     if anchor is not None:
         kwargs["anchor"] = str(anchor)
     try:
-        draw.text((float(xy[0]), float(xy[1])), str(text), **kwargs)
+        draw_text_traced(draw, (float(xy[0]), float(xy[1])), str(text), **kwargs, role="readout", required=False)
         return _bbox(draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=int(stroke_width), anchor=anchor))
     except Exception:
         kwargs.pop("anchor", None)
-        draw.text((float(xy[0]), float(xy[1])), str(text), **kwargs)
+        draw_text_traced(draw, (float(xy[0]), float(xy[1])), str(text), **kwargs, role="readout", required=False)
         width, height = draw.textsize(str(text), font=font)
         return _bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
 
@@ -723,7 +740,7 @@ def _render_scatter_readout(
             )
 
     legend_bboxes: Dict[str, List[float]] = {}
-    legend_left = plot_bbox[2] + 36.0
+    legend_left = plot_bbox[2] + float(render_params.legend_gap_px)
     legend_top = plot_bbox[1] + 30.0
     legend_row_height = 52.0
     _draw_text(
@@ -802,6 +819,27 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
     }
 
 
+def _build_keyed_evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> Dict[str, List[float]]:
+    """Return role-bound evidence boxes for the scatter readout query."""
+
+    if str(dataset.query.answer) == UNANSWERABLE_ANSWER:
+        return {}
+
+    trace = dict(dataset.query.trace)
+    keyed: Dict[str, List[float]] = {}
+    target_point_id = str(dataset.query.target_point_id)
+    if target_point_id:
+        keyed["target_point_readout"] = list(rendered.point_evidence_bboxes[str(target_point_id)])
+
+    comparison_point_id = str(trace.get("comparison_point_id", ""))
+    if comparison_point_id:
+        keyed["comparison_point_readout"] = list(rendered.point_evidence_bboxes[str(comparison_point_id)])
+
+    if str(dataset.query.evidence_x_label):
+        keyed["x_axis_label"] = list(rendered.x_label_bboxes[str(dataset.query.evidence_x_label)])
+    return dict(keyed)
+
+
 class ChartsScatterSeriesReadoutTask:
     """Answer value readout questions over a multi-series scatter chart."""
 
@@ -828,7 +866,9 @@ class ChartsScatterSeriesReadoutTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_scatter_readout(background, dataset=dataset, render_params=render_params)
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_scatter_readout(background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -872,12 +912,11 @@ class ChartsScatterSeriesReadoutTask:
         is_unanswerable = str(dataset.query.answer) == UNANSWERABLE_ANSWER
         target_point = None if is_unanswerable else _point_by_id(dataset.series, str(dataset.query.target_point_id))
         evidence_point_ids = [str(point_id) for point_id in dataset.query.evidence_point_ids]
-        evidence_bboxes = [list(rendered.point_evidence_bboxes[str(point_id)]) for point_id in evidence_point_ids]
-        if str(dataset.query.evidence_x_label):
-            evidence_bboxes.append(list(rendered.x_label_bboxes[str(dataset.query.evidence_x_label)]))
+        evidence_bboxes_by_role = _build_keyed_evidence_bboxes(dataset, rendered)
+        evidence_bboxes = [list(bbox) for bbox in evidence_bboxes_by_role.values()]
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes_by_role))
 
         total_points = sum(len(series.points) for series in dataset.series)
         complexity = build_chart_complexity(
@@ -901,6 +940,9 @@ class ChartsScatterSeriesReadoutTask:
             for series in dataset.series
         }
         projected_evidence = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_bboxes_by_role),
+            "pixel_keyed_bbox_map": dict(evidence_bboxes_by_role),
             "bbox_set": list(evidence_bboxes),
             "point_id": "" if target_point is None else str(target_point.point_id),
             "point_ids": list(evidence_point_ids),
@@ -945,7 +987,12 @@ class ChartsScatterSeriesReadoutTask:
                 "coord_space": "pixel",
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "point_radius_px": int(render_params.point_radius_px),
+                "legend_gap_px": int(render_params.legend_gap_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_assets": {
+                    "font_asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

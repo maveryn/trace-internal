@@ -31,14 +31,21 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import sample_chart_labels
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_three_d_bar_grid_query_base"
@@ -72,16 +79,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="three_d_bar")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="three_d_bar", apply_prob=0.0)
 
-_SERIES_LABEL_POOL: Tuple[str, ...] = (
-    "Solar",
-    "Wind",
-    "Hydro",
-    "Geo",
-    "Bio",
-    "Coal",
-    "Gas",
-    "Nuke",
-)
 _DEFAULT_PALETTE: Tuple[RGB, ...] = (
     (62, 121, 190),
     (219, 117, 68),
@@ -251,7 +248,7 @@ def _draw_text(
     kwargs: Dict[str, Any] = {}
     if anchor is not None:
         kwargs["anchor"] = str(anchor)
-    draw.text(
+    draw_text_traced(draw,
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
@@ -259,7 +256,7 @@ def _draw_text(
         stroke_fill=stroke_fill,
         stroke_width=max(0, int(stroke_width)),
         **kwargs,
-    )
+     role="readout", required=False,)
     return _text_bbox(draw, xy, str(text), font, anchor=anchor, stroke_width=max(0, int(stroke_width)))
 
 
@@ -452,14 +449,26 @@ def _sample_x_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
     if rng.random() < 0.58:
         start = int(rng.randint(2014, 2026 - int(count)))
         return tuple(str(start + index) for index in range(int(count)))
-    return tuple(str(label) for label in sample_chart_labels(count=int(count), instance_seed=int(instance_seed)))
+    return tuple(
+        str(label)
+        for label in sample_chart_labels(
+            count=int(count),
+            instance_seed=int(instance_seed),
+            namespace=f"task_charts__bar_3d.labels:x:{int(count)}",
+        )
+    )
 
 
 def _sample_series_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
     rng = spawn_rng(int(instance_seed), "charts.three_d_bar.series_labels")
-    labels = list(_SERIES_LABEL_POOL)
-    rng.shuffle(labels)
-    return tuple(str(label) for label in labels[: int(count)])
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
 
 
 def _sample_query_id(
@@ -545,7 +554,7 @@ def _sample_grid(
         context=f"generation defaults for {TASK_ID}",
     )
     x_max = max(int(x_min), min(int(x_max), 8))
-    series_max = max(int(series_min), min(int(series_max), len(_SERIES_LABEL_POOL)))
+    series_max = max(int(series_min), int(series_max))
     rng = spawn_rng(int(instance_seed), "charts.three_d_bar.grid")
     x_count = int(rng.randint(int(x_min), int(x_max)))
     series_count = int(rng.randint(int(series_min), int(series_max)))
@@ -1183,10 +1192,6 @@ def _make_prompt(
     )
 
 
-def _quoted(value: str) -> str:
-    return f'"{str(value)}"'
-
-
 class ChartsThreeDBarGridQueryTask:
     """Generate one 3D bar-grid chart query."""
 
@@ -1231,12 +1236,18 @@ class ChartsThreeDBarGridQueryTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_bar_grid(
-            background,
-            dataset=dataset,
-            params=params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_bar_grid(
+                background,
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1249,12 +1260,6 @@ class ChartsThreeDBarGridQueryTask:
             for bar_id in dataset.query.evidence_bar_ids
             if str(bar_id) in trace_by_id
         ]
-        evidence_bboxes = [
-            list(trace_by_id[str(bar_id)]["bar_bbox_px"])
-            for bar_id in dataset.query.evidence_bar_ids
-            if str(bar_id) in trace_by_id
-        ]
-
         task_prompt_group = (
             "axis_total_value"
             if str(query_id) in set(AXIS_TOTAL_QUERY_IDS)
@@ -1265,14 +1270,14 @@ class ChartsThreeDBarGridQueryTask:
         query_trace = dict(dataset.query.trace)
         slots = {
             "object_description": str(prompt_defaults["object_description"]),
-            "series_label": _quoted(str(query_trace.get("series_label", ""))),
-            "series_label_a": _quoted(str(query_trace.get("series_label_a", ""))),
-            "series_label_b": _quoted(str(query_trace.get("series_label_b", ""))),
-            "category_label": _quoted(str(query_trace.get("category_label", ""))),
-            "category_label_a": _quoted(str(query_trace.get("category_label_a", ""))),
-            "category_label_b": _quoted(str(query_trace.get("category_label_b", ""))),
-            "start_category_label": _quoted(str(query_trace.get("start_category_label", ""))),
-            "end_category_label": _quoted(str(query_trace.get("end_category_label", ""))),
+            "series_label": str(query_trace.get("series_label", "")),
+            "series_label_a": str(query_trace.get("series_label_a", "")),
+            "series_label_b": str(query_trace.get("series_label_b", "")),
+            "category_label": str(query_trace.get("category_label", "")),
+            "category_label_a": str(query_trace.get("category_label_a", "")),
+            "category_label_b": str(query_trace.get("category_label_b", "")),
+            "start_category_label": str(query_trace.get("start_category_label", "")),
+            "end_category_label": str(query_trace.get("end_category_label", "")),
             "comparison_phrase": str(query_trace.get("comparison_phrase", "")),
             "threshold": str(query_trace.get("threshold", "")),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1334,6 +1339,7 @@ class ChartsThreeDBarGridQueryTask:
                 "coord_space": "pixel",
                 "scene_variant": "three_d_bar_grid",
                 "background_style": dict(background_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "post_image_noise": dict(post_noise_meta),
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "y_axis_max": int(rendered.y_axis_max),
@@ -1360,8 +1366,9 @@ class ChartsThreeDBarGridQueryTask:
                 "evidence_bar_ids": [str(bar_id) for bar_id in dataset.query.evidence_bar_ids],
             },
             "projected_evidence": {
+                "type": "point_set",
                 "point_set": list(evidence_points),
-                "bbox_set": list(evidence_bboxes),
+                "pixel_point_set": list(evidence_points),
             },
         }
         bar_count = int(len(dataset.x_labels) * len(dataset.series_labels))

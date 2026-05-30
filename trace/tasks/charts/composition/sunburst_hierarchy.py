@@ -31,13 +31,19 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.render_variation import resolve_render_int, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
 
 
 TASK_ID = "charts_composition_sunburst_hierarchy_base"
@@ -257,7 +263,7 @@ def _draw_multiline_centered_text(
     boxes: List[BBox] = []
     for line, height in zip(clean_lines, heights):
         xy = (float(center[0]), float(y + height / 2.0))
-        draw.text(
+        draw_text_traced(draw,
             xy,
             line,
             font=font,
@@ -265,7 +271,7 @@ def _draw_multiline_centered_text(
             anchor="mm",
             stroke_fill=stroke_fill,
             stroke_width=max(0, int(stroke_width)),
-        )
+         role="readout", required=False,)
         boxes.append(
             _bbox(draw.textbbox(xy, line, font=font, anchor="mm", stroke_width=max(0, int(stroke_width))))
         )
@@ -662,7 +668,6 @@ def _build_query(
             raise ValueError("sunburst parent totals must be unique for extremum query")
         want_highest = str(query_id) == "highest_parent_total_label"
         target = max(parent_nodes, key=lambda node: int(node.value)) if want_highest else min(parent_nodes, key=lambda node: int(node.value))
-        target_leaf_ids = _descendant_leaf_ids(nodes_by_id, str(target.node_id))
         all_leaf_ids: List[str] = []
         for parent_id in parent_ids:
             all_leaf_ids.extend(_descendant_leaf_ids(nodes_by_id, str(parent_id)))
@@ -670,13 +675,13 @@ def _build_query(
             query_id=str(query_id),
             answer=str(target.label),
             answer_type="string",
-            evidence_node_ids=tuple(target_leaf_ids),
+            evidence_node_ids=tuple(all_leaf_ids),
             trace={
                 "extremum": "highest" if want_highest else "lowest",
                 "answer_parent_id": str(target.node_id),
                 "answer_parent_label": str(target.label),
                 "parent_totals": {str(nodes_by_id[parent_id].label): int(nodes_by_id[parent_id].value) for parent_id in parent_ids},
-                "answer_leaf_ids": [str(leaf_id) for leaf_id in target_leaf_ids],
+                "answer_leaf_ids": [str(leaf_id) for leaf_id in _descendant_leaf_ids(nodes_by_id, str(target.node_id))],
                 "leaf_ids": [str(leaf_id) for leaf_id in all_leaf_ids],
             },
         )
@@ -870,18 +875,18 @@ def _render_sunburst(
     value_font = _font(render_params.value_font_size_px, bold=True)
     note_font = _font(render_params.note_font_size_px, bold=False)
 
-    draw.text(
+    draw_text_traced(draw,
         (float(panel_bbox[0] + 26), float(panel_bbox[1] + 18)),
         "Concentric Hierarchy Chart",
         font=title_font,
         fill=render_params.text_color_rgb,
-    )
-    draw.text(
+     role="readout", required=False,)
+    draw_text_traced(draw,
         (float(panel_bbox[0] + 28), float(panel_bbox[3] - 30)),
         "Ring sizes show hierarchy; use printed outer values for calculations.",
         font=note_font,
         fill=render_params.muted_text_rgb,
-    )
+     role="readout", required=False,)
 
     nodes_by_id = {str(node.node_id): node for node in dataset.nodes}
     spans = _node_angle_spans(dataset)
@@ -1050,10 +1055,6 @@ def _make_prompt(
     )
 
 
-def _quote(value: str) -> str:
-    return f'"{str(value)}"'
-
-
 def _answer_hint_key(query_id: str) -> str:
     return "answer_hint_label" if str(query_id) in set(PARENT_EXTREMUM_QUERY_IDS) else "answer_hint_integer"
 
@@ -1119,12 +1120,18 @@ class ChartsCompositionSunburstHierarchyTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_sunburst(
-            background,
-            dataset=dataset,
-            params=params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_sunburst(
+                background,
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1134,7 +1141,7 @@ class ChartsCompositionSunburstHierarchyTask:
         query_trace = dict(dataset.query.trace)
         slots = {
             "object_description": str(prompt_defaults["object_description_sunburst"]),
-            "parent_label": _quote(str(query_trace.get("parent_label", ""))),
+            "parent_label": str(query_trace.get("parent_label", "")),
             "comparison_phrase": str(query_trace.get("comparison_phrase", "")),
             "threshold_value": str(query_trace.get("threshold_value", "")),
             "lower_value": str(query_trace.get("lower_value", "")),
@@ -1204,6 +1211,7 @@ class ChartsCompositionSunburstHierarchyTask:
                 "scene_variant": "sunburst_hierarchy",
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "chart_bbox_px": list(rendered.chart_bbox_px),
                 **dict(rendered.render_meta),
             },
@@ -1232,6 +1240,7 @@ class ChartsCompositionSunburstHierarchyTask:
                 "calculation": dict(query_trace),
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": list(evidence_bboxes),
                 "evidence_node_ids": [str(node_id) for node_id in dataset.query.evidence_node_ids],
             },

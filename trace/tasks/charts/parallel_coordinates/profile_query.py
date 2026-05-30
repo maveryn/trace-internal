@@ -24,13 +24,15 @@ from ...shared.config_defaults import (
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.bbox_projection import bbox_union as _bbox_union, round_bbox as _bbox
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -38,6 +40,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -71,21 +74,6 @@ _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="parallel_coordinates")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="parallel_coordinates", apply_prob=0.15)
 
-_METRIC_LABEL_POOL: Tuple[str, ...] = (
-    "Cost",
-    "Speed",
-    "Quality",
-    "Risk",
-    "Reach",
-    "Yield",
-    "Safety",
-    "Growth",
-    "Access",
-    "Stability",
-    "Capacity",
-    "Delay",
-)
-_PROFILE_LABEL_POOL: Tuple[str, ...] = tuple("ABCDEFGH")
 _PROFILE_PALETTE: Tuple[Tuple[int, int, int], ...] = (
     (38, 101, 176),
     (216, 95, 2),
@@ -109,6 +97,7 @@ _QUERY_LOADS: Dict[str, float] = {
 
 RGB = Tuple[int, int, int]
 BBox = List[float]
+Point = List[float]
 
 
 @dataclass(frozen=True)
@@ -256,6 +245,20 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
         axis_namespace="scene_variant",
+    )
+
+
+def _sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
+    return str(
+        sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        )
     )
 
 
@@ -429,11 +432,28 @@ def _sample_base(
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.profile_count",
         low=int(profile_min),
-        high=min(int(profile_max), len(_PROFILE_LABEL_POOL)),
+        high=int(profile_max),
     )
     metric_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.metrics")
-    metrics = list(_METRIC_LABEL_POOL)
-    metric_rng.shuffle(metrics)
+    metrics = list(
+        resolve_chart_entity_labels(
+            metric_rng,
+            count=int(axis_count),
+            min_chars=2,
+            max_chars=8,
+            allow_spaces=False,
+        ).labels
+    )
+    profile_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.profile_labels")
+    profile_labels = list(
+        resolve_chart_entity_labels(
+            profile_rng,
+            count=int(profile_count),
+            min_chars=2,
+            max_chars=6,
+            allow_spaces=False,
+        ).labels
+    )
     trace_params = {
         "query_id": str(query_id),
         "scene_variant": str(scene_variant),
@@ -448,8 +468,8 @@ def _sample_base(
     }
     return (
         str(scene_variant),
-        tuple(str(value) for value in metrics[: int(axis_count)]),
-        list(_PROFILE_LABEL_POOL[: int(profile_count)]),
+        tuple(str(value) for value in metrics),
+        list(profile_labels),
         int(profile_count),
         int(axis_count),
         int(value_min),
@@ -717,7 +737,15 @@ def _draw_centered_text(
     height = float(box[3] - box[1])
     x = float(xy[0]) - width / 2.0
     y = float(xy[1]) - height / 2.0
-    draw.text((x, y), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=max(0, int(stroke_width)))
+    draw_text_traced(
+        draw,
+        (x, y),
+        str(text),
+        font=font,
+        fill=fill,
+        stroke_fill=stroke_fill,
+        stroke_width=max(0, int(stroke_width)),
+     role="readout", required=False,)
     return _bbox([x, y, x + width, y + height])
 
 
@@ -739,7 +767,7 @@ def _render_parallel_coordinates(background: Image.Image, *, dataset: _Dataset, 
     label_font = load_font(render_params.label_font_size_px, bold=True)
     tick_font = load_font(render_params.tick_font_size_px, bold=False)
     threshold_font = load_font(render_params.threshold_font_size_px, bold=True)
-    draw.text((panel_margin + 22, 50), "Profile Comparison", font=title_font, fill=render_params.text_rgb)
+    draw_text_traced(draw, (panel_margin + 22, 50), "Profile Comparison", font=title_font, fill=render_params.text_rgb, role="readout", required=False)
 
     value_min = int(dataset.query.params["value_min"])
     value_max = int(dataset.query.params["value_max"])
@@ -758,14 +786,15 @@ def _render_parallel_coordinates(background: Image.Image, *, dataset: _Dataset, 
     for tick in tick_values:
         y = y_px(float(tick))
         draw.line([left, y, right, y], fill=render_params.grid_rgb, width=render_params.grid_line_width_px)
-        draw.text(
+        draw_text_traced(
+            draw,
             (left - 46, y - 9),
             str(int(tick)),
             font=tick_font,
             fill=render_params.muted_text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
             stroke_width=1,
-        )
+         role="readout", required=False,)
 
     selected_axes = {int(dataset.query.axis_i), int(dataset.query.axis_j)}
     threshold_bboxes: Dict[int, BBox] = {}
@@ -791,14 +820,15 @@ def _render_parallel_coordinates(background: Image.Image, *, dataset: _Dataset, 
             y = y_px(float(dataset.query.threshold))
             draw.line([x - 22, y, x + 22, y], fill=render_params.threshold_rgb, width=3)
             text_bbox = _text_bbox(draw, (x + 26, y - 9), str(dataset.query.threshold), threshold_font, stroke_width=1)
-            draw.text(
+            draw_text_traced(
+                draw,
                 (x + 26, y - 9),
                 str(dataset.query.threshold),
                 font=threshold_font,
                 fill=render_params.threshold_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
                 stroke_width=1,
-            )
+             role="readout", required=False,)
             threshold_bboxes[int(axis_index)] = _bbox_union([[x - 22, y - 2, x + 22, y + 2], text_bbox], padding=2)
 
     point_bboxes: Dict[str, BBox] = {}
@@ -830,7 +860,15 @@ def _render_parallel_coordinates(background: Image.Image, *, dataset: _Dataset, 
         label_right_xy = (right + 48, points[-1][1] - 10)
         for suffix, xy in (("left", label_left_xy), ("right", label_right_xy)):
             box = _text_bbox(draw, xy, profile.label, label_font, stroke_width=2)
-            draw.text(xy, profile.label, font=label_font, fill=line_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=2)
+            draw_text_traced(
+                draw,
+                xy,
+                profile.label,
+                font=label_font,
+                fill=line_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=2,
+             role="readout", required=False,)
             label_bboxes[f"{profile.profile_id}:{suffix}"] = box
         profile_bboxes[profile.profile_id] = _bbox_union(
             profile_segment_boxes
@@ -862,23 +900,58 @@ def _render_parallel_coordinates(background: Image.Image, *, dataset: _Dataset, 
     )
 
 
-def _segment_key(profile_id: str, axis_i: int, axis_j: int) -> str:
-    if int(axis_j) != int(axis_i) + 1:
-        return str(profile_id)
-    return f"{profile_id}:axis_{int(axis_i)}_{int(axis_j)}"
+def _bbox_center(bbox: Sequence[float]) -> Tuple[float, float]:
+    if len(bbox) != 4:
+        raise ValueError(f"expected bbox with 4 values, got {bbox}")
+    return (float(bbox[0] + bbox[2]) / 2.0, float(bbox[1] + bbox[3]) / 2.0)
 
 
-def _evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> List[BBox]:
+def _round_point(x: float, y: float) -> Point:
+    return [round(float(x), 2), round(float(y), 2)]
+
+
+def _axis_point(dataset: _Dataset, rendered: _Rendered, profile_id: str, axis_index: int) -> Tuple[float, float]:
+    bbox = rendered.point_bboxes_px[f"{profile_id}:axis_{int(axis_index)}"]
+    return _bbox_center(bbox)
+
+
+def _segment_midpoint(dataset: _Dataset, rendered: _Rendered, profile_id: str) -> Point:
+    x0, y0 = _axis_point(dataset, rendered, str(profile_id), int(dataset.query.axis_i))
+    x1, y1 = _axis_point(dataset, rendered, str(profile_id), int(dataset.query.axis_j))
+    return _round_point((float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0)
+
+
+def _crossing_point(dataset: _Dataset, rendered: _Rendered, first_profile_id: str, second_profile_id: str) -> Point:
     axis_i = int(dataset.query.axis_i)
     axis_j = int(dataset.query.axis_j)
-    boxes: List[BBox] = []
+    x0, y0 = _axis_point(dataset, rendered, str(first_profile_id), axis_i)
+    x1, y1 = _axis_point(dataset, rendered, str(first_profile_id), axis_j)
+    _, other_y0 = _axis_point(dataset, rendered, str(second_profile_id), axis_i)
+    _, other_y1 = _axis_point(dataset, rendered, str(second_profile_id), axis_j)
+    first_delta = float(y1) - float(y0)
+    second_delta = float(other_y1) - float(other_y0)
+    denom = float(first_delta) - float(second_delta)
+    if abs(float(denom)) < 1e-9:
+        return _round_point((float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0)
+    t = (float(other_y0) - float(y0)) / float(denom)
+    t = max(0.0, min(1.0, float(t)))
+    return _round_point(float(x0) + (float(x1) - float(x0)) * t, float(y0) + first_delta * t)
+
+
+def _evidence_points(dataset: _Dataset, rendered: _Rendered) -> Tuple[str, Dict[str, Point] | List[Point]]:
+    profiles_by_id = {str(profile.profile_id): profile for profile in dataset.profiles}
+    if str(dataset.query.query_id) in CROSSING_QUERY_IDS:
+        points: List[Point] = [
+            _crossing_point(dataset, rendered, str(first_profile_id), str(second_profile_id))
+            for first_profile_id, second_profile_id in dataset.query.crossing_pairs
+        ]
+        return "point_set", list(points)
+
+    points_by_label: Dict[str, Point] = {}
     for profile_id in dataset.query.evidence_profile_ids:
-        key = _segment_key(str(profile_id), int(axis_i), int(axis_j))
-        if key in rendered.segment_bboxes_px:
-            boxes.append(list(rendered.segment_bboxes_px[key]))
-        else:
-            boxes.append(list(rendered.profile_bboxes_px[str(profile_id)]))
-    return boxes
+        profile = profiles_by_id[str(profile_id)]
+        points_by_label[str(profile.label)] = _segment_midpoint(dataset, rendered, str(profile_id))
+    return "keyed_point_map", dict(points_by_label)
 
 
 def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -> Dict[str, Any]:
@@ -892,8 +965,8 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults["answer_hint_label" if is_label else "answer_hint_count"]),
-        "evidence_hint": str(prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_count"]),
-        "json_example": str(prompt_defaults["json_example_label" if is_label else "json_example_count"]),
+        "evidence_hint": str(prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_condition_count"]),
+        "json_example": str(prompt_defaults["json_example_label" if is_label else "json_example_condition_count"]),
         "json_example_answer_only": str(prompt_defaults["json_example_answer_only_label" if is_label else "json_example_answer_only_count"]),
     }
     if dataset.query.threshold is not None:
@@ -916,6 +989,12 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
     elif str(dataset.query.query_id) == "crossings_involving_profile_between_axes":
         reference = str(dataset.query.params["reference_profile_label"])
         slots["reference_profile"] = reference
+    if str(dataset.query.query_id) in CROSSING_QUERY_IDS:
+        slots["evidence_hint"] = str(prompt_defaults["evidence_hint_crossing_count"])
+        slots["json_example"] = str(prompt_defaults["json_example_crossing_count"])
+    elif str(dataset.query.query_id) in CONDITION_QUERY_IDS:
+        slots["evidence_hint"] = str(prompt_defaults["evidence_hint_condition_count"])
+        slots["json_example"] = str(prompt_defaults["json_example_condition_count"])
     return slots
 
 
@@ -953,7 +1032,9 @@ class ChartsParallelCoordinatesProfileTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        rendered = _render_parallel_coordinates(background, dataset=dataset, render_params=render_params)
+        chart_font_family = _sample_chart_font_family(int(instance_seed), params)
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered = _render_parallel_coordinates(background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -971,9 +1052,11 @@ class ChartsParallelCoordinatesProfileTask:
                 "answer_hint_label",
                 "answer_hint_count",
                 "evidence_hint_label",
-                "evidence_hint_count",
+                "evidence_hint_condition_count",
+                "evidence_hint_crossing_count",
                 "json_example_label",
-                "json_example_count",
+                "json_example_condition_count",
+                "json_example_crossing_count",
                 "json_example_answer_only_label",
                 "json_example_answer_only_count",
                 "object_description_parallel_coordinates",
@@ -993,10 +1076,10 @@ class ChartsParallelCoordinatesProfileTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = _evidence_bboxes(dataset, rendered)
+        evidence_type, evidence_points = _evidence_points(dataset, rendered)
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_points)
         profiles_by_id = {profile.profile_id: profile for profile in dataset.profiles}
         axis_pair = [int(dataset.query.axis_i), int(dataset.query.axis_j)]
         profile_rows = [
@@ -1008,10 +1091,11 @@ class ChartsParallelCoordinatesProfileTask:
             }
             for profile in dataset.profiles
         ]
-        projected_evidence = {
-            "bbox_set": list(evidence_bboxes),
+        profile_labels = [str(profiles_by_id[str(value)].label) for value in dataset.query.evidence_profile_ids]
+        projected_evidence: Dict[str, Any] = {
+            "type": str(evidence_type),
             "profile_ids": [str(value) for value in dataset.query.evidence_profile_ids],
-            "profile_labels": [str(profiles_by_id[str(value)].label) for value in dataset.query.evidence_profile_ids],
+            "profile_labels": list(profile_labels),
             "axis_pair": list(axis_pair),
             "segment_bboxes": {
                 str(key): list(value)
@@ -1019,6 +1103,28 @@ class ChartsParallelCoordinatesProfileTask:
                 if any(str(key).startswith(str(profile_id) + ":") for profile_id in dataset.query.evidence_profile_ids)
             },
         }
+        if str(evidence_type) == "keyed_point_map":
+            keyed_point_map = dict(evidence_points) if isinstance(evidence_points, dict) else {}
+            projected_evidence.update(
+                {
+                    "keyed_point_map": dict(keyed_point_map),
+                    "pixel_keyed_point_map": dict(keyed_point_map),
+                    "point_set": list(keyed_point_map.values()),
+                    "pixel_point_set": list(keyed_point_map.values()),
+                }
+            )
+        else:
+            point_set = list(evidence_points) if isinstance(evidence_points, list) else []
+            projected_evidence.update(
+                {
+                    "point_set": list(point_set),
+                    "pixel_point_set": list(point_set),
+                    "crossing_pair_labels": [
+                        [str(profiles_by_id[str(first)].label), str(profiles_by_id[str(second)].label)]
+                        for first, second in dataset.query.crossing_pairs
+                    ],
+                }
+            )
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1057,6 +1163,10 @@ class ChartsParallelCoordinatesProfileTask:
                 "line_width_px": int(render_params.line_width_px),
                 "point_radius_px": int(render_params.point_radius_px),
                 "layout_jitter": dict(render_params.layout_jitter_meta),
+                "font_assets": {
+                    "font_asset_version": font_asset_version(),
+                    "chart_font_family": str(chart_font_family),
+                },
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

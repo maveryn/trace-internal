@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/three_d`
 4. Query id: `series_trend_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the first and last point markers of the supporting series.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.three_d.panel_query.ChartsThreeDSeriesTrendLabelTask`

@@ -63,7 +63,8 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
     assert str(execution["query_id"]) == query_id
     assert str(query_params["query_id"]) == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    expected_evidence_type = "bbox_set" if query_id == "threshold_count" else "keyed_bbox_map"
+    assert out.evidence_gt.type == expected_evidence_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "pictogram_quantity"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
@@ -75,12 +76,27 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
     expected = _expected_answer(execution, query_params, query_id)
     assert int(out.answer_gt.value) == int(expected)
     assert int(execution["answer_value"]) == int(expected)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == expected_evidence_type
 
     evidence_category_ids = [str(value) for value in trace["projected_evidence"]["category_ids"]]
+    evidence_category_labels = [str(value) for value in trace["projected_evidence"]["category_labels"]]
     expected_boxes = [render_map["category_bboxes_px"][category_id] for category_id in evidence_category_ids]
-    assert out.evidence_gt.value == expected_boxes
-    for bbox in out.evidence_gt.value:
+    if expected_evidence_type == "keyed_bbox_map":
+        expected_keyed = {
+            str(execution["category_id_to_label"][category_id]): box
+            for category_id, box in zip(evidence_category_ids, expected_boxes)
+        }
+        assert out.evidence_gt.value == expected_keyed
+        assert trace["projected_evidence"]["keyed_bbox_map"] == expected_keyed
+        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_keyed
+        assert trace["projected_evidence"]["bbox_set"] == list(expected_keyed.values())
+        boxes_to_check = list(out.evidence_gt.value.values())
+    else:
+        assert out.evidence_gt.value == expected_boxes
+        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        boxes_to_check = list(out.evidence_gt.value)
+    assert evidence_category_labels == [str(execution["category_id_to_label"][category_id]) for category_id in evidence_category_ids]
+    for bbox in boxes_to_check:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -111,7 +127,10 @@ def test_charts_pictogram_prompt_examples_match_contract() -> None:
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["answer"], int)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        if query_id == "threshold_count":
+            assert isinstance(answer_and_evidence["evidence"], list)
+        else:
+            assert isinstance(answer_and_evidence["evidence"], dict)
         assert isinstance(answer_only["answer"], int)
 
 

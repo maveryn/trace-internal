@@ -65,7 +65,6 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
 
         assert task_cls.task_id in list_default_task_ids()
         assert out.scene_id == "error_interval"
-        assert out.query_id == "default"
         assert out.query_id == query_id
         assert str(execution["query_id"]) == query_id
         assert out.answer_gt.type == answer_type

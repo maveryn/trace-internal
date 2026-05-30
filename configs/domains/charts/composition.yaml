@@ -239,14 +239,14 @@ prompt:
     answer_hint: set "answer" to the requested integer; for percentage-point questions, omit the percent sign
     object_description_small_multiple_pie: several small pie charts. Each panel has the same segment legend, slice numbers are percentages, and each panel title includes its total count
     object_description_small_multiple_donut: several small donut charts. Each panel has the same segment legend, slice numbers are percentages, and each panel title includes its total count
-    evidence_hint_top_k_by_segment_then_sum_other_segment_count: set "evidence" to an array of [x,y] pixel points for the target-segment value labels from the selected panels
-    evidence_hint_conditioned_panel_sum_from_percent: set "evidence" to an array of [x,y] pixel points for the target-segment value labels from the panels that satisfy the percentage condition
-    evidence_hint_average_top_k_minus_average_bottom_k: set "evidence" to an array of [x,y] pixel points for the target-segment percentage labels from the selected highest and lowest panels
-    evidence_hint_composition_shift_l1_distance: set "evidence" to an array of [x,y] pixel points for each start-panel and end-panel segment percentage label used to compute the absolute changes
-    json_example_top_k_by_segment_then_sum_other_segment_count: '{"evidence":[[260,280],[520,300]],"answer":780}'
-    json_example_conditioned_panel_sum_from_percent: '{"evidence":[[240,290],[480,310],[720,330]],"answer":720}'
-    json_example_average_top_k_minus_average_bottom_k: '{"evidence":[[240,260],[480,280],[720,360],[960,380]],"answer":20}'
-    json_example_composition_shift_l1_distance: '{"evidence":[[240,250],[240,310],[240,370],[240,430],[620,250],[620,310],[620,370],[620,430]],"answer":28}'
+    evidence_hint_top_k_by_segment_then_sum_other_segment_count: 'set "evidence" to an object using exactly these keys: {evidence_key_list}. Put [x,y] pixel points at the centers of the corresponding selected-panel percentage labels or total-count text'
+    evidence_hint_conditioned_panel_sum_from_percent: 'set "evidence" to an object using exactly these keys: {evidence_key_list}. Put [x,y] pixel points at the centers of the corresponding selected-panel percentage labels or total-count text'
+    evidence_hint_average_top_k_minus_average_bottom_k: 'set "evidence" to an object using exactly these keys: {evidence_key_list}. Put [x,y] pixel points at the centers of the corresponding highest/lowest panel percentage labels'
+    evidence_hint_composition_shift_l1_distance: 'set "evidence" to an object using exactly these keys: {evidence_key_list}. Put [x,y] pixel points at the centers of the corresponding start/end panel segment percentage labels'
+    json_example_top_k_by_segment_then_sum_other_segment_count: '{"evidence":{"rank|2020|A":[230,250],"target|2020|B":[260,280],"total|2020":[245,110],"rank|2021|A":[500,255],"target|2021|B":[520,300],"total|2021":[505,112]},"answer":780}'
+    json_example_conditioned_panel_sum_from_percent: '{"evidence":{"condition|2020|A":[210,260],"target|2020|B":[240,290],"total|2020":[225,110],"condition|2021|A":[450,280],"target|2021|B":[480,310],"total|2021":[465,112]},"answer":720}'
+    json_example_average_top_k_minus_average_bottom_k: '{"evidence":{"rank|2020|A":[220,240],"target|2020|B":[240,260],"rank|2021|A":[460,260],"target|2021|B":[480,280],"rank|2022|A":[700,340],"target|2022|B":[720,360],"rank|2023|A":[940,360],"target|2023|B":[960,380]},"answer":20}'
+    json_example_composition_shift_l1_distance: '{"evidence":{"start|2020|A":[240,250],"end|2023|A":[620,250],"start|2020|B":[240,310],"end|2023|B":[620,310]},"answer":28}'
     json_example_answer_only_top_k_by_segment_then_sum_other_segment_count: '{"answer":780}'
     json_example_answer_only_conditioned_panel_sum_from_percent: '{"answer":720}'
     json_example_answer_only_average_top_k_minus_average_bottom_k: '{"answer":20}'
@@ -263,18 +263,18 @@ prompt:
       object_description_donut: one donut chart with a table of exact integer category shares
       object_description_stacked_bar: one vertical 100% stacked bar with a table of exact integer category shares
       object_description_stacked_horizontal_bar: one horizontal 100% stacked bar with a table of exact integer category shares
-      evidence_hint_contiguous_chart_order_sum: set "evidence" to [x0,y0,x1,y1] boxes for the category rows in the chart-order span
-      evidence_hint_positional_segment_share_sum: set "evidence" to [x0,y0,x1,y1] boxes for the anchor category row and target segment rows named in the prompt
-      evidence_hint_chart_order_share_to_count: set "evidence" to [x0,y0,x1,y1] boxes for the displayed total count and category rows in the chart-order span
-      evidence_hint_chart_order_remaining_count: set "evidence" to [x0,y0,x1,y1] boxes for the displayed total count and excluded category rows in the chart-order span
-      evidence_hint_sector_share_to_angle: set "evidence" to [x0,y0,x1,y1] boxes for the category rows in the sector span
-      evidence_hint_chart_order_adjacent_transfer_gap: set "evidence" to [x0,y0,x1,y1] boxes for the source category row and adjacent target category row
-      json_example_contiguous_chart_order_sum: '{"evidence":[[790,180,1220,210],[790,270,1220,300],[790,360,1220,390],[790,510,1220,540]],"answer":42}'
-      json_example_positional_segment_share_sum: '{"evidence":[[790,150,1220,180],[790,270,1220,300],[790,450,1220,480]],"answer":31}'
-      json_example_chart_order_share_to_count: '{"evidence":[[42,72,210,96],[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":600}'
-      json_example_chart_order_remaining_count: '{"evidence":[[42,72,210,96],[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":900}'
-      json_example_sector_share_to_angle: '{"evidence":[[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":108}'
-      json_example_chart_order_adjacent_transfer_gap: '{"evidence":[[790,180,1220,210],[790,390,1220,420]],"answer":13}'
+      evidence_hint_contiguous_chart_order_sum: set "evidence" to an object mapping each included category label to the [x,y] pixel point at the center of its chart segment
+      evidence_hint_positional_segment_share_sum: set "evidence" to an object mapping the anchor category label and each target category label to [x,y] pixel points at the centers of their chart segments
+      evidence_hint_chart_order_share_to_count: set "evidence" to an object mapping each included category label to the [x,y] pixel point at the center of its chart segment
+      evidence_hint_chart_order_remaining_count: set "evidence" to an object mapping each excluded category label to the [x,y] pixel point at the center of its chart segment
+      evidence_hint_sector_share_to_angle: set "evidence" to an object mapping each included category label to the [x,y] pixel point at the center of its chart segment
+      evidence_hint_chart_order_adjacent_transfer_gap: set "evidence" to an object mapping the source category label and adjacent target category label to [x,y] pixel points at the centers of their chart segments
+      json_example_contiguous_chart_order_sum: '{"evidence":{"Aster":[565,236],"Birch":[716,314],"Cedar":[680,472],"Dune":[518,436]},"answer":42}'
+      json_example_positional_segment_share_sum: '{"evidence":{"Teal":[620,235],"Birch":[735,365],"Valley":[548,500]},"answer":31}'
+      json_example_chart_order_share_to_count: '{"evidence":{"Aster":[565,236],"Birch":[716,314],"Cedar":[680,472]},"answer":600}'
+      json_example_chart_order_remaining_count: '{"evidence":{"Aster":[565,236],"Birch":[716,314],"Cedar":[680,472]},"answer":900}'
+      json_example_sector_share_to_angle: '{"evidence":{"Aster":[565,236],"Birch":[716,314],"Cedar":[680,472]},"answer":108}'
+      json_example_chart_order_adjacent_transfer_gap: '{"evidence":{"Ruby":[590,250],"Crimson":[740,380]},"answer":13}'
       json_example_answer_only_contiguous_chart_order_sum: '{"answer":42}'
       json_example_answer_only_positional_segment_share_sum: '{"answer":31}'
       json_example_answer_only_chart_order_share_to_count: '{"answer":600}'
@@ -291,10 +291,10 @@ prompt:
       answer_hint_integer: set "answer" to the requested integer
       answer_hint_label: set "answer" to the exact parent category label
       evidence_hint_parent_total_from_leaves_value: set "evidence" to [x0,y0,x1,y1] boxes for the outer leaf value labels under the requested parent category
-      evidence_hint_parent_total_extremum_label: set "evidence" to [x0,y0,x1,y1] boxes for the outer leaf value labels under the answer parent category
+      evidence_hint_parent_total_extremum_label: set "evidence" to [x0,y0,x1,y1] boxes for the outer leaf value labels used to compare all parent-category totals
       evidence_hint_conditional_leaf_count: set "evidence" to [x0,y0,x1,y1] boxes for the checked outer leaf value labels under the requested parent category
       json_example_parent_total_from_leaves_value: '{"evidence":[[860,250,910,278],[930,312,980,340],[970,390,1020,418]],"answer":105}'
-      json_example_parent_total_extremum_label: '{"evidence":[[840,230,890,258],[920,320,970,348],[420,520,470,548]],"answer":"Healthcare"}'
+      json_example_parent_total_extremum_label: '{"evidence":[[840,230,890,258],[920,320,970,348],[420,520,470,548],[650,210,700,238],[720,310,770,338],[540,590,590,618]],"answer":"Healthcare"}'
       json_example_conditional_leaf_count: '{"evidence":[[840,230,890,258],[920,320,970,348],[970,410,1020,438]],"answer":2}'
       json_example_answer_only_parent_total_from_leaves_value: '{"answer":105}'
       json_example_answer_only_parent_total_extremum_label: '{"answer":"Healthcare"}'

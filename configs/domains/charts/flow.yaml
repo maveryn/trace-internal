@@ -110,15 +110,15 @@ prompt:
     object_description_three_column_sankey: a three-column Sankey-style flow diagram. Each node has a visible label, each directed band has a printed integer value, and bands run from a source node through one middle node to a target node
     object_description_radial_chord_sankey: a radial Sankey-style flow diagram. Source nodes and target nodes are labeled around a ring, and each curved band has a printed integer flow value
     answer_hint: set "answer" to the requested integer
-    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the printed flow-value labels used in the calculation
+    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation
     radial_answer_hint_value: set "answer" to the requested integer total
     radial_answer_hint_label: set "answer" to the exact visible source or target label as a string
-    radial_evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the printed flow-value labels used in the calculation or comparison, plus the selected endpoint label when the answer is a label
-    json_example_source_to_target_total_flow: '{"evidence":[[318,184,354,210],[742,190,778,216],[310,294,346,320],[742,284,778,310]],"answer":27}'
-    json_example_path_bottleneck_value: '{"evidence":[[322,220,358,246],[742,234,778,260]],"answer":12}'
-    json_example_path_flow_difference: '{"evidence":[[322,240,358,266],[742,252,778,278]],"answer":9}'
-    json_example_source_outgoing_total_flow: '{"evidence":[[318,184,354,210],[310,294,346,320]],"answer":31}'
-    json_example_target_incoming_total_flow: '{"evidence":[[742,190,778,216],[742,284,778,310]],"answer":34}'
+    radial_evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation or comparison, plus the selected endpoint node box when the answer is a label
+    json_example_source_to_target_total_flow: '{"evidence":[[260,168,520,226],[670,174,930,232],[252,280,516,338],[670,270,930,328]],"answer":27}'
+    json_example_path_bottleneck_value: '{"evidence":[[260,206,520,264],[670,220,930,278]],"answer":12}'
+    json_example_path_flow_difference: '{"evidence":[[260,226,520,284],[670,238,930,296]],"answer":9}'
+    json_example_source_outgoing_total_flow: '{"evidence":[[260,168,520,226],[252,280,516,338]],"answer":31}'
+    json_example_target_incoming_total_flow: '{"evidence":[[670,174,930,232],[670,270,930,328]],"answer":34}'
     json_example_source_to_targets_total: '{"evidence":[[420,330,458,358],[560,394,598,422]],"answer":47}'
     json_example_sources_to_target_total: '{"evidence":[[690,318,728,346],[612,430,650,458]],"answer":39}'
     json_example_largest_target_for_source: '{"evidence":[[420,330,458,358],[560,394,598,422],[930,470,954,498]],"answer":"Y"}'

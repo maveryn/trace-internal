@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/table_counting`
 4. Query id: `categorical_value_count`, `in_interval`, `threshold_count`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over matching table cells.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.table.counting.value_count.ChartsTableValuePredicateCountTask`

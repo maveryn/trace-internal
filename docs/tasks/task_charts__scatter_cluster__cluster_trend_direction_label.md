@@ -6,6 +6,11 @@
 3. Source implementation domain/group: `charts/scatter`
 4. Query id: `cluster_trend_direction_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `keyed_bbox_map`.
+
+## Evidence
+Prompt-facing evidence uses a role-keyed cluster-hull box with key
+`answer_cluster`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter.cluster_query.ChartsScatterClusterTrendDirectionLabelTask`

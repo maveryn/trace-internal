@@ -73,11 +73,10 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_id == "default"
     assert out.query_id == query_id
     assert out.scene_id == "scatter_readout"
     assert out.answer_gt.type == answer_type
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "scatter_series_readout_query"
     assert str(execution["scene_variant"]) == "marker_scatter"
@@ -89,9 +88,12 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
     expected_answer = _expected_answer(execution, query_id)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["bbox_set"] == list(out.evidence_gt.value.values())
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.evidence_gt.value.values():
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -102,14 +104,14 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
     target_point_id = str(execution["target_point_id"])
     assert trace["projected_evidence"]["point_id"] == target_point_id
     assert trace["projected_evidence"]["point_ids"] == evidence_point_ids
-    for index, point_id in enumerate(evidence_point_ids):
-        assert out.evidence_gt.value[index] == render_map["point_evidence_bboxes_px"][point_id]
+    assert out.evidence_gt.value["target_point_readout"] == render_map["point_evidence_bboxes_px"][target_point_id]
     if answer_type == "string":
-        assert len(out.evidence_gt.value) == 2
-        assert out.evidence_gt.value[1] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
+        assert set(out.evidence_gt.value) == {"target_point_readout", "x_axis_label"}
+        assert out.evidence_gt.value["x_axis_label"] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
     else:
-        assert len(out.evidence_gt.value) == 3
-        assert out.evidence_gt.value[-1] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
+        assert set(out.evidence_gt.value) == {"target_point_readout", "comparison_point_readout", "x_axis_label"}
+        assert out.evidence_gt.value["comparison_point_readout"] == render_map["point_evidence_bboxes_px"][str(execution["comparison_point_id"])]
+        assert out.evidence_gt.value["x_axis_label"] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -131,7 +133,7 @@ def test_chart_scatter_series_readout_prompt_examples_match_contract() -> None:
         else:
             assert isinstance(answer_and_evidence["answer"], str)
             assert isinstance(answer_only["answer"], str)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_evidence["evidence"], dict)
         assert "The image shows" in out.prompt
         assert "Displayed is" not in out.prompt
         assert "Shown is" not in out.prompt

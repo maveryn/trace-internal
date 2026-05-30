@@ -5,10 +5,14 @@
 2. Scene id: `part_whole`
 3. Source implementation domain/group: `charts/composition`
 4. Query id: `chart_order_adjacent_transfer_gap`
-5. Semantic query details are recorded in `query_id` and trace params.
+5. Answer type: integer
+6. Evidence type: `keyed_point_map`
+7. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.share_arithmetic_value.ChartsCompositionChartAdjacentTransferGapValueTask`
 2. Prompt lookup domain/group: `charts/composition`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+5. Prompt-facing evidence maps the source category label and the adjacent
+   target category label to the center points of their chart segments.

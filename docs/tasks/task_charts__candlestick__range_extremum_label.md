@@ -6,6 +6,12 @@
 3. Source implementation domain/group: `charts/candlestick`
 4. Query id: `body_range_extremum_label`, `wick_range_extremum_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Answer type: `string`, the exact visible period label.
+7. Evidence type: `bbox_set` containing one answer candle mark:
+   - `wick_range_extremum_label`: answer candle wick bbox.
+   - `body_range_extremum_label`: answer candle body bbox.
+
+Printed O/H/L/C value labels and the period label are support text recorded in trace metadata, not prompt-facing evidence boxes.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.candlestick.ohlc_query.ChartsCandlestickRangeExtremumLabelTask`

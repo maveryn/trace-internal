@@ -1,0 +1,955 @@
+"""Base choropleth map rendering helpers."""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+
+from PIL import Image, ImageDraw
+
+from ....core.seed import spawn_rng
+from ...shared.bbox_projection import bbox_union_raw as _bbox_union, round_bbox as _round_bbox
+from ...shared.color_distance import coerce_rgb as _rgb
+from ...shared.config_defaults import required_group_defaults, resolve_required_int_bounds
+from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
+from ...shared.text_rendering import fit_font_to_box, load_font
+from ..shared.label_assets import resolve_chart_category_labels
+from .choropleth_assets import (
+    GEOGRAPHIC_MAP_ASSETS as _GEOGRAPHIC_MAP_ASSETS,
+    WORLD_CATEGORY_TITLE_OPTIONS as _WORLD_CATEGORY_TITLE_OPTIONS,
+    WORLD_MAP_ASSET_ID as _WORLD_MAP_ASSET_ID,
+    WORLD_TITLE_OPTIONS as _WORLD_TITLE_OPTIONS,
+    load_geographic_map_asset as _load_geographic_map_asset,
+    load_world_map_asset as _load_world_map_asset,
+)
+from .choropleth_config import *  # noqa: F403
+from .choropleth_geometry import (
+    _balanced_int,
+    _choose_random,
+    _grid_pair_support,
+    _grid_points,
+    _neighbors,
+    _polygon_bbox,
+    _polygon_center,
+    _reading_order_region_ids,
+    _region_polygon,
+    _region_sort_key,
+    _sample_connected_cells,
+    _shrink_polygon,
+)
+from .choropleth_geography import (
+    WORLD_FILTERED_CONTINENTS as _WORLD_FILTERED_CONTINENTS,
+    _border_segment_key,
+    _border_segment_length,
+    _centroid_lonlat_from_rings,
+    _geographic_border_neighbors,
+    _geographic_shared_border_lengths,
+    _region_boundary_segments,
+    _selected_geographic_region_adjacency,
+    _synthetic_region_adjacency,
+    _world_country_shared_border_lengths,
+    _world_filtered_region_candidates,
+)
+from .choropleth_style import (
+    resolve_choropleth_legend_position as _resolve_legend_position,
+    resolve_choropleth_marker_style as _resolve_marker_style,
+    resolve_choropleth_palette as _resolve_palette,
+    resolve_choropleth_world_map_style as _resolve_world_map_style,
+)
+
+Point = Tuple[float, float]
+BBox = Tuple[float, float, float, float]
+
+@dataclass(frozen=True)
+class _MapRenderParams:
+    canvas_width: int
+    canvas_height: int
+    outer_margin_px: int
+    panel_padding_px: int
+    title_band_height_px: int
+    legend_width_px: int
+    legend_height_px: int
+    map_legend_gap_px: int
+    region_gap_px: int
+    region_border_width_px: int
+    label_font_size_px: int
+    legend_font_size_px: int
+    title_font_size_px: int
+    legend_position: str
+    legend_position_probabilities: Dict[str, float]
+    panel_fill_rgb: Tuple[int, int, int]
+    panel_border_rgb: Tuple[int, int, int]
+    title_color_rgb: Tuple[int, int, int]
+    map_border_rgb: Tuple[int, int, int]
+    region_border_rgb: Tuple[int, int, int]
+    legend_fill_rgb: Tuple[int, int, int]
+    legend_text_rgb: Tuple[int, int, int]
+    map_palette_rgb: Tuple[Tuple[int, int, int], ...]
+    map_palette_variant: str
+    map_palette_variant_probabilities: Dict[str, float]
+    world_map_style_id: str
+    world_map_style_probabilities: Dict[str, float]
+    world_map_style: Dict[str, Any]
+    layout_offset_x_px: int
+    layout_offset_y_px: int
+    layout_jitter_meta: Dict[str, Any]
+
+@dataclass(frozen=True)
+class _RenderedChoroplethMap:
+    image: Image.Image
+    entities: Tuple[Dict[str, Any], ...]
+    panel_bbox_px: List[float]
+    title_bbox_px: List[float]
+    map_bbox_px: List[float]
+    legend_bbox_px: List[float]
+    region_bbox_map: Dict[str, List[float]]
+    region_center_map: Dict[str, List[float]]
+    legend_entry_bbox_map: Dict[str, List[float]]
+    render_meta: Dict[str, Any]
+
+def _render_style_seed(params: Mapping[str, Any]) -> int:
+    try:
+        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
+    except Exception:
+        return 0
+
+def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    return resolve_render_rgb(
+        params,
+        _RENDER_DEFAULTS,
+        str(key),
+        fallback,
+        instance_seed=_render_style_seed(params),
+        namespace=TASK_ID,
+    )
+
+def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
+    raw = params.get(key, _RENDER_DEFAULTS.get(key, fallback))
+    return int(raw)
+
+def _resolve_render_params(
+    params: Mapping[str, Any],
+    *,
+    query_id: str,
+    legend_count: int,
+) -> _MapRenderParams:
+    outer = _int_param(params, "outer_margin_px", 42)
+    jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
+        left_px=int(outer),
+        right_px=int(outer),
+        top_px=int(outer),
+        bottom_px=int(outer),
+        params=params,
+        defaults=_RENDER_DEFAULTS,
+        instance_seed=_render_style_seed(params),
+        namespace=f"{TASK_ID}.layout",
+    )
+    categorical = _is_categorical_query_id(str(query_id))
+    palette_variant, palette_probabilities, palette = _resolve_palette(
+        params,
+        render_defaults=_RENDER_DEFAULTS,
+        task_id=TASK_ID,
+        style_seed=_render_style_seed(params),
+        required_palette_count=int(legend_count),
+        categorical=bool(categorical),
+    )
+    legend_position, legend_position_probabilities = _resolve_legend_position(
+        params,
+        render_defaults=_RENDER_DEFAULTS,
+        task_id=TASK_ID,
+        instance_seed=_render_style_seed(params),
+    )
+    world_map_style_id, world_map_style_probabilities, world_map_style = _resolve_world_map_style(
+        params,
+        render_defaults=_RENDER_DEFAULTS,
+        task_id=TASK_ID,
+        instance_seed=_render_style_seed(params),
+    )
+    return _MapRenderParams(
+        canvas_width=_int_param(params, "canvas_width", 1180),
+        canvas_height=_int_param(params, "canvas_height", 760),
+        outer_margin_px=int(outer),
+        panel_padding_px=_int_param(params, "panel_padding_px", 26),
+        title_band_height_px=_int_param(params, "title_band_height_px", 62),
+        legend_width_px=_int_param(params, "legend_width_px", 238),
+        legend_height_px=_int_param(params, "legend_height_px", 118),
+        map_legend_gap_px=_int_param(params, "map_legend_gap_px", 32),
+        region_gap_px=_int_param(params, "region_gap_px", 3),
+        region_border_width_px=_int_param(params, "region_border_width_px", 3),
+        label_font_size_px=_int_param(params, "label_font_size_px", 18),
+        legend_font_size_px=_int_param(params, "legend_font_size_px", 17),
+        title_font_size_px=_int_param(params, "title_font_size_px", 28),
+        legend_position=str(legend_position),
+        legend_position_probabilities=dict(legend_position_probabilities),
+        panel_fill_rgb=_rgb_param(params, "panel_fill_rgb", (252, 253, 251)),
+        panel_border_rgb=_rgb_param(params, "panel_border_rgb", (72, 82, 92)),
+        title_color_rgb=_rgb_param(params, "title_color_rgb", (35, 42, 50)),
+        map_border_rgb=_rgb_param(params, "map_border_rgb", (74, 84, 94)),
+        region_border_rgb=_rgb_param(params, "region_border_rgb", (255, 255, 255)),
+        legend_fill_rgb=_rgb_param(params, "legend_fill_rgb", (255, 255, 255)),
+        legend_text_rgb=_rgb_param(params, "legend_text_rgb", (36, 42, 50)),
+        map_palette_rgb=tuple(palette),
+        map_palette_variant=str(palette_variant),
+        map_palette_variant_probabilities=dict(palette_probabilities),
+        world_map_style_id=str(world_map_style_id),
+        world_map_style_probabilities=dict(world_map_style_probabilities),
+        world_map_style=dict(world_map_style),
+        layout_offset_x_px=int(jitter_left) - int(outer),
+        layout_offset_y_px=int(jitter_top) - int(outer),
+        layout_jitter_meta=dict(layout_jitter_meta),
+    )
+
+def _color_luminance(color: Sequence[int]) -> float:
+    red, green, blue = (int(color[0]), int(color[1]), int(color[2]))
+    return (0.299 * float(red)) + (0.587 * float(green)) + (0.114 * float(blue))
+
+def _text_fill_for_color(color: Sequence[int]) -> Tuple[int, int, int]:
+    return (255, 255, 255) if _color_luminance(color) < 145.0 else (26, 35, 44)
+
+def _text_stroke_for_color(color: Sequence[int]) -> Tuple[int, int, int]:
+    return (24, 32, 40) if _color_luminance(color) < 145.0 else (255, 255, 255)
+
+def _region_value_label_text(region: Mapping[str, Any]) -> str:
+    value = region.get("region_value")
+    if value is None:
+        return ""
+    label = str(region.get("region_label") or "").strip()
+    if label:
+        return f"{label}:{int(value)}"
+    return str(int(value))
+
+def _draw_region_value_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    region: Mapping[str, Any],
+    center: Sequence[float],
+    bbox: Sequence[float],
+    fill_color: Sequence[int],
+    render_params: _MapRenderParams,
+) -> List[float] | None:
+    text = _region_value_label_text(region)
+    if not text:
+        return None
+    width = max(1.0, float(bbox[2]) - float(bbox[0]))
+    height = max(1.0, float(bbox[3]) - float(bbox[1]))
+    max_width = max(18.0, min(float(width) - 4.0, 74.0))
+    max_height = max(10.0, min(float(height) - 4.0, 24.0))
+    font = fit_font_to_box(
+        draw,
+        text=str(text),
+        max_width=float(max_width),
+        max_height=float(max_height),
+        bold=True,
+        min_size_px=7,
+        max_size_px=max(8, int(render_params.label_font_size_px)),
+        fill_ratio=0.95,
+    )
+    return draw_centered_text(
+        draw,
+        text=str(text),
+        center=(float(center[0]), float(center[1])),
+        font=font,
+        fill=_text_fill_for_color(fill_color),
+        stroke_fill=_text_stroke_for_color(fill_color),
+        stroke_width=2,
+    )
+
+def _layout_bboxes(render_params: _MapRenderParams) -> Tuple[BBox, BBox, BBox, BBox]:
+    outer = float(render_params.outer_margin_px)
+    offset_x = float(render_params.layout_offset_x_px)
+    offset_y = float(render_params.layout_offset_y_px)
+    panel_bbox: BBox = (
+        outer + offset_x,
+        outer + offset_y,
+        float(render_params.canvas_width) - outer + offset_x,
+        float(render_params.canvas_height) - outer + offset_y,
+    )
+    title_bbox: BBox = (
+        panel_bbox[0] + float(render_params.panel_padding_px),
+        panel_bbox[1] + 10.0,
+        panel_bbox[2] - float(render_params.panel_padding_px),
+        panel_bbox[1] + float(render_params.title_band_height_px),
+    )
+    content_top = float(title_bbox[3] + 12.0)
+    content_bottom = float(panel_bbox[3] - render_params.panel_padding_px)
+    if str(render_params.legend_position) == "none":
+        legend_bbox = (0.0, 0.0, 0.0, 0.0)
+        map_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            content_top,
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            content_bottom,
+        )
+    elif str(render_params.legend_position) == "bottom":
+        legend_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            float(content_bottom - render_params.legend_height_px),
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            float(content_bottom),
+        )
+        map_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            content_top,
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            float(legend_bbox[1] - render_params.map_legend_gap_px),
+        )
+    elif str(render_params.legend_position) == "top":
+        legend_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            content_top,
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            float(content_top + render_params.legend_height_px),
+        )
+        map_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            float(legend_bbox[3] + render_params.map_legend_gap_px),
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            content_bottom,
+        )
+    else:
+        legend_left = float(panel_bbox[2] - render_params.panel_padding_px - render_params.legend_width_px)
+        map_bbox = (
+            float(panel_bbox[0] + render_params.panel_padding_px),
+            content_top,
+            float(legend_left - render_params.map_legend_gap_px),
+            content_bottom,
+        )
+        legend_bbox = (
+            legend_left,
+            content_top,
+            float(panel_bbox[2] - render_params.panel_padding_px),
+            content_bottom,
+        )
+    return panel_bbox, title_bbox, map_bbox, legend_bbox
+
+def _draw_legend(
+    draw: ImageDraw.ImageDraw,
+    *,
+    legend_bins: Sequence[Mapping[str, Any]],
+    legend_bbox: BBox,
+    render_params: _MapRenderParams,
+    categorical: bool,
+) -> Dict[str, List[float]]:
+    if str(render_params.legend_position) == "none":
+        return {}
+    draw_rounded_rect(
+        draw,
+        legend_bbox,
+        radius=12,
+        fill=render_params.legend_fill_rgb,
+        outline=render_params.map_border_rgb,
+        width=2,
+    )
+    palette = list(render_params.map_palette_rgb)
+    legend_entry_bbox_map: Dict[str, List[float]] = {}
+    title = "Category legend" if bool(categorical) else "Value legend"
+    title_bbox = (
+        legend_bbox[0] + 12.0,
+        legend_bbox[1] + 10.0,
+        legend_bbox[2] - 12.0,
+        legend_bbox[1] + 42.0,
+    )
+    draw_centered_text(
+        draw,
+        text=title,
+        center=(0.5 * (title_bbox[0] + title_bbox[2]), 0.5 * (title_bbox[1] + title_bbox[3])),
+        font=load_font(int(render_params.legend_font_size_px) + 2, bold=True),
+        fill=render_params.legend_text_rgb,
+        stroke_fill=render_params.legend_fill_rgb,
+        stroke_width=1,
+    )
+
+    if str(render_params.legend_position) in {"bottom", "top"}:
+        count = max(1, len(legend_bins))
+        start_x = legend_bbox[0] + 18.0
+        usable_w = max(1.0, legend_bbox[2] - legend_bbox[0] - 36.0)
+        cell_w = usable_w / float(count)
+        swatch_h = 26.0
+        swatch_y0 = legend_bbox[1] + 52.0
+        label_y0 = swatch_y0 + swatch_h + 3.0
+        for index, bin_spec in enumerate(legend_bins):
+            left = float(start_x + (index * cell_w) + 4.0)
+            right = float(start_x + ((index + 1) * cell_w) - 4.0)
+            swatch_bbox = (left, swatch_y0, right, swatch_y0 + swatch_h)
+            fill = tuple(int(channel) for channel in palette[int(index) % len(palette)])
+            draw.rounded_rectangle(
+                swatch_bbox,
+                radius=5,
+                fill=fill,
+                outline=tuple(int(channel) for channel in render_params.map_border_rgb),
+                width=1,
+            )
+            text_bbox = (left - 2.0, label_y0, right + 2.0, legend_bbox[3] - 10.0)
+            draw_centered_text(
+                draw,
+                text=str(bin_spec["bin_label"]),
+                center=(0.5 * (text_bbox[0] + text_bbox[2]), 0.5 * (text_bbox[1] + text_bbox[3])),
+                font=fit_font_to_box(
+                    draw,
+                    text=str(bin_spec["bin_label"]),
+                    max_width=max(1.0, float(text_bbox[2] - text_bbox[0])),
+                    max_height=max(1.0, float(text_bbox[3] - text_bbox[1])),
+                    bold=True,
+                    min_size_px=9,
+                    max_size_px=int(render_params.legend_font_size_px),
+                    fill_ratio=0.92,
+                ),
+                fill=render_params.legend_text_rgb,
+                stroke_fill=render_params.legend_fill_rgb,
+                stroke_width=1,
+            )
+            legend_entry_bbox_map[str(bin_spec["bin_id"])] = _round_bbox(swatch_bbox)
+    else:
+        row_top = legend_bbox[1] + 56.0
+        row_step = max(38.0, min(55.0, (legend_bbox[3] - row_top - 14.0) / max(1.0, float(len(legend_bins)))))
+        for index, bin_spec in enumerate(legend_bins):
+            top = float(row_top + (float(index) * row_step))
+            swatch_bbox = (
+                float(legend_bbox[0] + 18.0),
+                top,
+                float(legend_bbox[0] + 66.0),
+                top + min(31.0, row_step - 8.0),
+            )
+            fill = tuple(int(channel) for channel in palette[int(index) % len(palette)])
+            draw.rounded_rectangle(
+                swatch_bbox,
+                radius=6,
+                fill=fill,
+                outline=tuple(int(channel) for channel in render_params.map_border_rgb),
+                width=1,
+            )
+            text_bbox = (
+                float(swatch_bbox[2] + 10.0),
+                float(top - 2.0),
+                float(legend_bbox[2] - 10.0),
+                float(top + min(35.0, row_step - 4.0)),
+            )
+            draw_centered_text(
+                draw,
+                text=str(bin_spec["bin_label"]),
+                center=(0.5 * (text_bbox[0] + text_bbox[2]), 0.5 * (text_bbox[1] + text_bbox[3])),
+                font=fit_font_to_box(
+                    draw,
+                    text=str(bin_spec["bin_label"]),
+                    max_width=max(1.0, float(text_bbox[2] - text_bbox[0])),
+                    max_height=max(1.0, float(text_bbox[3] - text_bbox[1])),
+                    bold=True,
+                    min_size_px=9,
+                    max_size_px=int(render_params.legend_font_size_px),
+                    fill_ratio=0.94,
+                ),
+                fill=render_params.legend_text_rgb,
+                stroke_fill=render_params.legend_fill_rgb,
+                stroke_width=1,
+            )
+            legend_entry_bbox_map[str(bin_spec["bin_id"])] = _round_bbox(swatch_bbox)
+    return dict(legend_entry_bbox_map)
+
+def _project_world_point(
+    point: Sequence[float],
+    *,
+    map_bbox: BBox,
+    lon_bounds: Sequence[float],
+    lat_bounds: Sequence[float],
+) -> Point:
+    lon = float(point[0])
+    lat = float(point[1])
+    lon_min, lon_max = float(lon_bounds[0]), float(lon_bounds[1])
+    lat_min, lat_max = float(lat_bounds[0]), float(lat_bounds[1])
+    lon = max(lon_min, min(lon_max, lon))
+    lat = max(lat_min, min(lat_max, lat))
+    x = float(map_bbox[0]) + ((lon - lon_min) / max(1e-9, lon_max - lon_min)) * float(map_bbox[2] - map_bbox[0])
+    y = float(map_bbox[1]) + ((lat_max - lat) / max(1e-9, lat_max - lat_min)) * float(map_bbox[3] - map_bbox[1])
+    return (float(x), float(y))
+
+def _project_world_rings(
+    rings: Sequence[Sequence[Sequence[float]]],
+    *,
+    map_bbox: BBox,
+    lon_bounds: Sequence[float],
+    lat_bounds: Sequence[float],
+) -> List[List[Point]]:
+    projected: List[List[Point]] = []
+    for ring in rings:
+        points = [
+            _project_world_point(point, map_bbox=map_bbox, lon_bounds=lon_bounds, lat_bounds=lat_bounds)
+            for point in ring
+            if len(point) >= 2
+        ]
+        if len(points) >= 3:
+            projected.append(points)
+    return projected
+
+def _fit_bbox_to_aspect(container_bbox: BBox, *, target_aspect: float) -> BBox:
+    left, top, right, bottom = [float(value) for value in container_bbox]
+    width = max(1.0, float(right - left))
+    height = max(1.0, float(bottom - top))
+    aspect = width / height
+    if aspect > float(target_aspect):
+        fitted_width = height * float(target_aspect)
+        x0 = left + ((width - fitted_width) / 2.0)
+        return (float(x0), top, float(x0 + fitted_width), bottom)
+    fitted_height = width / float(target_aspect)
+    y0 = top + ((height - fitted_height) / 2.0)
+    return (left, float(y0), right, float(y0 + fitted_height))
+
+def _draw_world_graticule(
+    draw: ImageDraw.ImageDraw,
+    *,
+    map_bbox: BBox,
+    lon_bounds: Sequence[float],
+    lat_bounds: Sequence[float],
+    color: Tuple[int, int, int],
+    width_px: int = 1,
+) -> None:
+    for lon in range(-120, 181, 60):
+        p0 = _project_world_point((float(lon), float(lat_bounds[0])), map_bbox=map_bbox, lon_bounds=lon_bounds, lat_bounds=lat_bounds)
+        p1 = _project_world_point((float(lon), float(lat_bounds[1])), map_bbox=map_bbox, lon_bounds=lon_bounds, lat_bounds=lat_bounds)
+        draw.line([p0, p1], fill=color, width=max(1, int(width_px)))
+    for lat in range(-30, 61, 30):
+        p0 = _project_world_point((float(lon_bounds[0]), float(lat)), map_bbox=map_bbox, lon_bounds=lon_bounds, lat_bounds=lat_bounds)
+        p1 = _project_world_point((float(lon_bounds[1]), float(lat)), map_bbox=map_bbox, lon_bounds=lon_bounds, lat_bounds=lat_bounds)
+        draw.line([p0, p1], fill=color, width=max(1, int(width_px)))
+
+def _render_world_choropleth_map(
+    background: Image.Image,
+    *,
+    scene_title: str,
+    map_asset_id: str,
+    regions: Sequence[Mapping[str, Any]],
+    legend_bins: Sequence[Mapping[str, Any]],
+    render_params: _MapRenderParams,
+    instance_seed: int,
+    categorical: bool,
+    draw_color_legend: bool = True,
+    neutral_regions: bool = False,
+    show_region_value_labels: bool = False,
+) -> _RenderedChoroplethMap:
+    image = background.copy()
+    draw = ImageDraw.Draw(image)
+    entities: List[Dict[str, Any]] = []
+    region_bbox_map: Dict[str, List[float]] = {}
+    region_center_map: Dict[str, List[float]] = {}
+
+    panel_bbox, title_bbox, map_bbox_raw, legend_bbox = _layout_bboxes(render_params)
+    asset = _load_geographic_map_asset(str(map_asset_id or "world_countries"))
+    lon_bounds = [float(value) for value in asset.get("lon_bounds", [-180.0, 180.0])]
+    lat_bounds = [float(value) for value in asset.get("lat_bounds", [-58.0, 84.0])]
+    world_aspect = abs(float(lon_bounds[1] - lon_bounds[0])) / max(1e-9, abs(float(lat_bounds[1] - lat_bounds[0])))
+    map_bbox = _fit_bbox_to_aspect(
+        (
+            float(map_bbox_raw[0] + 18.0),
+            float(map_bbox_raw[1] + 18.0),
+            float(map_bbox_raw[2] - 18.0),
+            float(map_bbox_raw[3] - 16.0),
+        ),
+        target_aspect=float(world_aspect),
+    )
+    style_id = str(render_params.world_map_style_id)
+    style_probabilities = dict(render_params.world_map_style_probabilities)
+    style = dict(render_params.world_map_style)
+    ocean_rgb = _rgb(style.get("ocean_rgb"), (230, 239, 245))
+    land_fill = _rgb(style.get("land_fill_rgb"), (215, 221, 219))
+    land_outline = _rgb(style.get("land_outline_rgb"), (132, 144, 148))
+    selected_outline = _rgb(style.get("selected_outline_rgb"), (38, 45, 52))
+    reference_fill = _rgb(style.get("reference_fill_rgb"), (255, 240, 138))
+    reference_outline = _rgb(style.get("reference_outline_rgb"), (20, 28, 36))
+    neutral_selected_fill = _rgb(style.get("marker_region_fill_rgb"), (235, 238, 232))
+    graticule_rgb = _rgb(style.get("graticule_rgb"), (200, 214, 222))
+    graticule_width = max(1, int(style.get("graticule_width_px", 1)))
+    selected_outline_width = max(1, int(style.get("selected_outline_width_px", 2)))
+    show_graticule = bool(style.get("show_graticule", True))
+    draw_rounded_rect(
+        draw,
+        panel_bbox,
+        radius=16,
+        fill=render_params.panel_fill_rgb,
+        outline=render_params.panel_border_rgb,
+        width=2,
+    )
+    draw.rounded_rectangle(
+        map_bbox_raw,
+        radius=12,
+        fill=ocean_rgb,
+        outline=tuple(int(channel) for channel in render_params.map_border_rgb),
+        width=2,
+    )
+    title_text_bbox = draw_centered_text(
+        draw,
+        text=str(scene_title),
+        center=(0.5 * (title_bbox[0] + title_bbox[2]), 0.5 * (title_bbox[1] + title_bbox[3])),
+        font=load_font(int(render_params.title_font_size_px), bold=True),
+        fill=render_params.title_color_rgb,
+        stroke_fill=render_params.panel_fill_rgb,
+        stroke_width=1,
+    )
+
+    selected_by_asset_id = {str(region["asset_region_id"]): dict(region) for region in regions}
+    selected_region_id_by_asset_id = {
+        str(region["asset_region_id"]): str(region["region_id"])
+        for region in regions
+    }
+    border_reference_scene = (
+        str(render_params.legend_position) == "none"
+        and any(bool(region.get("is_reference_region")) for region in regions)
+    )
+    palette = list(render_params.map_palette_rgb)
+    selected_fill_by_region_id: Dict[str, Tuple[int, int, int]] = {}
+
+    if show_graticule:
+        _draw_world_graticule(
+            draw,
+            map_bbox=map_bbox,
+            lon_bounds=lon_bounds,
+            lat_bounds=lat_bounds,
+            color=graticule_rgb,
+            width_px=graticule_width,
+        )
+
+    selected_projected: Dict[str, List[List[Point]]] = {}
+    all_region_boxes: List[List[float]] = []
+    for asset_region in asset.get("regions", []):
+        if not isinstance(asset_region, Mapping):
+            continue
+        asset_region_id = str(asset_region.get("region_id"))
+        projected_rings = _project_world_rings(
+            asset_region.get("rings", []),
+            map_bbox=map_bbox,
+            lon_bounds=lon_bounds,
+            lat_bounds=lat_bounds,
+        )
+        if not projected_rings:
+            continue
+        region_spec = selected_by_asset_id.get(asset_region_id)
+        fill = land_fill
+        outline = land_outline
+        line_width = 1
+        if region_spec is not None:
+            if bool(region_spec.get("is_reference_region")):
+                fill = reference_fill
+                outline = reference_outline
+                line_width = max(4, int(selected_outline_width) + 2)
+            elif bool(border_reference_scene):
+                fill = land_fill
+                outline = land_outline
+                line_width = 1
+            elif bool(neutral_regions):
+                fill = neutral_selected_fill
+                outline = selected_outline
+                line_width = selected_outline_width
+            else:
+                fill = tuple(int(channel) for channel in palette[int(region_spec["bin_index"]) % len(palette)])
+                outline = selected_outline
+                line_width = selected_outline_width
+            selected_fill_by_region_id[selected_region_id_by_asset_id[asset_region_id]] = tuple(int(channel) for channel in fill)
+            selected_projected[selected_region_id_by_asset_id[asset_region_id]] = projected_rings
+        for ring in projected_rings:
+            draw.polygon(ring, fill=fill, outline=outline)
+            draw.line(ring + [ring[0]], fill=outline, width=line_width, joint="curve")
+            all_region_boxes.append(_polygon_bbox(ring))
+
+    for region in regions:
+        region_id = str(region["region_id"])
+        rings = selected_projected.get(region_id, [])
+        bbox = _bbox_union(_polygon_bbox(ring) for ring in rings) if rings else [0.0, 0.0, 0.0, 0.0]
+        centroid_lonlat = region.get("centroid_lonlat", [0.0, 0.0])
+        center = _project_world_point(
+            centroid_lonlat,
+            map_bbox=map_bbox,
+            lon_bounds=lon_bounds,
+            lat_bounds=lat_bounds,
+        )
+        region_bbox_map[region_id] = list(bbox)
+        region_center_map[region_id] = [round(float(center[0]), 3), round(float(center[1]), 3)]
+        value_label_bbox = None
+        if bool(show_region_value_labels):
+            value_label_bbox = _draw_region_value_label(
+                draw,
+                region=region,
+                center=center,
+                bbox=bbox,
+                fill_color=selected_fill_by_region_id.get(str(region_id), land_fill),
+                render_params=render_params,
+            )
+        entities.append(
+            {
+                "entity_id": region_id,
+                "entity_type": "world_choropleth_country",
+                "bbox_xyxy": list(bbox),
+                "attrs": {
+                    "asset_region_id": str(region["asset_region_id"]),
+                    "display_name": str(region["display_name"]),
+                    "continent": str(region.get("continent") or ""),
+                    "bin_index": int(region["bin_index"]),
+                    "bin_label": str(region["bin_label"]),
+                    "bin_lower": region.get("bin_lower"),
+                    "bin_upper": region.get("bin_upper"),
+                    "category": str(region.get("category") or ""),
+                    "region_label": str(region.get("region_label") or ""),
+                    "region_value": region.get("region_value"),
+                    "is_reference_region": bool(region.get("is_reference_region")),
+                    "center_px": list(region_center_map[region_id]),
+                    "centroid_lonlat": list(region.get("centroid_lonlat", [])),
+                },
+            }
+        )
+        if value_label_bbox is not None:
+            entities.append(
+                {
+                    "entity_id": f"{region_id}_value_label",
+                    "entity_type": "map_region_value_label",
+                    "bbox_xyxy": list(value_label_bbox),
+                    "attrs": {
+                        "region_id": str(region_id),
+                        "region_label": str(region.get("region_label") or ""),
+                        "region_value": int(region.get("region_value")),
+                    },
+                }
+            )
+
+    legend_entry_bbox_map = (
+        _draw_legend(
+            draw,
+            legend_bins=legend_bins,
+            legend_bbox=legend_bbox,
+            render_params=render_params,
+            categorical=bool(categorical),
+        )
+        if bool(draw_color_legend)
+        else {}
+    )
+    map_shape_bbox = _bbox_union(all_region_boxes) if all_region_boxes else _round_bbox(map_bbox)
+    entities.insert(0, {"entity_id": "map_panel", "entity_type": "map_panel", "bbox_xyxy": _round_bbox(panel_bbox)})
+    entities.insert(
+        1,
+        {
+            "entity_id": "map_title",
+            "entity_type": "map_title",
+            "bbox_xyxy": list(title_text_bbox),
+            "attrs": {"title": str(scene_title)},
+        },
+    )
+    entities.insert(2, {"entity_id": "world_choropleth_map_shape", "entity_type": "world_choropleth_map_shape", "bbox_xyxy": list(map_shape_bbox)})
+    return _RenderedChoroplethMap(
+        image=image,
+        entities=tuple(dict(item) for item in entities),
+        panel_bbox_px=_round_bbox(panel_bbox),
+        title_bbox_px=list(title_text_bbox),
+        map_bbox_px=list(map_shape_bbox),
+        legend_bbox_px=_round_bbox(legend_bbox),
+        region_bbox_map=dict(region_bbox_map),
+        region_center_map=dict(region_center_map),
+        legend_entry_bbox_map=dict(legend_entry_bbox_map),
+        render_meta={
+            "world_map_style": {
+                "style_id": str(style_id),
+                "style_probabilities": dict(style_probabilities),
+                "ocean_rgb": [int(channel) for channel in ocean_rgb],
+                "land_fill_rgb": [int(channel) for channel in land_fill],
+                "land_outline_rgb": [int(channel) for channel in land_outline],
+                "selected_outline_rgb": [int(channel) for channel in selected_outline],
+                "reference_fill_rgb": [int(channel) for channel in reference_fill],
+                "reference_outline_rgb": [int(channel) for channel in reference_outline],
+                "graticule_rgb": [int(channel) for channel in graticule_rgb],
+                "show_graticule": bool(show_graticule),
+            },
+            "world_projection_bbox_px": _round_bbox(map_bbox),
+            "world_projection_aspect": round(float(world_aspect), 6),
+        },
+    )
+
+def _render_choropleth_map(
+    background: Image.Image,
+    *,
+    scene_title: str,
+    rows: int,
+    cols: int,
+    regions: Sequence[Mapping[str, Any]],
+    legend_bins: Sequence[Mapping[str, Any]],
+    render_params: _MapRenderParams,
+    instance_seed: int,
+    categorical: bool,
+    draw_color_legend: bool = True,
+    neutral_regions: bool = False,
+    show_region_value_labels: bool = False,
+) -> _RenderedChoroplethMap:
+    image = background.copy()
+    draw = ImageDraw.Draw(image)
+    entities: List[Dict[str, Any]] = []
+    region_bbox_map: Dict[str, List[float]] = {}
+    region_center_map: Dict[str, List[float]] = {}
+
+    panel_bbox, title_bbox, map_bbox, legend_bbox = _layout_bboxes(render_params)
+    draw_rounded_rect(
+        draw,
+        panel_bbox,
+        radius=16,
+        fill=render_params.panel_fill_rgb,
+        outline=render_params.panel_border_rgb,
+        width=2,
+    )
+    title_text_bbox = draw_centered_text(
+        draw,
+        text=str(scene_title),
+        center=(0.5 * (title_bbox[0] + title_bbox[2]), 0.5 * (title_bbox[1] + title_bbox[3])),
+        font=load_font(int(render_params.title_font_size_px), bold=True),
+        fill=render_params.title_color_rgb,
+        stroke_fill=render_params.panel_fill_rgb,
+        stroke_width=1,
+    )
+
+    grid_points = _grid_points(
+        rows=int(rows),
+        cols=int(cols),
+        map_bbox=(
+            map_bbox[0] + 20.0,
+            map_bbox[1] + 22.0,
+            map_bbox[2] - 20.0,
+            map_bbox[3] - 18.0,
+        ),
+        instance_seed=int(instance_seed),
+    )
+
+    palette = list(render_params.map_palette_rgb)
+    reference_fill = _rgb(render_params.world_map_style.get("reference_fill_rgb"), (255, 240, 138))
+    reference_outline = _rgb(render_params.world_map_style.get("reference_outline_rgb"), (20, 28, 36))
+    neutral_fills = (
+        (235, 238, 232),
+        (229, 235, 236),
+        (238, 235, 229),
+        (233, 232, 240),
+    )
+    polygons: Dict[str, List[Point]] = {}
+    for region in regions:
+        region_id = str(region["region_id"])
+        polygon = _region_polygon(row=int(region["row"]), col=int(region["col"]), grid_points=grid_points)
+        display_polygon = _shrink_polygon(polygon, gap_px=float(render_params.region_gap_px))
+        polygons[region_id] = list(display_polygon)
+
+    map_shape_bbox = _bbox_union(_polygon_bbox(points) for points in polygons.values())
+
+    for region in regions:
+        region_id = str(region["region_id"])
+        display_polygon = polygons[str(region_id)]
+        bin_index = int(region["bin_index"])
+        fill = tuple(int(channel) for channel in palette[int(bin_index) % len(palette)])
+        outline = tuple(int(channel) for channel in render_params.map_border_rgb)
+        line_width = max(1, int(render_params.region_border_width_px) - 1)
+        if bool(region.get("is_reference_region")):
+            fill = reference_fill
+            outline = reference_outline
+            line_width = max(4, int(render_params.region_border_width_px) + 1)
+        elif bool(neutral_regions):
+            fill = neutral_fills[int(_region_sort_key(region_id)[1]) % len(neutral_fills)] if isinstance(_region_sort_key(region_id)[1], int) else neutral_fills[0]
+            outline = tuple(int(channel) for channel in render_params.map_border_rgb)
+            line_width = max(2, int(render_params.region_border_width_px) - 1)
+        draw.polygon(
+            display_polygon,
+            fill=fill,
+            outline=tuple(int(channel) for channel in render_params.region_border_rgb),
+        )
+        draw.line(
+            display_polygon + [display_polygon[0]],
+            fill=outline,
+            width=int(line_width),
+            joint="curve",
+        )
+        bbox = _polygon_bbox(display_polygon)
+        center = _polygon_center(display_polygon)
+        region_bbox_map[region_id] = list(bbox)
+        region_center_map[region_id] = [round(float(center[0]), 3), round(float(center[1]), 3)]
+        value_label_bbox = None
+        if bool(show_region_value_labels):
+            value_label_bbox = _draw_region_value_label(
+                draw,
+                region=region,
+                center=center,
+                bbox=bbox,
+                fill_color=fill,
+                render_params=render_params,
+            )
+        entities.append(
+            {
+                "entity_id": region_id,
+                "entity_type": "choropleth_region",
+                "bbox_xyxy": list(bbox),
+                "attrs": {
+                    "row": int(region["row"]),
+                    "col": int(region["col"]),
+                    "bin_index": int(bin_index),
+                    "bin_label": str(region["bin_label"]),
+                    "bin_lower": region.get("bin_lower"),
+                    "bin_upper": region.get("bin_upper"),
+                    "category": str(region.get("category") or ""),
+                    "region_label": str(region.get("region_label") or ""),
+                    "region_value": region.get("region_value"),
+                    "is_reference_region": bool(region.get("is_reference_region")),
+                    "center_px": list(region_center_map[region_id]),
+                },
+            }
+        )
+        if value_label_bbox is not None:
+            entities.append(
+                {
+                    "entity_id": f"{region_id}_value_label",
+                    "entity_type": "map_region_value_label",
+                    "bbox_xyxy": list(value_label_bbox),
+                    "attrs": {
+                        "region_id": str(region_id),
+                        "region_label": str(region.get("region_label") or ""),
+                        "region_value": int(region.get("region_value")),
+                    },
+                }
+            )
+
+    legend_entry_bbox_map = (
+        _draw_legend(
+            draw,
+            legend_bins=legend_bins,
+            legend_bbox=legend_bbox,
+            render_params=render_params,
+            categorical=bool(categorical),
+        )
+        if bool(draw_color_legend)
+        else {}
+    )
+
+    entities.insert(0, {"entity_id": "map_panel", "entity_type": "map_panel", "bbox_xyxy": _round_bbox(panel_bbox)})
+    entities.insert(
+        1,
+        {
+            "entity_id": "map_title",
+            "entity_type": "map_title",
+            "bbox_xyxy": list(title_text_bbox),
+            "attrs": {"title": str(scene_title)},
+        },
+    )
+    entities.insert(2, {"entity_id": "choropleth_map_shape", "entity_type": "choropleth_map_shape", "bbox_xyxy": list(map_shape_bbox)})
+    return _RenderedChoroplethMap(
+        image=image,
+        entities=tuple(dict(item) for item in entities),
+        panel_bbox_px=_round_bbox(panel_bbox),
+        title_bbox_px=list(title_text_bbox),
+        map_bbox_px=list(map_shape_bbox),
+        legend_bbox_px=_round_bbox(legend_bbox),
+        region_bbox_map=dict(region_bbox_map),
+        region_center_map=dict(region_center_map),
+        legend_entry_bbox_map=dict(legend_entry_bbox_map),
+        render_meta={
+            "map_style": {"style_id": "synthetic_irregular_default"},
+        },
+    )
+
+
+__all__ = [
+    'BBox',
+    'Point',
+    '_MapRenderParams',
+    '_RenderedChoroplethMap',
+    '_render_choropleth_map',
+    '_render_world_choropleth_map',
+    '_resolve_render_params',
+]

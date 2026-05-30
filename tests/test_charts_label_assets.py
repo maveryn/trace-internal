@@ -7,6 +7,7 @@ import random
 from trace.tasks.charts.shared.label_assets import (
     CHART_CATEGORY_LABEL_BUCKET_MANIFESTS,
     resolve_chart_category_labels,
+    resolve_chart_compact_axis_labels,
     resolve_chart_entity_labels,
     resolve_chart_text_labels,
 )
@@ -55,3 +56,14 @@ def test_chart_text_labels_still_support_compact_letters() -> None:
     assert len(set(resolved.labels)) == 12
     assert resolved.label_source_kind == "letters"
     assert all(len(label) == 1 and label.isalpha() for label in resolved.labels)
+
+
+def test_chart_compact_axis_labels_use_large_synthetic_pool() -> None:
+    resolved = resolve_chart_compact_axis_labels(random.Random(37), count=40)
+
+    assert len(resolved.labels) == 40
+    assert len(set(resolved.labels)) == 40
+    assert resolved.label_source_kind == "synthetic_compact_id"
+    assert resolved.label_bucket == "dense_axis_compact_id"
+    assert all(2 <= len(label) <= 4 for label in resolved.labels)
+    assert all(label.isascii() and label.isalnum() for label in resolved.labels)

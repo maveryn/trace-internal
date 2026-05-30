@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.charts.distribution.boxplot_label import ChartsDistributionBoxplotLabelTask
+from trace.tasks.charts.distribution.boxplot_label import (
+    ChartsDistributionBoxplotLabelTask,
+    ChartsDistributionBoxplotMedianRankDifferenceValueTask,
+    ChartsDistributionBoxplotPairedMedianShiftLabelTask,
+)
 from trace.tasks.charts.distribution.histogram_count import (
     ChartsDistributionHistogramCountTask,
     ChartsDistributionHistogramCumulativeRankLabelTask,
@@ -246,14 +250,21 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         quartiles_by_label = {str(label): dict(values) for label, values in execution["quartiles_by_label"].items()}
 
         assert str(out.query_id) == str(query_id)
-        assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "point_set"
+        assert out.answer_gt.type == "string"
         assert str(execution["scene_variant"]) == "boxplot"
         assert str(render["scene_variant"]) == "boxplot"
-        evidence_points = [list(point) for point in out.evidence_gt.value]
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-        assert len(trace["projected_evidence"]["bbox_set"]) == (2 if "reference_label" in execution else 1)
+        if str(query_id) == "median_reference_label":
+            assert out.evidence_gt.type == "keyed_point_map"
+            assert trace["projected_evidence"]["type"] == "keyed_point_map"
+            assert set(out.evidence_gt.value) == {"reference_boxplot", "answer_boxplot"}
+            assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+        else:
+            assert out.evidence_gt.type == "point_set"
+            evidence_points = [list(point) for point in out.evidence_gt.value]
+            assert trace["projected_evidence"]["type"] == "point_set"
+            assert trace["projected_evidence"]["point_set"] == evidence_points
+            assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
+            assert len(trace["projected_evidence"]["bbox_set"]) == 1
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         all_box_values = [
             int(value)
@@ -304,8 +315,8 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
 def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> None:
     task = ChartsDistributionBoxplotLabelTask()
     expected = {
-        "median_reference_label": {"evidence": [[240, 300], [430, 250]], "answer": "M"},
-        "iqr_extremum_label": {"evidence": [[430, 250]], "answer": "Q"},
+        "median_reference_label": {"evidence": {"reference_boxplot": [240, 300], "answer_boxplot": [430, 250]}, "answer": "Maple"},
+        "iqr_extremum_label": {"evidence": [[430, 250]], "answer": "Ivory"},
     }
     for index, query_id in enumerate(expected, start=11140):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
@@ -443,6 +454,33 @@ def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> 
     assert float(high_scan.complexity.complexity_score) > float(low_scan.complexity.complexity_score)
 
 
+def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_evidence() -> None:
+    median_rank = ChartsDistributionBoxplotMedianRankDifferenceValueTask().generate(
+        11180,
+        params={"query_id": "median_top_second_difference_value"},
+        max_attempts=10,
+    )
+    assert median_rank.answer_gt.type == "integer"
+    assert median_rank.evidence_gt.type == "keyed_point_map"
+    assert set(median_rank.evidence_gt.value) == {
+        "highest_median_boxplot",
+        "second_highest_median_boxplot",
+    }
+    assert median_rank.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
+    assert median_rank.trace_payload["projected_evidence"]["keyed_point_map"] == median_rank.evidence_gt.value
+
+    paired_shift = ChartsDistributionBoxplotPairedMedianShiftLabelTask().generate(
+        11181,
+        params={"query_id": "paired_median_greatest_increase_label"},
+        max_attempts=10,
+    )
+    assert paired_shift.answer_gt.type == "string"
+    assert paired_shift.evidence_gt.type == "keyed_point_map"
+    assert set(paired_shift.evidence_gt.value) == {"before_boxplot", "after_boxplot"}
+    assert paired_shift.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
+    assert paired_shift.trace_payload["projected_evidence"]["keyed_point_map"] == paired_shift.evidence_gt.value
+
+
 def test_chart_distribution_violin_variants_match_contract() -> None:
     task = ChartsDistributionViolinLabelTask()
     for seed, query_id in enumerate(
@@ -456,14 +494,16 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
         support_by_label = {str(label): dict(values) for label, values in execution["support_by_label"].items()}
 
         assert str(out.query_id) == str(query_id)
-        assert out.answer_gt.type == "option_letter"
+        assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
         assert str(execution["scene_variant"]) == "violin"
         assert str(render["scene_variant"]) == "violin"
         assert str(render["violin_style"]["mode_line_style"]) in {"full", "short", "dot", "none"}
         assert str(render["violin_style"]["fill_style"]) in {"solid", "light", "outline", "hatch"}
         assert str(render["violin_style"]["palette_mode"]) in {"single", "per_violin_muted"}
+        assert str(render["font_assets"]["chart_font_family"]).strip()
         assert str(trace["scene_ir"]["scene_kind"]) == "chart_violin_distribution"
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == [list(bbox) for bbox in out.evidence_gt.value]
         assert len(trace["projected_evidence"]["bbox_set"]) == 1
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -493,5 +533,5 @@ def test_chart_distribution_violin_public_task_contract() -> None:
     assert str(out.query_id) in {"highest_mode", "lowest_mode", "widest_support", "narrowest_support", "bimodal_label"}
     assert str(execution["query_id"]) == str(out.query_id)
     assert str(query_spec["params"]["query_id"]) == str(out.query_id)
-    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_set"

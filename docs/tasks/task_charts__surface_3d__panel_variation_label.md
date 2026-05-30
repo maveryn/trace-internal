@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/three_d`
 4. Query id: `panel_variation_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the supporting answer panel.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.three_d.panel_query.ChartsThreeDPanelVariationLabelTask`

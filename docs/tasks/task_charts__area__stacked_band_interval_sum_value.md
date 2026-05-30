@@ -12,3 +12,9 @@
 2. Prompt lookup domain/group: `charts/area`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and evidence are produced from the same metadata execution trace.
+
+## Evidence Contract
+1. Answer schema: integer value.
+2. Evidence schema: `point_set`.
+3. Evidence marks the queried category's rendered band-value points from the queried start x-axis label through the queried end x-axis label.
+4. Category colors, legend entries, value-label bboxes, and band polygons are renderer metadata, not public evidence.

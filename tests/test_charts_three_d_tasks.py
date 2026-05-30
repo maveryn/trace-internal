@@ -88,7 +88,11 @@ def test_chart_three_d_base_variants_match_contract(query_id: str) -> None:
     expected = _expected_answer(execution)
     assert out.answer_gt.value == expected
     assert execution["answer"] == expected
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["font_assets"]
+    if query_id == "series_trend_label":
+        assert len(trace["projected_evidence"]["point_ids"]) == 2
 
     for bbox in out.evidence_gt.value:
         _assert_bbox_inside_canvas(
@@ -118,13 +122,9 @@ def test_chart_three_d_public_tasks_rewrite_query_id(query_id: str, task_id: str
     out = create_task(task_id).generate(98300 + SUPPORTED_QUERY_IDS.index(query_id), params={}, max_attempts=80)
     trace = out.trace_payload
 
-    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["scene_ir"]["relations"]["query_id"] == "default"
     assert trace["scene_ir"]["relations"]["query_id"] == query_id
 
 

@@ -587,7 +587,13 @@ def build_density_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}:category_count:{str(query_id)}",
     )
-    labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+        )
+    )
     rng = spawn_rng(int(instance_seed), f"{task_id}.density.{str(query_id)}")
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
@@ -1214,7 +1220,14 @@ def build_boxplot_median_rank_difference_dataset(
     if medians is None:
         raise ValueError("unable to construct ranked-median boxplot difference within requested answer bounds")
 
-    labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:median_rank_difference_value:{int(category_count)}",
+            max_chars=3,
+        )
+    )
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
     specs = [
@@ -1312,7 +1325,14 @@ def build_boxplot_paired_median_shift_dataset(
         raise ValueError("paired boxplot shift support is too small for requested category count")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_id)}")
-    base_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    base_labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+            max_chars=3,
+        )
+    )
     shift_magnitudes = [int(value) for value in rng.sample(shift_support, int(category_count))]
     rng.shuffle(shift_magnitudes)
     if str(query_id) == "paired_median_greatest_increase_label":
@@ -1507,7 +1527,14 @@ def build_boxplot_dataset_for_variant(
         instance_seed=int(instance_seed),
         namespace=f"{task_id}:category_count:{str(query_id)}",
     )
-    labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    labels = list(
+        sample_chart_labels(
+            count=int(category_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.labels:{str(query_id)}:{int(category_count)}",
+            max_chars=3,
+        )
+    )
     rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_id)}")
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])

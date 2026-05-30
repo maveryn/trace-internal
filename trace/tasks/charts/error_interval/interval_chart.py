@@ -22,14 +22,16 @@ from ...shared.config_defaults import (
 )
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text, draw_dashed_line, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.render_variation import resolve_render_rgb
+from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_chart_complexity,
     clamp_unit_interval,
@@ -37,6 +39,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_entity_labels
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
@@ -86,29 +89,6 @@ _SCENE_LOADS: Dict[str, float] = {
     "bar_with_error": 0.62,
 }
 
-_LABEL_POOL: Tuple[str, ...] = (
-    "Aster",
-    "Briar",
-    "Cedar",
-    "Dune",
-    "Ember",
-    "Fjord",
-    "Grove",
-    "Harbor",
-    "Ivory",
-    "Juniper",
-    "Kestrel",
-    "Lagoon",
-    "Meadow",
-    "Nimbus",
-    "Orchid",
-    "Prairie",
-    "Quartz",
-    "Ripple",
-    "Summit",
-    "Tundra",
-)
-
 RGB = Tuple[int, int, int]
 BBox = List[float]
 
@@ -149,6 +129,10 @@ class _RenderParams:
     canvas_width: int
     canvas_height: int
     outer_margin_px: int
+    outer_margin_left_px: int
+    outer_margin_right_px: int
+    outer_margin_top_px: int
+    outer_margin_bottom_px: int
     title_band_height_px: int
     label_band_px: int
     plot_padding_px: int
@@ -176,6 +160,8 @@ class _RenderParams:
     grid_rgb: RGB
     reference_rgb: RGB
     interval_outline_rgb: RGB
+    font_family: str
+    layout_jitter_meta: Dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -271,9 +257,14 @@ def _sample_int_range(
 
 def _choose_labels(*, count: int, instance_seed: int) -> List[str]:
     rng = spawn_rng(int(instance_seed), "charts.error_interval.labels")
-    labels = list(_LABEL_POOL)
-    rng.shuffle(labels)
-    return labels[: int(count)]
+    labels = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    ).labels
+    return [str(label) for label in labels]
 
 
 def _palette(params: Mapping[str, Any], *, count: int, instance_seed: int) -> List[RGB]:
@@ -565,10 +556,25 @@ def _render_float(params: Mapping[str, Any], key: str, fallback: float) -> float
 
 
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
+    outer_margin = _render_int(params, "outer_margin_px", 54)
+    margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
+        left_px=int(outer_margin),
+        right_px=int(outer_margin),
+        top_px=int(outer_margin),
+        bottom_px=int(outer_margin),
+        params=params,
+        defaults=_RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.layout",
+    )
     return _RenderParams(
         canvas_width=_render_int(params, "canvas_width", 1320),
         canvas_height=_render_int(params, "canvas_height", 900),
-        outer_margin_px=_render_int(params, "outer_margin_px", 54),
+        outer_margin_px=int(outer_margin),
+        outer_margin_left_px=int(margin_left),
+        outer_margin_right_px=int(margin_right),
+        outer_margin_top_px=int(margin_top),
+        outer_margin_bottom_px=int(margin_bottom),
         title_band_height_px=_render_int(params, "title_band_height_px", 72),
         label_band_px=_render_int(params, "label_band_px", 154),
         plot_padding_px=_render_int(params, "plot_padding_px", 32),
@@ -596,6 +602,16 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         grid_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "grid_rgb", [224, 227, 232], instance_seed=int(instance_seed), namespace="charts.error_interval"),
         reference_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "reference_rgb", [76, 84, 94], instance_seed=int(instance_seed), namespace="charts.error_interval"),
         interval_outline_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "interval_outline_rgb", [34, 40, 48], instance_seed=int(instance_seed), namespace="charts.error_interval"),
+        font_family=sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.chart_font",
+            params=params,
+            exclude_tags=("display",),
+            explicit_key="chart_font_family",
+            weights_key="chart_font_family_weights",
+        ),
+        layout_jitter_meta=dict(layout_jitter_meta),
     )
 
 
@@ -611,7 +627,7 @@ def _draw_text(
     anchor: str = "la",
 ) -> BBox:
     try:
-        draw.text(
+        draw_text_traced(draw,
             (float(xy[0]), float(xy[1])),
             str(text),
             font=font,
@@ -619,7 +635,7 @@ def _draw_text(
             stroke_width=max(0, int(stroke_width)),
             stroke_fill=tuple(stroke_fill),
             anchor=str(anchor),
-        )
+         role="readout", required=False,)
         bbox = draw.textbbox(
             (float(xy[0]), float(xy[1])),
             str(text),
@@ -629,14 +645,14 @@ def _draw_text(
         )
         return _bbox(bbox)
     except Exception:
-        draw.text(
+        draw_text_traced(draw,
             (float(xy[0]), float(xy[1])),
             str(text),
             font=font,
             fill=tuple(fill),
             stroke_width=max(0, int(stroke_width)),
             stroke_fill=tuple(stroke_fill),
-        )
+         role="readout", required=False,)
         bbox = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=max(0, int(stroke_width)))
         return _bbox(bbox)
 
@@ -648,7 +664,7 @@ def _draw_axis_ticks_horizontal(
     plot_bbox: Sequence[float],
 ) -> None:
     left, top, right, bottom = [float(value) for value in plot_bbox]
-    tick_font = load_font(p.tick_font_size_px, bold=False)
+    tick_font = load_font(p.tick_font_size_px, bold=False, font_family=p.font_family)
 
     def x_for(value: int) -> float:
         return float(left + ((int(value) - p.axis_min) / max(1, p.axis_max - p.axis_min)) * (right - left))
@@ -668,7 +684,7 @@ def _draw_axis_ticks_vertical(
     plot_bbox: Sequence[float],
 ) -> None:
     left, top, right, bottom = [float(value) for value in plot_bbox]
-    tick_font = load_font(p.tick_font_size_px, bold=False)
+    tick_font = load_font(p.tick_font_size_px, bold=False, font_family=p.font_family)
 
     def y_for(value: int) -> float:
         return float(bottom - ((int(value) - p.axis_min) / max(1, p.axis_max - p.axis_min)) * (bottom - top))
@@ -712,12 +728,12 @@ def _render_horizontal_forest(
             dash_px=10,
             gap_px=7,
         )
-        ref_font = load_font(p.tick_font_size_px, bold=True)
+        ref_font = load_font(p.tick_font_size_px, bold=True, font_family=p.font_family)
         _draw_text(draw, xy=(ref_x + 6, plot_top - 8), text=f"ref {dataset.reference_value}", font=ref_font, fill=p.reference_rgb, stroke_fill=p.text_stroke_rgb, anchor="lb")
 
     row_h = float((plot_bottom - plot_top) / max(1, len(dataset.items)))
-    label_font = load_font(p.label_font_size_px, bold=True)
-    value_font = load_font(p.value_font_size_px, bold=False)
+    label_font = load_font(p.label_font_size_px, bold=True, font_family=p.font_family)
+    value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
     entities: List[Dict[str, Any]] = []
@@ -746,7 +762,13 @@ def _render_horizontal_forest(
         draw.ellipse((xm - r, y - r, xm + r, y + r), fill=tuple(item.color_rgb), outline=tuple(p.interval_outline_rgb), width=2)
         _draw_text(draw, xy=(x0, y - cap - 3), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="mb")
         _draw_text(draw, xy=(x1, y + cap + 3), text=str(item.upper), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="mt")
-        interval_bbox = _bbox([min(x0, x1) - 20, y - cap - 20, max(x0, x1) + 20, y + cap + 20])
+        mark_pad = max(4.0, float(p.point_radius_px) + 3.0)
+        interval_bbox = _bbox([
+            min(x0, x1) - mark_pad,
+            y - cap - mark_pad,
+            max(x0, x1) + mark_pad,
+            y + cap + mark_pad,
+        ])
         item_bbox = _bbox([left + 12, row_top, right - 12, row_bottom])
         interval_bboxes[item.item_id] = interval_bbox
         item_bboxes[item.item_id] = item_bbox
@@ -788,12 +810,12 @@ def _render_vertical_dot_whisker(
     if dataset.reference_value is not None:
         ref_y = y_for(int(dataset.reference_value))
         draw_dashed_line(draw, start=(plot_left, ref_y), end=(plot_right, ref_y), fill=p.reference_rgb, width=2, dash_px=11, gap_px=7)
-        ref_font = load_font(p.tick_font_size_px, bold=True)
+        ref_font = load_font(p.tick_font_size_px, bold=True, font_family=p.font_family)
         _draw_text(draw, xy=(plot_right - 4, ref_y - 5), text=f"ref {dataset.reference_value}", font=ref_font, fill=p.reference_rgb, stroke_fill=p.text_stroke_rgb, anchor="rb")
 
     slot_w = float((plot_right - plot_left) / max(1, len(dataset.items)))
-    label_font = load_font(p.label_font_size_px, bold=True)
-    value_font = load_font(p.value_font_size_px, bold=False)
+    label_font = load_font(p.label_font_size_px, bold=True, font_family=p.font_family)
+    value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
     entities: List[Dict[str, Any]] = []
@@ -813,7 +835,13 @@ def _render_vertical_dot_whisker(
         _draw_text(draw, xy=(x - cap - 3, y0), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="rm")
         _draw_text(draw, xy=(x + cap + 3, y1), text=str(item.upper), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="lm")
         _draw_text(draw, xy=(x, plot_bottom + 19), text=item.label, font=label_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="mt")
-        interval_bbox = _bbox([x - cap - 28, min(y0, y1) - 14, x + cap + 28, max(y0, y1) + 14])
+        mark_pad = max(4.0, float(p.point_radius_px) + 3.0)
+        interval_bbox = _bbox([
+            x - cap - mark_pad,
+            min(y0, y1) - mark_pad,
+            x + cap + mark_pad,
+            max(y0, y1) + mark_pad,
+        ])
         item_bbox = _bbox([x - slot_w * 0.45, plot_top, x + slot_w * 0.45, plot_bottom + 48])
         interval_bboxes[item.item_id] = interval_bbox
         item_bboxes[item.item_id] = item_bbox
@@ -844,13 +872,13 @@ def _render_bar_with_error(
     if dataset.reference_value is not None:
         ref_y = y_for(int(dataset.reference_value))
         draw_dashed_line(draw, start=(plot_left, ref_y), end=(plot_right, ref_y), fill=p.reference_rgb, width=2, dash_px=11, gap_px=7)
-        ref_font = load_font(p.tick_font_size_px, bold=True)
+        ref_font = load_font(p.tick_font_size_px, bold=True, font_family=p.font_family)
         _draw_text(draw, xy=(plot_right - 4, ref_y - 5), text=f"ref {dataset.reference_value}", font=ref_font, fill=p.reference_rgb, stroke_fill=p.text_stroke_rgb, anchor="rb")
 
     slot_w = float((plot_right - plot_left) / max(1, len(dataset.items)))
     bar_w = max(18.0, float(slot_w) * float(p.bar_width_fraction))
-    label_font = load_font(p.label_font_size_px, bold=True)
-    value_font = load_font(p.value_font_size_px, bold=False)
+    label_font = load_font(p.label_font_size_px, bold=True, font_family=p.font_family)
+    value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
     entities: List[Dict[str, Any]] = []
@@ -871,7 +899,13 @@ def _render_bar_with_error(
         _draw_text(draw, xy=(x - cap - 3, y_lower), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="rm")
         _draw_text(draw, xy=(x + cap + 3, y_upper), text=str(item.upper), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="lm")
         _draw_text(draw, xy=(x, plot_bottom + 19), text=item.label, font=label_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="mt")
-        interval_bbox = _bbox([x - max(cap + 30, bar_w * 0.5), min(y_lower, y_upper) - 16, x + max(cap + 30, bar_w * 0.5), max(y_lower, y_upper) + 16])
+        mark_half_width = max(float(cap) + 6.0, (float(bar_w) * 0.5) + 4.0)
+        interval_bbox = _bbox([
+            x - mark_half_width,
+            min(float(y_lower), float(y_upper), float(bar_bbox[1])) - 6.0,
+            x + mark_half_width,
+            max(float(y_lower), float(y_upper), float(bar_bbox[3])) + 6.0,
+        ])
         item_bbox = _bbox([x - slot_w * 0.45, plot_top, x + slot_w * 0.45, plot_bottom + 48])
         interval_bboxes[item.item_id] = interval_bbox
         item_bboxes[item.item_id] = item_bbox
@@ -906,8 +940,12 @@ def _render_chart(
         image = image.resize((int(p.canvas_width), int(p.canvas_height)))
     draw = ImageDraw.Draw(image)
 
-    margin = float(p.outer_margin_px)
-    panel_bbox = _bbox([margin, margin, p.canvas_width - margin, p.canvas_height - margin])
+    panel_bbox = _bbox([
+        float(p.outer_margin_left_px),
+        float(p.outer_margin_top_px),
+        float(p.canvas_width - p.outer_margin_right_px),
+        float(p.canvas_height - p.outer_margin_bottom_px),
+    ])
     draw_rounded_rect(
         draw,
         tuple(panel_bbox),
@@ -916,11 +954,11 @@ def _render_chart(
         outline=p.panel_outline_rgb,
         width=int(p.panel_outline_width_px),
     )
-    title_font = load_font(p.title_font_size_px, bold=True)
+    title_font = load_font(p.title_font_size_px, bold=True, font_family=p.font_family)
     draw_centered_text(
         draw,
         text=str(dataset.title),
-        center=(p.canvas_width / 2.0, margin + p.title_band_height_px * 0.43),
+        center=((float(panel_bbox[0]) + float(panel_bbox[2])) / 2.0, float(panel_bbox[1]) + p.title_band_height_px * 0.43),
         font=title_font,
         fill=p.text_rgb,
         stroke_fill=p.text_stroke_rgb,
@@ -966,6 +1004,11 @@ def _render_chart(
             "axis_rgb": list(p.axis_rgb),
             "grid_rgb": list(p.grid_rgb),
             "reference_rgb": list(p.reference_rgb),
+        },
+        "layout_jitter": dict(p.layout_jitter_meta),
+        "font_assets": {
+            "asset_version": font_asset_version(),
+            "chart_font_family": str(p.font_family),
         },
     }
     return _Rendered(
@@ -1157,6 +1200,8 @@ class ChartsErrorIntervalChartTask:
                 "canvas_height": int(image.size[1]),
                 "category_labels": [str(item.label) for item in dataset.items],
                 "render_meta": dict(rendered.render_meta),
+                "layout_jitter": dict(rendered.render_meta.get("layout_jitter", {})),
+                "font_assets": dict(rendered.render_meta.get("font_assets", {})),
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

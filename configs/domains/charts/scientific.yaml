@@ -80,16 +80,16 @@ prompt:
     object_description_multipanel_line_grid: a scientific multi-panel line figure with labeled subplots, a shared method legend, numeric axes, and visible point markers
     answer_hint_label: set "answer" to the exact visible method or subplot label as a string
     answer_hint_count: set "answer" to the requested count as an integer
-    evidence_hint_curve_at_x_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the queried subplot and the compared method markers at the queried x-value
-    evidence_hint_threshold_series_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the queried subplot and the markers above the threshold at the queried x-value
-    evidence_hint_cross_panel_delta_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the winning subplot and the start and end markers for the queried method in each compared subplot
-    evidence_hint_curve_intersection_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the queried subplot and each intersection point; if there are no intersections, include only the subplot box
-    evidence_hint_earliest_maximum_panel_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the winning subplot and each compared subplot's maximum marker for the queried method
-    json_example_curve_at_x_extremum_label: '{"evidence":[[80,120,520,420],[180,260,190,270],[180,210,190,220],[180,300,190,310]],"answer":"M2"}'
-    json_example_threshold_series_count: '{"evidence":[[80,120,520,420],[260,180,270,190],[260,205,270,215]],"answer":2}'
-    json_example_cross_panel_delta_extremum_label: '{"evidence":[[560,120,1000,420],[170,320,180,330],[430,190,440,200],[650,310,660,320],[910,160,920,170]],"answer":"B"}'
-    json_example_curve_intersection_count: '{"evidence":[[80,120,520,420],[310,240,322,252],[440,210,452,222]],"answer":2}'
-    json_example_earliest_maximum_panel_label: '{"evidence":[[80,120,520,420],[170,190,180,200],[650,210,660,220],[1120,180,1130,190]],"answer":"A"}'
+    evidence_hint_curve_at_x_extremum_label: set "evidence" to an array of [x,y] pixel points on the compared method markers at the queried x-value
+    evidence_hint_threshold_series_count: set "evidence" to an array of [x,y] pixel points on the markers above the threshold at the queried x-value
+    evidence_hint_cross_panel_delta_extremum_label: set "evidence" to an array of [x,y] pixel points on the start and end markers for the queried method in each compared subplot
+    evidence_hint_curve_intersection_count: set "evidence" to an array of [x,y] pixel points on each intersection; use an empty array if there are no intersections
+    evidence_hint_earliest_maximum_panel_label: set "evidence" to an array of [x,y] pixel points on each compared subplot's maximum marker for the queried method
+    json_example_curve_at_x_extremum_label: '{"evidence":[[185,265],[185,215],[185,305]],"answer":"M2"}'
+    json_example_threshold_series_count: '{"evidence":[[265,185],[265,210]],"answer":2}'
+    json_example_cross_panel_delta_extremum_label: '{"evidence":[[175,325],[435,195],[655,315],[915,165]],"answer":"B"}'
+    json_example_curve_intersection_count: '{"evidence":[[316,246],[446,216]],"answer":2}'
+    json_example_earliest_maximum_panel_label: '{"evidence":[[175,195],[655,215],[1125,185]],"answer":"A"}'
     json_example_answer_only_curve_at_x_extremum_label: '{"answer":"M2"}'
     json_example_answer_only_threshold_series_count: '{"answer":2}'
     json_example_answer_only_cross_panel_delta_extremum_label: '{"answer":"B"}'

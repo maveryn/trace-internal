@@ -67,18 +67,18 @@
   },
   "query_templates": {
     "reference_nearest_label": [
-      "Which labeled point has {target_axis_label} closest to {target_axis_value}?",
-      "Find the point label whose {target_axis_label} value is nearest to {target_axis_value}.",
-      "Which point is closest to {target_axis_value} on the {target_axis_label} axis?",
-      "Compare the labeled points by {target_axis_label}. Which one is nearest to {target_axis_value}?",
-      "What label marks the point with {target_axis_label} value closest to {target_axis_value}?"
+      "Which labeled point has \"{target_axis_label}\" closest to {target_axis_value}?",
+      "Find the point label whose \"{target_axis_label}\" value is nearest to {target_axis_value}.",
+      "Which point is closest to {target_axis_value} on the \"{target_axis_label}\" axis?",
+      "Compare the labeled points by \"{target_axis_label}\". Which one is nearest to {target_axis_value}?",
+      "What label marks the point with \"{target_axis_label}\" value closest to {target_axis_value}?"
     ],
     "surface_extremum_label": [
-      "For group {target_y_category}, which x-axis label has the {extremum_phrase} surface value?",
-      "Looking only at group {target_y_category}, find the x-axis label with the {extremum_phrase} value.",
-      "In the {target_y_category} row of the surface, which x-axis label is {extremum_phrase}?",
-      "Which x-axis category has the {extremum_phrase} value for group {target_y_category}?",
-      "Within group {target_y_category}, what x-axis label reaches the {extremum_phrase} surface height?"
+      "For group \"{target_y_category}\", which x-axis label has the {extremum_phrase} surface value?",
+      "Looking only at group \"{target_y_category}\", find the x-axis label with the {extremum_phrase} value.",
+      "In the \"{target_y_category}\" row of the surface, which x-axis label is {extremum_phrase}?",
+      "Which x-axis category has the {extremum_phrase} value for group \"{target_y_category}\"?",
+      "Within group \"{target_y_category}\", what x-axis label reaches the {extremum_phrase} surface height?"
     ],
     "series_trend_label": [
       "Which series has the greatest overall {trend_direction_phrase} from the first year to the last year?",

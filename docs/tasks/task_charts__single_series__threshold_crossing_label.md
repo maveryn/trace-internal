@@ -6,6 +6,12 @@
 3. Source implementation domain/group: `charts/trend`
 4. Query id: `threshold_crossing`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `point_set`.
+
+## Evidence
+Prompt-facing evidence is a homogeneous `point_set` over the ordered witnesses
+needed to establish the first crossing. Controlled-unanswerable instances use
+an empty point set.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.trend.value.ChartsTrendThresholdCrossingLabelTask`

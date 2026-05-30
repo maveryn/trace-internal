@@ -34,6 +34,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ...shared.visual_style.context_layer import (
     context_text_layer_metadata,
     draw_dashboard_reserved_margin_context,
@@ -47,6 +48,7 @@ from ..shared.complexity import (
     resolve_chart_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
+from ..shared.label_assets import resolve_chart_category_labels, resolve_chart_entity_labels
 from ..shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
@@ -64,6 +66,8 @@ _SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "dual_source_target_sum_value",
     "dual_condition_count",
     "panel_gap_extremum_category_label",
+    "top_k_overlap_count",
+    "category_panel_condition_count",
 )
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("mixed_dashboard",)
 _SUPPORTED_RANK_DIRECTIONS: Tuple[str, ...] = ("largest", "smallest")
@@ -83,29 +87,8 @@ POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="dashboard", ap
 
 RGB = Tuple[int, int, int]
 BBox = Tuple[int, int, int, int]
+Point = Tuple[int, int]
 
-_CATEGORY_LABEL_POOL: Tuple[str, ...] = (
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "P",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-)
 _PANEL_KIND_NAMES: Dict[str, str] = {
     "bar": "Bars",
     "line": "Line",
@@ -114,27 +97,14 @@ _PANEL_KIND_NAMES: Dict[str, str] = {
 }
 _SUPPORTED_PANEL_KINDS: Tuple[str, ...] = ("bar", "line", "donut", "radar")
 SUPPORTED_PANEL_KINDS = _SUPPORTED_PANEL_KINDS
-_PANEL_TITLE_SUFFIXES: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
-_MISSING_PANEL_NAME_POOL: Tuple[str, ...] = (
-    "Atlas",
-    "Beacon",
-    "Cobalt",
-    "Delta",
-    "Echo",
-    "Fusion",
-    "Harbor",
-    "Ion",
-    "Juniper",
-    "Keystone",
-    "Lumen",
-    "Meridian",
-)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "source_rank_target_value": 0.56,
     "source_rank_difference_value": 0.66,
     "dual_source_target_sum_value": 0.82,
     "dual_condition_count": 0.78,
     "panel_gap_extremum_category_label": 0.70,
+    "top_k_overlap_count": 0.76,
+    "category_panel_condition_count": 0.72,
 }
 _SCENE_LOAD_BY_VARIANT: Dict[str, float] = {"mixed_dashboard": 0.82}
 
@@ -211,6 +181,7 @@ class _Rendered:
     entities: Tuple[Dict[str, Any], ...]
     panel_bboxes_px: Dict[str, BBox]
     support_bboxes_px: Dict[str, Dict[str, BBox]]
+    support_points_px: Dict[str, Dict[str, Point]]
     value_label_bboxes_px: Dict[str, Dict[str, BBox]]
     context_text_elements: Tuple[Dict[str, Any], ...]
     context_text_layout: Dict[str, Any]
@@ -341,6 +312,7 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
             palette_fallback,
         ),
         font_family=sample_font_family(
+            role="readout",
             instance_seed=_render_style_seed(params),
             namespace=f"{TASK_ID}.chart_font",
             params=params,
@@ -425,6 +397,38 @@ def _condition_count_support(params: Mapping[str, Any], category_count: int) -> 
     return tuple(values)
 
 
+def _top_k_support(params: Mapping[str, Any], category_count: int) -> Tuple[int, ...]:
+    raw = params.get("top_k_support", group_default(_GEN_DEFAULTS, "top_k_support", [2, 3, 4, 5, 6]))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("top_k_support must be a sequence")
+    values = sorted({int(value) for value in raw if 1 <= int(value) <= int(category_count)})
+    if not values:
+        raise ValueError("top_k_support has no feasible values for category count")
+    return tuple(values)
+
+
+def _top_k_overlap_count_support(params: Mapping[str, Any], *, category_count: int, top_k: int) -> Tuple[int, ...]:
+    raw = params.get("top_k_overlap_count_support", group_default(_GEN_DEFAULTS, "top_k_overlap_count_support", [1, 2, 3, 4, 5]))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("top_k_overlap_count_support must be a sequence")
+    min_overlap = max(0, int(top_k) * 2 - int(category_count))
+    max_overlap = int(top_k)
+    values = sorted({int(value) for value in raw if int(min_overlap) <= int(value) <= int(max_overlap)})
+    if not values:
+        raise ValueError("top_k_overlap_count_support has no feasible values for category count/top_k")
+    return tuple(values)
+
+
+def _panel_condition_count_support(params: Mapping[str, Any], panel_count: int) -> Tuple[int, ...]:
+    raw = params.get("panel_condition_count_support", group_default(_GEN_DEFAULTS, "panel_condition_count_support", [1, 2, 3, 4, 5]))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("panel_condition_count_support must be a sequence")
+    values = sorted({int(value) for value in raw if 0 <= int(value) <= int(panel_count)})
+    if not values:
+        raise ValueError("panel_condition_count_support has no values feasible for panel count")
+    return tuple(values)
+
+
 def _balanced_support_choice(
     params: Mapping[str, Any],
     *,
@@ -453,6 +457,10 @@ def _join_labels(values: Sequence[str]) -> str:
     if len(labels) == 2:
         return f"{labels[0]} and {labels[1]}"
     return f"{', '.join(labels[:-1])}, and {labels[-1]}"
+
+
+def _join_quoted_labels(values: Sequence[str]) -> str:
+    return _join_labels([f'"{str(value)}"' for value in values])
 
 
 def _rank_phrase(direction: str, rank_n: int) -> str:
@@ -501,6 +509,24 @@ def _ranked_category_id(
     if int(rank_n) < 1 or int(rank_n) > len(ordered):
         raise ValueError("rank_n is outside category support")
     return str(ordered[int(rank_n) - 1].category_id)
+
+
+def _top_k_category_ids(
+    *,
+    categories: Sequence[_Category],
+    panel: _Panel,
+    direction: str,
+    top_k: int,
+) -> Tuple[str, ...]:
+    reverse = str(direction) == "largest"
+    ordered = sorted(
+        categories,
+        key=lambda category: int(panel.values_by_category_id[str(category.category_id)]),
+        reverse=bool(reverse),
+    )
+    if int(top_k) < 1 or int(top_k) > len(ordered):
+        raise ValueError("top_k is outside category support")
+    return tuple(str(category.category_id) for category in ordered[: int(top_k)])
 
 
 def _compare_condition(value: int, comparison: str, threshold: int) -> bool:
@@ -559,7 +585,7 @@ def _sample_categories(params: Mapping[str, Any], *, instance_seed: int, render_
     )
     if int(category_min) < 4:
         raise ValueError("category_count_min must be at least 4 for dashboard charts")
-    category_max = min(int(category_max), len(_CATEGORY_LABEL_POOL), len(render_params.category_palette_rgb))
+    category_max = min(int(category_max), len(render_params.category_palette_rgb))
     if int(category_min) > int(category_max):
         raise ValueError("category_count_min exceeds feasible palette/label support")
     explicit_category_count = params.get("category_count")
@@ -575,8 +601,15 @@ def _sample_categories(params: Mapping[str, Any], *, instance_seed: int, render_
             support=tuple(range(int(category_min), int(category_max) + 1)),
         )
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.categories")
-    labels = list(_CATEGORY_LABEL_POOL)
-    rng.shuffle(labels)
+    labels = list(
+        resolve_chart_category_labels(
+            rng,
+            count=int(category_count),
+            min_chars=2,
+            max_chars=8,
+            allow_spaces=False,
+        ).labels
+    )
     color_pool = list(render_params.category_palette_rgb)
     rng.shuffle(color_pool)
     return tuple(
@@ -587,6 +620,19 @@ def _sample_categories(params: Mapping[str, Any], *, instance_seed: int, render_
         )
         for index in range(int(category_count))
     )
+
+
+def _sample_panel_title_labels(*, count: int, instance_seed: int, namespace: str) -> Tuple[str, ...]:
+    """Sample compact unique labels for dashboard panel titles."""
+
+    resolved = resolve_chart_entity_labels(
+        spawn_rng(int(instance_seed), str(namespace)),
+        count=int(count),
+        min_chars=2,
+        max_chars=7,
+        allow_spaces=False,
+    )
+    return tuple(str(label) for label in resolved.labels)
 
 
 def _sample_panels(
@@ -606,8 +652,6 @@ def _sample_panels(
     )
     if int(panel_count_min) < 3:
         raise ValueError("panel_count_min must be at least 3 for dashboard cross-panel queries")
-    if int(panel_count_max) > len(_PANEL_TITLE_SUFFIXES):
-        raise ValueError("panel_count_max exceeds supported dashboard panel-title suffixes")
     explicit_panel_count = params.get("panel_count")
     if explicit_panel_count is not None:
         panel_count = int(explicit_panel_count)
@@ -661,10 +705,15 @@ def _sample_panels(
             str(weighted_choice(kind_rng, probabilities, sort_keys=True))
             for _ in range(int(panel_count))
         ]
+    panel_title_labels = _sample_panel_title_labels(
+        count=int(panel_count),
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.panel_titles",
+    )
     panels: List[_Panel] = []
     for index, kind in enumerate(selected_kinds):
         panel_id = f"panel_{index}"
-        name = f"{_PANEL_KIND_NAMES[str(kind)]} {_PANEL_TITLE_SUFFIXES[index]}"
+        name = f"{panel_title_labels[index]} {_PANEL_KIND_NAMES[str(kind)]}"
         rng = spawn_rng(int(instance_seed), f"{TASK_ID}.panel_values.{panel_id}")
         values = rng.sample(list(range(int(value_min), int(value_max) + 1)), len(categories))
         panels.append(
@@ -699,6 +748,34 @@ def _choose_rank_params(
         raise ValueError("rank support has no feasible values for category count")
     rank_n = int(support[int(rng.randrange(len(support)))])
     return str(direction), int(rank_n)
+
+
+def _choose_distinct_rank_params(
+    rng,
+    *,
+    params: Mapping[str, Any],
+    category_count: int,
+    avoid_phrase: str,
+) -> Tuple[str, int]:
+    """Choose rank parameters whose visible phrase differs from an existing rank phrase."""
+
+    candidates: List[Tuple[str, int]] = []
+    raw_weights = params.get(
+        "rank_direction_weights",
+        group_default(_GEN_DEFAULTS, "rank_direction_weights", {direction: 1.0 for direction in _SUPPORTED_RANK_DIRECTIONS}),
+    )
+    if not isinstance(raw_weights, Mapping):
+        raise ValueError("rank_direction_weights must be a mapping when provided")
+    feasible_ranks = tuple(value for value in _rank_support(params) if int(value) <= int(category_count))
+    for direction in _SUPPORTED_RANK_DIRECTIONS:
+        if float(raw_weights.get(str(direction), 0.0)) <= 0.0:
+            continue
+        for rank_n in feasible_ranks:
+            if _rank_phrase(str(direction), int(rank_n)) != str(avoid_phrase):
+                candidates.append((str(direction), int(rank_n)))
+    if not candidates:
+        raise ValueError("no distinct rank phrase is feasible")
+    return candidates[int(rng.randrange(len(candidates)))]
 
 
 def _build_query(
@@ -786,7 +863,12 @@ def _build_query(
         second_source = _panel_by_id(panels, second_source_id)
         target_panel = _panel_by_id(panels, target_id)
         first_direction, first_rank_n = _choose_rank_params(rng, params=params, category_count=len(categories))
-        second_direction, second_rank_n = _choose_rank_params(rng, params=params, category_count=len(categories))
+        second_direction, second_rank_n = _choose_distinct_rank_params(
+            rng,
+            params=params,
+            category_count=len(categories),
+            avoid_phrase=_rank_phrase(str(first_direction), int(first_rank_n)),
+        )
         first_category_id = _ranked_category_id(
             categories=categories,
             panel=first_source,
@@ -929,9 +1011,17 @@ def _build_query(
             enabled=bool(params.get("_enable_unanswerable", False)),
         ):
             visible_panel_names = [str(panel.name) for panel in panels]
+            missing_panel_candidates = tuple(
+                f"{label} Panel"
+                for label in _sample_panel_title_labels(
+                    count=max(16, len(visible_panel_names) + 8),
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}.missing_panel_candidates",
+                )
+            )
             missing_panel_name = choose_missing_label(
                 visible_labels=visible_panel_names,
-                candidate_labels=_MISSING_PANEL_NAME_POOL,
+                candidate_labels=missing_panel_candidates,
                 fallback_prefix="Panel ",
                 instance_seed=int(instance_seed),
                 namespace=f"{TASK_ID}.missing_panel",
@@ -1005,6 +1095,182 @@ def _build_query(
             answer=str(answer_category.label),
             answer_type="string",
             evidence_refs=((str(first_panel_id), str(answer_category.category_id)), (str(second_panel_id), str(answer_category.category_id))),
+            params=query_params,
+        )
+
+    if str(query_id) == "top_k_overlap_count":
+        direction = _weighted_choice_from_defaults(
+            rng,
+            params=params,
+            key="top_k_rank_direction",
+            supported=_SUPPORTED_RANK_DIRECTIONS,
+            fallback_weights_key="rank_direction_weights",
+        )
+        top_k_values = _top_k_support(params, len(categories))
+        raw_support = params.get("top_k_overlap_count_support", group_default(_GEN_DEFAULTS, "top_k_overlap_count_support", [1, 2, 3, 4, 5]))
+        if not isinstance(raw_support, Sequence) or isinstance(raw_support, (str, bytes)):
+            raise ValueError("top_k_overlap_count_support must be a sequence")
+        feasible_targets = sorted(
+            {
+                int(target)
+                for target in raw_support
+                for candidate_top_k in top_k_values
+                if max(0, int(candidate_top_k) * 2 - len(categories)) <= int(target) <= int(candidate_top_k)
+            }
+        )
+        if not feasible_targets:
+            raise ValueError("top_k_overlap_count_support has no feasible targets")
+        target_count = _balanced_support_choice(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.top_k_overlap_count.answer",
+            support=feasible_targets,
+        )
+        feasible_top_k_values = tuple(
+            int(candidate_top_k)
+            for candidate_top_k in top_k_values
+            if max(0, int(candidate_top_k) * 2 - len(categories)) <= int(target_count) <= int(candidate_top_k)
+        )
+        top_k = _balanced_support_choice(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.top_k_overlap_count.top_k",
+            support=feasible_top_k_values,
+        )
+        support = _top_k_overlap_count_support(params, category_count=len(categories), top_k=int(top_k))
+        first_panel_id, second_panel_id = rng.sample(panel_ids, 2)
+        first_panel = _panel_by_id(panels, first_panel_id)
+        second_panel = _panel_by_id(panels, second_panel_id)
+        first_top = _top_k_category_ids(
+            categories=categories,
+            panel=first_panel,
+            direction=str(direction),
+            top_k=int(top_k),
+        )
+        outside_first_top = [str(category.category_id) for category in categories if str(category.category_id) not in set(first_top)]
+        if int(top_k) - int(target_count) > len(outside_first_top):
+            raise ValueError("target overlap is infeasible for sampled category count/top_k")
+        overlap = tuple(rng.sample(list(first_top), int(target_count))) if int(target_count) > 0 else ()
+        extra = tuple(rng.sample(outside_first_top, int(top_k) - int(target_count))) if int(top_k) > int(target_count) else ()
+        desired_second_top = tuple(overlap) + tuple(extra)
+        available_values = sorted(int(value) for value in second_panel.values_by_category_id.values())
+        if str(direction) == "largest":
+            target_values = list(reversed(available_values[-int(top_k) :]))
+            other_values = list(reversed(available_values[: len(available_values) - int(top_k)]))
+        else:
+            target_values = list(available_values[: int(top_k)])
+            other_values = list(available_values[int(top_k) :])
+        target_ids = list(desired_second_top)
+        other_ids = [str(category.category_id) for category in categories if str(category.category_id) not in set(target_ids)]
+        rng.shuffle(target_ids)
+        rng.shuffle(other_ids)
+        for category_id, value in zip(target_ids, target_values):
+            second_panel.values_by_category_id[str(category_id)] = int(value)
+        for category_id, value in zip(other_ids, other_values):
+            second_panel.values_by_category_id[str(category_id)] = int(value)
+        second_top = _top_k_category_ids(
+            categories=categories,
+            panel=second_panel,
+            direction=str(direction),
+            top_k=int(top_k),
+        )
+        realized_overlap = tuple(category_id for category_id in first_top if category_id in set(second_top))
+        if len(realized_overlap) != int(target_count):
+            raise ValueError("constructed top-k overlap did not realize requested count")
+        category_order = {str(category.category_id): index for index, category in enumerate(categories)}
+        overlap_sorted = tuple(sorted(realized_overlap, key=lambda category_id: category_order[str(category_id)]))
+        evidence_refs = tuple(
+            (panel_id, category_id)
+            for category_id in overlap_sorted
+            for panel_id in (str(first_panel_id), str(second_panel_id))
+        )
+        rank_word = "highest-valued" if str(direction) == "largest" else "lowest-valued"
+        query_params = {
+            "query_id": str(query_id),
+            "scene_variant": "mixed_dashboard",
+            "query_id_probabilities": dict(query_id_probabilities),
+            "first_topk_panel_id": str(first_panel_id),
+            "first_topk_panel_name": str(first_panel.name),
+            "second_topk_panel_id": str(second_panel_id),
+            "second_topk_panel_name": str(second_panel.name),
+            "top_k_rank_direction": str(direction),
+            "top_k": int(top_k),
+            "top_k_phrase": f"{int(top_k)} {rank_word}",
+            "first_top_category_ids": list(first_top),
+            "first_top_category_labels": [str(_category_by_id(categories, category_id).label) for category_id in first_top],
+            "second_top_category_ids": list(second_top),
+            "second_top_category_labels": [str(_category_by_id(categories, category_id).label) for category_id in second_top],
+            "overlap_category_ids": list(overlap_sorted),
+            "overlap_category_labels": [str(_category_by_id(categories, category_id).label) for category_id in overlap_sorted],
+            "target_count_support": list(support),
+            "count_value": int(len(overlap_sorted)),
+        }
+        return _Query(
+            query_id=str(query_id),
+            answer=int(len(overlap_sorted)),
+            answer_type="integer",
+            evidence_refs=tuple(evidence_refs),
+            params=query_params,
+        )
+
+    if str(query_id) == "category_panel_condition_count":
+        comparison = _weighted_choice_from_defaults(
+            rng,
+            params=params,
+            key="panel_condition_comparison",
+            supported=_SUPPORTED_CONDITION_COMPARISONS,
+            fallback_weights_key="condition_comparison_weights",
+        )
+        support = _panel_condition_count_support(params, len(panels))
+        target_count = _balanced_support_choice(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.category_panel_condition_count.answer",
+            support=support,
+        )
+        value_min = int(params.get("value_min", group_default(_GEN_DEFAULTS, "value_min", 12)))
+        value_max = int(params.get("value_max", group_default(_GEN_DEFAULTS, "value_max", 92)))
+        candidates: List[Tuple[str, int, Tuple[str, ...]]] = []
+        for category in categories:
+            category_id = str(category.category_id)
+            for threshold in range(int(value_min) + 2, int(value_max) - 1):
+                matches = tuple(
+                    str(panel.panel_id)
+                    for panel in panels
+                    if _compare_condition(
+                        int(panel.values_by_category_id[str(category_id)]),
+                        str(comparison),
+                        int(threshold),
+                    )
+                )
+                if len(matches) == int(target_count):
+                    candidates.append((str(category_id), int(threshold), matches))
+        if not candidates:
+            raise ValueError("no dashboard category/threshold realizes requested panel-condition count")
+        category_id, threshold, matches = candidates[int(rng.randrange(len(candidates)))]
+        category = _category_by_id(categories, category_id)
+        panel_order = {str(panel.panel_id): index for index, panel in enumerate(panels)}
+        matching_panel_ids = tuple(sorted(matches, key=lambda panel_id: panel_order[str(panel_id)]))
+        evidence_refs = tuple((str(panel_id), str(category_id)) for panel_id in matching_panel_ids)
+        query_params = {
+            "query_id": str(query_id),
+            "scene_variant": "mixed_dashboard",
+            "query_id_probabilities": dict(query_id_probabilities),
+            "condition_category_id": str(category_id),
+            "condition_category_label": str(category.label),
+            "panel_condition_comparison": str(comparison),
+            "panel_threshold": int(threshold),
+            "panel_condition_phrase": _condition_phrase(str(comparison), int(threshold)),
+            "matching_panel_ids": list(matching_panel_ids),
+            "matching_panel_names": [str(_panel_by_id(panels, panel_id).name) for panel_id in matching_panel_ids],
+            "target_count_support": list(support),
+            "count_value": int(len(matching_panel_ids)),
+        }
+        return _Query(
+            query_id=str(query_id),
+            answer=int(len(matching_panel_ids)),
+            answer_type="integer",
+            evidence_refs=tuple(evidence_refs),
             params=query_params,
         )
 
@@ -1097,6 +1363,30 @@ def _nested_bbox_map_to_json(mapping: Mapping[str, Mapping[str, Sequence[int]]])
     return {str(key): _bbox_map_to_json(value) for key, value in mapping.items()}
 
 
+def _clip_point_to_canvas(point: Sequence[float], *, width: int, height: int) -> Point:
+    x = min(max(0, int(round(float(point[0])))), max(0, int(width) - 1))
+    y = min(max(0, int(round(float(point[1])))), max(0, int(height) - 1))
+    return (int(x), int(y))
+
+
+def _clip_point_map_to_canvas(mapping: Mapping[str, Sequence[float]], *, width: int, height: int) -> Dict[str, Point]:
+    return {
+        str(key): _clip_point_to_canvas(point, width=int(width), height=int(height))
+        for key, point in mapping.items()
+    }
+
+
+def _point_map_to_json(mapping: Mapping[str, Sequence[float]]) -> Dict[str, List[int]]:
+    return {
+        str(key): [int(round(float(point[0]))), int(round(float(point[1])))]
+        for key, point in mapping.items()
+    }
+
+
+def _nested_point_map_to_json(mapping: Mapping[str, Mapping[str, Sequence[float]]]) -> Dict[str, Dict[str, List[int]]]:
+    return {str(key): _point_map_to_json(value) for key, value in mapping.items()}
+
+
 def _draw_text(
     draw: ImageDraw.ImageDraw,
     xy: Tuple[float, float],
@@ -1109,7 +1399,7 @@ def _draw_text(
 ) -> BBox:
     stroke_fill = resolve_text_stroke_fill(fill)
     bbox = draw.textbbox(tuple(xy), str(text), font=font, anchor=str(anchor), stroke_width=int(stroke_width))
-    draw.text(
+    draw_text_traced(draw,
         tuple(xy),
         str(text),
         font=font,
@@ -1117,7 +1407,7 @@ def _draw_text(
         fill=tuple(fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(stroke_fill),
-    )
+     role="readout", required=False,)
     return _bbox_tuple(bbox)
 
 
@@ -1197,7 +1487,7 @@ def _draw_bar_panel(
     panel_bbox: BBox,
     categories: Sequence[_Category],
     render_params: _RenderParams,
-) -> Tuple[Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
@@ -1220,6 +1510,7 @@ def _draw_bar_panel(
     bar_width = max(18.0, slot * 0.58)
     support: Dict[str, BBox] = {}
     values: Dict[str, BBox] = {}
+    points: Dict[str, Point] = {}
     entities: List[Dict[str, Any]] = []
     for index, category in enumerate(categories):
         cx = float(plot_bbox[0]) + slot * (float(index) + 0.5)
@@ -1231,11 +1522,13 @@ def _draw_bar_panel(
         label_bbox = _draw_text(draw, (cx, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=1)
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([bar_box, value_bbox, label_bbox]), 4)
         values[str(category.category_id)] = value_bbox
+        points[str(category.category_id)] = (int(round(cx)), int(round(y)))
         entities.append(
             {
                 "entity_id": f"{panel.panel_id}:{category.category_id}",
                 "entity_type": "dashboard_bar_mark",
                 "bbox_xyxy": list(support[str(category.category_id)]),
+                "point_xy": list(points[str(category.category_id)]),
                 "attrs": {
                     "panel_id": str(panel.panel_id),
                     "panel_name": str(panel.name),
@@ -1245,7 +1538,7 @@ def _draw_bar_panel(
                 },
             }
         )
-    return support, values, entities
+    return support, values, points, entities
 
 
 def _draw_line_panel(
@@ -1255,7 +1548,7 @@ def _draw_line_panel(
     panel_bbox: BBox,
     categories: Sequence[_Category],
     render_params: _RenderParams,
-) -> Tuple[Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
@@ -1289,6 +1582,7 @@ def _draw_line_panel(
         draw.line(points, fill=tuple(render_params.connector_color_rgb), width=int(render_params.line_width_px), joint="curve")
     support: Dict[str, BBox] = {}
     values: Dict[str, BBox] = {}
+    mark_points: Dict[str, Point] = {}
     entities: List[Dict[str, Any]] = []
     radius = int(render_params.point_radius_px)
     for (x, y), category in zip(points, categories):
@@ -1301,11 +1595,13 @@ def _draw_line_panel(
         label_bbox = _draw_text(draw, (x, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=1)
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([point_box, value_bbox, label_bbox]), 4)
         values[str(category.category_id)] = value_bbox
+        mark_points[str(category.category_id)] = (int(round(x)), int(round(y)))
         entities.append(
             {
                 "entity_id": f"{panel.panel_id}:{category.category_id}",
                 "entity_type": "dashboard_line_point",
                 "bbox_xyxy": list(support[str(category.category_id)]),
+                "point_xy": list(mark_points[str(category.category_id)]),
                 "attrs": {
                     "panel_id": str(panel.panel_id),
                     "panel_name": str(panel.name),
@@ -1315,7 +1611,7 @@ def _draw_line_panel(
                 },
             }
         )
-    return support, values, entities
+    return support, values, mark_points, entities
 
 
 def _draw_donut_panel(
@@ -1325,7 +1621,7 @@ def _draw_donut_panel(
     panel_bbox: BBox,
     categories: Sequence[_Category],
     render_params: _RenderParams,
-) -> Tuple[Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
     label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
@@ -1338,10 +1634,17 @@ def _draw_donut_panel(
     donut_box = (donut_center[0] - radius, donut_center[1] - radius, donut_center[0] + radius, donut_center[1] + radius)
     total = sum(int(panel.values_by_category_id[str(category.category_id)]) for category in categories)
     start_angle = -90.0
+    segment_points: Dict[str, Point] = {}
     for category in categories:
         value = int(panel.values_by_category_id[str(category.category_id)])
         sweep = 360.0 * (float(value) / float(max(1, total)))
         draw.pieslice(donut_box, start=start_angle, end=start_angle + sweep, fill=tuple(category.color_rgb), outline=(255, 255, 255), width=2)
+        mid_angle = math.radians(start_angle + sweep / 2.0)
+        mid_radius = float(radius) * 0.72
+        segment_points[str(category.category_id)] = (
+            int(round(float(donut_center[0]) + math.cos(mid_angle) * mid_radius)),
+            int(round(float(donut_center[1]) + math.sin(mid_angle) * mid_radius)),
+        )
         start_angle += sweep
     inner_radius = max(34, int(radius * 0.46))
     inner_box = (donut_center[0] - inner_radius, donut_center[1] - inner_radius, donut_center[0] + inner_radius, donut_center[1] + inner_radius)
@@ -1370,6 +1673,7 @@ def _draw_donut_panel(
                 "entity_id": f"{panel.panel_id}:{category.category_id}",
                 "entity_type": "dashboard_donut_legend_row",
                 "bbox_xyxy": list(support[str(category.category_id)]),
+                "point_xy": list(segment_points[str(category.category_id)]),
                 "attrs": {
                     "panel_id": str(panel.panel_id),
                     "panel_name": str(panel.name),
@@ -1379,7 +1683,7 @@ def _draw_donut_panel(
                 },
             }
         )
-    return support, values, entities
+    return support, values, segment_points, entities
 
 
 def _draw_radar_panel(
@@ -1389,7 +1693,7 @@ def _draw_radar_panel(
     panel_bbox: BBox,
     categories: Sequence[_Category],
     render_params: _RenderParams,
-) -> Tuple[Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
     label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
@@ -1408,6 +1712,7 @@ def _draw_radar_panel(
     vertex_points: List[Tuple[float, float]] = []
     support: Dict[str, BBox] = {}
     values: Dict[str, BBox] = {}
+    mark_points: Dict[str, Point] = {}
     entities: List[Dict[str, Any]] = []
     point_radius = int(render_params.point_radius_px)
     for index, category in enumerate(categories):
@@ -1436,11 +1741,13 @@ def _draw_radar_panel(
         value_bbox = _draw_text(draw, (value_x, value_y), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor="mm", stroke_width=2)
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([label_bbox, point_box, value_bbox]), 4)
         values[str(category.category_id)] = value_bbox
+        mark_points[str(category.category_id)] = (int(round(point[0])), int(round(point[1])))
         entities.append(
             {
                 "entity_id": f"{panel.panel_id}:{category.category_id}",
                 "entity_type": "dashboard_radar_vertex",
                 "bbox_xyxy": list(support[str(category.category_id)]),
+                "point_xy": list(mark_points[str(category.category_id)]),
                 "attrs": {
                     "panel_id": str(panel.panel_id),
                     "panel_name": str(panel.name),
@@ -1450,7 +1757,7 @@ def _draw_radar_panel(
                 },
             }
         )
-    return support, values, entities
+    return support, values, mark_points, entities
 
 
 def _render_dashboard(
@@ -1515,6 +1822,7 @@ def _render_dashboard(
     )
     if bool(title_record.get("enabled", False)):
         title_font_family = sample_font_family(
+            role="context",
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.{dataset.scene_variant}.main_title_font",
             params=context_params,
@@ -1560,6 +1868,7 @@ def _render_dashboard(
         context_element_records = [element.to_trace() for element in context_elements]
     panel_bboxes: Dict[str, BBox] = {}
     support_bboxes: Dict[str, Dict[str, BBox]] = {}
+    support_points: Dict[str, Dict[str, Point]] = {}
     value_label_bboxes: Dict[str, Dict[str, BBox]] = {}
     entities: List[Dict[str, Any]] = [
         {
@@ -1591,17 +1900,22 @@ def _render_dashboard(
             }
         )
         if str(panel.kind) == "bar":
-            support, value_bboxes, mark_entities = _draw_bar_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
+            support, value_bboxes, mark_points, mark_entities = _draw_bar_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
         elif str(panel.kind) == "line":
-            support, value_bboxes, mark_entities = _draw_line_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
+            support, value_bboxes, mark_points, mark_entities = _draw_line_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
         elif str(panel.kind) == "donut":
-            support, value_bboxes, mark_entities = _draw_donut_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
+            support, value_bboxes, mark_points, mark_entities = _draw_donut_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
         elif str(panel.kind) == "radar":
-            support, value_bboxes, mark_entities = _draw_radar_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
+            support, value_bboxes, mark_points, mark_entities = _draw_radar_panel(draw, panel=panel, panel_bbox=panel_bbox, categories=dataset.categories, render_params=render_params)
         else:
             raise ValueError(f"unsupported panel kind: {panel.kind}")
         support_bboxes[str(panel.panel_id)] = _clip_bbox_map_to_canvas(
             support,
+            width=int(render_params.canvas_width),
+            height=int(render_params.canvas_height),
+        )
+        support_points[str(panel.panel_id)] = _clip_point_map_to_canvas(
+            mark_points,
             width=int(render_params.canvas_width),
             height=int(render_params.canvas_height),
         )
@@ -1616,6 +1930,7 @@ def _render_dashboard(
         entities=tuple(entities),
         panel_bboxes_px=dict(panel_bboxes),
         support_bboxes_px=dict(support_bboxes),
+        support_points_px=dict(support_points),
         value_label_bboxes_px=dict(value_label_bboxes),
         context_text_elements=tuple(context_element_records),
         context_text_layout=dict(context_layout),
@@ -1630,21 +1945,26 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         evidence_hint = str(prompt_defaults["evidence_hint_label"])
         json_example = str(prompt_defaults["json_example_label"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only_label"])
-    elif query_id == "dual_condition_count":
+    elif query_id in {"dual_condition_count", "top_k_overlap_count", "category_panel_condition_count"}:
         answer_hint = str(prompt_defaults["answer_hint_count"])
         evidence_hint = str(prompt_defaults["evidence_hint_count"])
         json_example = str(prompt_defaults["json_example_count"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only_count"])
+    elif query_id == "dual_source_target_sum_value":
+        answer_hint = str(prompt_defaults["answer_hint_value"])
+        evidence_hint = str(prompt_defaults["evidence_hint_dual_source_target_sum"])
+        json_example = str(prompt_defaults["json_example_dual_source_target_sum"])
+        json_example_answer_only = str(prompt_defaults["json_example_answer_only_value"])
     else:
         answer_hint = str(prompt_defaults["answer_hint_value"])
-        evidence_hint = str(prompt_defaults["evidence_hint_value"])
-        json_example = str(prompt_defaults["json_example_value"])
+        evidence_hint = str(prompt_defaults["evidence_hint_source_rank_metric"])
+        json_example = str(prompt_defaults["json_example_source_rank_metric"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only_value"])
     object_description_template = str(prompt_defaults["object_description_mixed_dashboard"])
     object_description = object_description_template.format(
         panel_count=int(len(dataset.panels)),
         category_count=int(len(dataset.categories)),
-        panel_name_list=_join_labels([str(panel.name) for panel in dataset.panels]),
+        panel_name_list=_join_quoted_labels([str(panel.name) for panel in dataset.panels]),
         panel_kind_list=_join_labels([str(panel.kind) for panel in dataset.panels]),
     )
     slots: Dict[str, str] = {
@@ -1661,6 +1981,114 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         if isinstance(value, (str, int, float)):
             slots[str(key)] = str(value)
     return slots
+
+
+def _evidence_records(
+    *,
+    evidence_refs: Sequence[Tuple[str, str]],
+    rendered: _Rendered,
+    panels_by_id: Mapping[str, _Panel],
+    categories_by_id: Mapping[str, _Category],
+) -> List[Dict[str, Any]]:
+    records: List[Dict[str, Any]] = []
+    for panel_id, category_id in evidence_refs:
+        records.append(
+            {
+                "panel_id": str(panel_id),
+                "panel_name": str(panels_by_id[str(panel_id)].name),
+                "category_id": str(category_id),
+                "category_label": str(categories_by_id[str(category_id)].label),
+                "point_xy": list(rendered.support_points_px[str(panel_id)][str(category_id)]),
+                "bbox_xyxy": list(rendered.support_bboxes_px[str(panel_id)][str(category_id)]),
+            }
+        )
+    return records
+
+
+def _build_evidence_payload(
+    *,
+    dataset: _Dataset,
+    rendered: _Rendered,
+    panels_by_id: Mapping[str, _Panel],
+    categories_by_id: Mapping[str, _Category],
+) -> Tuple[TypedValue, Dict[str, Any], List[Tuple[str, str]]]:
+    evidence_refs = [(str(panel_id), str(category_id)) for panel_id, category_id in dataset.query.evidence_refs]
+    evidence_records = _evidence_records(
+        evidence_refs=evidence_refs,
+        rendered=rendered,
+        panels_by_id=panels_by_id,
+        categories_by_id=categories_by_id,
+    )
+    query_id = str(dataset.query.query_id)
+
+    if query_id in {"source_rank_target_value", "source_rank_difference_value"}:
+        keyed_points = {
+            "source_panel": list(rendered.support_points_px[evidence_refs[0][0]][evidence_refs[0][1]]),
+            "target_panel": list(rendered.support_points_px[evidence_refs[1][0]][evidence_refs[1][1]]),
+        }
+        return (
+            TypedValue(type="keyed_point_map", value=dict(keyed_points)),
+            {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(keyed_points),
+                "pixel_keyed_point_map": dict(keyed_points),
+                "evidence_refs": evidence_records,
+            },
+            evidence_refs,
+        )
+
+    if query_id == "dual_source_target_sum_value":
+        keyed_points = {
+            "first_source_panel": list(rendered.support_points_px[evidence_refs[0][0]][evidence_refs[0][1]]),
+            "second_source_panel": list(rendered.support_points_px[evidence_refs[1][0]][evidence_refs[1][1]]),
+            "target_first_category": list(rendered.support_points_px[evidence_refs[2][0]][evidence_refs[2][1]]),
+            "target_second_category": list(rendered.support_points_px[evidence_refs[3][0]][evidence_refs[3][1]]),
+        }
+        return (
+            TypedValue(type="keyed_point_map", value=dict(keyed_points)),
+            {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(keyed_points),
+                "pixel_keyed_point_map": dict(keyed_points),
+                "evidence_refs": evidence_records,
+            },
+            evidence_refs,
+        )
+
+    if query_id == "panel_gap_extremum_category_label":
+        keyed_points = (
+            {
+                "first_panel": list(rendered.support_points_px[evidence_refs[0][0]][evidence_refs[0][1]]),
+                "second_panel": list(rendered.support_points_px[evidence_refs[1][0]][evidence_refs[1][1]]),
+            }
+            if len(evidence_refs) == 2
+            else {}
+        )
+        return (
+            TypedValue(type="keyed_point_map", value=dict(keyed_points)),
+            {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(keyed_points),
+                "pixel_keyed_point_map": dict(keyed_points),
+                "evidence_refs": evidence_records,
+            },
+            evidence_refs,
+        )
+
+    point_set = [
+        list(rendered.support_points_px[str(panel_id)][str(category_id)])
+        for panel_id, category_id in evidence_refs
+    ]
+    return (
+        TypedValue(type="point_set", value=list(point_set)),
+        {
+            "type": "point_set",
+            "point_set": list(point_set),
+            "pixel_point_set": list(point_set),
+            "evidence_refs": evidence_records,
+        },
+        evidence_refs,
+    )
 
 
 class ChartsDashboardCrossPanelQueryTask:
@@ -1732,10 +2160,12 @@ class ChartsDashboardCrossPanelQueryTask:
                 "answer_hint_value",
                 "answer_hint_count",
                 "answer_hint_label",
-                "evidence_hint_value",
+                "evidence_hint_source_rank_metric",
+                "evidence_hint_dual_source_target_sum",
                 "evidence_hint_count",
                 "evidence_hint_label",
-                "json_example_value",
+                "json_example_source_rank_metric",
+                "json_example_dual_source_target_sum",
                 "json_example_count",
                 "json_example_label",
                 "json_example_answer_only_value",
@@ -1759,29 +2189,16 @@ class ChartsDashboardCrossPanelQueryTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_refs = [(str(panel_id), str(category_id)) for panel_id, category_id in dataset.query.evidence_refs]
-        evidence_bboxes = [
-            list(rendered.support_bboxes_px[str(panel_id)][str(category_id)])
-            for panel_id, category_id in evidence_refs
-        ]
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         panels_by_id = {str(panel.panel_id): panel for panel in dataset.panels}
         categories_by_id = {str(category.category_id): category for category in dataset.categories}
-        projected_evidence = {
-            "bbox_set": list(evidence_bboxes),
-            "evidence_refs": [
-                {
-                    "panel_id": str(panel_id),
-                    "panel_name": str(panels_by_id[str(panel_id)].name),
-                    "category_id": str(category_id),
-                    "category_label": str(categories_by_id[str(category_id)].label),
-                    "bbox_xyxy": list(rendered.support_bboxes_px[str(panel_id)][str(category_id)]),
-                }
-                for panel_id, category_id in evidence_refs
-            ],
-        }
+        evidence_gt, projected_evidence, evidence_refs = _build_evidence_payload(
+            dataset=dataset,
+            rendered=rendered,
+            panels_by_id=panels_by_id,
+            categories_by_id=categories_by_id,
+        )
         values_by_panel = {
             str(panel.panel_id): {
                 "panel_name": str(panel.name),
@@ -1875,6 +2292,7 @@ class ChartsDashboardCrossPanelQueryTask:
                 "image_id": "img0",
                 "panel_bboxes_px": _bbox_map_to_json(rendered.panel_bboxes_px),
                 "support_bboxes_px": _nested_bbox_map_to_json(rendered.support_bboxes_px),
+                "support_points_px": _nested_point_map_to_json(rendered.support_points_px),
                 "value_label_bboxes_px": _nested_bbox_map_to_json(rendered.value_label_bboxes_px),
                 "context_text_bboxes_px": {
                     str(element["context_id"]): [int(value) for value in element["bbox_xyxy"]]
@@ -1974,12 +2392,36 @@ class ChartsDashboardPanelGapExtremumCategoryLabelTask(
     supports_unanswerable = True
 
 
+@register_task
+class ChartsDashboardTopKOverlapCountTask(
+    FixedChartQueryVariantTaskMixin,
+    ChartsDashboardCrossPanelQueryTask,
+):
+    """Count shared category labels between two top-k dashboard panels."""
+
+    task_id = "task_charts__dashboard__top_k_overlap_count"
+    fixed_query_id = "top_k_overlap_count"
+
+
+@register_task
+class ChartsDashboardCategoryPanelConditionCountTask(
+    FixedChartQueryVariantTaskMixin,
+    ChartsDashboardCrossPanelQueryTask,
+):
+    """Count dashboard panels where one category satisfies a value condition."""
+
+    task_id = "task_charts__dashboard__category_panel_condition_count"
+    fixed_query_id = "category_panel_condition_count"
+
+
 __all__ = [
+    "ChartsDashboardCategoryPanelConditionCountTask",
     "ChartsDashboardCrossPanelQueryTask",
     "ChartsDashboardDualConditionCountTask",
     "ChartsDashboardDualSourceTargetSumValueTask",
     "ChartsDashboardPanelGapExtremumCategoryLabelTask",
     "ChartsDashboardSourceRankMetricValueTask",
+    "ChartsDashboardTopKOverlapCountTask",
     "SUPPORTED_SCENE_VARIANTS",
     "SUPPORTED_PANEL_KINDS",
     "SUPPORTED_QUERY_IDS",

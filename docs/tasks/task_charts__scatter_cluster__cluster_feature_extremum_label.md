@@ -6,6 +6,12 @@
 3. Source implementation domain/group: `charts/scatter`
 4. Query id: `cluster_separation_extremum_label`, `cluster_spread_extremum_label`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `keyed_bbox_map`.
+
+## Evidence
+Prompt-facing evidence uses role-keyed cluster-hull boxes. Spread queries use
+`answer_cluster`; separation queries use `reference_cluster` and
+`answer_cluster` so the two cluster roles are verifiable.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter.cluster_query.ChartsScatterClusterFeatureExtremumLabelTask`

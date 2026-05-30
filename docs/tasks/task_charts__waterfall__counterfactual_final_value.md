@@ -6,6 +6,7 @@
 3. Source implementation domain/group: `charts/waterfall`
 4. Query id: `remove_step_final_total`, `reverse_step_final_total`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `bbox_set` over the final value, target contribution value, and target step label.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.waterfall.panel_query.ChartsWaterfallCounterfactualFinalValueTask`

@@ -59,11 +59,11 @@
   },
   "query_templates": {
     "kth_rank_in_column": [
-      "Which row has the {query_rank} {rank_direction} value in the {query_column} column? {unanswerable_instruction}",
-      "Find the row label with the {query_rank} {rank_direction} value in the {query_column} column. {unanswerable_instruction}",
-      "Which row is {query_rank} {rank_direction} by {query_column} value? {unanswerable_instruction}",
-      "What row name corresponds to the {query_rank} {rank_direction} value in {query_column}? {unanswerable_instruction}",
-      "Identify the row with the {query_rank} {rank_direction} {query_column} value. {unanswerable_instruction}"
+      "Which row has the {query_rank} {rank_direction} value in the \"{query_column}\" column? {unanswerable_instruction}",
+      "Find the row label with the {query_rank} {rank_direction} value in the \"{query_column}\" column. {unanswerable_instruction}",
+      "Which row is {query_rank} {rank_direction} by \"{query_column}\" value? {unanswerable_instruction}",
+      "What row name corresponds to the {query_rank} {rank_direction} value in \"{query_column}\"? {unanswerable_instruction}",
+      "Identify the row with the {query_rank} {rank_direction} \"{query_column}\" value. {unanswerable_instruction}"
     ]
   },
   "allow_empty_task_templates": true

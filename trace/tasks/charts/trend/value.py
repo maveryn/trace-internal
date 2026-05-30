@@ -36,7 +36,13 @@ from ..shared.labeled_chart_common import (
 from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
 from ..shared.information_style import prepare_chart_information_scene
 from ..shared.unanswerable import UNANSWERABLE_ANSWER, absence_proof, should_use_unanswerable_branch
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_background_defaults,
+    load_chart_noise_defaults,
+    sample_chart_font_family,
+)
+from ...shared.text_rendering import temporary_default_font_family
 
 
 QueryVariant = str
@@ -680,7 +686,7 @@ class ChartsTrendValueTask:
             ordered_evidence_labels = [str(label) for label in trace_extras["ordered_evidence_labels"]]
             interval_gap_for_complexity = int(trace_extras["interval_gap"])
             interval_gap_range_for_complexity = list(trace_extras["interval_gap_range"])
-            evidence_kind = "point_set"
+            evidence_kind = "keyed_point_map"
             answer_type = "integer"
         else:
             crossing_mode, crossing_mode_probabilities = _resolve_crossing_mode(
@@ -787,13 +793,19 @@ class ChartsTrendValueTask:
             task_group=self.task_group,
             render_params=render_params,
         )
-        rendered_scene = render_labeled_chart_scene(
-            background,
-            scene_variant=str(scene_variant),
-            marks=marks,
-            render_params=render_params,
+        chart_font_family = sample_chart_font_family(
             instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.chart_font",
+            params=params,
         )
+        with temporary_default_font_family(str(chart_font_family)):
+            rendered_scene = render_labeled_chart_scene(
+                background,
+                scene_variant=str(scene_variant),
+                marks=marks,
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -919,7 +931,19 @@ class ChartsTrendValueTask:
         }
         evidence_projection = projected_mark_evidence(rendered_scene, ordered_evidence_labels)
         evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type=str(evidence_kind), value=list(evidence_points))
+        keyed_evidence_points: Dict[str, list[float]] = {}
+        if str(evidence_kind) == "keyed_point_map":
+            point_map = {
+                str(label): list(point)
+                for label, point in evidence_projection.get("pixel_point_map", {}).items()
+            }
+            keyed_evidence_points = {
+                "start_mark": list(point_map[str(trace_extras["start_label"])]),
+                "end_mark": list(point_map[str(trace_extras["end_label"])]),
+            }
+            evidence_gt = TypedValue(type="keyed_point_map", value=dict(keyed_evidence_points))
+        else:
+            evidence_gt = TypedValue(type=str(evidence_kind), value=list(evidence_points))
 
         optional_structure_params = {
             **(
@@ -1090,6 +1114,7 @@ class ChartsTrendValueTask:
                     "grid_line_width_px": int(render_params.grid_line_width_px),
                     "tick_length_px": int(render_params.tick_length_px),
                 },
+                "font_assets": chart_font_asset_metadata(str(chart_font_family)),
                 "mark_style": {
                     "sampling_policy": str(mark_style["sampling_policy"]),
                     "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),
@@ -1169,10 +1194,21 @@ class ChartsTrendValueTask:
                     else {}
                 ),
             },
-            "projected_evidence": {
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
-            },
+            "projected_evidence": (
+                {
+                    "type": "keyed_point_map",
+                    "keyed_point_map": dict(keyed_evidence_points),
+                    "pixel_keyed_point_map": dict(keyed_evidence_points),
+                    "point_set": list(keyed_evidence_points.values()),
+                    **dict(evidence_projection),
+                }
+                if str(evidence_kind) == "keyed_point_map"
+                else {
+                    "type": "point_set",
+                    "point_set": list(evidence_points),
+                    **dict(evidence_projection),
+                }
+            ),
         }
 
         if str(query_id) in _STRUCTURE_REASONING_LOADS:
@@ -1216,6 +1252,7 @@ class ChartsTrendValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id="single_series",
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

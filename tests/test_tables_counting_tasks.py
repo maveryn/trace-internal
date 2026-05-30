@@ -44,6 +44,7 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
+        assert str(render["font_assets"]["table_font_family"]).strip()
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
@@ -55,6 +56,7 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         )
         assert len(column_headers) == expected_column_count
         assert str(query_column) in set(column_headers)
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
         assert len(evidence_bboxes) == int(out.answer_gt.value) == len(expected_cell_ids)
 
@@ -150,6 +152,7 @@ def test_table_counting_visual_style_axes_preserve_projected_bboxes() -> None:
     assert style["inner_rule_style"] == "dashed"
     assert style["numeric_alignment"] == "right"
     assert render["table_bbox_px"] == [80.0, 70.0, 895.0, 840.0]
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
     expected_bboxes = [
@@ -176,7 +179,7 @@ def test_table_counting_target_count_sampling_decouples_from_query_id_sampling()
     assert set(answers_by_variant) == {"threshold_count", "in_interval", "categorical_value_count"}
     assert answers_by_variant["threshold_count"].issubset(set(range(4, 9)))
     assert answers_by_variant["in_interval"].issubset(set(range(4, 9)))
-    assert answers_by_variant["categorical_value_count"].issubset(set(range(10)))
+    assert answers_by_variant["categorical_value_count"].issubset(set(range(11)))
     assert all(answers for answers in answers_by_variant.values())
 
 

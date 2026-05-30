@@ -6,6 +6,11 @@
 3. Source implementation domain/group: `charts/counting`
 4. Query id: `in_interval`, `threshold_count`
 5. Semantic query details are recorded in `query_id` and trace params.
+6. Evidence type: `point_set`.
+
+## Evidence
+Prompt-facing evidence is a homogeneous `point_set` over every mark satisfying
+the requested value predicate. Evidence cardinality equals the integer answer.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.counting.value_count.ChartsCountingValuePredicateCountTask`

@@ -22,7 +22,7 @@
       <h2>{{ domain_name }}</h2>
       <p>{{ domain.scenes|length }} scenes, {{ domain.task_count }} tasks, {{ domain.sample_count }} samples</p>
       {% if feedback.total %}
-        <span class="badge">{{ feedback.open }} open / {{ feedback.total }} feedback</span>
+        <span class="badge">{{ feedback.open }} open / {{ feedback.total }} issue{% if feedback.total != 1 %}s{% endif %}</span>
       {% endif %}
     </a>
   {% endfor %}

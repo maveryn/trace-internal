@@ -11,10 +11,10 @@
 1. `bfs_kth_visit_label`: breadth-first search from a named source row, using each row's neighbor order left to right.
 2. `dfs_kth_visit_label`: recursive depth-first search from a named source row, using each row's neighbor order left to right.
 
-## Evidence
+## Annotation
 1. Answer type: `string`.
-2. Evidence type: `bbox_sequence`.
-3. Evidence boxes are `[x0,y0,x1,y1]` pixel boxes around the visited row labels, ordered from the source row through the answer row.
+2. Annotation type: `bbox_sequence`.
+3. Annotation boxes are `[x0,y0,x1,y1]` pixel boxes around the visited row labels, ordered from the source row through the answer row.
 
 ## Generation Notes
 1. The scene renders a directed graph as an adjacency-list panel.

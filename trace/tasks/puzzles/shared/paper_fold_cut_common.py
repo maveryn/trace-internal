@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ...shared.config_defaults import group_default, resolve_required_int_bounds
+from ...shared.config_defaults import resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.mcq import option_label_for_index
 from .common import resolve_puzzle_axis_variant
+from .params import resolve_puzzle_int_param
 
 
 Cells = Tuple[Tuple[int, int], ...]
@@ -35,17 +36,6 @@ class PuzzleFoldCutDefaults:
     grid_size: int = 6
     cut_count_min: int = 1
     cut_count_max: int = 2
-
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
 
 
 def _canonicalize_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
@@ -374,7 +364,7 @@ def build_fold_cut_result_dataset_for_variant(
         context=f"{task_id} option-count bounds",
     )
     option_count = int(option_count_min + (abs(int(instance_seed)) % (int(option_count_max) - int(option_count_min) + 1)))
-    grid_size = int(_resolve_int_param(params, gen_defaults, "grid_size", int(defaults.grid_size)))
+    grid_size = int(resolve_puzzle_int_param(params, gen_defaults, "grid_size", int(defaults.grid_size)))
     if int(grid_size) % 2 != 0:
         raise ValueError("fold-cut puzzles require an even grid_size")
 

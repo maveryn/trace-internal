@@ -2,7 +2,10 @@
 
 The task-review web app is the browser replacement for workbook-first manual
 inspection. It reads the active review sidecars under `review/task-reviews` and
-persists reviewer feedback in a separate SQLite database.
+persists reviewer issue threads in a separate SQLite database. The reviewer UI
+uses **issue/issues** for actionable human comments, and browser-facing issue
+pages live under `/issues`. Internal API names, CSS hooks, and SQLite tables
+still use `feedback` for compatibility.
 
 ## Default Review Workflow
 
@@ -19,22 +22,30 @@ Then use this review loop:
 2. If anything under `review/task-reviews` changed, click **Reload Index** in
    the app or call `POST /api/reload`.
 3. Inspect through the browser app by domain, scene, task, and query id.
-4. Use task and sample pages to review image, prompt, answer, evidence,
-   distribution status, solve-rate status, and manual-audit status.
-5. Save sample-specific feedback in the app so comments are keyed to the exact
-   sample identity; do not use Excel notes as the default feedback channel.
-6. Mark manual-audit checkboxes only after prompt, image, evidence,
-   distribution, and solve-rate review are acceptable.
-7. Treat a task as complete only when all manual audit gates pass and the
-   current solve-rate artifact is accepted.
+4. Use scene, task, and sample pages to review image, prompt, answer, annotation,
+   distribution status, review status, and solve-rate status.
+5. Save sample-specific issues in the app so comments are keyed to the exact
+   sample identity; do not use Excel notes as the default issue channel.
+6. Mark the review checkboxes only after prompt, image, annotation, and
+   distribution are acceptable. This is the non-solve-rate review completion
+   status shown in domain and scene views.
+7. Mark the solve-rate checkbox separately after solve-rate artifacts have been
+   inspected. Domain and scene views show solve-rate completion separately
+   because solve-rate review often happens after visual/manual review.
 8. Use Excel workbooks only as optional static exports for archival, sharing
    outside the app, or fallback debugging.
 9. If web-app code, templates, CSS, JavaScript, indexer logic, resource
    indexing, feedback storage, or schemas changed, restart the app instead of
    only reloading the index.
 10. After reload or restart, verify the affected domain/scene/task/sample page
-    shows the updated local files, statuses, and feedback controls before
+    shows the updated local files, statuses, and issue controls before
     handing off.
+11. When an agent fixes a reviewer issue, add an agent repair note to the
+    existing issue thread after validation. The repair note is the handoff
+    from agent to reviewer; it is not the resolution.
+12. Reviewer/human resolution changes the underlying feedback status to
+    `resolved`. Resolved issues leave the open work queue but remain stored,
+    exportable, and inspectable through their thread/detail page.
 
 Excel workbooks are no longer the required manual-inspection surface. They are
 kept only as optional static exports for archival, sharing outside the app, or
@@ -87,8 +98,8 @@ are ready:
   CSS/JS, server routes, indexer logic, resource indexing, feedback storage, and
   schema changes.
 - After either refresh path, open the affected domain/scene/task/sample page and
-  verify the displayed image/prompt/evidence/status reflects the local files.
-- Feedback comments, manual audit checkboxes, theme changes, and ordinary
+  verify the displayed image/prompt/annotation/status reflects the local files.
+- Issue comments, manual audit checkboxes, theme changes, and ordinary
   navigation do not require **Reload Index**.
 
 ## Data Sources
@@ -112,7 +123,76 @@ The separate **Resources** link opens `/resources`, which scans
 font contact sheets, icon sheets, illustration object sheets, and other support
 assets. Resource files are served only through stable indexed ids under
 `/resources/media/<asset_id>`; they are not task samples and do not use sample
-feedback.
+issue threads.
+
+The separate **3D Objects** link opens `/three-d/objects`, which renders one
+lazy-loaded native preview per canonical `three_d` object profile. The page is
+grouped by the object profile family (`object_scene`, `object_cluster`, room
+wall/floor, street, and warehouse) and persists profile-level decisions in the
+same review SQLite DB. Use **Approve**, **Remove**, or **Improve rendering**
+with a note when auditing object fidelity. These decisions are keyed by
+`profile_id` from `trace/tasks/three_d/shared/object_resources.py`; they are not
+sample-specific issue threads and do not affect task-review completion gates.
+Export the saved decisions through `/api/three-d/objects/reviews/export.jsonl`
+when turning object-review notes into implementation work.
+
+The separate **Illustration Objects** link opens `/illustrations/objects`,
+which renders one lazy-loaded preview per reusable illustration object/style
+entry. The page has renderer tabs for `vector`, `top_down_pixel_rpg`, and
+`isometric_pixel_rpg`, plus category tabs for object families such as people,
+plants, fixtures, structures, vehicles, and objects. It pulls vector entries
+from the shared illustration object catalog/library and pixel RPG entries from
+the shared top-down/isometric object dispatcher, so newly registered reusable
+objects appear without committing new preview PNGs. Use **Approve**, **Remove**,
+or **Improve rendering** with a note when auditing illustration object fidelity.
+The summary counts and decision tabs filter the page by saved decision; use the
+**Improve** filter to view the current rendering issue list for the selected
+renderer/category.
+These decisions are keyed by renderer-specific `item_id` values and stored in
+`illustration_object_review`; they are not sample-specific issue threads and do
+not affect task-review completion gates. Export the saved decisions through
+`/api/illustrations/objects/reviews/export.jsonl`.
+
+Scene pages link to `/domains/<domain>/scenes/<scene_id>/review`, a scene-level
+review surface that shows two preview slots for every query id under every task
+in the scene. The number of image cards is therefore `query_count * 2`, with a
+missing-sample placeholder shown when a query has fewer than two indexed review
+samples. Use this page to inspect scene-wide rendering or prompt patterns in one
+scrolling pass. Scene-level issues filed there are stored with an empty
+`task_id`, link back to the scene review page, and should be used only for
+feedback that applies across the scene family rather than to one task or one
+exact generated sample.
+
+The separate **Taxonomy** link opens `/taxonomy`, which browses the current
+taxonomy audit artifacts under `review/taxonomy-audit`. The taxonomy browser is
+for task-boundary review, not generated task completion. It shows current task
+and query ids mapped to proposed task ids, attaches available current review
+samples for each query, and links back to the normal task/sample pages for
+image, prompt, answer, and annotation inspection. The taxonomy overview shows
+global decision-review progress as approved decisions over total current tasks,
+plus the number of current tasks with open taxonomy issues. Each taxonomy task
+detail page has an **Approve Decision** control for accepting the proposed
+keep/split/rename mapping. If the decision is not acceptable, file a taxonomy
+issue from that page; filing a taxonomy issue automatically clears approval for
+that taxonomy task. Use **Next Pending**, **Approve and Next**, or **Save Issue
+and Next** to advance through the remaining pending taxonomy items in the same
+domain queue. Taxonomy decision approvals are stored in the same review
+SQLite database in `taxonomy_decision_review`; taxonomy issues remain in the
+normal feedback tables with the `[taxonomy:<round>]` prefix. Taxonomy task
+pages also show **Arguments / Variant Axes** from `program_arguments_json`.
+These rows explain allowed in-task argument values for review; `needs_review`
+means the builder could only infer a weak/default argument description and a
+manual override may be useful.
+`/taxonomy/contract-v0/tree` shows the proposed units as a
+contract-v0 program tree:
+`domain -> program root -> program signature -> proposed task unit`, with each
+unit also showing its base program contract when the exact task-level contract
+is narrower than the signature family. Taxonomy comments are stored in the
+normal issue database as task-level issues with a
+`[taxonomy:<round>]` prefix, so they remain visible in task issue history and
+the `/issues` work queue while also appearing on the taxonomy detail page. The
+current review round is `contract_v0_reanalysis`; no other taxonomy package is
+part of the active review surface.
 
 Current resource-sheet generators:
 
@@ -144,7 +224,7 @@ used by scene review/status generation when available:
 
 If those artifacts are absent, task rows show `No solve-rate artifact`.
 
-## Feedback
+## Issues and Feedback Storage
 
 Default feedback database:
 
@@ -152,22 +232,22 @@ Default feedback database:
 review/feedback/review_feedback.sqlite
 ```
 
-The same SQLite database stores task-level manual audit status. Manual audit is
+The same SQLite database stores task-level audit status. Review audit is
 separate from generated artifacts and starts unchecked for every task. A task's
-manual audit passes only when the reviewer has checked all task-level gates:
+review status passes when the reviewer has checked all non-solve-rate gates:
 
 - prompt
 - image
-- evidence
+- annotation
 - distribution check
-- solve-rate review
 
 The solve-rate review checkbox records that a human has inspected the displayed
 solve-rate status and accepted it as operationally sufficient for the task. It
-does not replace the generated solve-rate artifact. A task is shown as completed
-only when all manual audit gates pass and the current solve-rate artifact is
-accepted. Reviewers can uncheck any manual audit gate later; the task
-immediately becomes pending again even if solve-rate remains accepted.
+does not replace the generated solve-rate artifact. Domain and scene pages show
+two completion counts: review completion from the four non-solve-rate gates,
+and solve-rate completion from the separate solve-rate checkbox. Reviewers can
+uncheck either status later; the affected completion count immediately becomes
+pending again.
 
 The distribution checkbox is initialized from generated artifacts: when
 `distribution_review.json` exists and passes, the app treats the distribution
@@ -182,76 +262,89 @@ offline inspection, but they are not decision criteria and should not be shown
 as manual-review blockers.
 
 Each comment is keyed to a stable sample identity derived from domain, scene,
-task, query, data path, image path, instance seed, prompt, answer, and evidence.
+task, query, data path, image path, instance seed, prompt, answer, and annotation.
 This prevents comments from silently attaching to a regenerated `0000.json`
 sample with different content.
 
-Feedback fields:
+Reviewer-facing terminology is **issue**. Browser-facing issue pages use
+`/issues`; legacy `/feedback` browser URLs redirect or alias to the issue pages
+for compatibility. Implementation-facing names remain `feedback`: API paths are
+under `/api/feedback`, and the SQLite tables are `feedback`,
+`feedback_comments`, and `feedback_notes`. Do not rename those internals during
+normal audit work.
 
-- category: `prompt`, `evidence`, `rendering`, `answer`, `calibration`, `other`
+Issue fields:
+
+- category: `prompt`, `annotation`, `rendering`, `answer`, `calibration`, `other`
 - severity: `note`, `issue`, `blocker`
 - status: `open`, `resolved`
 - free-text comment and optional author
 
-The `/feedback` page is the minimal work queue. It groups actionable tasks by
-domain, scene, and task, and shows only these blockers:
+The `/issues` page is the minimal issue work queue. It groups actionable
+tasks by domain, scene, and task, and shows only these blockers:
 
-- missing manual audit gates for prompt, image, evidence, or distribution;
+- missing manual audit gates for prompt, image, annotation, or distribution;
 - solve-rate manual checkbox not checked;
 - automated solve-rate artifact missing;
 - automated solve-rate artifact present but not accepted;
-- open task-level or sample-level feedback.
+- open task-level or sample-level issues.
 
 Use the task/sample links to inspect the exact target. Resolve buttons close
-only the feedback item; they do not mark audit gates or solve-rate review as
-passed. Click a feedback item or its `thread` link to inspect the reviewer
+only the issue item; they do not mark audit gates or solve-rate review as
+passed. Click an issue item or its `thread` link to inspect the reviewer
 comment, agent repair notes, add a new agent note, and review the linked
 task/sample from one page.
-Task pages show open feedback, reviewer follow-up comments, and existing repair
-notes as compact read-only context. When an open task/sample feedback thread
+Task pages show open issues, reviewer follow-up comments, and existing repair
+notes as compact read-only context. When an open task/sample issue thread
 already exists, the nearby reviewer comment box appends to that thread instead
-of creating a separate feedback item. Use the `Thread` link to open the full
-reviewer/agent loop. Add agent repair notes from the feedback thread page, not
-from the task/sample preview list. The floating task-feedback panel keeps the
-reviewer comment composer outside the scrollable open-feedback list so long
-feedback loops do not hide the input controls.
+of creating a separate issue item. Use the `Thread` link to open the full
+reviewer/agent loop. Add agent repair notes from the issue thread page, not
+from the task/sample preview list. The floating task issue panel keeps the
+reviewer comment composer outside the scrollable open-issue list so long issue
+loops do not hide the input controls.
+
+Resolved issues remain part of the task history. They should no longer appear
+as open blockers on `/issues`, but the thread still preserves the original
+reviewer comment, reviewer follow-ups, and agent repair notes in chronological
+order. Agents may verify resolved status when asked, but should not reopen,
+delete, or supersede resolved issues unless the user explicitly requests it.
 
 ## Agent Repair Notes
 
-Human feedback and agent repair notes have different meanings:
+Human issue threads and agent repair notes have different meanings:
 
-- reviewer feedback is the issue or request, and stays `open` until a human
+- reviewer issue is the request or defect report, and stays `open` until a human
   verifies the updated sample/task and resolves it;
-- reviewer follow-up comments continue the same feedback thread when the human
+- reviewer follow-up comments continue the same issue thread when the human
   adds more detail or asks another question;
 - agent repair notes are append-only implementation notes attached to a feedback
   item after an agent has changed code, prompts, configs, generated artifacts,
-  or docs to address that feedback.
+  or docs to address that issue.
 
-When an agent acts on reviewer feedback:
+When an agent acts on a reviewer issue:
 
 1. Make the code/artifact/doc change normally.
 2. Regenerate affected task-review artifacts when the rendered sample surface
    changed.
 3. Reload the app index after artifact changes, or restart the app after app or
    feedback-schema changes.
-4. Add a brief repair note under the relevant feedback item. Use one sentence
-   that states what changed and whether review artifacts were regenerated or the
-   app was reloaded.
-5. Do not mark the feedback resolved unless the user explicitly asked the agent
+4. Add a brief repair note under the relevant issue item. Use one sentence
+   that states what changed, which validation/review command ran, whether
+   review artifacts were regenerated, and whether the app was reloaded.
+5. Do not mark the issue resolved unless the user explicitly asked the agent
    to perform that human-verification step. The normal flow is: agent fixes,
    agent adds repair note, human reviews, human resolves.
 
 If a change addresses a broad task-level issue, add the repair note to the
-task-level feedback item. If the issue is visible only in one generated
-question/image, add the repair note to that sample's feedback item.
+task-level issue item. If the issue is visible only in one generated
+question/image, add the repair note to that sample's issue item.
 
-Export feedback as JSONL:
+Export issue records through the feedback API as JSONL:
 
 ```bash
 curl -H "Authorization: Bearer $TRACE_REVIEW_APP_TOKEN" \
   http://127.0.0.1:7860/api/feedback/export.jsonl
 ```
 
-Each exported feedback record includes an `agent_notes` array with any repair
-notes attached to that feedback id.
+Each exported record includes an `agent_notes` array with any repair notes
+attached to that issue's underlying feedback id.

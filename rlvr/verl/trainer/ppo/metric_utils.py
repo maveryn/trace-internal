@@ -27,9 +27,9 @@ from verl import DataProto
 from verl.utils.import_utils import deprecated
 
 try:
-    from trace.core.reward_scoring import TRACE_EVIDENCE_LOG_TYPES as _TRACE_EVIDENCE_LOG_TYPES
+    from trace.core.reward_scoring import TRACE_ANNOTATION_LOG_TYPES as _TRACE_ANNOTATION_LOG_TYPES
 except Exception:  # pragma: no cover
-    _TRACE_EVIDENCE_LOG_TYPES = (
+    _TRACE_ANNOTATION_LOG_TYPES = (
         "bbox_sequence",
         "bbox_set",
         "keyed_bbox_map",
@@ -246,7 +246,7 @@ def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]])
 
     reduced: dict[str, float] = {}
     for key, values in reward_extra_infos_dict.items():
-        if key.startswith("evidence_type_"):
+        if key.startswith("annotation_type_"):
             continue
         numeric_values: list[float] = []
         for value in values:
@@ -262,29 +262,29 @@ def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]])
         if numeric_values:
             reduced[f"reward/{key}"] = float(np.mean(numeric_values))
 
-    evidence_rewards = reward_extra_infos_dict.get("evidence_reward")
-    if evidence_rewards is None:
+    annotation_rewards = reward_extra_infos_dict.get("annotation_reward")
+    if annotation_rewards is None:
         return reduced
     try:
-        evidence_values = np.asarray(evidence_rewards, dtype=float)
+        annotation_values = np.asarray(annotation_rewards, dtype=float)
     except (TypeError, ValueError):
         return reduced
 
-    for evidence_type in _TRACE_EVIDENCE_LOG_TYPES:
-        masks = reward_extra_infos_dict.get(f"evidence_type_{evidence_type}")
+    for annotation_type in _TRACE_ANNOTATION_LOG_TYPES:
+        masks = reward_extra_infos_dict.get(f"annotation_type_{annotation_type}")
         if masks is None:
             continue
         try:
             mask_values = np.asarray(masks, dtype=float)
         except (TypeError, ValueError):
             continue
-        if mask_values.shape != evidence_values.shape:
+        if mask_values.shape != annotation_values.shape:
             continue
         count = float(np.sum(mask_values))
-        reduced[f"reward/evidence_count/{evidence_type}"] = count
-        reduced[f"reward/evidence_fraction/{evidence_type}"] = float(count / max(1, len(mask_values)))
+        reduced[f"reward/annotation_count/{annotation_type}"] = count
+        reduced[f"reward/annotation_fraction/{annotation_type}"] = float(count / max(1, len(mask_values)))
         if count > 0:
-            reduced[f"reward/evidence_reward/{evidence_type}"] = float(np.sum(evidence_values * mask_values) / count)
+            reduced[f"reward/annotation_reward/{annotation_type}"] = float(np.sum(annotation_values * mask_values) / count)
     return reduced
 
 

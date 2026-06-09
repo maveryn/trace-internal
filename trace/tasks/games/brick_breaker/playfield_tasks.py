@@ -431,7 +431,7 @@ def _sample_next_hit_scene(*, rng, axes: _ResolvedAxes) -> BrickBreakerSample:
         target_lane_index=None,
         target_lane_label=None,
         ball_start_lane_index=ball_start_lane,
-        evidence_entity_ids=(str(target_brick.brick_id),),
+        annotation_entity_ids=(str(target_brick.brick_id),),
         construction_mode="angled_path_first_lower_row_brick",
     )
     validate_brick_breaker_sample(sample)
@@ -476,7 +476,7 @@ def _sample_paddle_catch_scene(*, rng, axes: _ResolvedAxes) -> BrickBreakerSampl
         target_lane_index=int(target_lane),
         target_lane_label=lane_label(target_lane),
         ball_start_lane_index=int(start_lane),
-        evidence_entity_ids=(lane_entity_id(target_lane),),
+        annotation_entity_ids=(lane_entity_id(target_lane),),
         construction_mode="straight_path_to_catch_lane",
     )
     validate_brick_breaker_sample(sample)
@@ -538,7 +538,7 @@ def _sample_hit_row_remaining_scene(*, rng, axes: _ResolvedAxes) -> BrickBreaker
         target_lane_index=None,
         target_lane_label=None,
         ball_start_lane_index=ball_start_lane,
-        evidence_entity_ids=remaining_ids,
+        annotation_entity_ids=remaining_ids,
         construction_mode="brick_hit_then_same_row_remaining_count",
     )
     validate_brick_breaker_sample(sample)
@@ -563,15 +563,15 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "paddle_catch_label":
         answer_value = "C"
-        evidence_value = [[245, 382, 345, 424]]
+        annotation_value = [[245, 382, 345, 424]]
     elif str(query_id) == "hit_row_remaining_count":
         answer_value = 4
-        evidence_value = [[120, 255, 220, 302], [230, 255, 330, 302], [340, 255, 440, 302], [450, 255, 550, 302]]
+        annotation_value = [[120, 255, 220, 302], [230, 255, 330, 302], [340, 255, 440, 302], [450, 255, 550, 302]]
     else:
         answer_value = "H"
-        evidence_value = [[438, 186, 514, 228]]
+        annotation_value = [[438, 186, 514, 228]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -645,9 +645,9 @@ class GamesBrickBreakerPlayfieldTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -667,11 +667,11 @@ class GamesBrickBreakerPlayfieldTask:
                 "object_description_brick_wall",
                 "brick_breaker_motion_rule_text",
                 "answer_hint_next_hit_label",
-                "evidence_hint_next_hit_label",
+                "annotation_hint_next_hit_label",
                 "answer_hint_paddle_catch_label",
-                "evidence_hint_paddle_catch_label",
+                "annotation_hint_paddle_catch_label",
                 "answer_hint_hit_row_remaining_count",
-                "evidence_hint_hit_row_remaining_count",
+                "annotation_hint_hit_row_remaining_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -683,14 +683,14 @@ class GamesBrickBreakerPlayfieldTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "brick_breaker_motion_rule_text": str(prompt_defaults["brick_breaker_motion_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -702,7 +702,7 @@ class GamesBrickBreakerPlayfieldTask:
             type="integer" if isinstance(sampled_scene.answer, int) else "string",
             value=int(sampled_scene.answer) if isinstance(sampled_scene.answer, int) else str(sampled_scene.answer),
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -714,7 +714,7 @@ class GamesBrickBreakerPlayfieldTask:
             query_id=str(axes.query_id),
             brick_count=len(sampled_scene.bricks),
             lane_count=int(sampled_scene.lane_count),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         brick_trace = [
             {
@@ -736,7 +736,7 @@ class GamesBrickBreakerPlayfieldTask:
                     "brick_rows": int(sampled_scene.brick_rows),
                     "brick_cols": int(sampled_scene.brick_cols),
                     "lane_count": int(sampled_scene.lane_count),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -793,15 +793,15 @@ class GamesBrickBreakerPlayfieldTask:
                 "target_lane_index": sampled_scene.target_lane_index,
                 "target_lane_label": sampled_scene.target_lane_label,
                 "ball_start_lane_index": sampled_scene.ball_start_lane_index,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -810,7 +810,7 @@ class GamesBrickBreakerPlayfieldTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -827,11 +827,19 @@ class GamesBrickBreakerPlayfieldTask:
 
 
 @register_task
-class GamesBrickBreakerTrajectoryTargetLabelTask(GamesBrickBreakerPlayfieldTask):
-    """Identify the labeled target reached by the visible ball trajectory."""
+class GamesBrickBreakerNextHitLabelTask(GamesBrickBreakerPlayfieldTask):
+    """Identify the next labeled brick hit by the visible ball trajectory."""
 
-    task_id = "task_games__brick_breaker__trajectory_target_label"
-    supported_query_ids = ("next_hit_label", "paddle_catch_label")
+    task_id = "task_games__brick_breaker__next_hit_label"
+    supported_query_ids = ("next_hit_label",)
+
+
+@register_task
+class GamesBrickBreakerPaddleCatchLabelTask(GamesBrickBreakerPlayfieldTask):
+    """Identify the catch lane reached by the visible ball trajectory."""
+
+    task_id = "task_games__brick_breaker__paddle_catch_label"
+    supported_query_ids = ("paddle_catch_label",)
 
 
 @register_task
@@ -844,6 +852,7 @@ class GamesBrickBreakerHitRowRemainingCountTask(GamesBrickBreakerPlayfieldTask):
 
 __all__ = [
     "GamesBrickBreakerHitRowRemainingCountTask",
+    "GamesBrickBreakerNextHitLabelTask",
+    "GamesBrickBreakerPaddleCatchLabelTask",
     "GamesBrickBreakerPlayfieldTask",
-    "GamesBrickBreakerTrajectoryTargetLabelTask",
 ]

@@ -28,9 +28,9 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert len(scene_entities) == 6
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "keyed_bbox_map"
-    assert sorted(out.evidence_gt.value.keys()) == ["selected_option", "source_fragment"]
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert sorted(out.annotation_gt.value.keys()) == ["selected_option", "source_fragment"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out.query_id == "partial_icon_match_label"
     assert out.scene_id == "icon_cutout"
     assert trace["scene_ir"]["scene_kind"] == "icons_icon_cutout_partial_match_label"
@@ -51,12 +51,12 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert str(execution["option_icon_ids_by_label"][answer_label]) == str(execution["correct_icon_id"])
     assert len({str(entity["icon_id"]) for entity in scene_entities}) == 6
 
-    assert out.evidence_gt.value == {
+    assert out.annotation_gt.value == {
         "source_fragment": list(reference["fragment_bbox_xyxy"]),
         "selected_option": list(matching[0]["cell_bbox_xyxy"]),
     }
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
     assert trace["witness_symbolic"]["selected_option_label"] == answer_label
     assert render_style["text_legibility"]["required_role_count"] >= 2
     assert render_style["text_legibility"]["failure_count"] == 0
@@ -68,11 +68,11 @@ def test_icons_relation_partial_match_prompt_example_matches_contract() -> None:
     task = IconsRelationPartialMatchLabelTask()
     out = task.generate(2026052802, params={"answer_label": "C"}, max_attempts=120)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "C"}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert sorted(answer_and_evidence["evidence"].keys()) == ["selected_option", "source_fragment"]
-    assert answer_and_evidence["answer"] == "C"
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert sorted(answer_and_annotation["annotation"].keys()) == ["selected_option", "source_fragment"]
+    assert answer_and_annotation["answer"] == "C"
 
 
 def test_icons_relation_partial_match_default_sampling() -> None:

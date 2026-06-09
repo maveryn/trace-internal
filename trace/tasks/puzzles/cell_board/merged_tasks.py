@@ -9,7 +9,7 @@ from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import rewrite_public_query_output
-from .attribute_count import CellBoardAttributeCountTask as _CellBoardAttributeCountTask
+from . import attribute_count as _attribute_count_tasks
 from .count_color_components import TileColorComponentsTask
 from .count_largest_component_size import TileLargestComponentSizeTask
 from .path_reachable_target_count import TileReachableTargetCountTask
@@ -67,11 +67,11 @@ def _select_query_spec(
     }
 
     explicit = None
-    for key in ("query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         candidate = params.get(key)
         if candidate is None:
             continue
-        if key == "query_id" and str(candidate) == "default":
+        if str(candidate) == "default":
             continue
         explicit = str(candidate)
         break
@@ -168,37 +168,54 @@ class _CellBoardQueryTask:
 
 
 @register_task
-class TileColorRegionCountPublicTask(_CellBoardQueryTask):
-    """Count connected components or largest component size for one queried color."""
+class TileColorComponentCountPublicTask(_CellBoardQueryTask):
+    """Count connected components for one queried color."""
 
-    task_id = "task_puzzles__cell_board__color_region_count"
-    query_specs = (
-        ("color_components", TileColorComponentsTask, "color_components"),
-        ("largest_component_size", TileLargestComponentSizeTask, "largest_component_size"),
-    )
+    task_id = "task_puzzles__cell_board__color_component_count"
+    query_specs = (("color_components", TileColorComponentsTask, "color_components"),)
 
 
 @register_task
-class TileReachabilityCountPublicTask(_CellBoardQueryTask):
-    """Count reachable cells or reachable/unreachable target cells."""
+class TileLargestComponentSizePublicTask(_CellBoardQueryTask):
+    """Find the largest connected component size for one queried color."""
 
-    task_id = "task_puzzles__cell_board__reachability_count"
+    task_id = "task_puzzles__cell_board__largest_component_size"
+    query_specs = (("largest_component_size", TileLargestComponentSizeTask, "largest_component_size"),)
+
+
+@register_task
+class TileReachableRegionSizePublicTask(_CellBoardQueryTask):
+    """Count cells reachable from the marked start."""
+
+    task_id = "task_puzzles__cell_board__reachable_region_size"
+    query_specs = (("region_size", TileRegionSizeTask, "region_size"),)
+
+
+@register_task
+class TileReachableTargetCountPublicTask(_CellBoardQueryTask):
+    """Count reachable or unreachable target cells from the marked start."""
+
+    task_id = "task_puzzles__cell_board__reachable_target_count"
     query_specs = (
-        ("region_size", TileRegionSizeTask, "region_size"),
         ("reachable_target_count", TileReachableTargetCountTask, "reachable_target_count"),
         ("unreachable_target_count", TileReachableTargetCountTask, "unreachable_target_count"),
     )
 
 
 @register_task
-class TilePathDistancePublicTask(_CellBoardQueryTask):
-    """Count a shortest-path or nearest-color-set path distance."""
+class TileShortestPathLengthPublicTask(_CellBoardQueryTask):
+    """Find the shortest path length between marked cells."""
 
-    task_id = "task_puzzles__cell_board__path_distance"
-    query_specs = (
-        ("shortest_path", TileShortestPathTask, "shortest_path"),
-        ("min_distance", TileMinDistanceTask, "min_distance"),
-    )
+    task_id = "task_puzzles__cell_board__shortest_path_length_value"
+    query_specs = (("shortest_path", TileShortestPathTask, "shortest_path"),)
+
+
+@register_task
+class TileMinimumColorSetDistancePublicTask(_CellBoardQueryTask):
+    """Find the minimum distance between two queried color sets."""
+
+    task_id = "task_puzzles__cell_board__minimum_color_set_distance_value"
+    query_specs = (("min_distance", TileMinDistanceTask, "min_distance"),)
 
 
 @register_task
@@ -210,8 +227,11 @@ class TileSymmetryViolationCountPublicTask(_CellBoardQueryTask):
 
 
 __all__ = [
-    "TileColorRegionCountPublicTask",
-    "TileReachabilityCountPublicTask",
-    "TilePathDistancePublicTask",
+    "TileColorComponentCountPublicTask",
+    "TileLargestComponentSizePublicTask",
+    "TileMinimumColorSetDistancePublicTask",
+    "TileReachableRegionSizePublicTask",
+    "TileReachableTargetCountPublicTask",
     "TileSymmetryViolationCountPublicTask",
+    "TileShortestPathLengthPublicTask",
 ]

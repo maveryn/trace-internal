@@ -96,21 +96,21 @@ def test_chart_statistics_summary_query_value_variants_match_contract() -> None:
         assert str(out.query_id) == str(query_id)
         assert str(execution["statistic_kind"]) == str(statistic_kind)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "point_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
 
         labels = [str(label) for label in execution["labels"]]
         values = [int(value) for value in execution["values"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
+        annotation_points = [list(point) for point in out.annotation_gt.value]
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
         assert len(labels) == int(execution["mark_count"])
-        assert evidence_labels == sorted(evidence_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
+        assert annotation_labels == sorted(annotation_labels)
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
         assert int(out.answer_gt.value) == _expected_answer(
             str(statistic_kind),
             values,
@@ -124,9 +124,9 @@ def test_chart_statistics_summary_query_value_variants_match_contract() -> None:
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
         _assert_value_axis_covers_values(render, values)
 
-        assert len(evidence_labels) == 1
-        assert len(evidence_points) == 1
-        assert int(execution["values_by_label"][evidence_labels[0]]) == int(out.answer_gt.value)
+        assert len(annotation_labels) == 1
+        assert len(annotation_points) == 1
+        assert int(execution["values_by_label"][annotation_labels[0]]) == int(out.answer_gt.value)
         if str(statistic_kind) == "nth_highest":
             assert int(execution["rank_n"]) >= 3
             assert str(execution["rank_direction"]) == "highest"
@@ -178,9 +178,9 @@ def test_chart_statistics_supports_additional_scene_variants() -> None:
 def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     expected = {
-        "median": {"evidence": [[300, 240]], "answer": 6},
-        "nth_highest": {"evidence": [[420, 180]], "answer": 7},
-        "nth_lowest": {"evidence": [[260, 360]], "answer": 4},
+        "median": {"annotation": [[300, 240]], "answer": 6},
+        "nth_highest": {"annotation": [[420, 180]], "answer": 7},
+        "nth_lowest": {"annotation": [[260, 360]], "answer": 4},
     }
     for index, statistic_kind in enumerate(expected, start=9300):
         out = task.generate(
@@ -188,9 +188,9 @@ def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
             params={"query_id": "order_statistic_value", "statistic_kind": statistic_kind},
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[statistic_kind]
+        assert answer_and_annotation == expected[statistic_kind]
         assert answer_only == {"answer": expected[statistic_kind]["answer"]}
 
 
@@ -201,7 +201,7 @@ def test_chart_statistics_task_is_deterministic() -> None:
     out_b = task.generate(9401, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -261,9 +261,9 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
         labels = [str(label) for label in execution["labels"]]
         values = [int(value) for value in execution["values"]]
         assert str(out.query_id) == str(query_id)
-        assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "point_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.answer_gt.type == "string"
+        assert out.annotation_gt.type == "point_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -274,10 +274,10 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
             values,
             rank_n=int(rank_n) if rank_n is not None else None,
         )
-        evidence_points = [list(point) for point in out.evidence_gt.value]
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-        assert len(trace["projected_evidence"]["bbox_set"]) == 1
+        annotation_points = [list(point) for point in out.annotation_gt.value]
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+        assert len(trace["projected_annotation"]["bbox_set"]) == 1
         assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
@@ -287,25 +287,25 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
 
         if str(statistic_kind) == "median":
             ordered_values = sorted(int(value) for value in values)
-            assert int(execution["evidence_value"]) == int(ordered_values[len(ordered_values) // 2])
+            assert int(execution["annotation_value"]) == int(ordered_values[len(ordered_values) // 2])
         elif str(statistic_kind) == "nth_highest":
             unique_values = sorted(set(int(value) for value in values), reverse=True)
             assert int(execution["rank_n"]) >= 3
-            assert int(execution["evidence_value"]) == int(unique_values[int(execution["rank_n"]) - 1])
+            assert int(execution["annotation_value"]) == int(unique_values[int(execution["rank_n"]) - 1])
             assert str(execution["rank_direction"]) == "highest"
         else:
             unique_values = sorted(set(int(value) for value in values))
             assert int(execution["rank_n"]) >= 3
-            assert int(execution["evidence_value"]) == int(unique_values[int(execution["rank_n"]) - 1])
+            assert int(execution["annotation_value"]) == int(unique_values[int(execution["rank_n"]) - 1])
             assert str(execution["rank_direction"]) == "lowest"
 
 
 def test_chart_statistics_summary_query_label_prompt_examples_match_selected_variant() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     expected = {
-        "median": {"evidence": [[300, 240]], "answer": "M"},
-        "nth_highest": {"evidence": [[420, 180]], "answer": "K"},
-        "nth_lowest": {"evidence": [[260, 360]], "answer": "R"},
+        "median": {"annotation": [[300, 240]], "answer": "M4K8"},
+        "nth_highest": {"annotation": [[420, 180]], "answer": "K7P2"},
+        "nth_lowest": {"annotation": [[260, 360]], "answer": "R6T4"},
     }
     for index, statistic_kind in enumerate(expected, start=9550):
         out = task.generate(
@@ -313,9 +313,9 @@ def test_chart_statistics_summary_query_label_prompt_examples_match_selected_var
             params={"query_id": "order_statistic_label", "statistic_kind": statistic_kind},
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[statistic_kind]
+        assert answer_and_annotation == expected[statistic_kind]
         assert answer_only == {"answer": expected[statistic_kind]["answer"]}
 
 
@@ -326,7 +326,7 @@ def test_chart_statistics_summary_query_label_task_is_deterministic() -> None:
     out_b = task.generate(9651, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -396,9 +396,9 @@ def test_chart_statistics_summary_query_label_rejects_removed_extremum_variants(
         task.generate(9691, params={"query_id": "argmin", "scene_variant": "bar"}, max_attempts=10)
 
 
-def test_point_set_evidence_type_is_registered_for_chart_label_tasks() -> None:
+def test_point_set_annotation_type_is_registered_for_chart_label_tasks() -> None:
     registry = load_type_registry()
-    assert registry.validate_evidence_type("point_set") is True
+    assert registry.validate_annotation_type("point_set") is True
 
 
 def test_chart_statistics_labels_use_compact_dense_axis_ids() -> None:

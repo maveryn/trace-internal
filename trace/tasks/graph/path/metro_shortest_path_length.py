@@ -13,7 +13,7 @@ class GraphPathMetroShortestPathLengthTask(MetroRouteGraphTaskBase):
     task_id = "task_graph__metro__shortest_path_length"
     task_group = "path"
     query_id = "metro_shortest_path_length"
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = "shortest_path_length_query"
 
 

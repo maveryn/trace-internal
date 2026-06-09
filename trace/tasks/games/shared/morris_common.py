@@ -9,6 +9,8 @@ from typing import Dict, FrozenSet, List, Mapping, Sequence, Tuple
 SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
 SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS: Tuple[str, ...] = (
     "all_pieces_in_mill_count",
+    "white_mill_completion_point_count",
+    "black_mill_completion_point_count",
 )
 
 _POSITION_LAYOUT: Tuple[Tuple[str, float, float], ...] = (
@@ -60,6 +62,7 @@ _MILL_POSITION_INDICES: Tuple[Tuple[int, int, int], ...] = (
 _WHITE_SUPPORT: Tuple[int, ...] = (0, 3, 5, 6, 7, 8, 9)
 _BLACK_SUPPORT: Tuple[int, ...] = (0, 3, 5, 6, 7, 8, 9)
 _ALL_SUPPORT: Tuple[int, ...] = (0, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
+_COMPLETION_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
 
 
 @dataclass(frozen=True)
@@ -82,6 +85,8 @@ class NineMensMorrisBoardState:
     all_piece_ids_in_mill: Tuple[str, ...]
     white_mill_ids: Tuple[str, ...]
     black_mill_ids: Tuple[str, ...]
+    white_mill_completion_node_labels: Tuple[str, ...]
+    black_mill_completion_node_labels: Tuple[str, ...]
     overlapping_piece_ids: Tuple[str, ...]
     target_answer: int
 
@@ -95,6 +100,8 @@ class _OccupancyAnalysis:
     all_piece_ids_in_mill: Tuple[str, ...]
     white_mill_ids: Tuple[str, ...]
     black_mill_ids: Tuple[str, ...]
+    white_mill_completion_node_labels: Tuple[str, ...]
+    black_mill_completion_node_labels: Tuple[str, ...]
     mill_membership_count_by_piece_id: Dict[str, int]
 
 
@@ -108,6 +115,30 @@ def _position_label(node_index: int) -> str:
 
 def _mill_id(mill_index: int) -> str:
     return f"mill_{int(mill_index)}"
+
+
+def _opponent_color(color: str) -> str:
+    """Return the opposite Morris piece color."""
+
+    return "black" if str(color) == "white" else "white"
+
+
+def _completion_node_labels(occupancy_by_node: Mapping[int, str], *, color: str) -> Tuple[str, ...]:
+    """Return empty nodes where one piece of the color would complete a mill."""
+
+    target_color = str(color)
+    completion_nodes: set[int] = set()
+    for node_index in range(len(_POSITION_LAYOUT)):
+        if int(node_index) in occupancy_by_node:
+            continue
+        for positions in _MILL_POSITION_INDICES:
+            if int(node_index) not in positions:
+                continue
+            other_positions = [int(position) for position in positions if int(position) != int(node_index)]
+            if all(str(occupancy_by_node.get(int(position), "")) == target_color for position in other_positions):
+                completion_nodes.add(int(node_index))
+                break
+    return tuple(_position_label(int(node_index)) for node_index in sorted(completion_nodes))
 
 
 def _compute_mill_union_sets_by_size() -> Dict[int, Tuple[FrozenSet[int], ...]]:
@@ -170,6 +201,8 @@ def _analyze_occupancy(occupancy_by_node: Mapping[int, str]) -> _OccupancyAnalys
         all_piece_ids_in_mill=tuple(str(piece_id) for piece_id in all_piece_ids),
         white_mill_ids=tuple(str(value) for value in sorted(white_mill_ids)),
         black_mill_ids=tuple(str(value) for value in sorted(black_mill_ids)),
+        white_mill_completion_node_labels=_completion_node_labels(occupancy_by_node, color="white"),
+        black_mill_completion_node_labels=_completion_node_labels(occupancy_by_node, color="black"),
         mill_membership_count_by_piece_id={str(key): int(value) for key, value in membership_count_by_piece_id.items()},
     )
 
@@ -200,6 +233,10 @@ def _normalize_query_id_and_color(query_id: str, player_color: str | None = None
     variant = str(query_id)
     if variant == "all_pieces_in_mill_count":
         color = None
+    elif variant == "white_mill_completion_point_count":
+        color = "white"
+    elif variant == "black_mill_completion_point_count":
+        color = "black"
     else:
         raise ValueError(f"unsupported nine-men's-morris query id: {query_id}")
     return str(variant), color
@@ -267,6 +304,77 @@ def _try_add_fillers(
                 del occupancy_by_node[int(node_index)]
 
 
+def _board_state_from_occupancy(
+    occupancy_by_node: Mapping[int, str],
+    *,
+    target_answer: int,
+) -> NineMensMorrisBoardState:
+    """Build a public board-state payload from finalized occupancy."""
+
+    final_analysis = _analyze_occupancy(occupancy_by_node)
+    piece_specs: List[NineMensMorrisPieceInstance] = []
+    for node_index in sorted(occupancy_by_node):
+        color = str(occupancy_by_node[node_index])
+        piece_specs.append(
+            NineMensMorrisPieceInstance(
+                piece_id=_piece_id(int(node_index), color),
+                node_index=int(node_index),
+                node_label=_position_label(int(node_index)),
+                color=str(color),
+            )
+        )
+    overlapping_piece_ids = [
+        str(piece_id)
+        for piece_id, count in final_analysis.mill_membership_count_by_piece_id.items()
+        if int(count) >= 2
+    ]
+    return NineMensMorrisBoardState(
+        piece_specs=tuple(piece_specs),
+        white_piece_ids_in_mill=tuple(str(value) for value in final_analysis.white_piece_ids_in_mill),
+        black_piece_ids_in_mill=tuple(str(value) for value in final_analysis.black_piece_ids_in_mill),
+        all_piece_ids_in_mill=tuple(str(value) for value in final_analysis.all_piece_ids_in_mill),
+        white_mill_ids=tuple(str(value) for value in final_analysis.white_mill_ids),
+        black_mill_ids=tuple(str(value) for value in final_analysis.black_mill_ids),
+        white_mill_completion_node_labels=tuple(str(value) for value in final_analysis.white_mill_completion_node_labels),
+        black_mill_completion_node_labels=tuple(str(value) for value in final_analysis.black_mill_completion_node_labels),
+        overlapping_piece_ids=tuple(sorted(overlapping_piece_ids)),
+        target_answer=int(target_answer),
+    )
+
+
+def _sample_completion_occupancy(
+    rng,
+    *,
+    color: str,
+    target_answer: int,
+) -> Dict[int, str]:
+    """Sample one legal occupancy with an exact mill-completion count."""
+
+    target = int(target_answer)
+    target_color = str(color)
+    other_color = _opponent_color(target_color)
+    for _ in range(8192):
+        target_count_min = 0 if int(target) == 0 else 2
+        target_piece_count = int(rng.randint(int(target_count_min), 9))
+        other_piece_count = int(rng.randint(0, 9))
+        nodes = list(range(len(_POSITION_LAYOUT)))
+        rng.shuffle(nodes)
+        occupancy: Dict[int, str] = {}
+        for node_index in nodes[:target_piece_count]:
+            occupancy[int(node_index)] = target_color
+        for node_index in nodes[target_piece_count : target_piece_count + other_piece_count]:
+            occupancy[int(node_index)] = other_color
+        analysis = _analyze_occupancy(occupancy)
+        completion_labels = (
+            analysis.white_mill_completion_node_labels
+            if target_color == "white"
+            else analysis.black_mill_completion_node_labels
+        )
+        if len(completion_labels) == int(target):
+            return occupancy
+    raise RuntimeError(f"failed to sample mill-completion board for {target_color} target {target}")
+
+
 def build_nine_mens_morris_board_state(
     *,
     rng,
@@ -280,6 +388,15 @@ def build_nine_mens_morris_board_state(
     variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
     if variant == "all_pieces_in_mill_count" and target not in _ALL_SUPPORT:
         raise ValueError(f"unsupported all-color target_answer: {target}")
+    if variant in {"white_mill_completion_point_count", "black_mill_completion_point_count"}:
+        if target not in _COMPLETION_SUPPORT:
+            raise ValueError(f"unsupported mill-completion target_answer: {target}")
+        occupancy_by_node = _sample_completion_occupancy(
+            rng,
+            color=str(color),
+            target_answer=int(target),
+        )
+        return _board_state_from_occupancy(occupancy_by_node, target_answer=int(target))
 
     for _ in range(512):
         white_mill_nodes, black_mill_nodes = _sample_mill_sets(
@@ -308,46 +425,24 @@ def build_nine_mens_morris_board_state(
         if variant == "all_pieces_in_mill_count" and int(all_count) != int(target):
             continue
 
-        piece_specs: List[NineMensMorrisPieceInstance] = []
-        for node_index in sorted(occupancy_by_node):
-            color = str(occupancy_by_node[node_index])
-            piece_specs.append(
-                NineMensMorrisPieceInstance(
-                    piece_id=_piece_id(int(node_index), color),
-                    node_index=int(node_index),
-                    node_label=_position_label(int(node_index)),
-                    color=str(color),
-                )
-            )
-
-        overlapping_piece_ids = [
-            str(piece_id)
-            for piece_id, count in final_analysis.mill_membership_count_by_piece_id.items()
-            if int(count) >= 2
-        ]
-        return NineMensMorrisBoardState(
-            piece_specs=tuple(piece_specs),
-            white_piece_ids_in_mill=tuple(str(value) for value in final_analysis.white_piece_ids_in_mill),
-            black_piece_ids_in_mill=tuple(str(value) for value in final_analysis.black_piece_ids_in_mill),
-            all_piece_ids_in_mill=tuple(str(value) for value in final_analysis.all_piece_ids_in_mill),
-            white_mill_ids=tuple(str(value) for value in final_analysis.white_mill_ids),
-            black_mill_ids=tuple(str(value) for value in final_analysis.black_mill_ids),
-            overlapping_piece_ids=tuple(sorted(overlapping_piece_ids)),
-            target_answer=int(target),
-        )
+        return _board_state_from_occupancy(occupancy_by_node, target_answer=int(target))
 
     raise RuntimeError(f"failed to build nine-men's-morris board for {variant} target {target}")
 
 
-def evidence_piece_ids(
+def annotation_piece_ids(
     board_state: NineMensMorrisBoardState,
     *,
     query_id: str,
     player_color: str | None = None,
 ) -> Tuple[str, ...]:
-    """Return prompt-facing evidence piece ids for one query id."""
+    """Return prompt-facing annotation piece ids for one query id."""
 
     variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
+    if variant == "white_mill_completion_point_count":
+        return tuple(str(label) for label in board_state.white_mill_completion_node_labels)
+    if variant == "black_mill_completion_point_count":
+        return tuple(str(label) for label in board_state.black_mill_completion_node_labels)
     return tuple(str(piece_id) for piece_id in board_state.all_piece_ids_in_mill)
 
 
@@ -355,6 +450,8 @@ def supported_targets_for_query(query_id: str, *, player_color: str | None = Non
     """Return the feasible answer support for one query id."""
 
     variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
+    if variant in {"white_mill_completion_point_count", "black_mill_completion_point_count"}:
+        return _COMPLETION_SUPPORT
     return _ALL_SUPPORT
 
 
@@ -370,6 +467,6 @@ __all__ = [
     "SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS",
     "SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS",
     "build_nine_mens_morris_board_state",
-    "evidence_piece_ids",
+    "annotation_piece_ids",
     "supported_targets_for_query",
 ]

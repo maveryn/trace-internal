@@ -76,18 +76,6 @@ LOOP_START_ANGLES_DEG: Tuple[int, ...] = (-90, -45, 0, 45, 90, 135, 180)
 BEAD_COLOR_DISTANCE_SPACE = "lab"
 BEAD_COLOR_MIN_DISTANCE = 50.0
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 def _variant_param(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],

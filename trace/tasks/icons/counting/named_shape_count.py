@@ -16,7 +16,7 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_style import sample_icon_palette
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -41,7 +41,7 @@ from ..shared.procedural_named_icons import (
 )
 
 
-TASK_ID = "task_icons__named_field__shape_count"
+TASK_ID = "task_icons__named_field__single_attribute_membership_count"
 QUERY_ID = "named_shape_count"
 _DEFAULT_ARRANGEMENT_PROFILES: Dict[str, Dict[str, int]] = {
     "jittered_grid": {"target_count_min": 1, "target_count_max": 6, "object_count_min": 14, "object_count_max": 28},
@@ -479,10 +479,10 @@ class IconsCountingNamedShapeCountTask:
         if scene is None or sample is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        evidence_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
-        if len(evidence_bboxes) != int(sample.target_count):
+        annotation_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
+        if len(annotation_bboxes) != int(sample.target_count):
             raise RuntimeError("rendered named-shape count did not match target count")
-        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -494,7 +494,7 @@ class IconsCountingNamedShapeCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -507,13 +507,13 @@ class IconsCountingNamedShapeCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]).format(shape_name=str(sample.target_shape_name)),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(shape_name=str(sample.target_shape_name)),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(shape_name=str(sample.target_shape_name)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -610,16 +610,16 @@ class IconsCountingNamedShapeCountTask:
                 "answer": int(sample.target_count),
                 "counted_instance_ids": list(counted_instance_ids),
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
             },
         }
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

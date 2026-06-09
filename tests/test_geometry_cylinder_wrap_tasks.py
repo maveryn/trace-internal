@@ -26,17 +26,17 @@ ANSWER_TYPE_BY_TASK = {
     GeometryCylinderWrapWrappedMarkPositionLabelTask: "option_letter",
 }
 
-EVIDENCE_COUNT_BY_TASK = {
+ANNOTATION_COUNT_BY_TASK = {
     GeometryCylinderWrapSurfacePathLengthValueTask: 3,
     GeometryCylinderWrapWrappedMarkPositionLabelTask: 2,
 }
 
-EVIDENCE_TYPE_BY_TASK = {
+ANNOTATION_TYPE_BY_TASK = {
     GeometryCylinderWrapSurfacePathLengthValueTask: "keyed_bbox_map",
     GeometryCylinderWrapWrappedMarkPositionLabelTask: "keyed_point_map",
 }
 
-EVIDENCE_KEYS_BY_TASK = {
+ANNOTATION_KEYS_BY_TASK = {
     GeometryCylinderWrapSurfacePathLengthValueTask: {
         "marked_surface_path",
         "circumference_dimension",
@@ -58,10 +58,10 @@ def test_cylinder_wrap_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == query_id
     assert out.answer_gt.type == ANSWER_TYPE_BY_TASK[task_cls]
-    assert out.evidence_gt.type == EVIDENCE_TYPE_BY_TASK[task_cls]
-    assert len(out.evidence_gt.value) == EVIDENCE_COUNT_BY_TASK[task_cls]
-    assert set(out.evidence_gt.value) == EVIDENCE_KEYS_BY_TASK[task_cls]
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == ANNOTATION_TYPE_BY_TASK[task_cls]
+    assert len(out.annotation_gt.value) == ANNOTATION_COUNT_BY_TASK[task_cls]
+    assert set(out.annotation_gt.value) == ANNOTATION_KEYS_BY_TASK[task_cls]
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
@@ -70,7 +70,7 @@ def test_cylinder_wrap_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == query_id
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["projected_evidence"]["type"] == EVIDENCE_TYPE_BY_TASK[task_cls]
+    assert trace["projected_annotation"]["type"] == ANNOTATION_TYPE_BY_TASK[task_cls]
     assert trace["render_spec"]["font_family"]["font_family"]
 
 
@@ -82,7 +82,7 @@ def test_cylinder_wrap_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
@@ -108,18 +108,18 @@ def test_wrapped_mark_position_uses_labeled_candidate_answer() -> None:
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_cylinder_wrap_evidence_stays_inside_canvas(task_cls) -> None:
+def test_cylinder_wrap_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     out = task.generate(76041, params={}, max_attempts=20)
     width, height = out.image.size
-    if out.evidence_gt.type == "keyed_bbox_map":
-        for x0, y0, x1, y1 in out.evidence_gt.value.values():
+    if out.annotation_gt.type == "keyed_bbox_map":
+        for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
             assert (y1 - y0) > 8.0
     else:
-        assert out.evidence_gt.type == "keyed_point_map"
-        for x, y in out.evidence_gt.value.values():
+        assert out.annotation_gt.type == "keyed_point_map"
+        for x, y in out.annotation_gt.value.values():
             assert 0.0 <= x <= float(width)
             assert 0.0 <= y <= float(height)

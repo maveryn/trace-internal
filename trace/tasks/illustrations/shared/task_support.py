@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from .style_registry import resolve_art_style_weights
 
 
 def bounds(
@@ -103,10 +104,7 @@ def style_weights(
 ) -> Dict[str, float]:
     """Resolve non-semantic illustration style weights."""
 
-    raw = params.get("style_weights", group_default(render_defaults, "style_weights", {style: 1.0 for style in style_ids}))
-    if not isinstance(raw, Mapping):
-        raise ValueError("style_weights must be a mapping")
-    return {str(key): max(0.0, float(value)) for key, value in raw.items()}
+    return resolve_art_style_weights(params, render_defaults, style_ids=style_ids)
 
 
 def setting_weights(

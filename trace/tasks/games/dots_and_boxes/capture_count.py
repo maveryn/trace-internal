@@ -14,6 +14,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.fixed_query import normalize_query_id_params
 from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -33,7 +34,7 @@ from ..shared.dots_boxes_common import (
     immediate_capture_edge_ids,
 )
 from ..shared.dots_boxes_scene import DotsAndBoxesRenderParams, render_dots_and_boxes_scene
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, forced_query_params, rewrite_fixed_query_output
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin, forced_query_params, rewrite_fixed_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_DOTS_AND_BOXES_STYLE_VARIANTS
@@ -45,6 +46,10 @@ _CAPTURE_MOVE_QUERY_IDS: Tuple[str, ...] = (
     "capture_move_count",
     "highlighted_candidate_capture_count",
 )
+_OWNED_BOX_QUERY_IDS: Tuple[str, ...] = (
+    "player_a_owned_box_count",
+    "player_b_owned_box_count",
+)
 
 
 @dataclass(frozen=True)
@@ -54,6 +59,7 @@ class _TaskDefaults:
     three_sided_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     capture_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     highlighted_candidate_capture_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    owned_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8)
     candidate_edge_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     box_rows_support: Tuple[int, ...] = (3, 4)
     box_cols_support: Tuple[int, ...] = (3, 4)
@@ -107,9 +113,7 @@ def _resolve_query_id(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced dots-and-boxes semantic variant."""
 
-    alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    alias_params = normalize_query_id_params(params)
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
@@ -137,7 +141,7 @@ def _resolve_query_id(
 def _has_explicit_query_axis(params: Mapping[str, Any]) -> bool:
     """Return true when a caller forces one concrete internal query branch."""
 
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         value = params.get(str(key))
         if value is not None and str(value).strip() and str(value) != "default":
             return True
@@ -155,17 +159,16 @@ def _resolve_public_capture_query_id(
     allowed_set = set(allowed)
     alias_params = dict(params)
     explicit_values = []
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         value = alias_params.get(str(key))
         if value is not None and str(value).strip() and str(value) != "default":
             explicit_values.append(str(value))
     if len(set(explicit_values)) > 1:
-        raise ValueError("query_id, query_id, and query_id must not disagree")
+        raise ValueError("query_id and query_variant must not disagree")
     if explicit_values:
         selected = str(explicit_values[0])
         if selected not in allowed_set:
             raise ValueError(f"unsupported capture-move query id: {selected}")
-        alias_params["query_id"] = selected
         alias_params["query_id"] = selected
 
     raw_weights = alias_params.get("capture_move_query_id_weights")
@@ -250,7 +253,7 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -387,6 +390,8 @@ def _target_support_key(query_id: str) -> str:
         "three_sided_box_count": "three_sided_box_count_support",
         "capture_move_count": "capture_move_count_support",
         "highlighted_candidate_capture_count": "highlighted_candidate_capture_count_support",
+        "player_a_owned_box_count": "owned_box_count_support",
+        "player_b_owned_box_count": "owned_box_count_support",
     }[str(query_id)]
 
 
@@ -397,6 +402,8 @@ def _fallback_support(query_id: str) -> Tuple[int, ...]:
         "three_sided_box_count": _DEFAULTS.three_sided_box_count_support,
         "capture_move_count": _DEFAULTS.capture_move_count_support,
         "highlighted_candidate_capture_count": _DEFAULTS.highlighted_candidate_capture_count_support,
+        "player_a_owned_box_count": _DEFAULTS.owned_box_count_support,
+        "player_b_owned_box_count": _DEFAULTS.owned_box_count_support,
     }[str(query_id)]
 
 
@@ -588,15 +595,22 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> DotsAndB
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
-    """Return answer+evidence and answer-only JSON examples for the dots-and-boxes task."""
+    """Return answer+annotation and answer-only JSON examples for the dots-and-boxes task."""
 
     answer_value = 2
+    if str(query_id) in _CAPTURE_MOVE_QUERY_IDS:
+        annotation_value = [
+            [[180, 220], [300, 220]],
+            [[310, 340], [430, 340]],
+        ]
+    else:
+        annotation_value = [
+            [180, 220, 300, 340],
+            [310, 220, 430, 340],
+        ]
     json_example = json.dumps(
         {
-            "evidence": [
-                [180, 220, 300, 340],
-                [310, 220, 430, 340],
-            ],
+            "annotation": annotation_value,
             "answer": int(answer_value),
         },
         ensure_ascii=True,
@@ -605,19 +619,30 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     return json_example, json_example_answer_only
 
 
-def _evidence_ids_and_bboxes(
+def _annotation_ids_type_and_value(
     *,
     board_state: DotsAndBoxesBoardState,
     rendered_scene,
     query_id: str,
-) -> Tuple[Tuple[str, ...], list[list[float]]]:
-    """Return query-specific symbolic evidence ids and projected bboxes."""
+) -> Tuple[Tuple[str, ...], str, list[Any]]:
+    """Return query-specific symbolic annotation ids, public type, and pixel value."""
 
-    if str(query_id) == "three_sided_box_count":
-        evidence_ids = tuple(str(box_id) for box_id in board_state.counted_box_ids)
-        return evidence_ids, [list(rendered_scene.render_map["box_bboxes_px"][str(box_id)]) for box_id in evidence_ids]
-    evidence_ids = tuple(str(edge_id) for edge_id in board_state.counted_edge_ids)
-    return evidence_ids, [list(rendered_scene.render_map["edge_bboxes_px"][str(edge_id)]) for edge_id in evidence_ids]
+    if str(query_id) == "three_sided_box_count" or str(query_id) in _OWNED_BOX_QUERY_IDS:
+        annotation_ids = tuple(str(box_id) for box_id in board_state.counted_box_ids)
+        return (
+            annotation_ids,
+            "bbox_set",
+            [list(rendered_scene.render_map["box_bboxes_px"][str(box_id)]) for box_id in annotation_ids],
+        )
+    annotation_ids = tuple(str(edge_id) for edge_id in board_state.counted_edge_ids)
+    return (
+        annotation_ids,
+        "point_pair_set",
+        [
+            [list(point) for point in rendered_scene.render_map["edge_point_pairs_px"][str(edge_id)]]
+            for edge_id in annotation_ids
+        ],
+    )
 
 
 class GamesDotsAndBoxesCaptureCountTask:
@@ -698,7 +723,7 @@ class GamesDotsAndBoxesCaptureCountTask:
         if board_state is None or rendered_scene is None or background_meta is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        evidence_ids, evidence_bboxes = _evidence_ids_and_bboxes(
+        annotation_ids, annotation_type, annotation_value = _annotation_ids_type_and_value(
             board_state=board_state,
             rendered_scene=rendered_scene,
             query_id=str(axes.query_id),
@@ -720,7 +745,7 @@ class GamesDotsAndBoxesCaptureCountTask:
                 "json_output_contract_answer_only",
                 "object_description_single_board",
                 f"answer_hint_{str(axes.query_id)}",
-                f"evidence_hint_{str(axes.query_id)}",
+                f"annotation_hint_{str(axes.query_id)}",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -732,13 +757,13 @@ class GamesDotsAndBoxesCaptureCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_board"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -747,7 +772,7 @@ class GamesDotsAndBoxesCaptureCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type=str(annotation_type), value=list(annotation_value))
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -761,7 +786,7 @@ class GamesDotsAndBoxesCaptureCountTask:
             drawn_edge_count=len(board_state.drawn_edge_ids),
             target_answer=int(axes.target_answer),
             path_turn_count=int(board_state.path_turn_count),
-            evidence_count=len(evidence_ids),
+            annotation_count=len(annotation_ids),
         )
 
         box_edge_map = {str(box.box_id): tuple(str(edge_id) for edge_id in box.edge_ids) for box in board_state.boxes}
@@ -783,7 +808,7 @@ class GamesDotsAndBoxesCaptureCountTask:
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": list(evidence_ids),
+                    "annotation_entity_ids": list(annotation_ids),
                     "box_rows": int(board_state.box_rows),
                     "box_cols": int(board_state.box_cols),
                     "candidate_edge_count": int(candidate_edge_count),
@@ -843,6 +868,7 @@ class GamesDotsAndBoxesCaptureCountTask:
                 "counted_box_ids": [str(box_id) for box_id in board_state.counted_box_ids],
                 "counted_edge_ids": [str(edge_id) for edge_id in board_state.counted_edge_ids],
                 "candidate_edge_ids": [str(edge_id) for edge_id in board_state.candidate_edge_ids],
+                "box_owner_by_id": dict(rendered_scene.render_map.get("box_owner_by_id", {})),
                 "immediate_capture_edge_ids": [str(edge_id) for edge_id in immediate_edges],
                 "box_drawn_side_counts": {str(box_id): int(count) for box_id, count in sorted(side_counts.items())},
                 "path_box_ids": [str(box_id) for box_id in board_state.path_box_ids],
@@ -869,17 +895,24 @@ class GamesDotsAndBoxesCaptureCountTask:
                     }
                     for box in board_state.boxes
                 ],
-                "evidence_entity_ids": [str(box_id) for box_id in evidence_ids],
+                "annotation_entity_ids": [str(box_id) for box_id in annotation_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(box_id) for box_id in evidence_ids],
+                "ids": [str(box_id) for box_id in annotation_ids],
             },
-            "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_annotation": (
+                {
+                    "type": "bbox_set",
+                    "bbox_set": [list(bbox) for bbox in annotation_value],
+                    "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
+                }
+                if str(annotation_type) == "bbox_set"
+                else {
+                    "type": "point_pair_set",
+                    "point_pair_set": [[list(point) for point in pair] for pair in annotation_value],
+                }
+            ),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -887,7 +920,7 @@ class GamesDotsAndBoxesCaptureCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -931,7 +964,16 @@ class GamesDotsAndBoxesCaptureMoveCountTask(GamesDotsAndBoxesCaptureCountTask):
         )
 
 
+@register_task
+class GamesDotsAndBoxesOwnedBoxCountTask(QuerySubsetTaskMixin, GamesDotsAndBoxesCaptureCountTask):
+    """Count completed boxes owned by one player marker."""
+
+    task_id = "task_games__dots_and_boxes__owned_box_count"
+    supported_query_ids = _OWNED_BOX_QUERY_IDS
+
+
 __all__ = [
     "GamesDotsAndBoxesCaptureMoveCountTask",
+    "GamesDotsAndBoxesOwnedBoxCountTask",
     "GamesDotsAndBoxesThreeSidedBoxCountTask",
 ]

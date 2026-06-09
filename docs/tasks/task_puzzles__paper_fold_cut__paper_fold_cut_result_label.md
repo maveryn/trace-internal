@@ -6,7 +6,7 @@
 3. Task id: `task_puzzles__paper_fold_cut__paper_fold_cut_result_label`
 4. Scene id: `paper_fold_cut`
 5. Answer type: `option_letter`
-6. Evidence type: `bbox_set`
+6. Annotation type: `bbox_set`
 
 ## Contract
 1. Branch metadata: `query_id`
@@ -17,5 +17,5 @@
    - one-fold branches also sample `fold_axis=vertical|horizontal`
 5. Scene axis: `fold_strip|fold_card|fold_outline`
 6. Rendered cut holes use one sampled shape per instance: `circle|square|diamond|rounded_square`.
-7. Prompt-facing evidence is exactly one bbox for the winning option image.
+7. Prompt-facing annotation is exactly one bbox for the winning option image.
 8. `execution_trace.internal_query_id` records the fold-count and fold-axis renderer grammar.

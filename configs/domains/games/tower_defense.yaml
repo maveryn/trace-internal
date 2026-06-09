@@ -1,0 +1,97 @@
+generation:
+  shared:
+    scene_variant_weights:
+      winding_path: 1.0
+      switchback_path: 1.0
+    query_id_weights:
+      marked_enemy_covered_by_tower_count: 1.0
+      covered_path_segment_count: 1.0
+    style_variant_weights:
+      grass_field: 1.0
+      desert_path: 1.0
+      blueprint_grid: 1.0
+      night_ops: 1.0
+      paper_map: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_id_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_tower_count_sampling: true
+    balanced_path_segment_count_sampling: true
+    balanced_target_answer_sampling: true
+    tower_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+    covered_path_tower_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+    path_segment_count_support:
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+    target_answer_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    covered_path_target_answer_support:
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+    range_radius_min_px: 118
+    range_radius_max_px: 190
+    covered_path_range_radius_min_px: 88
+    covered_path_range_radius_max_px: 168
+    tower_path_clearance_px: 42
+    tower_min_gap_px: 46
+    uncovered_margin_px: 28
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 760
+    map_width_px: 820
+    map_height_px: 570
+    panel_margin_px: 38
+    path_width_px: 28
+    path_node_radius_px: 17
+    tower_radius_px: 19
+    enemy_radius_px: 13
+    range_outline_width_px: 3
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      range_reasoning: 0.40
+      ambiguity: 0.10
+      output_burden: 0.16
+prompt:
+  shared:
+    bundle_id: games_tower_defense_v0
+    scene_key: tower_defense_map
+    task_key: tower_defense_query
+    object_description_winding_path_marked_enemy_covered_by_tower_count: a tower-defense map with a winding path, circular tower range rings, and one marked enemy on the path
+    object_description_switchback_path_marked_enemy_covered_by_tower_count: a tower-defense map with a switchback path, circular tower range rings, and one marked enemy on the path
+    object_description_winding_path_covered_path_segment_count: a tower-defense map with a winding path, circular tower range rings, and discrete path nodes
+    object_description_switchback_path_covered_path_segment_count: a tower-defense map with a switchback path, circular tower range rings, and discrete path nodes
+    coverage_rule_text_marked_enemy_covered_by_tower_count: A tower covers the marked enemy when the enemy is inside that tower's visible range ring.
+    coverage_rule_text_covered_path_segment_count: A path node is covered when its center is inside at least one visible tower range ring.
+    annotation_hint_marked_enemy_covered_by_tower_count: set "annotation" to [x, y] pixel points at the centers of every tower whose range ring covers the marked enemy; use an empty array when none do
+    answer_hint_marked_enemy_covered_by_tower_count: set "answer" to the number of towers whose range rings cover the marked enemy
+    annotation_hint_covered_path_segment_count: set "annotation" to [x, y] pixel points at the centers of every covered path node
+    answer_hint_covered_path_segment_count: set "answer" to the number of path nodes covered by at least one tower range ring

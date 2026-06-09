@@ -3,7 +3,7 @@
 This document defines the standard for adding metadata-generated rationale
 targets to TRACE. Rationale targets are optional synthetic response targets for
 review, distillation, or later supervised/RLVR variants. They are not a
-replacement for verifiers, evidence payloads, or final JSON answer contracts.
+replacement for verifiers, annotation payloads, or final JSON answer contracts.
 
 ## Scope
 
@@ -11,7 +11,7 @@ Rationale targets may be generated for every public task and every internal
 `query_id`, in both output modes:
 
 - `answer_only`
-- `answer_and_evidence`
+- `answer_and_annotation`
 
 Each mode should support two detail levels:
 
@@ -39,7 +39,7 @@ Required alignment:
 2. A rationale template family may contain several wording variants, but they
    must explain the same reasoning structure.
 3. If two branches stay inside the same public task but require different
-   reasoning prose, operation order, evidence explanation, or answer transform,
+   reasoning prose, operation order, annotation explanation, or answer transform,
    split them into different `query_id` values.
 4. If two branches differ only by slot values inside the same reasoning
    structure, they may share a `query_id`; for example, a single template can
@@ -60,12 +60,12 @@ Every rationale target must satisfy these rules:
 2. No text appears after the final JSON object.
 3. Final JSON keeps the existing output-mode schema:
    - `answer_only`: `{"answer": ...}`
-   - `answer_and_evidence`: the current answer/evidence schema for that task.
+   - `answer_and_annotation`: the current answer/annotation schema for that task.
 4. The rationale text is generated only from task metadata, execution traces,
-   verifier witnesses, and projected evidence. It must never infer from pixels.
+   verifier witnesses, and projected annotation. It must never infer from pixels.
 5. The rationale cannot introduce facts that are not in the scene, prompt, or
    verifier trace.
-6. The rationale cannot change task semantics, answer distribution, evidence
+6. The rationale cannot change task semantics, answer distribution, annotation
    format, prompt wording, solve-rate calibration, or reward calculation unless
    that use is explicitly approved.
 7. Template choice must be deterministic by seed, task id, `query_id`, output
@@ -88,7 +88,7 @@ Detailed target:
 
 1. `Scope`: identify the visible region, item set, chart series, board cells,
    graph nodes, document fields, or other answer-bearing entities.
-2. `Evidence`: name the values, labels, entities, or witness objects used.
+2. `Annotation`: name the values, labels, entities, or witness objects used.
 3. `Operation`: describe the rule, arithmetic, ordering, comparison, traversal,
    lookup, or transformation applied.
 4. `Check`: state the computed/selected result and, when useful, why competing
@@ -115,7 +115,7 @@ Shared constraints:
 - Avoid long enumerations unless the task answer requires listing/counting many
   witnesses.
 - Do not include pixel coordinates in prose unless the task itself asks for
-  coordinates. Pixel-space evidence belongs in the final JSON evidence field.
+  coordinates. Pixel-space annotation belongs in the final JSON annotation field.
 - Do not include redundant restatements of the full prompt.
 
 Each domain policy must set its own expected length profile and should include a
@@ -134,11 +134,11 @@ Each bundle should expose templates by:
 
 - `task_key`
 - optional `query_key`
-- `output_mode`: `answer_only` or `answer_and_evidence`
+- `output_mode`: `answer_only` or `answer_and_annotation`
 - `detail_level`: `concise` or `detailed`
 
 Slots should come from the same typed execution trace used to build the answer
-and evidence. Prefer explicit slots such as:
+and annotation. Prefer explicit slots such as:
 
 - `target_label`
 - `scope_label`
@@ -147,7 +147,7 @@ and evidence. Prefer explicit slots such as:
 - `computed_value`
 - `comparison_candidates`
 - `winner_label`
-- `evidence_role_summary`
+- `annotation_role_summary`
 - `final_json`
 
 Do not build rationales by string-parsing prompts.
@@ -167,22 +167,22 @@ Each generated instance with rationale targets should record:
 If a rationale cannot be generated safely, record an explicit missing reason
 instead of falling back to a generic explanation.
 
-## Evidence-Mode Rules
+## Annotation-Mode Rules
 
-For `answer_and_evidence`:
+For `answer_and_annotation`:
 
-- The rationale should explain why the evidence objects are sufficient for the
+- The rationale should explain why the annotation objects are sufficient for the
   answer.
-- The prose should refer to evidence semantically, such as selected bars,
+- The prose should refer to annotation semantically, such as selected bars,
   queried row cells, traversed path edges, counted icons, or chosen option
   panels.
-- The final JSON remains the only place where the machine-verifiable evidence
+- The final JSON remains the only place where the machine-verifiable annotation
   array appears.
-- Evidence prose and JSON evidence must come from the same projected evidence
+- Annotation prose and JSON annotation must come from the same projected annotation
   trace.
 - If the answer is `unanswerable`, the rationale must name the checked scope
-  and the missing requested entity; evidence should follow the task's documented
-  unanswerable evidence contract.
+  and the missing requested entity; annotation should follow the task's documented
+  unanswerable annotation contract.
 
 ## Quality Gates
 
@@ -193,7 +193,7 @@ Before enabling rationale targets for a domain:
 3. Parse the final JSON from every target with the same parser used by reward
    code.
 4. Confirm final JSON equals the verifier ground truth.
-5. Confirm evidence JSON equals the projected evidence ground truth in evidence
+5. Confirm annotation JSON equals the projected annotation ground truth in annotation
    mode.
 6. Check that rationales do not mention hidden metadata names, internal ids,
    unsupported units, answer balancing, random seeds, or generation mechanics.
@@ -211,7 +211,7 @@ The policy should define:
 - allowed operation verbs;
 - preferred witness names;
 - acceptable arithmetic notation;
-- how to describe evidence;
+- how to describe annotation;
 - how to describe uncertainty or unanswerable branches;
 - prohibited shortcuts that would make the task easier than the prompt.
 
@@ -230,7 +230,7 @@ Use chart-native language:
   metadata.
 - For ranking/extremum tasks, list only the decisive candidates unless the task
   requires exhaustive comparison.
-- For evidence mode, describe the selected marks, cells, regions, or panels;
+- For annotation mode, describe the selected marks, cells, regions, or panels;
   leave bbox arrays to final JSON.
 - Do not imply visual readout precision beyond the rendered contract.
 
@@ -266,7 +266,7 @@ Use geometric construction language:
 - Separate visible givens from derived quantities.
 - Show formulas only when the formula is part of the intended reasoning.
 - For coordinate tasks, state graph-coordinate values in prose and keep
-  pixel-space points in evidence JSON.
+  pixel-space points in annotation JSON.
 
 ### Puzzles And Games
 
@@ -304,7 +304,7 @@ Use setup/rule/calculation language:
    forms.
 3. Add one pilot scene with all active `query_id` values covered.
 4. Add scene-review sidecar fields for concise/detailed answer-only and
-   answer+evidence rationale targets so the browser review app can display
+   answer+annotation rationale targets so the browser review app can display
    them.
 5. Review the pilot manually.
 6. Expand one domain at a time.

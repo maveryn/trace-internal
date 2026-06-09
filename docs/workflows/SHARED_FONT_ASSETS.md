@@ -27,10 +27,14 @@ generating task instances.
    without an explicit `font_family`; it still samples from the `readout` pool
    through the shared dispatcher and records the family under
    `render_spec.font_assets`.
-4. New or touched renderer code should pass an explicit sampled family into
+4. Chart tasks must expose `render_spec.font_assets.chart_font_family` for
+   review consistency. Renderers that sample an explicit chart family should
+   write that value directly; otherwise the registry records the same
+   deterministic `implicit_readout_font_family` as the chart family alias.
+5. New or touched renderer code should pass an explicit sampled family into
    `load_font(..., font_family=...)`, or enter a documented
    `temporary_default_font_family(...)` block for one coherent scene/panel.
-5. Every task-facing font sample must declare a role:
+6. Every task-facing font sample must declare a role:
    - `readout`: answer-bearing or read-required text such as measurements,
      chart ticks, table cells, graph labels, board coordinates, option labels,
      card ranks, and compact visible task text. This role samples from
@@ -40,28 +44,33 @@ generating task instances.
      manifest.
    - `decorative`: non-semantic visual dressing only. This role may sample from
      the full vendored manifest.
-6. Keep existing text roles internally consistent:
+7. Keep existing text roles internally consistent:
    - all chart axis/category/value labels in one chart or chart panel should use
      one sampled family unless the scene explicitly has separate text regions;
    - all option labels in one option set should use one sampled family;
    - each page/document section may use one sampled family for that section;
    - context boxes may use a different sampled family per box, but heading/body
      text inside one box should normally share the same family.
-7. Mixing multiple families in one image is allowed when it follows meaningful
+8. Math-symbol readouts may use the shared symbol-safe fallback for the affected
+   text token when the sampled readout family does not reliably cover the
+   required glyphs, such as `∠`, `θ`, `β`, `π`, `√`, or `−`. The fallback must
+   be routed through `trace/tasks/shared/text_rendering.py` so bbox calculation
+   and drawing use the same font.
+9. Mixing multiple families in one image is allowed when it follows meaningful
    visual regions: title/chrome, body text, option set, chart labels, sidebar
    note, callout box, etc. Do not sample a different family per glyph, per word,
    or per answer candidate unless that variation is the task itself.
-8. Record sampled font metadata in `render_spec` or scene entity metadata:
+10. Record sampled font metadata in `render_spec` or scene entity metadata:
    `font_family`, `font_role`, `font_pool_id`, `font_pool_size`, and
    `font_asset_version`. Non-answer context text should record font family and
    role in each `context_text_layer.elements[]` record.
-9. Font choice must be independent of answer value, correct option, query id,
+11. Font choice must be independent of answer value, correct option, query id,
    and difficulty bucket.
-10. Do not use ad hoc include/exclude tag filters for semantic readout text; the
+12. Do not use ad hoc include/exclude tag filters for semantic readout text; the
    readout pool already owns that policy. Use explicit role selection first, and
    only add a scene-local exclusion for a documented non-readout readability or
    semantics reason.
-11. Do not use unlicensed system fonts as the planned source of variation.
+13. Do not use unlicensed system fonts as the planned source of variation.
    System fonts remain fallback only.
 
 ## Available Families

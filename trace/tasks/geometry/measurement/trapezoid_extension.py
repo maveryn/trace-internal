@@ -45,6 +45,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -178,6 +180,7 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -193,8 +196,8 @@ class _ResolvedProblem:
 class _RenderedTrapezoidExtensionScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -245,27 +248,29 @@ def _draw_dashed_line(
         distance += dash + gap
 
 
-def _draw_height_marker(ctx: _RenderContext, top_y: float, bottom_y: float, label: str) -> BBox:
-    x = 56.0
-    tick = 11.0
-    ctx.draw.line([(x, top_y), (x, bottom_y)], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
-    ctx.draw.line([(x - tick, top_y), (x + tick, top_y)], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
-    ctx.draw.line([(x - tick, bottom_y), (x + tick, bottom_y)], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
-    label_bbox = _draw_label(ctx, label, (x + 42.0, (top_y + bottom_y) / 2.0), small=True)
+def _draw_height_marker(ctx: _RenderContext, top: Point, bottom: Point, label: str, label_center: Point) -> BBox:
+    tick = 11.0 * float(ctx.scene_transform.transform.scale)
+    dx = float(bottom[0]) - float(top[0])
+    dy = float(bottom[1]) - float(top[1])
+    length = max(1e-9, math.hypot(dx, dy))
+    nx = -dy / length
+    ny = dx / length
+    ctx.draw.line([top, bottom], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    ctx.draw.line([(top[0] - nx * tick, top[1] - ny * tick), (top[0] + nx * tick, top[1] + ny * tick)], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    ctx.draw.line([(bottom[0] - nx * tick, bottom[1] - ny * tick), (bottom[0] + nx * tick, bottom[1] + ny * tick)], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    label_bbox = _draw_label(ctx, label, label_center, small=True)
     marker_bbox = _bbox_from_points(
-        ((x - tick, top_y), (x + tick, bottom_y)),
+        (
+            (top[0] - nx * tick, top[1] - ny * tick),
+            (top[0] + nx * tick, top[1] + ny * tick),
+            (bottom[0] - nx * tick, bottom[1] - ny * tick),
+            (bottom[0] + nx * tick, bottom[1] + ny * tick),
+        ),
         width=ctx.width,
         height=ctx.height,
         pad=5.0,
     )
     return _union_bboxes((marker_bbox, label_bbox), width=ctx.width, height=ctx.height)
-
-
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if abs(float(value) - float(selected)) <= 1e-9 else 0.0)
-        for value in values
-    }
 
 
 def _resolve_problem(
@@ -321,7 +326,10 @@ def _resolve_problem(
         case=case,
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(float(value) for value in support_values))), float(answer)
+            tuple(sorted(set(float(value) for value in support_values))),
+            float(answer),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: abs(float(value) - float(selected)) <= 1e-9,
         ),
     )
 
@@ -335,6 +343,22 @@ def _render_trapezoid_extension_scene(
     e = (685.0, 170.0)
     d = (95.0, 420.0)
     c = (645.0, 420.0)
+    raw_label_points = {
+        "top_base": (245.0, 132.0),
+        "height_top": (56.0, 170.0),
+        "height_bottom": (56.0, 420.0),
+        "height_label": (98.0, 295.0),
+        "parallelogram_area": (520.0, 84.0),
+        "parallelogram_perimeter": (520.0, 84.0),
+        "side": (94.0, 288.0),
+        "extension": (520.0, 132.0),
+        "bottom_base": (370.0, 458.0),
+        "target_extension": (520.0, 202.0),
+        "target_area": (520.0, 505.0),
+    }
+    ctx.scene_transform.resolve((a, b, e, d, c, *raw_label_points.values()))
+    a, b, e, d, c = ctx.scene_transform.points((a, b, e, d, c))
+    label_points = ctx.scene_transform.keyed_points(raw_label_points)
 
     trapezoid_points = (a, b, c, d)
     extension_points = (b, e, c)
@@ -347,66 +371,66 @@ def _render_trapezoid_extension_scene(
     ctx.draw.line([d, c], fill=ctx.line_color, width=ctx.line_width)
 
     label_bboxes: Dict[str, BBox] = {}
-    label_bboxes["top_base"] = _draw_label(ctx, f"AB={case.top_base}", (245.0, 132.0), small=True)
-    label_bboxes["height"] = _draw_height_marker(ctx, a[1], d[1], f"h={case.height}")
+    label_bboxes["top_base"] = _draw_label(ctx, f"AB={case.top_base}", label_points["top_base"], small=True)
+    label_bboxes["height"] = _draw_height_marker(ctx, label_points["height_top"], label_points["height_bottom"], f"h={case.height}", label_points["height_label"])
 
     supporting_labels: list[BBox] = [label_bboxes["top_base"], label_bboxes["height"]]
     if problem.query_id == "extension_from_parallelogram_area":
         label_bboxes["parallelogram_area"] = _draw_label(
-            ctx, f"parallelogram area={case.parallelogram_area}", (520.0, 84.0), small=True
+            ctx, f"parallelogram area={case.parallelogram_area}", label_points["parallelogram_area"], small=True
         )
         supporting_labels.append(label_bboxes["parallelogram_area"])
         target_text = "BE=?"
         formula = "BE = parallelogram area / h - AB"
     elif problem.query_id == "extension_from_parallelogram_perimeter":
         label_bboxes["parallelogram_perimeter"] = _draw_label(
-            ctx, f"parallelogram perimeter={case.parallelogram_perimeter}", (520.0, 84.0), small=True
+            ctx, f"parallelogram perimeter={case.parallelogram_perimeter}", label_points["parallelogram_perimeter"], small=True
         )
-        label_bboxes["side"] = _draw_label(ctx, f"AD={case.side}", (94.0, 288.0), small=True)
+        label_bboxes["side"] = _draw_label(ctx, f"AD={case.side}", label_points["side"], small=True)
         supporting_labels.extend((label_bboxes["parallelogram_perimeter"], label_bboxes["side"]))
         target_text = "BE=?"
         formula = "BE = parallelogram perimeter / 2 - AD - AB"
     elif problem.query_id == "trapezoid_area_from_extension_and_height":
-        label_bboxes["extension"] = _draw_label(ctx, f"BE={case.extension}", (520.0, 132.0), small=True)
+        label_bboxes["extension"] = _draw_label(ctx, f"BE={case.extension}", label_points["extension"], small=True)
         supporting_labels.append(label_bboxes["extension"])
         target_text = "trapezoid area=?"
         formula = "trapezoid area = h * (AB + DC) / 2, with DC = AB + BE"
     elif problem.query_id == "trapezoid_area_from_bases_and_height":
-        label_bboxes["bottom_base"] = _draw_label(ctx, f"DC={case.bottom_base}", (370.0, 458.0), small=True)
+        label_bboxes["bottom_base"] = _draw_label(ctx, f"DC={case.bottom_base}", label_points["bottom_base"], small=True)
         supporting_labels.append(label_bboxes["bottom_base"])
         target_text = "trapezoid area=?"
         formula = "trapezoid area = h * (AB + DC) / 2"
     elif problem.query_id == "trapezoid_area_from_parallelogram_area":
         label_bboxes["parallelogram_area"] = _draw_label(
-            ctx, f"parallelogram area={case.parallelogram_area}", (520.0, 84.0), small=True
+            ctx, f"parallelogram area={case.parallelogram_area}", label_points["parallelogram_area"], small=True
         )
         supporting_labels.append(label_bboxes["parallelogram_area"])
         target_text = "trapezoid area=?"
         formula = "trapezoid area = h * (AB + DC) / 2, with DC = parallelogram area / h"
     else:
         label_bboxes["parallelogram_perimeter"] = _draw_label(
-            ctx, f"parallelogram perimeter={case.parallelogram_perimeter}", (520.0, 84.0), small=True
+            ctx, f"parallelogram perimeter={case.parallelogram_perimeter}", label_points["parallelogram_perimeter"], small=True
         )
-        label_bboxes["side"] = _draw_label(ctx, f"AD={case.side}", (94.0, 288.0), small=True)
+        label_bboxes["side"] = _draw_label(ctx, f"AD={case.side}", label_points["side"], small=True)
         supporting_labels.extend((label_bboxes["parallelogram_perimeter"], label_bboxes["side"]))
         target_text = "trapezoid area=?"
         formula = "trapezoid area = h * (AB + DC) / 2, with DC = parallelogram perimeter / 2 - AD"
 
     if answer_kind == "extension_length":
-        label_bboxes["target"] = _draw_label(ctx, target_text, (520.0, 202.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, target_text, label_points["target_extension"], small=True)
     else:
-        label_bboxes["target"] = _draw_label(ctx, target_text, (520.0, 505.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, target_text, label_points["target_area"], small=True)
 
     original_bbox = _bbox_from_points(trapezoid_points, width=ctx.width, height=ctx.height, pad=10.0)
     dashed_completion_bbox = _bbox_from_points(extension_points, width=ctx.width, height=ctx.height, pad=10.0)
     supporting_bbox = _union_bboxes(supporting_labels, width=ctx.width, height=ctx.height, pad=4.0)
-    evidence_roles = (
+    annotation_roles = (
         "target_cue",
         "original_trapezoid",
         "dashed_parallelogram_completion",
         "supporting_visible_labels",
     )
-    evidence_bboxes = (
+    annotation_bboxes = (
         label_bboxes["target"],
         original_bbox,
         dashed_completion_bbox,
@@ -450,8 +474,8 @@ def _render_trapezoid_extension_scene(
     return _RenderedTrapezoidExtensionScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -545,6 +569,13 @@ class _TrapezoidExtensionBaseTask:
             line_width=max(2, int(line_width)),
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         return ctx, {
             "background_style": dict(background_meta),
@@ -561,7 +592,7 @@ class _TrapezoidExtensionBaseTask:
     def _build_complexity(self, rendered: _RenderedTrapezoidExtensionScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.50
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.16
         )
         is_perimeter_query = "perimeter" in str(rendered.witness.get("formula_family", ""))
@@ -569,7 +600,7 @@ class _TrapezoidExtensionBaseTask:
         ambiguity = 0.52 + (0.08 if self.answer_kind == "area" else 0.0)
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -614,6 +645,7 @@ class _TrapezoidExtensionBaseTask:
                     ctx, problem, answer_kind=str(self.answer_kind)
                 )
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -636,7 +668,7 @@ class _TrapezoidExtensionBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -650,14 +682,14 @@ class _TrapezoidExtensionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -668,16 +700,16 @@ class _TrapezoidExtensionBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "query_id": str(problem.query_id),
@@ -693,7 +725,7 @@ class _TrapezoidExtensionBaseTask:
                 "relations": {
                     "query_id": str(problem.query_id),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -721,7 +753,7 @@ class _TrapezoidExtensionBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "integer",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2 if "perimeter" not in str(problem.query_id) else 3,
                 **dict(rendered.witness),
             },
@@ -731,21 +763,21 @@ class _TrapezoidExtensionBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -758,29 +790,65 @@ class _TrapezoidExtensionBaseTask:
 
 
 @register_task
-class GeometryTrapezoidExtensionLengthValueTask(_TrapezoidExtensionBaseTask):
-    """Infer the added extension length after completing a trapezoid to a parallelogram."""
+class GeometryExtensionFromParallelogramAreaTask(_TrapezoidExtensionBaseTask):
+    """Infer the extension length from completed-parallelogram area."""
 
-    task_id = "task_geometry__trapezoid_extension__trapezoid_extension_length_value"
-    supported_queries = _LENGTH_QUERIES
-    cases = _LENGTH_CASES
+    task_id = "task_geometry__trapezoid_extension__extension_from_parallelogram_area"
+    supported_queries = ("extension_from_parallelogram_area",)
+    cases = tuple(case for case in _LENGTH_CASES if case.query_id == "extension_from_parallelogram_area")
     answer_kind = "extension_length"
     reasoning_kind = "extension_length"
 
 
 @register_task
-class GeometryTrapezoidExtensionAreaValueTask(_TrapezoidExtensionBaseTask):
-    """Infer the trapezoid area using the parallelogram completion."""
+class GeometryExtensionFromParallelogramPerimeterTask(_TrapezoidExtensionBaseTask):
+    """Infer the extension length from completed-parallelogram perimeter."""
 
-    task_id = "task_geometry__trapezoid_extension__trapezoid_extension_area_value"
-    supported_queries = _AREA_QUERIES
-    cases = _AREA_CASES
+    task_id = "task_geometry__trapezoid_extension__extension_from_parallelogram_perimeter"
+    supported_queries = ("extension_from_parallelogram_perimeter",)
+    cases = tuple(case for case in _LENGTH_CASES if case.query_id == "extension_from_parallelogram_perimeter")
+    answer_kind = "extension_length"
+    reasoning_kind = "extension_length"
+
+
+@register_task
+class GeometryTrapezoidAreaFromBasesAndHeightTask(_TrapezoidExtensionBaseTask):
+    """Compute trapezoid area from visible bases and height."""
+
+    task_id = "task_geometry__trapezoid_extension__trapezoid_area_from_bases_and_height"
+    supported_queries = ("trapezoid_area_from_bases_and_height",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "trapezoid_area_from_bases_and_height")
+    answer_kind = "area"
+    reasoning_kind = "area"
+
+
+@register_task
+class GeometryTrapezoidAreaFromExtensionAndHeightTask(_TrapezoidExtensionBaseTask):
+    """Compute trapezoid area from extension and height."""
+
+    task_id = "task_geometry__trapezoid_extension__trapezoid_area_from_extension_and_height"
+    supported_queries = ("trapezoid_area_from_extension_and_height",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "trapezoid_area_from_extension_and_height")
+    answer_kind = "area"
+    reasoning_kind = "area"
+
+
+@register_task
+class GeometryTrapezoidAreaFromParallelogramAreaTask(_TrapezoidExtensionBaseTask):
+    """Compute trapezoid area from completed-parallelogram area."""
+
+    task_id = "task_geometry__trapezoid_extension__trapezoid_area_from_parallelogram_area"
+    supported_queries = ("trapezoid_area_from_parallelogram_area",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "trapezoid_area_from_parallelogram_area")
     answer_kind = "area"
     reasoning_kind = "area"
 
 
 __all__ = [
-    "GeometryTrapezoidExtensionAreaValueTask",
-    "GeometryTrapezoidExtensionLengthValueTask",
+    "GeometryExtensionFromParallelogramAreaTask",
+    "GeometryExtensionFromParallelogramPerimeterTask",
     "SCENE_ID",
+    "GeometryTrapezoidAreaFromBasesAndHeightTask",
+    "GeometryTrapezoidAreaFromExtensionAndHeightTask",
+    "GeometryTrapezoidAreaFromParallelogramAreaTask",
 ]

@@ -24,12 +24,15 @@ def test_games_go_group_property_count_defaults_present() -> None:
         "marked_group_liberty_count",
         "marked_group_adjacent_enemy_count",
         "marked_group_shared_liberty_count",
+        "black_stone_group_count",
+        "white_stone_group_count",
     }
     assert set(generation["player_color_weights"].keys()) == {"black", "white"}
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_GO_STYLE_VARIANTS)
     assert list(generation["liberty_count_support"]) == [1, 2, 3, 4, 6]
     assert list(generation["adjacent_enemy_count_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["shared_liberty_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["stone_group_count_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
     assert list(generation["board_size_support"]) == [6, 7, 8]
     assert int(rendering["max_board_size_px"]) > 0
     assert float(rendering["stone_radius_fraction"]) > 0.0

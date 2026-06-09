@@ -90,6 +90,6 @@ def test_physics_thermodynamics_pv_defaults_expose_scene_query_and_answer_suppor
 
     assert "pressure-volume diagram" in str(prompt["object_description_clean_grid"])
 
-    assert "highlighted PV process or cycle" in str(prompt["evidence_hint_work_value"])
+    assert "highlighted PV process or cycle" in str(prompt["annotation_hint_work_value"])
 
-    assert "correct labeled candidate process" in str(prompt["evidence_hint_process_sign_choice"])
+    assert "correct labeled candidate mini diagram" in str(prompt["annotation_hint_process_sign_choice"])

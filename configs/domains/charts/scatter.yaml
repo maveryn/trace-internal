@@ -17,6 +17,21 @@ generation:
     trend_distractor_x_jitter: 0.58
     trend_distractor_y_jitter: 0.66
     trend_distractor_y_jitter_scale: 0.18
+    centroid_option_answer_radius_min: 1.2
+    centroid_option_answer_radius_max: 2.8
+    centroid_option_distractor_radius_min: 8.0
+    centroid_option_distractor_radius_max: 17.0
+    centroid_option_distance_margin_min: 4.0
+    centroid_option_count_support: [4, 6]
+    area_rank_product_min: 34.0
+    area_rank_product_max: 42.0
+    area_rank_adjacent_gap_min: 0.12
+    area_rank_adjacent_gap_max: 0.20
+    area_rank_max_min_ratio: 2.8
+    area_rank_aspect_ratio_min: 0.72
+    area_rank_aspect_ratio_max: 1.38
+    area_rank_angle_min_degrees: -38.0
+    area_rank_angle_max_degrees: 38.0
     x_value_min: 0
     x_value_max: 100
     y_value_min: 0
@@ -25,6 +40,10 @@ generation:
       cluster_trend_direction_label: 1.0
       cluster_separation_extremum_label: 1.0
       cluster_spread_extremum_label: 1.0
+      largest_cluster_area_label: 1.0
+      second_largest_cluster_area_label: 1.0
+      smallest_cluster_area_label: 1.0
+      centroid_option_selection_label: 1.0
     trend_direction_weights:
       upward: 1.0
       downward: 1.0
@@ -44,6 +63,75 @@ generation:
     balanced_spread_axis_sampling: true
     balanced_spread_extremum_sampling: true
   task_overrides:
+    charts_scatter_points_query_base:
+      scatter_points_count_min: 28
+      scatter_points_count_max: 54
+      scatter_points_category_count_min: 4
+      scatter_points_category_count_max: 6
+      scatter_points_per_category_min: 6
+      scatter_points_per_category_max: 10
+      category_threshold_points_per_category_min: 7
+      category_threshold_points_per_category_max: 12
+      axis_threshold_answer_min: 4
+      axis_threshold_answer_max: 18
+      category_threshold_answer_min: 2
+      category_threshold_answer_max: 9
+      threshold_values: [20, 30, 40, 50, 60, 70, 80]
+      mean_extremum_margin_min: 8.0
+      category_label_min_chars: 3
+      category_label_max_chars: 12
+      category_label_allow_spaces: true
+      plain_marker_shape: circle
+      query_id_weights:
+        axis_threshold_point_count: 1.0
+        category_axis_mean_extremum_label: 1.0
+        category_threshold_point_count: 1.0
+      threshold_axis_weights:
+        x: 1.0
+        y: 1.0
+      threshold_direction_weights:
+        above: 1.0
+        below: 1.0
+      mean_axis_weights:
+        x: 1.0
+        y: 1.0
+      mean_extremum_weights:
+        largest: 1.0
+        smallest: 1.0
+      balanced_query_id_sampling: true
+      balanced_threshold_axis_sampling: true
+      balanced_threshold_direction_sampling: true
+      balanced_mean_axis_sampling: true
+      balanced_mean_extremum_sampling: true
+    charts_scatter_facet_grid_query_base:
+      facet_panel_count_min: 6
+      facet_panel_count_max: 12
+      facet_layout_empty_slot_max: 2
+      facet_background_points_min: 28
+      facet_background_points_max: 42
+      facet_distractor_points_min: 10
+      facet_distractor_points_max: 18
+      facet_density_winner_gap_min: 0.16
+      facet_density_winner_gap_max: 0.28
+      facet_label_min_chars: 3
+      facet_label_max_chars: 10
+      facet_label_allow_spaces: false
+      panel_label_variant_weights:
+        named_compact: 1.0
+        technical_topics: 1.0
+        condition_labels: 0.75
+        temporal_sequence: 0.25
+        report_topics: 0.5
+      query_id_weights:
+        upper_right_density_extremum_label: 1.0
+        upper_left_density_extremum_label: 1.0
+        lower_right_density_extremum_label: 1.0
+        lower_left_density_extremum_label: 1.0
+      facet_layout_weights:
+        2x3: 1.0
+        3x3: 1.0
+        3x4: 1.0
+      balanced_query_id_sampling: true
     charts_scatter_series_readout_base:
       readout_series_count_min: 5
       readout_series_count_max: 5
@@ -67,10 +155,12 @@ rendering:
     plot_margin_right_px: 260
     plot_margin_top_px: 72
     plot_margin_bottom_px: 112
-    axis_line_width_px: 2
+    axis_line_width_px_min: 1
+    axis_line_width_px_max: 2
     grid_line_width_px: 1
     tick_length_px: 8
-    point_radius_px: 7
+    point_radius_px_min: 5
+    point_radius_px_max: 8
     tick_font_size_px: 17
     legend_font_size_px: 22
     title_font_size_px: 26
@@ -85,6 +175,84 @@ rendering:
       - [188, 87, 132]
       - [109, 125, 55]
   task_overrides:
+    charts_scatter_points_query_base:
+      scatter_points_canvas_width: 1280
+      scatter_points_canvas_height: 820
+      scatter_points_plot_margin_left_px: 112
+      scatter_points_plot_margin_right_px: 292
+      scatter_points_plot_margin_top_px: 80
+      scatter_points_plot_margin_bottom_px: 118
+      scatter_points_point_radius_px_min: 5
+      scatter_points_point_radius_px_max: 8
+      scatter_points_tick_font_size_px: 16
+      scatter_points_label_font_size_px: 19
+      scatter_points_legend_font_size_px: 20
+      scatter_points_title_font_size_px: 26
+      scatter_points_legend_gap_px: 78
+      scatter_points_x_axis_label: X value
+      scatter_points_y_axis_label: Y value
+      scatter_points_title_options:
+        - Point Distribution
+        - Scatter Measurements
+        - Sample Point Map
+        - Observed Points
+      scatter_points_threshold_line_rgb_options:
+        - [31, 91, 170]
+        - [166, 61, 49]
+        - [45, 115, 78]
+        - [116, 73, 158]
+      scatter_points_threshold_label_rgb_options:
+        - [20, 60, 126]
+        - [128, 42, 36]
+        - [31, 84, 58]
+        - [86, 52, 122]
+      plain_point_rgb_options:
+        - [48, 99, 176]
+        - [176, 77, 55]
+        - [48, 132, 85]
+        - [123, 77, 164]
+      scatter_points_category_palette_rgb:
+        - [42, 96, 176]
+        - [210, 83, 72]
+        - [52, 144, 92]
+        - [138, 82, 178]
+        - [215, 137, 42]
+        - [44, 148, 169]
+        - [184, 73, 124]
+    charts_scatter_facet_grid_query_base:
+      facet_canvas_width: 1280
+      facet_canvas_height: 860
+      facet_grid_left_px: 92
+      facet_grid_right_px: 70
+      facet_grid_top_px: 92
+      facet_grid_bottom_px: 96
+      facet_panel_gap_x_px: 24
+      facet_panel_gap_y_px: 30
+      facet_axis_line_width_px: 1
+      facet_grid_line_width_px: 1
+      facet_point_radius_px: 3
+      facet_title_font_size_px: 25
+      facet_panel_label_font_size_px: 16
+      facet_axis_label_font_size_px: 18
+      facet_tick_font_size_px: 11
+      facet_background_point_rgb: [188, 194, 202]
+      facet_foreground_stroke_rgb: [255, 255, 255]
+      facet_region_tint_rgb: [252, 231, 160]
+      facet_axis_color_rgb: [82, 92, 108]
+      facet_grid_color_rgb: [222, 227, 235]
+      facet_text_color_rgb: [25, 32, 44]
+      facet_text_stroke_rgb: [255, 255, 255]
+      facet_panel_fill_rgb: [250, 251, 253]
+      facet_panel_border_rgb: [194, 202, 214]
+      facet_palette_rgb:
+        - [42, 96, 176]
+        - [210, 83, 72]
+        - [52, 144, 92]
+        - [138, 82, 178]
+        - [215, 137, 42]
+        - [44, 148, 169]
+        - [184, 73, 124]
+        - [105, 125, 55]
     charts_scatter_series_readout_base:
       readout_canvas_width: 1440
       readout_canvas_height: 820
@@ -92,7 +260,8 @@ rendering:
       readout_plot_margin_right_px: 370
       readout_plot_margin_top_px: 78
       readout_plot_margin_bottom_px: 126
-      readout_point_radius_px: 8
+      readout_point_radius_px_min: 6
+      readout_point_radius_px_max: 8
       readout_tick_font_size_px: 17
       readout_axis_label_font_size_px: 19
       readout_value_font_size_px: 16
@@ -113,6 +282,16 @@ complexity:
       reasoning_load: 0.35
       scene_variant_load: 0.15
   task_overrides:
+    charts_scatter_points_query_base:
+      criteria_weights:
+        visual_scan: 0.48
+        reasoning_load: 0.37
+        scene_variant_load: 0.15
+    charts_scatter_facet_grid_query_base:
+      criteria_weights:
+        visual_scan: 0.50
+        reasoning_load: 0.35
+        scene_variant_load: 0.15
     charts_scatter_series_readout_base:
       criteria_weights:
         visual_scan: 0.48
@@ -124,26 +303,59 @@ prompt:
     bundle_id: charts_scatter_v0
     scene_key: scatter_cluster
     task_key: scatter_cluster_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested cluster label as a string
-    evidence_hint: set "evidence" to an object mapping "answer_cluster" to the [x0,y0,x1,y1] box around the answer cluster hull; for closest/farthest-from questions, also include "reference_cluster"
-    json_example: '{"evidence":{"reference_cluster":[120,260,245,350],"answer_cluster":[220,360,340,455]},"answer":"K"}'
-    json_example_answer_only: '{"answer":"K"}'
+    answer_hint_option_letter: set "answer" to the selected option letter as a capital letter
+    annotation_hint: set "annotation" to an object mapping "answer_cluster" to the [x0,y0,x1,y1] box around the answer cluster hull; for closest/farthest-from questions, also include "reference_cluster"
+    annotation_hint_centroid_option_selection_label: set "annotation" to an object mapping "target_cluster" to the [x0,y0,x1,y1] box around the named cluster hull and "selected_option_marker" to the [x0,y0,x1,y1] box around the selected option marker
+    annotation_hint_cluster_area_rank_label: set "annotation" to an object mapping "answer_cluster" to the [x0,y0,x1,y1] box around the answer cluster's shaded footprint
+    json_example: '{"annotation":{"reference_cluster":[120,260,245,350],"answer_cluster":[220,360,340,455]},"answer":"Cobalt"}'
+    json_example_centroid_option_selection_label: '{"annotation":{"target_cluster":[145,255,276,344],"selected_option_marker":[312,276,342,306]},"answer":"D"}'
+    json_example_cluster_area_rank_label: '{"annotation":{"answer_cluster":[145,255,276,344]},"answer":"Cobalt"}'
+    json_example_answer_only: '{"answer":"Cobalt"}'
+    json_example_answer_only_option_letter: '{"answer":"D"}'
     object_description_single_scatter: a scatter plot with several colored point clusters and a matching legend
+    object_description_area_envelope_scatter: a scatter plot with several colored point clusters, shaded cluster footprints, and a matching legend
   task_overrides:
+    charts_scatter_points_query_base:
+      bundle_id: charts_scatter_v0
+      scene_key: scatter_points
+      task_key: scatter_points_query
+      json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      answer_hint_count: set "answer" to the requested count as an integer
+      answer_hint_category_label: set "answer" to the exact visible category label as a string
+      annotation_hint_point_set: set "annotation" to an array of [x,y] pixel points at the centers of the supporting data points
+      json_example_count: '{"annotation":[[230,410],[512,288]],"answer":2}'
+      json_example_category_label: '{"annotation":[[230,410],[512,288],[640,320]],"answer":"Orchid"}'
+      json_example_answer_only_count: '{"answer":2}'
+      json_example_answer_only_category_label: '{"answer":"Orchid"}'
+      object_description_scatter_points_plain: a scatter plot of individual data points with numeric x- and y-axes
+      object_description_scatter_points_categories: a categorized scatter plot with individual data points, numeric x- and y-axes, and a legend
+    charts_scatter_facet_grid_query_base:
+      bundle_id: charts_scatter_v0
+      scene_key: scatter_facet_grid
+      task_key: scatter_facet_grid_query
+      json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      answer_hint_panel_label: set "answer" to the exact visible panel label as a string
+      annotation_hint_density_extremum_label: set "annotation" to an object mapping "answer_density_region" to the [x0,y0,x1,y1] box around the densest supporting point region inside the answer panel
+      json_example_density_extremum_label: '{"annotation":{"answer_density_region":[440,210,505,275]},"answer":"Orchid"}'
+      json_example_answer_only_panel_label: '{"answer":"Orchid"}'
+      object_description_scatter_facet_grid: a grid of small scatter panels with shared x- and y-axes and a highlighted target region in each panel
     charts_scatter_series_readout_base:
       bundle_id: charts_scatter_v0
       scene_key: scatter_series_readout
       task_key: scatter_series_readout_query
-      json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+      json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
       json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
       answer_hint_x_label: set "answer" to the requested x-axis label as a string
       answer_hint_y_value: set "answer" to the requested integer value
       unanswerable_instruction: If the requested series is not shown in the legend, answer exactly "unanswerable".
-      evidence_hint: set "evidence" to an object mapping each evidence role to an [x0,y0,x1,y1] bounding box around the supporting point/value readout or shared x-axis label; if the answer is "unanswerable", use an empty object
-      json_example_x_label: '{"evidence":{"target_point_readout":[420,250,458,284],"x_axis_label":[398,692,444,713]},"answer":"2016"}'
-      json_example_y_value: '{"evidence":{"target_point_readout":[420,250,458,284],"comparison_point_readout":[520,310,558,344],"x_axis_label":[498,692,544,713]},"answer":63}'
+      annotation_hint: set "annotation" to an object mapping each annotation role to an [x0,y0,x1,y1] bounding box around the supporting point/value readout or shared x-axis label; if the answer is "unanswerable", use an empty object
+      json_example_x_label: '{"annotation":{"target_point_readout":[420,250,458,284],"x_axis_label":[398,692,444,713]},"answer":"2016"}'
+      json_example_y_value: '{"annotation":{"target_point_readout":[420,250,458,284],"comparison_point_readout":[520,310,558,344],"x_axis_label":[498,692,544,713]},"answer":63}'
       json_example_answer_only_x_label: '{"answer":"2016"}'
       json_example_answer_only_y_value: '{"answer":63}'
       object_description_scatter_series_readout: a multi-series scatter plot with labeled points and a legend

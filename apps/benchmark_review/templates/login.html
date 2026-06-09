@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | TRACE Benchmark Review</title>
+    <link rel="stylesheet" href="{{ app_path('/static/app.css?v=' ~ static_version|default('0')) if app_path is defined else '/static/app.css' }}">
+  </head>
+  <body class="login-body">
+    <main class="login-panel">
+      <h1>TRACE Benchmark Review</h1>
+      {% if not has_token %}
+        <p>No token is configured. Continue to the app.</p>
+      {% endif %}
+      {% if error %}
+        <p class="error-text">{{ error }}</p>
+      {% endif %}
+      <form action="{{ app_path('/login') if app_path is defined else '/login' }}" method="post">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label>
+          Token
+          <input type="password" name="token" autofocus>
+        </label>
+        <button type="submit">Open</button>
+      </form>
+    </main>
+  </body>
+</html>

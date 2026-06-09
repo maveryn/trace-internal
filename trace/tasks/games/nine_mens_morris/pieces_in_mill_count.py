@@ -23,14 +23,14 @@ from ...shared.prompt_variants import (
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_games_nine_mens_morris_pieces_in_mill_complexity
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.morris_common import (
     SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS,
     SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS,
     NineMensMorrisBoardState,
     build_nine_mens_morris_board_state,
-    evidence_piece_ids,
+    annotation_piece_ids,
     supported_targets_for_query,
 )
 from ..shared.morris_scene import NineMensMorrisRenderParams, render_nine_mens_morris_scene
@@ -47,6 +47,8 @@ class _TaskDefaults:
     """Stable fallback defaults for visible nine-men's-morris scenes."""
 
     all_pieces_in_mill_count_support: Tuple[int, ...] = (0, 3, 5, 6, 7, 8, 9)
+    white_mill_completion_point_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    black_mill_completion_point_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     canvas_width: int = 1180
     canvas_height: int = 820
     board_width_px: int = 860
@@ -155,7 +157,7 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -235,6 +237,8 @@ def _target_support_key(query_id: str) -> str:
 
     return {
         "all_pieces_in_mill_count": "all_pieces_in_mill_count_support",
+        "white_mill_completion_point_count": "white_mill_completion_point_count_support",
+        "black_mill_completion_point_count": "black_mill_completion_point_count_support",
     }[str(query_id)]
 
 
@@ -245,7 +249,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=params,
     )
-    player_color = None
+    player_color = {
+        "white_mill_completion_point_count": "white",
+        "black_mill_completion_point_count": "black",
+    }.get(str(query_id))
     player_color_probabilities: Dict[str, float] = {}
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -376,11 +383,11 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> NineMens
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return answer+evidence and answer-only JSON examples for the Morris task."""
+    """Return answer+annotation and answer-only JSON examples for the Morris task."""
 
     json_example = json.dumps(
         {
-            "evidence": [
+            "annotation": [
                 [202, 242],
                 [362, 242],
             ],
@@ -444,14 +451,19 @@ class GamesNineMensMorrisPiecesInMillCountTask:
         if board_state is None or rendered_scene is None or background_meta is None or panel_style_meta is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        evidence_ids = evidence_piece_ids(
+        annotation_ids = annotation_piece_ids(
             board_state,
             query_id=str(axes.query_id),
             player_color=axes.player_color,
         )
-        evidence_points = [
-            list(rendered_scene.render_map["piece_centers_px"][str(piece_id)])
-            for piece_id in evidence_ids
+        annotation_map_key = (
+            "node_centers_px"
+            if str(axes.query_id) in {"white_mill_completion_point_count", "black_mill_completion_point_count"}
+            else "piece_centers_px"
+        )
+        annotation_points = [
+            list(rendered_scene.render_map[str(annotation_map_key)][str(entity_id)])
+            for entity_id in annotation_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -471,7 +483,11 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "object_description_single_board",
                 "mill_rule_text",
                 "answer_hint_all_pieces_in_mill_count",
-                "evidence_hint_all_pieces_in_mill_count",
+                "answer_hint_white_mill_completion_point_count",
+                "answer_hint_black_mill_completion_point_count",
+                "annotation_hint_all_pieces_in_mill_count",
+                "annotation_hint_white_mill_completion_point_count",
+                "annotation_hint_black_mill_completion_point_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -483,7 +499,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_board"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -491,7 +507,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color or "white")
                 ),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color or "white")
                 ),
                 "json_example": str(json_example),
@@ -504,7 +520,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -517,7 +533,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             total_piece_count=int(total_piece_count),
             target_answer=int(axes.target_answer),
             overlapping_piece_count=len(board_state.overlapping_piece_ids),
-            evidence_count=len(evidence_ids),
+            annotation_count=len(annotation_ids),
         )
 
         trace_payload = {
@@ -530,7 +546,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                     "player_color": axes.player_color,
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": list(evidence_ids),
+                    "annotation_entity_ids": list(annotation_ids),
                 },
             },
             "query_spec": {
@@ -584,17 +600,24 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "all_piece_ids_in_mill": [str(value) for value in board_state.all_piece_ids_in_mill],
                 "white_mill_ids": [str(value) for value in board_state.white_mill_ids],
                 "black_mill_ids": [str(value) for value in board_state.black_mill_ids],
+                "white_mill_completion_node_labels": [
+                    str(value) for value in board_state.white_mill_completion_node_labels
+                ],
+                "black_mill_completion_node_labels": [
+                    str(value) for value in board_state.black_mill_completion_node_labels
+                ],
                 "overlapping_piece_ids": [str(value) for value in board_state.overlapping_piece_ids],
-                "evidence_entity_ids": [str(value) for value in evidence_ids],
+                "annotation_map_key": str(annotation_map_key),
+                "annotation_entity_ids": [str(value) for value in annotation_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(value) for value in evidence_ids],
+                "ids": [str(value) for value in annotation_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -603,7 +626,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -625,6 +648,21 @@ class GamesNineMensMorrisAllPiecesInMillCountTask(
     fixed_query_id = "all_pieces_in_mill_count"
 
 
+@register_task
+class GamesNineMensMorrisMillCompletionPointCountTask(
+    QuerySubsetTaskMixin,
+    GamesNineMensMorrisPiecesInMillCountTask,
+):
+    """Count empty points where one piece would complete a mill."""
+
+    task_id = "task_games__nine_mens_morris__mill_completion_point_count"
+    supported_query_ids = (
+        "white_mill_completion_point_count",
+        "black_mill_completion_point_count",
+    )
+
+
 __all__ = [
     "GamesNineMensMorrisAllPiecesInMillCountTask",
+    "GamesNineMensMorrisMillCompletionPointCountTask",
 ]

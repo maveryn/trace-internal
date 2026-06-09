@@ -357,7 +357,7 @@ class TraceRLHFDataset(Dataset):
 
     def _normalize_trace_metadata_fields(self, example: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(example)
-        for key in ("answer_gt", "evidence_gt", "reward_contract", "trace_ref", "metadata", "extra_info"):
+        for key in ("answer_gt", "annotation_gt", "reward_contract", "trace_ref", "metadata", "extra_info"):
             value = normalized.get(key)
             if not isinstance(value, str):
                 continue
@@ -687,7 +687,7 @@ class TraceRLHFDataset(Dataset):
         extra_info.setdefault("prompt", prompt)
         for key in (
             "answer_gt",
-            "evidence_gt",
+            "annotation_gt",
             "reward_contract",
             "trace_ref",
             "metadata",

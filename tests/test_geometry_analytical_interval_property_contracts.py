@@ -6,17 +6,15 @@ import pytest
 
 from trace.tasks.geometry.analytical.function_property_label import (
     GeometryAnalyticalFunctionPropertyLabelTask,
-    GeometryAnalyticalRelationPropertyLabelTask,
+    GeometryFunctionPanelsSignIntervalLabelTask,
 )
 
 
 @pytest.mark.parametrize(
     ("task_cls", "query_id"),
     (
-        (GeometryAnalyticalRelationPropertyLabelTask, "monotonic_interval_increasing_label"),
-        (GeometryAnalyticalRelationPropertyLabelTask, "monotonic_interval_decreasing_label"),
-        (GeometryAnalyticalRelationPropertyLabelTask, "sign_interval_positive_label"),
-        (GeometryAnalyticalRelationPropertyLabelTask, "sign_interval_negative_label"),
+        (GeometryFunctionPanelsSignIntervalLabelTask, "sign_interval_positive_label"),
+        (GeometryFunctionPanelsSignIntervalLabelTask, "sign_interval_negative_label"),
     ),
 )
 def test_geometry_analytical_interval_property_tasks_emit_expected_contract(task_cls, query_id: str) -> None:
@@ -28,16 +26,14 @@ def test_geometry_analytical_interval_property_tasks_emit_expected_contract(task
 
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert out.query_id == "default"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert out.query_id == query_id
-    assert out.trace_payload["query_spec"]["params"]["query_id"] == "default"
     assert out.trace_payload["query_spec"]["params"]["query_id"] == query_id
-    expected_interval = "[-2, 2]" if "monotonic" in query_id else "[-4, 4]"
+    expected_interval = "[-4, 4]"
     assert out.trace_payload["query_spec"]["params"]["target_interval"] == expected_interval
     assert out.trace_payload["execution_trace"]["target_interval"] == expected_interval
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_geometry_analytical_base_rejects_unknown_interval_property_variant() -> None:

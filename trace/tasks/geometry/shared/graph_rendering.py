@@ -176,7 +176,7 @@ def pixel_point_to_graph_units(
     gx = int(round(gx_raw))
     gy = int(round(gy_raw))
     if abs(gx_raw - float(gx)) > float(tol) or abs(gy_raw - float(gy)) > float(tol):
-        raise ValueError("point is not aligned to graph-paper lattice for graph-unit evidence")
+        raise ValueError("point is not aligned to graph-paper lattice for graph-unit annotation")
     return [int(gx), int(gy)]
 
 

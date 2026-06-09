@@ -5,7 +5,7 @@ complexity:
       reasoning_load: 0.34
       scene_variant_load: 0.24
   task_overrides:
-    task_pages__form_section__section_expression_value:
+    pages_form_section_section_expression_source:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.4
@@ -19,7 +19,7 @@ rendering:
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 16
   task_overrides:
-    task_pages__form_section__section_expression_value:
+    pages_form_section_section_expression_source:
       canvas_width: 1256
       canvas_height: 1000
       sheet_page_width_px: 960
@@ -215,7 +215,7 @@ visual:
         - 0.035
 generation:
   task_overrides:
-    task_pages__form_section__section_expression_value:
+    pages_form_section_section_expression_source:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       query_id_weights:
@@ -231,7 +231,7 @@ prompt:
     bundle_id: pages_arithmetic_v0
     answer_hint: set "answer" to the computed amount formatted as a currency string with exactly two digits after the decimal point
   task_overrides:
-    task_pages__form_section__section_expression_value:
+    pages_form_section_section_expression_source:
       scene_key: structured_document_sections
       task_key: section_expression_query
       object_description_form_sheet: a structured application form with visible section
@@ -240,6 +240,6 @@ prompt:
         header fields, and summary blocks
       object_description_receipt_sheet: a receipt-style document with visible section
         headers and labeled totals rows
-      evidence_hint: set "evidence" to an object mapping operand role keys such
+      annotation_hint: set "annotation" to an object mapping operand role keys such
         as "first_operand", "second_operand", and "third_operand" to the referenced
         operand value bounding box [x0, y0, x1, y1]

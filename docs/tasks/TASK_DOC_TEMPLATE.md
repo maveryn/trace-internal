@@ -10,15 +10,15 @@
 1. Entities/relations:
 2. Supported `query_id` values:
 3. `answer_gt.type`:
-4. Default `evidence_gt.type`:
-5. Alternate evidence forms:
-6. Evidence witness policy:
+4. Default `annotation_gt.type`:
+5. Alternate annotation forms:
+6. Annotation witness policy:
    - minimal object/primitive witnesses:
-   - evidence shape choice (`point_set`, `bbox_set`, `point_pair_set`,
+   - annotation shape choice (`point_set`, `bbox_set`, `point_pair_set`,
      `keyed_point_map`, `keyed_bbox_map`, etc.):
-   - keyed evidence role names, if used:
+   - keyed annotation role names, if used:
    - numeric/readout annotation handling:
-   - answer-option evidence policy (only allowed for complete visual
+   - answer-option annotation policy (only allowed for complete visual
      option-image/panel tasks with a source/reference/original image or
      region; otherwise ground source/candidate objects or primitives):
 7. Overlap/touch policy (if applicable):
@@ -30,12 +30,12 @@
 4. Optional query-id prompt mapping (`query_key` or slot-driven mapping):
 5. Required slots:
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-6. JSON example validity rule: every documented prompt JSON example must be a valid response for the active task/variant/output mode (keys, value types, and evidence cardinality/semantics).
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+6. JSON example validity rule: every documented prompt JSON example must be a valid response for the active task/variant/output mode (keys, value types, and annotation cardinality/semantics).
 7. Variant counts (scene/task/query-id/mode):
 8. Output modes:
    - `answer_only`
-   - `answer_and_evidence`
+   - `answer_and_annotation`
 
 ## 4) Determinism + constraints
 1. Seed namespaces used:
@@ -46,6 +46,6 @@
 ## 5) Complexity + tests
 1. Complexity definition/components:
 2. Determinism test:
-3. Answer/evidence consistency test:
+3. Answer/annotation consistency test:
 4. Prompt metadata/placeholder test:
 5. Constraint-specific tests:

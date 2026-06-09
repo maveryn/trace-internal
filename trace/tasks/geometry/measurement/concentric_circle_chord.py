@@ -37,6 +37,7 @@ from ..shared.shape_style import (
     extract_background_anchor_colors,
     sample_geometry_shape_style,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 from ..shared.measurement_rendering import (
     round1 as _round1,
     fmt_measure as _fmt_number,
@@ -46,6 +47,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.scene_transform import LazySceneTransform
+from ..shared.vector2d import unit as _unit
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -118,6 +121,7 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -136,9 +140,9 @@ class _ResolvedProblem:
 class _RenderedConcentricScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
-    evidence_keyed_points: Mapping[str, Point]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
+    annotation_keyed_points: Mapping[str, Point]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -177,15 +181,6 @@ def _draw_dimension(
         (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
     )
     return _draw_label(ctx, label, center, small=True)
-
-
-def _selected_probability_map(
-    values: Sequence[int], selected: int | float
-) -> Dict[str, float]:
-    return {
-        str(value): (1.0 if float(value) == float(selected) else 0.0)
-        for value in values
-    }
 
 
 def _resolve_problem(
@@ -248,7 +243,9 @@ def _resolve_problem(
         chord_length=int(chord_length),
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(support_values))), answer
+            tuple(sorted(set(support_values))),
+            answer,
+            is_selected=lambda value, selected: float(value) == float(selected),
         ),
     )
 
@@ -256,14 +253,22 @@ def _resolve_problem(
 def _render_concentric_scene(
     ctx: _RenderContext, problem: _ResolvedProblem
 ) -> _RenderedConcentricScene:
-    center = (326.0, 292.0)
-    outer_px = 178.0
-    inner_px = outer_px * float(problem.inner_radius) / float(problem.outer_radius)
-    half_chord_px = outer_px * float(problem.half_chord) / float(problem.outer_radius)
-    chord_y = center[1] - inner_px
-    left = (center[0] - half_chord_px, chord_y)
-    right = (center[0] + half_chord_px, chord_y)
-    tangent = (center[0], chord_y)
+    raw_center = (326.0, 292.0)
+    raw_outer_px = 178.0
+    raw_inner_px = raw_outer_px * float(problem.inner_radius) / float(problem.outer_radius)
+    raw_half_chord_px = raw_outer_px * float(problem.half_chord) / float(problem.outer_radius)
+    raw_chord_y = raw_center[1] - raw_inner_px
+    raw_left = (raw_center[0] - raw_half_chord_px, raw_chord_y)
+    raw_right = (raw_center[0] + raw_half_chord_px, raw_chord_y)
+    raw_tangent = (raw_center[0], raw_chord_y)
+    raw_dim_left = (raw_left[0], raw_chord_y - 46.0)
+    raw_dim_right = (raw_right[0], raw_chord_y - 46.0)
+    ctx.scene_transform.resolve((raw_center, raw_left, raw_right, raw_tangent, raw_dim_left, raw_dim_right))
+    center, left, right, tangent, dim_left, dim_right = ctx.scene_transform.points(
+        (raw_center, raw_left, raw_right, raw_tangent, raw_dim_left, raw_dim_right)
+    )
+    outer_px = raw_outer_px * float(ctx.scene_transform.transform.scale)
+    inner_px = raw_inner_px * float(ctx.scene_transform.transform.scale)
 
     outer_box = (
         center[0] - outer_px,
@@ -287,22 +292,14 @@ def _render_concentric_scene(
         [center, right], fill=ctx.line_color, width=max(2, ctx.line_width - 1)
     )
 
-    marker = 16.0
-    ctx.draw.line(
-        [(tangent[0], tangent[1]), (tangent[0] + marker, tangent[1])],
-        fill=ctx.line_color,
-        width=2,
-    )
-    ctx.draw.line(
-        [(tangent[0] + marker, tangent[1]), (tangent[0] + marker, tangent[1] + marker)],
-        fill=ctx.line_color,
-        width=2,
-    )
-    ctx.draw.line(
-        [(tangent[0] + marker, tangent[1] + marker), (tangent[0], tangent[1] + marker)],
-        fill=ctx.line_color,
-        width=2,
-    )
+    marker = 16.0 * float(ctx.scene_transform.transform.scale)
+    chord_unit = _unit((float(right[0]) - float(tangent[0]), float(right[1]) - float(tangent[1])))
+    radius_unit = _unit((float(center[0]) - float(tangent[0]), float(center[1]) - float(tangent[1])))
+    m0 = tangent
+    m1 = (m0[0] + chord_unit[0] * marker, m0[1] + chord_unit[1] * marker)
+    m2 = (m1[0] + radius_unit[0] * marker, m1[1] + radius_unit[1] * marker)
+    m3 = (m0[0] + radius_unit[0] * marker, m0[1] + radius_unit[1] * marker)
+    ctx.draw.line([m0, m1, m2, m3], fill=ctx.line_color, width=2)
 
     for label, point in (("O", center), ("A", left), ("B", right), ("T", tangent)):
         px, py = float(point[0]), float(point[1])
@@ -330,11 +327,10 @@ def _render_concentric_scene(
     label_bboxes["inner_radius"] = _draw_dimension(
         ctx, center, tangent, inner_radius_label, label_offset=(-38.0, -4.0)
     )
-    dim_y = chord_y - 46.0
     label_bboxes["chord"] = _draw_dimension(
         ctx,
-        (left[0], dim_y),
-        (right[0], dim_y),
+        dim_left,
+        dim_right,
         chord_label,
         label_offset=(0.0, -18.0),
         color=ctx.accent_color,
@@ -353,9 +349,9 @@ def _render_concentric_scene(
 
     if problem.query_id not in {"chord_length_from_radii", "inner_radius_from_chord"}:
         raise ValueError(f"unsupported concentric-circle query_id: {problem.query_id}")
-    evidence_keyed_points = {"O": center, "A": left, "B": right, "T": tangent}
-    evidence_roles = tuple(evidence_keyed_points.keys())
-    evidence_bboxes = tuple()
+    annotation_keyed_points = {"O": center, "A": left, "B": right, "T": tangent}
+    annotation_roles = tuple(annotation_keyed_points.keys())
+    annotation_bboxes = tuple()
 
     chord_bbox = _bbox_from_points(
         (left, right), width=ctx.width, height=ctx.height, pad=18.0
@@ -400,9 +396,9 @@ def _render_concentric_scene(
     return _RenderedConcentricScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
-        evidence_keyed_points=dict(evidence_keyed_points),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
+        annotation_keyed_points=dict(annotation_keyed_points),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -416,7 +412,7 @@ def _render_concentric_scene(
             "tangent_point": [round(tangent[0], 3), round(tangent[1], 3)],
             "construction_points": {
                 key: [round(point[0], 3), round(point[1], 3)]
-                for key, point in evidence_keyed_points.items()
+                for key, point in annotation_keyed_points.items()
             },
             "label_bboxes": {
                 key: _bbox_to_list(value) for key, value in label_bboxes.items()
@@ -433,6 +429,7 @@ class _ConcentricCircleChordBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "concentric_circle_chord"
@@ -508,6 +505,13 @@ class _ConcentricCircleChordBaseTask:
             line_width=max(2, int(line_width)),
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -520,10 +524,10 @@ class _ConcentricCircleChordBaseTask:
         return ctx, render_meta
 
     def _build_complexity(self, rendered: _RenderedConcentricScene) -> TaskComplexity:
-        evidence_count = len(rendered.evidence_keyed_points)
+        annotation_count = len(rendered.annotation_keyed_points)
         visual_scan = clamp_unit_interval(
             0.36
-            + normalize_linear(evidence_count, min_value=2, max_value=4)
+            + normalize_linear(annotation_count, min_value=2, max_value=4)
             * 0.18
         )
         formula_family = str(rendered.witness.get("formula_family", ""))
@@ -532,7 +536,7 @@ class _ConcentricCircleChordBaseTask:
         ambiguity = 0.42 if is_chord_length else 0.48
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(evidence_count, min_value=2, max_value=4)
+            + normalize_linear(annotation_count, min_value=2, max_value=4)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -575,6 +579,7 @@ class _ConcentricCircleChordBaseTask:
                 )
                 rendered = _render_concentric_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -597,7 +602,7 @@ class _ConcentricCircleChordBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -611,14 +616,14 @@ class _ConcentricCircleChordBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -629,13 +634,13 @@ class _ConcentricCircleChordBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(key): [round(float(point[0]), 3), round(float(point[1]), 3)]
-            for key, point in rendered.evidence_keyed_points.items()
+            for key, point in rendered.annotation_keyed_points.items()
         }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(
-            type="keyed_point_map", value=dict(evidence_keyed_points)
+        annotation_gt = TypedValue(
+            type="keyed_point_map", value=dict(annotation_keyed_points)
         )
         query_params = {
             "scene_id": SCENE_ID,
@@ -654,7 +659,7 @@ class _ConcentricCircleChordBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": "tangent_chord",
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -686,7 +691,7 @@ class _ConcentricCircleChordBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 1,
                 **dict(rendered.witness),
             },
@@ -696,19 +701,19 @@ class _ConcentricCircleChordBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "keyed_point_map",
-                "original_evidence_value": dict(evidence_keyed_points),
+                "original_annotation_value": dict(annotation_keyed_points),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_point_map",
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -721,15 +726,25 @@ class _ConcentricCircleChordBaseTask:
 
 
 @register_task
-class GeometryConcentricCircleChordValueTask(_ConcentricCircleChordBaseTask):
-    """Compute a chord or radius value in a concentric-circle tangent-chord diagram."""
+class GeometryConcentricChordLengthFromRadiiTask(_ConcentricCircleChordBaseTask):
+    """Compute the outer chord length from the two radii."""
 
-    task_id = "task_geometry__concentric_chord__concentric_circle_chord_value"
-    supported_queries = _ALL_CONCENTRIC_CHORD_QUERIES
+    task_id = "task_geometry__concentric_chord__chord_length_from_radii"
+    supported_queries = _CHORD_LENGTH_QUERIES
+    reasoning_kind = "concentric_circle_chord"
+
+
+@register_task
+class GeometryConcentricInnerRadiusFromChordTask(_ConcentricCircleChordBaseTask):
+    """Compute the inner radius from outer radius and chord length."""
+
+    task_id = "task_geometry__concentric_chord__inner_radius_from_chord"
+    supported_queries = _INNER_RADIUS_QUERIES
     reasoning_kind = "concentric_circle_chord"
 
 
 __all__ = [
-    "GeometryConcentricCircleChordValueTask",
+    "GeometryConcentricChordLengthFromRadiiTask",
+    "GeometryConcentricInnerRadiusFromChordTask",
     "SCENE_ID",
 ]

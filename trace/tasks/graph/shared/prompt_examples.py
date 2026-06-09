@@ -6,12 +6,12 @@ import json
 from typing import Any, Tuple
 
 
-def build_graph_prompt_json_examples(*, evidence_value: Any, answer_value: Any) -> Tuple[str, str]:
-    """Return compact answer+evidence and answer-only JSON examples."""
+def build_graph_prompt_json_examples(*, annotation_value: Any, answer_value: Any) -> Tuple[str, str]:
+    """Return compact answer+annotation and answer-only JSON examples."""
 
     return (
         json.dumps(
-            {"evidence": evidence_value, "answer": answer_value},
+            {"annotation": annotation_value, "answer": answer_value},
             ensure_ascii=False,
             allow_nan=False,
             separators=(",", ":"),

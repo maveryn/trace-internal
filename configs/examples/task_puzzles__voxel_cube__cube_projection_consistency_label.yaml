@@ -1,6 +1,0 @@
-task: task_puzzles__voxel_cube__cube_projection_consistency_label
-
-params:
-  consistency_query: inconsistent_projection_label
-  projection_consistency_option_count_min: 5
-  projection_consistency_option_count_max: 5

@@ -17,7 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import projected_puzzle_bbox_evidence
+from ..shared.common import projected_puzzle_bbox_annotation
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -148,9 +148,9 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "object_description_string_strip",
                 "object_description_string_card",
                 "object_description_string_outline",
-                "evidence_hint_open_rope_count",
-                "evidence_hint_closed_loop_count",
-                "evidence_hint_knotted_component_count",
+                "annotation_hint_open_rope_count",
+                "annotation_hint_closed_loop_count",
+                "annotation_hint_knotted_component_count",
                 "json_example_open_rope_count",
                 "json_example_closed_loop_count",
                 "json_example_knotted_component_count",
@@ -161,7 +161,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -172,12 +172,12 @@ class _PuzzlesTopologyStringComponentBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -187,17 +187,17 @@ class _PuzzlesTopologyStringComponentBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         supporting_item_ids = [str(value) for value in dataset["supporting_item_ids"]]
-        evidence_source = rendered_scene.component_bbox_map
-        evidence_projection = projected_puzzle_bbox_evidence(evidence_source, list(supporting_item_ids))
-        evidence_bboxes = [
+        annotation_source = rendered_scene.component_bbox_map
+        annotation_projection = projected_puzzle_bbox_annotation(annotation_source, list(supporting_item_ids))
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
-        if len(evidence_bboxes) != int(answer_value):
-            raise ValueError("string topology evidence projection does not match answer count")
+        if len(annotation_bboxes) != int(answer_value):
+            raise ValueError("string topology annotation projection does not match answer count")
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         visual_scan = float(normalize_int_with_bounds(int(dataset["visual_group_count"]), list(dataset["visual_group_count_range"])))
         answer_support = [int(value) for value in dataset["target_answer_support"]]
@@ -213,7 +213,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
             },
         )
 
-        evidence_source_name = "component_bboxes_px"
+        annotation_source_name = "component_bboxes_px"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"puzzle_topology_{str(scene_variant)}",
@@ -275,7 +275,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "crossing_bboxes_px": {
                     str(key): list(value) for key, value in rendered_scene.crossing_bbox_map.items()
                 },
-                "evidence_source": str(evidence_source_name),
+                "annotation_source": str(annotation_source_name),
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -310,18 +310,18 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "target_answer_probabilities": dict(dataset["target_answer_probabilities"]),
                 "answer_value": int(answer_value),
                 "supporting_item_ids": list(supporting_item_ids),
-                "supporting_evidence_source": str(evidence_source_name),
+                "supporting_annotation_source": str(annotation_source_name),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "solver_trace": dict(dataset["solver_trace"]),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
 
@@ -338,7 +338,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -358,7 +358,7 @@ class PuzzlesTopologyStringComponentCountTask(_PuzzlesTopologyStringComponentBas
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         effective_params: Dict[str, Any] = dict(params)
         if effective_params.get("query_id") is None:
-            for key in ("query_id", "query_id"):
+            for key in ("query_id", "query_variant"):
                 if effective_params.get(key) is not None:
                     effective_params["query_id"] = str(effective_params[key])
                     break

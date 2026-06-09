@@ -6,10 +6,14 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.counting.named_shape_color_boolean_count import QUERY_IDS
+from trace.tasks.icons.counting.named_shape_color_boolean_count import QUERY_IDS, QUERY_IDS_BY_TASK_ID
 
 
-TASK_ID = "task_icons__named_field__shape_attribute_boolean_count"
+TASK_ID_BY_QUERY_ID = {
+    query_id: task_id
+    for task_id, query_ids in QUERY_IDS_BY_TASK_ID.items()
+    for query_id in query_ids
+}
 
 
 def _predicate(query_id: str, *, is_shape: bool, is_attribute: bool) -> bool:
@@ -29,8 +33,8 @@ def _predicate(query_id: str, *, is_shape: bool, is_attribute: bool) -> bool:
 
 
 def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None:
-    task = create_task(TASK_ID)
     for index, query_id in enumerate(QUERY_IDS):
+        task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
         out = task.generate(
             hash64(20260523, "named-shape-color-boolean-contract", index),
             params={
@@ -62,22 +66,22 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 4
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == 4
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == 4
         assert len(counted_entities) == 4
         assert "star" in out.prompt
         assert "red [#E63232]" in out.prompt
         assert all("color_name" in entity for entity in entities)
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted_entities}
-        assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
+        assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
 
 
 def test_icons_counting_named_shape_color_boolean_fill_style_axis_contract() -> None:
-    task = create_task(TASK_ID)
     query_id = "shape_and_color_count"
+    task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
     out = task.generate(
         hash64(20260523, "named-shape-fill-style-boolean-contract", 0),
         params={
@@ -111,29 +115,35 @@ def test_icons_counting_named_shape_color_boolean_fill_style_axis_contract() -> 
     assert "striped fill style" in out.prompt
     assert all("fill_style" in entity for entity in entities)
     assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted_entities}
-    assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
+    assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
 
 
 def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> None:
-    task = create_task(TASK_ID)
     query_counts: Counter[str] = Counter()
     answer_counts: Counter[int] = Counter()
     attribute_axes: Counter[str] = Counter()
     layouts: set[str] = set()
-    for index in range(90):
-        out = task.generate(
-            hash64(20260523, "named-shape-color-boolean-sampling", index),
-            params={},
-            max_attempts=200,
-        )
-        execution = out.trace_payload["execution_trace"]
-        query_counts[str(execution["query_id"])] += 1
-        answer_counts[int(out.answer_gt.value)] += 1
-        attribute_axes[str(execution["target_attribute_axis"])] += 1
-        layouts.add(str(execution["arrangement_mode"]))
-        assert 4 <= int(execution["object_count"]) <= 10
-        assert 1 <= int(out.answer_gt.value) <= 5
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+    for task_id, supported_queries in QUERY_IDS_BY_TASK_ID.items():
+        task = create_task(str(task_id))
+        task_query_counts: Counter[str] = Counter()
+        for index in range(24):
+            out = task.generate(
+                hash64(20260523, f"named-shape-color-boolean-sampling.{task_id}", index),
+                params={},
+                max_attempts=200,
+            )
+            execution = out.trace_payload["execution_trace"]
+            query_id = str(execution["query_id"])
+            task_query_counts[query_id] += 1
+            query_counts[query_id] += 1
+            answer_counts[int(out.answer_gt.value)] += 1
+            attribute_axes[str(execution["target_attribute_axis"])] += 1
+            layouts.add(str(execution["arrangement_mode"]))
+            assert query_id in set(supported_queries)
+            assert 4 <= int(execution["object_count"]) <= 10
+            assert 1 <= int(out.answer_gt.value) <= 5
+            assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+        assert set(task_query_counts).issubset(set(supported_queries))
 
     assert set(query_counts) == set(QUERY_IDS)
     assert set(answer_counts).issubset(set(range(1, 6)))
@@ -143,7 +153,7 @@ def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> Non
 
 
 def test_icons_counting_named_shape_color_boolean_rejects_stack_layouts() -> None:
-    task = create_task(TASK_ID)
+    task = create_task("task_icons__named_field__multi_attribute_and_count")
     try:
         task.generate(
             hash64(20260523, "named-shape-color-boolean-stack-reject", 0),

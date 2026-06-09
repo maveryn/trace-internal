@@ -593,7 +593,7 @@ def _resolve_layout_placement(
     instance_seed: int,
     scene_variant: str,
 ) -> Tuple[Tuple[float, float], Dict[str, Any]]:
-    """Resolve whole-circuit placement before evidence projection."""
+    """Resolve whole-circuit placement before annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -658,11 +658,11 @@ def _resolve_layout_placement(
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     prefix = "R" if str(query_id) == "total_resistance" else "C"
-    evidence_example = {
+    annotation_example = {
         f"{prefix}1": [2, 3, 4, 5],
         f"{prefix}2": [6, 7, 8, 9],
     }
-    return build_prompt_json_examples(evidence_value=evidence_example, answer_type="integer")
+    return build_prompt_json_examples(annotation_value=annotation_example, answer_type="integer")
 
 
 class _PhysicsCircuitsEquivalentComponentBaseTask:
@@ -742,8 +742,8 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                     "json_output_contract_answer_only",
                     "answer_hint_total_resistance",
                     "answer_hint_total_capacitance",
-                    "evidence_hint_total_resistance",
-                    "evidence_hint_total_capacitance",
+                    "annotation_hint_total_resistance",
+                    "annotation_hint_total_capacitance",
                     "object_description_series_parallel_total_resistance",
                     "object_description_series_parallel_total_capacitance",
                 ),
@@ -757,14 +757,14 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(
                         prompt_defaults[f"object_description_{str(axes.scene_variant)}_{str(axes.query_id)}"]
                     ),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                     "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
@@ -773,16 +773,16 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            evidence_value = {
+            annotation_value = {
                 str(key): [float(v) for v in bbox]
-                for key, bbox in rendered_scene.evidence_bbox_map.items()
+                for key, bbox in rendered_scene.annotation_bbox_map.items()
             }
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_value))
-            projected_evidence = {
+            annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_value),
-                "pixel_keyed_bbox_map": dict(evidence_value),
+                "keyed_bbox_map": dict(annotation_value),
+                "pixel_keyed_bbox_map": dict(annotation_value),
             }
             component_count = len(rendered_scene.component_specs)
             complexity = build_physics_circuit_resistance_complexity(
@@ -803,7 +803,7 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                         "component_kind": str(axes.component_kind),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
-                        "evidence_entity_id_map": dict(rendered_scene.evidence_entity_id_map),
+                        "annotation_entity_id_map": dict(rendered_scene.annotation_entity_id_map),
                     },
                 },
                 "query_spec": {
@@ -873,14 +873,14 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                         }
                         for spec in rendered_scene.component_specs
                     ],
-                    "evidence_entity_id_map": dict(rendered_scene.evidence_entity_id_map),
+                    "annotation_entity_id_map": dict(rendered_scene.annotation_entity_id_map),
                 },
                 "witness_symbolic": {
                     "type": "object_map",
-                    "ids": [str(value) for value in rendered_scene.evidence_entity_id_map.values()],
-                    "key_to_entity_id": dict(rendered_scene.evidence_entity_id_map),
+                    "ids": [str(value) for value in rendered_scene.annotation_entity_id_map.values()],
+                    "key_to_entity_id": dict(rendered_scene.annotation_entity_id_map),
                 },
-                "projected_evidence": dict(projected_evidence),
+                "projected_annotation": dict(projected_annotation),
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
             }
@@ -888,7 +888,7 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

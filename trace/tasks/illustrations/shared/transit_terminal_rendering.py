@@ -12,8 +12,9 @@ from ...shared.text_rendering import fit_font_to_box
 from ...shared.text_legibility import draw_text_traced
 from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
 from .object_library import BBox, RGB, STYLE_IDS
-from .object_registry import make_object_record
-from .person_rendering import draw_person_hair_back, draw_person_hair_front, draw_person_skirt, normalize_person_gender, sample_person_gender
+from .object_rendering import IllustrationObjectSpec, RenderContext, make_vector_scene_object_record, render_illustration_object, render_vector_scene_object
+from .object_variants import RENDERER_STYLE_VECTOR
+from .person_rendering import sample_person_gender
 
 
 TRANSIT_SETTING_IDS: Tuple[str, ...] = variant_ids_with_tag("transit_setting")
@@ -59,6 +60,7 @@ class TransitPerson:
     gender_id: str
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -72,6 +74,7 @@ class TransitLuggageItem:
     primary_color_rgb: RGB
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -107,6 +110,7 @@ class TransitDecor:
     decor_type: str
     bbox_xyxy: BBox
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -145,6 +149,15 @@ def transit_service_point_display_name(service_point_id: str) -> str:
     return TRANSIT_SERVICE_POINT_LABELS.get(str(service_point_id), str(service_point_id).replace("_", " "))
 
 
+def _bench_visual_attributes(rng, *, style_id: str) -> Dict[str, Any]:
+    wood = _jitter_rgb(rng, (142, 91, 58), 8)
+    return {
+        "wood_color_rgb": [int(v) for v in wood],
+        "outline_color_rgb": [74, 57, 45],
+        "style_id": str(style_id),
+    }
+
+
 
 
 def _jitter_rgb(rng, color: RGB, amount: int = 14) -> RGB:
@@ -163,16 +176,6 @@ def _choose_weighted(rng, weights: Mapping[str, float], support: Sequence[str]) 
         if running >= threshold:
             return str(value)
     return str(choices[-1][0])
-
-
-def _style_params(style_id: str) -> Tuple[RGB, int, bool]:
-    if str(style_id) == "paper_cutout":
-        return (246, 245, 236), 4, True
-    if str(style_id) == "outlined_cartoon":
-        return (37, 42, 52), 3, False
-    if str(style_id) == "soft_shadow":
-        return (66, 73, 84), 2, True
-    return (66, 73, 84), 1, False
 
 
 def _rect(
@@ -427,6 +430,7 @@ def _draw_area(
     area_id: str,
     area_box: BBox,
     scale: int,
+    style_id: str,
 ) -> Tuple[TransitArea, List[TransitDecor]]:
     x0, y0, x1, y1 = area_box
     decor: List[TransitDecor] = []
@@ -451,8 +455,21 @@ def _draw_area(
     bench_y = platform[1] + 48.0
     if y1 - bench_y > 72.0 and float(rng.random()) < 0.82:
         bench = (x0 + 24.0, bench_y, min(x1 - 28.0, x0 + 150.0), bench_y + 42.0)
-        _draw_bench(draw, rng=rng, bbox=bench, scale=scale)
-        decor.append(TransitDecor(f"decor_bench_{area_id}", "bench", tuple(round(float(v), 3) for v in bench), {"area_id": str(area_id)}))
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=f"decor_bench_{area_id}",
+            object_type="bench",
+            bbox_xyxy=bench,
+            renderer_id="fixture_bench",
+            renderer_variant_id="bench",
+            semantic_attributes={"decor_type": "bench", "area_id": str(area_id)},
+            visual_attributes=_bench_visual_attributes(rng, style_id=str(style_id)),
+            role="distractor",
+            source_entity_type="transit_decor",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
+        decor.append(TransitDecor(f"decor_bench_{area_id}", "bench", tuple(round(float(v), 3) for v in bench), {"area_id": str(area_id)}, object_record=rendered.object_record))
     return (
         TransitArea(
             area_id=str(area_id),
@@ -465,16 +482,6 @@ def _draw_area(
         ),
         decor,
     )
-
-
-def _draw_bench(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    wood = _jitter_rgb(rng, (142, 91, 58), 8)
-    outline = (74, 57, 45)
-    _rect(draw, (x0, y0 + 5.0, x1, y0 + 18.0), fill=wood, outline=outline, width=1, scale=scale, radius=4)
-    _rect(draw, (x0 + 8.0, y0 + 24.0, x1 - 8.0, y0 + 36.0), fill=wood, outline=outline, width=1, scale=scale, radius=4)
-    for lx in (x0 + 20.0, x1 - 30.0):
-        _rect(draw, (lx, y0 + 34.0, lx + 8.0, y1), fill=outline, outline=None, width=1, scale=scale, radius=2)
 
 
 def _draw_terminal_decor(
@@ -769,67 +776,6 @@ def _clothes_color(rng) -> RGB:
     return tuple(int(v) for v in rng.choice(((74, 122, 180), (194, 83, 85), (220, 169, 75), (94, 151, 124), (130, 104, 160), (83, 154, 177), (202, 114, 80))))  # type: ignore[return-value]
 
 
-def _rel(box: BBox, x0: float, y0: float, x1: float, y1: float) -> BBox:
-    bx0, by0, bx1, by1 = box
-    w = bx1 - bx0
-    h = by1 - by0
-    return (bx0 + x0 * w, by0 + y0 * h, bx0 + x1 * w, by0 + y1 * h)
-
-
-def _draw_shadow(draw: ImageDraw.ImageDraw, bbox: BBox, *, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    _ellipse(draw, (x0 + 0.08 * (x1 - x0), y1 - 0.06 * (y1 - y0), x1 - 0.04 * (x1 - x0), y1 + 0.04 * (y1 - y0)), fill=(132, 128, 119), outline=None, width=1, scale=scale)
-
-
-def _draw_person(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: BBox,
-    pose_id: str,
-    primary: RGB,
-    accent: RGB,
-    skin: RGB,
-    gender_id: str,
-    style_id: str,
-    scale: int,
-) -> Tuple[TransitDecor, ...]:
-    outline, line_width, shadow = _style_params(str(style_id))
-    if shadow:
-        _draw_shadow(draw, bbox, scale=scale)
-    x0, y0, x1, y1 = bbox
-    decor: List[TransitDecor] = []
-    gender = normalize_person_gender(gender_id)
-    head = _rel(bbox, 0.30, 0.03, 0.70, 0.27)
-    torso = _rel(bbox, 0.28, 0.29, 0.74, 0.53 if gender == "female" else 0.60)
-    draw_person_hair_back(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    _ellipse(draw, head, fill=skin, outline=outline, width=line_width, scale=scale)
-    draw_person_hair_front(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    _rect(draw, torso, fill=primary, outline=outline, width=line_width, scale=scale, radius=7)
-    leg_color = (63, 71, 88)
-    if str(pose_id) == "walking":
-        _line(draw, [(x0 + 0.42 * (x1 - x0), y0 + 0.58 * (y1 - y0)), (x0 + 0.18 * (x1 - x0), y1 - 2.0)], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.58 * (x1 - x0), y0 + 0.58 * (y1 - y0)), (x0 + 0.82 * (x1 - x0), y1 - 4.0)], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.32 * (x1 - x0), y0 + 0.36 * (y1 - y0)), (x0 + 0.15 * (x1 - x0), y0 + 0.56 * (y1 - y0))], fill=primary, width=max(3, line_width + 2), scale=scale)
-        _line(draw, [(x0 + 0.70 * (x1 - x0), y0 + 0.36 * (y1 - y0)), (x0 + 0.90 * (x1 - x0), y0 + 0.50 * (y1 - y0))], fill=primary, width=max(3, line_width + 2), scale=scale)
-    elif str(pose_id) == "seated":
-        _line(draw, [(x0 + 0.38 * (x1 - x0), y0 + 0.60 * (y1 - y0)), (x0 + 0.20 * (x1 - x0), y0 + 0.82 * (y1 - y0)), (x0 + 0.48 * (x1 - x0), y0 + 0.84 * (y1 - y0))], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.60 * (x1 - x0), y0 + 0.60 * (y1 - y0)), (x0 + 0.78 * (x1 - x0), y0 + 0.82 * (y1 - y0)), (x0 + 0.98 * (x1 - x0), y0 + 0.80 * (y1 - y0))], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-    else:
-        _line(draw, [(x0 + 0.42 * (x1 - x0), y0 + 0.58 * (y1 - y0)), (x0 + 0.36 * (x1 - x0), y1 - 3.0)], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.58 * (x1 - x0), y0 + 0.58 * (y1 - y0)), (x0 + 0.66 * (x1 - x0), y1 - 3.0)], fill=leg_color, width=max(4, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.30 * (x1 - x0), y0 + 0.36 * (y1 - y0)), (x0 + 0.18 * (x1 - x0), y0 + 0.62 * (y1 - y0))], fill=primary, width=max(3, line_width + 2), scale=scale)
-        _line(draw, [(x0 + 0.70 * (x1 - x0), y0 + 0.36 * (y1 - y0)), (x0 + 0.82 * (x1 - x0), y0 + 0.62 * (y1 - y0))], fill=primary, width=max(3, line_width + 2), scale=scale)
-    if gender == "female":
-        bottom_factor = 0.70 if str(pose_id) == "seated" else 0.73
-        draw_person_skirt(draw, torso_bbox=torso, bottom_y=y0 + bottom_factor * (y1 - y0), fill=primary, outline=outline, scale=scale, width=line_width)
-    if str(pose_id) == "with_luggage":
-        bag = (x1 + 2.0, y1 - 0.35 * (y1 - y0), x1 + 0.22 * (y1 - y0), y1 - 2.0)
-        _rect(draw, bag, fill=accent, outline=outline, width=1, scale=scale, radius=4)
-        _line(draw, [(bag[0] + 0.5 * (bag[2] - bag[0]), bag[1]), (bag[0] + 0.5 * (bag[2] - bag[0]), bag[1] - 14.0)], fill=outline, width=2, scale=scale)
-        decor.append(TransitDecor("pending_luggage", "person_luggage", tuple(round(float(v), 3) for v in bag), {}))
-    return tuple(decor)
-
-
 def _candidate_luggage_box(rng, *, layout: Mapping[str, Any], area_id: str, luggage_type: str, width: int, height: int) -> BBox:
     area = _area_bbox(layout, str(area_id)) or tuple(float(v) for v in layout["concourse_bbox"])
     if str(area_id) in set(TRANSIT_BOARDING_AREA_IDS):
@@ -921,37 +867,6 @@ def _place_luggage(
     return tuple(placed)
 
 
-def _draw_luggage_item(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: BBox,
-    luggage_type: str,
-    color: RGB,
-    style_id: str,
-    scale: int,
-) -> None:
-    outline, line_width, shadow = _style_params(str(style_id))
-    if shadow:
-        _draw_shadow(draw, bbox, scale=scale)
-    x0, y0, x1, y1 = bbox
-    if str(luggage_type) == "luggage_cart":
-        _rect(draw, (x0 + 0.08 * (x1 - x0), y0 + 0.24 * (y1 - y0), x1 - 0.06 * (x1 - x0), y1 - 0.18 * (y1 - y0)), fill=color, outline=outline, width=line_width, scale=scale, radius=5)
-        _line(draw, [(x0 + 0.06 * (x1 - x0), y1 - 0.12 * (y1 - y0)), (x1 - 0.02 * (x1 - x0), y1 - 0.12 * (y1 - y0))], fill=outline, width=max(2, line_width + 1), scale=scale)
-        _line(draw, [(x1 - 0.16 * (x1 - x0), y0 + 0.12 * (y1 - y0)), (x1 - 0.02 * (x1 - x0), y0 - 0.10 * (y1 - y0))], fill=outline, width=max(2, line_width), scale=scale)
-        for wx in (x0 + 0.18 * (x1 - x0), x1 - 0.22 * (x1 - x0)):
-            _ellipse(draw, (wx - 4.0, y1 - 8.0, wx + 6.0, y1 + 2.0), fill=(45, 49, 55), outline=None, width=1, scale=scale)
-        return
-    if str(luggage_type) == "backpack":
-        _rect(draw, (x0 + 0.10 * (x1 - x0), y0 + 0.08 * (y1 - y0), x1 - 0.08 * (x1 - x0), y1 - 0.02 * (y1 - y0)), fill=color, outline=outline, width=line_width, scale=scale, radius=10)
-        _rect(draw, (x0 + 0.24 * (x1 - x0), y0 + 0.44 * (y1 - y0), x1 - 0.18 * (x1 - x0), y1 - 0.16 * (y1 - y0)), fill=color, outline=outline, width=1, scale=scale, radius=5)
-        _line(draw, [(x0 + 0.28 * (x1 - x0), y0 + 0.10 * (y1 - y0)), (x0 + 0.05 * (x1 - x0), y0 + 0.54 * (y1 - y0))], fill=outline, width=max(2, line_width), scale=scale)
-        _line(draw, [(x1 - 0.28 * (x1 - x0), y0 + 0.10 * (y1 - y0)), (x1 - 0.04 * (x1 - x0), y0 + 0.54 * (y1 - y0))], fill=outline, width=max(2, line_width), scale=scale)
-        return
-    _rect(draw, (x0 + 0.08 * (x1 - x0), y0 + 0.18 * (y1 - y0), x1 - 0.04 * (x1 - x0), y1 - 0.04 * (y1 - y0)), fill=color, outline=outline, width=line_width, scale=scale, radius=6)
-    _line(draw, [(x0 + 0.40 * (x1 - x0), y0 + 0.18 * (y1 - y0)), (x0 + 0.40 * (x1 - x0), y0 - 0.06 * (y1 - y0)), (x0 + 0.72 * (x1 - x0), y0 - 0.06 * (y1 - y0)), (x0 + 0.72 * (x1 - x0), y0 + 0.18 * (y1 - y0))], fill=outline, width=max(2, line_width), scale=scale)
-    _line(draw, [(x0 + 0.20 * (x1 - x0), y1 - 0.20 * (y1 - y0)), (x1 - 0.16 * (x1 - x0), y1 - 0.20 * (y1 - y0))], fill=color, width=max(2, line_width), scale=scale)
-
-
 def render_transit_terminal_scene(
     *,
     rng,
@@ -983,7 +898,7 @@ def render_transit_terminal_scene(
         box = _area_bbox(layout, str(area_id))
         if box is None:
             continue
-        area, area_decor = _draw_area(draw, rng=rng, setting_id=str(setting_id), area_id=str(area_id), area_box=box, scale=scale)
+        area, area_decor = _draw_area(draw, rng=rng, setting_id=str(setting_id), area_id=str(area_id), area_box=box, scale=scale, style_id=str(style_id))
         areas.append(area)
         decor.extend(area_decor)
     concourse = tuple(float(v) for v in layout["concourse_bbox"])
@@ -1004,24 +919,45 @@ def render_transit_terminal_scene(
         accent = _clothes_color(rng)
         skin = _skin_color(rng)
         gender_id = sample_person_gender(rng)
-        accessory_decor = _draw_person(
-            draw,
-            bbox=bbox,
-            pose_id=str(pose_id),
-            primary=primary,
-            accent=accent,
-            skin=skin,
-            gender_id=str(gender_id),
-            style_id=str(style_id),
-            scale=scale,
+        semantic_attributes = {
+            "area_id": str(spec.area_id),
+            "pose_id": str(pose_id),
+            **dict(spec.attributes),
+        }
+        visual_attributes = {
+            "primary_color_rgb": [int(v) for v in primary],
+            "accent_color_rgb": [int(v) for v in accent],
+            "skin_color_rgb": [int(v) for v in skin],
+            "gender_id": str(gender_id),
+            "style_id": str(style_id),
+        }
+        rendered = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=person_id,
+                object_type="person",
+                bbox_xyxy=bbox,
+                renderer_id="transit_person",
+                renderer_variant_id=str(pose_id),
+                semantic_attributes=semantic_attributes,
+                visual_attributes=visual_attributes,
+                role=str(spec.role),
+                source_entity_type="transit_person",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=scale,
+                style_id=str(style_id),
+            ),
         )
-        for decor_index, item in enumerate(accessory_decor):
+        for decor_index, item in enumerate(rendered.support_items):
+            item_attributes = item.get("attributes", {}) if isinstance(item, Mapping) else {}
             decor.append(
                 TransitDecor(
                     f"{person_id}_luggage_{decor_index}",
-                    str(item.decor_type),
-                    tuple(round(float(v), 3) for v in item.bbox_xyxy),
-                    {"supports_person_id": str(person_id), **dict(item.attributes)},
+                    str(item.get("support_type", "person_support")),
+                    tuple(round(float(v), 3) for v in item.get("bbox", (0.0, 0.0, 0.0, 0.0))),
+                    {"supports_person_id": str(person_id), **(dict(item_attributes) if isinstance(item_attributes, Mapping) else {})},
                 )
             )
         persons.append(
@@ -1036,6 +972,7 @@ def render_transit_terminal_scene(
                 gender_id=str(gender_id),
                 role=str(spec.role),
                 attributes={**dict(spec.attributes), "area_id": str(spec.area_id), "pose_id": str(pose_id)},
+                object_record=rendered.object_record,
             )
         )
     placed_luggage = _place_luggage(
@@ -1050,6 +987,29 @@ def render_transit_terminal_scene(
     for index, (spec, bbox) in enumerate(sorted(placed_luggage, key=lambda item: (float(item[1][3]), float(item[1][0])))):
         luggage_id = f"luggage_{index:02d}"
         color = _clothes_color(rng)
+        semantic_attributes = {
+            "area_id": str(spec.area_id),
+            "luggage_type": str(spec.luggage_type),
+            **dict(spec.attributes),
+        }
+        visual_attributes = {
+            "primary_color_rgb": [int(v) for v in color],
+            "style_id": str(style_id),
+        }
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=str(luggage_id),
+            object_type="luggage",
+            bbox_xyxy=bbox,
+            renderer_id="transit_luggage",
+            renderer_variant_id=str(spec.luggage_type),
+            semantic_attributes=semantic_attributes,
+            visual_attributes=visual_attributes,
+            role=str(spec.role),
+            source_entity_type="transit_luggage",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
         luggage_items.append(
             TransitLuggageItem(
                 luggage_id=str(luggage_id),
@@ -1059,16 +1019,8 @@ def render_transit_terminal_scene(
                 primary_color_rgb=tuple(int(v) for v in color),
                 role=str(spec.role),
                 attributes={**dict(spec.attributes), "area_id": str(spec.area_id), "luggage_type": str(spec.luggage_type)},
+                object_record=rendered.object_record,
             )
-        )
-    for item in luggage_items:
-        _draw_luggage_item(
-            draw,
-            bbox=item.bbox_xyxy,
-            luggage_type=str(item.luggage_type),
-            color=tuple(int(v) for v in item.primary_color_rgb),
-            style_id=str(style_id),
-            scale=scale,
         )
     if scale != 1:
         image = image.resize((width, height), Image.Resampling.LANCZOS)
@@ -1101,7 +1053,7 @@ def transit_luggage_bbox_map(scene: RenderedTransitTerminalScene) -> Dict[str, L
 
 
 def sort_transit_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
-    """Return bboxes sorted top-to-bottom then left-to-right for stable evidence."""
+    """Return bboxes sorted top-to-bottom then left-to-right for stable annotation."""
 
     boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
     boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
@@ -1113,7 +1065,7 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
 
     entities: List[Dict[str, Any]] = []
     for area in scene.areas:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(area.area_id),
             object_type="boarding_area",
             bbox_xyxy=area.bbox_xyxy,
@@ -1124,7 +1076,9 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
                 **dict(area.attributes),
             },
             source_entity_type="transit_boarding_area",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(area.area_id),
@@ -1138,24 +1092,30 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
             }
         )
     for person in scene.persons:
-        object_record = make_object_record(
-            object_id=str(person.person_id),
-            object_type="person",
-            bbox_xyxy=person.bbox_xyxy,
-            semantic_attributes={
-                "area_id": str(person.area_id),
-                "pose_id": str(person.pose_id),
-                **dict(person.attributes),
-            },
-            visual_attributes={
-                "primary_color_rgb": [int(v) for v in person.primary_color_rgb],
-                "accent_color_rgb": [int(v) for v in person.accent_color_rgb],
-                "skin_color_rgb": [int(v) for v in person.skin_color_rgb],
-                "gender_id": str(person.gender_id),
-            },
-            role=str(person.role),
-            source_entity_type="transit_person",
-        ).as_dict()
+        object_record = (
+            dict(person.object_record)
+            if person.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(person.person_id),
+                object_type="person",
+                bbox_xyxy=person.bbox_xyxy,
+                semantic_attributes={
+                    "area_id": str(person.area_id),
+                    "pose_id": str(person.pose_id),
+                    **dict(person.attributes),
+                },
+                visual_attributes={
+                    "primary_color_rgb": [int(v) for v in person.primary_color_rgb],
+                    "accent_color_rgb": [int(v) for v in person.accent_color_rgb],
+                    "skin_color_rgb": [int(v) for v in person.skin_color_rgb],
+                    "gender_id": str(person.gender_id),
+                },
+                role=str(person.role),
+                source_entity_type="transit_person",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(person.person_id),
@@ -1169,19 +1129,25 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
             }
         )
     for item in scene.luggage:
-        object_record = make_object_record(
-            object_id=str(item.luggage_id),
-            object_type="luggage",
-            bbox_xyxy=item.bbox_xyxy,
-            semantic_attributes={
-                "area_id": str(item.area_id),
-                "luggage_type": str(item.luggage_type),
-                **dict(item.attributes),
-            },
-            visual_attributes={"primary_color_rgb": [int(v) for v in item.primary_color_rgb]},
-            role=str(item.role),
-            source_entity_type="transit_luggage",
-        ).as_dict()
+        object_record = (
+            dict(item.object_record)
+            if item.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(item.luggage_id),
+                object_type="luggage",
+                bbox_xyxy=item.bbox_xyxy,
+                semantic_attributes={
+                    "area_id": str(item.area_id),
+                    "luggage_type": str(item.luggage_type),
+                    **dict(item.attributes),
+                },
+                visual_attributes={"primary_color_rgb": [int(v) for v in item.primary_color_rgb]},
+                role=str(item.role),
+                source_entity_type="transit_luggage",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(item.luggage_id),
@@ -1195,7 +1161,7 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
             }
         )
     for point in scene.service_points:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(point.service_point_id),
             object_type="service_point",
             bbox_xyxy=point.bbox_xyxy,
@@ -1205,7 +1171,9 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
                 **dict(point.attributes),
             },
             source_entity_type="transit_service_point",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(point.service_point_id),
@@ -1219,13 +1187,19 @@ def transit_scene_entities(scene: RenderedTransitTerminalScene) -> List[Dict[str
             }
         )
     for item in scene.decor:
-        object_record = make_object_record(
-            object_id=str(item.decor_id),
-            object_type="decor",
-            bbox_xyxy=item.bbox_xyxy,
-            semantic_attributes={"decor_type": str(item.decor_type), **dict(item.attributes)},
-            source_entity_type="transit_decor",
-        ).as_dict()
+        object_record = (
+            dict(item.object_record)
+            if item.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(item.decor_id),
+                object_type="decor",
+                bbox_xyxy=item.bbox_xyxy,
+                semantic_attributes={"decor_type": str(item.decor_type), **dict(item.attributes)},
+                source_entity_type="transit_decor",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(item.decor_id),

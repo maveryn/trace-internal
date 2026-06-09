@@ -1,35 +1,55 @@
 # `task_physics__wave_interference__interference_point_choice`
 
+## Summary
 - Domain: `physics`
 - Scene id: `wave_interference`
-- Task group: `waves`
-- Query id: `interference_point_choice`
-- Answer type: `option_letter`
-- Evidence type: unordered `point_set`
+- Implementation task group: `waves`
+- Implementation source: `trace/tasks/physics/waves/interference_tank.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__wave_interference__interference_point_choice` -> `task_physics__wave_interference__interference_point_choice`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Summary
+## Task Contract
+Selects the candidate point satisfying the requested constructive/destructive interference condition.
 
-Shows a two-source ripple-tank interference diagram with circular crest/trough wavefronts and labeled candidate points `A-E`. The task asks which point has the requested interference condition.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Prompt Contract
+## Query Branches
 
-Prompt bundle: `physics_waves_v0`; scene key: `wave_interference_tank`; task key: `wave_interference_tank_query`; query key: `interference_point_choice`.
+| Query id | Program schema |
+| --- | --- |
+| `interference_point_choice` | `option_letter(select(candidate_points, interference_condition(path_difference_parity, phase_relation)=target_condition)); scene=wave_interference; scope=interference_point_choice` |
 
-Outputs `query_id="interference_point_choice"`. The trace records source phase relation, target condition, candidate point distances from each source in `lambda/2` steps, each point's resolved condition, the correct option letter, evidence entity ids, technical diagram style, font family, whole-tank layout placement, and post-render noise metadata.
+## Program Metadata
+- Program signatures: `physics.wave_interference_condition_choice`
+- Base program contract: `option_letter(select(candidate_points, interference_condition(path_difference_parity, phase_relation)=target_condition)); scene=wave_interference; scope=interference_point_choice`
+- Parameter axes: `phase_relation`, `target_condition`
+- Arguments:
+  - `candidate_points`: semantic_role; allowed `visible_candidate_points`; source `program_schema_concrete`
+  - `path_difference_parity`: semantic_role; allowed `candidate_path_difference_parity`; source `program_schema_concrete`
+  - `phase_relation`: semantic_role; allowed `in_phase`, `opposite_phase`; source `program_schema_concrete`
+  - `target_condition`: semantic_role; allowed `constructive`, `destructive`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `interference_point_choice`
 
-## Evidence Contract
+## Answer Contract
+- Answer schema: `option_letter`
+- Generator `answer_gt.type`: `option_letter`
+- The answer value is the selected visible option letter.
 
-Evidence is one pixel point at the center of the labeled candidate point matching the requested interference condition. Source markers, wavefront rings, grid lines, and legend text are scene context.
+## Annotation Contract
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set | unordered`
+- Annotation is an unordered set of final-image pixel points over the queried event/target centers.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
-Evidence is projected after the final whole-tank layout offset.
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
 
-## Rendering
-
-The renderer uses shared `technical_diagram_style` for the outer sheet, tank/grid palette, frame, and post-render noise. It samples one readout font family per tank and applies whole-tank layout placement before computing evidence.
-
-## Sampling Notes
-
-- `scene_variant`: `clean_tank|grid_tank|lab_sheet`
-- `phase_relation`: `in_phase|opposite_phase`
-- `target_condition`: `constructive|destructive`
-- Candidate labels `A-E` are balanced as the final answer support.
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/wave_interference/task_physics__wave_interference__interference_point_choice/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

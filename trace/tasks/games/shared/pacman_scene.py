@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.drawing import draw_centered_text
+from .text import draw_centered_game_text as draw_centered_text
 from ...shared.text_rendering import load_font
 from .layout import apply_games_layout_jitter_to_bbox
 from .pacman_common import (
@@ -524,6 +524,7 @@ def render_pacman_scene(
         center = centers[coord]
         item_bbox = _circle_bbox(center, item_radius)
         color = theme.item_palette_rgb.get(str(item.kind), next(iter(theme.item_palette_rgb.values())))
+        display_text = str(int(item.score_value)) if item.score_value is not None else str(item.label)
         draw.ellipse(
             item_bbox,
             fill=color,
@@ -532,7 +533,7 @@ def render_pacman_scene(
         )
         draw_centered_text(
             draw,
-            text=str(item.label),
+            text=display_text,
             center=center,
             font=label_font,
             fill=theme.item_label_rgb,
@@ -547,12 +548,15 @@ def render_pacman_scene(
                 "entity_id": entity_id,
                 "type": "bonus_item",
                 "label": str(item.label),
+                "display_text": display_text,
                 "kind": str(item.kind),
                 "coord": [int(coord[0]), int(coord[1])],
                 "bbox_px": list(item_bbox),
                 "point_px": list(entity_points[entity_id]),
             }
         )
+        if item.score_value is not None:
+            entities[-1]["score_value"] = int(item.score_value)
 
     ghost_radius = max(12.0, float(params.ghost_radius_px))
     for ghost in ghosts:

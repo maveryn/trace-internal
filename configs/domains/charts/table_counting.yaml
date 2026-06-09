@@ -14,7 +14,7 @@ generation:
     balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
-    task_charts__table__value_predicate_count:
+    charts_table_value_predicate_count_base:
       row_count_min: 10
       row_count_max: 20
       query_id_weights:
@@ -208,11 +208,11 @@ rendering:
     shadow_offset_px_min: 3
     shadow_offset_px_max: 7
   task_overrides:
-    task_charts__table__value_predicate_count:
+    charts_table_value_predicate_count_base:
       canvas_height: 900
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_spreadsheet: a spreadsheet-style table with one Name column, several numeric columns, full grid lines,
       and a shaded header row
@@ -227,16 +227,16 @@ prompt:
     task_key: value_count_query
     answer_hint: set "answer" to the exact integer count of matching rows
   task_overrides:
-    task_charts__table__value_predicate_count:
-      evidence_hint_threshold_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for every matching value
+    charts_table_value_predicate_count_base:
+      annotation_hint_threshold_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for every matching value
         cell, or [] if none match
-      evidence_hint_in_interval: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for every matching value cell,
+      annotation_hint_in_interval: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for every matching value cell,
         or [] if none match
-      evidence_hint_categorical_value_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for every matching
+      annotation_hint_categorical_value_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for every matching
         category cell, or [] if none match
-      json_example_threshold_count: '{"evidence":[[260,180,372,236],[260,236,372,292]],"answer":2}'
-      json_example_in_interval: '{"evidence":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],"answer":3}'
-      json_example_categorical_value_count: '{"evidence":[[260,180,372,236],[260,292,372,348]],"answer":2}'
+      json_example_threshold_count: '{"annotation":[[260,180,372,236],[260,236,372,292]],"answer":2}'
+      json_example_in_interval: '{"annotation":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],"answer":3}'
+      json_example_categorical_value_count: '{"annotation":[[260,180,372,236],[260,292,372,348]],"answer":2}'
       json_example_answer_only_threshold_count: '{"answer":2}'
       json_example_answer_only_in_interval: '{"answer":3}'
       json_example_answer_only_categorical_value_count: '{"answer":2}'

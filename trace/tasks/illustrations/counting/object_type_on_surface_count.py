@@ -252,7 +252,7 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
         )
         if len(counted_ids) != int(sample.target_count):
             raise RuntimeError("rendered type-on-surface count did not match sample target")
-        evidence_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
+        annotation_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -262,7 +262,7 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_object_type_on_surface",
-                "evidence_hint_object_type_on_surface",
+                "annotation_hint_object_type_on_surface",
                 "json_example_object_type_on_surface",
                 "json_example_answer_only_object_type_on_surface",
             ],
@@ -279,7 +279,7 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
                 object_name=str(sample.object_name),
                 surface_name=str(sample.surface_type),
             ),
-            "evidence_hint": str(prompt_defaults["evidence_hint_object_type_on_surface"]).format(
+            "annotation_hint": str(prompt_defaults["annotation_hint_object_type_on_surface"]).format(
                 object_name=str(sample.object_name),
                 surface_name=str(sample.surface_type),
             ),
@@ -295,8 +295,8 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
             query_key=QUERY_ID,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -373,13 +373,13 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
                 "object_type": str(sample.object_type),
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

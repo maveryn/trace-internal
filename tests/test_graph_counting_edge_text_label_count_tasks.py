@@ -58,9 +58,9 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "edge_text_label_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 3
-    assert len(out.evidence_gt.value) == 3
+    assert len(out.annotation_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_text_label_counting"
     assert execution["query_id"] == "edge_text_label_count"
     assert execution["graph_directionality"] == "directed"
@@ -78,7 +78,7 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
         tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
         for entry in execution["edge_attribute_labels_by_label_pair"]
     }
-    assert int(out.answer_gt.value) == len(matching_edges) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_edges) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in matching_edges]
     assert trace["witness_symbolic"]["target_edge_label"] == "feeds"
     assert all(labels_by_edge[tuple(edge)] == "feeds" for edge in matching_edges)
@@ -92,13 +92,13 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert all(edge["edge_label_bbox_xyxy"] is not None for edge in edge_entities)
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert (
         trace["render_spec"]["style"]["semantic_edge_text_labels_by_label_pair"]
         == execution["edge_attribute_labels_by_label_pair"]
     )
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_edge_text_label_prompt_examples_match_contract() -> None:
@@ -120,16 +120,16 @@ def test_graph_counting_edge_text_label_prompt_examples_match_contract() -> None
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(
-        out.prompt_variants["answer_and_evidence"]
+    answer_and_annotation = _extract_prompt_json_example(
+        out.prompt_variants["answer_and_annotation"]
     )
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [
         [240, 190, 308, 214],
         [412, 238, 480, 262],
     ]
-    assert answer_and_evidence["answer"] == 2
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_counting_edge_text_label_sampling_covers_target_counts() -> None:

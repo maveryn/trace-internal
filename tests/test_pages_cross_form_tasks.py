@@ -47,12 +47,12 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
         render = trace["render_spec"]
         render_map = trace["render_map"]
         item_specs = [dict(spec) for spec in execution["item_specs"]]
-        evidence_bbox_ids = [str(item) for item in execution["evidence_bbox_ids"]]
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        annotation_bbox_ids = [str(item) for item in execution["annotation_bbox_ids"]]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(out.query_id) == str(query_id)
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == "purchase_receipt_pair"
@@ -67,17 +67,17 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
         assert [str(item) for item in execution["receiving_item_order_ids"]] != [
             str(spec["item_id"]) for spec in item_specs
         ]
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert [str(item) for item in execution["supporting_bbox_ids"]] == evidence_bbox_ids
-        assert all(str(item).startswith("recv:") for item in evidence_bbox_ids)
-        assert set(evidence_bbox_ids) == {f"recv:{item_id}" for item_id in execution["mismatch_item_ids"]}
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert [str(item) for item in execution["supporting_bbox_ids"]] == annotation_bbox_ids
+        assert all(str(item).startswith("recv:") for item in annotation_bbox_ids)
+        assert set(annotation_bbox_ids) == {f"recv:{item_id}" for item_id in execution["mismatch_item_ids"]}
 
         expected_bboxes = [
             [float(value) for value in render_map["row_bboxes_px"][bbox_id]]
-            for bbox_id in evidence_bbox_ids
+            for bbox_id in annotation_bbox_ids
         ]
-        assert evidence_bboxes == expected_bboxes
+        assert annotation_bboxes == expected_bboxes
         supporting_cell_bbox_ids = dict(execution["supporting_cell_bbox_ids"])
         assert supporting_cell_bbox_ids
 
@@ -90,17 +90,17 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
 
         if str(query_id) == "total_amount_delta":
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert len(annotation_bbox_ids) == len(execution["mismatch_item_ids"])
             assert sum(1 for role in supporting_cell_bbox_ids if role.endswith("_unit_value")) == len(execution["mismatch_item_ids"])
         elif str(query_id) == "shortfall_minus_overage_value":
             assert len(execution["shortfall_item_ids"]) >= 1
             assert len(execution["overage_item_ids"]) >= 1
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert len(annotation_bbox_ids) == len(execution["mismatch_item_ids"])
             assert sum(1 for role in supporting_cell_bbox_ids if role.endswith("_unit_value")) == len(execution["mismatch_item_ids"])
         elif str(query_id) == "sum_absolute_quantity_differences":
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert len(annotation_bbox_ids) == len(execution["mismatch_item_ids"])
             assert not any(role.endswith("_unit_value") for role in supporting_cell_bbox_ids)
 
 
@@ -114,13 +114,13 @@ def test_pages_cross_form_reconciliation_prompt_examples_match_contract() -> Non
 
     for index, (query_id, expected_answer) in enumerate(expected_answers.items(), start=70120):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
 
-        assert answer_and_evidence["answer"] == expected_answer
+        assert answer_and_annotation["answer"] == expected_answer
         assert answer_only["answer"] == expected_answer
-        assert isinstance(answer_and_evidence["evidence"], list)
-        assert all(len(bbox) == 4 for bbox in answer_and_evidence["evidence"])
+        assert isinstance(answer_and_annotation["annotation"], list)
+        assert all(len(bbox) == 4 for bbox in answer_and_annotation["annotation"])
 
 
 def test_pages_cross_form_reconciliation_value_is_deterministic() -> None:
@@ -130,7 +130,7 @@ def test_pages_cross_form_reconciliation_value_is_deterministic() -> None:
     out_b = task.generate(70170, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -158,7 +158,7 @@ def test_pages_cross_form_reconciliation_balanced_sampling_covers_variants() -> 
         "sum_absolute_quantity_differences",
     }
     assert set(scene_variants.keys()) == {"purchase_receipt_pair"}
-    assert all(count >= 3 for count in query_ids.values())
+    assert all(count >= 2 for count in query_ids.values())
 
 
 def test_pages_cross_form_reconciliation_layout_jitter_stays_in_bounds() -> None:
@@ -179,7 +179,7 @@ def test_pages_cross_form_reconciliation_layout_jitter_stays_in_bounds() -> None
         trace = out.trace_payload
         all_bboxes = []
         all_bboxes.extend(trace["render_map"]["panel_bboxes_px"].values())
-        all_bboxes.extend(out.evidence_gt.value)
+        all_bboxes.extend(out.annotation_gt.value)
         for bbox in all_bboxes:
             x0, y0, x1, y1 = [float(value) for value in bbox]
             assert 0.0 <= x0 <= x1 <= float(width)

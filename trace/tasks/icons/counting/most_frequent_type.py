@@ -286,7 +286,7 @@ class IconsCountingMostFrequentTypeCountTask:
             if str(entity.get("icon_id")) == str(winner_icon_id)
         ]
         if len(winner_bboxes) != int(frequency_spec.winning_frequency):
-            raise ValueError("most-frequent evidence did not match the requested winning frequency")
+            raise ValueError("most-frequent annotation did not match the requested winning frequency")
         max_frequency = max(int(value) for value in scene_payload.type_frequencies.values())
         if int(max_frequency) != int(frequency_spec.winning_frequency):
             raise ValueError("scene did not realize requested most-frequent count")
@@ -312,27 +312,27 @@ class IconsCountingMostFrequentTypeCountTask:
         question_text_by_variant = _PROMPT_DEFAULTS.get("question_text_by_variant")
         if isinstance(question_text_by_variant, Mapping):
             question_text = question_text_by_variant.get(str(QUERY_ID), question_text)
-        evidence_hint = _PROMPT_DEFAULTS.get("evidence_hint")
-        evidence_hint_by_variant = _PROMPT_DEFAULTS.get("evidence_hint_by_variant")
-        if isinstance(evidence_hint_by_variant, Mapping):
-            evidence_hint = evidence_hint_by_variant.get(str(QUERY_ID), evidence_hint)
+        annotation_hint = _PROMPT_DEFAULTS.get("annotation_hint")
+        annotation_hint_by_variant = _PROMPT_DEFAULTS.get("annotation_hint_by_variant")
+        if isinstance(annotation_hint_by_variant, Mapping):
+            annotation_hint = annotation_hint_by_variant.get(str(QUERY_ID), annotation_hint)
         if not isinstance(question_text, str) or not question_text.strip():
             raise ValueError(f"missing prompt question text for {self.task_id}:{QUERY_ID}")
-        if not isinstance(evidence_hint, str) or not evidence_hint.strip():
-            raise ValueError(f"missing prompt evidence hint for {self.task_id}:{QUERY_ID}")
+        if not isinstance(annotation_hint, str) or not annotation_hint.strip():
+            raise ValueError(f"missing prompt annotation hint for {self.task_id}:{QUERY_ID}")
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -341,10 +341,10 @@ class IconsCountingMostFrequentTypeCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order(tuple(winner_bboxes))
+        annotation_bboxes = sort_bboxes_reading_order(tuple(winner_bboxes))
         answer_value = int(frequency_spec.winning_frequency)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_most_frequent_type_counting",
@@ -411,17 +411,17 @@ class IconsCountingMostFrequentTypeCountTask:
                 "scene_icon_ids": list(scene_payload.scene_icon_ids),
                 "scene_rotations_degrees": list(scene_payload.scene_rotations_degrees),
                 "type_frequencies": dict(scene_payload.type_frequencies),
-                "evidence_indices": list(winner_indices),
+                "annotation_indices": list(winner_indices),
             },
             "witness_symbolic": {
                 "winner_icon_id": str(winner_icon_id),
                 "winner_frequency": int(answer_value),
                 "winner_indices": list(winner_indices),
                 "type_frequencies": dict(scene_payload.type_frequencies),
-                "evidence_indices": list(winner_indices),
+                "annotation_indices": list(winner_indices),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
         complexity = build_icons_counting_singleton_type_complexity(
@@ -443,7 +443,7 @@ class IconsCountingMostFrequentTypeCountTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

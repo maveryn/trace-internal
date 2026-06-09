@@ -11,9 +11,19 @@
 1. Registered class: `trace.tasks.charts.size_encoding.comparison_label.ChartsSizeEncodingCategoryTotalExtremumLabelTask`
 2. Prompt lookup domain/group: `charts/size_encoding`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and evidence are produced from the same metadata execution trace.
+4. Answers and annotation are produced from the same metadata execution trace.
 
-## Evidence
-1. Public evidence type: `bbox_set`.
-2. The set contains the visible item bboxes for every item in the answer category.
-3. The answer category legend label is not used as evidence; evidence points to the chart items whose displayed sizes are combined.
+## Annotation Contract
+1. Answer schema: `string_label`.
+2. Annotation schema: `bbox_set`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `category_total_extremum_label` | `selection.extreme_metric_label` | `string_label` | `bbox_set` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

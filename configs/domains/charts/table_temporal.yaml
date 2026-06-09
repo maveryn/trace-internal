@@ -14,7 +14,7 @@ generation:
     balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
-    task_charts__table__temporal_row_interval_difference_value:
+    charts_table_temporal_value_base:
       row_count_min: 10
       row_count_max: 20
       numeric_column_count_min: 8
@@ -204,7 +204,7 @@ rendering:
     shadow_offset_px_min: 3
     shadow_offset_px_max: 7
   task_overrides:
-    task_charts__table__temporal_row_interval_difference_value:
+    charts_table_temporal_value_base:
       canvas_width: 1360
       canvas_height: 872
       row_label_width_fraction: 0.08
@@ -214,7 +214,7 @@ rendering:
       cell_padding_px: 8
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_spreadsheet: a spreadsheet-style table with one Name column, several year columns in chronological
       order, full grid lines, and a shaded header row
@@ -229,13 +229,13 @@ prompt:
     task_key: temporal_value_query
     answer_hint: set "answer" to the exact integer temporal result
   task_overrides:
-    task_charts__table__temporal_row_interval_difference_value:
-      evidence_hint_absolute_difference_between_rows_over_year_interval: set "evidence" to [x0, y0, x1, y1] boxes for the
+    charts_table_temporal_value_base:
+      annotation_hint_absolute_difference_between_rows_over_year_interval: set "annotation" to [x0, y0, x1, y1] boxes for the
         queried year cells from both named rows across the interval
-      evidence_hint_sum_absolute_differences_between_rows_over_year_interval: set "evidence" to [x0, y0, x1, y1] boxes for
+      annotation_hint_sum_absolute_differences_between_rows_over_year_interval: set "annotation" to [x0, y0, x1, y1] boxes for
         the queried year cells from both named rows across the interval
-      json_example_absolute_difference_between_rows_over_year_interval: '{"evidence":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":7}'
-      json_example_sum_absolute_differences_between_rows_over_year_interval: '{"evidence":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":17}'
+      json_example_absolute_difference_between_rows_over_year_interval: '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":7}'
+      json_example_sum_absolute_differences_between_rows_over_year_interval: '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":17}'
       json_example_answer_only_absolute_difference_between_rows_over_year_interval: '{"answer":7}'
       json_example_answer_only_sum_absolute_differences_between_rows_over_year_interval: '{"answer":17}'
 visual:

@@ -25,7 +25,7 @@ generation:
     - 3
     - 4
     - 5
-    same_suit_order_by_suit: true
+    same_suit_order_by_suit: false
     same_suit_as_reference_count_card_count_support:
     - 16
     - 17
@@ -45,7 +45,7 @@ generation:
     - 3
     - 4
     - 5
-    higher_rank_order_by_rank: true
+    higher_rank_order_by_rank: false
     higher_than_reference_count_card_count_support:
     - 16
     - 17
@@ -113,19 +113,59 @@ generation:
     balanced_cards_per_hand_sampling: true
     blackjack_hand_count_support:
     - 4
-    - 5
     - 6
     blackjack_cards_per_hand_support:
     - 3
     - 4
     poker_hand_count_support:
     - 4
-    - 5
+    - 6
+    balanced_poker_winning_category_sampling: true
+    poker_winning_category_weights:
+      one_pair: 1.0
+      two_pair: 1.0
+      three_of_a_kind: 1.0
+      straight: 1.0
+      flush: 1.0
+      full_house: 1.0
+      four_of_a_kind: 1.0
+      straight_flush: 1.0
+    poker_draw_candidate_count_support:
+    - 4
+    - 6
+    balanced_poker_draw_target_category_sampling: true
+    poker_draw_target_category_weights:
+      one_pair: 1.0
+      two_pair: 1.0
+      three_of_a_kind: 1.0
+      straight: 1.0
+      flush: 1.0
+      full_house: 1.0
+      four_of_a_kind: 1.0
+      straight_flush: 1.0
+    balanced_missing_card_query_id_sampling: true
+    missing_card_query_id_weights:
+      missing_flush_card_label: 1.0
+      missing_straight_card_label: 1.0
+      missing_full_house_card_label: 1.0
+      missing_three_of_kind_card_label: 1.0
+    missing_card_candidate_count_support:
+    - 4
     - 6
     trick_player_count_support:
     - 4
-    - 5
     - 6
+    trick_play_candidate_count_support:
+    - 4
+    - 6
+    balanced_trick_played_count_sampling: true
+    trick_play_played_count_support:
+    - 3
+    - 4
+    balanced_trick_play_trump_mode_sampling: true
+    trick_play_trump_mode_weights:
+      no_trump: 1.0
+      with_trump: 1.0
 rendering:
   shared:
     canvas_width: 1180
@@ -166,27 +206,46 @@ prompt:
       playing cards arranged in rows
     object_description_poker_multi_hand: several labeled five-card poker hands arranged
       in rows
+    object_description_poker_draw_completion: a four-card poker hand above labeled
+      candidate draw cards
     object_description_trick_row: several labeled played cards in one trick
+    object_description_trick_candidate_play: already-played trick cards above labeled
+      candidate next-play cards
+    object_description_missing_card_completion: a four-card partial hand above labeled
+      candidate cards
     rank_order_text: Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K
       < A, with Ace high only.
     continuation_rule_text: Read each row from left to right; continue from the top
       row to each lower row in order.
-    evidence_hint_same_suit_as_reference_count: set "evidence" to an array of bounding
+    annotation_hint_same_suit_as_reference_count: set "annotation" to an array of bounding
       boxes [x0, y0, x1, y1] for every non-reference card with the same suit as the
       reference card
-    evidence_hint_higher_than_reference_count: set "evidence" to an array of bounding
+    annotation_hint_higher_than_reference_count: set "annotation" to an array of bounding
       boxes [x0, y0, x1, y1] for every non-reference card ranked higher than the reference
       card
-    evidence_hint_exact_triple_count: set "evidence" to an array of bounding boxes
-      [x0, y0, x1, y1] for every card that belongs to one of the counted exact triples
-    evidence_hint_longest_run_length: set "evidence" to an array of bounding boxes
+    annotation_hint_exact_triple_count: set "annotation" to an object mapping each rank
+      label that appears exactly three times to an array of three card bounding boxes
+      [x0, y0, x1, y1] for that rank
+    annotation_hint_longest_run_length: set "annotation" to an array of bounding boxes
       [x0, y0, x1, y1] for the cards in the unique longest run
-    evidence_hint_blackjack_best_hand_label: set "evidence" to an array of bounding
+    annotation_hint_blackjack_best_hand_label: set "annotation" to an array of bounding
       boxes [x0, y0, x1, y1] for every card in the winning blackjack hand
-    evidence_hint_poker_best_hand_label: set "evidence" to an array of bounding boxes
+    annotation_hint_poker_best_hand_label: set "annotation" to an array of bounding boxes
       [x0, y0, x1, y1] for every card in the winning poker hand
-    evidence_hint_trick_taking_winner_label: set "evidence" to an array with the bounding
+    annotation_hint_poker_draw_card_label: set "annotation" to an array with the bounding
+      box [x0, y0, x1, y1] for the selected candidate card
+    annotation_hint_trick_taking_winner_label: set "annotation" to an array with the bounding
       box [x0, y0, x1, y1] for the single winning played card
+    annotation_hint_trick_winning_play_label: set "annotation" to an array with the bounding
+      box [x0, y0, x1, y1] for the selected candidate card
+    annotation_hint_missing_flush_card_label: set "annotation" to an array with the bounding
+      box [x0, y0, x1, y1] for the selected candidate card
+    annotation_hint_missing_straight_card_label: set "annotation" to an array with the bounding
+      box [x0, y0, x1, y1] for the selected candidate card
+    annotation_hint_missing_full_house_card_label: set "annotation" to an array with the
+      bounding box [x0, y0, x1, y1] for the selected candidate card
+    annotation_hint_missing_three_of_kind_card_label: set "annotation" to an array with
+      the bounding box [x0, y0, x1, y1] for the selected candidate card
     answer_hint_same_suit_as_reference_count: set "answer" to the number of non-reference
       cards that share the reference card's suit
     answer_hint_higher_than_reference_count: set "answer" to the number of non-reference
@@ -199,5 +258,17 @@ prompt:
       hand option letter, for example "C"
     answer_hint_poker_best_hand_label: set "answer" to only the winning poker hand
       option letter, for example "C"
+    answer_hint_poker_draw_card_label: set "answer" to only the selected candidate
+      option letter, for example "C"
     answer_hint_trick_taking_winner_label: set "answer" to only the winning player
       option letter, for example "C"
+    answer_hint_trick_winning_play_label: set "answer" to only the selected candidate
+      option letter, for example "C"
+    answer_hint_missing_flush_card_label: set "answer" to only the selected candidate
+      option letter, for example "C"
+    answer_hint_missing_straight_card_label: set "answer" to only the selected candidate
+      option letter, for example "C"
+    answer_hint_missing_full_house_card_label: set "answer" to only the selected candidate
+      option letter, for example "C"
+    answer_hint_missing_three_of_kind_card_label: set "answer" to only the selected
+      candidate option letter, for example "C"

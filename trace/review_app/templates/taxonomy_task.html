@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% macro feedback_events_readonly(item) -%}
+  {% set events = feedback_thread_events_by_feedback.get(item.id, []) %}
+  {% if events %}
+    <div class="feedback-event-list compact">
+      {% for event in events %}
+        <article class="feedback-event-item {{ event.kind }}">
+          <div class="feedback-event-meta">{{ event.label }}{% if event.author %} · {{ event.author }}{% endif %} · {{ event.created_at }}</div>
+          <p>{{ event.text }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% macro program_arguments_block(payload, title='Arguments / Variant Axes') -%}
+  {% if payload and payload.get('arguments') %}
+    <div class="taxonomy-arguments">
+      <div class="taxonomy-arguments-header">
+        <strong>{{ title }}</strong>
+        <span class="status {% if payload.get('status') == 'needs_review' %}warn{% else %}ok{% endif %}">{{ payload.get('status', 'unknown') }}</span>
+      </div>
+      {% if payload.get('parameter_axes') %}
+        <div class="muted">axes: {{ payload.get('parameter_axes')|join(', ') }}</div>
+      {% endif %}
+      <table class="taxonomy-arguments-table">
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Allowed values</th>
+            <th>Type</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, spec in payload.get('arguments', {}).items() %}
+            <tr>
+              <td><code>{{ name }}</code></td>
+              <td>
+                {% for value in spec.get('allowed_values', []) %}
+                  <span class="badge taxonomy-argument-value">{{ value }}</span>
+                {% endfor %}
+              </td>
+              <td>{{ spec.get('value_type', 'n/a') }}</td>
+              <td>
+                {{ spec.get('source', 'n/a') }}
+                {% if spec.get('notes') %}<div class="muted">{{ spec.get('notes') }}</div>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% elif payload %}
+    <div class="taxonomy-arguments empty">
+      <strong>{{ title }}</strong>
+      <span class="status warn">{{ payload.get('status', 'needs_review') }}</span>
+      <p class="muted">No structured argument entries are available for this row.</p>
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug) }}">taxonomy</a>
+  <a href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '?domain=' ~ taxonomy_task.domain) }}">{{ taxonomy_task.domain }}</a>
+  <span>{{ taxonomy_task.scene_id }}</span>
+  <span>{{ taxonomy_task.current_task_id }}</span>
+</nav>
+
+{% set task_path = '/domains/' ~ taxonomy_task.domain ~ '/scenes/' ~ taxonomy_task.scene_id ~ '/tasks/' ~ taxonomy_task.current_task_id %}
+{% set current_query_count = taxonomy_task.current_query_count or taxonomy_task.queries|length %}
+{% set proposed_task_count = taxonomy_task.proposed_task_count or taxonomy_task.proposed_task_ids|length %}
+
+<section class="task-header taxonomy-task-header">
+  <div>
+    <h2>{{ taxonomy_task.current_task_id }}</h2>
+    <div class="taxonomy-decision-summary decision-{{ taxonomy_task.decision or 'unknown' }}">
+      <div class="taxonomy-decision-summary-label">Task Boundary Decision</div>
+      <div class="taxonomy-decision-summary-main">
+        <span class="taxonomy-decision-summary-context">{{ taxonomy_task.domain }} / {{ taxonomy_task.scene_id }}</span>
+        <span class="taxonomy-decision-summary-count">{{ current_query_count }}</span>
+        <span>query row{% if current_query_count != 1 %}s{% endif %}</span>
+        <span class="taxonomy-decision-summary-arrow">mapped to</span>
+        <span class="taxonomy-decision-summary-count">{{ proposed_task_count }}</span>
+        <span>proposed task unit{% if proposed_task_count != 1 %}s{% endif %}</span>
+      </div>
+    </div>
+    {% if taxonomy_task.indexed %}
+      <a class="button-link" href="{{ app_path(task_path) }}">Open current task review</a>
+    {% else %}
+      <span class="badge">current task not indexed in review artifacts</span>
+    {% endif %}
+    <div class="taxonomy-next-nav">
+      {% if taxonomy_next_pending_path %}
+        <a class="button-link taxonomy-next-link" href="{{ app_path(taxonomy_next_pending_path) }}">Next Pending in {{ taxonomy_task.domain }}</a>
+      {% elif taxonomy_next_task_path %}
+        <span class="status ok">No later pending item in {{ taxonomy_task.domain }}</span>
+        <a class="button-link" href="{{ app_path(taxonomy_next_task_path) }}">Next Task</a>
+      {% else %}
+        <span class="status ok">End of {{ taxonomy_task.domain }} queue</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="taxonomy-decision-card">
+    <div class="taxonomy-decision-status-row">
+      <span class="status {% if taxonomy_task.decision == 'split' %}warn{% else %}ok{% endif %}">{{ taxonomy_task.decision or 'unknown' }}</span>
+      {% if taxonomy_decision_review.approved %}
+        <span class="status ok">approved</span>
+      {% else %}
+        <span class="status warn">not approved</span>
+      {% endif %}
+      {% if taxonomy_open_issue_count %}
+        <span class="status warn">{{ taxonomy_open_issue_count }} open issue{% if taxonomy_open_issue_count != 1 %}s{% endif %}</span>
+      {% endif %}
+    </div>
+    <p>{{ taxonomy_task.rationale }}</p>
+  </div>
+</section>
+
+<section class="table-panel compact taxonomy-approval-panel">
+  <div>
+    <h2>Decision Approval</h2>
+    <p class="muted">
+      Approve this current-task decision when the proposed keep/split/rename mapping is acceptable.
+      If it is not acceptable, file a taxonomy issue below; filing an issue clears approval for this task.
+    </p>
+    {% if taxonomy_decision_review.updated_at %}
+      <p class="muted">
+        Last updated {{ taxonomy_decision_review.updated_at }}{% if taxonomy_decision_review.updated_by %} by {{ taxonomy_decision_review.updated_by }}{% endif %}.
+      </p>
+    {% endif %}
+  </div>
+  <form class="taxonomy-approval-form" action="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/domains/' ~ taxonomy_task.domain ~ '/scenes/' ~ taxonomy_task.scene_id ~ '/tasks/' ~ taxonomy_task.current_task_id ~ '/decision-review') }}" method="post">
+    <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+    <input type="hidden" name="next_pending" value="{{ taxonomy_next_pending_path }}">
+    <label>
+      <span>Reviewer</span>
+      <input type="text" name="updated_by" value="{{ taxonomy_decision_review.updated_by }}" placeholder="optional">
+    </label>
+    <label class="taxonomy-approval-note">
+      <span>Approval note</span>
+      <textarea name="notes" rows="2" placeholder="Optional note">{{ taxonomy_decision_review.notes }}</textarea>
+    </label>
+    <div class="taxonomy-approval-actions">
+      <button type="submit" name="action" value="approve" class="taxonomy-approve-button">Approve Decision</button>
+      <button type="submit" name="action" value="approve_next" class="taxonomy-approve-button" {% if not taxonomy_next_pending_path %}disabled{% endif %}>Approve and Next</button>
+      {% if taxonomy_decision_review.approved %}
+        <button type="submit" name="action" value="clear">Clear Approval</button>
+      {% endif %}
+    </div>
+  </form>
+</section>
+
+<section class="table-panel compact taxonomy-semantic-panel">
+  <h2>Program Taxonomy</h2>
+  <p class="muted">These are the proposed contract-v0 task units for this current task, grouped by normalized program signature.</p>
+  <div class="taxonomy-semantic-unit-list">
+    {% for proposed_id in taxonomy_task.proposed_task_ids %}
+      {% set unit = taxonomy_units_by_id.get(proposed_id) %}
+      {% if unit %}
+        <article class="taxonomy-semantic-unit">
+          <div>
+            <a class="badge" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/tree?domain=' ~ unit.domain) }}">{{ unit.domain }}</a>
+            <span class="taxonomy-path">{{ unit.semantic_root }} / {{ unit.semantic_family }} / {{ unit.semantic_leaf }}</span>
+          </div>
+          <h3>{{ unit.proposed_task_id }}</h3>
+          <p class="muted">{{ unit.query_count }} query row{% if unit.query_count != 1 %}s{% endif %}: {{ unit.query_ids|join(', ') }}</p>
+          {% if unit.program_schema %}
+            <p class="muted">{{ unit.program_schema }}</p>
+          {% endif %}
+          {% if unit.base_program_contract and unit.base_program_contract != unit.program_schema %}
+            <p class="muted">base: {{ unit.base_program_contract }}</p>
+          {% endif %}
+          <div class="taxonomy-tree-meta">
+            <span class="badge">answer: {{ unit.answer_types|join('|') or 'n/a' }}</span>
+            <span class="badge">annotation: {{ unit.annotation_types|join('|') or 'n/a' }}</span>
+            {% if unit.program_signature_id %}<span class="badge">program: {{ unit.program_signature_id }}</span>{% endif %}
+          </div>
+          {% if unit.query_count > 1 %}
+            {{ program_arguments_block(unit.program_argument_axes, 'Aggregate Arguments / Variant Axes') }}
+          {% endif %}
+        </article>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+<section class="table-panel compact taxonomy-map-panel">
+  <h2>Current → Updated Mapping</h2>
+  <table class="taxonomy-table">
+    <thead>
+      <tr>
+        <th>Current Query</th>
+        <th>Proposed Task</th>
+        <th>Program Contract</th>
+        <th>Answer / Annotation</th>
+        <th>Scene / Params</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for query in taxonomy_task.queries %}
+        <tr id="query-{{ query.query_id|urlquote }}">
+          <td>
+            <strong>{{ query.query_id }}</strong>
+            {% if query.current_objective and query.current_objective != query.query_id %}
+              <div class="muted">current objective: {{ query.current_objective }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ query.proposed_task_id }}</strong>
+            <div class="muted">decision source: {{ query.decision_source or 'n/a' }}</div>
+            <div class="muted">taxonomy path: {{ query.semantic_path }}</div>
+            <p>{{ query.rationale }}</p>
+          </td>
+          <td>
+            <span class="badge">{{ query.program_signature_id or 'program n/a' }}</span>
+            {% if query.base_program_contract %}<p class="muted">base: {{ query.base_program_contract }}</p>{% endif %}
+            {% if query.program_schema and query.program_schema != query.base_program_contract %}<p class="muted">{{ query.program_schema }}</p>{% endif %}
+            {{ program_arguments_block(query.program_arguments, 'Query Arguments / Variant Axes') }}
+          </td>
+          <td>
+            <span class="badge">answer: {{ query.answer_schema or query.answer_types or 'n/a' }}</span>
+            <span class="badge">annotation: {{ query.annotation_schema or query.annotation_types or 'n/a' }}</span>
+            {% if query.answer_type_observed %}<div class="muted">observed answer: {{ query.answer_type_observed }}</div>{% endif %}
+            {% if query.annotation_type_observed %}<div class="muted">observed annotation: {{ query.annotation_type_observed }}</div>{% endif %}
+          </td>
+          <td>
+            {% if query.scene_contract %}<div class="muted">{{ query.scene_contract }}</div>{% endif %}
+            {% if query.view_contract %}<div class="muted">view: {{ query.view_contract }}</div>{% endif %}
+            {% if query.parameter_axes %}<div class="muted">params: {{ query.parameter_axes }}</div>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="table-panel compact taxonomy-feedback-panel">
+  <h2>Taxonomy Issues When Not Approved</h2>
+  {% if taxonomy_feedback %}
+    <div class="open-feedback-list">
+      {% for item in taxonomy_feedback %}
+        <article class="open-feedback-item">
+          <p>{{ item.comment }}</p>
+          <div class="feedback-item-actions">
+            <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Thread</a>
+            {% if item.status == 'open' %}
+              <form action="{{ app_path('/issues/' ~ item.id) }}" method="post">
+                <input type="hidden" name="status" value="resolved">
+                <input type="hidden" name="next" value="{{ request.url.path }}">
+                <button type="submit" class="feedback-resolve-button">Resolve</button>
+              </form>
+            {% else %}
+              <span class="status ok">resolved</span>
+            {% endif %}
+          </div>
+          {{ feedback_events_readonly(item) }}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No taxonomy feedback has been filed for this current task.</p>
+  {% endif %}
+  <form class="task-feedback-compose taxonomy-feedback-compose" action="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/domains/' ~ taxonomy_task.domain ~ '/scenes/' ~ taxonomy_task.scene_id ~ '/tasks/' ~ taxonomy_task.current_task_id ~ '/issues') }}" method="post">
+    <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+    <input type="hidden" name="next_pending" value="{{ taxonomy_next_pending_path }}">
+    <input type="hidden" name="category" value="other">
+    <input type="hidden" name="severity" value="issue">
+    <label>
+      <span>Why this decision is not approved</span>
+      <textarea name="comment" rows="2" placeholder="Issue with the proposed task boundary, name, split, merge, or rationale" required></textarea>
+    </label>
+    <div class="taxonomy-feedback-actions">
+      <button type="submit">Save Issue and Mark Not Approved</button>
+      <button type="submit" name="next_mode" value="next_pending" {% if not taxonomy_next_pending_path %}disabled{% endif %}>Save Issue and Next</button>
+    </div>
+  </form>
+</section>
+
+<section class="taxonomy-query-examples">
+  <h2>Query Examples</h2>
+  {% for query in taxonomy_task.queries %}
+    <article class="taxonomy-query-card" id="example-{{ query.query_id|urlquote }}">
+      <div class="taxonomy-query-row-header">
+        <div>
+          <h3>{{ query.query_id }}</h3>
+          <p class="muted">Updated task: {{ query.proposed_task_id }}. Showing up to 5 current review examples for this query.</p>
+        </div>
+        <form class="inline-feedback-form taxonomy-query-feedback" action="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/domains/' ~ taxonomy_task.domain ~ '/scenes/' ~ taxonomy_task.scene_id ~ '/tasks/' ~ taxonomy_task.current_task_id ~ '/issues') }}" method="post">
+          <input type="hidden" name="next" value="{{ request.url.path }}#example-{{ query.query_id|urlquote }}">
+          <input type="hidden" name="query_id" value="{{ query.query_id }}">
+          <input type="hidden" name="category" value="other">
+          <input type="hidden" name="severity" value="issue">
+          <textarea name="comment" rows="2" placeholder="Issue for this query mapping" required></textarea>
+          <button type="submit">Save</button>
+        </form>
+      </div>
+
+      {% if query.sample_uids %}
+        <div class="taxonomy-example-list">
+          {% for sample_uid in query.sample_uids %}
+            {% set sample = taxonomy_samples_by_uid.get(sample_uid) %}
+            {% if sample %}
+              <div class="sample-row taxonomy-example-sample">
+                <a class="sample-row-thumb taxonomy-sample-pair" href="{{ app_path('/samples/' ~ sample.uid) }}">
+                  {% if sample.image_exists %}
+                    <figure>
+                      <figcaption>Image</figcaption>
+                      <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+                    </figure>
+                    <figure>
+                      <figcaption>Annotation</figcaption>
+                      <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="">
+                    </figure>
+                  {% else %}
+                    <span>missing image</span>
+                  {% endif %}
+                </a>
+                <a class="sample-row-main" href="{{ app_path('/samples/' ~ sample.uid) }}" draggable="false">
+                  <div class="sample-row-title">
+                    <strong>{{ sample.query_id }}</strong>
+                    <span>seed {{ sample.instance_seed }}</span>
+                  </div>
+                  <p data-selectable-text>{{ (sample.prompt_answer_and_annotation or sample.prompt)|excerpt(900) }}</p>
+                </a>
+                <a class="sample-row-facts" href="{{ app_path('/samples/' ~ sample.uid) }}" draggable="false">
+                  <div>
+                    <label>answer</label>
+                    <pre data-selectable-text>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json|excerpt(180) }}</pre>
+                  </div>
+                  <div>
+                    <label>annotation</label>
+                    <pre data-selectable-text>{{ {"type": sample.annotation_type, "value": sample.annotation_value}|pretty_json|excerpt(260) }}</pre>
+                  </div>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-panel">
+          <p class="muted">No generated review sample is indexed for this current query.</p>
+        </div>
+      {% endif %}
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

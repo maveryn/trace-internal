@@ -46,6 +46,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -135,6 +137,7 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -158,21 +161,12 @@ class _ResolvedProblem:
 class _RenderedIncircleScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
-
-
-def _selected_probability_map(
-    values: Sequence[int | float], selected: int | float
-) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if _round1(value) == _round1(selected) else 0.0)
-        for value in values
-    }
 
 
 def _triangle_area(side_a: float, side_b: float, side_c: float) -> float:
@@ -277,7 +271,10 @@ def _resolve_problem(
         inradius=float(inradius),
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(support_values))), _round1(answer)
+            tuple(sorted(set(support_values))),
+            _round1(answer),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: _round1(value) == _round1(selected),
         ),
     )
 
@@ -424,6 +421,19 @@ def _render_incircle_scene(
     assert isinstance(a, tuple) and isinstance(b, tuple) and isinstance(c, tuple)
     assert isinstance(d, tuple) and isinstance(e, tuple) and isinstance(f, tuple)
     assert isinstance(o, tuple)
+    point_layout = {key: value for key, value in layout.items() if isinstance(value, tuple)}
+    ctx.scene_transform.resolve(tuple(point_layout.values()))
+    point_layout = ctx.scene_transform.keyed_points(point_layout)
+    for key, value in point_layout.items():
+        layout[key] = value
+    a = point_layout["A"]
+    b = point_layout["B"]
+    c = point_layout["C"]
+    d = point_layout["D"]
+    e = point_layout["E"]
+    f = point_layout["F"]
+    o = point_layout["O"]
+    inradius_px *= float(ctx.scene_transform.transform.scale)
 
     triangle_points = [a, b, c]
     ctx.draw.polygon(triangle_points, fill=ctx.fill_color)
@@ -489,8 +499,8 @@ def _render_incircle_scene(
         label_bboxes["unknown_perimeter"] = _draw_label(
             ctx, "P=?", (o[0], o[1] - 62.0), small=True
         )
-        evidence_roles = ("tangent_a_label", "tangent_b_label", "tangent_c_label")
-        evidence_bboxes = (
+        annotation_roles = ("tangent_a_label", "tangent_b_label", "tangent_c_label")
+        annotation_bboxes = (
             label_bboxes["tangent_a"],
             label_bboxes["tangent_b"],
             label_bboxes["tangent_c"],
@@ -521,13 +531,13 @@ def _render_incircle_scene(
         label_bboxes["unknown_radius"] = _draw_label(
             ctx, "r=?", ((o[0] + d[0]) / 2.0 - 28.0, (o[1] + d[1]) / 2.0), small=True
         )
-        evidence_roles = (
+        annotation_roles = (
             "tangent_a_label",
             "tangent_b_label",
             "tangent_c_label",
             "area_label",
         )
-        evidence_bboxes = (
+        annotation_bboxes = (
             label_bboxes["tangent_a"],
             label_bboxes["tangent_b"],
             label_bboxes["tangent_c"],
@@ -591,8 +601,8 @@ def _render_incircle_scene(
     return _RenderedIncircleScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -617,6 +627,7 @@ class _TangentPolygonIncircleBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "tangent_polygon_incircle"
@@ -698,6 +709,13 @@ class _TangentPolygonIncircleBaseTask:
             line_width=max(2, int(line_width)),
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -713,14 +731,14 @@ class _TangentPolygonIncircleBaseTask:
     def _build_complexity(self, rendered: _RenderedIncircleScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.38
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.18
         )
         precision = 0.64 if self.reasoning_kind == "incircle_perimeter" else 0.74
         ambiguity = 0.44 if self.reasoning_kind == "incircle_perimeter" else 0.52
         output_burden = clamp_unit_interval(
             0.45
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -761,6 +779,7 @@ class _TangentPolygonIncircleBaseTask:
                 )
                 rendered = _render_incircle_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -783,7 +802,7 @@ class _TangentPolygonIncircleBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -797,14 +816,14 @@ class _TangentPolygonIncircleBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -815,16 +834,16 @@ class _TangentPolygonIncircleBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": "triangle_incircle",
@@ -842,7 +861,7 @@ class _TangentPolygonIncircleBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": "triangle_incircle",
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -871,7 +890,7 @@ class _TangentPolygonIncircleBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2 if "radius" in str(problem.query_id) else 1,
                 **dict(rendered.witness),
             },
@@ -881,21 +900,21 @@ class _TangentPolygonIncircleBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

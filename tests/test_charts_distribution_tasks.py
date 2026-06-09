@@ -14,8 +14,10 @@ from trace.tasks.charts.distribution.histogram_count import (
     ChartsDistributionHistogramCumulativeRankLabelTask,
 )
 from trace.tasks.charts.distribution.violin_label import (
-    ChartsDistributionViolinDistributionFeatureLabelTask,
     ChartsDistributionViolinLabelTask,
+    ChartsDistributionViolinModeExtremumLabelTask,
+    ChartsDistributionViolinModalityLabelTask,
+    ChartsDistributionViolinSupportWidthExtremumLabelTask,
 )
 
 
@@ -71,18 +73,21 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             )
             for entity in trace["scene_ir"]["entities"]
         }
-        evidence_bboxes = [list(bbox) for bbox in out.evidence_gt.value]
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
+        annotation_bboxes = [list(bbox) for bbox in out.annotation_gt.value]
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
         axis_values = [int(label) for label in labels]
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert str(execution["scene_variant"]) == "histogram"
         assert str(render["scene_variant"]) == "histogram"
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
-        assert len(evidence_bboxes) == len(evidence_labels)
+        assert render["information_scene_style"]["kind"] == "information_scene_style"
+        assert render["information_scene_style"]["style_request"]["style_family"] == "information_scene"
+        assert render["information_scene_style"]["style_request"]["domain"] == "charts"
+        assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
+        assert len(annotation_bboxes) == len(annotation_labels)
         assert len(trace["scene_ir"]["entities"]) == int(execution["bin_count"])
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
@@ -110,17 +115,17 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             outside_interval_labels = [str(label) for label in labels if str(label) not in set(inside_interval_labels)]
 
         if str(query_id) == "interval_mass" and str(execution["interval_relation"]) == "inside":
-            assert 5 <= len(evidence_labels) <= int(execution["bin_count"])
-            assert evidence_labels == inside_interval_labels
-            assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in evidence_labels)
+            assert 5 <= len(annotation_labels) <= int(execution["bin_count"])
+            assert annotation_labels == inside_interval_labels
+            assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in annotation_labels)
         elif str(query_id) == "bin_count_between_values":
-            assert 2 <= len(evidence_labels) <= 15
-            assert evidence_labels == inside_interval_labels
-            assert int(out.answer_gt.value) == len(evidence_labels)
+            assert 2 <= len(annotation_labels) <= 15
+            assert annotation_labels == inside_interval_labels
+            assert int(out.answer_gt.value) == len(annotation_labels)
         elif str(query_id) == "rank_item_bin_label":
             answer_index = int(execution["answer_bin_index"])
             target_rank = int(execution["target_rank"])
-            assert evidence_labels == [labels[answer_index]]
+            assert annotation_labels == [labels[answer_index]]
             assert str(execution["answer_bin_label"]) == str(labels[answer_index])
             assert int(out.answer_gt.value) == int(labels[answer_index])
             assert int(execution["cumulative_count_before_answer_bin"]) < target_rank
@@ -128,13 +133,13 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         else:
             assert str(query_id) == "interval_mass"
             assert str(execution["interval_relation"]) == "outside"
-            assert 2 <= len(evidence_labels) <= int(execution["bin_count"])
-            assert evidence_labels == outside_interval_labels
-            assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in evidence_labels)
-            assert int(execution["outside_bin_count"]) == len(evidence_labels)
+            assert 2 <= len(annotation_labels) <= int(execution["bin_count"])
+            assert annotation_labels == outside_interval_labels
+            assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in annotation_labels)
+            assert int(execution["outside_bin_count"]) == len(annotation_labels)
             assert int(execution["outside_left_bin_count"]) >= 1
             assert int(execution["outside_right_bin_count"]) >= 1
-            assert int(execution["outside_left_bin_count"]) + int(execution["outside_right_bin_count"]) == len(evidence_labels)
+            assert int(execution["outside_left_bin_count"]) + int(execution["outside_right_bin_count"]) == len(annotation_labels)
             assert int(execution["excluded_interval_bin_span"]) == len(inside_interval_labels)
             assert int(execution["excluded_interval_bin_span"]) >= 2
 
@@ -159,15 +164,15 @@ def test_histogram_bins_are_contiguous_numeric_intervals() -> None:
 def test_chart_distribution_histogram_prompt_examples_match_selected_variant() -> None:
     task = ChartsDistributionHistogramCountTask()
     expected = {
-        "interval_mass": {"evidence": [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], "answer": 15},
-        "bin_count_between_values": {"evidence": [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], "answer": 3},
-        "rank_item_bin_label": {"evidence": [[264, 240, 308, 520]], "answer": 18},
+        "interval_mass": {"annotation": [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], "answer": 15},
+        "bin_count_between_values": {"annotation": [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], "answer": 3},
+        "rank_item_bin_label": {"annotation": [[264, 240, 308, 520]], "answer": 18},
     }
     for index, query_id in enumerate(expected, start=11040):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -178,7 +183,7 @@ def test_chart_distribution_histogram_task_is_deterministic() -> None:
     out_b = task.generate(11060, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -211,7 +216,7 @@ def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> 
     assert str(execution["query_id"]) == "rank_item_bin_label"
     assert str(query_spec["params"]["query_id"]) == "rank_item_bin_label"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
 
 
 def test_chart_distribution_histogram_complexity_is_normalized_and_monotonic() -> None:
@@ -254,17 +259,17 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         assert str(execution["scene_variant"]) == "boxplot"
         assert str(render["scene_variant"]) == "boxplot"
         if str(query_id) == "median_reference_label":
-            assert out.evidence_gt.type == "keyed_point_map"
-            assert trace["projected_evidence"]["type"] == "keyed_point_map"
-            assert set(out.evidence_gt.value) == {"reference_boxplot", "answer_boxplot"}
-            assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+            assert out.annotation_gt.type == "keyed_point_map"
+            assert trace["projected_annotation"]["type"] == "keyed_point_map"
+            assert set(out.annotation_gt.value) == {"reference_boxplot", "answer_boxplot"}
+            assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
         else:
-            assert out.evidence_gt.type == "point_set"
-            evidence_points = [list(point) for point in out.evidence_gt.value]
-            assert trace["projected_evidence"]["type"] == "point_set"
-            assert trace["projected_evidence"]["point_set"] == evidence_points
-            assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-            assert len(trace["projected_evidence"]["bbox_set"]) == 1
+            assert out.annotation_gt.type == "point_set"
+            annotation_points = [list(point) for point in out.annotation_gt.value]
+            assert trace["projected_annotation"]["type"] == "point_set"
+            assert trace["projected_annotation"]["point_set"] == annotation_points
+            assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+            assert len(trace["projected_annotation"]["bbox_set"]) == 1
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         all_box_values = [
             int(value)
@@ -290,7 +295,7 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
                 key=lambda label: int(quartiles_by_label[label]["median"]) - int(reference_q3),
             )
             assert str(out.answer_gt.value) == str(target_label)
-            assert int(execution["evidence_value"]) == int(quartiles_by_label[target_label]["median"]) - int(reference_q3)
+            assert int(execution["annotation_value"]) == int(quartiles_by_label[target_label]["median"]) - int(reference_q3)
         elif str(query_id) == "median_reference_label" and str(execution["median_reference_direction"]) == "below_reference_q1":
             reference_label = str(execution["reference_label"])
             reference_q1 = int(execution["reference_q1"])
@@ -299,30 +304,30 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
                 key=lambda label: int(reference_q1) - int(quartiles_by_label[label]["median"]),
             )
             assert str(out.answer_gt.value) == str(target_label)
-            assert int(execution["evidence_value"]) == int(reference_q1) - int(quartiles_by_label[target_label]["median"])
+            assert int(execution["annotation_value"]) == int(reference_q1) - int(quartiles_by_label[target_label]["median"])
         elif str(query_id) == "iqr_extremum_label" and str(execution["extremum_direction"]) == "largest":
             target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["iqr"]))
             assert str(out.answer_gt.value) == str(target_label)
-            assert int(execution["evidence_value"]) == int(quartiles_by_label[target_label]["iqr"])
+            assert int(execution["annotation_value"]) == int(quartiles_by_label[target_label]["iqr"])
         else:
             assert str(query_id) == "iqr_extremum_label"
             assert str(execution["extremum_direction"]) == "smallest"
             target_label = min(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["iqr"]))
             assert str(out.answer_gt.value) == str(target_label)
-            assert int(execution["evidence_value"]) == int(quartiles_by_label[target_label]["iqr"])
+            assert int(execution["annotation_value"]) == int(quartiles_by_label[target_label]["iqr"])
 
 
 def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> None:
     task = ChartsDistributionBoxplotLabelTask()
     expected = {
-        "median_reference_label": {"evidence": {"reference_boxplot": [240, 300], "answer_boxplot": [430, 250]}, "answer": "Maple"},
-        "iqr_extremum_label": {"evidence": [[430, 250]], "answer": "Ivory"},
+        "median_reference_label": {"annotation": {"reference_boxplot": [240, 300], "answer_boxplot": [430, 250]}, "answer": "Maple"},
+        "iqr_extremum_label": {"annotation": [[430, 250]], "answer": "Ivory"},
     }
     for index, query_id in enumerate(expected, start=11140):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -333,7 +338,7 @@ def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     out_b = task.generate(11160, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -454,20 +459,20 @@ def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> 
     assert float(high_scan.complexity.complexity_score) > float(low_scan.complexity.complexity_score)
 
 
-def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_evidence() -> None:
+def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_annotation() -> None:
     median_rank = ChartsDistributionBoxplotMedianRankDifferenceValueTask().generate(
         11180,
         params={"query_id": "median_top_second_difference_value"},
         max_attempts=10,
     )
     assert median_rank.answer_gt.type == "integer"
-    assert median_rank.evidence_gt.type == "keyed_point_map"
-    assert set(median_rank.evidence_gt.value) == {
+    assert median_rank.annotation_gt.type == "keyed_point_map"
+    assert set(median_rank.annotation_gt.value) == {
         "highest_median_boxplot",
         "second_highest_median_boxplot",
     }
-    assert median_rank.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
-    assert median_rank.trace_payload["projected_evidence"]["keyed_point_map"] == median_rank.evidence_gt.value
+    assert median_rank.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+    assert median_rank.trace_payload["projected_annotation"]["keyed_point_map"] == median_rank.annotation_gt.value
 
     paired_shift = ChartsDistributionBoxplotPairedMedianShiftLabelTask().generate(
         11181,
@@ -475,10 +480,10 @@ def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_evidence()
         max_attempts=10,
     )
     assert paired_shift.answer_gt.type == "string"
-    assert paired_shift.evidence_gt.type == "keyed_point_map"
-    assert set(paired_shift.evidence_gt.value) == {"before_boxplot", "after_boxplot"}
-    assert paired_shift.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
-    assert paired_shift.trace_payload["projected_evidence"]["keyed_point_map"] == paired_shift.evidence_gt.value
+    assert paired_shift.annotation_gt.type == "keyed_point_map"
+    assert set(paired_shift.annotation_gt.value) == {"before_boxplot", "after_boxplot"}
+    assert paired_shift.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+    assert paired_shift.trace_payload["projected_annotation"]["keyed_point_map"] == paired_shift.annotation_gt.value
 
 
 def test_chart_distribution_violin_variants_match_contract() -> None:
@@ -495,7 +500,7 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "string"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert str(execution["scene_variant"]) == "violin"
         assert str(render["scene_variant"]) == "violin"
         assert str(render["violin_style"]["mode_line_style"]) in {"full", "short", "dot", "none"}
@@ -503,9 +508,9 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
         assert str(render["violin_style"]["palette_mode"]) in {"single", "per_violin_muted"}
         assert str(render["font_assets"]["chart_font_family"]).strip()
         assert str(trace["scene_ir"]["scene_kind"]) == "chart_violin_distribution"
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == [list(bbox) for bbox in out.evidence_gt.value]
-        assert len(trace["projected_evidence"]["bbox_set"]) == 1
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == [list(bbox) for bbox in out.annotation_gt.value]
+        assert len(trace["projected_annotation"]["bbox_set"]) == 1
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"])
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(execution["labels"])
@@ -516,7 +521,7 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
             expected = min(support_by_label, key=lambda label: int(support_by_label[label]["mode_values"][0]))
         elif str(query_id) == "bimodal_label":
             expected = next(label for label, values in support_by_label.items() if bool(values["bimodal"]))
-            assert len(execution["evidence_values"]) == 2
+            assert len(execution["annotation_values"]) == 2
         elif str(query_id) == "widest_support":
             expected = max(support_by_label, key=lambda label: int(support_by_label[label]["support_span"]))
         else:
@@ -525,13 +530,18 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
 
 
 def test_chart_distribution_violin_public_task_contract() -> None:
-    task = ChartsDistributionViolinDistributionFeatureLabelTask()
-    out = task.generate(11280, params={}, max_attempts=10)
-    execution = out.trace_payload["execution_trace"]
-    query_spec = out.trace_payload["query_spec"]
+    cases = (
+        (ChartsDistributionViolinModeExtremumLabelTask, {"highest_mode", "lowest_mode"}),
+        (ChartsDistributionViolinSupportWidthExtremumLabelTask, {"widest_support", "narrowest_support"}),
+        (ChartsDistributionViolinModalityLabelTask, {"bimodal_label"}),
+    )
+    for task_cls, allowed_query_ids in cases:
+        out = task_cls().generate(11280 + len(task_cls.task_id), params={}, max_attempts=10)
+        execution = out.trace_payload["execution_trace"]
+        query_spec = out.trace_payload["query_spec"]
 
-    assert str(out.query_id) in {"highest_mode", "lowest_mode", "widest_support", "narrowest_support", "bimodal_label"}
-    assert str(execution["query_id"]) == str(out.query_id)
-    assert str(query_spec["params"]["query_id"]) == str(out.query_id)
-    assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_set"
+        assert str(out.query_id) in allowed_query_ids
+        assert str(execution["query_id"]) == str(out.query_id)
+        assert str(query_spec["params"]["query_id"]) == str(out.query_id)
+        assert out.answer_gt.type == "string"
+        assert out.annotation_gt.type == "bbox_set"

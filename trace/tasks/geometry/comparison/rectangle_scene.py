@@ -53,7 +53,7 @@ class RectangleComparisonScenePayload:
     objects: Tuple[RectangleComparisonObject, ...]
     winner_metrics: ComparisonGapMetrics
     winner_label: str
-    evidence_points_by_label: Dict[str, Point]
+    annotation_points_by_label: Dict[str, Point]
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
@@ -390,7 +390,7 @@ def sample_rectangle_comparison_scene(
             objects=tuple(objects),
             winner_metrics=metrics,
             winner_label=str(winner.label),
-            evidence_points_by_label={
+            annotation_points_by_label={
                 "vertex_1": winner.vertices[0],
                 "vertex_2": winner.vertices[1],
                 "vertex_3": winner.vertices[2],

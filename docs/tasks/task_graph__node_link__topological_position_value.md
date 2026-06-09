@@ -11,7 +11,7 @@
 2. `query_id`: `topological_position`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
-4. `evidence_gt.type`: `point_sequence`
+4. `annotation_gt.type`: `point_sequence`
 5. Scene contract:
    - one single-panel labeled directed acyclic graph per image,
    - unique topological order guaranteed by construction and verified on the finalized successor adjacency,
@@ -21,7 +21,7 @@
 6. Query contract:
    - the prompt asks `What is the position of node X in the unique topological order, counting from 1?`,
    - answer is the queried node's 1-based position in the unique topological order,
-   - evidence is the full ordered node-center pixel path from first to last in that unique order.
+   - annotation is the full ordered node-center pixel path from first to last in that unique order.
 7. Topology policy:
    - `target_position` is sampled from `1..7`,
    - node count is chosen from feasible support that can realize the requested position,
@@ -43,15 +43,15 @@
    - scene: `object_description`
    - task: `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-5. Modes: `answer_only`, `answer_and_evidence`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":3}`
-7. Answer+evidence JSON shape: `{"evidence":[[140,220],[260,180],[380,240],[500,300],[620,260]],"answer":3}`
-8. Prompt-facing evidence uses an ordered pixel point path because node order is semantically required, but consecutive points are not required to form graph edges.
+7. Answer+annotation JSON shape: `{"annotation":[[140,220],[260,180],[380,240],[500,300],[620,260]],"answer":3}`
+8. Prompt-facing annotation uses an ordered pixel point path because node order is semantically required, but consecutive points are not required to form graph edges.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_sequence` of all node-center pixel points in the unique topological order, from first to last.
-2. `answer_gt.value` equals the 1-based index of the queried node inside that ordered evidence sequence.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the `point_sequence` of all node-center pixel points in the unique topological order, from first to last.
+2. `answer_gt.value` equals the 1-based index of the queried node inside that ordered annotation sequence.
 3. `scene_ir.entities` stores one node entity per rendered node with:
    - visible label,
    - total/in/out degree,
@@ -65,7 +65,7 @@
    - unique topological order labels,
    - directed successor/predecessor adjacency,
    - target position.
-5. `projected_evidence` includes:
+5. `projected_annotation` includes:
    - `point_sequence`
    - `pixel_point_sequence`
    - `pixel_bbox_set`
@@ -84,12 +84,12 @@
 1. Background and post-image noise use the merged graph-domain visual defaults from `configs/domains/graph/base.yaml`.
 2. Current graph scenes use a single rounded light panel on a light solid background.
 3. Directed edges render arrowheads, but semantics still come from adjacency rather than layout.
-4. Ordered evidence overlays may connect node centers in witness order for review, but that overlay path is only a visualization of the sequence, not a claim that consecutive labels are adjacent.
+4. Ordered annotation overlays may connect node centers in witness order for review, but that overlay path is only a visualization of the sequence, not a claim that consecutive labels are adjacent.
 5. When `label_variant=short_names`, prompt references to the queried node are quoted, for example node `"Abby"`.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized successor adjacency.
+2. Answers and annotation come from the same finalized successor adjacency.
 3. Unique-answer policy: generation targets one explicit node position inside a unique topological order and rejects any finalized graph with either multiple valid topological orders or a mismatched queried position.
 4. Reject/resample conditions:
    - no feasible node-count support for the requested position,

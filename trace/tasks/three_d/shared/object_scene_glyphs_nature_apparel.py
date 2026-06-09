@@ -401,11 +401,16 @@ def _draw_cup_object(
     for p1, p2 in ((top_body, top_handle), (bottom_body, bottom_handle)):
         _draw_line(draw, p1, p2, fill=(35, 42, 50), width=7)
         _draw_line(draw, p1, p2, fill=_tint(fill, 0.10), width=4)
+    attachment_boxes = []
+    for cx, cy in (top_body, bottom_body):
+        pad = [cx - body_w * 0.055, cy - body_h * 0.055, cx + body_w * 0.075, cy + body_h * 0.055]
+        draw.ellipse(pad, fill=_tint(fill, 0.10), outline=(35, 42, 50), width=1)
+        attachment_boxes.append(pad)
     connector_boxes = [
         [min(top_body[0], top_handle[0]), min(top_body[1], top_handle[1]) - 4.0, max(top_body[0], top_handle[0]), max(top_body[1], top_handle[1]) + 4.0],
         [min(bottom_body[0], bottom_handle[0]), min(bottom_body[1], bottom_handle[1]) - 4.0, max(bottom_body[0], bottom_handle[0]), max(bottom_body[1], bottom_handle[1]) + 4.0],
     ]
-    return _bbox_union(body_bbox, side_handle, *connector_boxes)
+    return _bbox_union(body_bbox, side_handle, *connector_boxes, *attachment_boxes)
 
 
 def _draw_bottle_object(

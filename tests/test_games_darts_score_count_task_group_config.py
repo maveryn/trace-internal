@@ -40,7 +40,10 @@ def test_games_darts_score_count_defaults_expose_scene_query_and_score_axes() ->
     assert int(rendering["marker_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_darts_v0"
     assert "dartboard" in str(prompt["object_description_single_board"])
+    assert "visible dart markers" in str(prompt["object_description_single_board"])
     assert "double ring" in str(prompt["scoring_rule_text"])
     assert "outer bull scores 25" in str(prompt["scoring_rule_text"])
-    assert "pixel points" in str(prompt["evidence_hint_total_score"])
-    assert "pixel points" in str(prompt["evidence_hint_ring_count"])
+    assert "double ring is the outer scoring band" in str(prompt["ring_rule_text"])
+    assert "triple ring is the inner scoring band" in str(prompt["ring_rule_text"])
+    assert "one pixel point" in str(prompt["annotation_hint_total_score"])
+    assert "pixel points" in str(prompt["annotation_hint_ring_count"])

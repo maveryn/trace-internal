@@ -29,8 +29,8 @@ SCAFFOLD_TERMS = (
 _FORMAT_SECTION_RE = re.compile(
     r"\n(?:"
     r"Answer format:|Required answer format:|Final answer format:|Use this answer format:|"
-    r"Evidence format:|Required evidence format:|Use this evidence format:|"
-    r"Format for the \"answer\" field:|Format for the \"evidence\" field:|"
+    r"Annotation format:|Required annotation format:|Use this annotation format:|"
+    r"Format for the \"answer\" field:|Format for the \"annotation\" field:|"
     r"Example JSON:"
     r")"
 )

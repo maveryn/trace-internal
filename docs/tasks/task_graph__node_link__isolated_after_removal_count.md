@@ -12,7 +12,7 @@
 2. `query_id`: `isolated_node_count_after_node_removal`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. `answer_gt.type`: `integer`
-5. `evidence_gt.type`: `point_set`
+5. `annotation_gt.type`: `point_set`
 6. Scene contract:
    - one single-panel labeled node-link graph,
    - simple unweighted graph only,
@@ -31,20 +31,20 @@
 1. Bundle: `graph_counting_v0`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `isolated_node_count_after_node_removal_query`
-4. Modes: `answer_only`, `answer_and_evidence`
+4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+evidence JSON shape: `{"evidence":[[180,220],[310,180]],"answer":2}`
+6. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180]],"answer":2}`
 7. Prompt references to `short_names` labels are quoted, for example node `"Abby"`.
-8. Prompt-facing evidence uses pixel-space node-center points for every remaining node that would be isolated.
+8. Prompt-facing annotation uses pixel-space node-center points for every remaining node that would be isolated.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the unordered `point_set` of pixel centers for all remaining nodes that would have total degree zero after the queried node is removed.
-2. `answer_gt.value == len(evidence_gt.value)` by construction, including zero-answer cases where evidence is an empty array.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the unordered `point_set` of pixel centers for all remaining nodes that would have total degree zero after the queried node is removed.
+2. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-answer cases where annotation is an empty array.
 3. `execution_trace.removed_node_label` records the hypothetically removed node.
 4. `execution_trace.matching_labels` records the symbolic witness labels in deterministic label order.
 5. `execution_trace.pre_removal_*_by_label` and `execution_trace.post_removal_*_by_label` record adjacency, successor, predecessor, degree, in-degree, and out-degree metadata.
 6. `scene_ir.entities` stores node labels, pre-removal degrees, post-removal degrees, center points, bboxes, `is_removed_query_node`, and `is_post_removal_isolated`.
-7. `projected_evidence` includes `point_set`, `pixel_point_set`, and `pixel_bbox_set`.
+7. `projected_annotation` includes `point_set`, `pixel_point_set`, and `pixel_bbox_set`.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
@@ -53,7 +53,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same rendered graph and the same post-removal execution trace.
+2. Answers and annotation come from the same rendered graph and the same post-removal execution trace.
 3. Generation constructs exactly the requested number of post-removal isolated nodes.
 4. No semantic auto-relaxation: failures do not weaken the graph, directionality, or count contract.
 

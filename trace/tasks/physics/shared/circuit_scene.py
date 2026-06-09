@@ -29,12 +29,12 @@ class CircuitComponentSpec:
 
 @dataclass(frozen=True)
 class RenderedCircuitScene:
-    """Rendered equivalent-circuit scene plus prompt-facing evidence metadata."""
+    """Rendered equivalent-circuit scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
     component_specs: List[CircuitComponentSpec]
-    evidence_bbox_map: Dict[str, List[float]]
-    evidence_entity_id_map: Dict[str, str]
+    annotation_bbox_map: Dict[str, List[float]]
+    annotation_entity_id_map: Dict[str, str]
     render_map: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
 
@@ -500,8 +500,8 @@ def render_component_network_scene(
     else:
         add_series_chain(left_anchor_x, right_anchor_x, series_values)
 
-    evidence_bbox_map = {str(spec.label): list(spec.bbox_px) for spec in component_specs}
-    evidence_entity_id_map = {str(spec.label): str(spec.component_id) for spec in component_specs}
+    annotation_bbox_map = {str(spec.label): list(spec.bbox_px) for spec in component_specs}
+    annotation_entity_id_map = {str(spec.label): str(spec.component_id) for spec in component_specs}
     render_map = {
         "accent_color_name": str(accent_color_name),
         "component_kind": str(kind),
@@ -509,7 +509,7 @@ def render_component_network_scene(
         "component_bboxes_px": {str(spec.label): list(spec.bbox_px) for spec in component_specs},
         "component_symbol_bboxes_px": {str(spec.label): list(spec.symbol_bbox_px) for spec in component_specs},
         "component_label_bboxes_px": {str(spec.label): list(spec.label_bbox_px) for spec in component_specs},
-        "component_entity_ids": dict(evidence_entity_id_map),
+        "component_entity_ids": dict(annotation_entity_id_map),
         "component_values": {str(spec.label): int(spec.value) for spec in component_specs},
         "component_units": {str(spec.label): str(spec.unit) for spec in component_specs},
         "wire_segments_px": list(wire_segments),
@@ -521,18 +521,18 @@ def render_component_network_scene(
             "A": list(left_label_bbox),
             "B": list(right_label_bbox),
         },
-        "evidence_bbox_map_px": dict(evidence_bbox_map),
-        "evidence_entity_id_map": dict(evidence_entity_id_map),
+        "annotation_bbox_map_px": dict(annotation_bbox_map),
+        "annotation_entity_id_map": dict(annotation_entity_id_map),
     }
     if kind == "resistor":
-        render_map["resistor_bboxes_px"] = dict(evidence_bbox_map)
+        render_map["resistor_bboxes_px"] = dict(annotation_bbox_map)
     if diagram_style is not None:
         render_map["technical_diagram_frame_mode"] = str(getattr(diagram_style, "frame_mode", "none"))
     return RenderedCircuitScene(
         image=canvas,
         component_specs=list(component_specs),
-        evidence_bbox_map=dict(evidence_bbox_map),
-        evidence_entity_id_map=dict(evidence_entity_id_map),
+        annotation_bbox_map=dict(annotation_bbox_map),
+        annotation_entity_id_map=dict(annotation_entity_id_map),
         render_map=render_map,
         scene_entities=list(scene_entities),
     )

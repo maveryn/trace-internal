@@ -2,22 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `solitaire`
-3. Public task id: `task_games__solitaire__foundation_ready_count`
-4. Query id: `foundation_ready_count`
-5. Objective: Count exposed tableau cards that can move to a foundation pile now.
+2. Task group: `solitaire`
+3. Scene id: `solitaire`
+4. Public task id: `task_games__solitaire__foundation_ready_count`
+5. Supported `query_id` values: `foundation_ready_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(cards, can_move_to_foundation(card)=True)); scene=solitaire; scope=foundation_ready_count`
 
-## Answer and Evidence
-1. Answer type: `integer`.
-2. Evidence type: `bbox_set` over counted exposed cards and the foundation piles used for the decision.
-3. `foundation_ready_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared `solitaire` renderer with Klondike-like and FreeCell-like layouts.
-2. Prompt bundle: `games_solitaire_v0`
-3. The scene records foundation tops and exposed-card identities in trace metadata.
-4. Rendering combines shared games panel backgrounds, layout jitter, sampled fonts, post-image noise, and five scene-local card/tableau styles.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Scene layout, target-answer support, and panel style are explicit params or recorded sampling axes.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

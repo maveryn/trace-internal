@@ -1,4 +1,4 @@
-"""Analytical 2D function-property label task with six mini coordinate panels."""
+"""Analytical 2D function-property label task with sampled mini coordinate panels."""
 
 from __future__ import annotations
 
@@ -47,8 +47,9 @@ from ..shared.diagram_style import (
     geometry_coordinate_panel_style_from_diagram_style,
     prepare_geometry_diagram_style_and_background,
 )
-from ..shared.fixed_query_task import MultiFixedGeometryQueryTaskMixin
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin, MultiFixedGeometryQueryTaskMixin
 from ..shared.noise_defaults import load_geometry_noise_defaults
+from ..shared.option_count import panel_grid_shape_for_option_count, resolve_geometry_option_count
 
 Point = Tuple[float, float]
 BBox = Tuple[int, int, int, int]
@@ -66,15 +67,12 @@ SIGN_INTERVAL_VARIANTS: Tuple[str, ...] = (
     SIGN_INTERVAL_POSITIVE_LABEL,
     SIGN_INTERVAL_NEGATIVE_LABEL,
 )
-INTERVAL_PROPERTY_VARIANTS: Tuple[str, ...] = MONOTONIC_INTERVAL_VARIANTS + SIGN_INTERVAL_VARIANTS
+INTERVAL_PROPERTY_VARIANTS: Tuple[str, ...] = SIGN_INTERVAL_VARIANTS
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "function_status_label",
     "one_to_one_status_label",
-    "domain_match_label",
     "range_match_label",
-    "y_axis_symmetry_label",
     "x_axis_symmetry_label",
-    "origin_symmetry_label",
     *INTERVAL_PROPERTY_VARIANTS,
 )
 DEFAULT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
@@ -87,10 +85,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 _POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="analytical")
 _GRID_MIN = -5
 _GRID_MAX = 5
-_PANEL_COLUMNS = 3
-_PANEL_ROWS = 2
-_PANEL_COUNT = 6
-_PANEL_CONFIG = CoordinatePanelConfig(grid_min=_GRID_MIN, grid_max=_GRID_MAX, columns=_PANEL_COLUMNS, rows=_PANEL_ROWS)
+_MAX_PANEL_COUNT = 6
 Color = Tuple[int, int, int]
 _PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
     CoordinatePanelStyle(),
@@ -182,6 +177,7 @@ class _ResolvedQuery:
     winner_label: str
     winner_label_probabilities: Dict[str, float]
     label_pool: Tuple[str, ...]
+    panel_count_probabilities: Dict[str, float]
     target_interval: Tuple[float, float] | None = None
 
 
@@ -199,6 +195,9 @@ class _RenderedScene:
     relations_by_label: Dict[str, _RelationSpec]
     panel_bboxes: Dict[str, List[int]]
     plot_bboxes: Dict[str, List[int]]
+    panel_columns: int
+    panel_rows: int
+    panel_count_probabilities: Dict[str, float]
     target_domain: str
     target_range: str
     target_interval: str
@@ -270,7 +269,7 @@ def _resolve_line_colors(params: Mapping[str, Any], *, instance_seed: int) -> Tu
         if not isinstance(explicit, Sequence) or isinstance(explicit, (str, bytes)):
             raise ValueError("line_colors must be a sequence of RGB triples")
         colors = tuple(_color_triplet(color) for color in explicit)
-        if len(colors) < _PANEL_COUNT:
+        if len(colors) < _MAX_PANEL_COUNT:
             raise ValueError("line_colors must contain at least one color per panel")
         return colors, {
             "source": "params",
@@ -285,7 +284,7 @@ def _resolve_line_colors(params: Mapping[str, Any], *, instance_seed: int) -> Tu
         namespace=f"{TASK_ID}.line_colors",
     )
     palette_index = int(selection_index) % len(_LINE_COLOR_PALETTES)
-    rotation = (int(selection_index) // len(_LINE_COLOR_PALETTES)) % _PANEL_COUNT
+    rotation = (int(selection_index) // len(_LINE_COLOR_PALETTES)) % _MAX_PANEL_COUNT
     palette = tuple(_LINE_COLOR_PALETTES[int(palette_index)])
     colors = tuple(palette[(index + int(rotation)) % len(palette)] for index in range(len(palette)))
     return colors, {
@@ -325,9 +324,16 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
 def _resolve_label_pool(params: Mapping[str, Any]) -> Tuple[str, ...]:
     raw_pool = params.get("candidate_label_pool", group_default(_GEN_DEFAULTS, "candidate_label_pool", DEFAULT_LABEL_POOL))
     label_pool = tuple(str(label).strip().upper() for label in raw_pool)
-    if len(label_pool) != _PANEL_COUNT or len(set(label_pool)) != _PANEL_COUNT:
-        raise ValueError("function_property_label requires exactly six unique candidate labels")
+    if len(label_pool) not in {4, 6} or len(set(label_pool)) != len(label_pool):
+        raise ValueError("function_property_label requires four or six unique candidate labels")
     return label_pool
+
+
+def _visible_panel_labels(label_pool: Sequence[str], *, winner_label: str, panel_count: int) -> Tuple[str, ...]:
+    labels = tuple(str(label) for label in label_pool[: int(panel_count)])
+    if str(winner_label) in set(labels):
+        return labels
+    return tuple([str(winner_label), *[label for label in labels if str(label) != str(winner_label)]])[: int(panel_count)]
 
 
 def _decoupled_winner_label_params(params: Mapping[str, Any]) -> Dict[str, Any]:
@@ -386,18 +392,29 @@ def _target_interval_for_variant(query_id: str) -> Tuple[float, float] | None:
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
     label_pool = _resolve_label_pool(params)
+    supported_counts = tuple(count for count in (4, 6) if int(count) <= len(label_pool))
+    panel_count, panel_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        field_name="panel_count",
+        supported_counts=supported_counts,
+        task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+    )
     winner_label, winner_label_probabilities = _resolve_winner_label(
         params,
         instance_seed=int(instance_seed),
         query_id=str(query_id),
         label_pool=label_pool,
     )
+    visible_labels = _visible_panel_labels(label_pool, winner_label=str(winner_label), panel_count=int(panel_count))
     return _ResolvedQuery(
         query_id=str(query_id),
         query_id_probabilities=dict(query_id_probabilities),
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_label_probabilities),
-        label_pool=tuple(label_pool),
+        label_pool=tuple(visible_labels),
+        panel_count_probabilities=dict(panel_count_probabilities),
         target_interval=_target_interval_for_variant(str(query_id)),
     )
 
@@ -1504,6 +1521,7 @@ def _draw_relation(
     relation: _RelationSpec,
     *,
     plot_bbox: BBox,
+    config: CoordinatePanelConfig,
     color: Tuple[int, int, int],
     line_width: int,
 ) -> None:
@@ -1515,19 +1533,19 @@ def _draw_relation(
         top_left = graph_point_to_panel_pixel(
             (float(cx) - float(rx), float(cy) + float(ry)),
             plot_bbox=plot_bbox,
-            config=_PANEL_CONFIG,
+            config=config,
         )
         bottom_right = graph_point_to_panel_pixel(
             (float(cx) + float(rx), float(cy) - float(ry)),
             plot_bbox=plot_bbox,
-            config=_PANEL_CONFIG,
+            config=config,
         )
         draw.ellipse((top_left[0], top_left[1], bottom_right[0], bottom_right[1]), outline=color, width=int(line_width))
         return
 
     graph_points = _relation_points(relation)
     pixel_points = [
-        graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=_PANEL_CONFIG)
+        graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=config)
         for point in graph_points
     ]
     if len(pixel_points) >= 2:
@@ -1561,12 +1579,19 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
         instance_seed=int(instance_seed),
         diagram_style=diagram_style,
     )
-    layout = coordinate_panel_layout(int(canvas_width), int(canvas_height), config=_PANEL_CONFIG)
+    panel_columns, panel_rows = panel_grid_shape_for_option_count(len(query.label_pool))
+    panel_config = CoordinatePanelConfig(
+        grid_min=_GRID_MIN,
+        grid_max=_GRID_MAX,
+        columns=int(panel_columns),
+        rows=int(panel_rows),
+    )
+    layout = coordinate_panel_layout(int(canvas_width), int(canvas_height), config=panel_config)
     panel_bboxes: Dict[str, List[int]] = {}
     plot_bboxes: Dict[str, List[int]] = {}
 
     for index, label in enumerate(query.label_pool):
-        panel_bbox = panel_bbox_for_index(layout, int(index), config=_PANEL_CONFIG)
+        panel_bbox = panel_bbox_for_index(layout, int(index), config=panel_config)
         plot_bbox = plot_bbox_for_panel(panel_bbox)
         panel_bboxes[str(label)] = [int(value) for value in panel_bbox]
         plot_bboxes[str(label)] = [int(value) for value in plot_bbox]
@@ -1575,7 +1600,7 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
             panel_bbox=panel_bbox,
             plot_bbox=plot_bbox,
             label=str(label),
-            config=_PANEL_CONFIG,
+            config=panel_config,
             style=panel_style,
         )
         color = line_colors[int(index) % len(line_colors)]
@@ -1583,6 +1608,7 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
             draw,
             relations_by_label[str(label)],
             plot_bbox=plot_bbox,
+            config=panel_config,
             color=color,
             line_width=int(line_width),
         )
@@ -1605,6 +1631,9 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
         relations_by_label=dict(relations_by_label),
         panel_bboxes=dict(panel_bboxes),
         plot_bboxes=dict(plot_bboxes),
+        panel_columns=int(panel_columns),
+        panel_rows=int(panel_rows),
+        panel_count_probabilities=dict(query.panel_count_probabilities),
         target_domain=_format_interval(winner_relation.domain),
         target_range=_format_interval(winner_relation.range),
         target_interval="" if query.target_interval is None else _format_interval(query.target_interval),
@@ -1706,15 +1735,15 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_selected_panel_bbox",
+                "annotation_hint_selected_panel_bbox",
                 "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_value = [list(rendered_scene.panel_bboxes[str(query.winner_label)])]
+        annotation_value = [list(rendered_scene.panel_bboxes[str(query.winner_label)])]
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             _PROMPT_DEFAULTS,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -1724,7 +1753,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "target_domain": str(rendered_scene.target_domain),
@@ -1732,7 +1761,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "target_interval": str(rendered_scene.target_interval),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_selected_panel_bbox"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_bbox"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1742,7 +1771,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(query.winner_label))
-        evidence_gt = TypedValue(type="bbox_set", value=evidence_value)
+        annotation_gt = TypedValue(type="bbox_set", value=annotation_value)
         winner_relation = rendered_scene.relations_by_label[str(query.winner_label)]
         relations_trace = {
             str(label): _relation_trace_payload(rendered_scene.relations_by_label[str(label)])
@@ -1780,6 +1809,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                     "winner_label": str(query.winner_label),
                     "winner_label_probabilities": dict(query.winner_label_probabilities),
                     "candidate_label_pool": list(query.label_pool),
+                    "panel_count_probabilities": dict(query.panel_count_probabilities),
                     "target_domain": str(rendered_scene.target_domain),
                     "target_range": str(rendered_scene.target_range),
                     "target_interval": str(rendered_scene.target_interval),
@@ -1795,9 +1825,10 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "panel_style": dict(rendered_scene.panel_style_meta),
                 "line_colors": [list(color) for color in rendered_scene.line_colors],
                 "line_color_selection": dict(rendered_scene.line_color_meta),
-                "panel_count": int(_PANEL_COUNT),
-                "panel_columns": int(_PANEL_COLUMNS),
-                "panel_rows": int(_PANEL_ROWS),
+                "panel_count": int(len(query.label_pool)),
+                "panel_count_probabilities": dict(rendered_scene.panel_count_probabilities),
+                "panel_columns": int(rendered_scene.panel_columns),
+                "panel_rows": int(rendered_scene.panel_rows),
                 "graph_unit_bounds": {"x": [int(_GRID_MIN), int(_GRID_MAX)], "y": [int(_GRID_MIN), int(_GRID_MAX)]},
             },
             "render_map": {
@@ -1815,6 +1846,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "relations_by_label": dict(relations_trace),
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
+                "panel_count_probabilities": dict(query.panel_count_probabilities),
                 "target_interval": str(rendered_scene.target_interval),
             },
             "witness_symbolic": {
@@ -1826,9 +1858,9 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "target_interval": str(rendered_scene.target_interval),
                 "relations_by_label": dict(relations_trace),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_value),
+                "bbox_set": list(annotation_value),
                 "panel_bbox_by_label": dict(rendered_scene.panel_bboxes),
                 "plot_bbox_by_label": dict(rendered_scene.plot_bboxes),
             },
@@ -1837,7 +1869,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=rendered_scene.image,
             image_id="img_0",
             trace_payload=trace_payload,
@@ -1849,12 +1881,65 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
 
 
 @register_task
-class GeometryAnalyticalRelationPropertyLabelTask(
+class GeometryFunctionPanelsFunctionStatusLabelTask(
+    FixedGeometryQueryTaskMixin,
+    GeometryAnalyticalFunctionPropertyLabelTask,
+):
+    """Choose the panel that is a function or non-function as requested."""
+
+    task_id = "task_geometry__function_panels__function_status_label"
+    fixed_query_id = "function_status_label"
+    scene_id = "function_panels"
+    public_scene_id = "function_panels"
+
+
+@register_task
+class GeometryFunctionPanelsOneToOneStatusLabelTask(
+    FixedGeometryQueryTaskMixin,
+    GeometryAnalyticalFunctionPropertyLabelTask,
+):
+    """Choose the panel matching a one-to-one relation status."""
+
+    task_id = "task_geometry__function_panels__one_to_one_status_label"
+    fixed_query_id = "one_to_one_status_label"
+    scene_id = "function_panels"
+    public_scene_id = "function_panels"
+
+
+@register_task
+class GeometryFunctionPanelsRangeMatchLabelTask(
+    FixedGeometryQueryTaskMixin,
+    GeometryAnalyticalFunctionPropertyLabelTask,
+):
+    """Choose the panel whose range matches the requested interval."""
+
+    task_id = "task_geometry__function_panels__range_match_label"
+    fixed_query_id = "range_match_label"
+    scene_id = "function_panels"
+    public_scene_id = "function_panels"
+
+
+@register_task
+class GeometryFunctionPanelsSignIntervalLabelTask(
     MultiFixedGeometryQueryTaskMixin,
     GeometryAnalyticalFunctionPropertyLabelTask,
 ):
-    """Choose the panel matching one requested coordinate-relation property."""
+    """Choose the panel matching a positive or negative sign interval."""
 
-    task_id = "task_geometry__function_panels__relation_property_label"
-    fixed_query_ids = SUPPORTED_QUERY_IDS
+    task_id = "task_geometry__function_panels__sign_interval_label"
+    fixed_query_ids = SIGN_INTERVAL_VARIANTS
+    scene_id = "function_panels"
+    public_scene_id = "function_panels"
+
+
+@register_task
+class GeometryFunctionPanelsXAxisSymmetryLabelTask(
+    FixedGeometryQueryTaskMixin,
+    GeometryAnalyticalFunctionPropertyLabelTask,
+):
+    """Choose the panel with x-axis symmetry."""
+
+    task_id = "task_geometry__function_panels__x_axis_symmetry_label"
+    fixed_query_id = "x_axis_symmetry_label"
+    scene_id = "function_panels"
     public_scene_id = "function_panels"

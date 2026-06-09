@@ -14,7 +14,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
-from ...shared.graph_point_evidence import labeled_grid_point_evidence_artifacts
+from ...shared.graph_point_annotation import labeled_grid_point_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
@@ -74,12 +74,12 @@ class _TaskDefaults:
     """Stable fallback defaults for optics ray-trace scenes."""
 
     canvas_width: int = 920
-    canvas_height: int = 560
-    board_left_px: int = 112
-    board_top_px: int = 72
+    canvas_height: int = 650
+    board_left_px: int = 168
+    board_top_px: int = 69
     board_cols: int = 8
     board_rows: int = 8
-    cell_size_px: int = 52
+    cell_size_px: int = 64
     board_grid_width_px: int = 1
     board_outline_width_px: int = 3
     mirror_width_px: int = 7
@@ -153,7 +153,7 @@ class _SceneLayout:
     bounce_cells: Tuple[Tuple[int, int], ...]
     source_point_px: Tuple[float, float]
     exit_point_px: Tuple[float, float]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -316,7 +316,7 @@ def _resolve_optics_layout_placement(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve whole-board placement before rendering and evidence projection."""
+    """Resolve whole-board placement before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -713,9 +713,9 @@ def _sample_scene_layout(
         exit_direction=str(exit_direction),
     )
     if str(query_id) == "bounce_count":
-        evidence_entity_ids = tuple(f"bounce_{int(index)}" for index in range(1, len(hit_bounce_cells) + 1))
+        annotation_entity_ids = tuple(f"bounce_{int(index)}" for index in range(1, len(hit_bounce_cells) + 1))
     else:
-        evidence_entity_ids = tuple(str(target.target_id) for target in targets if bool(target.hit))
+        annotation_entity_ids = tuple(str(target.target_id) for target in targets if bool(target.hit))
     mirror_specs = tuple(
         _MirrorPlacement(
             mirror_id=f"mirror_{int(index)}",
@@ -737,7 +737,7 @@ def _sample_scene_layout(
         bounce_cells=tuple((int(col), int(row)) for col, row in hit_bounce_cells),
         source_point_px=tuple(float(value) for value in source_point_px),
         exit_point_px=tuple(float(value) for value in exit_point_px),
-        evidence_entity_ids=tuple(str(item) for item in evidence_entity_ids),
+        annotation_entity_ids=tuple(str(item) for item in annotation_entity_ids),
     )
 
 
@@ -745,13 +745,13 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples for the active optics query."""
 
     if str(query_id) == "bounce_count":
-        evidence = [[242, 190], [346, 294]]
+        annotation = [[242, 190], [346, 294]]
     else:
-        evidence = [[190, 138], [398, 346]]
-    return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
+        annotation = [[190, 138], [398, 346]]
+    return build_prompt_json_examples(annotation_value=annotation, answer_type="integer")
 
 
-def _pixel_point_set_evidence_artifacts(
+def _pixel_point_set_annotation_artifacts(
     *,
     points_by_label: Mapping[str, Sequence[float]],
     graph_origin: Sequence[float],
@@ -763,15 +763,15 @@ def _pixel_point_set_evidence_artifacts(
 
     labels = [str(label) for label in ordered_labels]
     if not labels:
-        return _empty_pixel_point_set_evidence_artifacts(witness_type=str(witness_type))
-    labeled = labeled_grid_point_evidence_artifacts(
+        return _empty_pixel_point_set_annotation_artifacts(witness_type=str(witness_type))
+    labeled = labeled_grid_point_annotation_artifacts(
         points_by_label=points_by_label,
         graph_origin=graph_origin,
         graph_spacing=int(graph_spacing),
         witness_type=str(witness_type),
         ordered_labels=tuple(labels),
     )
-    projected = dict(labeled["projected_evidence"])
+    projected = dict(labeled["projected_annotation"])
     pixel_map = {
         str(label): [float(point[0]), float(point[1])]
         for label, point in dict(projected.get("pixel_point_map", {})).items()
@@ -779,11 +779,11 @@ def _pixel_point_set_evidence_artifacts(
     point_set = [list(pixel_map[str(label)]) for label in labels]
     witness_symbolic = dict(labeled["witness_symbolic"])
     return {
-        "evidence_type": "point_set",
-        "evidence_value": [list(point) for point in point_set],
+        "annotation_type": "point_set",
+        "annotation_value": [list(point) for point in point_set],
         "required_labels": list(labels),
         "witness_symbolic": witness_symbolic,
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "point_set",
             "point_set": [list(point) for point in point_set],
             "pixel_point_set": [list(point) for point in point_set],
@@ -792,18 +792,18 @@ def _pixel_point_set_evidence_artifacts(
     }
 
 
-def _empty_pixel_point_set_evidence_artifacts(*, witness_type: str) -> Dict[str, Any]:
-    """Return an empty pixel point-set evidence payload."""
+def _empty_pixel_point_set_annotation_artifacts(*, witness_type: str) -> Dict[str, Any]:
+    """Return an empty pixel point-set annotation payload."""
 
     return {
-        "evidence_type": "point_set",
-        "evidence_value": [],
+        "annotation_type": "point_set",
+        "annotation_value": [],
         "required_labels": [],
         "witness_symbolic": {
             "type": str(witness_type),
             "count": 0,
         },
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "point_set",
             "point_set": [],
             "pixel_point_set": [],
@@ -887,7 +887,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 ray_polyline_cells=list(scene_layout.path_cells),
                 source_point_px=tuple(scene_layout.source_point_px),
                 exit_point_px=tuple(scene_layout.exit_point_px),
-                evidence_entity_ids=list(scene_layout.evidence_entity_ids),
+                annotation_entity_ids=list(scene_layout.annotation_entity_ids),
                 query_id=str(axes.query_id),
                 diagram_style=diagram_style,
                 font_family=str(font_family),
@@ -908,8 +908,8 @@ class _PhysicsOpticsRayTraceBaseTask:
                     "json_output_contract",
                     "json_output_contract_answer_only",
                     "answer_hint",
-                    "evidence_hint_bounce_count",
-                    "evidence_hint_target_hit_count",
+                    "annotation_hint_bounce_count",
+                    "annotation_hint_target_hit_count",
                     "object_description_single_mirror",
                     "object_description_double_mirror",
                     "object_description_triple_mirror",
@@ -926,12 +926,12 @@ class _PhysicsOpticsRayTraceBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
@@ -942,32 +942,32 @@ class _PhysicsOpticsRayTraceBaseTask:
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
             if str(axes.query_id) == "bounce_count":
-                evidence_points_by_label = {
+                annotation_points_by_label = {
                     str(spec.bounce_id): list(spec.point_px)
                     for spec in rendered_scene.bounce_specs
-                    if str(spec.bounce_id) in set(rendered_scene.evidence_entity_ids)
+                    if str(spec.bounce_id) in set(rendered_scene.annotation_entity_ids)
                 }
                 witness_type = "physics_optics_bounce_points"
             else:
-                evidence_points_by_label = {
+                annotation_points_by_label = {
                     str(spec.target_id): list(spec.point_px)
                     for spec in rendered_scene.target_specs
-                    if str(spec.target_id) in set(rendered_scene.evidence_entity_ids)
+                    if str(spec.target_id) in set(rendered_scene.annotation_entity_ids)
                 }
                 witness_type = "physics_optics_hit_target_points"
-            evidence_artifacts = _pixel_point_set_evidence_artifacts(
-                points_by_label=evidence_points_by_label,
+            annotation_artifacts = _pixel_point_set_annotation_artifacts(
+                points_by_label=annotation_points_by_label,
                 graph_origin=rendered_scene.graph_origin_px,
                 graph_spacing=int(rendered_scene.graph_spacing_px),
                 witness_type=str(witness_type),
-                ordered_labels=tuple(str(item) for item in rendered_scene.evidence_entity_ids),
+                ordered_labels=tuple(str(item) for item in rendered_scene.annotation_entity_ids),
             )
             render_map = dict(rendered_scene.render_map)
-            render_map["evidence_point_map_px"] = dict(evidence_artifacts["projected_evidence"].get("pixel_point_map", {}))
-            render_map["evidence_point_set_px"] = list(evidence_artifacts["evidence_value"])
-            evidence_gt = TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            render_map["annotation_point_map_px"] = dict(annotation_artifacts["projected_annotation"].get("pixel_point_map", {}))
+            render_map["annotation_point_set_px"] = list(annotation_artifacts["annotation_value"])
+            annotation_gt = TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             )
             complexity = build_physics_optics_ray_trace_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -988,7 +988,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                         "query_id": str(axes.query_id),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -1066,11 +1066,11 @@ class _PhysicsOpticsRayTraceBaseTask:
                     ],
                     "path_cells": [[int(col), int(row)] for col, row in scene_layout.path_cells],
                     "bounce_cells": [[int(col), int(row)] for col, row in scene_layout.bounce_cells],
-                    "evidence_pixel_points": [list(point) for point in evidence_gt.value],
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_pixel_points": [list(point) for point in annotation_gt.value],
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                 },
-                "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-                "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+                "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+                "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
             }
@@ -1078,7 +1078,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

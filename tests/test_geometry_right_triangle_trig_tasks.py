@@ -6,30 +6,40 @@ import pytest
 
 from trace.tasks.geometry.measurement.right_triangle_trig import (
     SCENE_ID,
-    GeometryRightTriangleAngleValueTask,
-    GeometryRightTriangleMissingSideValueTask,
+    GeometryAngleOfElevationValueTask,
+    GeometryRightTriangleAngleAdjacentHypotenuseTask,
+    GeometryRightTriangleAngleOppositeAdjacentTask,
+    GeometryRightTriangleAngleOppositeHypotenuseTask,
+    GeometryRightTriangleGroundFromAngleAndHeightTask,
+    GeometryRightTriangleGroundFromAngleAndHypotenuseTask,
+    GeometryRightTriangleHeightFromAngleAndGroundTask,
+    GeometryRightTriangleHeightFromAngleAndHypotenuseTask,
+    GeometryRightTriangleHypotenuseFromAngleAndHeightTask,
 )
 
 
 TASK_CLASSES = (
-    GeometryRightTriangleMissingSideValueTask,
-    GeometryRightTriangleAngleValueTask,
+    GeometryRightTriangleHeightFromAngleAndGroundTask,
+    GeometryRightTriangleGroundFromAngleAndHeightTask,
+    GeometryRightTriangleHypotenuseFromAngleAndHeightTask,
+    GeometryRightTriangleHeightFromAngleAndHypotenuseTask,
+    GeometryRightTriangleGroundFromAngleAndHypotenuseTask,
+    GeometryRightTriangleAngleOppositeAdjacentTask,
+    GeometryRightTriangleAngleOppositeHypotenuseTask,
+    GeometryRightTriangleAngleAdjacentHypotenuseTask,
+    GeometryAngleOfElevationValueTask,
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryRightTriangleMissingSideValueTask: (
-        "height_from_angle_and_ground",
-        "ground_from_angle_and_height",
-        "hypotenuse_from_angle_and_height",
-        "height_from_angle_and_hypotenuse",
-        "ground_from_angle_and_hypotenuse",
-    ),
-    GeometryRightTriangleAngleValueTask: (
-        "angle_from_opposite_adjacent",
-        "angle_from_opposite_hypotenuse",
-        "angle_from_adjacent_hypotenuse",
-        "angle_of_elevation_from_height_and_distance",
-    ),
+    GeometryRightTriangleHeightFromAngleAndGroundTask: ("height_from_angle_and_ground",),
+    GeometryRightTriangleGroundFromAngleAndHeightTask: ("ground_from_angle_and_height",),
+    GeometryRightTriangleHypotenuseFromAngleAndHeightTask: ("hypotenuse_from_angle_and_height",),
+    GeometryRightTriangleHeightFromAngleAndHypotenuseTask: ("height_from_angle_and_hypotenuse",),
+    GeometryRightTriangleGroundFromAngleAndHypotenuseTask: ("ground_from_angle_and_hypotenuse",),
+    GeometryRightTriangleAngleOppositeAdjacentTask: ("angle_from_opposite_adjacent",),
+    GeometryRightTriangleAngleOppositeHypotenuseTask: ("angle_from_opposite_hypotenuse",),
+    GeometryRightTriangleAngleAdjacentHypotenuseTask: ("angle_from_adjacent_hypotenuse",),
+    GeometryAngleOfElevationValueTask: ("angle_of_elevation_from_height_and_distance",),
 }
 
 
@@ -39,20 +49,18 @@ def test_right_triangle_trig_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(57001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert 2 <= len(out.evidence_gt.value) <= 3
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert 2 <= len(out.annotation_gt.value) <= 3
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["execution_trace"]["answer_rounding"] == "nearest_tenth"
 
 
@@ -65,7 +73,7 @@ def test_right_triangle_trig_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
@@ -87,7 +95,7 @@ def test_right_triangle_trig_tasks_support_every_explicit_query(task_cls) -> Non
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_right_triangle_trig_evidence_stays_inside_canvas(task_cls) -> None:
+def test_right_triangle_trig_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(
@@ -96,7 +104,7 @@ def test_right_triangle_trig_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value:
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
@@ -104,6 +112,6 @@ def test_right_triangle_trig_evidence_stays_inside_canvas(task_cls) -> None:
 
 
 def test_right_triangle_trig_tasks_reject_unknown_query_id() -> None:
-    task = GeometryRightTriangleMissingSideValueTask()
+    task = GeometryRightTriangleHeightFromAngleAndGroundTask()
     with pytest.raises(ValueError):
         task.generate(57031, params={"query_id": "not_a_query"}, max_attempts=20)

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -29,11 +28,7 @@ from ..shared.complexity import (
 )
 from ..shared.fixed_query_task import rewrite_graph_query_output
 from ..shared.graph_sampling import (
-    SUPPORTED_EXTREME_DEGREE_DIRECTIONS,
     SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES,
-    SUPPORTED_EXTREME_DEGREE_EXTREMA,
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_extreme_degree_value,
     graph_label_sort_key,
@@ -41,18 +36,37 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ..shared.task_support import graph_balanced_axis_count, resolve_graph_named_variant, resolve_graph_render_params
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.prompt_examples import build_graph_prompt_json_examples
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
+from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
 TASK_ID = "task_graph__node_link__degree_extremum_value"
+SUPPORTED_QUERY_IDS = (
+    "undirected_max_degree_value",
+    "undirected_min_degree_value",
+    "directed_max_in_degree_value",
+    "directed_min_in_degree_value",
+    "directed_max_out_degree_value",
+    "directed_min_out_degree_value",
+    "directed_max_total_degree_value",
+    "directed_min_total_degree_value",
+)
+_QUERY_TO_AXES = {
+    "undirected_max_degree_value": ("undirected", "degree", "max"),
+    "undirected_min_degree_value": ("undirected", "degree", "min"),
+    "directed_max_in_degree_value": ("directed", "in_degree", "max"),
+    "directed_min_in_degree_value": ("directed", "in_degree", "min"),
+    "directed_max_out_degree_value": ("directed", "out_degree", "max"),
+    "directed_min_out_degree_value": ("directed", "out_degree", "min"),
+    "directed_max_total_degree_value": ("directed", "total_degree", "max"),
+    "directed_min_total_degree_value": ("directed", "total_degree", "min"),
+}
 
 
 @dataclass(frozen=True)
@@ -110,6 +124,7 @@ class _ResolvedQuery:
     layout_transform_variant_probabilities: Dict[str, float]
     edge_routing_variant_probabilities: Dict[str, float]
     node_color_name_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -124,13 +139,9 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match the pixel-space node-evidence format."""
+    """Return prompt examples that match the pixel-space node-annotation format."""
 
-    example_evidence = [[180, 220], [310, 180]]
-    return (
-        json.dumps({"evidence": example_evidence, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-    )
+    return build_graph_prompt_json_examples(annotation_value=[[180, 220], [310, 180]], answer_value=3)
 
 
 def _node_count_selection_index(
@@ -145,106 +156,180 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(graph_directionality)}:{str(degree_mode)}:{str(extremum_mode)}:"
-        f"{int(target_degree)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(graph_directionality),
+            str(degree_mode),
+            str(extremum_mode),
+            int(target_degree),
+            str(topology_profile),
+        ),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
+
+def _query_id_from_axes(*, graph_directionality: str, degree_mode: str, extremum_mode: str) -> str:
+    """Return the public query id for one validated extreme-degree axis tuple."""
+
+    if str(graph_directionality) == "undirected":
+        if str(degree_mode) != "degree":
+            raise ValueError("undirected extreme-degree queries require degree_mode=degree")
+        return f"undirected_{str(extremum_mode)}_degree_value"
+    if str(degree_mode) not in SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES:
+        raise ValueError(f"unsupported directed degree_mode: {degree_mode}")
+    return f"directed_{str(extremum_mode)}_{str(degree_mode)}_value"
 
 
+def _query_id_from_explicit_axes(params: Mapping[str, Any]) -> str | None:
+    """Return a query id from complete explicit axis overrides, if present."""
 
-def _decoupled_axis_params(
-    instance_seed: int,
+    has_directionality = params.get("graph_directionality") is not None
+    has_degree_mode = params.get("degree_mode") is not None
+    has_extremum_mode = params.get("extremum_mode") is not None
+    if not any((has_directionality, has_degree_mode, has_extremum_mode)):
+        return None
+    if not all((has_directionality, has_degree_mode, has_extremum_mode)):
+        raise ValueError(
+            "degree-extremum axis overrides must provide graph_directionality, "
+            "degree_mode, and extremum_mode together"
+        )
+    return _query_id_from_axes(
+        graph_directionality=str(params["graph_directionality"]),
+        degree_mode=str(params["degree_mode"]),
+        extremum_mode=str(params["extremum_mode"]),
+    )
+
+
+def _uniform_positive_probabilities(probabilities: Mapping[str, float]) -> bool:
+    """Return true when all positive probabilities are equal."""
+
+    positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
+    if not positives:
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _resolve_public_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
+    """Resolve the public query branch as the primary sampling axis."""
+
+    explicit_axis_query_id = _query_id_from_explicit_axes(params)
+    if explicit_axis_query_id is not None:
+        if params.get("query_id") is not None and str(params["query_id"]) != str(explicit_axis_query_id):
+            raise ValueError("query_id conflicts with explicit degree-extremum axis overrides")
+        if str(explicit_axis_query_id) not in _QUERY_TO_AXES:
+            raise ValueError(f"unsupported degree-extremum axis combination: {explicit_axis_query_id}")
+        return str(explicit_axis_query_id), {
+            str(query_id): (1.0 if str(query_id) == str(explicit_axis_query_id) else 0.0)
+            for query_id in SUPPORTED_QUERY_IDS
+        }
+
+    raw_query_weights = params.get("query_id_weights")
+    if isinstance(raw_query_weights, Mapping):
+        query_weights = {str(key): float(value) for key, value in raw_query_weights.items()}
+    else:
+        raw_default_weights = _GEN_DEFAULTS.get("query_id_weights", {})
+        query_weights = (
+            {str(key): float(value) for key, value in raw_default_weights.items()}
+            if isinstance(raw_default_weights, Mapping)
+            else {}
+        )
+    if not query_weights:
+        query_weights = {str(query_id): 1.0 for query_id in SUPPORTED_QUERY_IDS}
+
+    query_id, probabilities = resolve_graph_named_variant(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.query_id"),
+        params={**dict(params), "query_id_weights": query_weights},
+        gen_defaults={},
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_QUERY_IDS,
+        instance_seed=int(instance_seed),
+        task_id=TASK_ID,
+        namespace="query_id",
+    )
+    use_cursor_cycle = (
+        params.get("_sample_cursor") is not None
+        and params.get("query_id") is None
+        and params.get("query_id_weights") is None
+        and bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
+        and _uniform_positive_probabilities(probabilities)
+    )
+    if bool(use_cursor_cycle):
+        positive_query_ids = [
+            str(query)
+            for query in SUPPORTED_QUERY_IDS
+            if float(probabilities.get(str(query), 0.0)) > 0.0
+        ]
+        if positive_query_ids:
+            query_id = positive_query_ids[abs(int(params["_sample_cursor"])) % len(positive_query_ids)]
+    return str(query_id), dict(probabilities)
+
+
+def _validate_axis_overrides(
     *,
+    query_id: str,
+    graph_directionality: str,
+    degree_mode: str,
+    extremum_mode: str,
     params: Mapping[str, Any],
-    divisor: int,
-    namespace: str,
-) -> Mapping[str, Any]:
-    """Advance one balanced axis after the preceding balanced axes."""
+) -> None:
+    """Reject explicit axis overrides that conflict with the resolved public query id."""
 
-    _ = instance_seed, divisor, namespace
-    return params
+    explicit_directionality = params.get("graph_directionality")
+    if explicit_directionality is not None and str(explicit_directionality) != str(graph_directionality):
+        raise ValueError("graph_directionality conflicts with query_id")
+    explicit_degree_mode = params.get("degree_mode")
+    if explicit_degree_mode is not None and str(explicit_degree_mode) != str(degree_mode):
+        raise ValueError("degree_mode conflicts with query_id")
+    explicit_extremum_mode = params.get("extremum_mode")
+    if explicit_extremum_mode is not None and str(explicit_extremum_mode) != str(extremum_mode):
+        raise ValueError("extremum_mode conflicts with query_id")
+
+    if any(key in params for key in ("graph_directionality", "degree_mode", "extremum_mode")):
+        derived = _query_id_from_axes(
+            graph_directionality=str(graph_directionality),
+            degree_mode=str(degree_mode),
+            extremum_mode=str(extremum_mode),
+        )
+        if str(derived) != str(query_id):
+            raise ValueError("axis overrides do not map to the resolved query_id")
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve one extreme-degree comparison query."""
 
-    direction_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.graph_directionality")
-    graph_directionality, graph_directionality_probabilities = resolve_graph_named_variant(
-        direction_rng,
+    query_id, query_id_probabilities = _resolve_public_query_id(int(instance_seed), params=params)
+    graph_directionality, degree_mode, extremum_mode = _QUERY_TO_AXES[str(query_id)]
+    _validate_axis_overrides(
+        query_id=str(query_id),
+        graph_directionality=str(graph_directionality),
+        degree_mode=str(degree_mode),
+        extremum_mode=str(extremum_mode),
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="graph_directionality",
-        weights_key="graph_directionality_weights",
-        balance_flag_key="balanced_graph_directionality_sampling",
-        supported=SUPPORTED_EXTREME_DEGREE_DIRECTIONS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="graph_directionality",
     )
-    direction_axis_count = graph_balanced_axis_count(
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        probabilities=graph_directionality_probabilities,
-        balance_flag_key="balanced_graph_directionality_sampling",
-        explicit_keys=("graph_directionality",),
-        weights_key="graph_directionality_weights",
-    )
-
-    extremum_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.extremum_mode")
-    extremum_params = _decoupled_axis_params(
-        int(instance_seed),
-        params=params,
-        divisor=int(direction_axis_count),
-        namespace="extremum_mode",
-    )
-    extremum_mode, extremum_mode_probabilities = resolve_graph_named_variant(
-        extremum_rng,
-        params=extremum_params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="extremum_mode",
-        weights_key="extremum_mode_weights",
-        balance_flag_key="balanced_extremum_mode_sampling",
-        supported=SUPPORTED_EXTREME_DEGREE_EXTREMA,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="extremum_mode",
-    )
-    extremum_axis_count = graph_balanced_axis_count(
-        params=extremum_params,
-        gen_defaults=_GEN_DEFAULTS,
-        probabilities=extremum_mode_probabilities,
-        balance_flag_key="balanced_extremum_mode_sampling",
-        explicit_keys=("extremum_mode",),
-        weights_key="extremum_mode_weights",
-    )
-    if str(graph_directionality) == "directed":
-        mode_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.degree_mode")
-        degree_mode_params = _decoupled_axis_params(
-            int(instance_seed),
-            params=params,
-            divisor=int(direction_axis_count * extremum_axis_count),
-            namespace="degree_mode",
-        )
-        degree_mode, degree_mode_probabilities = resolve_graph_named_variant(
-            mode_rng,
-            params=degree_mode_params,
-            gen_defaults=_GEN_DEFAULTS,
-            explicit_key="degree_mode",
-            weights_key="degree_mode_weights",
-            balance_flag_key="balanced_degree_mode_sampling",
-            supported=SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES,
-            instance_seed=int(instance_seed),
-            task_id=TASK_ID,
-            namespace="degree_mode",
-        )
-    else:
-        degree_mode = "degree"
-        explicit_degree_mode = params.get("degree_mode")
-        if explicit_degree_mode is not None and str(explicit_degree_mode) != "degree":
-            raise ValueError("degree_mode can only be degree for undirected extreme-degree queries")
-        degree_mode_probabilities = {"degree": 1.0}
+    graph_directionality_probabilities = {
+        "undirected": sum(
+            float(prob)
+            for query, prob in query_id_probabilities.items()
+            if str(_QUERY_TO_AXES[str(query)][0]) == "undirected"
+        ),
+        "directed": sum(
+            float(prob)
+            for query, prob in query_id_probabilities.items()
+            if str(_QUERY_TO_AXES[str(query)][0]) == "directed"
+        ),
+    }
+    degree_mode_probabilities = {}
+    for query, prob in query_id_probabilities.items():
+        mode = str(_QUERY_TO_AXES[str(query)][1])
+        degree_mode_probabilities[mode] = float(degree_mode_probabilities.get(mode, 0.0) + float(prob))
+    extremum_mode_probabilities = {}
+    for query, prob in query_id_probabilities.items():
+        mode = str(_QUERY_TO_AXES[str(query)][2])
+        extremum_mode_probabilities[mode] = float(extremum_mode_probabilities.get(mode, 0.0) + float(prob))
 
     topology_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.topology_profile")
     topology_profile, topology_probabilities = resolve_graph_named_variant(
@@ -331,83 +416,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for the requested extreme-degree query")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
-    )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
     )
 
     return _ResolvedQuery(
@@ -417,12 +430,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_count=int(node_count),
         target_degree=int(target_degree),
         topology_profile=str(topology_profile),
-        layout_variant=str(layout_variant),
-        label_variant=str(label_variant),
-        node_shape_variant=str(node_shape_variant),
-        layout_transform_variant=str(layout_transform_variant),
-        edge_routing_variant=str(edge_routing_variant),
-        node_color_name=str(node_color_name),
+        layout_variant=str(visual_axes.layout_variant),
+        label_variant=str(visual_axes.label_variant),
+        node_shape_variant=str(visual_axes.node_shape_variant),
+        layout_transform_variant=str(visual_axes.layout_transform_variant),
+        edge_routing_variant=str(visual_axes.edge_routing_variant),
+        node_color_name=str(visual_axes.node_color_name),
         graph_directionality_probabilities=dict(graph_directionality_probabilities),
         degree_mode_probabilities=dict(degree_mode_probabilities),
         extremum_mode_probabilities=dict(extremum_mode_probabilities),
@@ -439,12 +452,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             )
         ),
         topology_profile_probabilities=dict(topology_probabilities),
-        layout_variant_probabilities=dict(layout_probabilities),
-        label_variant_probabilities=dict(label_variant_probabilities),
-        node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
-        layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
-        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
-        node_color_name_probabilities=dict(node_color_name_probabilities),
+        layout_variant_probabilities=dict(visual_axes.layout_variant_probabilities),
+        label_variant_probabilities=dict(visual_axes.label_variant_probabilities),
+        node_shape_variant_probabilities=dict(visual_axes.node_shape_variant_probabilities),
+        layout_transform_variant_probabilities=dict(visual_axes.layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(visual_axes.edge_routing_variant_probabilities),
+        node_color_name_probabilities=dict(visual_axes.node_color_name_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
     )
 
 
@@ -596,14 +610,14 @@ class GraphComparisonExtremeDegreeValueTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint_max_degree_value",
-                "evidence_hint_min_degree_value",
-                "evidence_hint_max_in_degree_value",
-                "evidence_hint_min_in_degree_value",
-                "evidence_hint_max_out_degree_value",
-                "evidence_hint_min_out_degree_value",
-                "evidence_hint_max_total_degree_value",
-                "evidence_hint_min_total_degree_value",
+                "annotation_hint_max_degree_value",
+                "annotation_hint_min_degree_value",
+                "annotation_hint_max_in_degree_value",
+                "annotation_hint_min_in_degree_value",
+                "annotation_hint_max_out_degree_value",
+                "annotation_hint_min_out_degree_value",
+                "annotation_hint_max_total_degree_value",
+                "annotation_hint_min_total_degree_value",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -612,7 +626,7 @@ class GraphComparisonExtremeDegreeValueTask:
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
         prompt_query_key = _query_key_for(query)
-        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
+        annotation_hint_key = f"annotation_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -620,7 +634,7 @@ class GraphComparisonExtremeDegreeValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(prompt_query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults["object_description_directed"]
@@ -629,7 +643,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -638,11 +652,11 @@ class GraphComparisonExtremeDegreeValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
+        annotation_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
         answer_gt = TypedValue(type="integer", value=int(graph_sample.target_degree))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -653,7 +667,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 "in_degree": int(graph_sample.in_degrees_by_label[str(node.label)]),
                 "out_degree": int(graph_sample.out_degrees_by_label[str(node.label)]),
                 "queried_degree": int(graph_sample.queried_degrees_by_label[str(node.label)]),
-                "is_extreme_degree_node": bool(str(node.label) in evidence_labels),
+                "is_extreme_degree_node": bool(str(node.label) in annotation_labels),
                 "neighbors": list(node.neighbors),
                 "successors": list(node.successors),
                 "predecessors": list(node.predecessors),
@@ -692,7 +706,7 @@ class GraphComparisonExtremeDegreeValueTask:
                     "degree_mode": str(query.degree_mode),
                     "extremum_mode": str(query.extremum_mode),
                     "target_degree": int(graph_sample.target_degree),
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -715,6 +729,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": "default",
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "graph_directionality": str(query.graph_directionality),
                     "graph_directionality_probabilities": dict(query.graph_directionality_probabilities),
                     "degree_mode": str(query.degree_mode),
@@ -780,6 +795,7 @@ class GraphComparisonExtremeDegreeValueTask:
             },
             "execution_trace": {
                 "query_id": "default",
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": f"{str(query.extremum_mode)}_{str(query.degree_mode)}_value",
                 "graph_directionality": str(query.graph_directionality),
@@ -789,7 +805,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 "edge_count": int(graph_sample.edge_count),
                 "target_degree": int(query.target_degree),
                 "answer": int(graph_sample.target_degree),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
                 "out_degrees_by_label": {str(key): int(value) for key, value in graph_sample.out_degrees_by_label.items()},
@@ -812,15 +828,15 @@ class GraphComparisonExtremeDegreeValueTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "degree_mode": str(query.degree_mode),
                 "extremum_mode": str(query.extremum_mode),
                 "target_degree": int(graph_sample.target_degree),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
@@ -828,7 +844,7 @@ class GraphComparisonExtremeDegreeValueTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
@@ -838,6 +854,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
             ),
             query_id=_public_query_id_for(query),
+            query_id_probabilities=dict(query.query_id_probabilities),
         )
 
 

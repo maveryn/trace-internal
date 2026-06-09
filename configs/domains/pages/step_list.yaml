@@ -8,6 +8,8 @@ generation:
       nth_step_title: 1.0
       nth_step_detail: 1.0
       step_after_named_step: 1.0
+      step_title_for_detail: 1.0
+      step_number_for_detail: 1.0
     scene_variant_weights:
       vertical_cards: 1.0
       horizontal_cards: 1.0
@@ -16,6 +18,44 @@ generation:
       first: 1.0
       interior: 1.0
       final: 1.0
+  task_overrides:
+    task_pages__instruction_panel__shared_control_for_step_set_label:
+      step_count_support: [5, 6, 7, 8]
+      controls_per_step_support: [2, 3]
+      control_count_support: [9, 10, 11, 12]
+      step_set_size_support: [2, 3]
+      query_id_weights:
+        nth_step_title: 0.0
+        nth_step_detail: 0.0
+        step_after_named_step: 0.0
+        step_title_for_detail: 0.0
+        step_number_for_detail: 0.0
+        shared_control_for_step_set_label: 1.0
+      scene_variant_weights:
+        vertical_cards: 0.0
+        horizontal_cards: 0.0
+        two_column_cards: 0.0
+        manual_cards: 1.0
+        checklist_table: 1.0
+        side_legend_sheet: 1.0
+    task_pages__instruction_panel__step_for_control_pair_label:
+      step_count_support: [5, 6, 7, 8]
+      controls_per_step_support: [2, 3]
+      control_count_support: [9, 10, 11, 12]
+      query_id_weights:
+        nth_step_title: 0.0
+        nth_step_detail: 0.0
+        step_after_named_step: 0.0
+        step_title_for_detail: 0.0
+        step_number_for_detail: 0.0
+        step_for_control_pair_label: 1.0
+      scene_variant_weights:
+        vertical_cards: 0.0
+        horizontal_cards: 0.0
+        two_column_cards: 0.0
+        manual_cards: 1.0
+        checklist_table: 1.0
+        side_legend_sheet: 1.0
 
 rendering:
   shared:
@@ -31,6 +71,37 @@ rendering:
     subtitle_font_size_px: 17
     step_title_font_size_px: 22
     step_detail_font_size_px: 17
+  task_overrides:
+    task_pages__instruction_panel__shared_control_for_step_set_label:
+      canvas_width: 1100
+      canvas_height: 880
+      outer_margin_px: 34
+      header_height_px: 92
+      gap_px: 14
+      corner_radius_px: 12
+      outline_width_px: 2
+      title_font_size_px: 30
+      subtitle_font_size_px: 16
+      step_title_font_size_px: 20
+      step_detail_font_size_px: 13
+      control_font_size_px: 14
+      number_badge_size_px: 34
+      control_chip_height_px: 30
+    task_pages__instruction_panel__step_for_control_pair_label:
+      canvas_width: 1100
+      canvas_height: 880
+      outer_margin_px: 34
+      header_height_px: 92
+      gap_px: 14
+      corner_radius_px: 12
+      outline_width_px: 2
+      title_font_size_px: 30
+      subtitle_font_size_px: 16
+      step_title_font_size_px: 20
+      step_detail_font_size_px: 13
+      control_font_size_px: 14
+      number_badge_size_px: 34
+      control_chip_height_px: 30
 
 complexity:
   shared:
@@ -38,6 +109,21 @@ complexity:
       order_lookup: 0.45
       visual_scan: 0.35
       scene_variant_load: 0.20
+  task_overrides:
+    task_pages__instruction_panel__shared_control_for_step_set_label:
+      criteria_weights:
+        order_lookup: 0.0
+        scene_variant_load: 0.0
+        lookup_reasoning: 0.50
+        visual_scan: 0.30
+        layout_load: 0.20
+    task_pages__instruction_panel__step_for_control_pair_label:
+      criteria_weights:
+        order_lookup: 0.0
+        scene_variant_load: 0.0
+        lookup_reasoning: 0.45
+        visual_scan: 0.35
+        layout_load: 0.20
 
 prompt:
   shared:
@@ -48,12 +134,34 @@ prompt:
     object_description_horizontal_cards: a numbered two-row list of instruction cards with a title and detail on each card
     object_description_two_column_cards: a numbered two-column list of instruction cards with a title and detail on each card
     answer_hint: set "answer" to the exact visible text requested by the question
-    evidence_hint: set "evidence" to an object mapping role names to [x0,y0,x1,y1] pixel bounding boxes for the visible step text used to identify the answer
-    evidence_hint_nth_step_title: set "evidence" to an object with key "target_title" mapped to the [x0,y0,x1,y1] pixel bounding box for the requested step title
-    evidence_hint_nth_step_detail: set "evidence" to an object with key "target_detail" mapped to the [x0,y0,x1,y1] pixel bounding box for the requested step detail text
-    evidence_hint_step_after_named_step: set "evidence" to an object with keys "source_title" and "target_title" mapped to [x0,y0,x1,y1] pixel bounding boxes for the named source step title and the immediately following step title
+    annotation_hint: set "annotation" to an object mapping role names to [x0,y0,x1,y1] pixel bounding boxes for the visible step text used to identify the answer
+    annotation_hint_nth_step_title: set "annotation" to an object with key "target_title" mapped to the [x0,y0,x1,y1] pixel bounding box for the requested step title
+    annotation_hint_nth_step_detail: set "annotation" to an object with key "target_detail" mapped to the [x0,y0,x1,y1] pixel bounding box for the requested step detail text
+    annotation_hint_step_after_named_step: set "annotation" to an object with keys "source_title" and "target_title" mapped to [x0,y0,x1,y1] pixel bounding boxes for the named source step title and the immediately following step title
+    annotation_hint_step_title_for_detail: set "annotation" to an object with keys "source_detail" and "target_title" mapped to [x0,y0,x1,y1] pixel bounding boxes for the named detail text and its owning step title
+    annotation_hint_step_number_for_detail: set "annotation" to an object with keys "source_detail" and "target_number" mapped to [x0,y0,x1,y1] pixel bounding boxes for the named detail text and its owning step number
+  task_overrides:
+    task_pages__instruction_panel__shared_control_for_step_set_label:
+      scene_key: instruction_panel
+      task_key: instruction_panel_query
+      object_description: an instruction panel with numbered steps and visible control chips on each step
+      answer_hint: set "answer" to the exact visible control label common to the referenced steps
+      annotation_hint: set "annotation" to an object mapping "step_numbers" to an array of [x0,y0,x1,y1] pixel bounding boxes for the referenced step-number badges and "shared_control_chips" to an array of [x0,y0,x1,y1] pixel bounding boxes for the matching control chips in those steps
+    task_pages__instruction_panel__step_for_control_pair_label:
+      scene_key: instruction_panel
+      task_key: instruction_panel_query
+      object_description: an instruction panel with numbered steps and visible control chips on each step
+      answer_hint: set "answer" to the integer step number containing both referenced control labels
+      annotation_hint: set "annotation" to an object mapping "first_control", "second_control", and "target_step_number" to [x0,y0,x1,y1] pixel bounding boxes for the two matching control chips and their step-number badge
 
 visual:
+  task_overrides:
+    task_pages__instruction_panel__shared_control_for_step_set_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__instruction_panel__step_for_control_pair_label:
+      context_text:
+        pages_context_text_enabled: false
   noise:
     apply_prob: 0.4
     edit_count_range: [1, 1]

@@ -30,7 +30,7 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from ..shared.anchor_marking import draw_anchor_marker
 from ..shared.complexity import build_icons_relation_between_two_anchors_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -833,7 +833,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -853,13 +853,13 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -867,8 +867,8 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        evidence_value = sort_bboxes_reading_order(scene_payload.matching_bboxes)
-        evidence_payload = bbox_set_evidence(evidence_value)
+        annotation_value = sort_bboxes_reading_order(scene_payload.matching_bboxes)
+        annotation_payload = bbox_set_annotation(annotation_value)
         answer_value = int(scene_payload.target_count)
 
         trace_payload = {
@@ -945,7 +945,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "anchors": {
                     "anchor_a": dict(scene_payload.anchor_instances[0]),
                     "anchor_b": dict(scene_payload.anchor_instances[1]),
-                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
+                    "matching_scene_boxes": list(annotation_payload["annotation_value"]),
                 },
             },
             "execution_trace": {
@@ -987,7 +987,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
                 "strip_boundary_margin_px": int(scene_payload.strip_boundary_margin_px),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         complexity = build_icons_relation_between_two_anchors_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1014,9 +1014,9 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(
-                type=str(evidence_payload["evidence_type"]),
-                value=list(evidence_payload["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_payload["annotation_type"]),
+                value=list(annotation_payload["annotation_value"]),
             ),
             image=image,
             image_id="img0",

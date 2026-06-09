@@ -67,7 +67,7 @@ _REQUIRED_INSTANCE_FIELDS = [
     "prompt_variants",
     "images",
     "answer_gt",
-    "evidence_gt",
+    "annotation_gt",
     "reward_contract",
     "task_complexity",
     "trace_ref",
@@ -312,7 +312,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         if query_key
         else ()
     )
-    mode_templates = dict(bundle.answer_or_evidence_templates)
+    mode_templates = dict(bundle.answer_or_annotation_templates)
     if len(scene_templates) != REQUIRED_PROMPT_VARIANTS:
         errors.append(
             _err(
@@ -363,8 +363,8 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
     expected_scene_count = len(scene_templates)
     expected_task_count = len(task_templates)
     expected_query_count = (len(query_templates) if query_key else None)
-    mode_key = str(prompt_variant.get("answer_or_evidence_key", "")).strip() if mode_templates else ""
-    mode_query_id_index = _to_int(prompt_variant.get("answer_or_evidence_query_id_index")) if mode_templates else None
+    mode_key = str(prompt_variant.get("answer_or_annotation_key", "")).strip() if mode_templates else ""
+    mode_query_id_index = _to_int(prompt_variant.get("answer_or_annotation_query_id_index")) if mode_templates else None
     expected_mode_count = len(mode_templates[mode_key]) if mode_key in mode_templates else None
 
     if observed_scene_count is None:
@@ -438,29 +438,29 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             errors.append(
                 _err(
                     error_codes.PROMPT_METADATA_MISSING,
-                    "missing answer_or_evidence key in prompt metadata",
+                    "missing answer_or_annotation key in prompt metadata",
                     instance_id=iid,
-                    field_path="query_spec.prompt_variant.answer_or_evidence_key",
+                    field_path="query_spec.prompt_variant.answer_or_annotation_key",
                 )
             )
         elif mode_key not in mode_templates:
             errors.append(
                 _err(
                     error_codes.PROMPT_KEY_MISSING,
-                    "prompt answer_or_evidence key not found in bundle",
+                    "prompt answer_or_annotation key not found in bundle",
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
-                    answer_or_evidence_key=mode_key,
+                    answer_or_annotation_key=mode_key,
                 )
             )
         else:
-            mode_count_key = f"answer_or_evidence:{mode_key}"
+            mode_count_key = f"answer_or_annotation:{mode_key}"
             observed_mode_count = _to_int(variant_count_by_key.get(mode_count_key))
             if observed_mode_count is None:
                 errors.append(
                     _err(
                         error_codes.PROMPT_METADATA_MISSING,
-                        "missing answer_or_evidence query-id count in prompt metadata",
+                        "missing answer_or_annotation query-id count in prompt metadata",
                         instance_id=iid,
                         field_path=f"query_spec.prompt_variant.variant_count_by_key.{mode_count_key}",
                     )
@@ -469,10 +469,10 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 errors.append(
                     _err(
                         error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                        "answer_or_evidence query-id count mismatch between metadata and bundle",
+                        "answer_or_annotation query-id count mismatch between metadata and bundle",
                         instance_id=iid,
                         prompt_bundle_id=bundle_id,
-                        answer_or_evidence_key=mode_key,
+                        answer_or_annotation_key=mode_key,
                         expected_count=expected_mode_count,
                         actual_count=observed_mode_count,
                     )
@@ -535,11 +535,11 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             errors.append(
                 _err(
                     error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
-                    "answer_or_evidence variant index out of range",
+                    "answer_or_annotation variant index out of range",
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
-                    answer_or_evidence_key=mode_key,
-                    query_id_index=prompt_variant.get("answer_or_evidence_query_id_index"),
+                    answer_or_annotation_key=mode_key,
+                    query_id_index=prompt_variant.get("answer_or_annotation_query_id_index"),
                     variant_count=expected_mode_count,
                 )
             )
@@ -549,7 +549,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
     if query_key:
         required_slots.extend(bundle.required_slots_by_key.get(f"query:{query_key}", ()))
     if mode_templates and mode_key:
-        required_slots.extend(bundle.required_slots_by_key.get(f"answer_or_evidence:{mode_key}", ()))
+        required_slots.extend(bundle.required_slots_by_key.get(f"answer_or_annotation:{mode_key}", ()))
     if required_slots:
         slot_values = prompt_variant.get("slot_values")
         if not isinstance(slot_values, Mapping):
@@ -586,7 +586,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             errors.append(
                 _err(
                     error_codes.PROMPT_METADATA_MISSING,
-                    "prompt_variants is required when bundle defines answer_or_evidence templates",
+                    "prompt_variants is required when bundle defines answer_or_annotation templates",
                     instance_id=iid,
                     field_path="prompt_variants",
                 )
@@ -603,7 +603,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 errors.append(
                     _err(
                         error_codes.PROMPT_METADATA_MISSING,
-                        "prompt_variants is missing required answer_or_evidence prompts",
+                        "prompt_variants is missing required answer_or_annotation prompts",
                         instance_id=iid,
                         field_path="prompt_variants",
                         missing_modes=missing_modes,
@@ -650,15 +650,15 @@ def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
                 )
             )
 
-    if "evidence_gt" in instance:
-        evidence = instance["evidence_gt"]
-        if not isinstance(evidence, dict) or "type" not in evidence or "value" not in evidence:
+    if "annotation_gt" in instance:
+        annotation = instance["annotation_gt"]
+        if not isinstance(annotation, dict) or "type" not in annotation or "value" not in annotation:
             errors.append(
                 _err(
                     error_codes.SCHEMA_TYPE_MISMATCH,
-                    "evidence_gt must be an object with keys {type, value}",
+                    "annotation_gt must be an object with keys {type, value}",
                     instance_id=iid,
-                    field_path="evidence_gt",
+                    field_path="annotation_gt",
                 )
             )
 
@@ -667,8 +667,8 @@ def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
         reward_contract_error = validate_reward_contract_payload(
             reward_contract,
             answer_type=instance.get("answer_gt", {}).get("type") if isinstance(instance.get("answer_gt"), dict) else None,
-            evidence_type=(
-                instance.get("evidence_gt", {}).get("type") if isinstance(instance.get("evidence_gt"), dict) else None
+            annotation_type=(
+                instance.get("annotation_gt", {}).get("type") if isinstance(instance.get("annotation_gt"), dict) else None
             ),
         )
         if reward_contract_error is not None:
@@ -917,6 +917,197 @@ def _validate_text_legibility_contract(
     return errors
 
 
+def _iter_marker_legibility_blocks(value: Any, *, field_path: str) -> List[tuple[str, Any]]:
+    """Find marker_legibility metadata blocks inside render metadata."""
+
+    found: List[tuple[str, Any]] = []
+    if not isinstance(value, Mapping):
+        return found
+    if "marker_legibility" in value:
+        found.append((f"{field_path}.marker_legibility", value.get("marker_legibility")))
+    for key, child in value.items():
+        if key == "marker_legibility":
+            continue
+        if isinstance(child, Mapping):
+            found.extend(_iter_marker_legibility_blocks(child, field_path=f"{field_path}.{key}"))
+        elif isinstance(child, list):
+            for index, item in enumerate(child):
+                if isinstance(item, Mapping):
+                    found.extend(_iter_marker_legibility_blocks(item, field_path=f"{field_path}.{key}[{index}]"))
+    return found
+
+
+def _validate_one_marker_legibility_block(
+    marker_legibility: Any,
+    *,
+    instance_id: str,
+    field_path_root: str,
+) -> List[_ValidationError]:
+    """Validate one rendered semantic-marker metadata block."""
+
+    errors: List[_ValidationError] = []
+    if not isinstance(marker_legibility, Mapping):
+        return [
+            _err(
+                error_codes.MARKER_LEGIBILITY_INVALID,
+                "marker_legibility metadata must be a mapping when present",
+                instance_id=instance_id,
+                field_path=field_path_root,
+            )
+        ]
+    if not bool(marker_legibility.get("enabled", True)):
+        return []
+
+    failure_count = _to_int(marker_legibility.get("failure_count"))
+    if failure_count is None or int(failure_count) < 0:
+        errors.append(
+            _err(
+                error_codes.MARKER_LEGIBILITY_INVALID,
+                "marker_legibility.failure_count must be a non-negative integer",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.failure_count",
+            )
+        )
+    elif int(failure_count) > 0:
+        errors.append(
+            _err(
+                error_codes.MARKER_LEGIBILITY_CONTRAST_FAILED,
+                "required semantic marker legibility metadata reports failures",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.failure_count",
+                failure_count=int(failure_count),
+            )
+        )
+
+    records = marker_legibility.get("records")
+    if records is None:
+        records = []
+    if not isinstance(records, list):
+        errors.append(
+            _err(
+                error_codes.MARKER_LEGIBILITY_INVALID,
+                "marker_legibility.records must be an array",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.records",
+            )
+        )
+        return errors
+
+    for index, record in enumerate(records):
+        field_prefix = f"{field_path_root}.records[{index}]"
+        if not isinstance(record, Mapping):
+            errors.append(
+                _err(
+                    error_codes.MARKER_LEGIBILITY_INVALID,
+                    "semantic marker legibility record must be a mapping",
+                    instance_id=instance_id,
+                    field_path=field_prefix,
+                )
+            )
+            continue
+        required = bool(record.get("required", True))
+        if not required:
+            continue
+        if record.get("passes") is not True:
+            errors.append(
+                _err(
+                    error_codes.MARKER_LEGIBILITY_CONTRAST_FAILED,
+                    "required semantic marker record does not pass legibility thresholds",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.passes",
+                    role=record.get("role"),
+                )
+            )
+        contrast = _finite_float(record.get("min_effective_contrast_ratio"))
+        contrast_required = _finite_float(record.get("min_contrast_required"))
+        if contrast is None or contrast_required is None or contrast < contrast_required:
+            errors.append(
+                _err(
+                    error_codes.MARKER_LEGIBILITY_CONTRAST_FAILED,
+                    "required semantic marker contrast is below threshold",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.min_effective_contrast_ratio",
+                    role=record.get("role"),
+                    min_effective_contrast_ratio=record.get("min_effective_contrast_ratio"),
+                    min_contrast_required=record.get("min_contrast_required"),
+                )
+            )
+        lab_distance = _finite_float(record.get("min_effective_lab_distance"))
+        lab_distance_required = _finite_float(record.get("min_lab_distance_required"))
+        if lab_distance is None or lab_distance_required is None or lab_distance < lab_distance_required:
+            errors.append(
+                _err(
+                    error_codes.MARKER_LEGIBILITY_CONTRAST_FAILED,
+                    "required semantic marker color distance is below threshold",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.min_effective_lab_distance",
+                    role=record.get("role"),
+                    min_effective_lab_distance=record.get("min_effective_lab_distance"),
+                    min_lab_distance_required=record.get("min_lab_distance_required"),
+                )
+            )
+        bbox = record.get("bbox_px")
+        if bbox is not None:
+            if not isinstance(bbox, list) or len(bbox) != 4:
+                errors.append(
+                    _err(
+                        error_codes.MARKER_LEGIBILITY_INVALID,
+                        "semantic marker bbox_px must be an array of four finite numbers",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                    )
+                )
+                continue
+            coords = [_finite_float(value) for value in bbox]
+            if any(value is None for value in coords):
+                errors.append(
+                    _err(
+                        error_codes.MARKER_LEGIBILITY_INVALID,
+                        "semantic marker bbox_px must contain only finite numbers",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                    )
+                )
+                continue
+            x0, y0, x1, y1 = [float(value) for value in coords if value is not None]
+            if x1 <= x0 or y1 <= y0:
+                errors.append(
+                    _err(
+                        error_codes.MARKER_LEGIBILITY_INVALID,
+                        "semantic marker bbox_px must have positive width and height",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                        bbox_px=bbox,
+                    )
+                )
+    return errors
+
+
+def _validate_marker_legibility_contract(
+    trace_record: Mapping[str, Any],
+    *,
+    instance_id: str,
+) -> List[_ValidationError]:
+    """Validate rendered semantic-marker metadata when a renderer records it."""
+
+    render_spec = trace_record.get("render_spec")
+    if not isinstance(render_spec, Mapping):
+        return []
+    errors: List[_ValidationError] = []
+    for field_path_root, marker_legibility in _iter_marker_legibility_blocks(render_spec, field_path="trace.render_spec"):
+        errors.extend(
+            _validate_one_marker_legibility_block(
+                marker_legibility,
+                instance_id=str(instance_id),
+                field_path_root=str(field_path_root),
+            )
+        )
+    return errors
+
+
 def validate_dataset(
     instances: List[Dict[str, Any]],
     *,
@@ -1037,6 +1228,7 @@ def validate_dataset(
 
         errors.extend(_validate_prompt_contract(inst, record))
         errors.extend(_validate_text_legibility_contract(record, instance_id=str(iid)))
+        errors.extend(_validate_marker_legibility_contract(record, instance_id=str(iid)))
 
         trace_reward_contract = record.get("reward_contract")
         if trace_reward_contract is None:
@@ -1052,7 +1244,7 @@ def validate_dataset(
             reward_contract_error = validate_reward_contract_payload(
                 trace_reward_contract,
                 answer_type=inst.get("answer_gt", {}).get("type") if isinstance(inst.get("answer_gt"), dict) else None,
-                evidence_type=inst.get("evidence_gt", {}).get("type") if isinstance(inst.get("evidence_gt"), dict) else None,
+                annotation_type=inst.get("annotation_gt", {}).get("type") if isinstance(inst.get("annotation_gt"), dict) else None,
             )
             if reward_contract_error is not None:
                 errors.append(

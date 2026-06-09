@@ -34,10 +34,10 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
         trace = out.trace_payload
         execution = trace["execution_trace"]
         target = dict(execution["target_control"])
-        evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
+        annotation_supports = [dict(record) for record in execution["annotation_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
         assert str(execution["query_id"]) == str(query_id)
         assert trace["scene_ir"]["scene_kind"] == "gui_navigation_path"
@@ -50,18 +50,18 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
             expected_roles = ("sidebar_section", "sidebar_group", "target_item")
         else:
             expected_roles = ("ribbon_tab", "ribbon_group", "target_command")
-        expected_evidence = {
-            expected_roles[0]: evidence_supports[0]["bbox_px"],
-            expected_roles[1]: evidence_supports[1]["bbox_px"],
+        expected_annotation = {
+            expected_roles[0]: annotation_supports[0]["bbox_px"],
+            expected_roles[1]: annotation_supports[1]["bbox_px"],
             expected_roles[2]: target["bbox_px"],
         }
-        assert out.evidence_gt.value == expected_evidence
-        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert set(out.evidence_gt.value) == set(expected_roles)
-        assert execution["evidence_role_support_ids"] == {
-            expected_roles[0]: str(execution["evidence_support_ids"][0]),
-            expected_roles[1]: str(execution["evidence_support_ids"][1]),
+        assert out.annotation_gt.value == expected_annotation
+        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert set(out.annotation_gt.value) == set(expected_roles)
+        assert execution["annotation_role_support_ids"] == {
+            expected_roles[0]: str(execution["annotation_support_ids"][0]),
+            expected_roles[1]: str(execution["annotation_support_ids"][1]),
             expected_roles[2]: str(target["control_id"]),
         }
 
@@ -70,11 +70,11 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
             assert int(execution["menu_command_count"]) == 3
             assert int(execution["total_control_count"]) == 2 * 2 * 2 * int(execution["menu_command_count"])
             assert str(target["role"]) == "menu_item"
-            assert [record["support_kind"] for record in evidence_supports] == ["menu_root", "menu_group"]
+            assert [record["support_kind"] for record in annotation_supports] == ["menu_root", "menu_group"]
         elif query_id == "sidebar_tree_target_label":
             assert int(execution["total_control_count"]) == 12
             assert str(target["role"]) == "sidebar_tree_item"
-            assert [record["support_kind"] for record in evidence_supports] == ["sidebar_section", "sidebar_group"]
+            assert [record["support_kind"] for record in annotation_supports] == ["sidebar_section", "sidebar_group"]
         else:
             assert list(execution["ribbon_tab_count_range"]) == [3, 5]
             assert list(execution["ribbon_group_count_range"]) == [2, 3]
@@ -86,7 +86,7 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
             )
             assert int(execution["total_control_count"]) <= 26
             assert str(target["role"]) == "ribbon_command"
-            assert [record["support_kind"] for record in evidence_supports] == ["ribbon_tab", "ribbon_group"]
+            assert [record["support_kind"] for record in annotation_supports] == ["ribbon_tab", "ribbon_group"]
 
         assert set(out.complexity.complexity_components.keys()) == {
             "visual_scan",
@@ -95,15 +95,15 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value.values() for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value.values() for coord in (box[1], box[3]))
+        assert all(0.0 <= float(coord) <= 1280.0 for box in out.annotation_gt.value.values() for coord in (box[0], box[2]))
+        assert all(0.0 <= float(coord) <= 800.0 for box in out.annotation_gt.value.values() for coord in (box[1], box[3]))
 
 
 def test_gui_relation_navigation_path_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationNavigationPathTargetLabelTask()
     out = task.generate(78200, params={"query_id": "menu_path_target_label"}, max_attempts=20)
-    assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": {
+    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
+        "annotation": {
             "menu_root": [82, 214, 308, 252],
             "menu_group": [104, 270, 286, 302],
             "target_command": [112, 316, 286, 354],
@@ -183,22 +183,23 @@ def test_gui_relation_navigation_path_target_label_deterministic() -> None:
     out_a = task.generate(78400, params=params, max_attempts=20)
     out_b = task.generate(78400, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_gui_relation_navigation_path_target_label_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_pages__navigation_flow__navigation_path_target_label"
+    task_id = "task_pages__navigation_flow__menu_path_target_label"
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_pages__navigation_flow__navigation_path_target_label",
+        dataset_name=f"build_smoke_{task_id}",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_pages__navigation_flow__navigation_path_target_label",
+                task_id=task_id,
                 count=4,
                 params={},
             )
@@ -215,7 +216,7 @@ def test_gui_relation_navigation_path_target_label_build_smoke(tmp_path: Path) -
     assert all(record["task_group"] == "relation" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_pages__navigation_flow__navigation_path_target_label"]) == 4
+    assert int(build_report["accepted_counts_by_task"][task_id]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

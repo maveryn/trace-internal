@@ -43,8 +43,8 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
     assert out.query_id == "undirected_named_node_degree_value"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
-    assert out.evidence_gt.type == "point_pair_set"
-    assert len(out.evidence_gt.value) == 2
+    assert out.annotation_gt.type == "point_pair_set"
+    assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_named_node_degree_value"
     assert execution["query_id"] == "undirected_named_node_degree_value"
     assert execution["graph_directionality"] == "undirected"
@@ -65,8 +65,8 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
     assert queried_degrees[query_label] == int(out.answer_gt.value)
     assert trace["witness_symbolic"]["query_label"] == query_label
     assert trace["witness_symbolic"]["edges"] == counted_edges
-    assert trace["projected_evidence"]["type"] == "point_pair_set"
-    assert trace["projected_evidence"]["point_pair_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
 
     for left, right in counted_edges:
         assert query_label in {str(left), str(right)}
@@ -77,9 +77,9 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
     query_node = next(node for node in node_entities if bool(node["is_query_node"]))
     assert query_node["label"] == query_label
     assert int(query_node["queried_degree"]) == 2
-    assert int(query_node["incident_evidence_edge_count"]) == 2
+    assert int(query_node["incident_annotation_edge_count"]) == 2
     assert sum(1 for edge in edge_entities if bool(edge["is_counted"])) == 2
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
 
 
@@ -116,7 +116,7 @@ def test_graph_counting_named_node_degree_value_directed_modes_use_edge_directio
         assert execution["graph_directionality"] == "directed"
         assert execution["degree_mode"] == degree_mode
         assert int(out.answer_gt.value) == queried_degrees[query_label] == 2
-        assert len(counted_edges) == len(out.evidence_gt.value) == 2
+        assert len(counted_edges) == len(out.annotation_gt.value) == 2
         assert all(bool(edge["directed"]) for edge in edge_entities)
         assert sum(1 for edge in edge_entities if bool(edge["is_counted"])) == 2
         if degree_mode == "in_degree":
@@ -140,11 +140,11 @@ def test_graph_counting_named_node_degree_value_prompt_examples_match_contract()
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[[180, 220], [310, 180]], [[180, 220], [430, 260]]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[[180, 220], [310, 180]], [[180, 220], [430, 260]]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_counting_named_node_degree_value_balanced_sampling_defaults() -> None:

@@ -9,11 +9,34 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .object_resources import ThreeDObjectProfile
-from ..room import wall_mounted_object_count as room_scene
 from . import object_scene
-from ..street import intersection_nearest as street_scene
-from ..warehouse import robot_forward_path as warehouse_scene
+from .camera_projection import build_projection_frame
+from .object_rendering import (
+    ThreeDObjectSpec,
+    ThreeDRenderContext,
+    rendered_three_d_object_from_bbox,
+    render_three_d_object,
+)
+from .object_resources import (
+    ThreeDObjectProfile,
+    WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB,
+    WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE,
+)
+from .object_scene import resolve_object_scene_render_params
+from .warehouse_object_rendering import _draw_ground_shadow as _draw_warehouse_ground_shadow
+from .warehouse_object_rendering import _fill_for_object as _warehouse_fill_for_object
+from ..room import wall_mounted_common as room_scene
+from ..room.wall_mounted_rendering import _draw_room_shell
+from ..street import intersection_scene as street_scene
+from ..street.intersection_building_rendering import _draw_styled_building_object
+from ..street.intersection_road_rendering import _draw_street_shell
+from ..warehouse import warehouse_scene_common as warehouse_scene
+from ..warehouse.warehouse_support_rendering import _draw_shelf_rack_object
+from .street_object_rendering_common import (
+    STREET_BUILDING_CONTEXT_OBJECT_TYPES,
+    _draw_shadow as _draw_street_shadow,
+    _street_object_fill_rgb,
+)
 
 
 @dataclass(frozen=True)
@@ -80,7 +103,7 @@ def _normalise_dimensions(
     return tuple(float(value) for value in dims)
 
 
-def _object_scene_render_params(canvas_width: int, canvas_height: int) -> object_scene._RenderParams:
+def _object_scene_render_params(canvas_width: int, canvas_height: int, *, draw_grid: bool = True) -> object_scene._RenderParams:
     return object_scene._resolve_render_params(
         {
             "canvas_width": int(canvas_width),
@@ -91,7 +114,7 @@ def _object_scene_render_params(canvas_width: int, canvas_height: int) -> object
             "scene_margin_bottom_px": 48,
             "room_extent": 2.25,
             "room_height": 2.2,
-            "grid_step": 0.8,
+            "grid_step": 0.8 if bool(draw_grid) else 0.0,
             "marker_radius_px": 18,
             "label_font_size_px": 1,
             "line_width_px": 2,
@@ -108,7 +131,11 @@ def _render_object_scene_profile(
     canvas_height: int,
     instance_seed: int,
 ) -> Tuple[Image.Image, List[float], Dict[str, Any]]:
-    render_params = _object_scene_render_params(int(canvas_width), int(canvas_height))
+    render_params = _object_scene_render_params(
+        int(canvas_width),
+        int(canvas_height),
+        draw_grid=str(profile.source_scene) != "object_cluster",
+    )
     rng = _profile_rng(profile, int(instance_seed), "object_scene")
     camera = object_scene._sample_camera(rng, yaw_band_degrees=(38.0, 62.0))
     dimensions = _normalise_dimensions(
@@ -221,7 +248,19 @@ def _room_reference_points(*specs: Mapping[str, Any]) -> List[Tuple[float, float
         if str(spec.get("object_role")) == "wall_object":
             points.extend(room_scene._wall_reference_points(spec))
         else:
-            points.extend(room_scene._object_reference_points(spec))
+            points.extend(_room_floor_reference_points(spec))
+    return points
+
+
+def _room_floor_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float, float]]:
+    x, y, _z = (float(value) for value in spec.get("world_xyz", (0.0, 0.0, 0.0)))
+    base_z = float(spec.get("base_xyz", (x, y, 0.0))[2])
+    width, depth, height = (float(value) for value in spec.get("dimensions_xyz", (0.6, 0.6, 0.6)))
+    xs = (x - width * 0.5, x + width * 0.5)
+    ys = (y - depth * 0.5, y + depth * 0.5)
+    zs = (base_z, base_z + height)
+    points = [(px, py, pz) for px in xs for py in ys for pz in zs]
+    points.append((x, y, base_z + height * 0.5))
     return points
 
 
@@ -232,7 +271,7 @@ def _render_room_wall_profile(
     canvas_height: int,
     instance_seed: int,
 ) -> Tuple[Image.Image, List[float], Dict[str, Any]]:
-    render_params = room_scene._resolve_render_params(
+    render_params = resolve_object_scene_render_params(
         {
             "canvas_width": int(canvas_width),
             "canvas_height": int(canvas_height),
@@ -261,12 +300,28 @@ def _render_room_wall_profile(
         counts_for_query=False,
     )
     spec = room_scene._with_picture_scenery(spec, rng)
-    frame = room_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=_room_reference_points(spec))
+    frame = build_projection_frame(camera=camera, render_params=render_params, point_worlds=_room_reference_points(spec))
     spec = room_scene._finalize_specs([spec], camera=camera, frame=frame)[0]
     image = Image.new("RGB", (int(canvas_width), int(canvas_height)), (246, 248, 247))
     draw = ImageDraw.Draw(image)
-    room_scene._draw_room_shell(draw, camera=camera, frame=frame, render_params=render_params, scene_variant="studio_room")
-    bbox = room_scene._draw_wall_object(draw, spec, camera=camera, frame=frame)
+    _draw_room_shell(draw, camera=camera, frame=frame, render_params=render_params, scene_variant="studio_room")
+    rendered = render_three_d_object(
+        ThreeDObjectSpec.from_mapping(
+            spec,
+            object_type_key="object_type",
+            default_renderer_id="room_wall_object",
+            role=str(spec.get("object_role", "wall_object")),
+            source_entity_type="three_d_room_wall_object",
+        ),
+        ThreeDRenderContext(
+            draw=draw,
+            camera=camera,
+            frame=frame,
+            render_params=render_params,
+            scene_variant="studio_room",
+        ),
+    )
+    bbox = list(rendered.bbox_xyxy)
     return image, list(bbox), {
         "preview_adapter": "room_wall_object",
         "scene_variant": "studio_room",
@@ -322,7 +377,7 @@ def _render_room_floor_profile(
     canvas_height: int,
     instance_seed: int,
 ) -> Tuple[Image.Image, List[float], Dict[str, Any]]:
-    render_params = room_scene._resolve_render_params(
+    render_params = resolve_object_scene_render_params(
         {
             "canvas_width": int(canvas_width),
             "canvas_height": int(canvas_height),
@@ -339,15 +394,46 @@ def _render_room_floor_profile(
     camera = room_scene._sample_room_camera(rng, scene_variant="studio_room", yaw_band_degrees=(-24.0, 24.0))
     target, support = _room_floor_target_spec(profile, rng)
     specs = [spec for spec in (support, target) if spec is not None]
-    frame = room_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=_room_reference_points(*specs))
+    frame = build_projection_frame(camera=camera, render_params=render_params, point_worlds=_room_reference_points(*specs))
     final_specs = {str(spec["object_id"]): spec for spec in room_scene._finalize_specs(specs, camera=camera, frame=frame)}
     image = Image.new("RGB", (int(canvas_width), int(canvas_height)), (246, 248, 247))
     draw = ImageDraw.Draw(image)
-    room_scene._draw_room_shell(draw, camera=camera, frame=frame, render_params=render_params, scene_variant="studio_room")
+    _draw_room_shell(draw, camera=camera, frame=frame, render_params=render_params, scene_variant="studio_room")
     if support is not None:
-        room_scene._draw_floor_object(draw, final_specs[str(support["object_id"])], camera=camera, frame=frame)
+        render_three_d_object(
+            ThreeDObjectSpec.from_mapping(
+                final_specs[str(support["object_id"])],
+                object_type_key="object_type",
+                default_renderer_id="room_floor_object",
+                role=str(support.get("object_role", "floor_object")),
+                source_entity_type="three_d_room_floor_object",
+            ),
+            ThreeDRenderContext(
+                draw=draw,
+                camera=camera,
+                frame=frame,
+                render_params=render_params,
+                scene_variant="studio_room",
+            ),
+        )
     target_spec = final_specs["inventory_target"]
-    bbox = room_scene._draw_floor_object(draw, target_spec, camera=camera, frame=frame)
+    rendered = render_three_d_object(
+        ThreeDObjectSpec.from_mapping(
+            target_spec,
+            object_type_key="object_type",
+            default_renderer_id="room_floor_object",
+            role=str(target_spec.get("object_role", "floor_object")),
+            source_entity_type="three_d_room_floor_object",
+        ),
+        ThreeDRenderContext(
+            draw=draw,
+            camera=camera,
+            frame=frame,
+            render_params=render_params,
+            scene_variant="studio_room",
+        ),
+    )
+    bbox = list(rendered.bbox_xyxy)
     return image, list(bbox), {
         "preview_adapter": "room_floor_object",
         "scene_variant": "studio_room",
@@ -378,7 +464,7 @@ def _render_street_profile(
         render_defaults={},
     )
     rng = _profile_rng(profile, int(instance_seed), "street")
-    camera = street_scene._sample_camera(rng, yaw_band_degrees=(32.0, 52.0))
+    camera = object_scene._sample_camera(rng, yaw_band_degrees=(32.0, 52.0))
     object_type = str(profile.object_type)
     orientation_axis = "x"
     dimensions = street_scene._dimensions_for_orientation(object_type, orientation_axis=orientation_axis, scale=0.92)
@@ -396,7 +482,8 @@ def _render_street_profile(
     )
     spec["object_name"] = str(profile.display_name)
     spec["prompt_name"] = str(profile.display_name)
-    if object_type in street_scene.STREET_BUILDING_CONTEXT_OBJECT_TYPES:
+    street_support = str(profile.resource_kind) == "scene_support"
+    if street_support and object_type in STREET_BUILDING_CONTEXT_OBJECT_TYPES:
         style = street_scene._fixed_building_style_for_street_object(object_type) or "concrete_midrise"
         spec = street_scene._apply_street_building_style(spec, style=style)
     reference_points = [
@@ -406,13 +493,13 @@ def _render_street_profile(
         (-render_params.street_extent, render_params.street_extent, 0.0),
         (-render_params.street_extent, -render_params.street_extent, 1.7),
         (render_params.street_extent, render_params.street_extent, 1.7),
-        *street_scene._object_reference_points(spec),
+        *object_scene._object_reference_points(spec),
     ]
-    frame = street_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
+    frame = object_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
     spec = street_scene._finalize_specs([spec], camera=camera, frame=frame)[0]
     image = Image.new("RGB", (int(canvas_width), int(canvas_height)), (216, 224, 220))
     draw = ImageDraw.Draw(image)
-    street_scene._draw_street_shell(
+    _draw_street_shell(
         draw,
         camera=camera,
         frame=frame,
@@ -421,11 +508,34 @@ def _render_street_profile(
         intersection_center_xy=(0.0, 0.0),
         intersection_layout="four_way",
     )
-    street_scene._draw_shadow(draw, spec, camera=camera, frame=frame)
-    if str(profile.role) == "street_context":
-        bbox = street_scene._draw_context_object(draw, spec, camera=camera, frame=frame)
+    _draw_street_shadow(draw, spec, camera=camera, frame=frame)
+    object_spec = ThreeDObjectSpec.from_mapping(
+        spec,
+        object_type_key="object_type",
+        default_renderer_id="street_object",
+        role=str(spec.get("object_role", profile.role)),
+        source_entity_type="three_d_street_context_object" if str(profile.role) == "street_context" else "three_d_street_candidate_object",
+    )
+    render_context = ThreeDRenderContext(
+        draw=draw,
+        camera=camera,
+        frame=frame,
+        render_params=render_params,
+        fill_rgb=_street_object_fill_rgb(spec),
+        scene_variant="downtown_intersection",
+    )
+    if street_support and object_type in STREET_BUILDING_CONTEXT_OBJECT_TYPES:
+        bbox = _draw_styled_building_object(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            fill=_street_object_fill_rgb(spec),
+        )
+        rendered = rendered_three_d_object_from_bbox(object_spec, render_context, bbox_xyxy=bbox)
     else:
-        bbox = street_scene._draw_candidate_object(draw, spec, camera=camera, frame=frame)
+        rendered = render_three_d_object(object_spec, render_context)
+    bbox = list(rendered.bbox_xyxy)
     return image, list(bbox), {
         "preview_adapter": "street_object",
         "scene_variant": "downtown_intersection",
@@ -460,7 +570,8 @@ def _warehouse_target_spec(profile: ThreeDObjectProfile) -> Dict[str, Any]:
                 "robot_accent_rgb": [int(channel) for channel in warehouse_scene.ROBOT_ACCENT_COLORS[0]],
             }
         )
-    if object_type == "shelf_rack":
+    warehouse_support = str(profile.resource_kind) == "scene_support"
+    if warehouse_support and object_type == "shelf_rack":
         spec.update(
             {
                 "shelf_style": "mixed_crates",
@@ -499,17 +610,42 @@ def _render_warehouse_profile(
         render_defaults={},
     )
     rng = _profile_rng(profile, int(instance_seed), "warehouse")
-    camera = warehouse_scene._sample_camera(rng, yaw_band_degrees=(32.0, 52.0))
+    camera = object_scene._sample_camera(rng, yaw_band_degrees=(32.0, 52.0))
     spec = _warehouse_target_spec(profile)
-    reference_points = object_scene._stage_reference_points(2.0) + warehouse_scene._object_reference_points(spec)
-    frame = warehouse_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
+    reference_points = object_scene._stage_reference_points(2.0) + object_scene._object_reference_points(spec)
+    frame = object_scene._build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
     spec = warehouse_scene._finalize_specs([spec], camera=camera, frame=frame)[0]
     image = Image.new("RGB", (int(canvas_width), int(canvas_height)), tuple(int(value) for value in render_params.floor_rgb))
     draw = ImageDraw.Draw(image)
     _draw_simple_floor_grid(draw, camera=camera, frame=frame, width=int(canvas_width), height=int(canvas_height))
-    warehouse_scene._draw_ground_shadow(draw, spec, camera=camera, frame=frame)
-    fill = warehouse_scene._fill_for_object(spec, scene_variant="storage_aisle")
-    bbox = warehouse_scene._draw_warehouse_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    _draw_warehouse_ground_shadow(draw, spec, camera=camera, frame=frame)
+    fill = (
+        WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB
+        if str(spec.get("object_type")) == WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE
+        else _warehouse_fill_for_object(spec, scene_variant="storage_aisle")
+    )
+    object_spec = ThreeDObjectSpec.from_mapping(
+        spec,
+        object_type_key="object_type",
+        default_renderer_id="warehouse_object",
+        role=str(spec.get("object_role", profile.role)),
+        source_entity_type="three_d_warehouse_object",
+    )
+    render_context = ThreeDRenderContext(
+        draw=draw,
+        camera=camera,
+        frame=frame,
+        render_params=render_params,
+        fill_rgb=fill,
+        scene_variant="storage_aisle",
+    )
+    warehouse_support = str(profile.resource_kind) == "scene_support"
+    if warehouse_support and str(spec.get("object_type")) == "shelf_rack":
+        rack_bbox = _draw_shelf_rack_object(draw, spec, camera=camera, frame=frame, fill=fill)
+        rendered = rendered_three_d_object_from_bbox(object_spec, render_context, bbox_xyxy=rack_bbox)
+    else:
+        rendered = render_three_d_object(object_spec, render_context)
+    bbox = list(rendered.bbox_xyxy)
     return image, list(bbox), {
         "preview_adapter": "warehouse_object",
         "scene_variant": "storage_aisle",

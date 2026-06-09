@@ -55,13 +55,13 @@ def test_graph_relation_component_size_after_edge_removal_contract_matches_trace
     edit_a, edit_b = [str(label) for label in execution["edit_edge"]]
     post_component = _component_from_adjacency(execution["post_edit_adjacency_by_label"], query_label)
 
-    assert "task_graph__node_link__component_membership_count" in TASK_REGISTRY
+    assert "task_graph__node_link__component_size_after_edge_edit" in TASK_REGISTRY
     assert out.scene_id == "node_link"
     assert out.query_id == "component_size_after_edge_removal"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
-    assert len(out.evidence_gt.value) == 3
+    assert len(out.annotation_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_component_size_after_edge_edit"
     assert execution["edit_operation"] == "edge_removal"
     assert execution["edit_edge_visible_in_rendered_graph"] is True
@@ -74,11 +74,11 @@ def test_graph_relation_component_size_after_edge_removal_contract_matches_trace
     assert edit_a in execution["pre_edit_adjacency_by_label"][edit_b]
     assert edit_b not in execution["post_edit_adjacency_by_label"][edit_a]
     assert edit_a not in execution["post_edit_adjacency_by_label"][edit_b]
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["witness_symbolic"]["labels"] == execution["matching_labels"]
     assert f'node "{query_label}"' in str(out.prompt)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_relation_component_size_after_edge_addition_contract_matches_trace() -> None:
@@ -100,7 +100,7 @@ def test_graph_relation_component_size_after_edge_addition_contract_matches_trac
 
     assert out.query_id == "component_size_after_edge_addition"
     assert int(out.answer_gt.value) == 5
-    assert len(out.evidence_gt.value) == 5
+    assert len(out.annotation_gt.value) == 5
     assert execution["edit_operation"] == "edge_addition"
     assert execution["edit_edge_visible_in_rendered_graph"] is False
     assert edit_b not in execution["pre_edit_adjacency_by_label"][edit_a]
@@ -118,11 +118,11 @@ def test_graph_relation_component_size_after_edge_edit_prompt_examples_match_con
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180], [430, 260]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180], [430, 260]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_graph_relation_component_size_after_edge_edit_balanced_sampling() -> None:
@@ -160,7 +160,7 @@ def test_graph_relation_component_size_after_edge_edit_build_smoke(tmp_path: Pat
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph__node_link__component_membership_count",
+                task_id="task_graph__node_link__component_size_after_edge_edit",
                 count=4,
                 params={},
             )
@@ -177,7 +177,7 @@ def test_graph_relation_component_size_after_edge_edit_build_smoke(tmp_path: Pat
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__component_membership_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__component_size_after_edge_edit"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

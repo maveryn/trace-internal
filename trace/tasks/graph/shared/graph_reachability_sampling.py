@@ -426,7 +426,7 @@ def sample_reachable_count_graph(
 ) -> GraphReachableSample:
     """Construct one directed graph with an exact reachable-count witness set.
 
-    The queried source node is included in the answer/evidence set. Generation
+    The queried source node is included in the answer/annotation set. Generation
     preserves at least one unreachable node by construction and verifies the
     final directed successor adjacency before returning.
     """

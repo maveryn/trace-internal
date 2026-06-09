@@ -46,6 +46,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -124,6 +126,7 @@ class _RenderContext:
     orientation_key: str
     orientation_sign_x: int
     orientation_sign_y: int
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -144,21 +147,12 @@ class _ResolvedProblem:
 class _RenderedPythagoreanSquareScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
-
-
-def _selected_probability_map(
-    values: Sequence[int | float], selected: int | float
-) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if _round1(value) == _round1(selected) else 0.0)
-        for value in values
-    }
 
 
 def _polygon_center(points: Sequence[Point]) -> Point:
@@ -225,7 +219,10 @@ def _resolve_problem(
         hypotenuse_side=float(hyp_side),
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(support_values))), answer
+            tuple(sorted(set(support_values))),
+            answer,
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: _round1(value) == _round1(selected),
         ),
     )
 
@@ -267,6 +264,93 @@ def _render_pythagorean_square_scene(
         (outer_bottom_right, center_bottom, center_right),
         (outer_bottom_left, center_left, center_bottom),
     )
+    marker = 16.0
+    angle_marks_raw = (
+        (
+            (left + marker, top),
+            (left + marker, top + marker),
+            (left, top + marker),
+        ),
+        (
+            (right - marker, top),
+            (right - marker, top + marker),
+            (right, top + marker),
+        ),
+        (
+            (right - marker, bottom),
+            (right - marker, bottom - marker),
+            (right, bottom - marker),
+        ),
+        (
+            (left + marker, bottom),
+            (left + marker, bottom - marker),
+            (left, bottom - marker),
+        ),
+    )
+    if ctx.orientation_key == "up_right":
+        outer_label_center_raw = ((left + right) / 2.0, top - 32.0)
+        leg_label_center_raw = ((left + center_top[0]) / 2.0, top + 28.0)
+        other_leg_label_center_raw = ((center_top[0] + right) / 2.0, top + 28.0)
+    elif ctx.orientation_key == "up_left":
+        outer_label_center_raw = (left - 56.0, (top + bottom) / 2.0)
+        leg_label_center_raw = (right - 34.0, (top + center_right[1]) / 2.0)
+        other_leg_label_center_raw = (
+            right - 42.0,
+            (center_right[1] + bottom) / 2.0,
+        )
+    elif ctx.orientation_key == "down_right":
+        outer_label_center_raw = ((left + right) / 2.0, bottom + 30.0)
+        leg_label_center_raw = ((center_bottom[0] + right) / 2.0, bottom - 28.0)
+        other_leg_label_center_raw = ((left + center_bottom[0]) / 2.0, bottom - 28.0)
+    else:
+        outer_label_center_raw = (right + 56.0, (top + bottom) / 2.0)
+        leg_label_center_raw = (left + 34.0, (center_left[1] + bottom) / 2.0)
+        other_leg_label_center_raw = (left + 42.0, (top + center_left[1]) / 2.0)
+
+    ctx.scene_transform.resolve(
+        (
+            *outer_square,
+            *central_square,
+            *(point for triangle in corner_triangles for point in triangle),
+            outer_label_center_raw,
+            leg_label_center_raw,
+            other_leg_label_center_raw,
+            *(point for mark in angle_marks_raw for point in mark),
+        )
+    )
+    (
+        outer_top_left,
+        outer_top_right,
+        outer_bottom_right,
+        outer_bottom_left,
+        center_top,
+        center_right,
+        center_bottom,
+        center_left,
+    ) = ctx.scene_transform.points(
+        (
+            outer_top_left,
+            outer_top_right,
+            outer_bottom_right,
+            outer_bottom_left,
+            center_top,
+            center_right,
+            center_bottom,
+            center_left,
+        )
+    )
+    outer_square = (
+        outer_top_left,
+        outer_top_right,
+        outer_bottom_right,
+        outer_bottom_left,
+    )
+    central_square = (center_top, center_right, center_bottom, center_left)
+    corner_triangles = tuple(ctx.scene_transform.points(triangle) for triangle in corner_triangles)
+    angle_marks = tuple(ctx.scene_transform.points(mark) for mark in angle_marks_raw)
+    outer_label_center = ctx.scene_transform.point(outer_label_center_raw)
+    leg_label_center = ctx.scene_transform.point(leg_label_center_raw)
+    other_leg_label_center = ctx.scene_transform.point(other_leg_label_center_raw)
 
     triangle_fills = (
         ctx.leg_fill_color,
@@ -297,52 +381,10 @@ def _render_pythagorean_square_scene(
         joint="curve",
     )
 
-    marker = 16.0
-    angle_marks = (
-        [
-            (left + marker, top),
-            (left + marker, top + marker),
-            (left, top + marker),
-        ],
-        [
-            (right - marker, top),
-            (right - marker, top + marker),
-            (right, top + marker),
-        ],
-        [
-            (right - marker, bottom),
-            (right - marker, bottom - marker),
-            (right, bottom - marker),
-        ],
-        [
-            (left + marker, bottom),
-            (left + marker, bottom - marker),
-            (left, bottom - marker),
-        ],
-    )
     for mark in angle_marks:
         ctx.draw.line(mark, fill=ctx.line_color, width=2)
 
     label_bboxes: Dict[str, BBox] = {}
-    if ctx.orientation_key == "up_right":
-        outer_label_center = ((left + right) / 2.0, top - 32.0)
-        leg_label_center = ((left + center_top[0]) / 2.0, top + 28.0)
-        other_leg_label_center = ((center_top[0] + right) / 2.0, top + 28.0)
-    elif ctx.orientation_key == "up_left":
-        outer_label_center = (left - 56.0, (top + bottom) / 2.0)
-        leg_label_center = (right - 34.0, (top + center_right[1]) / 2.0)
-        other_leg_label_center = (
-            right - 42.0,
-            (center_right[1] + bottom) / 2.0,
-        )
-    elif ctx.orientation_key == "down_right":
-        outer_label_center = ((left + right) / 2.0, bottom + 30.0)
-        leg_label_center = ((center_bottom[0] + right) / 2.0, bottom - 28.0)
-        other_leg_label_center = ((left + center_bottom[0]) / 2.0, bottom - 28.0)
-    else:
-        outer_label_center = (right + 56.0, (top + bottom) / 2.0)
-        leg_label_center = (left + 34.0, (center_left[1] + bottom) / 2.0)
-        other_leg_label_center = (left + 42.0, (top + center_left[1]) / 2.0)
     label_bboxes["outer_square_side"] = _draw_label(
         ctx,
         f"outer side={outer_side_units}",
@@ -366,12 +408,12 @@ def _render_pythagorean_square_scene(
         ctx, "Area=?", central_square_center, small=True
     )
 
-    evidence_roles = (
+    annotation_roles = (
         "outer_square_side_label",
         "given_triangle_leg_label",
         "other_triangle_leg_label",
     )
-    evidence_bboxes = (
+    annotation_bboxes = (
         label_bboxes["outer_square_side"],
         label_bboxes["given_triangle_leg"],
         label_bboxes["other_triangle_leg"],
@@ -443,8 +485,8 @@ def _render_pythagorean_square_scene(
     return _RenderedPythagoreanSquareScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=square_entities,
         render_map={
@@ -492,6 +534,7 @@ class _PythagoreanSquareDissectionBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "pythagorean_square_dissection"
@@ -594,6 +637,13 @@ class _PythagoreanSquareDissectionBaseTask:
             orientation_key=str(orientation_key),
             orientation_sign_x=int(orientation_sign_x),
             orientation_sign_y=int(orientation_sign_y),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -618,7 +668,7 @@ class _PythagoreanSquareDissectionBaseTask:
     ) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.40
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=4)
             * 0.16
         )
         precision = 0.56 if self.reasoning_kind == "square_area" else 0.72
@@ -664,6 +714,7 @@ class _PythagoreanSquareDissectionBaseTask:
                 )
                 rendered = _render_pythagorean_square_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -686,7 +737,7 @@ class _PythagoreanSquareDissectionBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -700,14 +751,14 @@ class _PythagoreanSquareDissectionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -718,16 +769,16 @@ class _PythagoreanSquareDissectionBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": "attached_squares",
@@ -745,7 +796,7 @@ class _PythagoreanSquareDissectionBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": "attached_squares",
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -774,7 +825,7 @@ class _PythagoreanSquareDissectionBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 1 if self.reasoning_kind == "square_area" else 2,
                 **dict(rendered.witness),
             },
@@ -784,21 +835,21 @@ class _PythagoreanSquareDissectionBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

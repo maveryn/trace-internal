@@ -128,11 +128,11 @@ class _ResolvedQuery:
 
 @dataclass(frozen=True)
 class _RenderedSolidScene:
-    """Rendered solid-view scene payload with evidence + trace artifacts."""
+    """Rendered solid-view scene payload with annotation + trace artifacts."""
 
     stack: CubeStack
     answer_value: int
-    evidence_bboxes: List[List[float]]
+    annotation_bboxes: List[List[float]]
     query_panel_bbox: List[float]
     stack_panel_bbox: List[float]
     query_grid_bbox: List[float]
@@ -155,7 +155,7 @@ _COMPLEXITY_WEIGHTS = {
     "ambiguity": 0.20,
     "output_burden": 0.10,
 }
-_TARGET_COUNT_BALANCE_SALT = 39017
+_TARGET_COUNT_BALANCE_SALT = 48518
 
 
 def _target_count_support(params: Mapping[str, Any]) -> Tuple[int, ...]:
@@ -729,7 +729,7 @@ def _render_scene(
         }
     )
 
-    evidence_bboxes = [list(bbox) for bbox in query_panel_meta["occupied_bboxes"]]
+    annotation_bboxes = [list(bbox) for bbox in query_panel_meta["occupied_bboxes"]]
     projection_cells_out = [[int(col), int(row)] for col, row in projection_cells]
     render_map = {
         "image_id": "img0",
@@ -740,7 +740,7 @@ def _render_scene(
         "query_view_title": str(view_title_for_query(str(query.query_id))),
         "stack_voxel_scale_percent": int(stack_voxel_scale_percent),
         "projection_cells": list(projection_cells_out),
-        "projection_cell_bboxes": list(evidence_bboxes),
+        "projection_cell_bboxes": list(annotation_bboxes),
         "stack_width": int(stack.width),
         "stack_depth": int(stack.depth),
         "stack_heights": [
@@ -750,8 +750,8 @@ def _render_scene(
     }
     return _RenderedSolidScene(
         stack=stack,
-        answer_value=int(len(evidence_bboxes)),
-        evidence_bboxes=list(evidence_bboxes),
+        answer_value=int(len(annotation_bboxes)),
+        annotation_bboxes=list(annotation_bboxes),
         query_panel_bbox=list(query_panel_meta["panel_bbox"]),
         stack_panel_bbox=list(stack_panel_meta["panel_bbox"]),
         query_grid_bbox=list(query_panel_meta["grid_bbox"]),
@@ -784,7 +784,7 @@ def _build_solid_view_complexity(
     cube_count: int,
     max_height: int,
     target_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ):
     """Build one normalized complexity payload for cube-stack view counting."""
 
@@ -797,7 +797,7 @@ def _build_solid_view_complexity(
         + (0.30 * normalize_int_with_bounds(int(cube_count - target_count), [0, 5]))
         + (0.12 if str(query_id) != TOP_VIEW_QUERY else 0.0)
     )
-    output_burden = normalize_int_with_bounds(int(evidence_count), [2, 7])
+    output_burden = normalize_int_with_bounds(int(annotation_count), [2, 7])
     return build_puzzle_complexity(
         weights=_COMPLEXITY_WEIGHTS,
         components={
@@ -819,7 +819,7 @@ class _ProjectionMatchRenderedScene:
     stack: CubeStack
     answer_label: str
     answer_index: int
-    evidence_bboxes: List[List[float]]
+    annotation_bboxes: List[List[float]]
     stack_panel_bbox: List[float]
     option_panel_bboxes: Dict[str, List[float]]
     option_grid_bboxes: Dict[str, List[float]]
@@ -1108,7 +1108,7 @@ def _render_projection_match_scene(
         option_grid_bboxes[str(label)] = list(option_meta["grid_bbox"])
         option_cells[str(label)] = [[int(col), int(row)] for col, row in candidate_sets[int(index)]]
 
-    evidence_bboxes = [list(option_panel_bboxes[str(answer_label)])]
+    annotation_bboxes = [list(option_panel_bboxes[str(answer_label)])]
     scene_entities: List[Dict[str, Any]] = [
         {
             "entity_id": f"cube_{index:02d}",
@@ -1161,7 +1161,7 @@ def _render_projection_match_scene(
         stack=stack,
         answer_label=str(answer_label),
         answer_index=int(answer_index),
-        evidence_bboxes=list(evidence_bboxes),
+        annotation_bboxes=list(annotation_bboxes),
         stack_panel_bbox=list(stack_panel_meta["panel_bbox"]),
         option_panel_bboxes=dict(option_panel_bboxes),
         option_grid_bboxes=dict(option_grid_bboxes),
@@ -1206,7 +1206,7 @@ class _ProjectionConsistencyRenderedScene:
     answer_label: str
     answer_index: int
     consistency_query: str
-    evidence_bboxes: List[List[float]]
+    annotation_bboxes: List[List[float]]
     reference_stack: CubeStack
     visible_counts_by_query: Dict[str, int]
     scene_entities: List[Dict[str, Any]]
@@ -1421,7 +1421,7 @@ def _render_inconsistent_projection_scene(
         option_cells[str(label)] = [[int(col), int(row)] for col, row in shown_cells]
         panel_query_by_label[str(label)] = str(query_id)
 
-    evidence_bboxes = [list(option_panel_bboxes[str(answer_label)])]
+    annotation_bboxes = [list(option_panel_bboxes[str(answer_label)])]
     scene_entities: List[Dict[str, Any]] = [
         {
             "entity_id": f"cube_{index:02d}",
@@ -1473,7 +1473,7 @@ def _render_inconsistent_projection_scene(
         answer_label=str(answer_label),
         answer_index=int(answer_index),
         consistency_query="inconsistent_projection_label",
-        evidence_bboxes=list(evidence_bboxes),
+        annotation_bboxes=list(annotation_bboxes),
         reference_stack=stack,
         visible_counts_by_query={str(key): int(value) for key, value in visible_counts_by_query.items()},
         scene_entities=list(scene_entities),
@@ -1567,7 +1567,7 @@ def _render_candidate_stack_from_views_scene(
             for (x_value, y_value), height in sorted(candidate_stacks[int(index)].heights.items())
         ]
 
-    evidence_bboxes = [list(option_panel_bboxes[str(answer_label)])]
+    annotation_bboxes = [list(option_panel_bboxes[str(answer_label)])]
     scene_entities: List[Dict[str, Any]] = []
     for query_id in SUPPORTED_QUERY_IDS:
         scene_entities.append(
@@ -1612,7 +1612,7 @@ def _render_candidate_stack_from_views_scene(
         answer_label=str(answer_label),
         answer_index=int(answer_index),
         consistency_query="candidate_stack_from_views_label",
-        evidence_bboxes=list(evidence_bboxes),
+        annotation_bboxes=list(annotation_bboxes),
         reference_stack=reference_stack,
         visible_counts_by_query={str(key): int(value) for key, value in visible_counts_by_query.items()},
         scene_entities=list(scene_entities),
@@ -1764,12 +1764,12 @@ class SolidViewCountGenerator:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_integer",
-                "evidence_hint_visible_cube_count",
+                "annotation_hint_visible_cube_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_bboxes,
+            annotation_value=rendered_scene.annotation_bboxes,
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -1779,14 +1779,14 @@ class SolidViewCountGenerator:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.public_query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_visible_cube_count"]),
                 "view_direction": str(query.view_direction).title(),
                 "view_direction_description": str(_view_direction_description(str(query.view_direction))),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_visible_cube_count"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_visible_cube_count"]),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1796,7 +1796,7 @@ class SolidViewCountGenerator:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(rendered_scene.answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(rendered_scene.evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(rendered_scene.annotation_bboxes))
 
         query_params = {
             "scene_variant": str(query.scene_variant),
@@ -1869,9 +1869,9 @@ class SolidViewCountGenerator:
                 "type": "projection_cell_set",
                 "cells": list(rendered_scene.projection_cells),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "pixel_bbox_set": list(rendered_scene.evidence_bboxes),
+                "pixel_bbox_set": list(rendered_scene.annotation_bboxes),
                 "projection_cells": list(rendered_scene.projection_cells),
                 "query_panel_bbox": list(rendered_scene.query_panel_bbox),
                 "query_grid_bbox": list(rendered_scene.query_grid_bbox),
@@ -1884,16 +1884,16 @@ class SolidViewCountGenerator:
             cube_count=int(rendered_scene.stack.cube_count),
             max_height=int(rendered_scene.stack.max_height),
             target_count=int(query.target_count),
-            evidence_count=len(rendered_scene.evidence_bboxes),
+            annotation_count=len(rendered_scene.annotation_bboxes),
         )
         trace_payload["answer_gt"] = answer_gt.to_dict()
-        trace_payload["evidence_gt"] = evidence_gt.to_dict()
+        trace_payload["annotation_gt"] = annotation_gt.to_dict()
         trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -2040,12 +2040,12 @@ class SolidViewProjectionMatchGenerator:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_option_letter",
-                "evidence_hint_projection_match_label",
+                "annotation_hint_projection_match_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_bboxes,
+            annotation_value=rendered_scene.annotation_bboxes,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -2055,14 +2055,14 @@ class SolidViewProjectionMatchGenerator:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=PROJECTION_MATCH_QUERY,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_projection_match_label"]),
                 "view_direction": str(query.view_direction).title(),
                 "view_direction_description": str(_view_direction_description(str(query.view_direction))),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_projection_match_label"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_projection_match_label"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -2072,7 +2072,7 @@ class SolidViewProjectionMatchGenerator:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(rendered_scene.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(rendered_scene.evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(rendered_scene.annotation_bboxes))
         query_params = {
             "scene_variant": str(query.scene_variant),
             "query_id": PROJECTION_MATCH_QUERY,
@@ -2147,11 +2147,11 @@ class SolidViewProjectionMatchGenerator:
                 "label": str(rendered_scene.answer_label),
                 "correct_projection_cells": list(rendered_scene.correct_projection_cells),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "pixel_bbox_set": list(rendered_scene.evidence_bboxes),
+                "pixel_bbox_set": list(rendered_scene.annotation_bboxes),
                 "selected_option_label": str(rendered_scene.answer_label),
-                "selected_option_bbox": list(rendered_scene.evidence_bboxes[0]),
+                "selected_option_bbox": list(rendered_scene.annotation_bboxes[0]),
             },
         }
         complexity = _build_projection_match_complexity(
@@ -2162,13 +2162,13 @@ class SolidViewProjectionMatchGenerator:
             target_count=int(query.target_count),
         )
         trace_payload["answer_gt"] = answer_gt.to_dict()
-        trace_payload["evidence_gt"] = evidence_gt.to_dict()
+        trace_payload["annotation_gt"] = annotation_gt.to_dict()
         trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -2332,12 +2332,12 @@ class SolidViewProjectionConsistencyGenerator:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_option_letter",
-                "evidence_hint_projection_consistency_label",
+                "annotation_hint_projection_consistency_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_bboxes,
+            annotation_value=rendered_scene.annotation_bboxes,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -2347,12 +2347,12 @@ class SolidViewProjectionConsistencyGenerator:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(rendered_scene.consistency_query),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_projection_consistency_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_projection_consistency_label"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_projection_consistency_label"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -2362,7 +2362,7 @@ class SolidViewProjectionConsistencyGenerator:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(rendered_scene.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(rendered_scene.evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(rendered_scene.annotation_bboxes))
         query_params = {
             "query_id": PROJECTION_CONSISTENCY_QUERY,
             "consistency_query": str(rendered_scene.consistency_query),
@@ -2423,11 +2423,11 @@ class SolidViewProjectionConsistencyGenerator:
                 "label": str(rendered_scene.answer_label),
                 "consistency_query": str(rendered_scene.consistency_query),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "pixel_bbox_set": list(rendered_scene.evidence_bboxes),
+                "pixel_bbox_set": list(rendered_scene.annotation_bboxes),
                 "selected_option_label": str(rendered_scene.answer_label),
-                "selected_option_bbox": list(rendered_scene.evidence_bboxes[0]),
+                "selected_option_bbox": list(rendered_scene.annotation_bboxes[0]),
             },
         }
         complexity = _build_projection_consistency_complexity(
@@ -2437,13 +2437,13 @@ class SolidViewProjectionConsistencyGenerator:
             option_count=int(rendered_scene.option_count),
         )
         trace_payload["answer_gt"] = answer_gt.to_dict()
-        trace_payload["evidence_gt"] = evidence_gt.to_dict()
+        trace_payload["annotation_gt"] = annotation_gt.to_dict()
         trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,

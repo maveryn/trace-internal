@@ -13,7 +13,7 @@ from ..shared.paired_canvas_common import (
     PairedCanvasPayload,
     build_paired_prompt,
     choose_query_id,
-    evidence_from_indices,
+    annotation_from_indices,
     make_icon_spec,
     paired_complexity,
     paired_task_output,
@@ -209,10 +209,10 @@ class IconsCountingPanelAddedRemovedCountTask:
             question_text=question_text,
             instance_seed=int(instance_seed),
         )
-        evidence_panel = "right" if payload.query_id == "added_in_right_count" else "left"
-        evidence = evidence_from_indices(
-            panel_icons=payload.right_icons if evidence_panel == "right" else payload.left_icons,
-            indices=payload.matching_right_indices if evidence_panel == "right" else payload.matching_left_indices,
+        annotation_panel = "right" if payload.query_id == "added_in_right_count" else "left"
+        annotation = annotation_from_indices(
+            panel_icons=payload.right_icons if annotation_panel == "right" else payload.left_icons,
+            indices=payload.matching_right_indices if annotation_panel == "right" else payload.matching_left_indices,
         )
         complexity = paired_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -234,9 +234,9 @@ class IconsCountingPanelAddedRemovedCountTask:
             prompt_artifacts=prompt_artifacts,
             prompt_defaults=prompt_defaults,
             render_params=render_params,
-            evidence_panel=evidence_panel,
+            annotation_panel=annotation_panel,
             answer_value=int(payload.target_count),
-            evidence_bboxes=evidence,
+            annotation_bboxes=annotation,
             complexity=complexity,
         )
 

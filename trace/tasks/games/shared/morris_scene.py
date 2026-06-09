@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .morris_common import NineMensMorrisBoardState, NineMensMorrisPieceInstance, POSITION_LAYOUT
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata

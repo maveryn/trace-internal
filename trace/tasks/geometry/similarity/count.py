@@ -25,7 +25,7 @@ from ...shared.variant_sampling import (
 )
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_similarity_complexity
-from ..shared.fixed_query_task import MultiFixedGeometryQueryTaskMixin
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame
 from ..shared.multi_polygon_scene import PolygonSceneObject, draw_polygon_objects
 from ..shared.noise_defaults import load_geometry_noise_defaults
@@ -86,7 +86,7 @@ class _TaskDefaults:
     label_font_size_max: int = 28
     label_stroke_width: int = 1
     label_stroke_width_min: int = 1
-    label_stroke_width_max: int = 2
+    label_stroke_width_max: int = 1
     object_label_offset_px: int = 14
     reference_label_gap_px: int = 20
     cue_line_padding_px: int = 18
@@ -747,7 +747,7 @@ class GeometrySimilarityCountTask:
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        evidence_labels = list(rendered_scene.matching_labels)
+        annotation_labels = list(rendered_scene.matching_labels)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
@@ -757,7 +757,7 @@ class GeometrySimilarityCountTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint_template",
+                "annotation_hint_template",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -766,10 +766,10 @@ class GeometrySimilarityCountTask:
         )
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults,
-            evidence_value=[list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in evidence_labels],
+            annotation_value=[list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in annotation_labels],
             answer_type="integer",
         )
-        evidence_hint = str(prompt_defaults["evidence_hint_template"]).format(
+        annotation_hint = str(prompt_defaults["annotation_hint_template"]).format(
             label_count=len(query.candidate_label_pool),
         )
         prompt_selection = render_task_prompt_variants(
@@ -779,12 +779,12 @@ class GeometrySimilarityCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -793,11 +793,11 @@ class GeometrySimilarityCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels)))
 
-        evidence_bboxes = [list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in evidence_labels]
-        evidence_centers = [list(rendered_scene.candidate_centers_px_by_label[str(label)]) for label in evidence_labels]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in annotation_labels]
+        annotation_centers = [list(rendered_scene.candidate_centers_px_by_label[str(label)]) for label in annotation_labels]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
@@ -814,7 +814,7 @@ class GeometrySimilarityCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "target_count": int(query.target_count),
                     "query_id": str(query.query_id),
                 },
@@ -853,22 +853,22 @@ class GeometrySimilarityCountTask:
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 "reference_center_graph": list(group_default(_GEN_DEFAULTS, "reference_center", _DEFAULTS.reference_center)),
                 "question_format": "count_matching_labels",
             },
             "witness_symbolic": {
                 "type": "geometry_similarity_matching_polygons",
                 "source_witness_type": "object_set",
-                "original_evidence_value": list(evidence_labels),
-                "labels": list(evidence_labels),
-                "label_set": list(evidence_labels),
+                "original_annotation_value": list(annotation_labels),
+                "labels": list(annotation_labels),
+                "label_set": list(annotation_labels),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "pixel_point_set": list(evidence_centers),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "pixel_point_set": list(annotation_centers),
             },
         }
 
@@ -884,7 +884,7 @@ class GeometrySimilarityCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -896,10 +896,22 @@ class GeometrySimilarityCountTask:
 
 
 @register_task
-class GeometrySimilarityShapeRelationCountTask(MultiFixedGeometryQueryTaskMixin, GeometrySimilarityCountTask):
-    """Count candidate polygons with the requested relation to the reference polygon."""
+class GeometryShapeGalleryCongruentCountTask(FixedGeometryQueryTaskMixin, GeometrySimilarityCountTask):
+    """Count candidate polygons congruent to the reference polygon."""
 
-    task_id = "task_geometry__shape_gallery__shape_relation_count"
-    fixed_query_ids = ("congruent_count", "similar_count")
+    task_id = "task_geometry__shape_gallery__congruent_count"
+    fixed_query_id = "congruent_count"
+    scene_id = "shape_gallery"
+    public_scene_id = "shape_gallery"
+    allowed_scene_variants = SUPPORTED_SCENE_VARIANTS
+
+
+@register_task
+class GeometryShapeGallerySimilarCountTask(FixedGeometryQueryTaskMixin, GeometrySimilarityCountTask):
+    """Count candidate polygons similar to the reference polygon."""
+
+    task_id = "task_geometry__shape_gallery__similar_count"
+    fixed_query_id = "similar_count"
+    scene_id = "shape_gallery"
     public_scene_id = "shape_gallery"
     allowed_scene_variants = SUPPORTED_SCENE_VARIANTS

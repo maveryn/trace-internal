@@ -1,1 +1,0 @@
-"""Puzzle probability task group."""

@@ -26,7 +26,7 @@ Measure:
 - closeness to easy canonical values,
 - number of visible labels/annotations,
 - precision burden (integer vs decimal vs `kπ`),
-- evidence cardinality / answer-format burden.
+- annotation cardinality / answer-format burden.
 
 ### `comparison`
 ```yaml
@@ -40,7 +40,7 @@ Measure:
 - object count,
 - winner gap / runner-up closeness,
 - direct-vs-derived quantity load,
-- graph-point evidence burden (`2` / `3` / `4` points).
+- graph-point annotation burden (`2` / `3` / `4` points).
 
 ### `counting`
 ```yaml
@@ -54,7 +54,7 @@ Measure:
 - object count,
 - class subtlety,
 - target-density balance,
-- evidence label-set burden,
+- annotation label-set burden,
 - boundary cases like overlapping school definitions or near-degenerate shapes.
 
 ### `analytical`
@@ -70,7 +70,7 @@ Measure:
 - number of inferential steps,
 - decomposition complexity,
 - answer precision burden,
-- measurement-map evidence burden.
+- measurement-map annotation burden.
 - when applicable, additional semantic variant axes such as explicit-vs-derived reasoning mode should raise `analytical_reasoning` / `ambiguity` inside the same family criteria rather than creating a second weighting scheme.
 
 ### `transformation`
@@ -82,10 +82,10 @@ output_burden: 0.10
 ```
 
 Measure:
-- candidate-scan load across the six labeled polygons plus the visible cue,
+- candidate-scan load across the visible labeled polygons plus the visible cue,
 - cue difficulty (`translation` < `reflection` < `rotation`),
 - scene-family bonus when the polygon has more vertices,
-- winning-polygon graph-point evidence burden (`3` vs `4` points).
+- winning-polygon graph-point annotation burden (`3` vs `4` points).
 
 ### `similarity`
 ```yaml
@@ -100,7 +100,7 @@ Measure:
 - predicate difficulty (`congruent_count` < `similar_count`),
 - scene-family bonus when the polygon has more vertices,
 - target-density balance over the matching subset,
-- unordered `bbox_set` evidence burden (`0..4` matched objects).
+- unordered `bbox_set` annotation burden (`0..4` matched objects).
 
 ### `coordinate`
 ```yaml
@@ -150,8 +150,8 @@ Measure:
 - Keep raw givens counts, winner gaps, or derivation depth in trace if they help debug the score.
 - For analytical geometry, prefer annotation-count, formula-family, and answer-format signals over raw answer magnitude; answer size alone is usually a poor proxy for derivation difficulty.
 - In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_id` determine the per-instance component values.
-- Geometry transformation tasks should stay evidence-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
-- Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
-- Geometry coordinate-relation tasks should keep the evidence contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint evidence for every matching segment, while point-membership/count variants should expose graph-point evidence whenever the visible witness is an unlabeled point set rather than a label identity problem.
+- Geometry transformation tasks should stay annotation-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
+- Geometry similarity tasks should stay annotation-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
+- Geometry coordinate-relation tasks should keep the annotation contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint annotation for every matching segment, while point-membership/count variants should expose graph-point annotation whenever the visible witness is an unlabeled point set rather than a label identity problem.
 - Geometry solid-view tasks should keep difficulty tied to hidden-cube/projection reasoning rather than answer magnitude alone; if the orthographic witness stays the same query-grid `bbox_set`, widen view variants inside the same family instead of splitting one task id per view direction.
 - Geometry graphing tasks should keep difficulty tied to plotted-scene/query structure and witness cardinality rather than raw y-values; if the prompt-facing witness stays a coordinate `point_set`, keep intercept / dashed-line / turning-point variants inside one family weighting policy instead of splitting one task id per graph question.

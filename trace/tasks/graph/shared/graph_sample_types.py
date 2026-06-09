@@ -61,6 +61,11 @@ SUPPORTED_COMPONENT_QUERY_IDS: Tuple[str, ...] = ("same_component_count",)
 SUPPORTED_COMPONENT_EDGE_EDIT_MODES: Tuple[str, ...] = ("edge_removal", "edge_addition")
 SUPPORTED_REACHABLE_QUERY_IDS: Tuple[str, ...] = ("reachable_count",)
 SUPPORTED_CYCLE_QUERY_IDS: Tuple[str, ...] = ("unique_cycle_size",)
+SUPPORTED_CHORDLESS_CYCLE_QUERY_IDS: Tuple[str, ...] = ("largest_chordless_cycle_size",)
+SUPPORTED_HAMILTONIAN_CYCLE_QUERY_IDS: Tuple[str, ...] = (
+    "next_in_hamiltonian_cycle_label",
+    "previous_in_hamiltonian_cycle_label",
+)
 SUPPORTED_COMPONENT_COMPARISON_QUERY_IDS: Tuple[str, ...] = ("largest_component_size",)
 SUPPORTED_PATH_QUERY_IDS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
 SUPPORTED_LONGEST_PATH_QUERY_IDS: Tuple[str, ...] = ("directed_longest_path_length",)
@@ -336,6 +341,32 @@ class GraphUniqueCycleSample(GraphTopologySample):
 
 
 @dataclass(frozen=True)
+class GraphLargestChordlessCycleSample(GraphTopologySample):
+    """Trace-ready graph sample for largest chordless-cycle tasks."""
+
+    target_labels: Tuple[str, ...]
+    target_cycle_size: int
+    chordless_cycle_sizes: Tuple[int, ...]
+    chordless_cycle_labels: Tuple[Tuple[str, ...], ...]
+    attachment_count: int
+    extra_edge_count: int
+
+
+@dataclass(frozen=True)
+class GraphHamiltonianCycleNeighborSample(GraphTopologySample):
+    """Trace-ready graph sample for Hamiltonian-cycle neighbor lookup tasks."""
+
+    target_labels: Tuple[str, ...]
+    query_label: str
+    answer_label: str
+    relation_mode: str
+    orientation_start_label: str
+    orientation_next_label: str
+    hamiltonian_cycle_count: int
+    extra_edge_count: int
+
+
+@dataclass(frozen=True)
 class GraphShortestPathSample(GraphTopologySample):
     """Trace-ready graph sample for unique shortest-path tasks."""
 
@@ -466,6 +497,7 @@ def graph_degree_mode_for_query_id(query_id: str, *, degree_mode: str | None = N
 __all__ = [
     "SUPPORTED_ARTICULATION_QUERY_IDS",
     "SUPPORTED_BRIDGE_QUERY_IDS",
+    "SUPPORTED_CHORDLESS_CYCLE_QUERY_IDS",
     "SUPPORTED_COMMON_NEIGHBOR_MODES",
     "SUPPORTED_COMPONENT_EDGE_EDIT_MODES",
     "SUPPORTED_COMPONENT_QUERY_IDS",
@@ -479,6 +511,7 @@ __all__ = [
     "SUPPORTED_EXTREME_DEGREE_DIRECTIONS",
     "SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES",
     "SUPPORTED_EXTREME_DEGREE_EXTREMA",
+    "SUPPORTED_HAMILTONIAN_CYCLE_QUERY_IDS",
     "SUPPORTED_ISOLATED_AFTER_NODE_REMOVAL_DIRECTIONS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
@@ -506,8 +539,10 @@ __all__ = [
     "GraphEdgeColorCountSample",
     "GraphEdgeTextLabelCountSample",
     "GraphExtremeDegreeSample",
+    "GraphHamiltonianCycleNeighborSample",
     "GraphIsolatedAfterNodeRemovalSample",
     "GraphLargestComponentSample",
+    "GraphLargestChordlessCycleSample",
     "GraphLongestPathSample",
     "GraphMinimumSpanningTreeSample",
     "GraphNamedNodeDegreeSample",

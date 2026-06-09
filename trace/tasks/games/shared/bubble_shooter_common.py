@@ -72,7 +72,7 @@ class BubbleShooterSample:
     target_answer: int | str
     option_specs: Tuple[BubbleShooterOption, ...]
     outcome: BubbleShotOutcome
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 
@@ -297,7 +297,7 @@ def compute_shot_outcome(
 
 
 def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
-    """Validate the public answer/evidence contract for one Bubble-shooter sample."""
+    """Validate the public answer/annotation contract for one Bubble-shooter sample."""
 
     if int(sample.row_count) <= 0 or int(sample.col_count) <= 0:
         raise ValueError("bubble shooter board dimensions must be positive")
@@ -310,8 +310,8 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
     known_entities.add(landing_slot_entity_id())
     known_entities.add(shooter_bubble_entity_id())
     known_entities.update(option_entity_id(option.label) for option in sample.option_specs)
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("bubble shooter evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("bubble shooter annotation references unknown entities")
 
     outcome = compute_shot_outcome(
         sample.board,
@@ -358,8 +358,8 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
     else:
         raise ValueError(f"unsupported bubble shooter query_id: {sample.query_id}")
 
-    if set(sample.evidence_entity_ids) != expected:
-        raise ValueError("bubble shooter evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected:
+        raise ValueError("bubble shooter annotation ids do not match active query")
 
 
 __all__ = [

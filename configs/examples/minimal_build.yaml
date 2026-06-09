@@ -1,13 +1,13 @@
 output_root: ./out
 
-dataset_name: demo_puzzles_cell_board_path_distance
+dataset_name: demo_puzzles_cell_board_shortest_path_length
 instance_version: v0
 image_format: png
 strict_repro: false
 max_attempts_per_instance: 100
 sampling_seed: 0
 tasks:
-  - task_id: task_puzzles__cell_board__path_distance
+  - task_id: task_puzzles__cell_board__shortest_path_length_value
     count: 10
     params:
       query_id: shortest_path

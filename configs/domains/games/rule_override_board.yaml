@@ -58,13 +58,13 @@ prompt:
     object_description_rule_override_board: several small labeled game boards
     line_rule_text: For the target player, making a full row, column, or diagonal loses; otherwise that player wins.
     piece_rule_text: For the target player, having fewer pieces than the other player wins; having more pieces loses.
-    evidence_hint_line_override_win_count: set "evidence" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player wins under the stated rule; use [] if none
+    annotation_hint_line_override_win_count: set "annotation" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player wins under the stated rule; use [] if none
     answer_hint_line_override_win_count: set "answer" to the integer number of target-player wins
-    evidence_hint_line_override_loss_count: set "evidence" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player loses under the stated rule; use [] if none
+    annotation_hint_line_override_loss_count: set "annotation" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player loses under the stated rule; use [] if none
     answer_hint_line_override_loss_count: set "answer" to the integer number of target-player losses
-    evidence_hint_piece_override_win_count: set "evidence" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player wins under the stated rule; use [] if none
+    annotation_hint_piece_override_win_count: set "annotation" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player wins under the stated rule; use [] if none
     answer_hint_piece_override_win_count: set "answer" to the integer number of target-player wins
-    evidence_hint_piece_override_loss_count: set "evidence" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player loses under the stated rule; use [] if none
+    annotation_hint_piece_override_loss_count: set "annotation" to bounding boxes [x0,y0,x1,y1] around every counted mini-board where the target player loses under the stated rule; use [] if none
     answer_hint_piece_override_loss_count: set "answer" to the integer number of target-player losses
 visual:
   noise:

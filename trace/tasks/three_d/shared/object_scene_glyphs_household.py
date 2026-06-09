@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from .object_scene_glyphs_large_stage import _draw_open_box_object
 from .camera_projection import (
     CameraSpec as _CameraSpec,
     ProjectionFrame as _ProjectionFrame,

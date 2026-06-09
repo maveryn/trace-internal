@@ -46,6 +46,25 @@ generation:
       pool_manifest: non_symmetry.txt
       rotation_candidates_degrees: [0, 90, 180, 270]
       step_candidates_degrees: [90, 180]
+    task_icons__wallpaper_panels__motif_violation_label:
+      option_count_choices: [6]
+      lattice_rows: 4
+      lattice_cols: 4
+      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      pool_manifest: non_symmetry.txt
+    task_icons__wallpaper_panels__same_pattern_as_reference_label:
+      option_count_choices: [6]
+      lattice_rows: 4
+      lattice_cols: 4
+      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      pool_manifest: non_symmetry.txt
+    task_icons__wallpaper_panels__reference_pattern_match_count:
+      option_count_choices: [6]
+      match_count_choices: [1, 2, 3, 4, 5]
+      lattice_rows: 4
+      lattice_cols: 4
+      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      pool_manifest: non_symmetry.txt
 
 rendering:
   shared:
@@ -154,6 +173,71 @@ rendering:
       cell_box_height_min_px: 112
       cell_box_height_max_px: 144
       icon_noise_edit_count_range: [0, 0]
+    task_icons__wallpaper_panels__motif_violation_label:
+      canvas_width: 1104
+      canvas_height: 640
+      panel_padding_px: 16
+      option_panel_gap_px: 18
+      lattice_rows: 4
+      lattice_cols: 4
+      scene_icon_size_min_px: 22
+      scene_icon_size_max_px: 32
+      scene_max_overlap_fraction: 0.12
+      cell_label_font_size_px: 22
+      palette_size_min: 1
+      palette_size_max: 1
+      icon_noise_edit_count_range: [0, 0]
+      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_canvas_treatment_weights:
+        bare_canvas: 1.0
+        plain_sheet: 1.0
+        matte_sheet: 1.0
+        thin_frame: 1.0
+        soft_panel: 1.0
+    task_icons__wallpaper_panels__same_pattern_as_reference_label:
+      canvas_width: 1104
+      canvas_height: 640
+      reference_panel_width_px: 300
+      panel_padding_px: 16
+      option_panel_gap_px: 18
+      lattice_rows: 4
+      lattice_cols: 4
+      scene_icon_size_min_px: 21
+      scene_icon_size_max_px: 31
+      scene_max_overlap_fraction: 0.12
+      cell_label_font_size_px: 22
+      palette_size_min: 1
+      palette_size_max: 1
+      icon_noise_edit_count_range: [0, 0]
+      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_canvas_treatment_weights:
+        bare_canvas: 1.0
+        plain_sheet: 1.0
+        matte_sheet: 1.0
+        thin_frame: 1.0
+        soft_panel: 1.0
+    task_icons__wallpaper_panels__reference_pattern_match_count:
+      canvas_width: 1104
+      canvas_height: 640
+      reference_panel_width_px: 300
+      panel_padding_px: 16
+      option_panel_gap_px: 18
+      lattice_rows: 4
+      lattice_cols: 4
+      scene_icon_size_min_px: 21
+      scene_icon_size_max_px: 31
+      scene_max_overlap_fraction: 0.12
+      cell_label_font_size_px: 22
+      palette_size_min: 1
+      palette_size_max: 1
+      icon_noise_edit_count_range: [0, 0]
+      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_canvas_treatment_weights:
+        bare_canvas: 1.0
+        plain_sheet: 1.0
+        matte_sheet: 1.0
+        thin_frame: 1.0
+        soft_panel: 1.0
 
 prompt:
   shared:
@@ -162,19 +246,43 @@ prompt:
     task_key: structured_violation_query
   task_overrides:
     task_icons__pattern_grid__attribute_pattern_violation_index:
-      object_description: a 3 by 3 numbered grid, one icon per box
+      object_description: a numbered 3 by 3 grid with one icon per box
       question_text: Which numbered box breaks the visible pattern?
-      evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating grid box
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating grid box
       answer_hint: set "answer" to the violating box index as an integer
-      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example: '{"annotation":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
     task_icons__sequence_strip__rotation_sequence_violation_index:
-      object_description: a horizontal row of numbered boxes, one icon per box
+      object_description: a horizontal row of numbered boxes with one icon per box
       question_text: Which numbered box breaks the rotation sequence?
-      evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating numbered box
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating numbered box
       answer_hint: set "answer" to the violating box index as an integer
-      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example: '{"annotation":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
+    task_icons__wallpaper_panels__motif_violation_label:
+      scene_key: wallpaper_panel_violation_scene
+      object_description: six labeled wallpaper panels filled with repeated icon motifs
+      question_text: Which labeled wallpaper panel uses a different wallpaper pattern from the others?
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the selected wallpaper panel
+      answer_hint: set "answer" to the odd panel letter
+      json_example: '{"annotation":[[420,220,462,262]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    task_icons__wallpaper_panels__same_pattern_as_reference_label:
+      scene_key: wallpaper_reference_match_scene
+      object_description: one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs
+      question_text: Which labeled panel has the same wallpaper pattern as the Reference panel?
+      annotation_hint: set "annotation" to a JSON object with keys "reference_panel" and "selected_panel", each mapped to one [x0, y0, x1, y1] box in image pixel coordinates
+      answer_hint: set "answer" to the matching panel letter
+      json_example: '{"annotation":{"reference_panel":[36,36,320,604],"selected_panel":[420,220,620,400]},"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    task_icons__wallpaper_panels__reference_pattern_match_count:
+      scene_key: wallpaper_reference_match_scene
+      object_description: one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs
+      question_text: How many labeled panels use the same wallpaper arrangement as the Reference panel?
+      annotation_hint: set "annotation" to a JSON object with lists of [x0, y0, x1, y1] pixel panel boxes under "reference_panel" and "matching_candidate_panels"
+      answer_hint: set "answer" to the number of matching labeled panels as an integer
+      json_example: '{"annotation":{"reference_panel":[[36,36,320,604]],"matching_candidate_panels":[[420,220,620,400],[650,220,850,400]]},"answer":2}'
+      json_example_answer_only: '{"answer":2}'
 complexity:
   shared:
     criteria_weights:

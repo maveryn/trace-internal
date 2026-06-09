@@ -48,7 +48,7 @@ from .shared.rectangular_board import (
     resolve_rectangular_board_layout,
 )
 from .shared.tile_colors import named_tile_color
-from .shared.tile_evidence import coordinate_set_evidence_artifacts, sort_coords_row_major
+from .shared.tile_annotation import coordinate_set_annotation_artifacts, sort_coords_row_major
 from .shared.tile_scene import build_tile_cell_entities
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
@@ -400,7 +400,7 @@ class TileReachableTargetCountTask:
         selected_target_coords = (
             reachable_target_coords if query_id == "reachable_target_count" else unreachable_target_coords
         )
-        evidence_artifacts = coordinate_set_evidence_artifacts(
+        annotation_artifacts = coordinate_set_annotation_artifacts(
             coords=selected_target_coords,
             bbox_map=bbox_map,
         )
@@ -422,20 +422,20 @@ class TileReachableTargetCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_task_key = str(prompt_defaults["task_key"])
         answer_hint = str(prompt_defaults["answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint"])
+        annotation_hint = str(prompt_defaults["annotation_hint"])
         if query_id == "unreachable_target_count":
             prompt_task_key = str(all_prompt_defaults.get("unreachable_task_key", "unreachable_target_count_query"))
             answer_hint = str(all_prompt_defaults.get("unreachable_answer_hint", answer_hint))
-            evidence_hint = str(all_prompt_defaults.get("unreachable_evidence_hint", evidence_hint))
+            annotation_hint = str(all_prompt_defaults.get("unreachable_annotation_hint", annotation_hint))
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             all_prompt_defaults,
-            evidence_value=[[216, 120], [168, 216]],
+            annotation_value=[[216, 120], [168, 216]],
             answer_type="integer",
         )
         if query_id == "unreachable_target_count":
@@ -449,7 +449,7 @@ class TileReachableTargetCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_task_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(rows),
                 "cols": int(cols),
@@ -458,7 +458,7 @@ class TileReachableTargetCountTask:
                 "target_color": str(target_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -474,7 +474,7 @@ class TileReachableTargetCountTask:
             if bool(blocked[row][col])
         ]
         start_id = cell_id(start)
-        selected_target_ids = list(evidence_artifacts["private_witness"]["ids"])
+        selected_target_ids = list(annotation_artifacts["private_witness"]["ids"])
         target_coord_set = {(int(row), int(col)) for row, col in target_coords}
         reachable_target_coord_set = {(int(row), int(col)) for row, col in reachable_target_coords}
         unreachable_target_coord_set = {(int(row), int(col)) for row, col in unreachable_target_coords}
@@ -551,7 +551,7 @@ class TileReachableTargetCountTask:
                     },
                     *selected_query_steps,
                     {
-                        "out": "evidence",
+                        "out": "annotation",
                         "op": "project_coords",
                         "in": str(selected_entity_set_name),
                         "source_coord_space": "tile_grid",
@@ -618,8 +618,8 @@ class TileReachableTargetCountTask:
                 "obstacle_fraction": float(realized_obstacle_fraction),
                 "reachable_fraction": float(reachable_fraction),
             },
-            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
 
         board_cell_count = int(rows) * int(cols)
@@ -665,9 +665,9 @@ class TileReachableTargetCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=image,
             image_id="img0",

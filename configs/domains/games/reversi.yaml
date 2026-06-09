@@ -7,6 +7,8 @@ generation:
       legal_move_count: 1.0
       corner_move_count: 1.0
       flip_count_for_marked_move: 1.0
+      black_frontier_disc_count: 1.0
+      white_frontier_disc_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -38,6 +40,18 @@ generation:
     - 4
     - 5
     - 6
+    frontier_disc_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
 rendering:
   shared:
     canvas_width: 900
@@ -76,13 +90,23 @@ prompt:
     corner_rule_text: The corner squares are the four outermost corners.
     marked_move_rule_text: The red marked empty square is the marked move.
     flip_rule_text: The marked move flips every bracketed opponent disc.
-    evidence_hint_legal_move_count: set "evidence" to bounding boxes [x0, y0, x1,
+    frontier_rule_text: A frontier disc touches at least one empty square horizontally,
+      vertically, or diagonally.
+    annotation_hint_legal_move_count: set "annotation" to bounding boxes [x0, y0, x1,
       y1] for every legal move square
-    evidence_hint_corner_move_count: set "evidence" to bounding boxes [x0, y0, x1,
+    annotation_hint_corner_move_count: set "annotation" to bounding boxes [x0, y0, x1,
       y1] for every legal corner square
-    evidence_hint_flip_count_for_marked_move: set "evidence" to one pixel point
+    annotation_hint_flip_count_for_marked_move: set "annotation" to one pixel point
       [x,y] at the center of every disc flipped by the marked move
+    annotation_hint_black_frontier_disc_count: set "annotation" to one pixel point
+      [x,y] at the center of every counted black frontier disc
+    annotation_hint_white_frontier_disc_count: set "annotation" to one pixel point
+      [x,y] at the center of every counted white frontier disc
     answer_hint_legal_move_count: set "answer" to the count of legal moves
     answer_hint_corner_move_count: set "answer" to the count of legal corner moves
     answer_hint_flip_count_for_marked_move: set "answer" to the count of discs flipped
       by the marked move
+    answer_hint_black_frontier_disc_count: set "answer" to the count of black frontier
+      discs
+    answer_hint_white_frontier_disc_count: set "answer" to the count of white frontier
+      discs

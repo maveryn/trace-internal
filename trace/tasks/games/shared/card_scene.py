@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill, temporary_default_font_family
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .style import CardTheme, build_games_card_theme, suit_color
 
@@ -303,8 +303,25 @@ def _row_groups_for_cards(
     cards: Sequence[CardInstance],
     *,
     max_cards_per_row: int,
+    row_card_counts: Sequence[int] | None = None,
 ) -> List[List[CardInstance]]:
     """Split cards into balanced reading-order rows with a fixed row maximum."""
+
+    if row_card_counts is not None:
+        row_sizes = [int(value) for value in row_card_counts]
+        if not row_sizes or any(int(value) <= 0 for value in row_sizes):
+            raise ValueError("row_card_counts must contain positive row sizes")
+        if sum(row_sizes) != len(cards):
+            raise ValueError("row_card_counts must sum to the number of cards")
+        if any(int(value) > int(max_cards_per_row) for value in row_sizes):
+            raise ValueError("row_card_counts cannot exceed max_cards_per_row")
+        rows: List[List[CardInstance]] = []
+        cursor = 0
+        ordered_cards = [card for card in cards]
+        for row_size in row_sizes:
+            rows.append(ordered_cards[cursor : cursor + int(row_size)])
+            cursor += int(row_size)
+        return rows
 
     max_per_row = int(max_cards_per_row)
     if max_per_row <= 0:
@@ -480,6 +497,7 @@ def render_cards_hand_scene(
     params: CardRenderParams,
     show_continuation_cue: bool,
     move_options: Sequence[CardMoveOption] = (),
+    row_card_counts: Sequence[int] | None = None,
 ) -> RenderedCardHandScene:
     """Render one visible card hand and return card-level trace metadata."""
 
@@ -494,6 +512,7 @@ def render_cards_hand_scene(
         row_groups = _row_groups_for_cards(
             cards=cards,
             max_cards_per_row=int(params.max_cards_per_row),
+            row_card_counts=row_card_counts,
         )
 
         row_left_positions = [
@@ -685,6 +704,7 @@ def render_cards_hand_scene(
         },
         "row_count": int(len(row_groups)),
         "max_cards_per_row": int(params.max_cards_per_row),
+        "row_card_counts": [int(len(row_cards)) for row_cards in row_groups],
         "row_card_ids": [
             [str(spec.card_id) for spec in card_specs if int(spec.row_index) == int(row_index)]
             for row_index in range(len(row_groups))

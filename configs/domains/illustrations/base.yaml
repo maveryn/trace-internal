@@ -1,6 +1,6 @@
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
 
 complexity:
@@ -12,6 +12,16 @@ complexity:
 
 rendering:
   shared:
+    art_style_support:
+      - flat_vector
+      - outlined_cartoon
+      - paper_cutout
+      - soft_shadow
+    art_style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
     environment_canvas_width: 1280
     environment_canvas_height: 840
     environment_object_count_min: 10

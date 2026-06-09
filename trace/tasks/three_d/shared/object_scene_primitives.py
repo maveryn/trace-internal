@@ -538,7 +538,45 @@ def _draw_torus_object(
     return [round(float(value), 3) for value in outer]
 
 
+bbox_from_screen_points = _bbox_from_screen_points
+bbox_union = _bbox_union
+draw_box_object = _draw_box_object
+draw_box_parts_object = _draw_box_parts_object
+draw_cone_object = _draw_cone_object
+draw_cylinder_object = _draw_cylinder_object
+draw_footprint_prism_object = _draw_footprint_prism_object
+draw_half_cylinder_object = _draw_half_cylinder_object
+draw_line = _draw_line
+draw_polyline = _draw_polyline
+draw_pyramid_object = _draw_pyramid_object
+draw_sphere_object = _draw_sphere_object
+draw_torus_object = _draw_torus_object
+draw_upright_profile_object = _draw_upright_profile_object
+draw_wedge_object = _draw_wedge_object
+project_face = _project_face
+shade_rgb = _shade
+tint_rgb = _tint
+
+
 __all__ = [
+    "bbox_from_screen_points",
+    "bbox_union",
+    "draw_box_object",
+    "draw_box_parts_object",
+    "draw_cone_object",
+    "draw_cylinder_object",
+    "draw_footprint_prism_object",
+    "draw_half_cylinder_object",
+    "draw_line",
+    "draw_polyline",
+    "draw_pyramid_object",
+    "draw_sphere_object",
+    "draw_torus_object",
+    "draw_upright_profile_object",
+    "draw_wedge_object",
+    "project_face",
+    "shade_rgb",
+    "tint_rgb",
     "_arrow_footprint_points",
     "_bbox_from_screen_points",
     "_bbox_union",

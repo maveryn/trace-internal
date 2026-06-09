@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from trace.tasks.puzzles.cell_board.path_reachable_target_count import TileReachableTargetCountTask
-from tests.cell_board_evidence_helpers import tile_coords_from_points, tile_ids_from_points
+from tests.cell_board_annotation_helpers import tile_coords_from_points, tile_ids_from_points
 from trace.tasks.puzzles.cell_board.path_shortest_path import TileShortestPathTask
 
 
@@ -52,8 +52,8 @@ def test_cell_board_shortest_path_outputs_expected_contract() -> None:
 
     assert str(out.query_id) == "shortest_path"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_sequence"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_sequence"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(render["tiling_type"]) == "rectangular_tiling"
     assert float(render["tile_aspect_ratio"]) == 1.0
     assert int(render["tile_width_px"]) == int(render["tile_height_px"])
@@ -61,10 +61,10 @@ def test_cell_board_shortest_path_outputs_expected_contract() -> None:
     assert int(execution["board_size"]) == 7
     assert execution["board_size_range"] == [7, 7]
 
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_sequence"] == out.evidence_gt.value
-    path_coords = tile_coords_from_points(trace, out.evidence_gt.value)
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_sequence"] == out.annotation_gt.value
+    path_coords = tile_coords_from_points(trace, out.annotation_gt.value)
     assert path_coords == execution["path_coords"]
     assert int(out.answer_gt.value) == len(path_coords) - 1
     assert path_coords[0] == execution["start_coord"]
@@ -102,7 +102,7 @@ def test_cell_board_shortest_path_is_deterministic() -> None:
     out_b = task.generate(7719, params=params, max_attempts=160)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.trace_payload["execution_trace"]["target_shortest_len"] == out_b.trace_payload["execution_trace"]["target_shortest_len"]
@@ -114,9 +114,9 @@ def test_cell_board_shortest_path_is_deterministic() -> None:
 def test_cell_board_shortest_path_prompt_example_matches_contract() -> None:
     task = TileShortestPathTask()
     out = task.generate(7733, params={}, max_attempts=160)
-    example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert list(example.keys()) == ["evidence", "answer"]
-    assert example["evidence"] == [[120, 120], [168, 120], [168, 168], [216, 168]]
+    example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    assert list(example.keys()) == ["annotation", "answer"]
+    assert example["annotation"] == [[120, 120], [168, 120], [168, 168], [216, 168]]
     assert int(example["answer"]) == 3
 
 
@@ -165,8 +165,8 @@ def test_cell_board_reachable_target_count_outputs_expected_contract() -> None:
 
     assert str(out.query_id) == "reachable_target_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(render["tiling_type"]) == "rectangular_tiling"
     assert float(render["tile_aspect_ratio"]) == 1.0
     assert int(render["tile_width_px"]) == int(render["tile_height_px"])
@@ -174,12 +174,12 @@ def test_cell_board_reachable_target_count_outputs_expected_contract() -> None:
     assert int(execution["board_size"]) == 7
     assert execution["board_size_range"] == [7, 7]
 
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    evidence_coords = tile_coords_from_points(trace, out.evidence_gt.value)
-    assert evidence_coords == execution["reachable_target_coords"]
-    assert int(out.answer_gt.value) == len(evidence_coords) == 2
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    annotation_coords = tile_coords_from_points(trace, out.annotation_gt.value)
+    assert annotation_coords == execution["reachable_target_coords"]
+    assert int(out.answer_gt.value) == len(annotation_coords) == 2
     assert execution["target_reachable_target_count_range"] == [2, 2]
     assert int(execution["target_reachable_target_count"]) == 2
     assert int(execution["total_target_count"]) == 3
@@ -191,7 +191,7 @@ def test_cell_board_reachable_target_count_outputs_expected_contract() -> None:
     reachable_target_coords = {tuple(coord) for coord in execution["reachable_target_coords"]}
     unreachable_target_coords = {tuple(coord) for coord in execution["unreachable_target_coords"]}
     assert len(target_coords) == 3
-    assert reachable_target_coords == {tuple(coord) for coord in evidence_coords}
+    assert reachable_target_coords == {tuple(coord) for coord in annotation_coords}
     assert reachable_target_coords.isdisjoint({tuple(execution["start_coord"])})
     assert reachable_target_coords.issubset(target_coords)
     assert unreachable_target_coords.issubset(target_coords)
@@ -219,7 +219,7 @@ def test_cell_board_reachable_target_count_outputs_expected_contract() -> None:
     _assert_normalized_complexity(out)
 
 
-def test_cell_board_reachable_target_count_supports_zero_answer_with_empty_evidence() -> None:
+def test_cell_board_reachable_target_count_supports_zero_answer_with_empty_annotation() -> None:
     task = TileReachableTargetCountTask()
     out = task.generate(
         7751,
@@ -234,10 +234,10 @@ def test_cell_board_reachable_target_count_supports_zero_answer_with_empty_evide
     execution = out.trace_payload["execution_trace"]
 
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["reachable_target_coords"] == []
     assert int(execution["total_target_count"]) >= 2
-    assert "or [] if no target tiles are reachable" in out.prompt_variants["answer_and_evidence"]
+    assert "or [] if no target tiles are reachable" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_cell_board_reachable_target_count_is_deterministic() -> None:
@@ -254,7 +254,7 @@ def test_cell_board_reachable_target_count_is_deterministic() -> None:
     out_b = task.generate(7767, params=params, max_attempts=160)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert (
@@ -269,9 +269,9 @@ def test_cell_board_reachable_target_count_is_deterministic() -> None:
 def test_cell_board_reachable_target_count_prompt_example_matches_contract() -> None:
     task = TileReachableTargetCountTask()
     out = task.generate(7773, params={}, max_attempts=160)
-    example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert list(example.keys()) == ["evidence", "answer"]
-    assert example["evidence"] == [[216, 120], [168, 216]]
+    example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    assert list(example.keys()) == ["annotation", "answer"]
+    assert example["annotation"] == [[216, 120], [168, 216]]
     assert int(example["answer"]) == 2
 
 

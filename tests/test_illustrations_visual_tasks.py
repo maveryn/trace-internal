@@ -8,8 +8,6 @@ from trace.core.seed import hash64
 from trace.tasks import create_task
 from trace.tasks.illustrations.visual.missing_patch_label import _GEN_DEFAULTS as _MISSING_PATCH_GEN_DEFAULTS
 from trace.tasks.illustrations.visual.jigsaw_piece_order import _sample_spec as _sample_jigsaw_spec
-from trace.tasks.illustrations.visual.object_difference_count import _sample_spec as _sample_difference_spec
-from trace.tasks.illustrations.visual.odd_scene_label import _sample_spec as _sample_odd_scene_spec
 
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
@@ -19,57 +17,10 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert max(counts.values()) <= int(expected * 1.85) + 1
 
 
-def test_object_difference_count_variants_contract() -> None:
-    for index, variant in enumerate(
-        ["added_object_count", "removed_object_count", "changed_color_object_count", "moved_object_count"]
-    ):
-        out = create_task("task_illustrations__difference_pair__object_difference_count").generate(
-            hash64(2026052501, "object-difference", index),
-            params={"query_id": variant, "target_count": 2, "object_count": 9},
-            max_attempts=300,
-        )
-        trace = out.trace_payload
-        assert out.scene_id == "difference_pair"
-        assert out.query_id == variant
-        assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
-        assert int(out.answer_gt.value) == 2
-        assert len(out.evidence_gt.value) == 2
-        assert len(trace["execution_trace"]["changed_object_ids"]) == 2
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert trace["render_spec"]["style"]["panel_label_font"]["pool"] == "global_approved_font_pool"
-        if variant == "moved_object_count":
-            distances = trace["render_map"]["moved_center_distances_px"]
-            assert len(distances) == 2
-            assert min(float(value) for value in distances.values()) >= 72.0
-
-
-def test_object_differenceseeded_sampler_balances_variants_and_answers() -> None:
-    samples = [
-        _sample_difference_spec(
-            instance_seed=hash64(2026052501, "object-difference-sampling", index),
-            params={},
-        )
-        for index in range(100)
-    ]
-    query_id_counts = Counter(sample.variant for sample in samples)
-    answer_counts = Counter(sample.target_count for sample in samples)
-    _assert_hash_balanced_counts(
-        query_id_counts,
-        {
-            "added_object_count",
-            "removed_object_count",
-            "changed_color_object_count",
-            "moved_object_count",
-        },
-    )
-    _assert_hash_balanced_counts(answer_counts, [1, 2, 3, 4, 5])
-
-
 def test_jigsaw_piece_order_contract() -> None:
     out = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order").generate(
         hash64(2026052502, "jigsaw-piece-order", 0),
-        params={"board_shape": "board_2x2", "source_task_id": "task_illustrations__library__section_book_count"},
+        params={"board_shape": "board_2x2", "source_task_id": "task_illustrations__library__books_in_section_count"},
         max_attempts=300,
     )
     trace = out.trace_payload
@@ -77,14 +28,13 @@ def test_jigsaw_piece_order_contract() -> None:
     assert out.scene_id == "image_cutout_board"
     assert out.query_id == "jigsaw_piece_order"
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_sequence"
+    assert out.annotation_gt.type == "bbox_sequence"
     assert len(labels) == 3
     assert set(labels) == {"1", "2", "3"}
-    assert len(out.evidence_gt.value) == 3
-    assert trace["projected_evidence"]["bbox_sequence"] == out.evidence_gt.value
+    assert len(out.annotation_gt.value) == 3
+    assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
     assert trace["scene_ir"]["entities"]["source_image_shown"] is False
     assert trace["scene_ir"]["entities"]["anchored_piece"] == {"position": "top_left", "content_index": 0}
-    assert trace["scene_ir"]["entities"]["source_scene_id"] != "object_field"
     assert trace["render_map"]["display_grid_shape"] == [2, 2]
     assert trace["render_map"]["anchored_content_index"] == 0
     assert trace["render_map"]["answer_positions"] == ["top_right", "bottom_left", "bottom_right"]
@@ -99,7 +49,7 @@ def test_jigsaw_piece_order_contract() -> None:
 def test_jigsaw_piece_order_one_by_three_contract() -> None:
     out = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order").generate(
         hash64(2026052502, "jigsaw-piece-order-1x3", 0),
-        params={"board_shape": "board_1x3", "source_task_id": "task_illustrations__library__section_book_count"},
+        params={"board_shape": "board_1x3", "source_task_id": "task_illustrations__library__books_in_section_count"},
         max_attempts=300,
     )
     trace = out.trace_payload
@@ -107,10 +57,10 @@ def test_jigsaw_piece_order_one_by_three_contract() -> None:
     assert out.scene_id == "image_cutout_board"
     assert out.query_id == "jigsaw_piece_order"
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_sequence"
+    assert out.annotation_gt.type == "bbox_sequence"
     assert len(labels) == 2
     assert set(labels) == {"1", "2"}
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["entities"]["anchored_piece"] == {"position": "left", "content_index": 0}
     assert trace["render_map"]["display_grid_shape"] == [1, 3]
     assert trace["render_map"]["answer_positions"] == ["middle", "right"]
@@ -139,7 +89,7 @@ def test_rotated_tile_label_contract() -> None:
         params={
             "correct_tile_index": 4,
             "rotation_degrees": 90,
-            "source_task_id": "task_illustrations__library__section_book_count",
+            "source_task_id": "task_illustrations__library__books_in_section_count",
         },
         max_attempts=300,
     )
@@ -148,18 +98,18 @@ def test_rotated_tile_label_contract() -> None:
     assert out.query_id == "rotated_tile_label"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert trace["render_map"]["correct_option_label"] == "E"
     assert trace["render_map"]["correct_tile_index"] == 4
     assert trace["render_map"]["rotation_degrees"] == 90
     assert trace["render_map"]["grid_shape"] == [3, 3]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["tile_label_font"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["style"]["grid_style"]["style_id"] in {"slate_badges", "ink_badges", "blueprint_badges"}
     assert trace["scene_ir"]["entities"]["source_image_shown"] is True
     assert trace["scene_ir"]["entities"]["rotated_tile"]["label"] == "E"
-    assert trace["scene_ir"]["entities"]["rotated_tile"]["bbox"] == out.evidence_gt.value[0]
+    assert trace["scene_ir"]["entities"]["rotated_tile"]["bbox"] == out.annotation_gt.value[0]
 
 
 def test_rotated_tile_label_sampling_balances_labels_and_rotations() -> None:
@@ -188,7 +138,7 @@ def test_missing_patch_label_variants_contract() -> None:
             params={
                 "patch_mode": mode,
                 "correct_option_index": 2,
-                "source_task_id": "task_illustrations__library__section_book_count",
+                "source_task_id": "task_illustrations__library__books_in_section_count",
             },
             max_attempts=300,
         )
@@ -197,14 +147,13 @@ def test_missing_patch_label_variants_contract() -> None:
         assert out.query_id == mode
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == expected_label
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert set(out.evidence_gt.value) == {"missing_region", "selected_option"}
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert set(out.annotation_gt.value) == {"missing_region", "selected_option"}
         assert trace["render_map"]["correct_option_label"] == expected_label
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
         assert trace["render_spec"]["style"]["label_font"]["pool"] == "global_approved_font_pool"
         assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_cards", "warm_cards", "cool_cards"}
-        assert trace["scene_ir"]["entities"]["source_scene_id"] != "object_field"
 
 
 def test_missing_patch_four_options_use_two_by_two_grid() -> None:
@@ -213,7 +162,7 @@ def test_missing_patch_four_options_use_two_by_two_grid() -> None:
         params={
             "option_count": 4,
             "correct_option_index": 2,
-            "source_task_id": "task_illustrations__library__section_book_count",
+            "source_task_id": "task_illustrations__library__books_in_section_count",
         },
         max_attempts=300,
     )
@@ -225,57 +174,10 @@ def test_missing_patch_four_options_use_two_by_two_grid() -> None:
 
 def test_missing_patch_source_support_excludes_mixed_sources() -> None:
     support = tuple(_MISSING_PATCH_GEN_DEFAULTS["source_task_id_support"])
-    assert "task_illustrations__object_field__object_type_count" not in support
     assert support == (
-        "task_illustrations__library__section_book_count",
-        "task_illustrations__park_playground__person_count",
+        "task_illustrations__environment__on_feature_object_count",
+        "task_illustrations__library__books_in_section_count",
+        "task_illustrations__park_playground__activity_person_count",
+        "task_illustrations__transit_terminal__person_in_boarding_area_count",
         "task_illustrations__construction_site__worker_attribute_count",
     )
-
-
-def test_odd_scene_label_contract() -> None:
-    out = create_task("task_illustrations__scene_options__odd_scene_label").generate(
-        hash64(2026052504, "odd-scene", 0),
-        params={
-            "correct_option_index": 4,
-            "source_query_key": "environment_road",
-            "common_count": 3,
-            "odd_count": 4,
-        },
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    assert out.scene_id == "scene_options"
-    assert out.query_id == "odd_scene_label"
-    assert out.answer_gt.type == "option_letter"
-    assert out.answer_gt.value == "E"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert trace["render_map"]["correct_option_label"] == "E"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    roles = [record["role"] for record in trace["render_map"]["option_sources"]]
-    assert roles.count("majority") == 5
-    assert roles.count("odd") == 1
-    target_counts = [record["target_count"] for record in trace["render_map"]["option_sources"]]
-    assert target_counts.count(3) == 5
-    assert target_counts.count(4) == 1
-    assert trace["query_spec"]["params"]["option_count"] == 6
-    assert trace["query_spec"]["params"]["source_query_key"] == "environment_road"
-    assert trace["render_spec"]["style"]["panel_grid"] == [2, 3]
-    assert trace["render_spec"]["style"]["option_label_font"]["pool"] == "global_approved_font_pool"
-    assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_grid", "warm_grid", "cool_grid"}
-    assert out.complexity.complexity_components["panel_count_load"] == 1.0
-    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-
-
-def test_odd_sceneseeded_sampler_balances_option_labels() -> None:
-    samples = [
-        _sample_odd_scene_spec(
-            instance_seed=hash64(2026052504, "odd-scene-sampling", index),
-            params={},
-        )
-        for index in range(120)
-    ]
-    label_counts = Counter(sample.correct_index for sample in samples)
-    _assert_hash_balanced_counts(label_counts, range(6))
-    assert all(sample.common_count != sample.odd_count for sample in samples)

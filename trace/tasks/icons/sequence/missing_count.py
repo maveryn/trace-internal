@@ -24,7 +24,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -445,7 +445,7 @@ class IconsSequenceMissingCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -458,13 +458,13 @@ class IconsSequenceMissingCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -473,13 +473,13 @@ class IconsSequenceMissingCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order((scene_payload.missing_cell_bbox,))
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order((scene_payload.missing_cell_bbox,))
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
         query_id = "arithmetic_progression"
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_payload["evidence_type"]),
-            value=list(evidence_payload["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_payload["annotation_type"]),
+            value=list(annotation_payload["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -550,7 +550,7 @@ class IconsSequenceMissingCountTask:
             "render_map": {
                 "image_id": "img0",
                 "anchors": {
-                    "missing_cell_bbox": list(evidence_payload["evidence_value"][0]),
+                    "missing_cell_bbox": list(annotation_payload["annotation_value"][0]),
                 },
             },
             "execution_trace": {
@@ -575,7 +575,7 @@ class IconsSequenceMissingCountTask:
                 "missing_cell_index": int(scene_payload.missing_cell_index),
                 "step_delta": int(scene_payload.step_delta),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         complexity = build_icons_sequence_missing_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -593,7 +593,7 @@ class IconsSequenceMissingCountTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

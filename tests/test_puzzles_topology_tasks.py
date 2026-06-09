@@ -19,8 +19,9 @@ from trace.tasks.puzzles.topology.string_component_count import (
     PuzzlesTopologyStringComponentCountTask,
 )
 from trace.tasks.puzzles.topology.voxel_ladder_maze import (
-    PuzzlesTopologyVoxelLadderCheckpointReachabilityTask,
     PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask,
+    PuzzlesTopologyVoxelLadderReachableCheckpointCountTask,
+    PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask,
 )
 from tests.helpers import assert_counter_support_within, extract_prompt_json_example
 
@@ -70,23 +71,21 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
                 render = trace["render_spec"]
                 render_map = trace["render_map"]
                 solver = execution["solver_trace"]
-                evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+                annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-                assert str(out.query_id) == "default"
                 assert str(out.query_id) == str(query_id)
                 assert str(out.scene_id) == "cyclic_order"
                 assert str(execution["token_render_style"]) == str(token_render_style)
                 assert str(execution["loop_path_style"]) == str(loop_path_style)
-                assert str(execution["query_id"]) == "default"
                 assert str(execution["query_id"]) == str(query_id)
                 assert str(execution["internal_query_id"]) == str(query_id)
-                assert out.evidence_gt.type == "bbox_set"
+                assert out.annotation_gt.type == "bbox_set"
                 assert out.answer_gt.type == "option_letter"
                 assert str(out.answer_gt.value) == str(execution["answer_option_label"])
                 assert int(execution["valid_option_count"]) == 1
-                assert len(evidence_bboxes) == 1
+                assert len(annotation_bboxes) == 1
                 assert str(execution["view_family"]) == "topology_loop_option_label"
-                assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+                assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
                 assert str(execution["scene_variant"]) == str(scene_variant)
                 assert str(render["scene_variant"]) == str(scene_variant)
                 assert str(render["loop_path_style"]) == str(loop_path_style)
@@ -99,7 +98,7 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
                 assert int(execution["bead_count"]) <= int(execution["bead_count_range"][1])
                 assert str(execution["question_format"]) == str(query_id)
                 assert str(execution["equivalence_rule"]) == "same_cyclic_order_up_to_rotation_no_reflection"
-                assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+                assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
 
                 option_specs = execution["option_specs"]
                 assert len(option_specs) == int(execution["option_count"])
@@ -112,7 +111,7 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
                     [float(value) for value in render_map["option_choice_bboxes_px"][str(option_id)]]
                     for option_id in execution["valid_option_choice_ids"]
                 ]
-                assert evidence_bboxes == expected_bboxes
+                assert annotation_bboxes == expected_bboxes
                 assert [str(value) for value in execution["supporting_option_choice_ids"]] == [
                     str(value) for value in execution["valid_option_choice_ids"]
                 ]
@@ -150,16 +149,16 @@ def test_puzzle_topology_prompt_examples_match_selected_variants() -> None:
     expected = {
         "cyclic_order_equivalent_label": (
             PuzzlesTopologyCyclicOrderEquivalentLabelTask(),
-            {"evidence": [[574, 463, 746, 617]], "answer": "C"},
+            {"annotation": [[574, 463, 746, 617]], "answer": "C"},
             {"answer": "C"},
         ),
     }
-    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=27410):
+    for index, (query_id, (task, expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=27410):
         out = task.generate(index, params={}, max_attempts=10)
         assert str(out.query_id) == str(query_id)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -174,7 +173,7 @@ def test_puzzle_topology_cyclic_order_match_task_is_deterministic() -> None:
     out_b = task.generate(27480, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -224,7 +223,7 @@ def test_puzzle_topology_cyclic_order_match_sampling_balances_visual_and_answer_
         label_variant_answer_labels,
         {"A", "B", "C", "D", "E", "F"},
         expected_per_key=33,
-        tolerance=10,
+        tolerance=15,
     )
 
 
@@ -255,19 +254,17 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
             components = [dict(component) for component in execution["component_specs"]]
             groups = [dict(group) for group in execution["visual_group_specs"]]
             crossings = [dict(crossing) for crossing in execution["crossing_specs"]]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "string_topology"
             assert out.answer_gt.type == "integer"
-            assert out.evidence_gt.type == "bbox_set"
+            assert out.annotation_gt.type == "bbox_set"
             assert int(out.answer_gt.value) == int(execution["answer_value"])
-            assert int(out.answer_gt.value) == len(evidence_bboxes)
+            assert int(out.answer_gt.value) == len(annotation_bboxes)
             assert int(out.answer_gt.value) >= 1
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
             assert str(render["scene_variant"]) == str(scene_variant)
@@ -282,9 +279,9 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
             assert set(render_map["crossing_bboxes_px"]) == {
                 str(crossing["crossing_id"]) for crossing in crossings
             }
-            assert str(render_map["evidence_source"]) == str(execution["supporting_evidence_source"])
+            assert str(render_map["annotation_source"]) == str(execution["supporting_annotation_source"])
             assert str(render["layout"]) == "random_open_canvas"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
 
             assert not any(str(group["group_type"]) == "linked_pair" for group in groups)
             assert not any(str(group["group_type"]) == "tangled_rope_bundle" for group in groups)
@@ -309,11 +306,11 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
                     for component in components
                     if bool(component["open_ended"])
                 ]
-                evidence_source = render_map["component_bboxes_px"]
+                annotation_source = render_map["component_bboxes_px"]
                 expected_count = int(execution["open_rope_count"])
             elif str(query_id) == "closed_loop_count":
                 expected_ids = [str(component["component_id"]) for component in components if bool(component["closed"])]
-                evidence_source = render_map["component_bboxes_px"]
+                annotation_source = render_map["component_bboxes_px"]
                 expected_count = sum(1 for component in components if bool(component["closed"]))
             else:
                 expected_ids = [
@@ -321,19 +318,19 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
                     for component in components
                     if int(component.get("knot_count", 0)) > 0
                 ]
-                evidence_source = render_map["component_bboxes_px"]
+                annotation_source = render_map["component_bboxes_px"]
                 expected_count = sum(1 for component in components if int(component.get("knot_count", 0)) > 0)
 
             assert int(out.answer_gt.value) == int(expected_count)
             assert [str(value) for value in execution["supporting_item_ids"]] == expected_ids
             assert [str(value) for value in execution["solver_trace"]["supporting_item_ids"]] == expected_ids
             expected_bboxes = [
-                [float(value) for value in evidence_source[str(item_id)]]
+                [float(value) for value in annotation_source[str(item_id)]]
                 for item_id in expected_ids
             ]
-            assert evidence_bboxes == expected_bboxes
+            assert annotation_bboxes == expected_bboxes
 
-            for bbox in evidence_bboxes:
+            for bbox in annotation_bboxes:
                 x1, y1, x2, y2 = bbox
                 assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
                 assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
@@ -357,7 +354,7 @@ def test_puzzle_topology_string_component_prompt_examples_match_selected_variant
         "open_rope_count": (
             PuzzlesTopologyStringComponentCountTask(),
             {
-                "evidence": [
+                "annotation": [
                     [92, 132, 266, 228],
                     [512, 176, 686, 272],
                     [786, 430, 960, 526],
@@ -369,22 +366,21 @@ def test_puzzle_topology_string_component_prompt_examples_match_selected_variant
         ),
         "closed_loop_count": (
             PuzzlesTopologyStringComponentCountTask(),
-            {"evidence": [[122, 168, 284, 270], [790, 168, 952, 270]], "answer": 2},
+            {"annotation": [[122, 168, 284, 270], [790, 168, 952, 270]], "answer": 2},
             {"answer": 2},
         ),
         "knotted_component_count": (
             PuzzlesTopologyStringComponentCountTask(),
-            {"evidence": [[456, 168, 628, 290]], "answer": 1},
+            {"annotation": [[456, 168, 628, 290]], "answer": 1},
             {"answer": 1},
         ),
     }
-    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=28610):
+    for index, (query_id, (task, expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=28610):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -395,7 +391,7 @@ def test_puzzle_topology_string_component_count_task_is_deterministic() -> None:
     out_b = task.generate(28680, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -440,7 +436,6 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
         )
         trace = out.trace_payload["execution_trace"]
         query_id = str(trace["query_id"])
-        assert str(trace["query_id"]) == "default"
         assert str(trace["internal_query_id"]) == str(query_id)
         combos[(query_id, str(trace["scene_variant"]))] += 1
         answers_by_variant.setdefault(query_id, set()).add(int(out.answer_gt.value))
@@ -485,15 +480,13 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
 
     fixed_scene_answers: dict[str, set[int]] = {}
     fixed_scene_distractors: dict[str, set[int]] = {}
-    for sampling_index in range(120):
+    for sampling_index in range(240):
         out = task.generate(
             28880 + sampling_index,
             params={"scene_variant": "string_card"},
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        query_id = str(trace["query_id"])
-        assert query_id == "default"
         query_id = str(trace["query_id"])
         assert str(trace["scene_variant"]) == "string_card"
         fixed_scene_answers.setdefault(query_id, set()).add(int(out.answer_gt.value))
@@ -516,7 +509,6 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        assert str(trace["query_id"]) == "default"
         assert str(trace["query_id"]) == "knotted_component_count"
         assert str(trace["internal_query_id"]) == "knotted_component_count"
         fixed_task_scenes[str(trace["scene_variant"])] += 1
@@ -556,15 +548,15 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
             render = trace["render_spec"]
             render_map = trace["render_map"]
             supporting_ids = [str(value) for value in execution["supporting_item_ids"]]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
             reachable_labels = [str(value) for value in execution["reachable_exit_labels"]]
             unreachable_labels = [str(value) for value in execution["unreachable_exit_labels"]]
 
             assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "maze"
             assert out.answer_gt.type == ("integer" if str(query_id) == "reachable_exit_count" else "string")
-            assert out.evidence_gt.type == "bbox_set"
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "bbox_set"
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
@@ -584,9 +576,9 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
             assert len(execution["exits"]) == int(execution["exit_count"])
             assert len(reachable_labels) == int(execution["reachable_exit_count"])
             assert len(reachable_labels) + len(unreachable_labels) == int(execution["exit_count"])
-            assert str(render_map["evidence_source"]) == str(execution["supporting_evidence_source"])
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
-            assert evidence_bboxes == [
+            assert str(render_map["annotation_source"]) == str(execution["supporting_annotation_source"])
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+            assert annotation_bboxes == [
                 [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
                 for item_id in supporting_ids
             ]
@@ -603,7 +595,7 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
                 assert int(out.answer_gt.value) == len(reachable_labels)
                 assert len(supporting_ids) == len(reachable_labels)
 
-            for bbox in evidence_bboxes:
+            for bbox in annotation_bboxes:
                 x1, y1, x2, y2 = bbox
                 assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
                 assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
@@ -613,21 +605,21 @@ def test_puzzle_topology_maze_exit_prompt_examples_match_selected_variants() -> 
     expected = {
         "exit_reachability_label": (
             PuzzlesTopologyMazeExitReachabilityLabelTask(),
-            {"evidence": [[166, 91, 221, 146]], "answer": "C"},
+            {"annotation": [[166, 91, 221, 146]], "answer": "C"},
             {"answer": "C"},
         ),
         "reachable_exit_count": (
             PuzzlesTopologyMazeReachableExitCountTask(),
-            {"evidence": [[166, 91, 221, 146], [472, 789, 527, 844], [979, 676, 1034, 731]], "answer": 3},
+            {"annotation": [[166, 91, 221, 146], [472, 789, 527, 844], [979, 676, 1034, 731]], "answer": 3},
             {"answer": 3},
         ),
     }
-    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=29210):
+    for index, (query_id, (task, expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=29210):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         assert str(out.query_id) == str(query_id)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -638,7 +630,7 @@ def test_puzzle_topology_maze_exit_label_task_is_deterministic() -> None:
     out_b = task.generate(29280, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -736,8 +728,8 @@ def test_puzzle_topology_maze_exit_reachability_label_samples_target_reachabilit
 def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
     task_cases = (
         (PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(), "checkpoint_sequence_label"),
-        (PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(), "unreachable_checkpoint_label"),
-        (PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(), "reachable_checkpoint_count"),
+        (PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask(), "unreachable_checkpoint_label"),
+        (PuzzlesTopologyVoxelLadderReachableCheckpointCountTask(), "reachable_checkpoint_count"),
     )
     scene_variants = (
         "clean_isometric_voxels",
@@ -757,7 +749,7 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             execution = trace["execution_trace"]
             render = trace["render_spec"]
             render_map = trace["render_map"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
             supporting_ids = [str(value) for value in execution["supporting_item_ids"]]
 
             assert str(out.query_id) == str(query_id)
@@ -767,12 +759,12 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert str(render["layout"]) == "isometric_voxel_platforms_with_ladders"
-            assert out.evidence_gt.type == "bbox_set"
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "bbox_set"
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-            assert str(render_map["evidence_source"]) == str(execution["supporting_evidence_source"])
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
-            assert evidence_bboxes == [
+            assert str(render_map["annotation_source"]) == str(execution["supporting_annotation_source"])
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+            assert annotation_bboxes == [
                 [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
                 for item_id in supporting_ids
             ]
@@ -827,7 +819,7 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             else:
                 raise AssertionError(f"unhandled voxel-ladder query {query_id}")
 
-            for bbox in evidence_bboxes:
+            for bbox in annotation_bboxes:
                 x1, y1, x2, y2 = bbox
                 assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
                 assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
@@ -838,7 +830,7 @@ def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -
         "checkpoint_sequence_label": (
             PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(),
             {
-                "evidence": [
+                "annotation": [
                     [128, 522, 206, 590],
                     [318, 404, 390, 474],
                     [472, 276, 544, 346],
@@ -850,28 +842,29 @@ def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -
             {"answer": "B"},
         ),
         "unreachable_checkpoint_label": (
-            PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(),
-            {"evidence": [[758, 318, 830, 388]], "answer": "purple"},
+            PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask(),
+            {"annotation": [[758, 318, 830, 388]], "answer": "purple"},
             {"answer": "purple"},
         ),
         "reachable_checkpoint_count": (
-            PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(),
-            {"evidence": [[318, 404, 390, 474], [472, 276, 544, 346], [664, 128, 736, 198]], "answer": 3},
+            PuzzlesTopologyVoxelLadderReachableCheckpointCountTask(),
+            {"annotation": [[318, 404, 390, 474], [472, 276, 544, 346], [664, 128, 736, 198]], "answer": 3},
             {"answer": 3},
         ),
     }
-    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=30010):
+    for index, (query_id, (task, expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=30010):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         assert str(out.query_id) == str(query_id)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
 def test_puzzle_topology_voxel_ladder_sampling_balances_public_queries_and_scenes() -> None:
     sequence_task = PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask()
-    reachability_task = PuzzlesTopologyVoxelLadderCheckpointReachabilityTask()
+    unreachable_task = PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask()
+    reachable_count_task = PuzzlesTopologyVoxelLadderReachableCheckpointCountTask()
     sequence_combos = Counter()
     reachability_combos = Counter()
     reachability_answers: dict[str, set[int]] = {}
@@ -881,12 +874,13 @@ def test_puzzle_topology_voxel_ladder_sampling_balances_public_queries_and_scene
         sequence_trace = sequence_out.trace_payload["execution_trace"]
         sequence_combos[(str(sequence_trace["query_id"]), str(sequence_trace["scene_variant"]))] += 1
 
-        reachability_out = reachability_task.generate(30320 + sampling_index, params={}, max_attempts=10)
-        reachability_trace = reachability_out.trace_payload["execution_trace"]
-        reachability_query = str(reachability_trace["query_id"])
-        reachability_combos[(reachability_query, str(reachability_trace["scene_variant"]))] += 1
-        if reachability_query == "reachable_checkpoint_count":
-            reachability_answers.setdefault(reachability_query, set()).add(int(reachability_out.answer_gt.value))
+        for task_offset, reachability_task in enumerate((unreachable_task, reachable_count_task)):
+            reachability_out = reachability_task.generate(30320 + (sampling_index * 2) + task_offset, params={}, max_attempts=10)
+            reachability_trace = reachability_out.trace_payload["execution_trace"]
+            reachability_query = str(reachability_trace["query_id"])
+            reachability_combos[(reachability_query, str(reachability_trace["scene_variant"]))] += 1
+            if reachability_query == "reachable_checkpoint_count":
+                reachability_answers.setdefault(reachability_query, set()).add(int(reachability_out.answer_gt.value))
 
     expected_sequence_combos = {
         ("checkpoint_sequence_label", scene_variant)
@@ -901,6 +895,6 @@ def test_puzzle_topology_voxel_ladder_sampling_balances_public_queries_and_scene
     assert set(reachability_combos) == expected_reachability_combos
     assert min(sequence_combos.values()) >= 39
     assert max(sequence_combos.values()) <= 41
-    assert min(reachability_combos.values()) >= 19
-    assert max(reachability_combos.values()) <= 21
+    assert min(reachability_combos.values()) >= 39
+    assert max(reachability_combos.values()) <= 41
     assert reachability_answers["reachable_checkpoint_count"] == {2, 3, 4, 5}

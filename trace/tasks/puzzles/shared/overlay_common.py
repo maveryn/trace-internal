@@ -80,18 +80,6 @@ class PuzzleOverlayRenderParams:
     instruction_fill_rgb: Tuple[int, int, int]
     unit_size_jitter: Dict[str, Any]
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 def _canonicalize_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
     """Return deterministic row-major cells."""
 

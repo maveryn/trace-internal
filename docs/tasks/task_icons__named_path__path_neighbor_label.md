@@ -9,11 +9,11 @@
 ## Contract
 1. The image shows a single continuous open path marked from `START` to `END`.
 2. Procedural named icons are placed on ordered path stops.
-3. Exactly six non-target stop icons are labeled `A` through `F`; the answer is one option letter.
-4. The queried named icon occurrence is unlabeled and is selected by path order.
+3. Exactly six non-target stop icons are option icons labeled `A` through `F`; the answer is one option letter.
+4. The queried named icon occurrence is selected by path order and is not one of the option icons.
 5. `answer_gt.type = option_letter`.
-6. `evidence_gt.type = keyed_bbox_map` with `queried_icon` for the queried named-icon occurrence and `selected_neighbor` for the selected labeled neighbor.
-   Evidence marks the two visual icon witnesses, not the numeric path stops or
+6. `annotation_gt.type = keyed_bbox_map` with `queried_icon` for the queried named-icon occurrence and `selected_neighbor` for the selected labeled neighbor.
+   Annotation marks the two visual icon witnesses, not the numeric path stops or
    standalone label text.
 
 ## Query IDs
@@ -27,7 +27,7 @@
 ## Generation
 The target shape is sampled from the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. The path contains six
-labeled option stops, `4..8` unlabeled non-target distractor stops, and `2..4`
+labeled option stops, `4..8` other non-target stops, and `2..4`
 occurrences of the target shape. Target occurrences are non-adjacent and never
 placed on the path endpoints. The selected neighbor is always a labeled
 non-target option.

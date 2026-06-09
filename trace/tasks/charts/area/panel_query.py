@@ -209,8 +209,26 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _AreaRen
                 namespace=TASK_ID,
             )
         ),
-        area_outline_width_px=int(params.get("area_outline_width_px", group_default(_RENDER_DEFAULTS, "area_outline_width_px", 3))),
-        point_radius_px=int(params.get("point_radius_px", group_default(_RENDER_DEFAULTS, "point_radius_px", 6))),
+        area_outline_width_px=int(
+            resolve_render_int(
+                params,
+                _RENDER_DEFAULTS,
+                "area_outline_width_px",
+                3,
+                instance_seed=int(instance_seed),
+                namespace=TASK_ID,
+            )
+        ),
+        point_radius_px=int(
+            resolve_render_int(
+                params,
+                _RENDER_DEFAULTS,
+                "point_radius_px",
+                6,
+                instance_seed=int(instance_seed),
+                namespace=TASK_ID,
+            )
+        ),
         axis_color_rgb=resolve_render_rgb(
             params,
             _RENDER_DEFAULTS,
@@ -738,7 +756,7 @@ def _make_prompt(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -758,10 +776,22 @@ class ChartsAreaPanelQueryTask:
     task_id = TASK_ID
     domain = "charts"
     task_group = "area"
-    query_id = "interval_area_value"
+    allowed_query_ids: Tuple[str, ...] = ("interval_area_value",)
+
+    def _select_query_id(self, instance_seed: int, *, params: Mapping[str, Any]) -> str:
+        allowed_query_ids = tuple(str(query_id) for query_id in self.allowed_query_ids)
+        requested_query_id = params.get("query_id")
+        if requested_query_id is not None:
+            if str(requested_query_id) not in set(allowed_query_ids):
+                raise ValueError(f"unsupported area query_id for {self.task_id}: {requested_query_id}")
+            return str(requested_query_id)
+        if len(allowed_query_ids) == 1:
+            return str(allowed_query_ids[0])
+        rng = spawn_rng(int(instance_seed), f"{self.task_id}.query_id")
+        return str(allowed_query_ids[int(rng.randrange(len(allowed_query_ids)))])
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_id = str(self.query_id)
+        query_id = self._select_query_id(int(instance_seed), params=params)
         if query_id not in set(SUPPORTED_QUERY_IDS):
             raise ValueError(f"unsupported area query_id: {query_id}")
         point_count, point_count_range = _sample_point_count(params, instance_seed=int(instance_seed))
@@ -789,9 +819,9 @@ class ChartsAreaPanelQueryTask:
                 "answer_hint_label",
                 "object_description_single_area",
                 "object_description_stacked_area",
-                "evidence_hint_interval_area_value",
-                "evidence_hint_stacked_band_interval_sum_value",
-                "evidence_hint_stacked_dominance_label",
+                "annotation_hint_interval_area_value",
+                "annotation_hint_stacked_band_interval_sum_value",
+                "annotation_hint_stacked_dominance_label",
                 "json_example_interval_area_value",
                 "json_example_stacked_band_interval_sum_value",
                 "json_example_stacked_dominance_label",
@@ -807,7 +837,7 @@ class ChartsAreaPanelQueryTask:
             series_labels = ("Series",)
             series_values = {"Series": tuple(int(value) for value in values)}
             answer_value: int | str = _trapezoid_interval_area(values, int(start_index), int(end_index))
-            evidence_pairs = [("Series", str(x_labels[index])) for index in range(int(start_index), int(end_index) + 1)]
+            annotation_pairs = [("Series", str(x_labels[index])) for index in range(int(start_index), int(end_index) + 1)]
             stacked = False
             object_description = str(prompt_defaults["object_description_single_area"])
             answer_type = "integer"
@@ -843,7 +873,7 @@ class ChartsAreaPanelQueryTask:
             if query_id == "stacked_band_interval_sum_value":
                 selected_category = str(series_labels[int(rng.randrange(len(series_labels)))])
                 answer_value = int(sum(int(series_values[selected_category][index]) for index in range(int(start_index), int(end_index) + 1)))
-                evidence_pairs = [(selected_category, str(x_labels[index])) for index in range(int(start_index), int(end_index) + 1)]
+                annotation_pairs = [(selected_category, str(x_labels[index])) for index in range(int(start_index), int(end_index) + 1)]
                 extra_trace = {
                     "category_label": str(selected_category),
                     "category_count": int(len(series_labels)),
@@ -865,9 +895,8 @@ class ChartsAreaPanelQueryTask:
                 if int(top_total) - int(second_total) < int(margin_min):
                     raise ValueError("stacked dominance query did not have a unique enough winner")
                 answer_value = str(top_label)
-                evidence_pairs = [
-                    (str(label), str(x_labels[index]))
-                    for label in series_labels
+                annotation_pairs = [
+                    (str(top_label), str(x_labels[index]))
                     for index in range(int(start_index), int(end_index) + 1)
                 ]
                 extra_trace = {
@@ -915,7 +944,7 @@ class ChartsAreaPanelQueryTask:
                 series_labels=series_labels,
                 series_values=series_values,
                 stacked=bool(stacked),
-                query_points=evidence_pairs,
+                query_points=annotation_pairs,
                 instance_seed=int(instance_seed),
                 params=render_style_params,
                 render_params=area_render_params,
@@ -930,9 +959,9 @@ class ChartsAreaPanelQueryTask:
             (str(trace["series_label"]), str(trace["x_label"])): trace
             for trace in rendered.point_traces
         }
-        evidence_points = [
+        annotation_points = [
             list(trace_by_pair[(str(series), str(label))]["mark_center_px"])
-            for series, label in evidence_pairs
+            for series, label in annotation_pairs
             if (str(series), str(label)) in trace_by_pair
         ]
         answer_hint_key = "answer_hint_integer" if str(answer_type) == "integer" else "answer_hint_label"
@@ -943,7 +972,7 @@ class ChartsAreaPanelQueryTask:
             "category_label": str(extra_trace.get("category_label", "")),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{query_id}"]),
+            "annotation_hint": str(prompt_defaults[f"annotation_hint_{query_id}"]),
             "answer_hint": str(prompt_defaults[answer_hint_key]),
             "json_example": str(prompt_defaults[f"json_example_{query_id}"]),
             "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{query_id}"]),
@@ -1027,17 +1056,17 @@ class ChartsAreaPanelQueryTask:
                 "answer_value": answer_value,
                 "question_format": str(question_format),
                 "values_by_series": dict(values_by_series),
-                "evidence_pairs": [[str(series), str(label)] for series, label in evidence_pairs],
+                "annotation_pairs": [[str(series), str(label)] for series, label in annotation_pairs],
                 **dict(query_params),
             },
             "witness_symbolic": {
                 "type": "point_set",
-                "count": int(len(evidence_points)),
+                "count": int(len(annotation_points)),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         visual_count = int(point_count) * max(1, len(series_labels))
@@ -1059,7 +1088,7 @@ class ChartsAreaPanelQueryTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=TypedValue(type="point_set", value=[list(point) for point in evidence_points]),
+            annotation_gt=TypedValue(type="point_set", value=[list(point) for point in annotation_points]),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1107,18 +1136,18 @@ class ChartsAreaPanelQueryTask:
 
 @register_task
 class ChartsAreaIntervalAreaValueTask(ChartsAreaPanelQueryTask):
-    """Compute area under a single filled area chart over a labeled interval."""
+    """Compute interval area over a filled area chart."""
 
     task_id = "task_charts__area__interval_area_value"
-    query_id = "interval_area_value"
+    allowed_query_ids = ("interval_area_value",)
 
 
 @register_task
 class ChartsAreaStackedBandIntervalSumValueTask(ChartsAreaPanelQueryTask):
-    """Sum one stacked area band over a labeled interval."""
+    """Compute an interval sum for one band in a stacked area chart."""
 
     task_id = "task_charts__area__stacked_band_interval_sum_value"
-    query_id = "stacked_band_interval_sum_value"
+    allowed_query_ids = ("stacked_band_interval_sum_value",)
 
 
 @register_task
@@ -1126,12 +1155,12 @@ class ChartsAreaStackedDominanceLabelTask(ChartsAreaPanelQueryTask):
     """Find the dominant stacked-area category over a labeled interval."""
 
     task_id = "task_charts__area__stacked_band_dominance_label"
-    query_id = "stacked_dominance_label"
+    allowed_query_ids = ("stacked_dominance_label",)
 
 
 __all__ = [
     "ChartsAreaIntervalAreaValueTask",
     "ChartsAreaPanelQueryTask",
-    "ChartsAreaStackedBandIntervalSumValueTask",
     "ChartsAreaStackedDominanceLabelTask",
+    "ChartsAreaStackedBandIntervalSumValueTask",
 ]

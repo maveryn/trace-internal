@@ -30,8 +30,8 @@ if str(RLVR_ROOT) not in sys.path:
 _ANSWER_TAG_RE = re.compile(r"<answer>(.*?)</answer>", re.DOTALL | re.IGNORECASE)
 _TRACE_REQUIRED_KEY_ORDER = {
     "answer": ["answer"],
-    "answer_and_evidence": ["answer", "evidence"],
-    "evidence": ["answer", "evidence"],
+    "answer_and_annotation": ["answer", "annotation"],
+    "annotation": ["answer", "annotation"],
 }
 
 
@@ -158,7 +158,7 @@ def _normalize_probe_response(
 
     from verl.utils.trace_reward import extract_trace_prediction
 
-    answer_value, evidence_value, json_found = extract_trace_prediction(response)
+    answer_value, annotation_value, json_found = extract_trace_prediction(response)
     if not json_found:
         return response, "none"
 
@@ -171,8 +171,8 @@ def _normalize_probe_response(
         payload = {}
         if answer_value is not None:
             payload["answer"] = answer_value
-        if evidence_value is not None:
-            payload["evidence"] = evidence_value
+        if annotation_value is not None:
+            payload["annotation"] = annotation_value
         if not payload:
             return response, "none"
     payload = _probe_jsonable(payload)
@@ -431,7 +431,7 @@ def _score_trace_response_with_item(
     response: str,
     item: dict[str, Any],
     answer_gt: dict[str, Any],
-    evidence_gt: dict[str, Any],
+    annotation_gt: dict[str, Any],
     reward_contract: dict[str, Any],
     trace_reward_mode: str,
     trace_answer_scoring: str,
@@ -442,7 +442,7 @@ def _score_trace_response_with_item(
     return score_trace_response(
         response=response,
         answer_gt=answer_gt,
-        evidence_gt=evidence_gt,
+        annotation_gt=annotation_gt,
         reward_contract=reward_contract,
         image_size=item.get("image_size") or item.get("source_image_size"),
         image_sizes=item.get("image_sizes"),
@@ -456,13 +456,13 @@ def _score_trace_response_with_item(
 
 def _effective_per_rollout_response_mode(args: argparse.Namespace) -> str:
     response_mode = str(getattr(args, "per_rollout_response_mode", "none") or "none")
-    if str(getattr(args, "diagnostics_mode", "none")) == "evidence_eval" and response_mode == "none":
+    if str(getattr(args, "diagnostics_mode", "none")) == "annotation_eval" and response_mode == "none":
         return "full"
     return response_mode
 
 
 def _should_write_per_rollout(args: argparse.Namespace) -> bool:
-    return bool(getattr(args, "write_per_rollout", False)) or str(getattr(args, "diagnostics_mode", "none")) == "evidence_eval"
+    return bool(getattr(args, "write_per_rollout", False)) or str(getattr(args, "diagnostics_mode", "none")) == "annotation_eval"
 
 
 def _stored_response_text(response: str, *, mode: str, max_chars: int) -> str | None:
@@ -479,8 +479,8 @@ def _stored_response_text(response: str, *, mode: str, max_chars: int) -> str | 
 def _required_key_order(trace_reward_mode: str) -> list[str]:
     normalized = str(trace_reward_mode or "").strip().lower()
     if normalized == "auto":
-        normalized = "answer_and_evidence"
-    return list(_TRACE_REQUIRED_KEY_ORDER.get(normalized, ["evidence", "answer"]))
+        normalized = "answer_and_annotation"
+    return list(_TRACE_REQUIRED_KEY_ORDER.get(normalized, ["annotation", "answer"]))
 
 
 def _diagnose_trace_response(
@@ -523,12 +523,12 @@ def _diagnose_trace_response(
         categories.append("json_not_object")
     if not bool(strict_score.get("answer_parse_ok", 0.0)):
         categories.append("answer_parse_failed")
-    if trace_reward_mode != "answer" and not bool(strict_score.get("evidence_parse_ok", 0.0)):
-        categories.append("evidence_parse_failed")
+    if trace_reward_mode != "answer" and not bool(strict_score.get("annotation_parse_ok", 0.0)):
+        categories.append("annotation_parse_failed")
     if float(strict_score.get("answer_reward", 0.0)) <= 0.0:
         categories.append("answer_wrong")
-    if trace_reward_mode != "answer" and float(strict_score.get("evidence_reward", 0.0)) <= 0.0:
-        categories.append("evidence_zero")
+    if trace_reward_mode != "answer" and float(strict_score.get("annotation_reward", 0.0)) <= 0.0:
+        categories.append("annotation_zero")
     if float(strict_score.get("task_reward_raw", 0.0)) <= 0.0 and not categories:
         categories.append("task_reward_zero")
 
@@ -558,7 +558,7 @@ def _build_per_rollout_row(
     response_max_chars: int,
 ) -> dict[str, Any]:
     answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
-    evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
+    annotation_gt = _maybe_parse_json_mapping(item["annotation_gt"])
     diagnostics = _diagnose_trace_response(
         response=response,
         token_count=token_count,
@@ -582,7 +582,7 @@ def _build_per_rollout_row(
         "max_generation_tokens_setting": int(max_tokens),
         "hit_response_cap": bool(int(token_count) >= int(max_tokens)),
         "answer_type": str(answer_gt.get("type", "")),
-        "evidence_type": str(evidence_gt.get("type", "")),
+        "annotation_type": str(annotation_gt.get("type", "")),
         "extraction_source": str(extraction_source),
         **diagnostics,
     }
@@ -595,7 +595,7 @@ def _build_per_rollout_row(
     for prefix, score in (("strict", strict_score), ("fallback", fallback_score)):
         row[f"{prefix}_task_reward"] = float(score.get("task_reward_raw", 0.0))
         row[f"{prefix}_answer_reward"] = float(score.get("answer_reward", 0.0))
-        row[f"{prefix}_evidence_reward"] = float(score.get("evidence_reward", 0.0))
+        row[f"{prefix}_annotation_reward"] = float(score.get("annotation_reward", 0.0))
         row[f"{prefix}_overall_reward"] = float(score.get("overall", 0.0))
         row[f"{prefix}_format_reward"] = float(score.get("format", 0.0))
         row[f"{prefix}_json_found"] = bool(score.get("json_found", 0.0))
@@ -603,11 +603,11 @@ def _build_per_rollout_row(
         row[f"{prefix}_format_json_ok"] = bool(score.get("format_json_ok", 0.0))
         row[f"{prefix}_format_schema_ok"] = bool(score.get("format_schema_ok", 0.0))
         row[f"{prefix}_answer_parse_ok"] = bool(score.get("answer_parse_ok", 0.0))
-        row[f"{prefix}_evidence_parse_ok"] = bool(score.get("evidence_parse_ok", 0.0))
+        row[f"{prefix}_annotation_parse_ok"] = bool(score.get("annotation_parse_ok", 0.0))
         row[f"{prefix}_positive"] = bool(float(score.get("task_reward_raw", 0.0)) > 0.0)
         row[f"{prefix}_perfect"] = bool(float(score.get("task_reward_raw", 0.0)) >= 1.0)
         for key, value in score.items():
-            if key.startswith("evidence_") and isinstance(value, (int, float)):
+            if key.startswith("annotation_") and isinstance(value, (int, float)):
                 row[f"{prefix}_{key}"] = float(value)
 
     stored_response = _stored_response_text(
@@ -650,7 +650,7 @@ def _build_instance_row(
         if int(count) == int(max_tokens) or str(source) == "none"
     )
     answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
-    evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
+    annotation_gt = _maybe_parse_json_mapping(item["annotation_gt"])
 
     return {
         "dataset_index": int(dataset_index),
@@ -687,7 +687,7 @@ def _build_instance_row(
         "crop_or_no_extract_rollout_count": int(crop_or_no_extract_rollout_count),
         "crop_or_no_extract_rate": float(crop_or_no_extract_rollout_count / rollout_count) if rollout_count else 0.0,
         "answer_type": str(answer_gt.get("type", "")),
-        "evidence_type": str(evidence_gt.get("type", "")),
+        "annotation_type": str(annotation_gt.get("type", "")),
     }
 
 
@@ -891,7 +891,7 @@ def _run_single_probe(args: argparse.Namespace) -> dict[str, Any]:
                         token_counts: list[int] = []
                         extraction_sources: list[str] = []
                         answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
-                        evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
+                        annotation_gt = _maybe_parse_json_mapping(item["annotation_gt"])
                         reward_contract = _maybe_parse_json_mapping(item["reward_contract"])
 
                         for rollout_index, completion in enumerate(generated.outputs):
@@ -901,7 +901,7 @@ def _run_single_probe(args: argparse.Namespace) -> dict[str, Any]:
                                 response=response,
                                 item=item,
                                 answer_gt=answer_gt,
-                                evidence_gt=evidence_gt,
+                                annotation_gt=annotation_gt,
                                 reward_contract=reward_contract,
                                 trace_reward_mode=args.trace_reward_mode,
                                 trace_answer_scoring=args.trace_answer_scoring,
@@ -915,13 +915,13 @@ def _run_single_probe(args: argparse.Namespace) -> dict[str, Any]:
                                 response=normalized_response,
                                 item=item,
                                 answer_gt=answer_gt,
-                                evidence_gt=evidence_gt,
+                                annotation_gt=annotation_gt,
                                 reward_contract=reward_contract,
                                 trace_reward_mode=args.trace_reward_mode,
                                 trace_answer_scoring=args.trace_answer_scoring,
                                 format_weight=args.trace_format_weight,
                             )
-                            primary_score = strict_score if str(args.diagnostics_mode) == "evidence_eval" else fallback_score
+                            primary_score = strict_score if str(args.diagnostics_mode) == "annotation_eval" else fallback_score
                             rollout_scores.append(primary_score)
                             extraction_sources.append(str(extraction_source))
                             token_counts.append(token_count)
@@ -1025,7 +1025,7 @@ def _run_single_probe(args: argparse.Namespace) -> dict[str, Any]:
             "seed": args.seed,
             "enforce_eager": args.enforce_eager,
             "diagnostics_mode": args.diagnostics_mode,
-            "primary_scoring_mode": "strict_raw" if str(args.diagnostics_mode) == "evidence_eval" else "normalized_fallback",
+            "primary_scoring_mode": "strict_raw" if str(args.diagnostics_mode) == "annotation_eval" else "normalized_fallback",
             "write_per_rollout": write_per_rollout,
             "per_rollout_response_mode": response_mode,
             "per_rollout_response_max_chars": args.per_rollout_response_max_chars,
@@ -1338,7 +1338,7 @@ def _run_sharded_probe(args: argparse.Namespace) -> dict[str, Any]:
             "seed": args.seed,
             "enforce_eager": args.enforce_eager,
             "diagnostics_mode": args.diagnostics_mode,
-            "primary_scoring_mode": "strict_raw" if str(args.diagnostics_mode) == "evidence_eval" else "normalized_fallback",
+            "primary_scoring_mode": "strict_raw" if str(args.diagnostics_mode) == "annotation_eval" else "normalized_fallback",
             "write_per_rollout": write_per_rollout,
             "per_rollout_response_mode": _effective_per_rollout_response_mode(args),
             "per_rollout_response_max_chars": args.per_rollout_response_max_chars,
@@ -1396,14 +1396,14 @@ def main() -> None:
     parser.add_argument("--server-timeout", type=float, default=600.0)
     parser.add_argument("--server-max-retries", type=int, default=3)
     parser.add_argument("--server-concurrency", type=int, default=128)
-    parser.add_argument("--trace-output-mode", default="answer", choices=("answer", "answer_and_evidence", "evidence"))
+    parser.add_argument("--trace-output-mode", default="answer", choices=("answer", "answer_and_annotation", "annotation"))
     parser.add_argument("--prompt-key", default="prompt_answer")
     parser.add_argument(
         "--system-prompt",
         default=str(RLVR_ROOT / "examples/prompts/trace_vero_json_system_prompt_answer.txt"),
         help="Path to the system prompt file, or 'none' to disable.",
     )
-    parser.add_argument("--trace-reward-mode", default="answer", choices=("answer", "answer_and_evidence", "auto"))
+    parser.add_argument("--trace-reward-mode", default="answer", choices=("answer", "answer_and_annotation", "auto"))
     parser.add_argument("--trace-answer-scoring", default="legacy_strict", choices=("legacy_strict", "exact_json", "strict", "legacy", "exact"))
     parser.add_argument("--trace-format-weight", type=float, default=0.0)
     parser.add_argument("--start-index", type=int, default=0)
@@ -1438,11 +1438,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=18)
     parser.add_argument(
         "--diagnostics-mode",
-        choices=("none", "evidence_eval"),
+        choices=("none", "annotation_eval"),
         default="none",
         help=(
-            "Optional diagnostic scoring/reporting mode. evidence_eval scores per-instance solve "
-            "from strict raw responses and emits per-rollout format/evidence diagnostics."
+            "Optional diagnostic scoring/reporting mode. annotation_eval scores per-instance solve "
+            "from strict raw responses and emits per-rollout format/annotation diagnostics."
         ),
     )
     parser.add_argument("--write-per-rollout", action="store_true", help="Write compressed per-rollout diagnostics JSONL.")

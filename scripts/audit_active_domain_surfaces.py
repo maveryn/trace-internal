@@ -22,6 +22,7 @@ ACTIVE_DOMAINS = {
     "illustrations",
     "pages",
     "physics",
+    "misc",
     "puzzles",
     "three_d",
 }
@@ -39,7 +40,9 @@ ALLOWED_DOMAIN_DOCS = {
     "ILLUSTRATIONS_TASK_SETUP.md",
     "PAGES_TASK_SETUP.md",
     "PHYSICS_TASK_SETUP.md",
-    "PUZZLE_TASK_SETUP.md",
+    "MISC_TASK_SETUP.md",
+    "PUZZLES_TASK_SETUP.md",
+    "THREE_D_COUNTQA_OBJECT_REFERENCES.md",
     "THREE_D_TASK_SETUP.md",
 }
 

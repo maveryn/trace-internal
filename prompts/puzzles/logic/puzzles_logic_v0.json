@@ -65,8 +65,29 @@
       "",
       ""
     ],
+    "balance_scale_missing_object_weight_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "balance_scale_equivalent_object_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "balance_scale_weight_order_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "toggle_grid_query": [
-      "Use this toggle rule: pressing a switch flips that cell and its orthogonal neighbors.",
+      "Follow this toggle rule: pressing a switch flips that cell and its orthogonal neighbors.",
       "Apply the toggle rule: each pressed switch flips itself and the adjacent up, down, left, and right cells.",
       "For this grid, a switch press changes the selected cell plus any edge-neighbor cells.",
       "Use the Lights-Out-style rule that each press flips the switch cell and its orthogonal neighbors.",
@@ -106,6 +127,9 @@
     "scene:arithmetic_constraint": [
       "object_description"
     ],
+    "scene:balance_scale": [
+      "object_description"
+    ],
     "scene:star_battle": [
       "object_description"
     ],
@@ -118,19 +142,19 @@
     "query:line_completion_label": [
       "line_label"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -138,12 +162,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -186,6 +210,13 @@
       "The image shows {object_description}.",
       "The puzzle diagram shows {object_description}.",
       "This arithmetic puzzle shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "balance_scale": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This balance-scale puzzle shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
     ],
@@ -358,6 +389,34 @@
       "Solve the marked brick from the repeated pyramid pattern.",
       "What integer belongs in the question-mark brick of the number pyramid?",
       "Find the hidden number in the number pyramid."
+    ],
+    "missing_object_weight_value": [
+      "Each scale is balanced. What integer value belongs in the question-mark box for the query object?",
+      "Use the balanced scales to determine the value of the object shown in the query row.",
+      "The pans on every scale balance. What is the integer value of the query object?",
+      "Solve the balance-scale equations and report the value that replaces the question mark.",
+      "Use the repeated objects and numbered weights on the balanced scales to find the query object's value."
+    ],
+    "equivalent_object_count_value": [
+      "Each scale is balanced. How many copies of the repeated object equal one source object?",
+      "Use the balanced scales to determine the count in the question-mark box.",
+      "The query row asks how many repeated objects balance one source object. What integer count replaces the question mark?",
+      "Solve the balance-scale equations and report the number of repeated objects equal to the source object.",
+      "Use the object weights implied by the balanced pans to find the missing equivalent-object count."
+    ],
+    "heaviest_object_label": [
+      "Use the tilted scales to identify the heaviest candidate object. What is its visible label?",
+      "Each lower pan is heavier. Which candidate object is the heaviest?",
+      "Read the balance comparisons and report the label of the heaviest object.",
+      "The tilted pans compare object weights. Which listed candidate is heaviest?",
+      "Infer the object weight order from the scales. What label marks the heaviest object?"
+    ],
+    "lightest_object_label": [
+      "Use the tilted scales to identify the lightest candidate object. What is its visible label?",
+      "Each higher pan is lighter. Which candidate object is the lightest?",
+      "Read the balance comparisons and report the label of the lightest object.",
+      "The tilted pans compare object weights. Which listed candidate is lightest?",
+      "Infer the object weight order from the scales. What label marks the lightest object?"
     ],
     "valid_cell_anywhere_label": [
       "Which labeled candidate cell can still hold a star?",

@@ -55,6 +55,12 @@ def infer_graph_scene_id(task_id: str) -> str:
     """Infer the public graph scene id for shared render styling."""
 
     text = str(task_id)
+    if "adjacency" in text:
+        return "adjacency"
+    if "binary_tree" in text or "bst_" in text or "heap_property" in text:
+        return "binary_tree"
+    if "graph_options" in text:
+        return "graph_options"
     if "metro" in text:
         return "metro"
     if "pipe" in text:

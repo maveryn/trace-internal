@@ -16,8 +16,10 @@ from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.color_format import format_named_color_with_hex, rgb_to_hex
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.font_assets import get_font_family_record, sample_font_family
+from ...shared.named_colors import available_named_colors, named_color
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -26,7 +28,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -42,12 +44,17 @@ from ..shared.visual_defaults import load_games_noise_defaults
 
 TASK_GROUP = "match3"
 SCENE_ID = "match3"
-QUERY_CLEARED_COUNT = "cleared_count_after_marked_swap"
-QUERY_CREATED_RUN_COUNT = "created_run_count_after_marked_swap"
 QUERY_MAX_CLEAR_LABEL = "max_clear_swap_label"
 QUERY_TARGET_CLEAR_LABEL = "target_clear_swap_label"
-SUPPORTED_EFFECT_VALUE_QUERIES: Tuple[str, ...] = (QUERY_CLEARED_COUNT, QUERY_CREATED_RUN_COUNT)
+QUERY_GRID_COLOR_GEM_COUNT = "grid_color_gem_count"
+QUERY_ROW_COLOR_GEM_COUNT = "row_color_gem_count"
+QUERY_COLUMN_COLOR_GEM_COUNT = "column_color_gem_count"
 SUPPORTED_BEST_SWAP_QUERIES: Tuple[str, ...] = (QUERY_MAX_CLEAR_LABEL, QUERY_TARGET_CLEAR_LABEL)
+SUPPORTED_GEM_COUNT_QUERIES: Tuple[str, ...] = (
+    QUERY_GRID_COLOR_GEM_COUNT,
+    QUERY_ROW_COLOR_GEM_COUNT,
+    QUERY_COLUMN_COLOR_GEM_COUNT,
+)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("square_board", "wide_board", "tall_board")
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "faceted_jewels",
@@ -57,14 +64,10 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "orb_tokens",
 )
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
-GEM_KEYS: Tuple[str, ...] = ("red", "blue", "green", "yellow", "purple", "cyan")
+GEM_KEYS: Tuple[str, ...] = tuple(str(name) for name, _rgb in available_named_colors())
 GEM_RGB: Dict[str, Tuple[int, int, int]] = {
-    "red": (222, 65, 73),
-    "blue": (55, 121, 219),
-    "green": (45, 166, 105),
-    "yellow": (238, 190, 52),
-    "purple": (146, 93, 208),
-    "cyan": (38, 169, 204),
+    str(name): tuple(int(value) for value in named_color(str(name)))
+    for name in GEM_KEYS
 }
 MATCH3_STYLE_RGB: Dict[str, Dict[str, Any]] = {
     "faceted_jewels": {
@@ -117,7 +120,7 @@ class _TaskDefaults:
     gem_type_count_support: Tuple[int, ...] = (5, 6)
     option_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     target_clear_count_support: Tuple[int, ...] = (0, 3, 4, 5, 6)
-    target_run_count_support: Tuple[int, ...] = (0, 1, 2)
+    gem_count_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
     canvas_width: int = 760
     canvas_height: int = 720
     panel_margin_px: int = 42
@@ -177,10 +180,8 @@ class _Sample:
     answer: int | str
     answer_type: str
     option_specs: Tuple[_SwapOption, ...]
-    marked_outcome: _MoveOutcome | None
     target_clear_count: int | None
-    target_run_count: int | None
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     metadata: Dict[str, Any]
 
 
@@ -454,16 +455,6 @@ def _cell_entity_id(coord: Coord) -> str:
     return f"gem_r{int(coord[0]) + 1}_c{int(coord[1]) + 1}"
 
 
-def _marked_run_entity_id(run_index: int) -> str:
-    return f"marked_created_run_{int(run_index) + 1}"
-
-
-def _evidence_for_effect_outcome(*, query_id: str, outcome: _MoveOutcome) -> Tuple[str, ...]:
-    if str(query_id) == QUERY_CLEARED_COUNT:
-        return tuple(_cell_entity_id(coord) for coord in outcome.cleared_cells)
-    return tuple(_marked_run_entity_id(index) for index, _run in enumerate(outcome.runs))
-
-
 def _resolve_target_answer(
     *,
     task_id: str,
@@ -471,27 +462,43 @@ def _resolve_target_answer(
     params: Mapping[str, Any],
     query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
-    if str(query_id) in {QUERY_CLEARED_COUNT, QUERY_MAX_CLEAR_LABEL, QUERY_TARGET_CLEAR_LABEL}:
-        return _sample_integer_axis(
-            task_id=str(task_id),
-            instance_seed=int(instance_seed),
-            params=params,
-            support_key="target_clear_count_support",
-            explicit_key="target_answer",
-            fallback_support=_DEFAULTS.target_clear_count_support,
-            namespace=f"{str(query_id)}.target_clear_count",
-            balanced_flag_key="balanced_target_answer_sampling",
-        )
     return _sample_integer_axis(
         task_id=str(task_id),
         instance_seed=int(instance_seed),
         params=params,
-        support_key="target_run_count_support",
+        support_key="target_clear_count_support",
         explicit_key="target_answer",
-        fallback_support=_DEFAULTS.target_run_count_support,
-        namespace=f"{str(query_id)}.target_run_count",
+        fallback_support=_DEFAULTS.target_clear_count_support,
+        namespace=f"{str(query_id)}.target_clear_count",
         balanced_flag_key="balanced_target_answer_sampling",
     )
+
+
+def _resolve_gem_count_answer_target(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_id: str,
+) -> Tuple[int, Dict[str, float]]:
+    raw_support = params.get("gem_count_answer_support", group_default(_GEN_DEFAULTS, "gem_count_answer_support", _DEFAULTS.gem_count_answer_support))
+    configured_support = tuple(int(value) for value in raw_support)
+    target, probabilities = _sample_integer_axis(
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="gem_count_answer_support",
+        explicit_key="target_answer",
+        fallback_support=_DEFAULTS.gem_count_answer_support,
+        namespace=f"{str(query_id)}.gem_count_answer",
+        balanced_flag_key="balanced_target_answer_sampling",
+    )
+    if str(query_id) in {QUERY_ROW_COLOR_GEM_COUNT, QUERY_COLUMN_COLOR_GEM_COUNT}:
+        scoped_support = [int(value) for value in configured_support if 1 <= int(value) <= 5]
+        if not scoped_support:
+            raise ValueError("row/column gem-count support must include at least one value in 1..5")
+        target = scoped_support[(int(target) - 1) % len(scoped_support)]
+    return int(target), dict(probabilities)
 
 
 def _select_random(outcomes: Sequence[_MoveOutcome], rng, *, count: int) -> Tuple[_MoveOutcome, ...]:
@@ -538,67 +545,6 @@ def _make_base_board(
         "gem_type_count_probabilities": dict(gem_count_probs),
     }
     return board, gem_keys, int(rows), int(cols), dict(metadata)
-
-
-def _sample_effect_value(
-    rng,
-    *,
-    task_id: str,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    scene_variant: str,
-    query_id: str,
-) -> _Sample:
-    target_answer, target_probs = _resolve_target_answer(
-        task_id=str(task_id),
-        instance_seed=int(instance_seed),
-        params=params,
-        query_id=str(query_id),
-    )
-    board, _gem_keys, _rows, _cols, metadata = _make_base_board(
-        rng,
-        task_id=str(task_id),
-        instance_seed=int(instance_seed),
-        params=params,
-        scene_variant=str(scene_variant),
-    )
-    outcomes = _all_move_outcomes(board)
-    if str(query_id) == QUERY_CLEARED_COUNT:
-        candidates = [outcome for outcome in outcomes if int(outcome.clear_count) == int(target_answer)]
-        answer = int(target_answer)
-        target_clear = int(target_answer)
-        target_run = None
-    else:
-        candidates = [outcome for outcome in outcomes if int(outcome.run_count) == int(target_answer)]
-        answer = int(target_answer)
-        target_clear = None
-        target_run = int(target_answer)
-    if not candidates:
-        raise ValueError(f"no marked swap candidate for {query_id}={target_answer}")
-    marked = rng.choice(tuple(candidates))
-    evidence_ids = _evidence_for_effect_outcome(query_id=str(query_id), outcome=marked)
-    metadata.update(
-        {
-            "target_answer": int(target_answer),
-            "target_answer_probabilities": dict(target_probs),
-            "move_count": int(len(outcomes)),
-            "clear_count_histogram": _histogram(int(outcome.clear_count) for outcome in outcomes),
-            "run_count_histogram": _histogram(int(outcome.run_count) for outcome in outcomes),
-        }
-    )
-    return _Sample(
-        query_id=str(query_id),
-        scene_variant=str(scene_variant),
-        board=board,
-        answer=int(answer),
-        answer_type="integer",
-        option_specs=(),
-        marked_outcome=marked,
-        target_clear_count=target_clear,
-        target_run_count=target_run,
-        evidence_entity_ids=tuple(evidence_ids),
-        metadata=dict(metadata),
-    )
 
 
 def _histogram(values: Sequence[int] | Any) -> Dict[str, int]:
@@ -693,7 +639,7 @@ def _sample_best_swap_label(
         for index, (label, outcome) in enumerate(zip(labels, option_outcomes))
     )
     answer_label = str(option_specs[int(answer_slot)].label)
-    evidence_ids = (str(option_specs[int(answer_slot)].entity_id),)
+    annotation_ids = (str(option_specs[int(answer_slot)].entity_id),)
     metadata.update(
         {
             "option_count": int(option_count),
@@ -712,10 +658,111 @@ def _sample_best_swap_label(
         answer=str(answer_label),
         answer_type="string",
         option_specs=tuple(option_specs),
-        marked_outcome=None,
         target_clear_count=None if target_clear_count is None else int(target_clear_count),
-        target_run_count=None,
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
+        metadata=dict(metadata),
+    )
+
+
+def _gem_count_matches(board: Board, *, query_id: str, color_name: str, row_index: int | None, col_index: int | None) -> Tuple[Coord, ...]:
+    matches: List[Coord] = []
+    for row, values in enumerate(board):
+        for col, value in enumerate(values):
+            if str(value) != str(color_name):
+                continue
+            if str(query_id) == QUERY_ROW_COLOR_GEM_COUNT and int(row) != int(row_index or -1):
+                continue
+            if str(query_id) == QUERY_COLUMN_COLOR_GEM_COUNT and int(col) != int(col_index or -1):
+                continue
+            matches.append((int(row), int(col)))
+    return tuple(matches)
+
+
+def _sample_gem_count(
+    rng,
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    scene_variant: str,
+    query_id: str,
+) -> _Sample:
+    target_answer, target_probs = _resolve_gem_count_answer_target(
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        query_id=str(query_id),
+    )
+    board, gem_keys, rows, cols, metadata = _make_base_board(
+        rng,
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        scene_variant=str(scene_variant),
+    )
+    answer_support = tuple(int(value) for value in params.get("gem_count_answer_support", group_default(_GEN_DEFAULTS, "gem_count_answer_support", _DEFAULTS.gem_count_answer_support)))
+    color_name = str(gem_keys[int(rng.randrange(len(gem_keys)))])
+    alternate_colors = [str(key) for key in gem_keys if str(key) != str(color_name)]
+    if not alternate_colors:
+        raise ValueError("gem-count task requires at least two gem colors")
+    row_index: int | None = None
+    col_index: int | None = None
+    if str(query_id) == QUERY_GRID_COLOR_GEM_COUNT:
+        scope = "grid"
+        scoped_coords = [(int(row), int(col)) for row in range(int(rows)) for col in range(int(cols))]
+    elif str(query_id) == QUERY_ROW_COLOR_GEM_COUNT:
+        scope = "row"
+        row_index = int(rng.randrange(int(rows)))
+        scoped_coords = [(int(row_index), int(col)) for col in range(int(cols))]
+    else:
+        scope = "column"
+        col_index = int(rng.randrange(int(cols)))
+        scoped_coords = [(int(row), int(col_index)) for row in range(int(rows))]
+    if int(target_answer) > len(scoped_coords):
+        scoped_support = [int(value) for value in answer_support if 1 <= int(value) <= len(scoped_coords)]
+        if not scoped_support:
+            raise ValueError("gem-count support has no feasible value for selected scope")
+        target_answer = scoped_support[(int(target_answer) - 1) % len(scoped_support)]
+    chosen_coords = list(scoped_coords)
+    rng.shuffle(chosen_coords)
+    target_coords = {tuple(coord) for coord in chosen_coords[: int(target_answer)]}
+    mutable_board = [list(row) for row in board]
+    for row, col in scoped_coords:
+        if (int(row), int(col)) in target_coords:
+            mutable_board[int(row)][int(col)] = str(color_name)
+        elif str(mutable_board[int(row)][int(col)]) == str(color_name):
+            mutable_board[int(row)][int(col)] = str(alternate_colors[int(rng.randrange(len(alternate_colors)))])
+    board = tuple(tuple(str(value) for value in row) for row in mutable_board)
+    matches = _gem_count_matches(board, query_id=str(query_id), color_name=str(color_name), row_index=row_index, col_index=col_index)
+    if len(matches) != int(target_answer):
+        raise ValueError("constructed gem-count board did not match target answer")
+    color_rgb = tuple(int(value) for value in GEM_RGB[str(color_name)])
+    color_label = format_named_color_with_hex(str(color_name), color_rgb)
+    annotation_ids = tuple(_cell_entity_id(coord) for coord in matches)
+    metadata.update(
+        {
+            "target_answer": int(target_answer),
+            "balanced_target_matched": True,
+            "target_answer_probabilities": dict(target_probs),
+            "target_color_name": str(color_name),
+            "target_color_rgb": [int(value) for value in color_rgb],
+            "target_color_hex": rgb_to_hex(color_rgb),
+            "target_color_label": str(color_label),
+            "scope": str(scope),
+            "row_index": None if row_index is None else int(row_index + 1),
+            "col_index": None if col_index is None else int(col_index + 1),
+            "answer_support": [int(value) for value in answer_support],
+        }
+    )
+    return _Sample(
+        query_id=str(query_id),
+        scene_variant=str(scene_variant),
+        board=board,
+        answer=int(len(matches)),
+        answer_type="integer",
+        option_specs=(),
+        target_clear_count=None,
+        annotation_entity_ids=tuple(annotation_ids),
         metadata=dict(metadata),
     )
 
@@ -734,7 +781,10 @@ def _draw_centered_text(
     text_h = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = bbox
     draw_text_traced(draw,
-        (float(x0 + ((x1 - x0) - text_w) / 2.0), float(y0 + ((y1 - y0) - text_h) / 2.0)),
+        (
+            float(x0 + ((x1 - x0) - text_w) / 2.0 - float(text_bbox[0])),
+            float(y0 + ((y1 - y0) - text_h) / 2.0 - float(text_bbox[1])),
+        ),
         str(text),
         font=font,
         fill=tuple(fill),
@@ -852,7 +902,10 @@ def _draw_arrow(
         (x1 - ux * head_len + px * head_w / 2.0, y1 - uy * head_len + py * head_w / 2.0),
         (x1 - ux * head_len - px * head_w / 2.0, y1 - uy * head_len - py * head_w / 2.0),
     )
-    draw.polygon(head, fill=tuple(line_rgb), outline=stroke)
+    draw.line((head[1][0], head[1][1], x1, y1), fill=stroke, width=int(width + 4))
+    draw.line((head[2][0], head[2][1], x1, y1), fill=stroke, width=int(width + 4))
+    draw.line((head[1][0], head[1][1], x1, y1), fill=tuple(line_rgb), width=int(width))
+    draw.line((head[2][0], head[2][1], x1, y1), fill=tuple(line_rgb), width=int(width))
     bbox = [
         min(x0, x1) - float(width + head_w),
         min(y0, y1) - float(width + head_w),
@@ -997,10 +1050,11 @@ def _render_scene(
                 float(y0 + cell - gem_inset),
             )
             color_key = str(sample.board[row][col])
+            color_rgb = tuple(int(value) for value in GEM_RGB[str(color_key)])
             _draw_gem(
                 draw,
                 gem_bbox,
-                fill_rgb=GEM_RGB[str(color_key)],
+                fill_rgb=color_rgb,
                 outline_rgb=border_rgb,
                 shape=str(gem_shape),
                 outline_width=int(gem_outline_width),
@@ -1017,6 +1071,9 @@ def _render_scene(
                 "row": int(row + 1),
                 "col": int(col + 1),
                 "color_key": str(color_key),
+                "color_name": str(color_key),
+                "color_rgb": [int(value) for value in color_rgb],
+                "color_hex": rgb_to_hex(color_rgb),
                 "bbox_px": list(bbox_list),
             }
             gem_specs.append(dict(spec))
@@ -1058,55 +1115,6 @@ def _render_scene(
         option_specs.append(dict(spec))
         entities.append(dict(spec))
 
-    marked_spec = None
-    if sample.marked_outcome is not None:
-        start = cell_centers[tuple(sample.marked_outcome.move.a)]
-        end = cell_centers[tuple(sample.marked_outcome.move.b)]
-        bbox = _draw_arrow(
-            draw,
-            start,
-            end,
-            line_rgb=mark_rgb,
-            label=None,
-            label_font=label_font,
-            text_rgb=text_rgb,
-            label_fill_rgb=tuple(style.option_marker_fill_rgb),
-            label_outline_rgb=mark_rgb,
-            width=int(arrow_width + 2),
-        )
-        entity_bboxes["marked_swap_arrow"] = [float(value) for value in bbox]
-        marked_arrow_point = [round(float((start[0] + end[0]) / 2.0), 3), round(float((start[1] + end[1]) / 2.0), 3)]
-        entity_points["marked_swap_arrow"] = list(marked_arrow_point)
-        marked_spec = {
-            "entity_id": "marked_swap_arrow",
-            "entity_type": "marked_match3_swap_arrow",
-            "from_cell": [int(sample.marked_outcome.move.a[0] + 1), int(sample.marked_outcome.move.a[1] + 1)],
-            "to_cell": [int(sample.marked_outcome.move.b[0] + 1), int(sample.marked_outcome.move.b[1] + 1)],
-            "clear_count": int(sample.marked_outcome.clear_count),
-            "run_count": int(sample.marked_outcome.run_count),
-            "cleared_cells": [[int(row + 1), int(col + 1)] for row, col in sample.marked_outcome.cleared_cells],
-            "bbox_px": [float(value) for value in bbox],
-            "center_px": list(marked_arrow_point),
-        }
-        entities.append(dict(marked_spec))
-        for run_index, run in enumerate(sample.marked_outcome.runs):
-            centers = [cell_centers[(int(row), int(col))] for row, col in run]
-            run_point = [
-                round(float(sum(point[0] for point in centers) / float(len(centers))), 3),
-                round(float(sum(point[1] for point in centers) / float(len(centers))), 3),
-            ]
-            run_entity_id = _marked_run_entity_id(int(run_index))
-            entity_points[str(run_entity_id)] = list(run_point)
-            entities.append(
-                {
-                    "entity_id": str(run_entity_id),
-                    "entity_type": "match3_created_run_center",
-                    "run_index": int(run_index),
-                    "cells": [[int(row + 1), int(col + 1)] for row, col in run],
-                    "point_px": list(run_point),
-                }
-            )
-
     render_map = {
         "entity_bboxes_px": dict(entity_bboxes),
         "entity_points_px": dict(entity_points),
@@ -1117,8 +1125,6 @@ def _render_scene(
         },
         "swap_arrow_bboxes_px": {str(spec["entity_id"]): [float(value) for value in spec["bbox_px"]] for spec in option_specs},
         "swap_arrow_points_px": {str(spec["entity_id"]): [float(value) for value in spec["center_px"]] for spec in option_specs},
-        "marked_swap_arrow_bbox_px": None if marked_spec is None else [float(value) for value in marked_spec["bbox_px"]],
-        "marked_swap_arrow_point_px": None if marked_spec is None else [float(value) for value in marked_spec["center_px"]],
         "grid_bbox_px": [float(grid_left), float(grid_top), float(grid_left + grid_width), float(grid_top + grid_height)],
         "scene_variant": str(sample.scene_variant),
         "panel_scene_style": dict(style_meta),
@@ -1149,47 +1155,52 @@ def _render_scene(
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in SUPPORTED_BEST_SWAP_QUERIES:
-        answer_and_evidence = {"evidence": [[456, 284]], "answer": "C"}
+        answer_and_annotation = {"annotation": [[456, 284]], "answer": "C"}
         answer_only = {"answer": "C"}
-    elif str(query_id) == QUERY_CREATED_RUN_COUNT:
-        answer_and_evidence = {"evidence": [[318, 338], [450, 338]], "answer": 2}
-        answer_only = {"answer": 2}
     else:
-        answer_and_evidence = {"evidence": [[252, 338], [318, 338], [384, 338], [450, 338]], "answer": 4}
+        answer_and_annotation = {"annotation": [[252, 338], [318, 338], [384, 338], [450, 338]], "answer": 4}
         answer_only = {"answer": 4}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
 
 def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str, str], Dict[str, Any]]:
+    prompt_required = [
+        "bundle_id",
+        "scene_key",
+        "task_key",
+        "json_output_contract",
+        "json_output_contract_answer_only",
+        f"answer_hint_{str(sample.query_id)}",
+        f"annotation_hint_{str(sample.query_id)}",
+    ]
+    if str(sample.query_id) in SUPPORTED_BEST_SWAP_QUERIES:
+        prompt_required.extend(("object_description_match3_grid", "match3_rule_text"))
+        object_description = "object_description_match3_grid"
+    else:
+        prompt_required.append("object_description_match3_count_grid")
+        object_description = "object_description_match3_count_grid"
     prompt_defaults = required_group_defaults(
         _PROMPT_DEFAULTS,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "object_description_match3_grid",
-            f"answer_hint_{str(sample.query_id)}",
-            f"evidence_hint_{str(sample.query_id)}",
-            "match3_rule_text",
-        ),
+        tuple(prompt_required),
         context=f"prompt defaults for {str(sample.query_id)}",
     )
     json_example, json_example_answer_only = _json_examples(str(sample.query_id))
     slots = {
-        "object_description": str(prompt_defaults["object_description_match3_grid"]),
+        "object_description": str(prompt_defaults[object_description]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults[f"answer_hint_{str(sample.query_id)}"]),
-        "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sample.query_id)}"]),
+        "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sample.query_id)}"]),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
-        "match3_rule_text": str(prompt_defaults["match3_rule_text"]),
+        "match3_rule_text": str(prompt_defaults.get("match3_rule_text", "")),
         "target_clear_count": "" if sample.target_clear_count is None else str(int(sample.target_clear_count)),
+        "target_color_label": str(sample.metadata.get("target_color_label", "")),
+        "row_index": "" if sample.metadata.get("row_index") is None else str(int(sample.metadata["row_index"])),
+        "col_index": "" if sample.metadata.get("col_index") is None else str(int(sample.metadata["col_index"])),
     }
     prompt_selection = render_task_prompt_variants(
         domain="games",
@@ -1198,7 +1209,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(sample.query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1211,15 +1222,16 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
     }
 
 
-def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> Any:
+def _build_complexity(*, task_id: str, sample: _Sample, annotation_count: int) -> Any:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
     rows = len(sample.board)
     cols = len(sample.board[0]) if rows else 0
     query_reasoning = {
-        QUERY_CLEARED_COUNT: 0.48,
-        QUERY_CREATED_RUN_COUNT: 0.58,
         QUERY_MAX_CLEAR_LABEL: 0.72,
         QUERY_TARGET_CLEAR_LABEL: 0.68,
+        QUERY_GRID_COLOR_GEM_COUNT: 0.22,
+        QUERY_ROW_COLOR_GEM_COUNT: 0.28,
+        QUERY_COLUMN_COLOR_GEM_COUNT: 0.28,
     }[str(sample.query_id)]
     option_load = len(sample.option_specs) if sample.option_specs else 1
     return build_games_complexity(
@@ -1228,7 +1240,7 @@ def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> 
             "visual_scan": normalize_linear(float(rows * cols), min_value=25.0, max_value=49.0),
             "state_reasoning": float(query_reasoning),
             "ambiguity": normalize_linear(float(option_load), min_value=1.0, max_value=8.0),
-            "output_burden": normalize_linear(float(evidence_count), min_value=1.0, max_value=10.0),
+            "output_burden": normalize_linear(float(annotation_count), min_value=1.0, max_value=10.0),
         },
     )
 
@@ -1243,8 +1255,8 @@ class _Match3Task:
     query_weights_key: str
 
     def _sample(self, rng, *, task_id: str, instance_seed: int, params: Mapping[str, Any], scene_variant: str, query_id: str) -> _Sample:
-        if str(query_id) in SUPPORTED_EFFECT_VALUE_QUERIES:
-            return _sample_effect_value(
+        if str(query_id) in SUPPORTED_GEM_COUNT_QUERIES:
+            return _sample_gem_count(
                 rng,
                 task_id=str(task_id),
                 instance_seed=int(instance_seed),
@@ -1305,9 +1317,9 @@ class _Match3Task:
             params=params,
             style_variant=str(style_variant),
         )
-        evidence_points = [
+        annotation_points = [
             list(rendered.render_map["entity_points_px"][str(entity_id)])
-            for entity_id in sample.evidence_entity_ids
+            for entity_id in sample.annotation_entity_ids
             if str(entity_id) in rendered.render_map["entity_points_px"]
         ]
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
@@ -1318,8 +1330,8 @@ class _Match3Task:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_points))
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, annotation_count=len(annotation_points))
         option_trace = [
             {
                 "label": str(option.label),
@@ -1334,16 +1346,6 @@ class _Match3Task:
             }
             for option in sample.option_specs
         ]
-        marked_trace = None
-        if sample.marked_outcome is not None:
-            marked_trace = {
-                "from_cell": [int(sample.marked_outcome.move.a[0] + 1), int(sample.marked_outcome.move.a[1] + 1)],
-                "to_cell": [int(sample.marked_outcome.move.b[0] + 1), int(sample.marked_outcome.move.b[1] + 1)],
-                "clear_count": int(sample.marked_outcome.clear_count),
-                "run_count": int(sample.marked_outcome.run_count),
-                "cleared_cells": [[int(row + 1), int(col + 1)] for row, col in sample.marked_outcome.cleared_cells],
-                "runs": [[[int(row + 1), int(col + 1)] for row, col in run] for run in sample.marked_outcome.runs],
-            }
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"games_match3_{str(sample.scene_variant)}",
@@ -1354,7 +1356,7 @@ class _Match3Task:
                     "style_variant": str(style_variant),
                     "rows": int(len(sample.board)),
                     "cols": int(len(sample.board[0]) if sample.board else 0),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1391,20 +1393,18 @@ class _Match3Task:
                 "style_variant": str(style_variant),
                 "board_before": [list(row) for row in sample.board],
                 "swap_options": option_trace,
-                "marked_outcome": marked_trace,
                 "target_clear_count": None if sample.target_clear_count is None else int(sample.target_clear_count),
-                "target_run_count": None if sample.target_run_count is None else int(sample.target_run_count),
                 "answer": sample.answer,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1413,7 +1413,7 @@ class _Match3Task:
             prompt=str(prompt),
             prompt_variants=dict(prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1425,24 +1425,34 @@ class _Match3Task:
 
 
 @register_task
-class GamesMatch3SwapEffectValueTask(_Match3Task):
-    """Compute a numeric effect of one marked match-3 swap."""
+class GamesMatch3MaxClearSwapLabelTask(_Match3Task):
+    """Choose the labeled match-3 swap that clears the most gems."""
 
-    task_id = "task_games__match3__swap_effect_value"
-    supported_queries = SUPPORTED_EFFECT_VALUE_QUERIES
-    query_weights_key = "effect_value_query_id_weights"
-
-
-@register_task
-class GamesMatch3BestSwapLabelTask(_Match3Task):
-    """Choose a labeled match-3 swap by immediate clear effect."""
-
-    task_id = "task_games__match3__best_swap_label"
-    supported_queries = SUPPORTED_BEST_SWAP_QUERIES
+    task_id = "task_games__match3__max_clear_swap_label"
+    supported_queries = (QUERY_MAX_CLEAR_LABEL,)
     query_weights_key = "best_swap_query_id_weights"
 
 
+@register_task
+class GamesMatch3TargetClearSwapLabelTask(_Match3Task):
+    """Choose the labeled match-3 swap that clears the target number of gems."""
+
+    task_id = "task_games__match3__target_clear_swap_label"
+    supported_queries = (QUERY_TARGET_CLEAR_LABEL,)
+    query_weights_key = "best_swap_query_id_weights"
+
+
+@register_task
+class GamesMatch3GemCountTask(_Match3Task):
+    """Count canonical named-color gems in the grid or one numbered row/column."""
+
+    task_id = "task_games__match3__gem_count"
+    supported_queries = SUPPORTED_GEM_COUNT_QUERIES
+    query_weights_key = "gem_count_query_id_weights"
+
+
 __all__ = [
-    "GamesMatch3BestSwapLabelTask",
-    "GamesMatch3SwapEffectValueTask",
+    "GamesMatch3GemCountTask",
+    "GamesMatch3MaxClearSwapLabelTask",
+    "GamesMatch3TargetClearSwapLabelTask",
 ]

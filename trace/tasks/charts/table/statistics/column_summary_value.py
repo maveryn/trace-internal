@@ -22,7 +22,7 @@ from trace.tasks.charts.table.shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
     build_summary_value_dataset_for_variant,
-    projected_table_region_bbox_evidence,
+    projected_table_region_bbox_annotation,
     resolve_table_axis_variant,
     resolve_table_render_params,
     table_render_style_spec,
@@ -158,9 +158,9 @@ class TablesStatisticsColumnSummaryValueTask:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_column_sum",
-                "evidence_hint_column_mean",
-                "evidence_hint_column_median",
+                "annotation_hint_column_sum",
+                "annotation_hint_column_mean",
+                "annotation_hint_column_median",
                 "json_example_column_sum",
                 "json_example_column_mean",
                 "json_example_column_median",
@@ -171,7 +171,7 @@ class TablesStatisticsColumnSummaryValueTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         query_column = str(dataset["query_column"])
@@ -180,7 +180,7 @@ class TablesStatisticsColumnSummaryValueTask:
             "query_column": str(query_column),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(evidence_hint),
+            "annotation_hint": str(annotation_hint),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -193,23 +193,23 @@ class TablesStatisticsColumnSummaryValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_table_region_bbox_evidence(
+        annotation_projection = projected_table_region_bbox_annotation(
             rendered_scene,
             column_headers=[str(query_column)],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         values_by_row = {
             str(row_label): {
@@ -302,11 +302,11 @@ class TablesStatisticsColumnSummaryValueTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
             },
         }
 
@@ -323,7 +323,7 @@ class TablesStatisticsColumnSummaryValueTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -343,19 +343,21 @@ class ChartsTableColumnSummaryValueTask:
     task_group = "table_statistics"
     prompt_domain = "charts"
     prompt_task_group = "table_statistics"
+    allowed_query_ids: Tuple[str, ...] = _SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        allowed_query_ids = tuple(str(query_id) for query_id in self.allowed_query_ids)
         selection_params = dict(params)
         if "query_id" not in selection_params and "query_id_weights" not in selection_params:
             selection_params["query_id_weights"] = {
                 str(query_id): 1.0
-                for query_id in _MERGED_QUERY_IDS
+                for query_id in allowed_query_ids
             }
         query_id, _ = resolve_table_axis_variant(
             params=selection_params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=_MERGED_QUERY_IDS,
+            supported_variants=allowed_query_ids,
             task_id=str(self.task_id),
             explicit_key="query_id",
             weights_key="query_id_weights",
@@ -378,8 +380,17 @@ class ChartsTableColumnSummaryValueTask:
         )
 
 
+@register_task
+class ChartsTableFilteredColumnMeanTask(ChartsTableColumnSummaryValueTask):
+    """Compute a mean over a table column after filtering rows by another column."""
+
+    task_id = "task_charts__table__filtered_column_mean"
+    allowed_query_ids = ("filtered_column_mean",)
+
+
 __all__ = [
     "ChartsTableColumnSummaryValueTask",
+    "ChartsTableFilteredColumnMeanTask",
     "_MERGED_QUERY_IDS",
     "TablesStatisticsColumnSummaryValueTask",
 ]

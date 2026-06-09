@@ -35,8 +35,10 @@ from ..shared.diagram_style import (
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _probability_map
 from ..shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox, round1
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
+from ..shared.option_count import resolve_geometry_option_count
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -45,6 +47,7 @@ Color = Tuple[int, int, int]
 SCENE_ID = "bearing_route"
 TASK_GROUP = "measurement"
 PROMPT_BUNDLE_ID = "geometry_bearing_route_v0"
+DEGREE_SYMBOL = chr(176)
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", TASK_GROUP)
 _ROUTE_CASES: Tuple[Tuple[int, int, int], ...] = (
@@ -62,6 +65,8 @@ _ROUTE_CASES: Tuple[Tuple[int, int, int], ...] = (
     (12, 35, 37),
 )
 _CARDINAL_BEARINGS: Tuple[int, ...] = (0, 90, 180, 270)
+_FINAL_BEARING_VALUES: Tuple[int, ...] = (0, 45, 90, 135, 180, 225, 270, 315)
+_FINAL_BEARING_LEG_LENGTHS: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 12)
 _ROUTE_STYLE_IDS: Tuple[str, ...] = ("survey_sheet", "navigation_plot", "field_notebook", "compass_card")
 _MARKER_STYLES: Tuple[str, ...] = ("ring", "target", "square", "pin")
 
@@ -77,6 +82,7 @@ class _RouteCase:
     option_count: int
     target_index: int | None
     option_labels: Tuple[str, ...]
+    final_bearing: int | None = None
 
 
 @dataclass(frozen=True)
@@ -86,6 +92,7 @@ class _ResolvedProblem:
     answer_type: str
     route_case: _RouteCase
     answer_probabilities: Dict[str, float]
+    option_count_probabilities: Dict[str, float]
 
 
 @dataclass
@@ -118,24 +125,21 @@ class _RenderedBearingScene:
     image: Image.Image
     answer: int | str
     answer_type: str
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
-    evidence_points: Tuple[Point, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
+    annotation_points: Tuple[Point, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
 
 
-def _probability_map(values: Sequence[int | str], selected: int | str | None = None) -> Dict[str, float]:
-    if selected is None:
-        probability = 1.0 / float(max(1, len(values)))
-        return {str(value): float(probability) for value in values}
-    return {str(value): (1.0 if str(value) == str(selected) else 0.0) for value in values}
-
-
 def _bearing_to_unit_vector(bearing_degrees: int) -> Point:
     theta = math.radians(float(bearing_degrees))
     return (math.sin(theta), -math.cos(theta))
+
+
+def _normalize_bearing(value: int | float) -> int:
+    return int(round(float(value))) % 360
 
 
 def _resolve_route_case(
@@ -181,8 +185,8 @@ def _resolve_route_case(
     target_index: int | None = None
     labels: Tuple[str, ...] = ()
     if include_labels:
-        if int(option_count) < 5:
-            raise ValueError("bearing endpoint task requires at least five candidate positions")
+        if int(option_count) < 4:
+            raise ValueError("bearing endpoint task requires at least four candidate positions")
         if int(option_count) > len(LABEL_POOL_SAFE_UPPER):
             raise ValueError("option_count exceeds safe label pool")
         if explicit_index is None:
@@ -212,8 +216,74 @@ def _resolve_route_case(
             option_count=int(option_count),
             target_index=target_index,
             option_labels=tuple(labels),
+            final_bearing=None,
         ),
         answer_probabilities,
+    )
+
+
+def _resolve_final_bearing_route_case(
+    *,
+    task_id: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    option_count: int,
+) -> tuple[_RouteCase, Dict[str, float]]:
+    explicit = params.get("target_bearing")
+    if explicit is not None:
+        target_bearing = _normalize_bearing(float(explicit))
+        if target_bearing not in set(_FINAL_BEARING_VALUES):
+            raise ValueError(f"target_bearing={target_bearing} is not supported by {task_id}")
+        bearing_index = _FINAL_BEARING_VALUES.index(int(target_bearing))
+    else:
+        bearing_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}.final_bearing",
+            )
+        ) % len(_FINAL_BEARING_VALUES)
+        target_bearing = int(_FINAL_BEARING_VALUES[int(bearing_index)])
+
+    length_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.leg_length",
+        )
+    ) % len(_FINAL_BEARING_LEG_LENGTHS)
+    leg_length = int(_FINAL_BEARING_LEG_LENGTHS[int(length_index)])
+
+    bearing_a = _normalize_bearing(int(target_bearing) - 45)
+    bearing_b = _normalize_bearing(int(target_bearing) + 45)
+    swap_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.leg_order",
+        )
+    )
+    if swap_index % 2:
+        bearing_a, bearing_b = bearing_b, bearing_a
+    turn_delta = (int(bearing_b) - int(bearing_a)) % 360
+    turn_direction = "right" if int(turn_delta) == 90 else "left"
+    probability_values = tuple(int(value) for value in _FINAL_BEARING_VALUES)
+    probabilities = _probability_map(probability_values, int(target_bearing) if explicit is not None else None)
+    displacement = int(round(math.sqrt(2.0) * float(leg_length)))
+    return (
+        _RouteCase(
+            leg_a=int(leg_length),
+            leg_b=int(leg_length),
+            displacement=int(displacement),
+            bearing_a=int(bearing_a),
+            bearing_b=int(bearing_b),
+            turn_direction=str(turn_direction),
+            option_count=int(option_count),
+            target_index=None,
+            option_labels=(),
+            final_bearing=int(target_bearing),
+        ),
+        probabilities,
     )
 
 
@@ -225,21 +295,30 @@ def _resolve_problem(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
 ) -> _ResolvedProblem:
-    option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", 6)))
-    if query_id == "final_displacement_value":
-        route_case, probabilities = _resolve_route_case(
+    option_count, option_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=gen_defaults,
+        field_name="option_count",
+        supported_counts=(4, 6),
+        task_id=task_id,
+        instance_seed=int(instance_seed),
+    )
+    if query_id == "final_bearing_value":
+        route_case, probabilities = _resolve_final_bearing_route_case(
             task_id=task_id,
             params=params,
             instance_seed=int(instance_seed),
             option_count=option_count,
-            include_labels=False,
         )
+        if route_case.final_bearing is None:
+            raise ValueError("final bearing task requires final_bearing")
         return _ResolvedProblem(
             query_id=query_id,
-            answer=int(route_case.displacement),
+            answer=int(route_case.final_bearing),
             answer_type="number",
             route_case=route_case,
             answer_probabilities=probabilities,
+            option_count_probabilities=dict(option_count_probabilities),
         )
     if query_id == "endpoint_position_label":
         route_case, probabilities = _resolve_route_case(
@@ -257,6 +336,7 @@ def _resolve_problem(
             answer_type="option_letter",
             route_case=route_case,
             answer_probabilities=probabilities,
+            option_count_probabilities=dict(option_count_probabilities),
         )
     raise ValueError(f"unsupported bearing-route query_id: {query_id}")
 
@@ -350,7 +430,7 @@ def _draw_text(
     *,
     font: Any | None = None,
     fill: Color | None = None,
-    stroke_width: int = 2,
+    stroke_width: int = 1,
 ) -> BBox:
     active_font = font or ctx.small_font
     active_fill = fill or ctx.label_color
@@ -492,7 +572,11 @@ def _project(point: Point, *, scale: float, origin: Point) -> Point:
 
 
 def _leg_label(distance: int, bearing: int) -> str:
-    return f"{int(bearing):03d} deg / {int(distance)}"
+    return f"{int(bearing)}{DEGREE_SYMBOL} / {int(distance)}"
+
+
+def _bearing_label(bearing: int) -> str:
+    return f"{int(bearing)}{DEGREE_SYMBOL}"
 
 
 def _offset_label_point(start: Point, end: Point, amount: float) -> Point:
@@ -504,8 +588,10 @@ def _offset_label_point(start: Point, end: Point, amount: float) -> Point:
     return ((sx + ex) / 2.0 + nx * float(amount), (sy + ey) / 2.0 + ny * float(amount))
 
 
-def _render_final_displacement_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _RenderedBearingScene:
+def _render_final_bearing_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _RenderedBearingScene:
     route_case = problem.route_case
+    if route_case.final_bearing is None:
+        raise ValueError("final bearing scene requires final_bearing")
     p0, p1, p2 = _route_unit_points(route_case)
     panel_bbox = (60.0, 78.0, 628.0, 504.0)
     route_panel_bbox = _draw_panel(ctx, panel_bbox, fill=ctx.panel_alt_fill)
@@ -516,28 +602,23 @@ def _render_final_displacement_scene(ctx: _RenderContext, problem: _ResolvedProb
 
     _draw_arrow_line(ctx.draw, start, mid, fill=ctx.accent_color, width=ctx.line_width + 1, arrow_size=14)
     _draw_arrow_line(ctx.draw, mid, end, fill=ctx.accent_color, width=ctx.line_width + 1, arrow_size=14)
-    _draw_dashed_line(ctx.draw, start, end, fill=ctx.secondary_accent_color, width=max(2, ctx.line_width - 1), dash=10, gap=7)
+    north_end = (float(start[0]), float(start[1]) - 58.0)
+    _draw_arrow_line(ctx.draw, start, north_end, fill=ctx.guide_color, width=max(2, ctx.line_width - 2), arrow_size=9)
+    north_label_bbox = _draw_text(ctx, "N", (north_end[0], north_end[1] - 18.0), font=ctx.tiny_font, stroke_width=1)
     start_bbox = _draw_marker(ctx, start, radius=10, color=ctx.secondary_color)
     end_bbox = _draw_marker(ctx, end, radius=10, color=ctx.secondary_accent_color)
-    start_label_bbox = _draw_text(ctx, "S", (start[0] - 20.0, start[1] + 20.0), font=ctx.small_font, stroke_width=2)
-    end_label_bbox = _draw_text(ctx, "F", (end[0] + 20.0, end[1] - 20.0), font=ctx.small_font, stroke_width=2)
-    label1_bbox = _draw_text(ctx, _leg_label(route_case.leg_a, route_case.bearing_a), _offset_label_point(start, mid, 28.0), font=ctx.small_font)
-    label2_bbox = _draw_text(ctx, _leg_label(route_case.leg_b, route_case.bearing_b), _offset_label_point(mid, end, 28.0), font=ctx.small_font)
+    start_label_bbox = _draw_text(ctx, "S", (start[0] - 20.0, start[1] + 20.0), font=ctx.small_font, stroke_width=1)
+    end_label_bbox = _draw_text(ctx, "F", (end[0] + 20.0, end[1] - 20.0), font=ctx.small_font, stroke_width=1)
+    label1_bbox = _draw_text(ctx, _bearing_label(route_case.bearing_a), _offset_label_point(start, mid, 28.0), font=ctx.small_font)
+    label2_bbox = _draw_text(ctx, _bearing_label(route_case.bearing_b), _offset_label_point(mid, end, 28.0), font=ctx.small_font)
     first_leg_bbox = _bbox_union(bbox_from_points((start, mid), width=ctx.width, height=ctx.height, pad=16.0), label1_bbox)
     second_leg_bbox = _bbox_union(bbox_from_points((mid, end), width=ctx.width, height=ctx.height, pad=16.0), label2_bbox)
-    cue_bbox = _draw_text(
-        ctx,
-        "?",
-        _offset_label_point(start, end, -30.0),
-        font=ctx.font,
-        fill=ctx.secondary_accent_color,
-    )
-    direct_bbox = bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=22.0)
-    direct_bbox = (
-        min(direct_bbox[0], cue_bbox[0], start_bbox[0], end_bbox[0], start_label_bbox[0], end_label_bbox[0]),
-        min(direct_bbox[1], cue_bbox[1], start_bbox[1], end_bbox[1], start_label_bbox[1], end_label_bbox[1]),
-        max(direct_bbox[2], cue_bbox[2], start_bbox[2], end_bbox[2], start_label_bbox[2], end_label_bbox[2]),
-        max(direct_bbox[3], cue_bbox[3], start_bbox[3], end_bbox[3], start_label_bbox[3], end_label_bbox[3]),
+    answer_relation_bbox = bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=22.0)
+    answer_relation_bbox = (
+        min(answer_relation_bbox[0], start_bbox[0], end_bbox[0], start_label_bbox[0], end_label_bbox[0], north_label_bbox[0]),
+        min(answer_relation_bbox[1], start_bbox[1], end_bbox[1], start_label_bbox[1], end_label_bbox[1], north_label_bbox[1]),
+        max(answer_relation_bbox[2], start_bbox[2], end_bbox[2], start_label_bbox[2], end_label_bbox[2], north_label_bbox[2]),
+        max(answer_relation_bbox[3], start_bbox[3], end_bbox[3], start_label_bbox[3], end_label_bbox[3], north_label_bbox[3]),
     )
     compass_bbox = _draw_compass_rose(ctx, (720.0, 148.0), radius=42.0)
     note_bbox = _draw_panel(ctx, (650.0, 248.0, 780.0, 402.0), fill=ctx.panel_fill)
@@ -558,10 +639,11 @@ def _render_final_displacement_scene(ctx: _RenderContext, problem: _ResolvedProb
             "bbox": bbox_to_list(route_panel_bbox),
         },
         {
-            "entity_id": "direct_displacement",
-            "entity_type": "segment",
-            "length": int(route_case.displacement),
-            "bbox": bbox_to_list(direct_bbox),
+            "entity_id": "final_bearing_segment",
+            "entity_type": "implicit_bearing_relation",
+            "visible": False,
+            "bearing_degrees": int(route_case.final_bearing),
+            "bbox": bbox_to_list(answer_relation_bbox),
         },
         {
             "entity_id": "compass_rose",
@@ -571,16 +653,17 @@ def _render_final_displacement_scene(ctx: _RenderContext, problem: _ResolvedProb
     )
     return _RenderedBearingScene(
         image=ctx.image,
-        answer=int(route_case.displacement),
+        answer=int(route_case.final_bearing),
         answer_type="number",
-        evidence_bboxes=(start_bbox, turn_bbox, end_bbox),
-        evidence_roles=("start_point", "turn_point", "finish_point"),
-        evidence_points=(start, mid, end),
+        annotation_bboxes=(start_bbox, end_bbox),
+        annotation_roles=("start_point", "finish_point"),
+        annotation_points=(start, end),
         scene_entities=scene_entities,
         render_map={
             "coord_space": "pixel",
             "route_panel_bbox": bbox_to_list(route_panel_bbox),
             "route_points_px": [[round(start[0], 3), round(start[1], 3)], [round(mid[0], 3), round(mid[1], 3)], [round(end[0], 3), round(end[1], 3)]],
+            "north_reference_line_px": [[round(start[0], 3), round(start[1], 3)], [round(north_end[0], 3), round(north_end[1], 3)]],
             "compass_bbox": bbox_to_list(compass_bbox),
             "bearing_note_bbox": bbox_to_list(note_bbox),
             "route_leg_annotation_bboxes": {
@@ -589,14 +672,15 @@ def _render_final_displacement_scene(ctx: _RenderContext, problem: _ResolvedProb
             },
         },
         witness={
-            "geometry_kind": "bearing_route_displacement",
+            "geometry_kind": "bearing_route_final_bearing",
             "leg_a": int(route_case.leg_a),
             "leg_b": int(route_case.leg_b),
             "bearing_a": int(route_case.bearing_a),
             "bearing_b": int(route_case.bearing_b),
             "turn_direction": str(route_case.turn_direction),
             "displacement": int(route_case.displacement),
-            "answer_value": int(route_case.displacement),
+            "final_bearing": int(route_case.final_bearing),
+            "answer_value": int(route_case.final_bearing),
         },
     )
 
@@ -693,7 +777,7 @@ def _render_endpoint_label_scene(ctx: _RenderContext, problem: _ResolvedProblem)
     instr1 = _draw_text(ctx, f"1: {_leg_label(route_case.leg_a, route_case.bearing_a)}", (684.0, 178.0), font=ctx.tiny_font, stroke_width=1)
     instr2 = _draw_text(ctx, f"2: {_leg_label(route_case.leg_b, route_case.bearing_b)}", (684.0, 222.0), font=ctx.tiny_font, stroke_width=1)
     _draw_compass_rose(ctx, (684.0, 296.0), radius=31.0)
-    instruction_evidence_bbox = (
+    instruction_annotation_bbox = (
         min(instruction_bbox[0], instr1[0], instr2[0]),
         min(instruction_bbox[1], instr1[1], instr2[1]),
         max(instruction_bbox[2], instr1[2], instr2[2]),
@@ -709,7 +793,7 @@ def _render_endpoint_label_scene(ctx: _RenderContext, problem: _ResolvedProblem)
         {
             "entity_id": "instruction_panel",
             "entity_type": "route_instruction_panel",
-            "bbox": bbox_to_list(instruction_evidence_bbox),
+            "bbox": bbox_to_list(instruction_annotation_bbox),
         },
         {
             "entity_id": "candidate_panel",
@@ -722,14 +806,14 @@ def _render_endpoint_label_scene(ctx: _RenderContext, problem: _ResolvedProblem)
         image=ctx.image,
         answer=str(problem.answer),
         answer_type="option_letter",
-        evidence_bboxes=(start_bbox, selected_bbox),
-        evidence_roles=("start_point", "reached_endpoint"),
-        evidence_points=(start, selected_center),
+        annotation_bboxes=(start_bbox, selected_bbox),
+        annotation_roles=("start_point", "reached_endpoint"),
+        annotation_points=(start, selected_center),
         scene_entities=scene_entities,
         render_map={
             "coord_space": "pixel",
             "candidate_panel_bbox": bbox_to_list(plot_panel_bbox),
-            "instruction_panel_bbox": bbox_to_list(instruction_evidence_bbox),
+            "instruction_panel_bbox": bbox_to_list(instruction_annotation_bbox),
             "start_center_px": [round(start[0], 3), round(start[1], 3)],
             "selected_candidate_center_px": [round(selected_center[0], 3), round(selected_center[1], 3)],
             "selected_candidate_label_bbox": bbox_to_list(selected_label_bbox),
@@ -773,6 +857,7 @@ class _BearingRouteBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     query_id = ""
     scene_variant = ""
@@ -786,8 +871,8 @@ class _BearingRouteBaseTask:
             displacement = float(rendered.witness.get("displacement", 10))
             visual_scan = 0.58
             precision = clamp_unit_interval(0.42 + (0.20 * displacement / 37.0))
-            ambiguity = 0.50
-        output_burden = clamp_unit_interval(0.40 + (0.05 * len(rendered.evidence_bboxes)))
+            ambiguity = 0.56 if str(rendered.witness.get("geometry_kind")) == "bearing_route_final_bearing" else 0.50
+        output_burden = clamp_unit_interval(0.40 + (0.05 * len(rendered.annotation_bboxes)))
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -820,8 +905,8 @@ class _BearingRouteBaseTask:
                     render_defaults=render_defaults,
                     task_id=str(self.task_id),
                 )
-                if problem.query_id == "final_displacement_value":
-                    rendered = _render_final_displacement_scene(ctx, problem)
+                if problem.query_id == "final_bearing_value":
+                    rendered = _render_final_bearing_scene(ctx, problem)
                 elif problem.query_id == "endpoint_position_label":
                     rendered = _render_endpoint_label_scene(ctx, problem)
                 else:
@@ -849,7 +934,7 @@ class _BearingRouteBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -863,12 +948,12 @@ class _BearingRouteBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=None,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -876,19 +961,19 @@ class _BearingRouteBaseTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        evidence_bboxes = [bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = (
-            [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in rendered.evidence_points]
-            if rendered.evidence_points
-            else _bbox_centers(evidence_bboxes)
+        annotation_bboxes = [bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = (
+            [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in rendered.annotation_points]
+            if rendered.annotation_points
+            else _bbox_centers(annotation_bboxes)
         )
-        evidence_keyed_bboxes = {
+        annotation_keyed_bboxes = {
             str(role): bbox_to_list(bbox)
-            for role, bbox in zip(rendered.evidence_roles, rendered.evidence_bboxes, strict=True)
+            for role, bbox in zip(rendered.annotation_roles, rendered.annotation_bboxes, strict=True)
         }
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(role): point
-            for role, point in zip(rendered.evidence_roles, evidence_points, strict=True)
+            for role, point in zip(rendered.annotation_roles, annotation_points, strict=True)
         }
         if rendered.answer_type == "number":
             rounded_answer = float(round1(float(rendered.answer)))
@@ -899,9 +984,9 @@ class _BearingRouteBaseTask:
         else:
             answer_value = str(rendered.answer)
             answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_type = "keyed_point_map"
-        evidence_value = dict(evidence_keyed_points)
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_type = "keyed_point_map"
+        annotation_value = dict(annotation_keyed_points)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(self.scene_variant),
@@ -911,6 +996,9 @@ class _BearingRouteBaseTask:
         }
         if str(problem.query_id) == "endpoint_position_label":
             query_params["target_index_probabilities"] = dict(problem.answer_probabilities)
+            query_params["option_count_probabilities"] = dict(problem.option_count_probabilities)
+        elif str(problem.query_id) == "final_bearing_value":
+            query_params["target_bearing_probabilities"] = dict(problem.answer_probabilities)
         else:
             query_params["target_support_probabilities"] = dict(problem.answer_probabilities)
         trace_payload: Dict[str, Any] = {
@@ -922,7 +1010,7 @@ class _BearingRouteBaseTask:
                     "scene_variant": str(self.scene_variant),
                     "query_id": str(problem.query_id),
                     "answer_value": answer_value,
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -947,7 +1035,7 @@ class _BearingRouteBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_type": str(rendered.answer_type),
                 "answer_value": answer_value,
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2,
                 **dict(rendered.witness),
             },
@@ -956,27 +1044,27 @@ class _BearingRouteBaseTask:
                 "scene_id": SCENE_ID,
                 "scene_variant": str(self.scene_variant),
                 "query_id": str(problem.query_id),
-                "source_witness_type": str(evidence_type),
-                "original_evidence_value": list(rendered.evidence_roles),
+                "source_witness_type": str(annotation_type),
+                "original_annotation_value": list(rendered.annotation_roles),
                 "answer_value": answer_value,
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
-                "type": str(evidence_type),
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+            "projected_annotation": {
+                "type": str(annotation_type),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -989,12 +1077,12 @@ class _BearingRouteBaseTask:
 
 
 @register_task
-class GeometryBearingRouteFinalDisplacementValueTask(_BearingRouteBaseTask):
-    """Compute final direct displacement after following two compass-bearing legs."""
+class GeometryBearingRouteFinalBearingValueTask(_BearingRouteBaseTask):
+    """Compute final direct bearing after following two compass-bearing legs."""
 
-    task_id = "task_geometry__bearing_route__final_displacement_value"
-    query_id = "final_displacement_value"
-    scene_variant = "drawn_route_displacement"
+    task_id = "task_geometry__bearing_route__final_bearing_value"
+    query_id = "final_bearing_value"
+    scene_variant = "drawn_route_bearing"
 
 
 @register_task
@@ -1008,6 +1096,6 @@ class GeometryBearingRouteEndpointPositionLabelTask(_BearingRouteBaseTask):
 
 __all__ = [
     "GeometryBearingRouteEndpointPositionLabelTask",
-    "GeometryBearingRouteFinalDisplacementValueTask",
+    "GeometryBearingRouteFinalBearingValueTask",
     "SCENE_ID",
 ]

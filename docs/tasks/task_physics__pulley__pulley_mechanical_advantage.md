@@ -3,63 +3,53 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `pulley`
-- Task group: `mechanics`
-- Task id: `task_physics__pulley__pulley_mechanical_advantage`
-- Query id: `force_relation`
-- Answer type: `integer`
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `mechanics`
+- Implementation source: `trace/tasks/physics/mechanics/pulley_mechanical_advantage.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__pulley__pulley_mechanical_advantage` -> `task_physics__pulley__pulley_mechanical_advantage`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Visual scaffold
-- The image shows one ideal block-and-tackle pulley setup.
-- The setup includes:
-  - a fixed upper pulley block,
-  - a moving lower pulley block,
-  - full vertical rope strands connecting the upper and lower blocks,
-  - optional cut non-supporting strands attached to either the upper or lower block but not both,
-  - a load block,
-  - an effort-force arrow.
-- Active `scene_variant` values:
-  - `open_block`
-  - `compact_block`
-  - `tall_block`
-    - the variants adjust the vertical spacing between blocks.
+## Task Contract
+Solves an ideal pulley force relation from visible support strands and known/unknown force labels.
 
-## Query IDs
-- `force_relation`
-  - `solve_for=effort_force`: the load force is shown and the effort force is marked `?`
-  - `solve_for=load_force`: the effort force is shown and the load force is marked `?`
-  - outputs `query_id="force_relation"`
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Reasoning contract
-- The pulley system is ideal, with no friction.
-- Mechanical advantage equals the number of full vertical rope strands that connect the fixed upper block to the moving lower block.
-- Cut strands are visual distractors and do not contribute to mechanical advantage.
-- The trace constructs integer force values using `load_force = effort_force * support_segment_count`.
-- The final answer is unique by construction for each solve target.
+## Query Branches
 
-## Evidence contract
-- `force_relation` with `solve_for=effort_force`
-  - prompt-facing evidence is a keyed map with:
-    - `support_1`, `support_2`, ... for all full supporting vertical rope-strand bboxes,
-    - `known_force` for the shown load-force label bbox,
-    - `target_force` for the marked `?` effort-force label/arrow bbox
-- `force_relation` with `solve_for=load_force`
-  - prompt-facing evidence is a keyed map with:
-    - `support_1`, `support_2`, ... for all full supporting vertical rope-strand bboxes,
-    - `known_force` for the shown effort-force label/arrow bbox,
-    - `target_force` for the marked `?` load-force label bbox
+| Query id | Program schema |
+| --- | --- |
+| `force_relation` | `solve_ideal_pulley(load_force, effort_force, support_strand_count, unknown_slot); scene=pulley; scope=pulley_mechanical_advantage; query_branch=force_relation` |
 
-## Sampling notes
-- Each sample draws one system.
-- Full connected supporting-strand counts use the support `2..6`.
-- Cut non-supporting strand counts use the support `0..4`.
-- Connected and cut-strand counts are sampled independently; review sampling does not force a joint connected/cut grid.
-- Missing effort-force answers use the support `4..18`.
-- Missing load-force answers use feasible products from `support_segment_count in 2..6` and `effort_force in 4..18`.
-- Under the seeded task sampler, scene, solve target, and answer-support cycles are decoupled so equal-size axes cover the scene/solve-target cross-product and do not alias one subfamily's answer support.
+## Program Metadata
+- Program signatures: `physics.pulley_force_solve`
+- Base program contract: `solve_ideal_pulley(load_force, effort_force, support_strand_count, unknown_slot); scene=pulley; scope=pulley_mechanical_advantage`
+- Parameter axes: `unknown_slot`
+- Arguments:
+  - `effort_force`: semantic_role; allowed `visible_or_unknown_effort_force`; source `program_schema_concrete`
+  - `load_force`: semantic_role; allowed `visible_or_unknown_load_force`; source `program_schema_concrete`
+  - `support_strand_count`: semantic_role; allowed `counted_full_supporting_strands`; source `program_schema_concrete`
+  - `unknown_slot`: semantic_role; allowed `effort_force`, `load_force`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `force_relation`
 
-## Prompt policy
-- Prompt text should identify the setup as one ideal pulley system.
-- Prompt text should ask only for an integer force value.
-- Prompt-facing evidence should stay on full supporting rope strands and the relevant load/effort labels.
-- The renderer samples one readout font per diagram and applies whole-diagram layout jitter before projecting evidence coordinates.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
+
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/pulley/task_physics__pulley__pulley_mechanical_advantage/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

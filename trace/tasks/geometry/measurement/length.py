@@ -37,7 +37,7 @@ from ..shared.conic_geometry import (
 )
 from ..shared.graph_paper import resolve_graph_cell_capacity
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.length_geometry import (
     draw_labeled_segment,
     sample_segment_instance_on_graph_paper,
@@ -461,18 +461,18 @@ def _question_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
         return ("question_text_ellipse_minor_axis", "question_text_ellipse", "question_text")
     return ("question_text",)
 
-def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
-    """Return ordered evidence-hint key candidates for one length variant."""
+def _annotation_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
+    """Return ordered annotation-hint key candidates for one length variant."""
     variant = str(variant_kind)
     if variant == "segment":
-        return ("evidence_hint_segment", "evidence_hint_point_map", "evidence_hint")
+        return ("annotation_hint_segment", "annotation_hint_point_map", "annotation_hint")
     if variant in _POLYGON_VARIANTS:
-        return ("evidence_hint_polygon_side", "evidence_hint_point_map", "evidence_hint")
+        return ("annotation_hint_polygon_side", "annotation_hint_point_map", "annotation_hint")
     if variant in _CIRCLE_VARIANTS:
-        return ("evidence_hint_circle_center", "evidence_hint_point_map", "evidence_hint")
+        return ("annotation_hint_circle_center", "annotation_hint_point_map", "annotation_hint")
     if variant in _ELLIPSE_VARIANTS:
-        return ("evidence_hint_ellipse_axis", "evidence_hint_point_map", "evidence_hint")
-    return ("evidence_hint_point_map", "evidence_hint")
+        return ("annotation_hint_ellipse_axis", "annotation_hint_point_map", "annotation_hint")
+    return ("annotation_hint_point_map", "annotation_hint")
 
 def _json_example_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
     """Return ordered JSON example key candidates for one length variant."""
@@ -711,7 +711,7 @@ class GeometryLengthMeasure2DTask:
         )
         entity: Dict[str, Any] | None = None
         anchor: Dict[str, Any] | None = None
-        evidence: Dict[str, Any] | None = None
+        annotation: Dict[str, Any] | None = None
         answer_scalar: int | None = None
         object_description: str | None = None
         question_text: str | None = None
@@ -764,8 +764,8 @@ class GeometryLengthMeasure2DTask:
                     answer_scalar = int(candidate.length_units)
                     entity = segment_scene_entity(candidate, segment_kind="segment")
                     anchor = segment_render_anchor(candidate)
-                    evidence_labels = [str(candidate.labels[0]), str(candidate.labels[1])]
-                    evidence = graph_point_set_evidence_artifacts(
+                    annotation_labels = [str(candidate.labels[0]), str(candidate.labels[1])]
+                    annotation = graph_point_set_annotation_artifacts(
                         points_by_label={
                             str(candidate.labels[0]): (float(candidate.endpoint_a[0]), float(candidate.endpoint_a[1])),
                             str(candidate.labels[1]): (float(candidate.endpoint_b[0]), float(candidate.endpoint_b[1])),
@@ -773,7 +773,7 @@ class GeometryLengthMeasure2DTask:
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                         witness_type="segment_endpoints",
-                        ordered_labels=evidence_labels,
+                        ordered_labels=annotation_labels,
                     )
                     object_description = _required_prompt_text(
                         _PROMPT_DEFAULTS,
@@ -870,7 +870,7 @@ class GeometryLengthMeasure2DTask:
                     anchor = polygon_render_anchor(polygon_instance)
                     side_label_a = str(polygon_instance.labels[int(side_idx)])
                     side_label_b = str(polygon_instance.labels[int(next_idx)])
-                    evidence = graph_point_set_evidence_artifacts(
+                    annotation = graph_point_set_annotation_artifacts(
                         points_by_label={
                             str(side_label_a): (float(point_a[0]), float(point_a[1])),
                             str(side_label_b): (float(point_b[0]), float(point_b[1])),
@@ -989,9 +989,9 @@ class GeometryLengthMeasure2DTask:
                         [float(point_a[0]), float(point_a[1])],
                         [float(point_b[0]), float(point_b[1])],
                     ]
-                    entity["attrs"]["evidence_labels"] = {"center": str(center_label)}
+                    entity["attrs"]["annotation_labels"] = {"center": str(center_label)}
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = graph_point_set_evidence_artifacts(
+                    annotation = graph_point_set_annotation_artifacts(
                         points_by_label={str(center_label): (float(circle_instance.center[0]), float(circle_instance.center[1]))},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
@@ -1104,12 +1104,12 @@ class GeometryLengthMeasure2DTask:
                         [float(point_a[0]), float(point_a[1])],
                         [float(point_b[0]), float(point_b[1])],
                     ]
-                    entity["attrs"]["evidence_labels"] = {
+                    entity["attrs"]["annotation_labels"] = {
                         "endpoint_a": str(endpoint_labels[0]),
                         "endpoint_b": str(endpoint_labels[1]),
                     }
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = graph_point_set_evidence_artifacts(
+                    annotation = graph_point_set_annotation_artifacts(
                         points_by_label={
                             str(endpoint_labels[0]): (float(point_a[0]), float(point_a[1])),
                             str(endpoint_labels[1]): (float(point_b[0]), float(point_b[1])),
@@ -1145,7 +1145,7 @@ class GeometryLengthMeasure2DTask:
             answer_scalar is None
             or entity is None
             or anchor is None
-            or evidence is None
+            or annotation is None
             or object_description is None
             or question_text is None
         ):
@@ -1171,9 +1171,9 @@ class GeometryLengthMeasure2DTask:
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
         prompt_scene_key = str(prompt_defaults["scene_key"])
         prompt_task_key = str(prompt_defaults["task_key"])
-        evidence_hint = _required_prompt_text(
+        annotation_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
-            preferred_keys=_evidence_hint_key_candidates_for_variant(str(variant_kind)),
+            preferred_keys=_annotation_hint_key_candidates_for_variant(str(variant_kind)),
             context=f"prompt defaults for {self.task_id}",
         )
         answer_hint = _required_prompt_text(
@@ -1197,13 +1197,13 @@ class GeometryLengthMeasure2DTask:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1224,7 +1224,7 @@ class GeometryLengthMeasure2DTask:
             ambiguity=float(complexity_components["ambiguity"]),
             output_burden=geometry_measurement_output_burden(
                 answer_format="integer",
-                evidence_point_count=(len(evidence["evidence_value"]) if isinstance(evidence["evidence_value"], list) else 1),
+                annotation_point_count=(len(annotation["annotation_value"]) if isinstance(annotation["annotation_value"], list) else 1),
             ),
         )
         trace_payload = {
@@ -1278,17 +1278,17 @@ class GeometryLengthMeasure2DTask:
                 "answer_format": "integer",
                 "query_id_probabilities": dict(variant_probabilities),
                 "required_graph_cells": int(required_graph_cells),
-                "required_evidence_labels": [str(label) for label in evidence.get("required_labels", [])],
+                "required_annotation_labels": [str(label) for label in annotation.get("required_labels", [])],
                 "question_text": str(question_text),
                 **dict(variant_detail),
             },
-            "witness_symbolic": dict(evidence["witness_symbolic"]),
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "witness_symbolic": dict(annotation["witness_symbolic"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_scalar)),
-            evidence_gt=TypedValue(type=str(evidence["evidence_type"]), value=evidence["evidence_value"]),
+            annotation_gt=TypedValue(type=str(annotation["annotation_type"]), value=annotation["annotation_value"]),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

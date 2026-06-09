@@ -8,25 +8,55 @@
       "",
       "",
       ""
+    ],
+    "refraction_speed_order_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "shadow_cause_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "lens_image_property_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ],
     "scene:mirror_ray_diagram": [
       "object_description"
+    ],
+    "scene:refraction_layers_diagram": [
+      "object_description"
+    ],
+    "scene:shadow_cause_diagram": [
+      "object_description"
+    ],
+    "scene:lens_optics_diagram": [
+      "object_description"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -34,16 +64,37 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
     "mirror_ray_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "refraction_layers_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "shadow_cause_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "lens_optics_diagram": [
       "The image shows {object_description}.",
       "The diagram shows {object_description}.",
       "This diagram shows {object_description}.",
@@ -65,6 +116,27 @@
       "What is the total number of target points crossed by the implied ray?",
       "Count the target points touched by the ray path before the ray leaves the grid.",
       "Follow the implied ray and determine how many target points it hits before exiting the diagram."
+    ],
+    "three_medium_speed_order": [
+      "Which option gives the order of light speed through M1, M2, and M3 from fastest to slowest?",
+      "Choose the option that orders the three media by light speed, fastest to slowest.",
+      "From the ray bending at the interfaces, which option lists the media from fastest light speed to slowest?",
+      "Which visible option is the fastest-to-slowest speed order for light in M1, M2, and M3?",
+      "Use the ray path and normals to select the option showing the light-speed order from fastest to slowest."
+    ],
+    "source_from_shadow_label": [
+      "Which labeled light source caused the shadow shown?",
+      "Choose the label of the light source that would cast the visible shadow.",
+      "Which candidate light source is positioned to make this cast shadow?",
+      "From the object and its shadow, which labeled light source caused the shadow?",
+      "Select the light-source label that matches the direction of the cast shadow."
+    ],
+    "converging_lens_image_property_choice": [
+      "Which option describes the image formed by the converging lens?",
+      "Use the object's position relative to F and 2F. Which option gives the image property?",
+      "For this converging lens, which option matches the image produced by the object arrow?",
+      "Choose the option that describes whether the image is real or virtual, upright or inverted, and larger, smaller, or the same size.",
+      "From the lens diagram, select the option with the correct image property."
     ]
   },
   "allow_empty_task_templates": true

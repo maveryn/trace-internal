@@ -14,7 +14,11 @@ from trace.tasks.three_d.shared.object_inventory_preview import (
     ObjectProfilePreview,
     render_three_d_object_profile_preview,
 )
-from trace.tasks.three_d.shared.object_resources import ThreeDObjectProfile, object_profiles
+from trace.tasks.three_d.shared.object_resources import (
+    OBJECT_CLUSTER_EXTRA_SHAPE_TYPES,
+    ThreeDObjectProfile,
+    object_profiles,
+)
 
 
 OUT_DIR = Path("review/task-reviews/assets/three_d/object_spritesheets")
@@ -212,6 +216,25 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
         object_profiles(source_scene="object_scene", role="spatial_small_shape"),
         key=lambda profile: (profile.display_name, profile.object_type),
     )
+    object_context = sorted(
+        object_profiles(source_scene="object_scene", role="spatial_context_shape"),
+        key=lambda profile: (profile.display_name, profile.object_type),
+    )
+    cluster_pool = sorted(
+        object_profiles(source_scene="object_cluster", role="cluster_small_shape"),
+        key=lambda profile: (profile.display_name, profile.object_type),
+    )
+    cluster_extra_types = {str(value) for value in OBJECT_CLUSTER_EXTRA_SHAPE_TYPES}
+    cluster_extra = tuple(profile for profile in cluster_pool if str(profile.object_type) in cluster_extra_types)
+    room_profiles = _scene_profiles("room")
+    room_wall = tuple(profile for profile in room_profiles if profile.role == "room_wall_object")
+    room_surface = tuple(profile for profile in room_profiles if profile.role == "room_surface_variant")
+    room_floor_props = tuple(profile for profile in room_profiles if profile.role == "room_floor_prop")
+    room_floor_variants = tuple(profile for profile in room_profiles if profile.role == "room_floor_variant")
+    street_profiles = _scene_profiles("street")
+    street_candidates = tuple(profile for profile in street_profiles if profile.role == "street_candidate")
+    street_context = tuple(profile for profile in street_profiles if profile.role == "street_context")
+    warehouse_profiles = _scene_profiles("warehouse")
     start_index = 0
     specs: List[Dict[str, Any]] = [
         {
@@ -225,48 +248,90 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
     ]
     start_index += len(object_small)
 
-    grouped_specs = [
-        ("01_object_scene_large_context_shapes.png", "Object Scene Large Context Object Pool", "All large/reference/support objects for object_scene.", _scene_profiles("object_scene"), "spatial_context_shape", None, 4),
-        ("02_room_wall_objects.png", "Room Wall Object Pool", "Wall-mounted room objects and wall decor variants.", _scene_profiles("room"), "room_wall_object", None, 4),
-        ("03_room_floor_and_surface_objects.png", "Room Floor And Surface Object Pool", "Room furniture, floor props, and tabletop variants.", _scene_profiles("room"), None, "room_wall_object", 4),
+    grouped_specs: List[tuple[str, str, str, Sequence[ThreeDObjectProfile], int]] = [
         (
-            "04_street_candidate_objects.png",
+            "01_object_scene_large_context_shapes.png",
+            "Object Scene Large Context Object Pool",
+            "Large/reference/support objects for object_scene tasks.",
+            object_context,
+            4,
+        ),
+        (
+            "02_object_cluster_all_countable_objects.png",
+            "Object Cluster Countable Object Pool",
+            f"All {len(cluster_pool)} object types sampled by object_cluster instance-count tasks.",
+            cluster_pool,
+            8,
+        ),
+        (
+            "03_object_cluster_extra_countqa_objects.png",
+            "Object Cluster CountQA Additions",
+            f"The {len(cluster_extra)} cluster-specific object types added for dense counting coverage.",
+            cluster_extra,
+            5,
+        ),
+        (
+            "04_room_wall_objects.png",
+            "Room Wall Object Pool",
+            "Wall-mounted room objects and wall decor variants.",
+            room_wall,
+            4,
+        ),
+        (
+            "05_room_surface_variants.png",
+            "Room Surface Object Variants",
+            "Small room objects rendered on furniture supports.",
+            room_surface,
+            4,
+        ),
+        (
+            "06_room_floor_props.png",
+            "Room Floor Prop Pool",
+            "Furniture and large floor props used by room scenes.",
+            room_floor_props,
+            4,
+        ),
+        (
+            "07_room_floor_variants.png",
+            "Room Floor Object Variants",
+            "Floor-standing variants of normally wall-mounted room objects.",
+            room_floor_variants,
+            4,
+        ),
+        (
+            "08_street_candidate_objects.png",
             "Street Candidate Object Pool",
             "Answerable street objects that may be lettered or queried; excludes scene context such as buildings and greenery.",
-            _scene_profiles("street"),
-            "street_candidate",
-            None,
+            street_candidates,
             4,
         ),
         (
-            "04_street_context_objects.png",
+            "09_street_context_objects.png",
             "Street Context Object Pool",
             "Non-answerable street scene context such as buildings, signs, benches, traffic lights, trees, and shrubs.",
-            _scene_profiles("street"),
-            "street_context",
-            None,
+            street_context,
             4,
         ),
-        ("05_warehouse_objects.png", "Warehouse Object Pool", "Robots, racks, reference objects, and warehouse equipment.", _scene_profiles("warehouse"), None, None, 4),
+        (
+            "10_warehouse_objects.png",
+            "Warehouse Object Pool",
+            "Robots, racks, reference objects, and warehouse equipment.",
+            warehouse_profiles,
+            4,
+        ),
     ]
-    for filename, title, subtitle, profiles, role_filter, excluded_role, cols in grouped_specs:
-        if role_filter is not None:
-            selected = tuple(profile for profile in profiles if profile.role == str(role_filter))
-        elif excluded_role is not None:
-            selected = tuple(profile for profile in profiles if profile.role != str(excluded_role))
-        else:
-            selected = tuple(profiles)
+    for filename, title, subtitle, selected, cols in grouped_specs:
         specs.append(
             {
                 "filename": filename,
                 "title": title,
                 "subtitle": subtitle,
-                "profiles": selected,
+                "profiles": tuple(selected),
                 "cols": cols,
                 "start_index": start_index,
             }
         )
-        start_index += len(selected)
+        start_index += len(tuple(selected))
     return specs
 
 

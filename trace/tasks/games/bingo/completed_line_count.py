@@ -29,7 +29,7 @@ from ..shared.bingo_common import (
     SUPPORTED_BINGO_SCENE_VARIANTS,
     BingoCardState,
     build_bingo_card_state,
-    evidence_cell_ids_for_query,
+    annotation_cell_ids_for_query,
 )
 from ..shared.bingo_scene import (
     SUPPORTED_BINGO_CELL_FILL_PATTERNS,
@@ -38,7 +38,7 @@ from ..shared.bingo_scene import (
     render_bingo_card_scene,
 )
 from ..shared.complexity import build_games_bingo_completed_line_complexity
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_BINGO_STYLE_VARIANTS
@@ -52,8 +52,11 @@ TASK_ID = "games_bingo_completed_line_count_base"
 class _TaskDefaults:
     """Stable fallback defaults for visible bingo-card scenes."""
 
-    completed_axis_line_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    line_sum_completed_line_count_support: Tuple[int, ...] = (2, 3, 4, 5)
+    completed_axis_line_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    line_sum_completed_line_count_support: Tuple[int, ...] = (2, 3, 4)
+    near_complete_line_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    called_marked_number_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    called_number_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     balanced_target_answer_within_line_axis: bool = False
     axis_distractor_mark_prob: float = 0.45
     line_sum_distractor_mark_prob: float = 0.20
@@ -72,6 +75,10 @@ class _TaskDefaults:
     cell_corner_radius_px: int = 14
     cell_gap_px: int = 10
     mark_inset_px: int = 12
+    called_panel_width_px: int = 220
+    called_panel_gap_px: int = 32
+    called_panel_title_font_size_px: int = 26
+    called_panel_number_font_size_px: int = 25
     mark_shape: str = "ellipse"
     cell_fill_pattern: str = "solid"
     dynamic_canvas_size_enabled: bool = True
@@ -94,6 +101,8 @@ class _ResolvedAxes:
     cell_fill_pattern: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
+    called_number_count: int | None
+    called_number_count_support: Tuple[int, ...]
     line_axis_probabilities: Dict[str, float]
     extremum_probabilities: Dict[str, float]
     query_id_probabilities: Dict[str, float]
@@ -102,6 +111,7 @@ class _ResolvedAxes:
     mark_shape_probabilities: Dict[str, float]
     cell_fill_pattern_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
+    called_number_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -123,8 +133,8 @@ def _params_with_source_query_aliases(params: Mapping[str, Any]) -> Dict[str, An
 
     alias_params = dict(params)
     explicit_query = alias_params.get("query_id")
-    if explicit_query is None and alias_params.get("query_id") is not None:
-        explicit_query = alias_params.get("query_id")
+    if explicit_query is None and alias_params.get("query_variant") is not None:
+        explicit_query = alias_params.get("query_variant")
         alias_params["query_id"] = explicit_query
     if explicit_query is None:
         return alias_params
@@ -175,7 +185,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
     """Return true when the query axis is using the default balanced cycle."""
 
     normalized_params = _params_with_source_query_aliases(params)
-    if normalized_params.get("query_id") is not None or normalized_params.get("query_id") is not None:
+    if normalized_params.get("query_id") is not None:
         return False
     enabled = bool(
         normalized_params.get(
@@ -286,6 +296,9 @@ def _target_support_key(query_id: str) -> str:
     return {
         "completed_axis_line_count": "completed_axis_line_count_support",
         "line_sum_extremum_value": "line_sum_completed_line_count_support",
+        "near_complete_row_count": "near_complete_line_count_support",
+        "near_complete_column_count": "near_complete_line_count_support",
+        "called_marked_number_count": "called_marked_number_count_support",
     }[str(query_id)]
 
 
@@ -362,6 +375,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balance_flag_key="balanced_line_axis_sampling",
             supported=SUPPORTED_BINGO_LINE_AXES,
         )
+    elif str(query_id) == "near_complete_row_count":
+        line_axis = "row"
+        line_axis_probabilities = {"row": 1.0, "column": 0.0}
+    elif str(query_id) == "near_complete_column_count":
+        line_axis = "column"
+        line_axis_probabilities = {"row": 0.0, "column": 1.0}
     extremum = None
     extremum_probabilities: Dict[str, float] = {}
     if str(query_id) == "line_sum_extremum_value":
@@ -468,6 +487,29 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
         if cycled_answer is not None:
             target_answer = int(cycled_answer)
+    called_number_count: int | None = None
+    called_number_count_support: Tuple[int, ...] = ()
+    called_number_count_probabilities: Dict[str, float] = {}
+    if str(query_id) == "called_marked_number_count":
+        called_number_count_support = resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="called_number_count_support",
+            fallback=_DEFAULTS.called_number_count_support,
+        )
+        called_number_count, called_number_count_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=target_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="called_number_count_support",
+            explicit_key="called_number_count",
+            fallback_support=_DEFAULTS.called_number_count_support,
+            namespace=f"{TASK_ID}.called_number_count",
+            balanced_flag_key="balanced_called_number_count_sampling",
+            namespace_support_permutation=True,
+        )
+        if int(called_number_count) < int(target_answer):
+            raise ValueError("called_number_count must be greater than or equal to target_answer")
     return _ResolvedAxes(
         query_id=str(query_id),
         line_axis=str(line_axis) if line_axis is not None else None,
@@ -478,6 +520,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         cell_fill_pattern=str(cell_fill_pattern),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
+        called_number_count=None if called_number_count is None else int(called_number_count),
+        called_number_count_support=tuple(int(value) for value in called_number_count_support),
         line_axis_probabilities=dict(line_axis_probabilities),
         extremum_probabilities=dict(extremum_probabilities),
         query_id_probabilities=dict(query_id_probabilities),
@@ -486,6 +530,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         mark_shape_probabilities=dict(mark_shape_probabilities),
         cell_fill_pattern_probabilities=dict(cell_fill_pattern_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
+        called_number_count_probabilities=dict(called_number_count_probabilities),
     )
 
 
@@ -495,6 +540,7 @@ def _render_params(
     instance_seed: int,
     mark_shape: str,
     cell_fill_pattern: str,
+    show_called_panel: bool = False,
 ) -> BingoRenderParams:
     """Resolve stable render parameters for one bingo scene."""
 
@@ -529,6 +575,25 @@ def _render_params(
         unit_scale,
         min_px=310,
     )
+    called_panel_width_px = scale_games_px(
+        params.get(
+            "called_panel_width_px",
+            group_default(_RENDER_DEFAULTS, "called_panel_width_px", _DEFAULTS.called_panel_width_px),
+        ),
+        unit_scale,
+        min_px=120,
+    )
+    called_panel_gap_px = scale_games_px(
+        params.get(
+            "called_panel_gap_px",
+            group_default(_RENDER_DEFAULTS, "called_panel_gap_px", _DEFAULTS.called_panel_gap_px),
+        ),
+        unit_scale,
+        min_px=16,
+    )
+    scene_footprint_width_px = int(card_width_px)
+    if bool(show_called_panel):
+        scene_footprint_width_px += int(called_panel_gap_px) + int(called_panel_width_px)
     dynamic_canvas_enabled = bool(
         params.get(
             "dynamic_canvas_size_enabled",
@@ -546,7 +611,7 @@ def _render_params(
                 int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
                 int(
                     round(
-                        float(card_width_px)
+                        float(scene_footprint_width_px)
                         + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px))))
                     )
                 ),
@@ -624,6 +689,32 @@ def _render_params(
         ),
         cell_gap_px=scale_games_px(params.get("cell_gap_px", group_default(_RENDER_DEFAULTS, "cell_gap_px", _DEFAULTS.cell_gap_px)), unit_scale, min_px=4),
         mark_inset_px=scale_games_px(params.get("mark_inset_px", group_default(_RENDER_DEFAULTS, "mark_inset_px", _DEFAULTS.mark_inset_px)), unit_scale, min_px=5),
+        called_panel_width_px=int(called_panel_width_px),
+        called_panel_gap_px=int(called_panel_gap_px),
+        called_panel_title_font_size_px=scale_games_px(
+            params.get(
+                "called_panel_title_font_size_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "called_panel_title_font_size_px",
+                    _DEFAULTS.called_panel_title_font_size_px,
+                ),
+            ),
+            unit_scale,
+            min_px=14,
+        ),
+        called_panel_number_font_size_px=scale_games_px(
+            params.get(
+                "called_panel_number_font_size_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "called_panel_number_font_size_px",
+                    _DEFAULTS.called_panel_number_font_size_px,
+                ),
+            ),
+            unit_scale,
+            min_px=14,
+        ),
         mark_shape=str(mark_shape or params.get("mark_shape", group_default(_RENDER_DEFAULTS, "mark_shape", _DEFAULTS.mark_shape))),
         cell_fill_pattern=str(
             cell_fill_pattern
@@ -634,16 +725,17 @@ def _render_params(
         ),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
+        instance_seed=int(instance_seed),
     )
 
 
 def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
-    """Return answer+evidence and answer-only JSON examples for the bingo task."""
+    """Return answer+annotation and answer-only JSON examples for the bingo task."""
 
     if str(query_id) == "line_sum_extremum_value":
         json_example = json.dumps(
             {
-                "evidence": [
+                "annotation": [
                     [120, 220, 220, 320],
                     [230, 220, 330, 320],
                     [340, 220, 440, 320],
@@ -656,11 +748,37 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         )
         json_example_answer_only = json.dumps({"answer": 184}, ensure_ascii=True)
         return json_example, json_example_answer_only
+    if str(query_id) in {"near_complete_row_count", "near_complete_column_count"}:
+        json_example = json.dumps(
+            {
+                "annotation": [
+                    [120, 220, 220, 320],
+                    [560, 330, 660, 430],
+                ],
+                "answer": 2,
+            },
+            ensure_ascii=True,
+        )
+        json_example_answer_only = json.dumps({"answer": 2}, ensure_ascii=True)
+        return json_example, json_example_answer_only
+    if str(query_id) == "called_marked_number_count":
+        json_example = json.dumps(
+            {
+                "annotation": [
+                    [120, 220, 220, 320],
+                    [340, 330, 440, 430],
+                ],
+                "answer": 2,
+            },
+            ensure_ascii=True,
+        )
+        json_example_answer_only = json.dumps({"answer": 2}, ensure_ascii=True)
+        return json_example, json_example_answer_only
 
     sample_answer = 2
     json_example = json.dumps(
         {
-            "evidence": [
+            "annotation": [
                 [120, 220, 220, 320],
                 [230, 220, 330, 320],
                 [340, 220, 440, 320],
@@ -693,6 +811,7 @@ class GamesBingoCompletedLineCountTask:
             instance_seed=int(instance_seed),
             mark_shape=str(axes.mark_shape),
             cell_fill_pattern=str(axes.cell_fill_pattern),
+            show_called_panel=str(axes.query_id) == "called_marked_number_count",
         )
         text_style_meta = {
             "font_family": str(render_params.font_family),
@@ -759,6 +878,7 @@ class GamesBingoCompletedLineCountTask:
                     query_id=str(axes.query_id),
                     line_axis=axes.line_axis,
                     extremum=axes.extremum,
+                    called_number_count=axes.called_number_count,
                     target_answer=int(axes.target_answer),
                     distractor_mark_prob=float(distractor_mark_prob),
                 )
@@ -767,6 +887,9 @@ class GamesBingoCompletedLineCountTask:
                 continue
             rendered_scene = render_bingo_card_scene(
                 cells=list(sampled_card.cells),
+                called_numbers=sampled_card.called_numbers
+                if str(axes.query_id) == "called_marked_number_count"
+                else (),
                 background=background,
                 scene_variant=str(axes.scene_variant),
                 style_variant=str(axes.style_variant),
@@ -778,14 +901,14 @@ class GamesBingoCompletedLineCountTask:
         if sampled_card is None or rendered_scene is None or background_meta is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts") from last_generation_error
 
-        evidence_cell_ids = evidence_cell_ids_for_query(
+        annotation_cell_ids = annotation_cell_ids_for_query(
             card_state=sampled_card,
             query_id=str(axes.query_id),
             line_axis=axes.line_axis,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
-            for cell_id in evidence_cell_ids
+            for cell_id in annotation_cell_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -805,10 +928,18 @@ class GamesBingoCompletedLineCountTask:
                 "object_description_single_card",
                 "completed_axis_rule_text",
                 "line_sum_extremum_rule_text",
+                "near_complete_line_rule_text",
+                "called_marked_number_rule_text",
                 "answer_hint_completed_axis_line_count",
                 "answer_hint_line_sum_extremum_value",
-                "evidence_hint_completed_axis_line_count",
-                "evidence_hint_line_sum_extremum_value",
+                "answer_hint_near_complete_row_count",
+                "answer_hint_near_complete_column_count",
+                "answer_hint_called_marked_number_count",
+                "annotation_hint_completed_axis_line_count",
+                "annotation_hint_line_sum_extremum_value",
+                "annotation_hint_near_complete_row_count",
+                "annotation_hint_near_complete_column_count",
+                "annotation_hint_called_marked_number_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -821,7 +952,7 @@ class GamesBingoCompletedLineCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_card"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -830,7 +961,7 @@ class GamesBingoCompletedLineCountTask:
                     line_axis=str(axes.line_axis or "row"),
                     extremum=str(extremum_text),
                 ),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]).format(
                     line_axis=str(axes.line_axis or "row"),
                     extremum=str(extremum_text),
                 ),
@@ -845,6 +976,10 @@ class GamesBingoCompletedLineCountTask:
                     line_axis=str(axes.line_axis or "row"),
                     extremum=str(extremum_text),
                 ),
+                "near_complete_line_rule_text": str(prompt_defaults["near_complete_line_rule_text"]).format(
+                    line_axis=str(axes.line_axis or "row")
+                ),
+                "called_marked_number_rule_text": str(prompt_defaults["called_marked_number_rule_text"]),
             },
             instance_seed=int(instance_seed),
         )
@@ -852,10 +987,12 @@ class GamesBingoCompletedLineCountTask:
 
         if str(axes.query_id) == "line_sum_extremum_value" and sampled_card.line_sum_target_value is not None:
             answer_value = int(sampled_card.line_sum_target_value)
+        elif str(axes.query_id) == "called_marked_number_count":
+            answer_value = int(len(sampled_card.called_marked_cell_ids))
         else:
             answer_value = int(axes.target_answer)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         marked_cell_count = sum(1 for cell in sampled_card.cells if bool(cell.is_marked))
         complexity = build_games_bingo_completed_line_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -867,7 +1004,7 @@ class GamesBingoCompletedLineCountTask:
                 if str(axes.query_id) == "line_sum_extremum_value"
                 else int(axes.target_answer)
             ),
-            evidence_count=len(evidence_cell_ids),
+            annotation_count=len(annotation_cell_ids),
         )
         target_answer_support_for_trace = (
             []
@@ -906,6 +1043,13 @@ class GamesBingoCompletedLineCountTask:
                     "line_sum_target_line_index": sampled_card.line_sum_target_line_index,
                     "line_sum_target_cell_ids": list(sampled_card.line_sum_target_cell_ids),
                     "line_sum_target_value": sampled_card.line_sum_target_value,
+                    "near_complete_row_indices": list(sampled_card.near_complete_row_indices),
+                    "near_complete_column_indices": list(sampled_card.near_complete_column_indices),
+                    "near_complete_gap_cell_ids": list(sampled_card.near_complete_gap_cell_ids),
+                    "called_numbers": [int(value) for value in sampled_card.called_numbers],
+                    "called_number_count": axes.called_number_count,
+                    "called_number_cell_ids": [str(value) for value in sampled_card.called_number_cell_ids],
+                    "called_marked_cell_ids": [str(value) for value in sampled_card.called_marked_cell_ids],
                     "completed_line_sums": [
                         {
                             "axis": str(axis_name),
@@ -914,7 +1058,7 @@ class GamesBingoCompletedLineCountTask:
                         }
                         for axis_name, line_index, value in sampled_card.completed_line_sums
                     ],
-                    "evidence_entity_ids": list(evidence_cell_ids),
+                    "annotation_entity_ids": list(annotation_cell_ids),
                 },
             },
             "query_spec": {
@@ -955,6 +1099,15 @@ class GamesBingoCompletedLineCountTask:
                     "line_sum_target_line_index": sampled_card.line_sum_target_line_index,
                     "line_sum_target_cell_ids": list(sampled_card.line_sum_target_cell_ids),
                     "line_sum_target_value": sampled_card.line_sum_target_value,
+                    "near_complete_row_indices": list(sampled_card.near_complete_row_indices),
+                    "near_complete_column_indices": list(sampled_card.near_complete_column_indices),
+                    "near_complete_gap_cell_ids": list(sampled_card.near_complete_gap_cell_ids),
+                    "called_numbers": [int(value) for value in sampled_card.called_numbers],
+                    "called_number_count": axes.called_number_count,
+                    "called_number_count_support": [int(value) for value in axes.called_number_count_support],
+                    "called_number_count_probabilities": dict(axes.called_number_count_probabilities),
+                    "called_number_cell_ids": [str(value) for value in sampled_card.called_number_cell_ids],
+                    "called_marked_cell_ids": [str(value) for value in sampled_card.called_marked_cell_ids],
                 },
             },
             "render_spec": {
@@ -964,6 +1117,8 @@ class GamesBingoCompletedLineCountTask:
                 "canvas_height": int(image.size[1]),
                 "mark_shape": str(render_params.mark_shape),
                 "cell_fill_pattern": str(render_params.cell_fill_pattern),
+                "called_panel_width_px": int(render_params.called_panel_width_px),
+                "called_panel_gap_px": int(render_params.called_panel_gap_px),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
                 "text_style": dict(text_style_meta),
@@ -993,6 +1148,14 @@ class GamesBingoCompletedLineCountTask:
                 "line_sum_target_line_index": sampled_card.line_sum_target_line_index,
                 "line_sum_target_cell_ids": list(sampled_card.line_sum_target_cell_ids),
                 "line_sum_target_value": sampled_card.line_sum_target_value,
+                "near_complete_row_indices": [int(value) for value in sampled_card.near_complete_row_indices],
+                "near_complete_column_indices": [int(value) for value in sampled_card.near_complete_column_indices],
+                "near_complete_gap_cell_ids": [str(value) for value in sampled_card.near_complete_gap_cell_ids],
+                "called_numbers": [int(value) for value in sampled_card.called_numbers],
+                "called_number_count": axes.called_number_count,
+                "called_number_count_support": [int(value) for value in axes.called_number_count_support],
+                "called_number_cell_ids": [str(value) for value in sampled_card.called_number_cell_ids],
+                "called_marked_cell_ids": [str(value) for value in sampled_card.called_marked_cell_ids],
                 "completed_line_sums": [
                     {
                         "axis": str(axis_name),
@@ -1012,14 +1175,14 @@ class GamesBingoCompletedLineCountTask:
                     }
                     for spec in rendered_scene.cell_specs
                 ],
-                "evidence_entity_ids": [str(cell_id) for cell_id in evidence_cell_ids],
+                "annotation_entity_ids": [str(cell_id) for cell_id in annotation_cell_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(cell_id) for cell_id in evidence_cell_ids],
+                "ids": [str(cell_id) for cell_id in annotation_cell_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1028,7 +1191,7 @@ class GamesBingoCompletedLineCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1055,7 +1218,28 @@ class GamesBingoLineSumExtremumValueTask(FixedQueryVariantTaskMixin, GamesBingoC
     fixed_query_id = "line_sum_extremum_value"
 
 
+@register_task
+class GamesBingoNearCompleteLineCountTask(QuerySubsetTaskMixin, GamesBingoCompletedLineCountTask):
+    """Count bingo rows or columns that are one mark away from complete."""
+
+    task_id = "task_games__bingo__near_complete_line_count"
+    supported_query_ids = (
+        "near_complete_row_count",
+        "near_complete_column_count",
+    )
+
+
+@register_task
+class GamesBingoCalledNumberMarkCountTask(FixedQueryVariantTaskMixin, GamesBingoCompletedLineCountTask):
+    """Count called numbers that are currently marked on the visible bingo card."""
+
+    task_id = "task_games__bingo__called_number_mark_count"
+    fixed_query_id = "called_marked_number_count"
+
+
 __all__ = [
     "GamesBingoAxisCompletedLineCountTask",
+    "GamesBingoCalledNumberMarkCountTask",
     "GamesBingoLineSumExtremumValueTask",
+    "GamesBingoNearCompleteLineCountTask",
 ]

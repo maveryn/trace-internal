@@ -11,17 +11,17 @@ def test_games_bubble_shooter_defaults_expose_scene_query_answer_and_style_axes(
     generation = resolve_task_group_section_defaults(
         cfg,
         "generation",
-        task_id="task_games__bubble_shooter__shot_effect_count",
+        task_id="task_games__bubble_shooter__pop_count",
     )
     rendering = resolve_task_group_section_defaults(
         cfg,
         "rendering",
-        task_id="task_games__bubble_shooter__shot_effect_count",
+        task_id="task_games__bubble_shooter__pop_count",
     )
     prompt = resolve_task_group_section_defaults(
         cfg,
         "prompt",
-        task_id="task_games__bubble_shooter__shot_effect_count",
+        task_id="task_games__bubble_shooter__pop_count",
     )
 
     assert set(generation["query_id_weights"].keys()) == {"pop_count", "drop_count", "pop_color_label"}

@@ -1,6 +1,6 @@
 ---
 name: domain-icons
-description: Use when designing, implementing, or reviewing TRACE icon-domain tasks, especially curated icon-pool selection, reference-vs-scene layout choices, evidence typing, and icon-specific ambiguity checks.
+description: Use when designing, implementing, or reviewing TRACE icon-domain tasks, especially curated icon-pool selection, reference-vs-scene layout choices, annotation typing, and icon-specific ambiguity checks.
 ---
 
 # Icons Domain
@@ -15,11 +15,11 @@ Use this whenever the task lives under `domain=icons`.
 5. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/ICON_TASK_SETUP.md` owns the active icons contract, asset policy, and evidence policy.
+- `docs/domains/ICON_TASK_SETUP.md` owns the active icons contract, asset policy, and annotation policy.
 - Active icon tasks put the concrete branch in `query_id`; old `query_id` params may still be used as internal replay controls for reviews.
 - Use icon manifests only through `trace/tasks/icons/shared/icon_assets.py`.
 - Use asymmetric icons when orientation, mirror symmetry, transformation identity, or attribute binding can collapse under icon symmetry.
-- Keep prompt-facing evidence on the semantic visual unit: icon-instance `bbox_set`, scene-cell `bbox_set`, or one local bbox for missing/violating slots.
+- Keep prompt-facing annotation on the semantic visual unit: icon-instance `bbox_set`, scene-cell `bbox_set`, or one local bbox for missing/violating slots.
 
 ## Practical review checklist
 - Prefer explicit target/distractor construction over relying on random icon placement to realize the answer.

@@ -15,7 +15,7 @@ Use this for implementation reviews, refactor reviews, and pre-merge checks.
 ## Review checklist
 1. Helper placement is correct and no duplicated deterministic utility was introduced.
 2. Prompt text remains externalized and prompt metadata stays complete.
-3. Answer, evidence, witness, and trace projections still come from one execution path.
+3. Answer, annotation, witness, and trace projections still come from one execution path.
 4. Public task ids, filenames, and module layout match the documented conventions.
 5. Docs changed together with code/config/module-boundary changes.
 6. Dead shims, stale exports, and orphaned helpers were removed during refactors.

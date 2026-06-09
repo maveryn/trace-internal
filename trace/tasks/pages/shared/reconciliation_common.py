@@ -544,7 +544,7 @@ def build_cross_form_reconciliation_dataset(
             "answer_value": int(answer_value),
             "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
             "supporting_bbox_ids": list(supporting_bbox_ids),
-            "evidence_bbox_ids": list(supporting_bbox_ids),
+            "annotation_bbox_ids": list(supporting_bbox_ids),
         }
     raise ValueError("failed to build a cross-form reconciliation scene with valid answer constraints")
 

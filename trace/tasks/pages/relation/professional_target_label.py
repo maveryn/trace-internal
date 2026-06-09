@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ...registry import register_task
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from .professional_target_common import (
     ProfessionalGuiRelationTaskBase,
     ProfessionalTaskDefinition,
@@ -10,7 +11,7 @@ from .professional_target_common import (
 )
 
 
-TASK_ID = "task_pages__workspace__professional_target_label"
+TASK_ID = "pages_workspace_professional_target_source"
 SUPPORTED_QUERY_IDS = (
     "toolbar_palette_control_label",
     "property_panel_control_label",
@@ -157,7 +158,6 @@ TASK_DEFINITION = ProfessionalTaskDefinition(
 )
 
 
-@register_task
 class PagesRelationProfessionalTargetLabelTask(ProfessionalGuiRelationTaskBase):
     """Identify a labeled target control in a professional application workspace."""
 
@@ -165,4 +165,72 @@ class PagesRelationProfessionalTargetLabelTask(ProfessionalGuiRelationTaskBase):
     definition = TASK_DEFINITION
 
 
-__all__ = ["PagesRelationProfessionalTargetLabelTask", "SUPPORTED_QUERY_IDS"]
+@register_task
+class PagesWorkspaceToolbarPaletteControlLabelTask(FixedPagesQueryTaskMixin):
+    """Identify a toolbar-palette control from a visible guide cue."""
+
+    task_id = "task_pages__workspace__toolbar_palette_control_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "workspace"
+    fixed_query_id = "toolbar_palette_control_label"
+    source_task_cls = PagesRelationProfessionalTargetLabelTask
+
+
+@register_task
+class PagesWorkspacePropertyPanelControlLabelTask(FixedPagesQueryTaskMixin):
+    """Identify a property-panel control from a visible setting cue."""
+
+    task_id = "task_pages__workspace__property_panel_control_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "workspace"
+    fixed_query_id = "property_panel_control_label"
+    source_task_cls = PagesRelationProfessionalTargetLabelTask
+
+
+@register_task
+class PagesWorkspaceCanvasWorkspaceControlLabelTask(FixedPagesQueryTaskMixin):
+    """Identify a canvas workspace control from a visible canvas cue."""
+
+    task_id = "task_pages__workspace__canvas_workspace_control_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "workspace"
+    fixed_query_id = "canvas_workspace_control_label"
+    source_task_cls = PagesRelationProfessionalTargetLabelTask
+
+
+@register_task
+class PagesWorkspaceCodeWorkspaceControlLabelTask(FixedPagesQueryTaskMixin):
+    """Identify an IDE workspace control from a visible code cue."""
+
+    task_id = "task_pages__workspace__code_workspace_control_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "workspace"
+    fixed_query_id = "code_workspace_control_label"
+    source_task_cls = PagesRelationProfessionalTargetLabelTask
+
+
+@register_task
+class PagesWorkspaceFileDialogControlLabelTask(FixedPagesQueryTaskMixin):
+    """Identify a file-dialog control from a visible dialog cue."""
+
+    task_id = "task_pages__workspace__file_dialog_control_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "workspace"
+    fixed_query_id = "file_dialog_control_label"
+    source_task_cls = PagesRelationProfessionalTargetLabelTask
+
+
+__all__ = [
+    "PagesRelationProfessionalTargetLabelTask",
+    "PagesWorkspaceCanvasWorkspaceControlLabelTask",
+    "PagesWorkspaceCodeWorkspaceControlLabelTask",
+    "PagesWorkspaceFileDialogControlLabelTask",
+    "PagesWorkspacePropertyPanelControlLabelTask",
+    "PagesWorkspaceToolbarPaletteControlLabelTask",
+    "SUPPORTED_QUERY_IDS",
+]

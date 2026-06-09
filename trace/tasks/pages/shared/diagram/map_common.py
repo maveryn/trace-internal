@@ -539,11 +539,11 @@ def build_map_navigation_dataset(
     lookup = {str(spec["landmark_id"]): dict(spec) for spec in landmark_specs}
     highlighted_route: list[Cell] = []
     route_landmark_ids: list[str] = []
-    evidence_landmark_bbox_ids: list[str] = []
-    evidence_zone_label_bbox_ids: list[str] = []
+    annotation_landmark_bbox_ids: list[str] = []
+    annotation_zone_label_bbox_ids: list[str] = []
     answer_label: str
     question_text: str
-    evidence_semantics: str
+    annotation_semantics: str
 
     if str(query_id) == "destination_after_directions":
         step_min, step_max = resolve_required_int_bounds(
@@ -560,13 +560,13 @@ def build_map_navigation_dataset(
         route_labels = [str(lookup[landmark_id]["landmark_label"]) for landmark_id in route_landmark_ids]
         directions = [_direction_between(source, target) for source, target in zip(route, route[1:])]
         answer_label = str(route_labels[-1])
-        evidence_landmark_bbox_ids = [str(lookup[landmark_id]["landmark_bbox_id"]) for landmark_id in route_landmark_ids]
+        annotation_landmark_bbox_ids = [str(lookup[landmark_id]["landmark_bbox_id"]) for landmark_id in route_landmark_ids]
         direction_text = _format_direction_steps(directions)
         question_text = (
             f"Starting at \"{route_labels[0]}\", follow the map directions to the next labeled landmark each time: "
             f"{direction_text}. What landmark do you reach? Return the exact landmark label."
         )
-        evidence_semantics = "route_landmarks_ordered"
+        annotation_semantics = "route_landmarks_ordered"
     elif str(query_id) == "landmark_after_route_step":
         step_min, step_max = resolve_required_int_bounds(
             params,
@@ -594,7 +594,7 @@ def build_map_navigation_dataset(
             )
         )
         answer_label = str(route_labels[step_index])
-        evidence_landmark_bbox_ids = [
+        annotation_landmark_bbox_ids = [
             str(lookup[landmark_id]["landmark_bbox_id"]) for landmark_id in route_landmark_ids[: int(step_index) + 1]
         ]
         question_text = (
@@ -602,7 +602,7 @@ def build_map_navigation_dataset(
             f"what is the {_ordinal(step_index)} landmark reached after \"{route_labels[0]}\"? "
             "Return the exact landmark label."
         )
-        evidence_semantics = "highlighted_route_landmarks_ordered_to_answer"
+        annotation_semantics = "highlighted_route_landmarks_ordered_to_answer"
     else:
         raise ValueError(f"unsupported map query id: {query_id}")
 
@@ -622,10 +622,10 @@ def build_map_navigation_dataset(
         "highlighted_route_landmark_ids": list(route_landmark_ids if highlighted_route else []),
         "route_landmark_ids": list(route_landmark_ids),
         "answer_label": str(answer_label),
-        "evidence_landmark_bbox_ids": list(evidence_landmark_bbox_ids),
-        "evidence_zone_label_bbox_ids": list(evidence_zone_label_bbox_ids),
-        "evidence_bbox_ids": [*evidence_landmark_bbox_ids, *evidence_zone_label_bbox_ids],
-        "evidence_semantics": str(evidence_semantics),
+        "annotation_landmark_bbox_ids": list(annotation_landmark_bbox_ids),
+        "annotation_zone_label_bbox_ids": list(annotation_zone_label_bbox_ids),
+        "annotation_bbox_ids": [*annotation_landmark_bbox_ids, *annotation_zone_label_bbox_ids],
+        "annotation_semantics": str(annotation_semantics),
     }
 
 

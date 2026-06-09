@@ -23,8 +23,8 @@ def test_metro_transfer_station_count_contract() -> None:
     assert out.query_id == "metro_transfer_station_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == len(transfer_labels) == 3
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == len(transfer_labels)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(transfer_labels)
     assert "transfer stations" in out.prompt or "multiple routes" in out.prompt
 
 
@@ -49,8 +49,8 @@ def test_metro_single_route_station_count_contract() -> None:
     assert out.scene_id == "metro"
     assert out.query_id == "metro_single_route_station_count"
     assert out.answer_gt.value == len(single_route_labels) == 11
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == len(single_route_labels)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(single_route_labels)
 
 
 def test_metro_exact_distance_count_contract() -> None:
@@ -74,8 +74,8 @@ def test_metro_exact_distance_count_contract() -> None:
     assert out.scene_id == "metro"
     assert out.query_id == "metro_exact_distance_count"
     assert out.answer_gt.value == len(exact_labels) == 4
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == len(exact_labels)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(exact_labels)
 
 
 def test_metro_shortest_path_length_contract() -> None:
@@ -88,8 +88,8 @@ def test_metro_shortest_path_length_contract() -> None:
     assert out.scene_id == "metro"
     assert out.query_id == "metro_shortest_path_length"
     assert out.answer_gt.value == int(trace["target_shortest_path_length"]) == 4
-    assert out.evidence_gt.type == "point_sequence"
-    assert len(out.evidence_gt.value) == out.answer_gt.value + 1
+    assert out.annotation_gt.type == "point_sequence"
+    assert len(out.annotation_gt.value) == out.answer_gt.value + 1
     assert trace["matching_labels"][0] == trace["source_label"]
     assert trace["matching_labels"][-1] == trace["goal_label"]
 
@@ -110,8 +110,8 @@ def test_metro_transfer_count_contract() -> None:
     assert out.scene_id == "metro"
     assert out.query_id == "metro_transfer_count"
     assert out.answer_gt.value == int(trace["target_route_transfer_count"]) == route_change_count == 4
-    assert out.evidence_gt.type == "point_sequence"
-    assert len(out.evidence_gt.value) == len(trace["matching_labels"])
+    assert out.annotation_gt.type == "point_sequence"
+    assert len(out.annotation_gt.value) == len(trace["matching_labels"])
     assert trace["matching_labels"][0] == trace["source_label"]
     assert trace["via_label"] in trace["matching_labels"]
     assert trace["matching_labels"][-1] == trace["goal_label"]
@@ -123,5 +123,5 @@ def test_metro_transfer_station_count_is_deterministic() -> None:
     left = task.generate(2026051908, params=params, max_attempts=100)
     right = task.generate(2026051908, params=params, max_attempts=100)
     assert left.answer_gt.value == right.answer_gt.value
-    assert left.evidence_gt.value == right.evidence_gt.value
+    assert left.annotation_gt.value == right.annotation_gt.value
     assert left.trace_payload["execution_trace"]["route_station_labels"] == right.trace_payload["execution_trace"]["route_station_labels"]

@@ -16,12 +16,12 @@ from tqdm.auto import tqdm
 from .taxonomy import resolve_task_query_id, resolve_task_taxonomy
 
 
-PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
-PromptVariantInput = Literal["active", "answer", "answer_only", "evidence", "answer_and_evidence"] | str
+PromptVariantMode = Literal["active", "answer_only", "answer_and_annotation"]
+PromptVariantInput = Literal["active", "answer", "answer_only", "annotation", "answer_and_annotation"] | str
 ImagePathMode = Literal["relative", "absolute", "dataset_relative"]
 ImageStorageMode = Literal["path_dict", "embedded_bytes"]
 OutputFormat = Literal["jsonl", "parquet"]
-_PARQUET_JSON_COLUMNS = ("answer_gt", "evidence_gt", "reward_contract", "trace_ref")
+_PARQUET_JSON_COLUMNS = ("answer_gt", "annotation_gt", "reward_contract", "trace_ref")
 _PARQUET_WRITE_CHUNK_SIZE = 4096
 _PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
 _EXPORT_PROGRESS_ENABLED = (
@@ -34,16 +34,16 @@ _PROMPT_VARIANT_ALIASES: dict[str, PromptVariantMode] = {
     "active": "active",
     "answer": "answer_only",
     "answer_only": "answer_only",
-    "answer_and_evidence": "answer_and_evidence",
-    "evidence": "answer_and_evidence",
+    "answer_and_annotation": "answer_and_annotation",
+    "annotation": "answer_and_annotation",
 }
 
 _ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
     r'^Use a valid JSON object with key "answer" for the final answer\.\s*$',
     re.IGNORECASE,
 )
-_ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
-    r'^Use a valid JSON object with keys (?:"evidence" and "answer" in that order|"answer" and "evidence") for the final answer\.\s*$',
+_ANSWER_AND_ANNOTATION_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with keys (?:"annotation" and "answer" in that order|"answer" and "annotation") for the final answer\.\s*$',
     re.IGNORECASE,
 )
 
@@ -209,7 +209,7 @@ def _strip_redundant_rlvr_output_contract(prompt: str, *, prompt_variant: Prompt
     schema_line_re = (
         _ANSWER_ONLY_SCHEMA_LINE_RE
         if prompt_variant == "answer_only"
-        else _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE
+        else _ANSWER_AND_ANNOTATION_SCHEMA_LINE_RE
     )
     filtered_lines = [line for line in prompt.splitlines() if not schema_line_re.match(line.strip())]
 
@@ -239,10 +239,10 @@ def _build_prompt_columns(record: Mapping[str, Any], *, image_count: int) -> dic
         "prompt_active": _normalize_multimodal_prompt(_select_prompt(record, "active"), image_count=image_count),
         "prompt_answer": prompt_answer,
         "prompt_answer_only": prompt_answer,
-        "prompt_answer_and_evidence": _normalize_multimodal_prompt(
+        "prompt_answer_and_annotation": _normalize_multimodal_prompt(
             _strip_redundant_rlvr_output_contract(
-                _select_prompt(record, "answer_and_evidence"),
-                prompt_variant="answer_and_evidence",
+                _select_prompt(record, "answer_and_annotation"),
+                prompt_variant="answer_and_annotation",
             ),
             image_count=image_count,
         ),
@@ -552,7 +552,7 @@ def build_rlvr_row(
     *,
     dataset_root: Path,
     output_parent: Path,
-    prompt_variant: PromptVariantInput = "answer_and_evidence",
+    prompt_variant: PromptVariantInput = "answer_and_annotation",
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
 ) -> dict[str, Any]:
@@ -565,12 +565,12 @@ def build_rlvr_row(
         raise ValueError("TRACE RLVR export requires instance_id")
 
     answer_gt = train_record.get("answer_gt")
-    evidence_gt = train_record.get("evidence_gt")
+    annotation_gt = train_record.get("annotation_gt")
     reward_contract = train_record.get("reward_contract")
     if not isinstance(answer_gt, Mapping):
         raise ValueError(f"TRACE RLVR export requires answer_gt on {instance_id}")
-    if not isinstance(evidence_gt, Mapping):
-        raise ValueError(f"TRACE RLVR export requires evidence_gt on {instance_id}")
+    if not isinstance(annotation_gt, Mapping):
+        raise ValueError(f"TRACE RLVR export requires annotation_gt on {instance_id}")
     if not isinstance(reward_contract, Mapping):
         raise ValueError(f"TRACE RLVR export requires reward_contract on {instance_id}")
     exported_images = _build_exported_images(
@@ -584,7 +584,7 @@ def build_rlvr_row(
     prompt = {
         "active": prompt_columns["prompt_active"],
         "answer_only": prompt_columns["prompt_answer"],
-        "answer_and_evidence": prompt_columns["prompt_answer_and_evidence"],
+        "answer_and_annotation": prompt_columns["prompt_answer_and_annotation"],
     }[prompt_variant]
     task_id = str(train_record.get("task", ""))
     taxonomy = resolve_task_taxonomy(
@@ -608,7 +608,7 @@ def build_rlvr_row(
         "prompt_mode": prompt_variant,
         "images": exported_images,
         "answer_gt": dict(answer_gt),
-        "evidence_gt": dict(evidence_gt),
+        "annotation_gt": dict(annotation_gt),
         "reward_contract": dict(reward_contract),
         "trace_ref": dict(train_record.get("trace_ref", {}))
         if isinstance(train_record.get("trace_ref"), Mapping)
@@ -718,7 +718,7 @@ def export_trace_dataset_to_rlvr(
     output_path: str | Path,
     *,
     output_format: OutputFormat | None = None,
-    prompt_variant: PromptVariantInput = "answer_and_evidence",
+    prompt_variant: PromptVariantInput = "answer_and_annotation",
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
     parquet_cpu_count: int | None = None,

@@ -36,6 +36,7 @@ from ..shared.object_resources import (
     BUILDING_STYLES,
     STREET_OBJECT_TYPES,
 )
+from ..shared.option_panel import build_text_option_choices
 from ..shared.camera_projection import (
     build_projection_frame as _build_projection_frame,
     sample_camera as _sample_camera,
@@ -56,7 +57,6 @@ from .intersection_scene import (
     _candidate_screen_separation_ok,
     _canvas_floor_polygon_available,
     _dimensions_for_orientation,
-    _draw_candidate_object,
     _finalize_specs,
     _make_street_object_spec,
     _min_pairwise,
@@ -69,73 +69,8 @@ from .intersection_scene import (
     _sample_intersection_center,
     _slot_allowed_for_layout,
     _translate_scene_xy,
-    render_street_intersection_scene_3d,
 )
-from .intersection_rendering import (
-    VEHICLE_OBJECT_TYPES,
-    PEDESTRIAN_OBJECT_TYPES,
-    STREET_BUILDING_CONTEXT_OBJECT_TYPES,
-    STREET_FIXED_BUILDING_STYLE_BY_OBJECT_TYPE,
-    STREET_FULL_BLEED_FALLBACK_EXTENT_MULTIPLIER,
-    _street_object_name,
-    _street_object_fill_rgb,
-    _base_street_object_dimensions,
-    _fixed_building_style_for_street_object,
-    _apply_street_building_style,
-    _dimensions_for_orientation,
-    _orientation_axis_for_xy,
-    _missing_arm_for_layout,
-    _arm_is_present,
-    _world_polygon,
-    _draw_world_rect,
-    _floor_polygon_area_xy,
-    _line_intersection_xy,
-    _dedupe_polygon_points_xy,
-    _clip_polygon_to_convex_floor,
-    _fallback_floor_polygon_xy,
-    _visible_floor_polygon_xy,
-    _canvas_floor_polygon_available,
-    _floor_bounds_xy,
-    _draw_clipped_floor_rect,
-    _draw_crosswalks,
-    _draw_lane_markings,
-    _road_rects_for_layout,
-    _draw_street_shell,
-    _draw_shadow,
-    _draw_vehicle_projected_details,
-    _draw_vehicle_object,
-    _draw_scooter_object,
-    _draw_bicycle_object,
-    _draw_motorcycle_object,
-    _draw_fire_hydrant_object,
-    _draw_trash_bin_object,
-    _draw_mailbox_object,
-    _draw_construction_barrier_object,
-    _draw_road_barrel_object,
-    _screen_points_bbox,
-    _draw_traffic_cone_object,
-    _draw_projected_limb,
-    _screen_line_bbox,
-    _screen_rect_bbox,
-    _draw_screen_pole,
-    _draw_traffic_light_context_object,
-    _draw_street_sign_context_object,
-    _draw_pedestrian_object,
-    _stable_palette_index,
-    _draw_building_face_rect,
-    _draw_building_window_grid,
-    _draw_building_vertical_glass,
-    _draw_building_horizontal_bands,
-    _draw_retail_front,
-    _draw_shopfront,
-    _draw_styled_building_object,
-    _upright_screen_basis,
-    _draw_street_evergreen_tree_object,
-    _draw_street_bush_object,
-    _draw_street_bench_object,
-    _draw_context_object,
-    _draw_candidate_object,
-)
+from .intersection_rendering import render_street_intersection_scene_3d
 
 
 TASK_ID = "task_three_d__street__intersection_nearest_label"
@@ -512,7 +447,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 @register_task
 class ThreeDStreetIntersectionNearestLabelTask:
-    """Choose the lettered street object nearest to an intersection center."""
+    """Choose the option-panel street object nearest to an intersection center."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -626,10 +561,12 @@ class ThreeDStreetIntersectionNearestLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
+        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
         rendered_scene = render_street_intersection_scene_3d(
             background,
             dataset=dataset,
             render_params=render_params,
+            option_choices=option_choices,
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -648,7 +585,7 @@ class ThreeDStreetIntersectionNearestLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -661,13 +598,13 @@ class ThreeDStreetIntersectionNearestLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -677,11 +614,11 @@ class ThreeDStreetIntersectionNearestLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in rendered_scene.evidence_bboxes
+            for bbox in rendered_scene.annotation_bboxes
         ]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = _build_complexity(
             candidate_count=int(dataset["candidate_count"]),
             context_object_count=int(dataset["context_object_count"]),
@@ -740,7 +677,9 @@ class ThreeDStreetIntersectionNearestLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "intersection_layout": str(dataset["intersection_layout"]),
@@ -772,6 +711,13 @@ class ThreeDStreetIntersectionNearestLabelTask:
                     str(key): list(value)
                     for key, value in rendered_scene.candidate_centers_px.items()
                 },
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value)
+                    for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "context_object_bboxes_px": {
                     str(key): list(value)
                     for key, value in rendered_scene.context_object_bboxes_px.items()
@@ -799,6 +745,11 @@ class ThreeDStreetIntersectionNearestLabelTask:
                 "answer_object_type": str(dataset["answer_object_type"]),
                 "target_object_ids": [str(value) for value in dataset["target_object_ids"]],
                 "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
                 "object_specs": [dict(spec) for spec in dataset["object_specs"]],
                 "intersection_center_xy": list(dataset["intersection_center_xy"]),
@@ -820,8 +771,8 @@ class ThreeDStreetIntersectionNearestLabelTask:
                 "id": str(dataset["answer_object_id"]),
                 "answer": str(answer_label),
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -831,7 +782,7 @@ class ThreeDStreetIntersectionNearestLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

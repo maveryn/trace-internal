@@ -8,6 +8,13 @@
       "",
       "",
       ""
+    ],
+    "instruction_panel_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -23,19 +30,35 @@
     "query:step_after_named_step": [
       "source_step_title"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:step_title_for_detail": [
+      "source_step_detail"
+    ],
+    "query:step_number_for_detail": [
+      "source_step_detail"
+    ],
+    "scene:instruction_panel": [
+      "object_description"
+    ],
+    "query:shared_control_for_step_set_label": [
+      "step_reference_list"
+    ],
+    "query:step_for_control_pair_label": [
+      "first_control_label",
+      "second_control_label"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -43,16 +66,23 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
     "step_list": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This page shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "instruction_panel": [
       "The image shows {object_description}.",
       "The page shows {object_description}.",
       "This page shows {object_description}.",
@@ -81,6 +111,34 @@
       "Which step title appears directly after {source_step_title}?",
       "Read the title on the step immediately following {source_step_title}.",
       "After {source_step_title}, what title is printed on the next numbered step?"
+    ],
+    "step_title_for_detail": [
+      "Which step title contains the detail {source_step_detail}?",
+      "Find the detail {source_step_detail}. What title is shown on that step?",
+      "What is the title of the step whose detail line reads {source_step_detail}?",
+      "Use the detail {source_step_detail}. Which step title owns it?",
+      "Read the card containing {source_step_detail}. What title is printed on that card?"
+    ],
+    "step_number_for_detail": [
+      "Which step number contains the detail {source_step_detail}?",
+      "Find the detail {source_step_detail}. What number is shown on that step?",
+      "What is the step number for the card whose detail line reads {source_step_detail}?",
+      "Use the detail {source_step_detail}. Which numbered step owns it?",
+      "Read the card containing {source_step_detail}. What number is printed on that card?"
+    ],
+    "shared_control_for_step_set_label": [
+      "Which visible control label appears in each of steps {step_reference_list}?",
+      "For steps {step_reference_list}, what control label is shared by all of them?",
+      "What control chip label is common to steps {step_reference_list}?",
+      "Across steps {step_reference_list}, which control label appears every time?",
+      "Find steps {step_reference_list}. Which visible control label do those steps all share?"
+    ],
+    "step_for_control_pair_label": [
+      "Which step number contains both {first_control_label} and {second_control_label}?",
+      "Find the step with control labels {first_control_label} and {second_control_label}. What number is on that step?",
+      "What numbered step includes both control chips {first_control_label} and {second_control_label}?",
+      "Use the control labels {first_control_label} and {second_control_label}. Which step number contains the pair?",
+      "Which visible step number has both {first_control_label} and {second_control_label} on the same step?"
     ]
   },
   "allow_empty_task_templates": true

@@ -11,7 +11,7 @@
 2. Branch metadata: `query_id`
 3. `query_id`: `count_marked_weekend_days` or `count_marked_weekday_days`
 4. Answer type: `integer`
-5. Evidence type: `bbox_set` over the marked date cells that satisfy the query.
+5. Annotation type: `bbox_set` over the marked date cells that satisfy the query.
 6. Mirror/query knob: `marked_day_class=weekend|weekday`
 
 ## Prompt + Trace
@@ -19,5 +19,5 @@
 2. Scene key: `month_calendar`
 3. Task key: `calendar_month_query`
 4. Internal prompt variant key: `count_marked_day_class`
-5. Trace records the month/year, marked dates, evidence dates, day-class query, and date-cell bboxes.
-6. Generation is deterministic from `instance_seed`; answers and evidence come from the finalized calendar metadata.
+5. Trace records the month/year, marked dates, annotation dates, day-class query, and date-cell bboxes.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized calendar metadata.

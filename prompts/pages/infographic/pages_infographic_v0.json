@@ -8,9 +8,103 @@
       "",
       "",
       ""
+    ],
+    "sectioned_infographic_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "mixed_infographic_lookup_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "hero_callout_infographic_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
+    "scene:mixed_infographic_page": [
+      "object_description"
+    ],
+    "scene:hero_callout_infographic": [
+      "object_description"
+    ],
+    "scene:sectioned_infographic": [],
+    "query:module_field_value_label": [
+      "module_title",
+      "item_label",
+      "field_label"
+    ],
+    "query:module_field_extremum_item_label": [
+      "module_title",
+      "field_label",
+      "rank_direction"
+    ],
+    "query:module_field_ranked_item_label": [
+      "module_title",
+      "field_label",
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:page_field_extremum_module_label": [
+      "field_label",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:module_two_field_condition_item_label": [
+      "module_title",
+      "numeric_field_label",
+      "condition_phrase",
+      "threshold_value",
+      "category_field_label",
+      "category_value"
+    ],
+    "query:module_condition_item_count": [
+      "module_title",
+      "field_label",
+      "condition_phrase",
+      "threshold_value"
+    ],
+    "query:module_field_total_value": [
+      "module_title",
+      "field_label"
+    ],
+    "query:two_module_field_total_comparison_module_label": [
+      "module_a_title",
+      "module_b_title",
+      "field_label"
+    ],
+    "query:callout_field_value_label": [
+      "callout_title",
+      "field_label"
+    ],
+    "query:callout_metric_extremum_label": [
+      "field_label",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:callout_condition_count": [
+      "field_label",
+      "condition_phrase",
+      "threshold_value"
+    ],
+    "query:section_item_count": [
+      "target_section"
+    ],
+    "query:section_filtered_item_label": [
+      "target_section",
+      "filter_marker_label"
+    ],
     "query:sum_named_metrics": [
       "target_labels"
     ],
@@ -27,6 +121,28 @@
       "excluded_labels"
     ],
     "query:section_ranked_total_label": [
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:nth_highest_metric_label": [
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:nth_lowest_metric_label": [
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:nth_highest_metric_in_section_label": [
+      "target_section",
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:nth_lowest_metric_in_section_label": [
+      "target_section",
       "rank_ordinal",
       "rank_direction",
       "rank_order_phrase"
@@ -56,19 +172,19 @@
       "target_section",
       "target_label"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -76,15 +192,36 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
+    "mixed_infographic_page": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This page shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "hero_callout_infographic": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This infographic shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "sectioned_infographic": [
+      "The page shows a sectioned infographic with named sections and short visible item rows.",
+      "This page shows a sectioned infographic with named sections and compact listed items.",
+      "The figure shows a sectioned infographic with topic headers and visible item rows.",
+      "The visual shows a sectioned infographic with grouped checklist-style item rows.",
+      "The page contains a sectioned infographic with named topic panels and listed items."
+    ],
     "infographic_metric_arithmetic": [
       "The image shows a multi-section infographic with labeled metric cards and printed values.",
       "The image shows a multi-section infographic with labeled metric cards and printed values.",
@@ -94,6 +231,97 @@
     ]
   },
   "query_templates": {
+    "module_field_value_label": [
+      "In module {module_title}, what value is shown for item {item_label} under field {field_label}?",
+      "Find module {module_title}. For {item_label}, read the value in the {field_label} field.",
+      "Within {module_title}, what visible value is paired with {item_label} and {field_label}?",
+      "Using the {field_label} field in module {module_title}, what value is listed for {item_label}?",
+      "Read the value where item {item_label} and field {field_label} meet in module {module_title}."
+    ],
+    "module_field_extremum_item_label": [
+      "In module {module_title}, which item has the {rank_direction} visible value under field {field_label}?",
+      "Find module {module_title}. For field {field_label}, what item label has the {rank_direction} value?",
+      "Within {module_title}, read the item label paired with the {rank_direction} {field_label} value.",
+      "Using the {field_label} field in module {module_title}, which item is {rank_direction}?",
+      "What item label in module {module_title} has the {rank_direction} value for {field_label}?"
+    ],
+    "module_field_ranked_item_label": [
+      "In module {module_title}, which item has the {rank_ordinal} {rank_direction} visible value under field {field_label}?",
+      "Find module {module_title}. For field {field_label}, what item label is {rank_ordinal} when ordered {rank_order_phrase}?",
+      "Within {module_title}, read the item label paired with the {rank_ordinal} {rank_direction} {field_label} value.",
+      "Using the {field_label} field in module {module_title}, which item ranks {rank_ordinal} by {rank_direction} value?",
+      "What item label in module {module_title} is {rank_ordinal} in {rank_order_phrase} order for {field_label}?"
+    ],
+    "page_field_extremum_module_label": [
+      "Across the page, which module has the {rank_direction} visible value for field {field_label}?",
+      "Scan all modules that show field {field_label}. What module title contains the {rank_direction} value?",
+      "For the shared field {field_label}, which module has the {rank_direction} value across the page?",
+      "Using all visible modules with field {field_label}, which module title has the {rank_direction} value?",
+      "When the {field_label} values are ordered {rank_order_phrase} across modules, which module title is first?"
+    ],
+    "module_two_field_condition_item_label": [
+      "In module {module_title}, which item has {numeric_field_label} {condition_phrase} {threshold_value} and {category_field_label} equal to {category_value}?",
+      "Find module {module_title}. What item label matches both {numeric_field_label} {condition_phrase} {threshold_value} and {category_field_label} = {category_value}?",
+      "Within {module_title}, read the item whose {numeric_field_label} is {condition_phrase} {threshold_value} and whose {category_field_label} is {category_value}.",
+      "Using module {module_title}, which item satisfies {numeric_field_label} {condition_phrase} {threshold_value} with {category_field_label} {category_value}?",
+      "What item label in module {module_title} matches the two conditions: {numeric_field_label} {condition_phrase} {threshold_value} and {category_field_label} = {category_value}?"
+    ],
+    "module_condition_item_count": [
+      "In module {module_title}, how many items have {field_label} {condition_phrase} {threshold_value}?",
+      "Find module {module_title}. Count the items whose {field_label} value is {condition_phrase} {threshold_value}.",
+      "Within {module_title}, what is the number of items with {field_label} {condition_phrase} {threshold_value}?",
+      "Using field {field_label} in module {module_title}, count the items {condition_phrase} {threshold_value}.",
+      "How many item values in module {module_title} are {condition_phrase} {threshold_value} for {field_label}?"
+    ],
+    "module_field_total_value": [
+      "In module {module_title}, what is the total of all visible {field_label} values?",
+      "Find module {module_title}. Add every item value under field {field_label}.",
+      "Within {module_title}, what sum do you get from the {field_label} values?",
+      "Using the {field_label} field in module {module_title}, compute the total across all items.",
+      "What is the combined value for field {field_label} in module {module_title}?"
+    ],
+    "two_module_field_total_comparison_module_label": [
+      "Compare modules {module_a_title} and {module_b_title}. Which module has the larger total for field {field_label}?",
+      "For field {field_label}, add the visible values in {module_a_title} and in {module_b_title}. Which module title has the larger total?",
+      "Between {module_a_title} and {module_b_title}, which module has the greater sum of {field_label} values?",
+      "Using the {field_label} field, total the listed values in modules {module_a_title} and {module_b_title}. Which module is larger?",
+      "Which of {module_a_title} or {module_b_title} has the higher total when all visible {field_label} values are summed?"
+    ],
+    "callout_field_value_label": [
+      "In callout {callout_title}, what value is shown for field {field_label}?",
+      "Find callout {callout_title}. What visible value is paired with field {field_label}?",
+      "Within {callout_title}, read the value shown in field {field_label}.",
+      "Using the {field_label} field in callout {callout_title}, what value is listed?",
+      "What value appears beside field {field_label} in callout {callout_title}?"
+    ],
+    "callout_metric_extremum_label": [
+      "Across the callout cards, which callout has the {rank_direction} visible value for field {field_label}?",
+      "For field {field_label}, what callout title contains the {rank_direction} value?",
+      "Scan the callout cards that show {field_label}. Which callout is {rank_direction}?",
+      "Using all visible {field_label} values, identify the callout title with the {rank_direction} value.",
+      "When the {field_label} values are ordered {rank_order_phrase}, which callout title is first?"
+    ],
+    "callout_condition_count": [
+      "How many callout cards have {field_label} {condition_phrase} {threshold_value}?",
+      "Count the callouts whose {field_label} value is {condition_phrase} {threshold_value}.",
+      "Across the callout cards, what is the number with {field_label} {condition_phrase} {threshold_value}?",
+      "Using field {field_label}, count the callout values that are {condition_phrase} {threshold_value}.",
+      "What count of callout cards satisfies {field_label} {condition_phrase} {threshold_value}?"
+    ],
+    "section_item_count": [
+      "How many visible item rows are listed in section {target_section}?",
+      "In section {target_section}, how many listed items are visible?",
+      "Count the item rows shown under section {target_section}.",
+      "What is the number of visible listed items in section {target_section}?",
+      "Using section {target_section}, count the visible items in that section."
+    ],
+    "section_filtered_item_label": [
+      "In section {target_section}, what item label has the {filter_marker_label}?",
+      "Find section {target_section}. Which listed item is marked with the {filter_marker_label}?",
+      "What is the visible item label next to the {filter_marker_label} in section {target_section}?",
+      "Using section {target_section}, read the item label with the {filter_marker_label}.",
+      "Within section {target_section}, which item is paired with the {filter_marker_label}?"
+    ],
     "sum_named_metrics": [
       "What is the sum of the values for {target_labels}?",
       "Add the printed values for {target_labels}. What is the total?",
@@ -128,6 +356,34 @@
       "Which section ranks {rank_ordinal} when the section totals are ordered from {rank_order_phrase}?",
       "Using the total of each section, identify the section with the {rank_ordinal} {rank_direction} total.",
       "What is the section label for the {rank_ordinal} {rank_direction} section total?"
+    ],
+    "nth_highest_metric_label": [
+      "Which metric card has the {rank_ordinal} {rank_direction} printed value?",
+      "Order all metric-card values from {rank_order_phrase}. What card label is {rank_ordinal}?",
+      "Across the whole infographic, which metric label is {rank_ordinal} when values are sorted from {rank_order_phrase}?",
+      "Using every metric card, identify the label with the {rank_ordinal} {rank_direction} value.",
+      "What is the card label for the {rank_ordinal} {rank_direction} printed metric value?"
+    ],
+    "nth_lowest_metric_label": [
+      "Which metric card has the {rank_ordinal} {rank_direction} printed value?",
+      "Order all metric-card values from {rank_order_phrase}. What card label is {rank_ordinal}?",
+      "Across the whole infographic, which metric label is {rank_ordinal} when values are sorted from {rank_order_phrase}?",
+      "Using every metric card, identify the label with the {rank_ordinal} {rank_direction} value.",
+      "What is the card label for the {rank_ordinal} {rank_direction} printed metric value?"
+    ],
+    "nth_highest_metric_in_section_label": [
+      "In section {target_section}, which metric card has the {rank_ordinal} {rank_direction} printed value?",
+      "Within section {target_section}, order the metric-card values from {rank_order_phrase}. What card label is {rank_ordinal}?",
+      "Looking only at section {target_section}, which metric label is {rank_ordinal} when values are sorted from {rank_order_phrase}?",
+      "Using the cards in section {target_section}, identify the label with the {rank_ordinal} {rank_direction} value.",
+      "What is the metric-card label for the {rank_ordinal} {rank_direction} printed value in section {target_section}?"
+    ],
+    "nth_lowest_metric_in_section_label": [
+      "In section {target_section}, which metric card has the {rank_ordinal} {rank_direction} printed value?",
+      "Within section {target_section}, order the metric-card values from {rank_order_phrase}. What card label is {rank_ordinal}?",
+      "Looking only at section {target_section}, which metric label is {rank_ordinal} when values are sorted from {rank_order_phrase}?",
+      "Using the cards in section {target_section}, identify the label with the {rank_ordinal} {rank_direction} value.",
+      "What is the metric-card label for the {rank_ordinal} {rank_direction} printed value in section {target_section}?"
     ],
     "section_icon_total_value": [
       "In section {target_section}, what is the sum of the values on cards using the {filter_icon_kind} icon?",
@@ -166,7 +422,7 @@
     ],
     "detail_for_named_item": [
       "In section {target_section}, what reference code is printed on the card labeled {target_label}?",
-      "Look at the {target_label} card in section {target_section}. What Ref code is printed on it?",
+      "In section {target_section}, what Ref code is printed on the {target_label} card?",
       "What reference code appears on the {target_label} metric card in section {target_section}?",
       "Find card {target_label} within section {target_section}. What reference code is shown?",
       "Within section {target_section}, read the Ref code printed on {target_label}."

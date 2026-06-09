@@ -12,7 +12,7 @@
 2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `arithmetic_progression`.
 4. Answer type: `answer_gt.type = integer`.
-5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the missing box in final image pixel coordinates).
+5. Annotation type: `annotation_gt.type = bbox_set` (exactly one box: the missing box in final image pixel coordinates).
 6. Sequence policy: the hidden counts follow one arithmetic progression with integer step `±1..±3`; the missing answer is sampled from `0..10`, and every visible count stays in `0..10`.
 7. Missing-position policy: the missing box may appear at any sequence position, including either end; default sampling cycles across feasible missing positions instead of favoring the leftmost box.
 8. Asset policy: the shared sequence icon is drawn from the curated `assets/icons/all_icons.txt` icon pool, and every visible icon keeps that same icon type.
@@ -26,12 +26,12 @@
 1. `prompt_bundle_id`: `icons_sequence_v0`
 2. `scene_key`: `sequence_missing_count`
 3. `task_key`: `missing_count_query`
-4. Answer+evidence JSON shape: `{"evidence":[[540,126,654,458]],"answer":5}`
+4. Answer+annotation JSON shape: `{"annotation":[[540,126,654,458]],"answer":5}`
 5. Answer-only JSON shape: `{"answer":5}`
 6. Required slots:
    - shared: `object_description`, `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
 7. Variant counts (scene/task/mode): exactly 5 templates per required key.
 8. Prompt style: the scene stem establishes the sequence-row layout; task wording asks only for the missing count that continues the sequence.
 
@@ -40,7 +40,7 @@
 2. Unique-answer policy: the hidden count is sampled first from the configured support, then one feasible `(missing_index, step_delta)` combination is chosen so the full arithmetic progression is uniquely determined.
 3. Reject/resample conditions: unsupported count/length/step config, missing curated assets, or per-cell placement failures under the overlap cap.
 4. No-auto-relaxation guarantee: generation fails on unmet sequence/placement constraints instead of weakening the arithmetic rule or overlap threshold.
-5. Evidence scope: the user-facing `bbox_set` contains only the missing box; the full sequence counts and visible per-cell icon placements stay in trace metadata.
+5. Annotation scope: the user-facing `bbox_set` contains only the missing box; the full sequence counts and visible per-cell icon placements stay in trace metadata.
 6. Trace style metadata records the sampled single-tint palette, icon-noise config, sampled row box width/height, sequence-cell styling, panel text-legibility metadata, and final per-instance nominal sizes/rotations/noise edits.
 7. Balanced defaults: seeded sampling balances the missing answer support `0..10`, row length support `4..6`, feasible missing positions, and arithmetic-step support.
 
@@ -53,6 +53,6 @@
 ## Current Review Status
 Current browser-review sidecars live under
 `review/task-reviews/icons/sequence_strip/task_icons__sequence_strip__missing_count_value/`.
-Public evidence uses the shared icon `bbox_set` payload over the missing
+Public annotation uses the shared icon `bbox_set` payload over the missing
 sequence cell only. Solve-rate status is tracked in
 `review/calibration_sweep_status.json`.

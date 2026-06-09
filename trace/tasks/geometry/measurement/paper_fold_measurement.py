@@ -32,6 +32,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -106,6 +108,7 @@ class _RenderContext:
     font: Any
     small_font: Any
     point_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -136,8 +139,8 @@ class _RenderedPaperFoldScene:
     answer: float
     query_id: str
     scene_variant: str
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
@@ -148,14 +151,9 @@ def _fmt_angle(value: float) -> str:
     return f"{_fmt_number(value)}{DEGREE_SYMBOL}"
 
 
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    selected_key = f"{float(selected):.1f}"
-    return {f"{float(value):.1f}": (1.0 if f"{float(value):.1f}" == selected_key else 0.0) for value in values}
-
-
 def _draw_point_label(ctx: _RenderContext, label: str, point: Point, offset: Point) -> BBox:
     center = (float(point[0]) + float(offset[0]), float(point[1]) + float(offset[1]))
-    bbox = ctx.draw.textbbox((0, 0), str(label), font=ctx.point_font, stroke_width=2)
+    bbox = ctx.draw.textbbox((0, 0), str(label), font=ctx.point_font, stroke_width=1)
     text_w = float(bbox[2] - bbox[0])
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
@@ -165,7 +163,7 @@ def _draw_point_label(ctx: _RenderContext, label: str, point: Point, offset: Poi
         str(label),
         font=ctx.point_font,
         fill=ctx.label_color,
-        stroke_width=2,
+        stroke_width=1,
         stroke_fill=ctx.label_stroke_color,
      role="readout", required=False,)
     return _pad_bbox((left, top, left + text_w, top + text_h), 3.0, width=ctx.width, height=ctx.height)
@@ -331,7 +329,11 @@ def _resolve_problem(
             "reasoning_steps": int(reasoning_steps),
         },
         query_probabilities=dict(query_probabilities),
-        support_probabilities=_selected_probability_map(support_values, answer),
+        support_probabilities=_selected_probability_map(
+            support_values,
+            answer,
+            key_fn=lambda value: f"{float(value):.1f}",
+        ),
     )
 
 
@@ -360,9 +362,12 @@ def _render_paper_fold_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> 
     e = pt(0.0, upper)
     f = pt(crease_top_x, 0.0)
     p = pt(offset, height)
+    ctx.scene_transform.resolve((a, b, c, d, e, f, p))
+    a, b, c, d, e, f, p = ctx.scene_transform.points((a, b, c, d, e, f, p))
 
     paper_bbox = _bbox_from_points((a, b, c, d), width=ctx.width, height=ctx.height, pad=0.0)
-    ctx.draw.rectangle(paper_bbox, fill=ctx.paper_fill_color, outline=ctx.line_color, width=ctx.line_width)
+    ctx.draw.polygon((a, b, c, d), fill=ctx.paper_fill_color)
+    ctx.draw.line((a, b, c, d, a), fill=ctx.line_color, width=ctx.line_width)
 
     overlay = Image.new("RGBA", ctx.image.size, (0, 0, 0, 0))
     overlay_draw = ImageDraw.Draw(overlay)
@@ -393,33 +398,35 @@ def _render_paper_fold_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> 
     _draw_point_label(ctx, "P", p, (0.0, 20.0))
 
     label_bboxes: Dict[str, BBox] = {}
-    evidence_roles: Tuple[str, ...]
+    annotation_roles: Tuple[str, ...]
     target_role = str(problem.params["target_role"])
-    theta_original = -90.0
-    theta_crease = -math.degrees(math.atan(offset / height))
-    theta_folded = -90.0 + 2.0 * (90.0 - math.degrees(math.atan(offset / height)))
+    rotation_degrees = float(ctx.scene_transform.transform.angle_degrees)
+    radius_scale = float(ctx.scene_transform.transform.scale)
+    theta_original = -90.0 + rotation_degrees
+    theta_crease = -math.degrees(math.atan(offset / height)) + rotation_degrees
+    theta_folded = -90.0 + 2.0 * (90.0 - math.degrees(math.atan(offset / height))) + rotation_degrees
     label_bboxes["known_angle"] = _draw_angle_arc(
         ctx,
         e,
         start_degrees=theta_original,
         end_degrees=theta_folded,
-        radius=78.0,
+        radius=78.0 * radius_scale,
         label=_fmt_angle(float(problem.params["known_angle_degrees"])),
         color=ctx.crease_color,
-        label_radius=106.0,
+        label_radius=106.0 * radius_scale,
     )
     label_bboxes["target"] = _draw_angle_arc(
         ctx,
         e,
         start_degrees=theta_crease,
         end_degrees=theta_folded,
-        radius=42.0,
+        radius=42.0 * radius_scale,
         label="x",
         color=ctx.crease_color,
-        label_radius=62.0,
+        label_radius=62.0 * radius_scale,
     )
-    evidence_roles = (target_role, "known_angle_label")
-    evidence_bboxes = (label_bboxes["target"], label_bboxes["known_angle"])
+    annotation_roles = (target_role, "known_angle_label")
+    annotation_bboxes = (label_bboxes["target"], label_bboxes["known_angle"])
 
     folded_bbox = _bbox_from_points((e, f, p), width=ctx.width, height=ctx.height, pad=8.0)
     original_fold_bbox = _bbox_from_points((a, e, f), width=ctx.width, height=ctx.height, pad=8.0)
@@ -460,12 +467,12 @@ def _render_paper_fold_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> 
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         scene_entities=scene_entities,
         render_map={
-            "target_bbox": _bbox_to_list(evidence_bboxes[0]),
-            "support_bboxes": [_bbox_to_list(bbox) for bbox in evidence_bboxes[1:]],
+            "target_bbox": _bbox_to_list(annotation_bboxes[0]),
+            "support_bboxes": [_bbox_to_list(bbox) for bbox in annotation_bboxes[1:]],
             "paper_bbox": _bbox_to_list(paper_bbox),
             "folded_flap_bbox": _bbox_to_list(folded_bbox),
             "original_corner_bbox": _bbox_to_list(original_fold_bbox),
@@ -493,6 +500,7 @@ class _PaperFoldMeasurementBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "paper_fold_measurement"
@@ -552,6 +560,13 @@ class _PaperFoldMeasurementBaseTask:
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
             point_font=load_font(max(10, int(point_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -574,8 +589,8 @@ class _PaperFoldMeasurementBaseTask:
         else:
             precision = 0.76
             ambiguity = 0.54
-        visual_scan = clamp_unit_interval(0.42 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4) * 0.18)
-        output_burden = clamp_unit_interval(0.44 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4) * 0.16)
+        visual_scan = clamp_unit_interval(0.42 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=4) * 0.18)
+        output_burden = clamp_unit_interval(0.44 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=4) * 0.16)
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -610,6 +625,7 @@ class _PaperFoldMeasurementBaseTask:
                 )
                 rendered = _render_paper_fold_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -632,7 +648,7 @@ class _PaperFoldMeasurementBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -646,12 +662,12 @@ class _PaperFoldMeasurementBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -660,16 +676,16 @@ class _PaperFoldMeasurementBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.scene_variant),
@@ -687,7 +703,7 @@ class _PaperFoldMeasurementBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.scene_variant),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -717,7 +733,7 @@ class _PaperFoldMeasurementBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": int(rendered.reasoning_steps),
                 **dict(rendered.witness),
             },
@@ -727,21 +743,21 @@ class _PaperFoldMeasurementBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

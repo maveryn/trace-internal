@@ -225,6 +225,12 @@ samples/
 
 # External asset bundles
 assets/external/kenney/raw/
+!assets/illustrations/external/
+!assets/illustrations/external/kenney/
+!assets/illustrations/external/kenney/top_down_shooter/
+!assets/illustrations/external/kenney/top_down_shooter/**
+assets/illustrations/external/kenney/top_down_shooter/raw/
+assets/illustrations/external/kenney/top_down_shooter/*.zip
 
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
@@ -236,6 +242,15 @@ review/*
 !review/docs/**
 !review/code-review/
 !review/code-review/**
+!review/taxonomy-audit/
+!review/taxonomy-audit/**
+!review/trace-extension/
+review/trace-extension/*
+!review/trace-extension/charts/
+review/trace-extension/charts/*
+!review/trace-extension/charts/charxiv/
+review/trace-extension/charts/charxiv/*
+!review/trace-extension/charts/charxiv/CHARXIV_EXPANSION_REPORT.md
 !review/task-reviews/
 review/task-reviews/*
 !review/task-reviews/README.md

@@ -16,7 +16,7 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_style import sample_icon_palette
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
@@ -39,15 +39,27 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 
 
-TASK_ID = "task_icons__named_field__shape_counterfactual_count"
+COUNTERFACTUAL_ATTRIBUTE_TASK_ID = "task_icons__named_field__counterfactual_attribute_count"
+COUNTERFACTUAL_TOTAL_TASK_ID = "task_icons__named_field__counterfactual_total_count"
+
+TASK_ID = COUNTERFACTUAL_ATTRIBUTE_TASK_ID
 
 QUERY_IDS: Tuple[str, ...] = (
     "target_count_after_shape_replacement",
     "total_count_after_shape_removal",
     "target_count_after_remove_and_replace",
 )
+
+QUERY_IDS_BY_TASK_ID: Dict[str, Tuple[str, ...]] = {
+    COUNTERFACTUAL_ATTRIBUTE_TASK_ID: (
+        "target_count_after_shape_replacement",
+        "target_count_after_remove_and_replace",
+    ),
+    COUNTERFACTUAL_TOTAL_TASK_ID: ("total_count_after_shape_removal",),
+}
 
 _NON_STACK_LAYOUT_MODES: Tuple[str, ...] = (
     "jittered_grid",
@@ -455,7 +467,7 @@ def _counted_instance_ids(sample: _SampleSpec) -> Tuple[str, ...]:
     )
 
 
-def _evidence_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[list[int]]:
+def _annotation_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[list[int]]:
     counted = set(_counted_instance_ids(sample))
     return sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in instances if str(instance.instance_id) in counted))
 
@@ -512,15 +524,28 @@ def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any]) -> Tas
     )
 
 
-@register_task
-class IconsCountingNamedShapeCounterfactualCountTask:
+def _params_for_public_task(params: Mapping[str, Any], *, task_id: str, query_ids: Sequence[str]) -> Dict[str, Any]:
+    resolved = dict(params)
+    allowed = tuple(str(query_id) for query_id in query_ids)
+    if not allowed:
+        raise ValueError(f"{task_id} must expose at least one query id")
+    requested = resolved.get("query_id", resolved.get("counterfactual_query_id"))
+    if requested is not None and str(requested) not in set(allowed):
+        raise ValueError(f"{task_id} only supports query_id values {allowed}")
+    resolved["counterfactual_query_ids"] = list(allowed)
+    return resolved
+
+
+class _IconsCountingNamedShapeCounterfactualCountTaskBase:
     """Count procedural named icons after a hypothetical removal or replacement."""
 
     task_id = TASK_ID
     domain = "icons"
     task_group = "counting"
+    query_ids: Tuple[str, ...] = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        params = _params_for_public_task(params, task_id=str(self.task_id), query_ids=tuple(self.query_ids))
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
@@ -578,11 +603,11 @@ class IconsCountingNamedShapeCounterfactualCountTask:
         if scene is None or sample is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        evidence_bboxes = _evidence_bboxes(sample, scene.instances)
+        annotation_bboxes = _annotation_bboxes(sample, scene.instances)
         counted_instance_ids = _counted_instance_ids(sample)
-        if len(evidence_bboxes) != int(sample.target_answer):
+        if len(annotation_bboxes) != int(sample.target_answer):
             raise RuntimeError("rendered counterfactual named-icon count did not match target answer")
-        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
 
         question_key = f"question_text_{sample.query_id}"
         prompt_defaults = required_group_defaults(
@@ -595,7 +620,7 @@ class IconsCountingNamedShapeCounterfactualCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 question_key,
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -608,7 +633,7 @@ class IconsCountingNamedShapeCounterfactualCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[question_key]).format(
@@ -618,7 +643,7 @@ class IconsCountingNamedShapeCounterfactualCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -755,16 +780,16 @@ class IconsCountingNamedShapeCounterfactualCountTask:
                 "remove_shape_id": str(sample.remove_shape_id),
                 "remove_shape_name": str(sample.remove_shape_name),
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
             },
         }
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",
@@ -775,6 +800,32 @@ class IconsCountingNamedShapeCounterfactualCountTask:
             query_id=str(sample.query_id),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(sample.query_id),
+            scene_id=SCENE_ID,
+            task_id=str(self.task_id),
+            query_probabilities=dict(sample.query_probabilities),
+        )
 
 
-__all__ = ["IconsCountingNamedShapeCounterfactualCountTask"]
+@register_task
+class IconsNamedFieldCounterfactualAttributeCountTask(_IconsCountingNamedShapeCounterfactualCountTaskBase):
+    """Count target-shape icons after a hypothetical shape replacement/removal."""
+
+    task_id = COUNTERFACTUAL_ATTRIBUTE_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[COUNTERFACTUAL_ATTRIBUTE_TASK_ID]
+
+
+@register_task
+class IconsNamedFieldCounterfactualTotalCountTask(_IconsCountingNamedShapeCounterfactualCountTaskBase):
+    """Count total icons after a hypothetical shape removal."""
+
+    task_id = COUNTERFACTUAL_TOTAL_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[COUNTERFACTUAL_TOTAL_TASK_ID]
+
+
+__all__ = [
+    "IconsNamedFieldCounterfactualAttributeCountTask",
+    "IconsNamedFieldCounterfactualTotalCountTask",
+]

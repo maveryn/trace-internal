@@ -16,8 +16,8 @@ Query ids:
 - `grid_size_violation`
 
 Answer schema: integer numbered-box index.
-Evidence schema: one-box `bbox_set` around the violating numbered box.
-Projected evidence uses the shared icon bbox evidence shape with `type`,
+Annotation schema: one-box `bbox_set` around the violating numbered box.
+Projected annotation uses the shared icon bbox annotation shape with `type`,
 `bbox_set`, `pixel_bbox_set`, and `pixel_point_set`.
 
 ## Notes

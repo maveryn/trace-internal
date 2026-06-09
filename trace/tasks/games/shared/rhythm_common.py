@@ -53,7 +53,7 @@ class RhythmSample:
     target_color_key: str | None
     answer: int
     notes: Tuple[RhythmNote, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 
@@ -88,7 +88,7 @@ def occupied_cells(note: RhythmNote) -> Tuple[int, ...]:
 
 
 def validate_rhythm_sample(sample: RhythmSample) -> None:
-    """Validate generated answer/evidence against the active rhythm query."""
+    """Validate generated answer/annotation against the active rhythm query."""
 
     if int(sample.lane_count) <= 0:
         raise ValueError("rhythm lane_count must be positive")
@@ -119,12 +119,12 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             occupied.add(cell)
 
     known_entities = set(note_ids) | {lane_entity_id(lane) for lane in range(int(sample.lane_count))}
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("rhythm evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("rhythm annotation references unknown entities")
 
     query = str(sample.query_id)
     by_id = {str(note.note_id): note for note in sample.notes}
-    evidence_ids = tuple(str(entity_id) for entity_id in sample.evidence_entity_ids)
+    annotation_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
 
     if query == "lane_hit_count":
         if sample.selected_lane_index is None:
@@ -136,7 +136,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             and note_hits_in_window(note, int(sample.beat_window))
         )
         expected_answer = len(expected_notes)
-        expected_evidence = tuple(str(note.note_id) for note in expected_notes)
+        expected_annotation = tuple(str(note.note_id) for note in expected_notes)
     elif query == "lane_color_hit_count":
         if sample.selected_lane_index is None or sample.target_color_key is None:
             raise ValueError("lane_color_hit_count requires selected lane and target color")
@@ -148,7 +148,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             and note_hits_in_window(note, int(sample.beat_window))
         )
         expected_answer = len(expected_notes)
-        expected_evidence = tuple(str(note.note_id) for note in expected_notes)
+        expected_annotation = tuple(str(note.note_id) for note in expected_notes)
     elif query == "most_hits_lane_label":
         hit_counts = []
         for lane in range(int(sample.lane_count)):
@@ -169,7 +169,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             for note in sample.notes
             if int(note.lane_index) == int(winning_lane) and note_hits_in_window(note, int(sample.beat_window))
         )
-        expected_evidence = tuple(str(note.note_id) for note in expected_notes)
+        expected_annotation = tuple(str(note.note_id) for note in expected_notes)
     elif query == "earliest_hit_lane_label":
         earliest_by_lane: list[int | None] = []
         for lane in range(int(sample.lane_count)):
@@ -193,17 +193,17 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             if int(note.lane_index) == int(winning_lane) and int(note.bottom_row) == int(earliest)
         ]
         if len(earliest_notes) != 1:
-            raise ValueError("earliest_hit_lane_label requires one evidence note")
-        expected_evidence = (str(earliest_notes[0].note_id),)
+            raise ValueError("earliest_hit_lane_label requires one annotation note")
+        expected_annotation = (str(earliest_notes[0].note_id),)
     else:
         raise ValueError(f"unsupported rhythm query_id: {sample.query_id}")
 
     if int(sample.answer) != int(expected_answer):
         raise ValueError("rhythm answer does not match active query")
-    if set(evidence_ids) != set(expected_evidence):
-        raise ValueError("rhythm evidence ids do not match active query")
-    if any(entity_id not in by_id for entity_id in evidence_ids):
-        raise ValueError("rhythm public evidence must reference notes")
+    if set(annotation_ids) != set(expected_annotation):
+        raise ValueError("rhythm annotation ids do not match active query")
+    if any(entity_id not in by_id for entity_id in annotation_ids):
+        raise ValueError("rhythm public annotation must reference notes")
 
 
 __all__ = [

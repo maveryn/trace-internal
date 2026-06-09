@@ -17,6 +17,9 @@
     "query:clear_shot_count": [
       "space_shooter_lane_rule_text"
     ],
+    "query:clear_shot_score_value": [
+      "space_shooter_lane_rule_text"
+    ],
     "query:projectile_intercept_count": [
       "space_shooter_lane_rule_text"
     ],
@@ -26,19 +29,19 @@
     "query:safe_lane_count": [
       "space_shooter_lane_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -46,12 +49,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -70,6 +73,13 @@
       "Count the enemy ships that are not blocked below by another enemy ship, shield, or asteroid in their lane. {space_shooter_lane_rule_text}",
       "{space_shooter_lane_rule_text} A clear-shot enemy has no lower enemy ship, shield, or asteroid in its lane. How many clear-shot enemies are shown?",
       "For each lane, count only the lowest enemy ship if no shield or asteroid is below it. {space_shooter_lane_rule_text} What is the total?"
+    ],
+    "clear_shot_score_value": [
+      "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. What is the total score from clear-shot enemies?",
+      "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. Add the values on enemy ships with no enemy ship, shield, or asteroid below them in the same lane.",
+      "Clear-shot enemies score their printed value. {space_shooter_lane_rule_text} Enemy shots do not block this score. What is the total?",
+      "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. For each lane, score only the lowest enemy ship if no shield or asteroid is below it.",
+      "Clear-shot enemies score their printed value. Clear-shot enemies have no lower enemy ship, shield, or asteroid in their lane. {space_shooter_lane_rule_text} Sum their printed values."
     ],
     "projectile_intercept_count": [
       "{space_shooter_lane_rule_text} Count enemy shots in the same lane as the player ship.",

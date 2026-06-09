@@ -41,10 +41,17 @@ from ..shared.library_task_common import (
 )
 
 
-TASK_ID = "task_illustrations__library__section_book_count"
+TASK_ID = "private_library_book_count"
 SCENE_ID = "library"
 QUERY_IDS: Tuple[str, ...] = (
     "books_in_section_count",
+    "book_color_in_section_count",
+    "upright_book_in_section_count",
+    "horizontal_book_in_section_count",
+)
+BOOKS_IN_SECTION_TASK_ID = "task_illustrations__library__books_in_section_count"
+FILTERED_BOOK_TASK_ID = "task_illustrations__library__filtered_book_in_section_count"
+FILTERED_QUERY_IDS: Tuple[str, ...] = (
     "book_color_in_section_count",
     "upright_book_in_section_count",
     "horizontal_book_in_section_count",
@@ -409,7 +416,7 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
 def _prompt_keys_and_slots(sample: _SampleSpec, prompt_defaults: Mapping[str, Any]) -> Dict[str, str | int]:
     if sample.query_id == "books_in_section_count":
         answer_hint = str(prompt_defaults["answer_hint_books_in_section"]).format(section_name=str(sample.section_name))
-        evidence_hint = str(prompt_defaults["evidence_hint_books_in_section"]).format(section_name=str(sample.section_name))
+        annotation_hint = str(prompt_defaults["annotation_hint_books_in_section"]).format(section_name=str(sample.section_name))
         json_example = str(prompt_defaults["json_example_books_in_section"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only_books_in_section"])
     elif sample.query_id == "book_color_in_section_count":
@@ -417,7 +424,7 @@ def _prompt_keys_and_slots(sample: _SampleSpec, prompt_defaults: Mapping[str, An
             color_label=str(sample.color_label),
             section_name=str(sample.section_name),
         )
-        evidence_hint = str(prompt_defaults["evidence_hint_book_color"]).format(
+        annotation_hint = str(prompt_defaults["annotation_hint_book_color"]).format(
             color_label=str(sample.color_label),
             section_name=str(sample.section_name),
         )
@@ -428,7 +435,7 @@ def _prompt_keys_and_slots(sample: _SampleSpec, prompt_defaults: Mapping[str, An
             orientation_name=str(sample.orientation_name),
             section_name=str(sample.section_name),
         )
-        evidence_hint = str(prompt_defaults["evidence_hint_book_orientation"]).format(
+        annotation_hint = str(prompt_defaults["annotation_hint_book_orientation"]).format(
             orientation_name=str(sample.orientation_name),
             section_name=str(sample.section_name),
         )
@@ -442,14 +449,13 @@ def _prompt_keys_and_slots(sample: _SampleSpec, prompt_defaults: Mapping[str, An
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(answer_hint),
-        "evidence_hint": str(evidence_hint),
+        "annotation_hint": str(annotation_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
 
 
-@register_task
-class IllustrationsCountingLibraryBookCountTask:
+class _LibraryBookCountImpl:
     """Count library books by section, color, or orientation."""
 
     task_id = TASK_ID
@@ -508,7 +514,7 @@ class IllustrationsCountingLibraryBookCountTask:
             )
         if len(counted_book_ids) != int(sample.target_count):
             raise RuntimeError("rendered library book count did not match sample target")
-        evidence_value = sort_library_bboxes(book_bbox_map(scene), counted_book_ids)
+        annotation_value = sort_library_bboxes(book_bbox_map(scene), counted_book_ids)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -519,15 +525,15 @@ class IllustrationsCountingLibraryBookCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_books_in_section",
-                "evidence_hint_books_in_section",
+                "annotation_hint_books_in_section",
                 "json_example_books_in_section",
                 "json_example_answer_only_books_in_section",
                 "answer_hint_book_color",
-                "evidence_hint_book_color",
+                "annotation_hint_book_color",
                 "json_example_book_color",
                 "json_example_answer_only_book_color",
                 "answer_hint_book_orientation",
-                "evidence_hint_book_orientation",
+                "annotation_hint_book_orientation",
                 "json_example_book_orientation",
                 "json_example_answer_only_book_orientation",
             ],
@@ -543,8 +549,8 @@ class IllustrationsCountingLibraryBookCountTask:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -620,13 +626,13 @@ class IllustrationsCountingLibraryBookCountTask:
                 "target_orientation": sample.orientation,
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -637,4 +643,88 @@ class IllustrationsCountingLibraryBookCountTask:
         )
 
 
-__all__ = ["IllustrationsCountingLibraryBookCountTask", "_sample_spec"]
+def _generate_public_library_count(
+    *,
+    public_task_id: str,
+    query_ids: Tuple[str, ...],
+    branch_id: str,
+    instance_seed: int,
+    params: Dict[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    requested_query = params.get("query_id")
+    if requested_query is not None and str(requested_query) not in set(query_ids):
+        raise ValueError(f"query_id must be one of {query_ids} for {public_task_id}")
+    branch_params = dict(params)
+    branch_params["query_id_support"] = list(query_ids)
+    output = _LibraryBookCountImpl().generate(
+        int(instance_seed),
+        params=branch_params,
+        max_attempts=int(max_attempts),
+    )
+    trace_payload = output.trace_payload
+    query_spec = trace_payload.setdefault("query_spec", {})
+    if isinstance(query_spec, dict):
+        query_spec["task_id"] = str(public_task_id)
+        query_spec["branch_id"] = str(branch_id)
+    scene_ir = trace_payload.setdefault("scene_ir", {})
+    if isinstance(scene_ir, dict):
+        relations = scene_ir.setdefault("relations", {})
+        if isinstance(relations, dict):
+            relations["branch_id"] = str(branch_id)
+    execution_trace = trace_payload.setdefault("execution_trace", {})
+    if isinstance(execution_trace, dict):
+        execution_trace["public_task_id"] = str(public_task_id)
+        execution_trace["branch_id"] = str(branch_id)
+    output.trace_payload = trace_payload
+    return output
+
+
+@register_task
+class IllustrationsCountingBooksInSectionCountTask:
+    """Count all books in one named library section."""
+
+    task_id = BOOKS_IN_SECTION_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        branch_params = dict(params)
+        if "query_id" not in branch_params:
+            branch_params["query_id"] = "books_in_section_count"
+        return _generate_public_library_count(
+            public_task_id=self.task_id,
+            query_ids=("books_in_section_count",),
+            branch_id="books_in_section",
+            instance_seed=int(instance_seed),
+            params=branch_params,
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class IllustrationsCountingFilteredBookInSectionCountTask:
+    """Count books in one library section filtered by color or orientation."""
+
+    task_id = FILTERED_BOOK_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_library_count(
+            public_task_id=self.task_id,
+            query_ids=FILTERED_QUERY_IDS,
+            branch_id="filtered_book_in_section",
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+__all__ = [
+    "IllustrationsCountingBooksInSectionCountTask",
+    "IllustrationsCountingFilteredBookInSectionCountTask",
+    "_sample_spec",
+]

@@ -81,7 +81,7 @@ def _register_dummy_tasks() -> None:
                 return TaskOutput(
                     prompt="dummy weighted a",
                     answer_gt=TypedValue(type="integer", value=1),
-                    evidence_gt=TypedValue(type="point_set", value=point),
+                    annotation_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
                     trace_payload={
@@ -111,7 +111,7 @@ def _register_dummy_tasks() -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 1},
                         "witness_symbolic": {"type": "point_set", "count": 1},
-                        "projected_evidence": {"pixel_point_set": point},
+                        "projected_annotation": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={"variant": "a"}),
                     task_versions={
@@ -139,7 +139,7 @@ def _register_dummy_tasks() -> None:
                 return TaskOutput(
                     prompt="dummy weighted b",
                     answer_gt=TypedValue(type="integer", value=2),
-                    evidence_gt=TypedValue(type="point_set", value=point),
+                    annotation_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
                     trace_payload={
@@ -169,7 +169,7 @@ def _register_dummy_tasks() -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 2},
                         "witness_symbolic": {"type": "point_set", "count": 1},
-                        "projected_evidence": {"pixel_point_set": point},
+                        "projected_annotation": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.2, complexity_components={"variant": "b"}),
                     task_versions={
@@ -198,7 +198,7 @@ def _register_dummy_tasks() -> None:
                 return TaskOutput(
                     prompt="dummy variant support",
                     answer_gt=TypedValue(type="integer", value=5),
-                    evidence_gt=TypedValue(type="point_set", value=point),
+                    annotation_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
                     trace_payload={
@@ -230,7 +230,7 @@ def _register_dummy_tasks() -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 5, "query_id_probabilities": probabilities},
                         "witness_symbolic": {"type": "point_set", "count": 1},
-                        "projected_evidence": {"pixel_point_set": point},
+                        "projected_annotation": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.3, complexity_components={"variant": "support"}),
                     task_versions={
@@ -263,13 +263,13 @@ def test_cell_board_shortest_path_deterministic() -> None:
     out_b = task.generate(123456, params=params, max_attempts=120)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "puzzles_cell_board_path_v0"
     assert out_a.trace_payload["execution_trace"]["target_shortest_len"] == out_b.trace_payload["execution_trace"]["target_shortest_len"]
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
@@ -281,7 +281,7 @@ def test_all_registered_tasks_emit_required_trace_fields() -> None:
         "render_map",
         "execution_trace",
         "witness_symbolic",
-        "projected_evidence",
+        "projected_annotation",
     }
     for task_id in list_task_ids():
         output = _generate_first_successful_output(task_id)
@@ -296,17 +296,17 @@ def test_instance_id_ignores_image_path() -> None:
         "instance_seed": 42,
         "domain": "puzzles",
         "task_group": "cell_board",
-        "task": "task_puzzles__cell_board__path_distance",
+        "task": "task_puzzles__cell_board__shortest_path_length_value",
         "scene_id": "cell_board",
         "query_id": "shortest_path",
         "prompt": "p",
-        "prompt_variants": {"answer_only": "p0", "answer_and_evidence": "p1"},
+        "prompt_variants": {"answer_only": "p0", "answer_and_annotation": "p1"},
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
         "answer_gt": {"type": "integer", "value": 5},
-        "evidence_gt": {"type": "point_sequence", "value": [[120, 120], [168, 120]]},
+        "annotation_gt": {"type": "point_sequence", "value": [[120, 120], [168, 120]]},
         "reward_contract": resolve_reward_contract(
             answer_type="integer",
-            evidence_type="point_sequence",
+            annotation_type="point_sequence",
         ).to_dict(),
         "versions": {"dsl_spec_version": "v0"},
     }
@@ -324,7 +324,7 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_puzzles__cell_board__path_distance",
+                task_id="task_puzzles__cell_board__shortest_path_length_value",
                 count=4,
                 params={
                     "rows": 7,
@@ -353,13 +353,13 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
         assert instance["query_id"] == "shortest_path"
         assert not Path(instance["images"][0]["path"]).is_absolute()
         assert instance["answer_gt"]["type"] == "integer"
-        assert instance["evidence_gt"]["type"] == "point_sequence"
+        assert instance["annotation_gt"]["type"] == "point_sequence"
         assert instance["reward_contract"]["answer"]["id"] == ANSWER_REWARD_CONTRACT_ID
         assert instance["reward_contract"]["answer"]["type"] == "integer"
-        assert instance["reward_contract"]["evidence"]["id"] == "point_sequence_soft_distance_v0"
-        assert instance["reward_contract"]["evidence"]["type"] == "point_sequence"
-        assert sorted(instance["prompt_variants"].keys()) == ["answer_and_evidence", "answer_only"]
-        assert instance["prompt"] == instance["prompt_variants"]["answer_and_evidence"]
+        assert instance["reward_contract"]["annotation"]["id"] == "point_sequence_soft_distance_v0"
+        assert instance["reward_contract"]["annotation"]["type"] == "point_sequence"
+        assert sorted(instance["prompt_variants"].keys()) == ["answer_and_annotation", "answer_only"]
+        assert instance["prompt"] == instance["prompt_variants"]["answer_and_annotation"]
 
     validation_report = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation_report["total_errors"] == 0
@@ -374,7 +374,7 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert build_report["dataset_id"].startswith("blake3:")
-    assert build_report["accepted_counts_by_task"]["task_puzzles__cell_board__path_distance"] == 4
+    assert build_report["accepted_counts_by_task"]["task_puzzles__cell_board__shortest_path_length_value"] == 4
 
     strict_output_root = tmp_path / "strict_out"
     strict_config = BuildConfig(
@@ -384,7 +384,7 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_puzzles__cell_board__path_distance",
+                task_id="task_puzzles__cell_board__shortest_path_length_value",
                 count=3,
                 params={
                     "rows": 6,
@@ -419,7 +419,7 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
         dataset_name="parallel_match",
         instance_version="v0",
         image_format="png",
-        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__path_distance", count=4, params=task_params)],
+        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__shortest_path_length_value", count=4, params=task_params)],
         strict_repro=False,
         max_attempts_per_instance=120,
         sampling_seed=23,
@@ -430,7 +430,7 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
         dataset_name="parallel_match",
         instance_version="v0",
         image_format="png",
-        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__path_distance", count=4, params=task_params)],
+        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__shortest_path_length_value", count=4, params=task_params)],
         strict_repro=False,
         max_attempts_per_instance=120,
         sampling_seed=23,
@@ -457,32 +457,43 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
 def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None:
     default_task_ids = list_default_task_ids()
     active_table_tasks = {
-        "task_charts__table__value_predicate_count",
+        "task_charts__table__threshold_count",
+        "task_charts__table__interval_value_count",
+        "task_charts__table__categorical_value_count",
         "task_charts__table__column_rank_label",
         "task_charts__table__column_summary_value",
-        "task_charts__table__temporal_row_interval_difference_value",
+        "task_charts__table__filtered_column_mean",
+        "task_charts__table__absolute_difference_between_rows_over_year_interval",
+        "task_charts__table__sum_absolute_differences_between_rows_over_year_interval",
     }
     active_cell_board_tasks = {
-        "task_puzzles__cell_board__attribute_count",
-        "task_puzzles__cell_board__color_region_count",
-        "task_puzzles__cell_board__reachability_count",
-        "task_puzzles__cell_board__path_distance",
+        "task_puzzles__cell_board__single_attribute_membership_count",
+        "task_puzzles__cell_board__scoped_attribute_count",
+        "task_puzzles__cell_board__color_component_count",
+        "task_puzzles__cell_board__largest_component_size",
+        "task_puzzles__cell_board__reachable_region_size",
+        "task_puzzles__cell_board__reachable_target_count",
+        "task_puzzles__cell_board__minimum_color_set_distance_value",
+        "task_puzzles__cell_board__shortest_path_length_value",
         "task_puzzles__cell_board__symmetry_violation_count",
     }
     active_page_time_artifact_tasks = {
         "task_pages__calendar__marked_day_class_count",
         "task_pages__calendar__weekday_occurrence_date",
+        "task_pages__schedule__longer_than_reference_count",
         "task_pages__schedule__maximum_non_overlapping_count",
-        "task_pages__schedule__reference_interval_count",
+        "task_pages__schedule__overlap_count",
         "task_pages__timeline__interval_membership_count",
     }
     active_puzzle_clock_tasks = {
-        "task_puzzles__clock_collection__compare",
-        "task_puzzles__analog_clock__offset_readout",
+        "task_misc__clock_collection__compare",
+        "task_misc__clock_match_panel__equivalent_time_label",
+        "task_misc__analog_clock__offset_readout",
     }
     active_brick_breaker_tasks = {
         "task_games__brick_breaker__hit_row_remaining_count",
-        "task_games__brick_breaker__trajectory_target_label",
+        "task_games__brick_breaker__next_hit_label",
+        "task_games__brick_breaker__paddle_catch_label",
     }
     assert default_task_ids
     assert len(default_task_ids) == len(set(default_task_ids))
@@ -506,18 +517,19 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         "graph",
         "icons",
         "illustrations",
+        "misc",
         "pages",
         "physics",
         "puzzles",
         "three_d",
     }
     assert resolve_task_taxonomy("task_charts__table__column_rank_label").domain == "charts"
-    assert resolve_task_taxonomy("task_puzzles__cell_board__path_distance").domain == "puzzles"
-    assert resolve_task_taxonomy("task_pages__control_board__control_filter_count").domain == "pages"
+    assert resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value").domain == "puzzles"
+    assert resolve_task_taxonomy("task_pages__control_board__disabled_controls_in_group_count").domain == "pages"
     assert resolve_task_taxonomy("task_pages__calendar__marked_day_class_count").domain == "pages"
-    assert resolve_task_taxonomy("task_puzzles__clock_collection__compare").domain == "puzzles"
+    assert resolve_task_taxonomy("task_misc__clock_collection__compare").domain == "misc"
 
-    taxonomy = resolve_task_taxonomy("task_puzzles__cell_board__path_distance")
+    taxonomy = resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value")
     injected = inject_taxonomy_metadata(
         {
             "query_spec": {
@@ -531,7 +543,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
             },
             "execution_trace": {"query_id": "shortest_path"},
         },
-        task_id="task_puzzles__cell_board__path_distance",
+        task_id="task_puzzles__cell_board__shortest_path_length_value",
         taxonomy=taxonomy,
         query_id="shortest_path",
         registered_domain="puzzles",
@@ -541,11 +553,11 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     assert metadata["public"] == {
         "domain": "puzzles",
         "scene_id": "cell_board",
-        "task_id": "task_puzzles__cell_board__path_distance",
+            "task_id": "task_puzzles__cell_board__shortest_path_length_value",
         "query_id": "shortest_path",
     }
     assert metadata["registered"] == {
-        "task_id": "task_puzzles__cell_board__path_distance",
+        "task_id": "task_puzzles__cell_board__shortest_path_length_value",
         "domain": "puzzles",
         "task_group": "cell_board",
     }
@@ -667,7 +679,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                 return TaskOutput(
                     prompt="dummy prompt without metadata",
                     answer_gt=TypedValue(type="integer", value=3),
-                    evidence_gt=TypedValue(type="point_set", value=point),
+                    annotation_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
                     trace_payload={
@@ -677,7 +689,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 3},
                         "witness_symbolic": {"type": "point_set", "count": 1},
-                        "projected_evidence": {"pixel_point_set": point},
+                        "projected_annotation": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
@@ -704,7 +716,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                 return TaskOutput(
                     prompt="dummy unresolved prompt {missing_token}",
                     answer_gt=TypedValue(type="integer", value=4),
-                    evidence_gt=TypedValue(type="point_set", value=point),
+                    annotation_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
                     trace_payload={
@@ -734,7 +746,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 4},
                         "witness_symbolic": {"type": "point_set", "count": 1},
-                        "projected_evidence": {"pixel_point_set": point},
+                        "projected_annotation": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={

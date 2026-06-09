@@ -4,12 +4,13 @@ generation:
       square_board: 1.0
       wide_board: 1.0
       tall_board: 1.0
-    effect_value_query_id_weights:
-      cleared_count_after_marked_swap: 1.0
-      created_run_count_after_marked_swap: 1.0
     best_swap_query_id_weights:
       max_clear_swap_label: 1.0
       target_clear_swap_label: 1.0
+    gem_count_query_id_weights:
+      grid_color_gem_count: 1.0
+      row_color_gem_count: 1.0
+      column_color_gem_count: 1.0
     style_variant_weights:
       faceted_jewels: 1.0
       round_candies: 1.0
@@ -27,21 +28,27 @@ generation:
     row_count_support: [5, 6, 7]
     col_count_support: [5, 6, 7]
     gem_type_count_support: [5, 6]
-    option_count_support: [5, 6, 7, 8]
+    option_count_support: [4, 5, 6]
     target_clear_count_support: [0, 3, 4, 5, 6]
-    target_run_count_support: [0, 1, 2]
+    gem_count_answer_support: [1, 2, 3, 4, 5, 6, 7, 8]
   task_overrides:
-    task_games__match3__best_swap_label:
+    task_games__match3__max_clear_swap_label:
       row_count_support: [5]
       col_count_support: [5]
       gem_type_count_support: [5]
-      option_count_support: [5]
+      option_count_support: [4, 5, 6]
       target_clear_count_support: [0, 3]
-    task_games__match3__swap_effect_value:
-      row_count_support: [5, 6]
-      col_count_support: [5, 6]
-      target_clear_count_support: [0, 3, 4]
-      target_run_count_support: [0, 1, 2]
+    task_games__match3__target_clear_swap_label:
+      row_count_support: [5]
+      col_count_support: [5]
+      gem_type_count_support: [5]
+      option_count_support: [4, 5, 6]
+      target_clear_count_support: [0, 3]
+    task_games__match3__gem_count:
+      row_count_support: [5]
+      col_count_support: [5]
+      gem_type_count_support: [5]
+      gem_count_answer_support: [1, 2, 3, 4, 5, 6, 7, 8]
 rendering:
   shared:
     canvas_width: 760
@@ -58,9 +65,9 @@ rendering:
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
   task_overrides:
-    task_games__match3__best_swap_label:
+    task_games__match3__max_clear_swap_label:
       arrow_width_px: 9
-    task_games__match3__swap_effect_value:
+    task_games__match3__target_clear_swap_label:
       arrow_width_px: 9
 complexity:
   shared:
@@ -74,16 +81,19 @@ prompt:
     bundle_id: games_match3_v0
     scene_key: match3_grid
     task_key: match3_query
-    object_description_match3_grid: a match-3 jewel grid with row and column numbers, colored gems, and marked or labeled adjacent-swap arrows
+    object_description_match3_grid: a match-3 jewel grid with row and column numbers, colored gems, and labeled adjacent-swap arrows
+    object_description_match3_count_grid: a match-3 jewel grid with row and column numbers and colored gems
     match3_rule_text: Swap only the two adjacent gems connected by the arrow. After the swap, immediately clear every horizontal or vertical run of three or more matching gems. Count only this immediate clear; do not apply falling, refill, special effects, or cascades.
-    evidence_hint_cleared_count_after_marked_swap: set "evidence" to a JSON array of [x,y] pixel points, one at the center of each gem cleared by the marked swap; use [] if no gems are cleared
-    answer_hint_cleared_count_after_marked_swap: set "answer" to the number of gems cleared by the marked swap
-    evidence_hint_created_run_count_after_marked_swap: set "evidence" to a JSON array of [x,y] pixel points, one near the center of each horizontal or vertical run created by the marked swap; use [] if no run is created
-    answer_hint_created_run_count_after_marked_swap: set "answer" to the number of horizontal or vertical matching runs created by the marked swap
-    evidence_hint_max_clear_swap_label: set "evidence" to a JSON array containing one [x,y] pixel point on the selected swap arrow
+    annotation_hint_max_clear_swap_label: set "annotation" to a JSON array containing one [x,y] pixel point on the selected swap arrow
     answer_hint_max_clear_swap_label: set "answer" to only the selected swap-arrow letter
-    evidence_hint_target_clear_swap_label: set "evidence" to a JSON array containing one [x,y] pixel point on the selected swap arrow
+    annotation_hint_target_clear_swap_label: set "annotation" to a JSON array containing one [x,y] pixel point on the selected swap arrow
     answer_hint_target_clear_swap_label: set "answer" to only the selected swap-arrow letter
+    annotation_hint_grid_color_gem_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every matching gem
+    answer_hint_grid_color_gem_count: set "answer" to the exact count as an integer
+    annotation_hint_row_color_gem_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every matching gem in the row
+    answer_hint_row_color_gem_count: set "answer" to the exact count as an integer
+    annotation_hint_column_color_gem_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every matching gem in the column
+    answer_hint_column_color_gem_count: set "answer" to the exact count as an integer
 visual:
   noise:
     apply_prob: 0.5

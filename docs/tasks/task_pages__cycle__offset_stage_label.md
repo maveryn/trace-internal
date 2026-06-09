@@ -15,7 +15,7 @@
    - `after`
    - `before`
 4. `answer_gt.type`: `string`
-5. `evidence_gt.type`: `bbox_set`
+5. `annotation_gt.type`: `bbox_set`
 6. Scene contract:
    - one cycle diagram panel is shown on a light background,
    - the panel contains `5..12` labeled stages arranged around a directed ring,
@@ -39,16 +39,16 @@
    - scene: `object_description`
    - task: `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
 6. Slot source:
    - prompt config in `configs/domains/pages/cycle.yaml`,
    - deterministic bundle selection from `prompts/pages/cycle/pages_cycle_v0.json`,
    - task-local JSON examples keyed by the active cycle-query id.
-7. Modes: `answer_only`, `answer_and_evidence`
-8. Prompt-facing answer is the exact visible target-stage label; prompt-facing evidence is the single target-stage bbox.
+7. Modes: `answer_only`, `answer_and_annotation`
+8. Prompt-facing answer is the exact visible target-stage label; prompt-facing annotation is the single target-stage bbox.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is a `bbox_set` with exactly one box:
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is a `bbox_set` with exactly one box:
    - the bbox of the correct target stage.
 2. `scene_ir.entities` stores:
    - `diagram_panel`
@@ -83,7 +83,7 @@
    - `answer_stage_index`
    - `stage_specs`
    - `edge_specs`
-5. `witness_symbolic` stores the answer stage id, while `projected_evidence` stores the target-stage bbox.
+5. `witness_symbolic` stores the answer stage id, while `projected_annotation` stores the target-stage bbox.
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged pages-domain visual defaults from `configs/domains/pages/base.yaml`.
@@ -92,16 +92,16 @@
    - one consistent ring layout,
    - clear arrow direction around the cycle,
    - no extra direction-label text beyond the panel chrome and visible arrows,
-   - paragraph-style margin notes are non-semantic distractors and must not overlap the panel, answer stage, or evidence.
+   - paragraph-style margin notes are non-semantic distractors and must not overlap the panel, answer stage, or annotation.
 3. The first cycle scene variant is `cycle_ring`, which keeps one reusable circular stage layout for both `before` and `after` queries.
 4. Layout reasoning should stay local:
    - the prompt references one visible stage label and one visible step count,
    - the answer is one visible target-stage label,
-   - evidence stays on the target stage itself.
+   - annotation stays on the target stage itself.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. `query_id`, `query_relationship`, `scene_variant`, and `cycle_direction` are sampled independently at the policy level.
-3. Answers and evidence come from the same exact rendered target stage.
+3. Answers and annotation come from the same exact rendered target stage.
 4. No semantic auto-relaxation.
 5. If a sampled cycle would produce duplicate visible labels or an invalid `k` range, reject and resample instead of silently rewriting the query.

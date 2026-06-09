@@ -2,16 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `checkers`
-3. Source task group: `checkers`
-4. Query ids: `legal_move_count`, `capture_move_count`
-5. Objective: Count Checkers landing squares matching the sampled move condition.
+2. Task group: `checkers`
+3. Scene id: `checkers`
+4. Public task id: `task_games__checkers__move_count`
+5. Supported `query_id` values: `capture_move_count`, `legal_move_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(legal_moves(current_player), move_filter)); scene=checkers; scope=move_count; query_branch=capture_move_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over qualifying landing squares.
-3. The sampled condition is retained as `query_id`.
-
-## Implementation
-1. Prompt bundle: `games_checkers_v0`
-2. Longest capture-chain reasoning remains a separate task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

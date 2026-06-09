@@ -25,43 +25,15 @@ ADDED_VARIANT = "after_added_k_objects_count"
 REMOVED_VARIANT = "after_removed_k_objects_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (ADDED_VARIANT, REMOVED_VARIANT)
 DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
-    "mixed_car": {
-        "source_task_id": "task_illustrations__object_field__object_type_count",
-        "source_params": {"object_type": "car"},
-        "singular_phrase": "car",
-        "plural_phrase": "cars",
-        "scene_id": "object_field",
-    },
-    "mixed_bicycle": {
-        "source_task_id": "task_illustrations__object_field__object_type_count",
-        "source_params": {"object_type": "bicycle"},
-        "singular_phrase": "bicycle",
-        "plural_phrase": "bicycles",
-        "scene_id": "object_field",
-    },
-    "mixed_bird": {
-        "source_task_id": "task_illustrations__object_field__object_type_count",
-        "source_params": {"object_type": "bird"},
-        "singular_phrase": "bird",
-        "plural_phrase": "birds",
-        "scene_id": "object_field",
-    },
-    "mixed_tree": {
-        "source_task_id": "task_illustrations__object_field__object_type_count",
-        "source_params": {"object_type": "tree"},
-        "singular_phrase": "tree",
-        "plural_phrase": "trees",
-        "scene_id": "object_field",
-    },
     "park_sitting": {
-        "source_task_id": "task_illustrations__park_playground__person_count",
+        "source_task_id": "task_illustrations__park_playground__activity_person_count",
         "source_params": {"query_id": "sitting_person_count"},
         "singular_phrase": "sitting person",
         "plural_phrase": "sitting people",
         "scene_id": "park_playground",
     },
     "park_walking": {
-        "source_task_id": "task_illustrations__park_playground__person_count",
+        "source_task_id": "task_illustrations__park_playground__activity_person_count",
         "source_params": {"query_id": "walking_person_count"},
         "singular_phrase": "walking person",
         "plural_phrase": "walking people",
@@ -240,11 +212,7 @@ def _source_params_for(sample: _SampleSpec, params: Mapping[str, Any]) -> Dict[s
         "target_count_min": 1,
         "target_count_max": max(10, int(sample.current_count)),
     }
-    if sample.source_query.source_task_id == "task_illustrations__object_field__object_type_count":
-        source_params["object_count"] = max(11, int(sample.current_count) + 5)
-        source_params["object_count_min"] = max(11, int(sample.current_count) + 5)
-        source_params["object_count_max"] = max(11, int(sample.current_count) + 5)
-    elif sample.source_query.source_task_id == "task_illustrations__park_playground__person_count":
+    if sample.source_query.source_task_id == "task_illustrations__park_playground__activity_person_count":
         source_params["person_count"] = max(10, int(sample.current_count) + 4)
         source_params["person_count_min"] = max(10, int(sample.current_count) + 4)
         source_params["person_count_max"] = max(10, int(sample.current_count) + 4)
@@ -265,18 +233,18 @@ def _render_source_scene(sample: _SampleSpec, *, instance_seed: int, params: Map
     current_answer = int(out.answer_gt.value)
     if current_answer != int(sample.current_count):
         raise ValueError(f"source current count {current_answer} did not match requested {sample.current_count}")
-    if str(out.evidence_gt.type) != "bbox_set":
-        raise ValueError("source task evidence must be bbox_set")
-    evidence_boxes = [[round(float(value), 3) for value in box] for box in out.evidence_gt.value]
-    if len(evidence_boxes) != int(sample.current_count):
-        raise ValueError("source evidence count did not match current_count")
+    if str(out.annotation_gt.type) != "bbox_set":
+        raise ValueError("source task annotation must be bbox_set")
+    annotation_boxes = [[round(float(value), 3) for value in box] for box in out.annotation_gt.value]
+    if len(annotation_boxes) != int(sample.current_count):
+        raise ValueError("source annotation count did not match current_count")
     source_info = {
         "source_task_id": str(sample.source_query.source_task_id),
         "source_scene_id": str(out.scene_id),
         "source_query_id": str(out.query_id),
         "source_trace_ref": dict(out.trace_payload).get("trace_ref"),
     }
-    return out.image.convert("RGB"), evidence_boxes, source_info
+    return out.image.convert("RGB"), annotation_boxes, source_info
 
 
 def _count_phrase(k: int, singular: str, plural: str, *, more: bool) -> str:
@@ -286,19 +254,19 @@ def _count_phrase(k: int, singular: str, plural: str, *, more: bool) -> str:
     return f"{count_word} more {plural}" if more else f"{count_word} {plural}"
 
 
-def _example_json_for(sample: _SampleSpec, *, include_evidence: bool) -> str:
+def _example_json_for(sample: _SampleSpec, *, include_annotation: bool) -> str:
     example_current = max(3, int(sample.edit_count_k) + 2)
     if str(sample.query_id) == ADDED_VARIANT:
         example_answer = example_current + int(sample.edit_count_k)
     else:
         example_answer = example_current - int(sample.edit_count_k)
     payload: Dict[str, Any] = {"answer": int(example_answer)}
-    if include_evidence:
+    if include_annotation:
         boxes = [
             [120 + 82 * index, 220, 176 + 82 * index, 292]
             for index in range(example_current)
         ]
-        payload = {"evidence": boxes, "answer": int(example_answer)}
+        payload = {"annotation": boxes, "answer": int(example_answer)}
     return json.dumps(payload, separators=(",", ":"))
 
 
@@ -342,7 +310,7 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -355,10 +323,10 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
             "remove_phrase": _count_phrase(sample.edit_count_k, sample.source_query.singular_phrase, sample.source_query.plural_phrase, more=False),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint"]).format(object_plural=str(sample.source_query.plural_phrase)),
+            "annotation_hint": str(prompt_defaults["annotation_hint"]).format(object_plural=str(sample.source_query.plural_phrase)),
             "answer_hint": str(prompt_defaults["answer_hint"]),
-            "json_example": _example_json_for(sample, include_evidence=True),
-            "json_example_answer_only": _example_json_for(sample, include_evidence=False),
+            "json_example": _example_json_for(sample, include_annotation=True),
+            "json_example_answer_only": _example_json_for(sample, include_annotation=False),
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -369,8 +337,8 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         edit_operation = "added" if sample.query_id == ADDED_VARIANT else "removed"
@@ -439,13 +407,13 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
                 "answer": int(sample.result_count),
                 "current_target_ids": [f"target_{index:02d}" for index in range(len(current_boxes))],
             },
-            "projected_evidence": {"bbox_set": list(current_boxes)},
+            "projected_annotation": {"bbox_set": list(current_boxes)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.result_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(current_boxes)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(current_boxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

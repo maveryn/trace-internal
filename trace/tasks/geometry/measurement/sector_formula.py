@@ -21,6 +21,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
 from ..shared.complexity import build_geometry_measurement_complexity, clamp_unit_interval, normalize_linear
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.measurement_rendering import (
     round1 as _round1,
@@ -31,6 +32,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -120,6 +122,7 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -138,8 +141,8 @@ class _RenderedSectorScene:
     answer: float
     query_id: str
     scene_variant: str
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
@@ -189,10 +192,6 @@ def _point_on_circle(center: Point, radius: float, degrees: float) -> Point:
 
 def _draw_arc_band(ctx: _RenderContext, box: BBox, *, start: float, end: float, color: Color, width_extra: int = 2) -> None:
     ctx.draw.arc(box, start=float(start), end=float(end), fill=color, width=max(5, int(ctx.line_width) + int(width_extra)))
-
-
-def _selected_probability_map(values: Sequence[int], selected: int | float) -> Dict[str, float]:
-    return {str(value): (1.0 if float(value) == float(selected) else 0.0) for value in values}
 
 
 def _cycle_index(
@@ -316,7 +315,11 @@ def _resolve_problem(
             "reasoning_steps": int(reasoning_steps),
         },
         query_probabilities=dict(query_probabilities),
-        support_probabilities=_selected_probability_map(support_values, theta if "angle" in formula_family else radius_units),
+        support_probabilities=_selected_probability_map(
+            support_values,
+            theta if "angle" in formula_family else radius_units,
+            is_selected=lambda value, selected: float(value) == float(selected),
+        ),
     )
 
 
@@ -328,6 +331,19 @@ def _draw_sector_base(ctx: _RenderContext, problem: _ResolvedProblem) -> Dict[st
     center = (302.0, 306.0)
     start_deg = -142.0
     end_deg = start_deg + float(theta)
+    ctx.scene_transform.resolve(
+        (
+            center,
+            (center[0] - radius_px, center[1]),
+            (center[0] + radius_px, center[1]),
+            (center[0], center[1] - radius_px),
+            (center[0], center[1] + radius_px),
+        )
+    )
+    center = ctx.scene_transform.point(center)
+    radius_px *= float(ctx.scene_transform.transform.scale)
+    start_deg += float(ctx.scene_transform.transform.angle_degrees)
+    end_deg += float(ctx.scene_transform.transform.angle_degrees)
     arc_box = (center[0] - radius_px, center[1] - radius_px, center[0] + radius_px, center[1] + radius_px)
     ctx.draw.pieslice(arc_box, start=start_deg, end=end_deg, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
     p0 = _point_on_circle(center, radius_px, start_deg)
@@ -440,11 +456,11 @@ def _render_sector_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
             target_role = "target_related_angle_cue"
 
     if target_role in {"target_sector_region", "target_arc"}:
-        evidence_bboxes = tuple(support_bboxes)
-        evidence_roles = tuple(support_roles)
+        annotation_bboxes = tuple(support_bboxes)
+        annotation_roles = tuple(support_roles)
     else:
-        evidence_bboxes = (target_bbox, *tuple(support_bboxes))
-        evidence_roles = (target_role, *tuple(support_roles))
+        annotation_bboxes = (target_bbox, *tuple(support_bboxes))
+        annotation_roles = (target_role, *tuple(support_roles))
     scene_entities = (
         {
             "entity_id": "sector",
@@ -461,8 +477,8 @@ def _render_sector_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         scene_entities=scene_entities,
         render_map={
             "target_bbox": _bbox_to_list(target_bbox),
@@ -484,6 +500,7 @@ class _SectorFormulaBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "sector_formula"
@@ -534,6 +551,13 @@ class _SectorFormulaBaseTask:
             line_width=max(2, int(line_width)),
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -553,9 +577,9 @@ class _SectorFormulaBaseTask:
             precision += 0.06
         if "complement" in rendered.query_id or "supplement" in rendered.query_id or "remaining" in rendered.query_id:
             precision += 0.08
-        visual_scan = clamp_unit_interval(0.42 + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=6) * 0.25)
+        visual_scan = clamp_unit_interval(0.42 + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=6) * 0.25)
         ambiguity = 0.44 + (0.10 if rendered.reasoning_steps > 1 else 0.0)
-        output_burden = clamp_unit_interval(0.46 + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=6) * 0.18)
+        output_burden = clamp_unit_interval(0.46 + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=6) * 0.18)
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -590,6 +614,7 @@ class _SectorFormulaBaseTask:
                 )
                 rendered = _render_sector_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -612,7 +637,7 @@ class _SectorFormulaBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -626,14 +651,14 @@ class _SectorFormulaBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "arc_length": _fmt_given(float(problem.params.get("arc_length", 0.0))),
                 "sector_area": _fmt_given(float(problem.params.get("sector_area", 0.0))),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -642,16 +667,16 @@ class _SectorFormulaBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.scene_variant),
@@ -669,7 +694,7 @@ class _SectorFormulaBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.scene_variant),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -699,7 +724,7 @@ class _SectorFormulaBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": int(rendered.reasoning_steps),
                 **dict(rendered.witness),
             },
@@ -709,21 +734,21 @@ class _SectorFormulaBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -736,24 +761,94 @@ class _SectorFormulaBaseTask:
 
 
 @register_task
-class GeometrySectorMeasureValueTask(_SectorFormulaBaseTask):
-    """Compute direct and inverse sector measures."""
+class GeometrySectorArcLengthFromAreaAndRadiusTask(_SectorFormulaBaseTask):
+    """Compute sector arc length from visible area and radius."""
 
-    task_id = "task_geometry__sector__sector_measure_value"
-    supported_queries = _MEASURE_QUERIES
+    task_id = "task_geometry__sector__arc_length_value_arc_length_from_area_and_radius"
+    supported_queries = ("arc_length_from_area_and_radius",)
     reasoning_kind = "sector_measure"
 
 
 @register_task
-class GeometrySectorAngleRelationValueTask(_SectorFormulaBaseTask):
-    """Infer a sector angle or related adjacent angle."""
+class GeometrySectorArcLengthFromRadiusAndSupplementAngleTask(_SectorFormulaBaseTask):
+    """Compute sector arc length from radius and supplement angle."""
 
-    task_id = "task_geometry__sector__sector_angle_relation_value"
-    supported_queries = _ANGLE_RELATION_QUERIES
+    task_id = "task_geometry__sector__arc_length_value_arc_length_from_radius_and_supplement_angle"
+    supported_queries = ("arc_length_from_radius_and_supplement_angle",)
+    reasoning_kind = "sector_measure"
+
+
+@register_task
+class GeometrySectorAreaFromArcLengthAndRadiusTask(_SectorFormulaBaseTask):
+    """Compute sector area from arc length and radius."""
+
+    task_id = "task_geometry__sector__sector_area_value_area_from_arc_length_and_radius"
+    supported_queries = ("area_from_arc_length_and_radius",)
+    reasoning_kind = "sector_measure"
+
+
+@register_task
+class GeometrySectorAreaFromRadiusAndComplementAngleTask(_SectorFormulaBaseTask):
+    """Compute sector area from radius and complement angle."""
+
+    task_id = "task_geometry__sector__sector_area_value_area_from_radius_and_complement_angle"
+    supported_queries = ("area_from_radius_and_complement_angle",)
+    reasoning_kind = "sector_measure"
+
+
+@register_task
+class GeometrySectorAngleFromArcLengthAndRadiusTask(_SectorFormulaBaseTask):
+    """Infer a sector angle from arc length and radius."""
+
+    task_id = "task_geometry__sector__angle_from_sector_measure_angle_from_arc_length_and_radius"
+    supported_queries = ("angle_from_arc_length_and_radius",)
+    reasoning_kind = "sector_angle_relation"
+
+
+@register_task
+class GeometrySectorAngleFromAreaAndRadiusTask(_SectorFormulaBaseTask):
+    """Infer a sector angle from area and radius."""
+
+    task_id = "task_geometry__sector__angle_from_sector_measure_angle_from_area_and_radius"
+    supported_queries = ("angle_from_area_and_radius",)
+    reasoning_kind = "sector_angle_relation"
+
+
+@register_task
+class GeometrySectorRelatedComplementAngleFromArcLengthTask(_SectorFormulaBaseTask):
+    """Infer a complementary angle from sector arc length."""
+
+    task_id = "task_geometry__sector__related_angle_from_sector_measure_complement_angle_from_arc_length"
+    supported_queries = ("complement_angle_from_arc_length",)
+    reasoning_kind = "sector_angle_relation"
+
+
+@register_task
+class GeometrySectorRelatedRemainingAngleFromSectorMeasureTask(_SectorFormulaBaseTask):
+    """Infer a remaining full-circle angle from a sector measure."""
+
+    task_id = "task_geometry__sector__related_angle_from_sector_measure_remaining_angle_from_sector_measure"
+    supported_queries = ("remaining_angle_from_sector_measure",)
+    reasoning_kind = "sector_angle_relation"
+
+
+@register_task
+class GeometrySectorRelatedSupplementAngleFromAreaTask(_SectorFormulaBaseTask):
+    """Infer a supplementary angle from sector area."""
+
+    task_id = "task_geometry__sector__related_angle_from_sector_measure_supplement_angle_from_area"
+    supported_queries = ("supplement_angle_from_area",)
     reasoning_kind = "sector_angle_relation"
 
 
 __all__ = [
-    "GeometrySectorMeasureValueTask",
-    "GeometrySectorAngleRelationValueTask",
+    "GeometrySectorAngleFromArcLengthAndRadiusTask",
+    "GeometrySectorAngleFromAreaAndRadiusTask",
+    "GeometrySectorArcLengthFromAreaAndRadiusTask",
+    "GeometrySectorArcLengthFromRadiusAndSupplementAngleTask",
+    "GeometrySectorAreaFromArcLengthAndRadiusTask",
+    "GeometrySectorAreaFromRadiusAndComplementAngleTask",
+    "GeometrySectorRelatedComplementAngleFromArcLengthTask",
+    "GeometrySectorRelatedRemainingAngleFromSectorMeasureTask",
+    "GeometrySectorRelatedSupplementAngleFromAreaTask",
 ]

@@ -13,8 +13,8 @@
    shape in the row.
 4. The target-shape run that determines the answer is unique by construction.
 5. `answer_gt.type = integer`.
-6. `evidence_gt.type = bbox_set` over the icons in the selected target-shape
-   run only. `projected_evidence` mirrors this as typed bbox-set evidence with
+6. `annotation_gt.type = bbox_set` over the icons in the selected target-shape
+   run only. `projected_annotation` mirrors this as typed bbox-set annotation with
    `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 
 ## Query IDs

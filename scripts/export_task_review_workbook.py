@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 import pandas as pd
 import zstandard as zstd
 
-from trace.core.review_overlays import resolve_overlay_evidence
+from trace.core.review_overlays import resolve_overlay_annotation
 from trace.core.taxonomy import resolve_task_query_id, resolve_task_taxonomy
 from trace.core.task_review_workbooks import write_inspection_excel as _write_inspection_excel
 
@@ -184,22 +184,22 @@ def main() -> int:
 
         prompt_variants = dict(instance.get("prompt_variants", {}) or {})
         prompt_answer_only = str(prompt_variants.get("answer_only", instance.get("prompt", "")))
-        prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", instance.get("prompt", "")))
+        prompt_answer_and_annotation = str(prompt_variants.get("answer_and_annotation", instance.get("prompt", "")))
 
         answer_gt = dict(instance.get("answer_gt", {}) or {})
-        evidence_gt = dict(instance.get("evidence_gt", {}) or {})
+        annotation_gt = dict(instance.get("annotation_gt", {}) or {})
         answer_only_ground_truth = {
             "answer": answer_gt.get("value"),
         }
         canonical_answer = {
-            "evidence": evidence_gt.get("value"),
+            "annotation": annotation_gt.get("value"),
             "answer": answer_gt.get("value"),
         }
 
-        overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
-            evidence_type=str(evidence_gt.get("type", "")),
-            evidence_value=evidence_gt.get("value"),
-            trace_payload={"projected_evidence": trace_record.get("projected_evidence", {})},
+        overlay_annotation_type, overlay_annotation_value = resolve_overlay_annotation(
+            annotation_type=str(annotation_gt.get("type", "")),
+            annotation_value=annotation_gt.get("value"),
+            trace_payload={"projected_annotation": trace_record.get("projected_annotation", {})},
         )
 
         data_payload = {
@@ -209,13 +209,13 @@ def main() -> int:
             "query_id": query_id,
             "instance_seed": int(instance.get("instance_seed", 0)),
             "instance_id": instance.get("instance_id"),
-            "prompt": prompt_answer_and_evidence,
+            "prompt": prompt_answer_and_annotation,
             "prompt_answer": prompt_answer_only,
             "prompt_answer_only": prompt_answer_only,
-            "prompt_answer_and_evidence": prompt_answer_and_evidence,
+            "prompt_answer_and_annotation": prompt_answer_and_annotation,
             "prompt_variants": prompt_variants,
             "answer_gt": answer_gt,
-            "evidence_gt": evidence_gt,
+            "annotation_gt": annotation_gt,
             "reward_contract": instance.get("reward_contract", {}),
             "image": {
                 "path": rel_image_path,
@@ -224,7 +224,7 @@ def main() -> int:
             "trace_ref": instance.get("trace_ref", {}),
             "query_spec": query_spec,
             "execution_trace": execution_trace,
-            "projected_evidence": trace_record.get("projected_evidence", {}),
+            "projected_annotation": trace_record.get("projected_annotation", {}),
             "versions": instance.get("versions", {}),
         }
         data_path = data_dir / query_id_dir / f"{query_id_index:04d}.json"
@@ -237,21 +237,21 @@ def main() -> int:
                 "task": task_id,
                 "scene_id": scene_id,
                 "query_id": query_id,
-                "prompt": prompt_answer_and_evidence,
+                "prompt": prompt_answer_and_annotation,
                 "prompt_answer": prompt_answer_only,
                 "prompt_answer_only": prompt_answer_only,
-                "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                "prompt_answer_and_annotation": prompt_answer_and_annotation,
                 "ground_truth_answer": answer_only_ground_truth,
-                "ground_truth_answer_and_evidence": canonical_answer,
+                "ground_truth_answer_and_annotation": canonical_answer,
                 "answer": canonical_answer,
-                "answer_evidence": evidence_gt.get("value"),
+                "answer_annotation": annotation_gt.get("value"),
                 "answer_type": str(answer_gt.get("type", "")),
-                "evidence_type": str(evidence_gt.get("type", "")),
+                "annotation_type": str(annotation_gt.get("type", "")),
                 "instance_seed": int(instance.get("instance_seed", 0)),
                 "image_path": rel_image_path,
                 "data_path": rel_data_path,
-                "overlay_evidence_type": str(overlay_evidence_type),
-                "overlay_evidence_value": overlay_evidence_value,
+                "overlay_annotation_type": str(overlay_annotation_type),
+                "overlay_annotation_value": overlay_annotation_value,
             }
         )
 

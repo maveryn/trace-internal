@@ -6,6 +6,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from trace.core.task_review_distribution import extract_sampling_axes
 from trace.tasks.physics.waves.interference_tank import (
     PhysicsWavesInterferencePointChoiceTask,
     PhysicsWavesPathDifferenceValueTask,
@@ -39,9 +40,9 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
 
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.annotation_gt.value) == 1
 
     assert out.scene_id == "wave_interference"
 
@@ -64,12 +65,12 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert correct_candidates[0]["condition"] == "constructive"
 
-    assert execution["evidence_entity_ids"] == ["candidate_D"]
+    assert execution["annotation_entity_ids"] == ["candidate_D"]
 
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    assert trace["render_map"]["evidence_point_set_px"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_point_set_px"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
@@ -98,15 +99,15 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert out.query_id == "path_difference_value"
 
-    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_bbox_map"
 
-    assert set(out.evidence_gt.value) == {"S1P", "S2P"}
+    assert set(out.annotation_gt.value) == {"S1P", "S2P"}
 
     assert out.trace_payload["query_spec"]["query_id"] == "path_difference_value"
-    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert out.trace_payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-    assert out.trace_payload["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
-    assert out.trace_payload["render_map"]["evidence_bbox_map_px"] == out.evidence_gt.value
+    assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert out.trace_payload["render_map"]["annotation_bbox_map_px"] == out.annotation_gt.value
     assert out.trace_payload["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert out.trace_payload["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
@@ -117,10 +118,13 @@ def test_physics_waves_path_difference_value_contract() -> None:
     assert abs(int(scenario["s1_distance_steps"]) - int(scenario["s2_distance_steps"])) == 4
 
     assert scenario["path_difference_steps"] == 4
+    sampling_axes = extract_sampling_axes(out)
+    assert sampling_axes["path_difference_steps"]["observed"] == "4"
+    assert "path_difference" not in sampling_axes
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["path_S1P", "path_S2P"]
+    assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == ["path_S1P", "path_S2P"]
 
-    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
+    assert out.trace_payload["execution_trace"]["annotation_key_by_entity_id"] == {
         "path_S1P": "S1P",
         "path_S2P": "S2P",
     }
@@ -151,7 +155,7 @@ def test_physics_waves_tasks_are_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 
@@ -203,10 +207,25 @@ def test_physics_waves_prompt_bundle_supports_variants() -> None:
     assert set(bundle["query_templates"]) == {
         "interference_point_choice",
         "path_difference_value",
+        "highest_amplitude_label",
+        "lowest_amplitude_label",
+        "highest_frequency_label",
+        "lowest_frequency_label",
+        "longest_wavelength_label",
+        "shortest_wavelength_label",
+        "sinusoid_component_spectrum",
+        "periodic_wave_harmonic_spectrum",
+        "pulse_width_spectrum",
     }
 
     assert len(bundle["query_templates"]["interference_point_choice"]) == 5
 
     assert len(bundle["query_templates"]["path_difference_value"]) == 5
 
-    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5
+    assert len(bundle["scene_templates"]["waveform_panel_diagram"]) == 5
+
+    assert len(bundle["query_templates"]["highest_amplitude_label"]) == 5
+
+    assert len(bundle["query_templates"]["shortest_wavelength_label"]) == 5
+
+    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5

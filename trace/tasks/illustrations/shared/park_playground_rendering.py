@@ -11,8 +11,9 @@ from PIL import Image, ImageDraw
 from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
 from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
 from .object_library import BBox, RGB, STYLE_IDS
-from .object_registry import make_object_record
-from .person_rendering import draw_person_hair_back, draw_person_hair_front, draw_person_skirt, normalize_person_gender, sample_person_gender
+from .object_rendering import IllustrationObjectSpec, RenderContext, make_vector_scene_object_record, render_illustration_object, render_vector_scene_object
+from .object_variants import RENDERER_STYLE_VECTOR
+from .person_rendering import sample_person_gender
 
 
 PARK_SETTING_IDS: Tuple[str, ...] = variant_ids_with_tag("park_setting")
@@ -57,6 +58,7 @@ class ParkPerson:
     gender_id: str
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -67,6 +69,7 @@ class ParkDecor:
     decor_type: str
     bbox_xyxy: BBox
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -112,6 +115,38 @@ def _decor_object_type(decor_type: str) -> str:
     return str(decor_type)
 
 
+def _park_equipment_visual_attributes(rng, equipment_type: str, style_id: str) -> Dict[str, Any]:
+    outline = _jitter_rgb(rng, (61, 71, 82), amount=6)
+    if str(equipment_type) == "slide":
+        primary = _jitter_rgb(rng, (216, 96, 82), amount=8)
+        accent = _jitter_rgb(rng, (229, 168, 67), amount=8)
+    elif str(equipment_type) == "swing_set":
+        primary = _jitter_rgb(rng, (83, 139, 190), amount=8)
+        accent = _jitter_rgb(rng, (83, 139, 190), amount=8)
+    elif str(equipment_type) == "seesaw":
+        primary = _jitter_rgb(rng, (218, 111, 82), amount=8)
+        accent = _jitter_rgb(rng, (142, 105, 77), amount=8)
+    else:
+        primary = outline
+        accent = _jitter_rgb(rng, (83, 139, 190), amount=8)
+    return {
+        "primary_color_rgb": [int(v) for v in primary],
+        "accent_color_rgb": [int(v) for v in accent],
+        "outline_color_rgb": [int(v) for v in outline],
+        "style_id": str(style_id),
+    }
+
+
+def _bench_visual_attributes(rng, *, style_id: str, wood_base: RGB = (146, 92, 58), outline_base: RGB = (75, 56, 43)) -> Dict[str, Any]:
+    wood = _jitter_rgb(rng, wood_base, amount=10)
+    outline = _jitter_rgb(rng, outline_base, amount=6)
+    return {
+        "wood_color_rgb": [int(v) for v in wood],
+        "outline_color_rgb": [int(v) for v in outline],
+        "style_id": str(style_id),
+    }
+
+
 
 
 def _jitter_rgb(rng, color: RGB, amount: int = 12) -> RGB:
@@ -130,16 +165,6 @@ def _choose_weighted(rng, weights: Mapping[str, float], support: Sequence[str]) 
         if running >= threshold:
             return str(value)
     return str(choices[-1][0])
-
-
-def _style_params(style_id: str) -> Tuple[RGB, int, bool]:
-    if str(style_id) == "paper_cutout":
-        return (252, 252, 247), 4, True
-    if str(style_id) == "outlined_cartoon":
-        return (35, 39, 48), 3, False
-    if str(style_id) == "soft_shadow":
-        return (73, 78, 88), 2, True
-    return (73, 78, 88), 1, False
 
 
 def _rect(draw: ImageDraw.ImageDraw, bbox: BBox, *, fill: RGB, outline: RGB | None, width: int, scale: int, radius: float = 0.0) -> None:
@@ -318,70 +343,6 @@ def _draw_background(draw: ImageDraw.ImageDraw, *, rng, setting_id: str, layout:
     return decor
 
 
-def _draw_slide(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    outline = (61, 71, 82)
-    ladder = (x0 + 0.08 * (x1 - x0), y0 + 0.14 * (y1 - y0), x0 + 0.34 * (x1 - x0), y1)
-    platform = (x0 + 0.16 * (x1 - x0), y0 + 0.08 * (y1 - y0), x0 + 0.46 * (x1 - x0), y0 + 0.28 * (y1 - y0))
-    slide = [(x0 + 0.40 * (x1 - x0), y0 + 0.24 * (y1 - y0)), (x1 - 0.06 * (x1 - x0), y1 - 0.06 * (y1 - y0)), (x1 - 0.28 * (x1 - x0), y1 - 0.06 * (y1 - y0)), (x0 + 0.28 * (x1 - x0), y0 + 0.28 * (y1 - y0))]
-    _rect(draw, platform, fill=_jitter_rgb(rng, (216, 96, 82), amount=8), outline=outline, width=2, scale=scale, radius=6)
-    for lx in (ladder[0], ladder[2]):
-        _line(draw, [(lx, ladder[1]), (lx, ladder[3])], fill=outline, width=4, scale=scale)
-    for rung_y in (0.35, 0.52, 0.69, 0.86):
-        y = y0 + rung_y * (y1 - y0)
-        _line(draw, [(ladder[0], y), (ladder[2], y)], fill=outline, width=3, scale=scale)
-    _poly(draw, slide, fill=_jitter_rgb(rng, (229, 168, 67), amount=8), outline=outline, width=2, scale=scale)
-
-
-def _draw_swing(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    outline = (61, 71, 82)
-    top = y0 + 0.12 * (y1 - y0)
-    _line(draw, [(x0 + 0.10 * (x1 - x0), y1), (x0 + 0.28 * (x1 - x0), top), (x0 + 0.72 * (x1 - x0), top), (x0 + 0.90 * (x1 - x0), y1)], fill=outline, width=5, scale=scale)
-    for center in (0.40, 0.62):
-        sx = x0 + center * (x1 - x0)
-        seat_y = y0 + 0.68 * (y1 - y0)
-        _line(draw, [(sx - 22.0, top), (sx - 13.0, seat_y)], fill=outline, width=2, scale=scale)
-        _line(draw, [(sx + 22.0, top), (sx + 13.0, seat_y)], fill=outline, width=2, scale=scale)
-        _rect(draw, (sx - 30.0, seat_y, sx + 30.0, seat_y + 12.0), fill=_jitter_rgb(rng, (83, 139, 190), amount=8), outline=outline, width=1, scale=scale, radius=3)
-
-
-def _draw_seesaw(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    outline = (61, 71, 82)
-    pivot = [(0.5 * (x0 + x1), y0 + 0.48 * (y1 - y0)), (x0 + 0.39 * (x1 - x0), y1), (x0 + 0.61 * (x1 - x0), y1)]
-    _poly(draw, pivot, fill=_jitter_rgb(rng, (142, 105, 77), amount=8), outline=outline, width=2, scale=scale)
-    _line(draw, [(x0 + 0.10 * (x1 - x0), y0 + 0.40 * (y1 - y0)), (x1 - 0.10 * (x1 - x0), y0 + 0.64 * (y1 - y0))], fill=_jitter_rgb(rng, (218, 111, 82), amount=8), width=13, scale=scale)
-
-
-def _draw_climber(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    outline = _jitter_rgb(rng, (70, 82, 96), amount=6)
-    cx = 0.5 * (x0 + x1)
-    base_y = y1
-    top = (cx, y0 + 0.12 * (y1 - y0))
-    base = [(x0 + 0.12 * (x1 - x0), base_y), (x1 - 0.12 * (x1 - x0), base_y), top]
-    for point in base[:2]:
-        _line(draw, [top, point], fill=outline, width=4, scale=scale)
-    for frac in (0.32, 0.50, 0.68, 0.84):
-        y = y0 + frac * (y1 - y0)
-        span = (y - top[1]) / max(1.0, base_y - top[1])
-        left_x = cx - span * (cx - base[0][0])
-        right_x = cx + span * (base[1][0] - cx)
-        _line(draw, [(left_x, y), (right_x, y)], fill=outline, width=3, scale=scale)
-
-
-def _draw_equipment(draw: ImageDraw.ImageDraw, *, rng, equipment_type: str, bbox: BBox, scale: int) -> None:
-    if equipment_type == "slide":
-        _draw_slide(draw, rng=rng, bbox=bbox, scale=scale)
-    elif equipment_type == "swing_set":
-        _draw_swing(draw, rng=rng, bbox=bbox, scale=scale)
-    elif equipment_type == "seesaw":
-        _draw_seesaw(draw, rng=rng, bbox=bbox, scale=scale)
-    else:
-        _draw_climber(draw, rng=rng, bbox=bbox, scale=scale)
-
-
 def _equipment_boxes(rng, *, playground: BBox, count: int) -> Tuple[BBox, ...]:
     columns = 3 if int(count) >= 5 else 2
     rows = max(1, (int(count) + columns - 1) // columns)
@@ -410,6 +371,7 @@ def _draw_equipment_and_fixtures(
     width: int,
     height: int,
     scale: int,
+    style_id: str,
     equipment_specs: Sequence[ParkEquipmentSpec] | None = None,
 ) -> List[ParkDecor]:
     decor: List[ParkDecor] = []
@@ -424,13 +386,35 @@ def _draw_equipment_and_fixtures(
     rng.shuffle(ordered)
     for index, (equipment_spec, box) in enumerate(ordered):
         equipment_type = str(equipment_spec.equipment_type)
-        _draw_equipment(draw, rng=rng, equipment_type=equipment_type, bbox=box, scale=scale)
+        visual_attributes = _park_equipment_visual_attributes(rng, equipment_type, str(style_id))
+        semantic_attributes = {
+            "decor_type": equipment_type,
+            "equipment_type": equipment_type,
+            "equipment_label": park_equipment_display_name(equipment_type),
+            "zone": "playground",
+            **dict(equipment_spec.attributes),
+        }
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=f"equipment_{index:02d}",
+            object_type="playground_equipment",
+            bbox_xyxy=box,
+            renderer_id="park_equipment",
+            renderer_variant_id=equipment_type,
+            semantic_attributes=semantic_attributes,
+            visual_attributes=visual_attributes,
+            role=str(equipment_spec.role),
+            source_entity_type="park_decor",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
         decor.append(
             ParkDecor(
                 f"equipment_{index:02d}",
                 equipment_type,
                 tuple(round(float(v), 3) for v in box),
                 {"zone": "playground", "role": str(equipment_spec.role), **dict(equipment_spec.attributes)},
+                object_record=rendered.object_record,
             )
         )
     tree_count = int(rng.randint(4, 8))
@@ -453,11 +437,26 @@ def _draw_equipment_and_fixtures(
         y = float(rng.uniform(625.0, float(height) - 88.0))
         if fixture_type == "bench":
             box = (x, y, x + 130.0, y + 52.0)
-            _draw_bench(draw, rng=rng, bbox=box, scale=scale)
+            rendered = render_vector_scene_object(
+                draw,
+                object_id=f"decor_fixture_{index}",
+                object_type="bench",
+                bbox_xyxy=box,
+                renderer_id="fixture_bench",
+                renderer_variant_id="bench",
+                semantic_attributes={"decor_type": fixture_type},
+                visual_attributes=_bench_visual_attributes(rng, style_id=str(style_id)),
+                role="distractor",
+                source_entity_type="park_decor",
+                render_scale=scale,
+                style_id=str(style_id),
+            )
+            object_record = rendered.object_record
         elif fixture_type == "lamp_post":
             box = (x, y - 110.0, x + 38.0, y + 20.0)
             _line(draw, [(x + 18.0, y - 88.0), (x + 18.0, y + 18.0)], fill=(74, 82, 91), width=5, scale=scale)
             _ellipse(draw, (x + 4.0, y - 122.0, x + 34.0, y - 88.0), fill=(246, 220, 122), outline=(74, 82, 91), width=2, scale=scale)
+            object_record = None
         else:
             box = (x, y, x + 148.0, y + 48.0)
             _ellipse(draw, box, fill=_jitter_rgb(rng, (93, 148, 81), amount=8), outline=(65, 111, 65), width=1, scale=scale)
@@ -465,18 +464,9 @@ def _draw_equipment_and_fixtures(
                 px = x + float(rng.uniform(16.0, 132.0))
                 py = y + float(rng.uniform(10.0, 34.0))
                 _ellipse(draw, (px, py, px + 12.0, py + 10.0), fill=_jitter_rgb(rng, rng.choice(((221, 85, 114), (238, 197, 77), (145, 97, 177))), amount=5), outline=None, width=1, scale=scale)
-        decor.append(ParkDecor(f"decor_fixture_{index}", fixture_type, tuple(round(float(v), 3) for v in box), {}))
+            object_record = None
+        decor.append(ParkDecor(f"decor_fixture_{index}", fixture_type, tuple(round(float(v), 3) for v in box), {}, object_record=object_record))
     return decor
-
-
-def _draw_bench(draw: ImageDraw.ImageDraw, *, rng, bbox: BBox, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    wood = _jitter_rgb(rng, (146, 92, 58), amount=10)
-    outline = _jitter_rgb(rng, (75, 56, 43), amount=6)
-    _rect(draw, (x0, y0 + 0.20 * (y1 - y0), x1, y0 + 0.44 * (y1 - y0)), fill=wood, outline=outline, width=1, scale=scale, radius=5)
-    _rect(draw, (x0 + 8.0, y0 + 0.52 * (y1 - y0), x1 - 8.0, y0 + 0.72 * (y1 - y0)), fill=wood, outline=outline, width=1, scale=scale, radius=5)
-    for lx in (x0 + 18.0, x1 - 30.0):
-        _rect(draw, (lx, y0 + 0.70 * (y1 - y0), lx + 10.0, y1), fill=outline, outline=None, width=1, scale=scale, radius=2)
 
 
 def _path_point(rng, layout: Mapping[str, Any]) -> Tuple[float, float]:
@@ -684,25 +674,26 @@ def _clothes_color(rng) -> RGB:
     return tuple(int(v) for v in rng.choice(((74, 122, 180), (194, 83, 85), (220, 169, 75), (94, 151, 124), (130, 104, 160), (83, 154, 177))))  # type: ignore[return-value]
 
 
-def _draw_shadow(draw: ImageDraw.ImageDraw, bbox: BBox, *, scale: int) -> None:
-    x0, y0, x1, y1 = bbox
-    _ellipse(draw, (x0 + 0.08 * (x1 - x0), y1 - 0.08 * (y1 - y0), x1 - 0.06 * (x1 - x0), y1 + 0.04 * (y1 - y0)), fill=(102, 126, 102), outline=None, width=1, scale=scale)
-
-
-def _rel(box: BBox, x0: float, y0: float, x1: float, y1: float) -> BBox:
-    bx0, by0, bx1, by1 = box
-    w = bx1 - bx0
-    h = by1 - by0
-    return (bx0 + x0 * w, by0 + y0 * h, bx0 + x1 * w, by0 + y1 * h)
-
-
-def _draw_activity_support(draw: ImageDraw.ImageDraw, *, rng, person_id: str, activity: str, bbox: BBox, scale: int) -> Tuple[ParkDecor, ...]:
+def _draw_activity_support(draw: ImageDraw.ImageDraw, *, rng, person_id: str, activity: str, bbox: BBox, scale: int, style_id: str) -> Tuple[ParkDecor, ...]:
     x0, y0, x1, y1 = bbox
     decor: List[ParkDecor] = []
     if str(activity) == "sitting":
         bench = (x0 - 24.0, y0 + 0.47 * (y1 - y0), x1 + 34.0, y0 + 0.86 * (y1 - y0))
-        _draw_bench(draw, rng=rng, bbox=bench, scale=scale)
-        decor.append(ParkDecor(f"{person_id}_bench", "activity_bench", tuple(round(float(v), 3) for v in bench), {"supports_person_id": str(person_id)}))
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=f"{person_id}_bench",
+            object_type="bench",
+            bbox_xyxy=bench,
+            renderer_id="fixture_bench",
+            renderer_variant_id="bench",
+            semantic_attributes={"decor_type": "activity_bench", "supports_person_id": str(person_id)},
+            visual_attributes=_bench_visual_attributes(rng, style_id=str(style_id)),
+            role="distractor",
+            source_entity_type="park_decor",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
+        decor.append(ParkDecor(f"{person_id}_bench", "activity_bench", tuple(round(float(v), 3) for v in bench), {"supports_person_id": str(person_id)}, object_record=rendered.object_record))
     if str(activity) == "playing_ball":
         ball_size = max(18.0, 0.20 * (y1 - y0))
         side = -1.0 if float(rng.random()) < 0.5 else 1.0
@@ -713,65 +704,6 @@ def _draw_activity_support(draw: ImageDraw.ImageDraw, *, rng, person_id: str, ac
         _line(draw, [(ball[0] + 0.18 * ball_size, ball[1] + 0.50 * ball_size), (ball[2] - 0.18 * ball_size, ball[1] + 0.50 * ball_size)], fill=(65, 71, 80), width=1, scale=scale)
         decor.append(ParkDecor(f"{person_id}_ball", "activity_ball", tuple(round(float(v), 3) for v in ball), {"supports_person_id": str(person_id)}))
     return tuple(decor)
-
-
-def _draw_activity_person(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: BBox,
-    activity: str,
-    primary: RGB,
-    accent: RGB,
-    skin: RGB,
-    style_id: str,
-    gender_id: str,
-    scale: int,
-) -> None:
-    outline, line_width, shadow = _style_params(str(style_id))
-    if shadow:
-        _draw_shadow(draw, bbox, scale=scale)
-    x0, y0, x1, y1 = bbox
-    gender = normalize_person_gender(gender_id)
-    if str(activity) == "sitting":
-        head = _rel(bbox, 0.31, 0.04, 0.69, 0.32)
-        body = _rel(bbox, 0.28, 0.32, 0.76, 0.56 if gender == "female" else 0.62)
-        draw_person_hair_back(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-        _ellipse(draw, head, fill=skin, outline=outline, width=line_width, scale=scale)
-        draw_person_hair_front(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-        _rect(draw, body, fill=primary, outline=outline, width=line_width, scale=scale, radius=8)
-        for arm in (_rel(bbox, 0.14, 0.40, 0.31, 0.64), _rel(bbox, 0.72, 0.40, 0.92, 0.62)):
-            _line(draw, [(arm[0], arm[1]), (arm[2], arm[3])], fill=primary, width=max(3, line_width + 1), scale=scale)
-        leg_color = (65, 74, 91)
-        _line(draw, [(x0 + 0.40 * (x1 - x0), y0 + 0.62 * (y1 - y0)), (x0 + 0.25 * (x1 - x0), y0 + 0.87 * (y1 - y0)), (x0 + 0.55 * (x1 - x0), y0 + 0.90 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.60 * (x1 - x0), y0 + 0.62 * (y1 - y0)), (x0 + 0.75 * (x1 - x0), y0 + 0.86 * (y1 - y0)), (x0 + 0.96 * (x1 - x0), y0 + 0.84 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        if gender == "female":
-            draw_person_skirt(draw, torso_bbox=body, bottom_y=y0 + 0.70 * (y1 - y0), fill=primary, outline=outline, scale=scale, width=line_width)
-        return
-    head = _rel(bbox, 0.31, 0.04, 0.69, 0.27)
-    torso = _rel(bbox, 0.29, 0.28, 0.72, 0.52 if gender == "female" else 0.58)
-    draw_person_hair_back(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    _ellipse(draw, head, fill=skin, outline=outline, width=line_width, scale=scale)
-    draw_person_hair_front(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    _rect(draw, torso, fill=primary, outline=outline, width=line_width, scale=scale, radius=8)
-    leg_color = (65, 74, 91)
-    if str(activity) == "walking":
-        _line(draw, [(x0 + 0.42 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.22 * (x1 - x0), y0 + 0.92 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.58 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.80 * (x1 - x0), y0 + 0.90 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.30 * (x1 - x0), y0 + 0.35 * (y1 - y0)), (x0 + 0.12 * (x1 - x0), y0 + 0.58 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-        _line(draw, [(x0 + 0.70 * (x1 - x0), y0 + 0.36 * (y1 - y0)), (x0 + 0.88 * (x1 - x0), y0 + 0.54 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-    elif str(activity) == "playing_ball":
-        _line(draw, [(x0 + 0.38 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.28 * (x1 - x0), y0 + 0.92 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.60 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.82 * (x1 - x0), y0 + 0.80 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.30 * (x1 - x0), y0 + 0.38 * (y1 - y0)), (x0 - 0.02 * (x1 - x0), y0 + 0.26 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-        _line(draw, [(x0 + 0.71 * (x1 - x0), y0 + 0.38 * (y1 - y0)), (x0 + 1.03 * (x1 - x0), y0 + 0.28 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-        _ellipse(draw, _rel(bbox, 0.36, 0.00, 0.64, 0.09), fill=accent, outline=outline, width=1, scale=scale)
-    else:
-        _line(draw, [(x0 + 0.42 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.38 * (x1 - x0), y0 + 0.92 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.58 * (x1 - x0), y0 + 0.56 * (y1 - y0)), (x0 + 0.62 * (x1 - x0), y0 + 0.92 * (y1 - y0))], fill=leg_color, width=max(5, line_width + 3), scale=scale)
-        _line(draw, [(x0 + 0.30 * (x1 - x0), y0 + 0.35 * (y1 - y0)), (x0 + 0.18 * (x1 - x0), y0 + 0.62 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-        _line(draw, [(x0 + 0.70 * (x1 - x0), y0 + 0.35 * (y1 - y0)), (x0 + 0.82 * (x1 - x0), y0 + 0.62 * (y1 - y0))], fill=primary, width=max(4, line_width + 2), scale=scale)
-    if gender == "female":
-        draw_person_skirt(draw, torso_bbox=torso, bottom_y=y0 + 0.72 * (y1 - y0), fill=primary, outline=outline, scale=scale, width=line_width)
 
 
 def render_park_playground_scene(
@@ -800,7 +732,7 @@ def render_park_playground_scene(
     draw = ImageDraw.Draw(image)
     decor: List[ParkDecor] = []
     decor.extend(_draw_background(draw, rng=rng, setting_id=str(setting_id), layout=layout, width=width, height=height, scale=scale))
-    decor.extend(_draw_equipment_and_fixtures(draw, rng=rng, layout=layout, width=width, height=height, scale=scale, equipment_specs=equipment_specs))
+    decor.extend(_draw_equipment_and_fixtures(draw, rng=rng, layout=layout, width=width, height=height, scale=scale, style_id=str(style_id), equipment_specs=equipment_specs))
     equipment_decor = tuple(item for item in decor if str(item.decor_id).startswith("equipment_"))
     placed = _place_persons(rng, specs=person_specs, layout=layout, width=width, height=height, equipment_decor=equipment_decor)
     persons: List[ParkPerson] = []
@@ -809,23 +741,44 @@ def render_park_playground_scene(
         if bool(spec.attributes.get("suppress_activity_support", False)):
             continue
         person_id = f"person_{index:02d}"
-        decor.extend(_draw_activity_support(draw, rng=rng, person_id=person_id, activity=str(spec.activity), bbox=bbox, scale=scale))
+        decor.extend(_draw_activity_support(draw, rng=rng, person_id=person_id, activity=str(spec.activity), bbox=bbox, scale=scale, style_id=str(style_id)))
     for index, (spec, bbox, zone) in enumerate(placed_sorted):
         person_id = f"person_{index:02d}"
         primary = _clothes_color(rng)
         accent = _clothes_color(rng)
         skin = _skin_color(rng)
         gender_id = sample_person_gender(rng)
-        _draw_activity_person(
-            draw,
-            bbox=bbox,
-            activity=str(spec.activity),
-            primary=primary,
-            accent=accent,
-            skin=skin,
-            style_id=str(style_id),
-            gender_id=str(gender_id),
-            scale=scale,
+        semantic_attributes = {
+            "activity": str(spec.activity),
+            "activity_label": park_activity_display_name(str(spec.activity)),
+            **dict(spec.attributes),
+            "zone": str(zone),
+        }
+        visual_attributes = {
+            "primary_color_rgb": [int(v) for v in primary],
+            "accent_color_rgb": [int(v) for v in accent],
+            "skin_color_rgb": [int(v) for v in skin],
+            "style_id": str(style_id),
+            "gender_id": str(gender_id),
+        }
+        rendered = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=person_id,
+                object_type="person",
+                bbox_xyxy=bbox,
+                renderer_id="park_person",
+                renderer_variant_id=str(spec.activity),
+                semantic_attributes=semantic_attributes,
+                visual_attributes=visual_attributes,
+                role=str(spec.role),
+                source_entity_type="park_person",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=scale,
+                style_id=str(style_id),
+            ),
         )
         persons.append(
             ParkPerson(
@@ -840,6 +793,7 @@ def render_park_playground_scene(
                 gender_id=str(gender_id),
                 role=str(spec.role),
                 attributes={**dict(spec.attributes), "zone": str(zone)},
+                object_record=rendered.object_record,
             )
         )
     if scale != 1:
@@ -870,7 +824,7 @@ def park_decor_bbox_map(scene: RenderedParkPlaygroundScene) -> Dict[str, List[fl
 
 
 def sort_park_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
-    """Return bboxes sorted top-to-bottom then left-to-right for stable evidence."""
+    """Return bboxes sorted top-to-bottom then left-to-right for stable annotation."""
 
     boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
     boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
@@ -882,25 +836,31 @@ def park_scene_entities(scene: RenderedParkPlaygroundScene) -> List[Dict[str, An
 
     entities: List[Dict[str, Any]] = []
     for person in scene.persons:
-        object_record = make_object_record(
-            object_id=str(person.person_id),
-            object_type="person",
-            bbox_xyxy=person.bbox_xyxy,
-            semantic_attributes={
-                "activity": str(person.activity),
-                "activity_label": str(person.activity_label),
-                **dict(person.attributes),
-            },
-            visual_attributes={
-                "primary_color_rgb": [int(v) for v in person.primary_color_rgb],
-                "accent_color_rgb": [int(v) for v in person.accent_color_rgb],
-                "skin_color_rgb": [int(v) for v in person.skin_color_rgb],
-                "style_id": str(person.style_id),
-                "gender_id": str(person.gender_id),
-            },
-            role=str(person.role),
-            source_entity_type="park_person",
-        ).as_dict()
+        object_record = (
+            dict(person.object_record)
+            if person.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(person.person_id),
+                object_type="person",
+                bbox_xyxy=person.bbox_xyxy,
+                semantic_attributes={
+                    "activity": str(person.activity),
+                    "activity_label": str(person.activity_label),
+                    **dict(person.attributes),
+                },
+                visual_attributes={
+                    "primary_color_rgb": [int(v) for v in person.primary_color_rgb],
+                    "accent_color_rgb": [int(v) for v in person.accent_color_rgb],
+                    "skin_color_rgb": [int(v) for v in person.skin_color_rgb],
+                    "style_id": str(person.style_id),
+                    "gender_id": str(person.gender_id),
+                },
+                role=str(person.role),
+                source_entity_type="park_person",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(person.person_id),
@@ -922,14 +882,20 @@ def park_scene_entities(scene: RenderedParkPlaygroundScene) -> List[Dict[str, An
         if object_type == "playground_equipment":
             semantic_attributes["equipment_type"] = str(item.decor_type)
             semantic_attributes["equipment_label"] = park_equipment_display_name(str(item.decor_type))
-        object_record = make_object_record(
-            object_id=str(item.decor_id),
-            object_type=object_type,
-            bbox_xyxy=item.bbox_xyxy,
-            semantic_attributes=semantic_attributes,
-            role=str(item.attributes.get("role", "distractor")),
-            source_entity_type="park_decor",
-        ).as_dict()
+        object_record = (
+            dict(item.object_record)
+            if item.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(item.decor_id),
+                object_type=object_type,
+                bbox_xyxy=item.bbox_xyxy,
+                semantic_attributes=semantic_attributes,
+                role=str(item.attributes.get("role", "distractor")),
+                source_entity_type="park_decor",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(item.decor_id),

@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
-from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import (
@@ -30,8 +27,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_legibility import draw_text_traced
-from ...shared.text_rendering import load_font
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
@@ -53,15 +48,21 @@ from ..shared.object_scene import (
     _resolve_render_params,
     _sample_camera,
     _sample_scene_object_specs,
-    render_object_scene_3d,
+)
+from .multiview_rendering import (
+    CANDIDATE_VIEW_KEY,
+    REFERENCE_VIEW_KEY,
+    offset_bbox as _offset_bbox,
+    offset_entities as _offset_entities,
+    panel_layout as _panel_layout,
+    panel_render_params as _panel_render_params,
+    render_multiview_scene as _render_multiview_scene,
+    shift_render_maps as _shift_render_maps,
 )
 
 
 TASK_ID = "task_three_d__object_scene__multiview_object_match_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("same_object_in_second_view",)
-REFERENCE_VIEW_KEY = "reference_view"
-CANDIDATE_VIEW_KEY = "candidate_view"
-MULTIVIEW_PANEL_ROOM_EXTENT = 2.55
 MULTIVIEW_CANDIDATE_POSITION_SCALE = 0.82
 MULTIVIEW_CANDIDATE_DIMENSION_SCALE = 1.18
 MULTIVIEW_MIN_CANDIDATE_BBOX_AREA_PX = 980.0
@@ -77,69 +78,6 @@ def _bbox_is_readable(bbox: Sequence[float], *, width: int, height: int, min_sid
     if box_width < float(min_side_px) or box_height < float(min_side_px):
         return False
     return float(bbox[2]) > 6.0 and float(bbox[3]) > 6.0 and float(bbox[0]) < float(width - 6) and float(bbox[1]) < float(height - 6)
-
-
-def _offset_bbox(bbox: Sequence[float], *, dx: float, dy: float) -> List[float]:
-    return [
-        round(float(bbox[0]) + float(dx), 3),
-        round(float(bbox[1]) + float(dy), 3),
-        round(float(bbox[2]) + float(dx), 3),
-        round(float(bbox[3]) + float(dy), 3),
-    ]
-
-
-def _offset_map(mapping: Mapping[str, Sequence[float]], *, dx: float, dy: float) -> Dict[str, List[float]]:
-    return {str(key): _offset_bbox(value, dx=dx, dy=dy) for key, value in mapping.items()}
-
-
-def _offset_centers(mapping: Mapping[str, Sequence[float]], *, dx: float, dy: float) -> Dict[str, List[float]]:
-    return {
-        str(key): [round(float(value[0]) + float(dx), 3), round(float(value[1]) + float(dy), 3)]
-        for key, value in mapping.items()
-    }
-
-
-def _offset_entities(entities: Sequence[Mapping[str, Any]], *, dx: float, dy: float, view_key: str) -> List[Dict[str, Any]]:
-    shifted: List[Dict[str, Any]] = []
-    for entity in entities:
-        updated = dict(entity)
-        updated["entity_id"] = f"{view_key}:{entity['entity_id']}"
-        updated["bbox_px"] = _offset_bbox(entity["bbox_px"], dx=dx, dy=dy)
-        attrs = dict(updated.get("attrs", {})) if isinstance(updated.get("attrs"), Mapping) else {}
-        attrs["view_key"] = str(view_key)
-        updated["attrs"] = attrs
-        shifted.append(updated)
-    return list(shifted)
-
-
-def _panel_layout(render_params: _RenderParams) -> Dict[str, Dict[str, int]]:
-    outer_margin = max(18, min(32, int(round(render_params.canvas_width * 0.018))))
-    gutter = max(24, min(42, int(round(render_params.canvas_width * 0.022))))
-    label_height = 38
-    panel_width = int((int(render_params.canvas_width) - (2 * outer_margin) - gutter) // 2)
-    panel_height = int(int(render_params.canvas_height) - (2 * outer_margin) - label_height)
-    panel_y = int(outer_margin + label_height)
-    left_x = int(outer_margin)
-    right_x = int(outer_margin + panel_width + gutter)
-    return {
-        REFERENCE_VIEW_KEY: {"x": left_x, "y": panel_y, "width": panel_width, "height": panel_height},
-        CANDIDATE_VIEW_KEY: {"x": right_x, "y": panel_y, "width": panel_width, "height": panel_height},
-    }
-
-
-def _panel_render_params(render_params: _RenderParams, panel: Mapping[str, int]) -> _RenderParams:
-    return replace(
-        render_params,
-        canvas_width=int(panel["width"]),
-        canvas_height=int(panel["height"]),
-        scene_margin_left_px=32,
-        scene_margin_right_px=32,
-        scene_margin_top_px=28,
-        scene_margin_bottom_px=32,
-        room_extent=min(float(render_params.room_extent), MULTIVIEW_PANEL_ROOM_EXTENT),
-        label_font_size_px=max(22, int(render_params.label_font_size_px)),
-        full_bleed_floor=True,
-    )
 
 
 def _camera_yaw_bands_for_instance(instance_seed: int) -> Tuple[Tuple[float, float], Tuple[float, float]]:
@@ -456,105 +394,6 @@ def _frame_record(frame) -> Dict[str, Any]:
     }
 
 
-def _render_view_dataset(dataset: Mapping[str, Any], *, view_key: str) -> Dict[str, Any]:
-    view = dataset["views"][str(view_key)]
-    return {
-        "query_id": str(dataset["query_id"]),
-        "scene_variant": str(dataset["scene_variant"]),
-        "point_specs": [dict(spec) for spec in view["point_specs"]],
-        "context_object_specs": [dict(spec) for spec in view["context_object_specs"]],
-        "answer_label": str(dataset["answer_label"]),
-        "answer_point_id": str(dataset["answer_point_id"]),
-        "camera": dict(view["camera"]),
-        "projection_frame": dict(view["projection_frame"]),
-    }
-
-
-def _draw_panel_label(draw: ImageDraw.ImageDraw, *, text: str, x: float, y: float) -> None:
-    font = load_font(22, bold=True)
-    draw_text_traced(
-        draw,
-        (float(x), float(y)),
-        str(text),
-        font=font,
-        fill=(28, 34, 43),
-        stroke_width=2,
-        stroke_fill=(255, 255, 255),
-     role="readout", required=False,)
-
-
-def _render_multiview_scene(
-    *,
-    dataset: Mapping[str, Any],
-    render_params: _RenderParams,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    background_defaults: Mapping[str, Any],
-) -> Tuple[Image.Image, Dict[str, Any], Dict[str, Any]]:
-    panel_layout = _panel_layout(render_params)
-    panel_params = _panel_render_params(render_params, panel_layout[REFERENCE_VIEW_KEY])
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
-        instance_seed=int(instance_seed),
-        params=params,
-        default_config=background_defaults,
-    )
-    composite = background.convert("RGB")
-    draw = ImageDraw.Draw(composite)
-    rendered_by_view = {}
-    view_background_meta = {}
-    for view_key, seed_offset in ((REFERENCE_VIEW_KEY, 17), (CANDIDATE_VIEW_KEY, 29)):
-        panel = panel_layout[str(view_key)]
-        panel_background, panel_background_meta = make_background_canvas(
-            canvas_width=int(panel["width"]),
-            canvas_height=int(panel["height"]),
-            instance_seed=int(instance_seed) + int(seed_offset),
-            params=params,
-            default_config=background_defaults,
-        )
-        view_dataset = _render_view_dataset(dataset, view_key=str(view_key))
-        rendered = render_object_scene_3d(
-            panel_background,
-            dataset=view_dataset,
-            render_params=panel_params,
-            draw_candidate_labels=str(view_key) == CANDIDATE_VIEW_KEY,
-            highlight_object_ids=(
-                [str(dataset["target_object_id"])] if str(view_key) == REFERENCE_VIEW_KEY else []
-            ),
-            evidence_label=str(dataset["answer_label"]),
-        )
-        composite.paste(rendered.image, (int(panel["x"]), int(panel["y"])))
-        draw.rectangle(
-            [
-                int(panel["x"]),
-                int(panel["y"]),
-                int(panel["x"]) + int(panel["width"]),
-                int(panel["y"]) + int(panel["height"]),
-            ],
-            outline=(57, 67, 80),
-            width=2,
-        )
-        rendered_by_view[str(view_key)] = rendered
-        view_background_meta[str(view_key)] = dict(panel_background_meta)
-
-    _draw_panel_label(
-        draw,
-        text="View 1",
-        x=float(panel_layout[REFERENCE_VIEW_KEY]["x"]),
-        y=float(panel_layout[REFERENCE_VIEW_KEY]["y"] - 31),
-    )
-    _draw_panel_label(
-        draw,
-        text="View 2",
-        x=float(panel_layout[CANDIDATE_VIEW_KEY]["x"]),
-        y=float(panel_layout[CANDIDATE_VIEW_KEY]["y"] - 31),
-    )
-    background_meta = dict(background_meta)
-    background_meta["view_panels"] = dict(view_background_meta)
-    return composite, dict(rendered_by_view), dict(background_meta)
-
-
 def _build_complexity(
     *,
     scene_variant: str,
@@ -712,7 +551,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             dx=float(candidate_panel["x"]),
             dy=float(candidate_panel["y"]),
         )
-        evidence_bbox_map = {
+        annotation_bbox_map = {
             "reference_view_object": list(reference_bbox),
             "second_view_match": list(candidate_bbox),
         }
@@ -727,7 +566,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -740,13 +579,13 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -755,7 +594,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             scene_variant=str(scene_variant),
@@ -890,10 +729,10 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 },
                 "answer_label": str(answer_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -903,7 +742,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -912,28 +751,6 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             scene_id=SCENE_ID,
             query_id=str(query_id),
         )
-
-
-def _shift_render_maps(rendered_scene, *, panel: Mapping[str, int]) -> Dict[str, Any]:
-    dx = float(panel["x"])
-    dy = float(panel["y"])
-    panel_bbox = [
-        float(panel["x"]),
-        float(panel["y"]),
-        float(panel["x"] + panel["width"]),
-        float(panel["y"] + panel["height"]),
-    ]
-    return {
-        "panel_bbox_px": list(panel_bbox),
-        "scene_bbox_px": _offset_bbox(rendered_scene.scene_bbox_px, dx=dx, dy=dy),
-        "room_bbox_px": _offset_bbox(rendered_scene.room_bbox_px, dx=dx, dy=dy),
-        "point_bboxes_px": _offset_map(rendered_scene.point_bboxes_px, dx=dx, dy=dy),
-        "point_centers_px": _offset_centers(rendered_scene.point_centers_px, dx=dx, dy=dy),
-        "object_bboxes_px": _offset_map(rendered_scene.object_bboxes_px, dx=dx, dy=dy),
-        "object_centers_px": _offset_centers(rendered_scene.object_centers_px, dx=dx, dy=dy),
-        "context_object_bboxes_px": _offset_map(rendered_scene.context_object_bboxes_px, dx=dx, dy=dy),
-        "context_object_centers_px": _offset_centers(rendered_scene.context_object_centers_px, dx=dx, dy=dy),
-    }
 
 
 __all__ = ["ThreeDSpatialMultiviewObjectMatchLabelTask"]

@@ -7,22 +7,22 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.graph.counting.degree_count import GraphCountingDegreeCountTask
+from trace.tasks.graph.counting.degree_count import GraphCountingDegreeValueFilterCountTask
 from tests.helpers import read_jsonl
 
 
 def test_graph_counting_degree_count_deterministic() -> None:
-    task = GraphCountingDegreeCountTask()
+    task = GraphCountingDegreeValueFilterCountTask()
     out_a = task.generate(19120, params={}, max_attempts=80)
     out_b = task.generate(19120, params={}, max_attempts=80)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "point_set"
+    assert out_a.annotation_gt.type == "point_set"
 
 
 def test_graph_counting_degree_count_build_smoke(tmp_path: Path) -> None:
@@ -34,7 +34,7 @@ def test_graph_counting_degree_count_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph__node_link__degree_predicate_count",
+                task_id="task_graph__node_link__degree_value_filter_count",
                 count=4,
                 params={},
             )
@@ -51,7 +51,7 @@ def test_graph_counting_degree_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "counting" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__degree_predicate_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__degree_value_filter_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

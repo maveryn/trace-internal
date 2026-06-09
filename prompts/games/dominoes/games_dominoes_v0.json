@@ -27,23 +27,27 @@
     "query:double_count": [
       "double_rule_text"
     ],
-    "query:two_step_extension_label": [
+    "query:second_play_candidate_count": [
       "connection_rule_text",
-      "two_step_rule_text"
+      "second_play_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:extendable_first_play_count": [
+      "connection_rule_text",
+      "extendable_first_play_rule_text"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -51,12 +55,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -97,12 +101,19 @@
       "{double_rule_text} What is the number of loose dominoes below whose two halves match?",
       "Among the loose dominoes below, how many are doubles? {double_rule_text}"
     ],
-    "two_step_extension_label": [
-      "The top chain ends with a tile marked `REF`. {connection_rule_text} {two_step_rule_text} Which loose domino label is the unique second play?",
-      "Use the open right end of the `REF` tile. {connection_rule_text} {two_step_rule_text} Which labeled loose domino can be played second?",
-      "A first loose domino must connect to the open right end of `REF`, then one labeled loose domino can connect next. Which label is that second domino?",
-      "{connection_rule_text} {two_step_rule_text} Give the label of the loose domino that works as the second step.",
-      "Find the two-step extension from the `REF` tile's open right end. Which labeled loose domino is the second domino?"
+    "second_play_candidate_count": [
+      "The top chain ends with a tile marked `REF`. {connection_rule_text} {second_play_rule_text}",
+      "Use the open right end of the `REF` tile. {connection_rule_text} {second_play_rule_text}",
+      "{connection_rule_text} {second_play_rule_text}",
+      "Start from the `REF` tile's open right end. {connection_rule_text} {second_play_rule_text}",
+      "First make the only legal direct play on `REF`. {connection_rule_text} {second_play_rule_text}"
+    ],
+    "extendable_first_play_count": [
+      "The top chain ends with a tile marked `REF`. {connection_rule_text} {extendable_first_play_rule_text}",
+      "Use the open right end of the `REF` tile. {connection_rule_text} {extendable_first_play_rule_text}",
+      "{connection_rule_text} {extendable_first_play_rule_text}",
+      "Start from the `REF` tile's open right end. {connection_rule_text} {extendable_first_play_rule_text}",
+      "For each loose domino, imagine playing it directly on `REF` if legal. {connection_rule_text} {extendable_first_play_rule_text}"
     ]
   },
   "allow_empty_task_templates": true

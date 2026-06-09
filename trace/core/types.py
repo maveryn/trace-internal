@@ -10,7 +10,7 @@ from .reward_contracts import RewardContract
 
 @dataclass(frozen=True)
 class TypedValue:
-    """Typed envelope for answer/evidence values."""
+    """Typed envelope for answer/annotation values."""
 
     type: str
     value: Any
@@ -73,7 +73,7 @@ class TrainInstance:
     prompt: str
     images: List[ImageRecord]
     answer_gt: TypedValue
-    evidence_gt: TypedValue
+    annotation_gt: TypedValue
     reward_contract: RewardContract
     task_complexity: TaskComplexity
     trace_ref: TraceRef
@@ -94,7 +94,7 @@ class TrainInstance:
             "prompt_variants": dict(self.prompt_variants),
             "images": [image.to_dict() for image in self.images],
             "answer_gt": self.answer_gt.to_dict(),
-            "evidence_gt": self.evidence_gt.to_dict(),
+            "annotation_gt": self.annotation_gt.to_dict(),
             "reward_contract": self.reward_contract.to_dict(),
             "task_complexity": self.task_complexity.to_dict(),
             "trace_ref": self.trace_ref.to_dict(),
@@ -113,11 +113,11 @@ class TraceInstance:
     render_map: Dict[str, Any]
     execution_trace: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
-    projected_evidence: Dict[str, Any]
+    projected_annotation: Dict[str, Any]
     taxonomy: Dict[str, Any] | None = None
     seed_map: Dict[str, int] | None = None
     answer_gt: TypedValue | None = None
-    evidence_gt: TypedValue | None = None
+    annotation_gt: TypedValue | None = None
     reward_contract: RewardContract | None = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -129,7 +129,7 @@ class TraceInstance:
             "render_map": self.render_map,
             "execution_trace": self.execution_trace,
             "witness_symbolic": self.witness_symbolic,
-            "projected_evidence": self.projected_evidence,
+            "projected_annotation": self.projected_annotation,
         }
         if self.taxonomy is not None:
             data["taxonomy"] = dict(self.taxonomy)
@@ -137,8 +137,8 @@ class TraceInstance:
             data["seed_map"] = dict(self.seed_map)
         if self.answer_gt is not None:
             data["answer_gt"] = self.answer_gt.to_dict()
-        if self.evidence_gt is not None:
-            data["evidence_gt"] = self.evidence_gt.to_dict()
+        if self.annotation_gt is not None:
+            data["annotation_gt"] = self.annotation_gt.to_dict()
         if self.reward_contract is not None:
             data["reward_contract"] = self.reward_contract.to_dict()
         return data

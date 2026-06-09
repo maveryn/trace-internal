@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="benchmark-toolbar">
+  <div class="filter-control-row">
+    <div class="filter-tabs" aria-label="Correctness filter">
+      {% for name, label, count in [
+        ('all', 'All', benchmark.sample_count),
+        ('correct', 'Correct', benchmark.correct_count),
+        ('incorrect', 'Incorrect', benchmark.incorrect_count),
+        ('unknown', 'Unknown', benchmark.unknown_count)
+      ] %}
+        <a class="{% if active_filter == name %}active{% endif %}" href="{{ benchmark_path(benchmark.benchmark, name, active_category, q|default('')) }}">
+          {{ label }} <span>{{ count }}</span>
+        </a>
+      {% endfor %}
+    </div>
+    <div class="row-order-toggle" role="radiogroup" aria-label="Row order" data-row-order-toggle>
+      <button type="button" role="radio" data-row-order="original" aria-checked="true">Original</button>
+      <button type="button" role="radio" data-row-order="shuffle" aria-checked="false">Shuffle</button>
+    </div>
+  </div>
+  <form class="inline-search" action="{{ app_path('/benchmarks/' ~ benchmark.benchmark) }}" method="get">
+    <input type="hidden" name="filter" value="{{ active_filter }}">
+    {% if benchmark.category_counts %}
+      <label class="category-filter">
+        Category
+        <select name="category">
+          <option value="all" {% if active_category == 'all' %}selected{% endif %}>All categories</option>
+          {% for category, count in benchmark.category_counts|dictsort %}
+            <option value="{{ category }}" {% if active_category == category %}selected{% endif %}>{{ category }} ({{ count }})</option>
+          {% endfor %}
+        </select>
+      </label>
+    {% else %}
+      <input type="hidden" name="category" value="all">
+    {% endif %}
+    <input type="search" name="q" value="{{ q|default('') }}" placeholder="Filter within this benchmark">
+    <button type="submit">Search</button>
+  </form>
+</section>
+
+<section class="benchmark-meta">
+  <span>Accuracy: <strong>{{ benchmark.accuracy|pct }}</strong></span>
+  <span>Model: <strong>{{ benchmark.model_id or index.model_id or 'unknown' }}</strong></span>
+  {% if benchmark.datetime %}<span>Run: <strong>{{ benchmark.datetime }}</strong></span>{% endif %}
+</section>
+
+<section class="sample-table" aria-label="Benchmark samples" data-sample-table>
+  {% for sample in samples %}
+    <a class="sample-row {{ sample.status }}" href="{{ app_path('/samples/' ~ sample.uid) }}">
+      <div class="sample-image">
+        {% if sample.image_exists %}
+          <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+        {% else %}
+          <span>No image</span>
+        {% endif %}
+      </div>
+      <div class="cell prompt-cell">
+        <div class="cell-label">Prompt</div>
+        <p>{{ sample.prompt|excerpt(900) }}</p>
+      </div>
+      <div class="cell response-cell">
+        <div class="cell-label">Model Response</div>
+        <p>{{ sample.model_response|excerpt(900) }}</p>
+      </div>
+      <div class="cell answer-cell">
+        <div class="status-line">
+          <span class="status-pill {{ sample.status }}">{{ sample.status }}</span>
+          <span>score {{ sample.score|score }}</span>
+        </div>
+        <dl>
+          {% if sample.category %}
+          <dt>Category</dt>
+          <dd>{{ sample.category|excerpt(180) }}</dd>
+          {% endif %}
+          <dt>Ground truth</dt>
+          <dd>{{ sample.target_label|excerpt(180) }}</dd>
+          <dt>Extracted</dt>
+          <dd>{{ sample.extracted_answer|excerpt(180) }}</dd>
+          <dt>Source</dt>
+          <dd>{{ sample.task_name|excerpt(80) }} #{{ sample.doc_id }}</dd>
+        </dl>
+      </div>
+    </a>
+  {% else %}
+    <div class="empty-state">No samples match this filter.</div>
+  {% endfor %}
+</section>
+{% endblock %}

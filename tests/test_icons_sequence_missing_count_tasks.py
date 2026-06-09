@@ -44,8 +44,8 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "icons_sequence_missing_count"
     assert execution["question_format"] == "infer_missing_sequence_count"
     assert out.query_id == "arithmetic_progression"
@@ -79,11 +79,11 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
         assert isinstance(entity["noise_edits"], list)
     assert len(scene_colors) == 1
 
-    missing_boxes = out.evidence_gt.value
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert missing_boxes == trace["projected_evidence"]["bbox_set"]
-    assert missing_boxes == trace["projected_evidence"]["pixel_bbox_set"]
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == 1
+    missing_boxes = out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert missing_boxes == trace["projected_annotation"]["bbox_set"]
+    assert missing_boxes == trace["projected_annotation"]["pixel_bbox_set"]
+    assert len(trace["projected_annotation"]["pixel_point_set"]) == 1
     drawn_text_roles = {
         str(record.get("role"))
         for record in trace["render_spec"]["drawn_text"]["text_legibility"]["records"]
@@ -123,7 +123,7 @@ def test_icons_sequence_missing_count_supports_end_missing_cell_and_zero_answer(
     )
     execution = out.trace_payload["execution_trace"]
     assert int(out.answer_gt.value) == 0
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.annotation_gt.value) == 1
     assert int(execution["missing_cell_index"]) == 3
     assert execution["full_sequence_counts"] == [3, 2, 1, 0]
 
@@ -136,12 +136,12 @@ def test_icons_sequence_missing_count_prompt_example_matches_contract() -> None:
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 5}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 1
-    assert answer_and_evidence["answer"] == 5
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 1
+    assert answer_and_annotation["answer"] == 5
 
 
 def test_icons_sequence_missing_count_balanced_sampling_defaults() -> None:

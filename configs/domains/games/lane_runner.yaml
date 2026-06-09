@@ -1,0 +1,114 @@
+generation:
+  shared:
+    scene_variant_weights:
+      two_lane_track: 1.0
+    query_id_weights:
+      path_coin_count: 1.0
+      safe_path_label: 1.0
+    style_variant_weights:
+      arcade_lane: 1.0
+      city_road: 1.0
+      forest_path: 1.0
+      neon_track: 1.0
+      paper_course: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_id_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_row_count_sampling: true
+    balanced_start_lane_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_option_count_sampling: true
+    balanced_answer_option_index_sampling: true
+    row_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+    start_lane_support:
+      - 0
+      - 1
+    target_answer_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    option_count_support:
+      - 4
+      - 6
+    answer_option_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  task_overrides:
+    games_lane_runner_path_coin_base:
+      query_id_weights:
+        path_coin_count: 1.0
+        safe_path_label: 0.0
+      target_answer_support:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+    games_lane_runner_safe_path_base:
+      query_id_weights:
+        path_coin_count: 0.0
+        safe_path_label: 1.0
+rendering:
+  shared:
+    dynamic_canvas_size_enabled: true
+    canvas_min_width: 360
+    canvas_min_height: 430
+    canvas_outer_margin_px: 72
+    cell_size_px: 80
+    cell_gap_px: 7
+    panel_margin_px: 28
+    start_band_height_px: 44
+    finish_band_height_px: 42
+    coin_radius_px: 17
+    runner_radius_px: 20
+    hazard_radius_px: 18
+    path_line_width_px: 7
+    path_label_font_size_px: 18
+    option_card_cell_size_px: 80
+    option_card_gap_px: 7
+    option_card_margin_px: 10
+    option_card_area_gap_px: 28
+    grid_line_width_px: 3
+    label_font_size_px: 20
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    layout_jitter_enabled: true
+    layout_jitter_mode: slack_fraction
+    layout_jitter_min_margin_px: 24
+    layout_jitter_x_slack_fraction_min: -0.75
+    layout_jitter_x_slack_fraction_max: 0.75
+    layout_jitter_y_slack_fraction_min: -0.75
+    layout_jitter_y_slack_fraction_max: 0.75
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      path_planning: 0.30
+      ambiguity: 0.12
+      output_burden: 0.24
+prompt:
+  shared:
+    bundle_id: games_lane_runner_v0
+    scene_key: lane_runner_track
+    task_key: lane_runner_query
+    object_description_two_lane_track: a two-lane runner track with a start marker, a finish band, and visible coins in lane cells
+    object_description_two_lane_track_path_coin: a two-lane runner track with a start marker, a finish band, visible coins in lane cells, and one shown path
+    lane_runner_path_rule_text: Follow the shown path from start to finish. Each step moves one row toward the finish; the path may stay in the same lane or switch diagonally to the other lane.
+    annotation_hint_path_coin_count: set "annotation" to [x, y] pixel points at the centers of every coin collected by the shown path
+    answer_hint_path_coin_count: set "answer" to the number of coins collected by the shown path
+    object_description_two_lane_track_safe_path: labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path
+    safe_path_rule_text: Each path moves one row toward the finish. A safe path never enters a hazard cell.
+    annotation_hint_safe_path_label: set "annotation" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected path card
+    answer_hint_safe_path_label: set "answer" to the selected path label as a capital letter

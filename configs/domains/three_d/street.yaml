@@ -159,24 +159,24 @@ prompt:
     task_three_d__street__intersection_nearest_label:
       scene_key: street
       task_key: street_intersection_nearest_query
-      object_description: a perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, and lettered street objects
-      evidence_hint: set "evidence" to one bounding box around the selected lettered street object
-      answer_hint: set "answer" to the selected street object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, candidate street objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__lane_ahead_object_label:
       scene_key: street
       task_key: street_lane_ahead_object_query
-      object_description: a perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object with a red travel-direction arrow, and lettered street objects
-      evidence_hint: set "evidence" to one bounding box around the selected lettered street object
-      answer_hint: set "answer" to the selected street object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, one red-boxed reference street object with a red travel-direction arrow, candidate street objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__same_road_arm_reference_label:
       scene_key: street
       task_key: street_same_road_arm_reference_query
-      object_description: a perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object, and lettered street objects
-      evidence_hint: set "evidence" to one bounding box around the selected lettered street object
-      answer_hint: set "answer" to the selected street object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, one red-boxed reference street object, candidate street objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

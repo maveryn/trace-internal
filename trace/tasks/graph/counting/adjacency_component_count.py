@@ -26,12 +26,15 @@ from ..shared.adjacency_representation_scene import (
     sample_component_adjacency,
 )
 from ..shared.complexity import build_graph_complexity, normalize_int_with_bounds, resolve_graph_complexity_weights
+from ..shared.fixed_query_task import FixedGraphQueryTaskMixin
 from ..shared.graph_sampling import SUPPORTED_NODE_LINK_LABEL_VARIANTS
 from ..shared.task_support import graph_int_support, resolve_graph_named_variant
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__adjacency__component_count"
+TASK_ID = "graph_adjacency_component_count_source"
+DIRECTED_STRONG_COMPONENT_COUNT_TASK_ID = "task_graph__adjacency__directed_strong_component_count"
+UNDIRECTED_COMPONENT_COUNT_TASK_ID = "task_graph__adjacency__undirected_component_count"
 SUPPORTED_ADJACENCY_COMPONENT_QUERY_IDS: Tuple[str, ...] = (
     "undirected_component_count",
     "directed_strong_component_count",
@@ -187,7 +190,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
     return (
-        json.dumps({"evidence": [[70, 126, 158, 158], [70, 318, 158, 350]], "answer": 2}, separators=(",", ":")),
+        json.dumps({"annotation": [[70, 126, 158, 158], [70, 318, 158, 350]], "answer": 2}, separators=(",", ":")),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 
@@ -219,7 +222,6 @@ def _build_complexity(*, node_count: int, edge_count: int, component_count: int)
     )
 
 
-@register_task
 class GraphCountingAdjacencyComponentCountTask:
     """Count components from an adjacency-list or adjacency-matrix representation."""
 
@@ -290,13 +292,13 @@ class GraphCountingAdjacencyComponentCountTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_bboxes = [[round(float(value), 3) for value in rendered.row_label_bboxes[str(label)]] for label in representatives]
+        annotation_bboxes = [[round(float(value), 3) for value in rendered.row_label_bboxes[str(label)]] for label in representatives]
         answer_gt = TypedValue(type="integer", value=int(len(sample.components)))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -304,7 +306,7 @@ class GraphCountingAdjacencyComponentCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults[
@@ -316,7 +318,7 @@ class GraphCountingAdjacencyComponentCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -422,16 +424,16 @@ class GraphCountingAdjacencyComponentCountTask:
                 "labels": list(representatives),
                 "components": [list(component) for component in sample.components],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -447,4 +449,29 @@ class GraphCountingAdjacencyComponentCountTask:
         )
 
 
-__all__ = ["GraphCountingAdjacencyComponentCountTask"]
+@register_task
+class GraphCountingAdjacencyDirectedStrongComponentCountTask(FixedGraphQueryTaskMixin):
+    """Count strongly connected components from a directed adjacency representation."""
+
+    task_id = DIRECTED_STRONG_COMPONENT_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "counting"
+    fixed_query_id = "directed_strong_component_count"
+    source_task_cls = GraphCountingAdjacencyComponentCountTask
+
+
+@register_task
+class GraphCountingAdjacencyUndirectedComponentCountTask(FixedGraphQueryTaskMixin):
+    """Count connected components from an undirected adjacency representation."""
+
+    task_id = UNDIRECTED_COMPONENT_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "counting"
+    fixed_query_id = "undirected_component_count"
+    source_task_cls = GraphCountingAdjacencyComponentCountTask
+
+
+__all__ = [
+    "GraphCountingAdjacencyDirectedStrongComponentCountTask",
+    "GraphCountingAdjacencyUndirectedComponentCountTask",
+]

@@ -113,7 +113,7 @@ def _construct_marker_dataset(
 
     answer_value: Any
     answer_type: str
-    evidence_region_ids: List[str]
+    annotation_region_ids: List[str]
     query_params: Dict[str, Any]
     target_count = 0
     target_support: List[int] = []
@@ -127,7 +127,7 @@ def _construct_marker_dataset(
             instance_seed=int(instance_seed),
         )
         target_ids = set(rng.sample(list(region_ids), int(target_count)))
-        evidence_region_ids = _reading_order_region_ids(list(target_ids), regions_by_id)
+        annotation_region_ids = _reading_order_region_ids(list(target_ids), regions_by_id)
         threshold_direction, threshold_direction_probabilities = _resolve_threshold_direction(
             params,
             instance_seed=int(instance_seed),
@@ -195,7 +195,7 @@ def _construct_marker_dataset(
                 regions_by_id[str(region_id)]["is_target_marker_region"] = False
         answer_value = str(regions_by_id[str(answer_region_id)]["marker_label"])
         answer_type = "string"
-        evidence_region_ids = [str(answer_region_id)]
+        annotation_region_ids = [str(answer_region_id)]
         target_count = 1
         target_support = [1]
         query_params = {
@@ -238,7 +238,7 @@ def _construct_marker_dataset(
         "legend_bins": [dict(item) for item in legend_bins],
         "regions": final_regions,
         "regions_by_id": {str(region["region_id"]): dict(region) for region in final_regions},
-        "evidence_region_ids": list(evidence_region_ids),
+        "annotation_region_ids": list(annotation_region_ids),
         "answer_value": answer_value,
         "answer_type": str(answer_type),
         "target_count": int(target_count),

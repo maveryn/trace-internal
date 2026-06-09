@@ -1,0 +1,83 @@
+{
+  "bundle_id": "games_sliding_block_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "sliding_block_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:sliding_block": [
+      "object_description"
+    ],
+    "query:blocker_count": [],
+    "query:movable_block_count": [],
+    "query:move_result_label": [
+      "move_sequence_description"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "sliding_block": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "blocker_count": [
+      "Count the blocks currently occupying the target block's straight path to the exit.",
+      "How many blocks are in the target block's direct exit path?",
+      "Determine the number of blocks blocking the red target block's straight route to the exit.",
+      "Count every block that lies between the target block and the exit arrow along the target's row or column.",
+      "How many rectangular blocks currently block the target block from sliding straight out?"
+    ],
+    "movable_block_count": [
+      "How many non-target blocks can slide at least one cell?",
+      "Count the non-target blocks that have at least one legal one-cell slide.",
+      "How many labeled blocks other than T can move one or more cells from their current position?",
+      "Count every non-target block that can slide left, right, up, or down by at least one cell without overlapping another block.",
+      "How many of the labeled non-target blocks are movable right now?"
+    ],
+    "move_result_label": [
+      "Apply these slides in order: {move_sequence_description}. Which labeled option shows the final board?",
+      "After making these moves in sequence, {move_sequence_description}, select the matching final-board option.",
+      "Use the original board, perform these slides in order: {move_sequence_description}. Which option is the resulting board?",
+      "Follow the slide sequence {move_sequence_description}. Choose the option that matches the board afterward.",
+      "Which labeled option shows the board after this slide sequence: {move_sequence_description}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

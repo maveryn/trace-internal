@@ -204,6 +204,10 @@ def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
     return (int(value[0]), int(value[1]), int(value[2]))
 
 
+def _style_trace(style: Mapping[str, Any]) -> Dict[str, Any]:
+    return {str(key): list(value) if isinstance(value, tuple) else value for key, value in style.items()}
+
+
 def _sample_jigsaw_board_style(rng) -> Dict[str, Any]:
     style_id = str(rng.choice(tuple(JIGSAW_BOARD_STYLES)))
     return {"style_id": style_id, **dict(JIGSAW_BOARD_STYLES[style_id])}
@@ -379,7 +383,7 @@ class IllustrationsVisualJigsawPieceOrderTask:
             label_font_family=str(option_label_font["font_family"]),
         )
         answer_value = " ".join(answer_labels)
-        evidence_sequence = [option_bboxes[label] for label in answer_labels]
+        annotation_sequence = [option_bboxes[label] for label in answer_labels]
         answer_positions = BOARD_ANSWER_POSITIONS[str(sample.board_shape)]
         anchored_position = str(BOARD_ANCHOR_POSITIONS[str(sample.board_shape)])
         anchored_cell = f"{_position_text(anchored_position)} cell"
@@ -395,7 +399,7 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_jigsaw_piece_order",
-                "evidence_hint_jigsaw_piece_order",
+                "annotation_hint_jigsaw_piece_order",
                 f"json_example_jigsaw_piece_order_{example_suffix}",
                 f"json_example_answer_only_jigsaw_piece_order_{example_suffix}",
             ],
@@ -413,7 +417,7 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 piece_count=len(display_order),
                 empty_cell_order=empty_cell_order,
             ),
-            "evidence_hint": str(prompt_defaults["evidence_hint_jigsaw_piece_order"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_jigsaw_piece_order"]),
             "json_example": str(prompt_defaults[f"json_example_jigsaw_piece_order_{example_suffix}"]),
             "json_example_answer_only": str(
                 prompt_defaults[f"json_example_answer_only_jigsaw_piece_order_{example_suffix}"]
@@ -428,8 +432,8 @@ class IllustrationsVisualJigsawPieceOrderTask:
             query_key=QUERY_ID,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -472,7 +476,7 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 "style": {
                     "source_task_id": str(source.source_task_id),
                     "source_scene_id": str(source.source_scene_id),
-                    "board_style": dict(board_style),
+                    "board_style": _style_trace(board_style),
                     "option_label_font": dict(option_label_font),
                 },
             },
@@ -494,13 +498,13 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 "answer_labels": list(answer_labels),
                 "answer": str(answer_value),
             },
-            "projected_evidence": {"bbox_sequence": list(evidence_sequence)},
+            "projected_annotation": {"bbox_sequence": list(annotation_sequence)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="string", value=str(answer_value)),
-            evidence_gt=TypedValue(type="bbox_sequence", value=list(evidence_sequence)),
+            annotation_gt=TypedValue(type="bbox_sequence", value=list(annotation_sequence)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

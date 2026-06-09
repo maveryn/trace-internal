@@ -46,7 +46,7 @@ def draw_labeled_points(
     stroke_width = (
         int(text_stroke_width)
         if text_stroke_width is not None
-        else max(1, int(round(0.08 * float(max(8, int(font_size_px))))))
+        else max(1, int(round(0.04 * float(max(8, int(font_size_px))))))
     )
     segments = [
         (

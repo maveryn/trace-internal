@@ -8,9 +8,15 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .bingo_common import BINGO_BOARD_SIZE, BINGO_COLUMN_LABELS, BingoCellInstance
 from .layout import apply_games_layout_jitter_to_bbox
+from .marking import (
+    draw_semantic_bbox_marker,
+    draw_semantic_ellipse_marker,
+    draw_semantic_line_marker,
+    resolve_semantic_marker_style,
+)
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import BingoTheme, build_games_bingo_theme
 
@@ -40,8 +46,13 @@ class BingoRenderParams:
     mark_inset_px: int
     mark_shape: str = "ellipse"
     cell_fill_pattern: str = "solid"
+    called_panel_width_px: int = 220
+    called_panel_gap_px: int = 32
+    called_panel_title_font_size_px: int = 26
+    called_panel_number_font_size_px: int = 25
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -93,6 +104,7 @@ def _draw_shadow(
 def render_bingo_card_scene(
     *,
     cells: Sequence[BingoCellInstance],
+    called_numbers: Sequence[int] | None = None,
     background: Image.Image,
     scene_variant: str,
     style_variant: str,
@@ -114,16 +126,37 @@ def render_bingo_card_scene(
     if cell_fill_pattern not in SUPPORTED_BINGO_CELL_FILL_PATTERNS:
         raise ValueError(f"unsupported bingo cell fill pattern: {params.cell_fill_pattern}")
 
-    card_left = float(0.5 * (int(params.canvas_width) - int(params.card_width_px)))
-    card_top = float(0.5 * (int(params.canvas_height) - int(params.card_height_px)))
-    card_right = float(card_left + int(params.card_width_px))
-    card_bottom = float(card_top + int(params.card_height_px))
-    card_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
-        bbox_px=(card_left, card_top, card_right, card_bottom),
+    called_values = tuple(int(value) for value in (called_numbers or ()))
+    has_called_panel = bool(called_values)
+    called_panel_width = int(params.called_panel_width_px) if has_called_panel else 0
+    called_panel_gap = int(params.called_panel_gap_px) if has_called_panel else 0
+    group_width = int(params.card_width_px) + int(called_panel_gap) + int(called_panel_width)
+    group_height = int(params.card_height_px)
+    group_left = float(0.5 * (int(params.canvas_width) - int(group_width)))
+    group_top = float(0.5 * (int(params.canvas_height) - int(group_height)))
+    group_right = float(group_left + int(group_width))
+    group_bottom = float(group_top + int(group_height))
+    group_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=(group_left, group_top, group_right, group_bottom),
         canvas_width=int(params.canvas_width),
         canvas_height=int(params.canvas_height),
         jitter=params.layout_jitter_meta,
     )
+    group_left, group_top, group_right, group_bottom = [float(value) for value in group_bbox]
+    card_left = float(group_left)
+    card_top = float(group_top)
+    card_right = float(card_left + int(params.card_width_px))
+    card_bottom = float(card_top + int(params.card_height_px))
+    card_bbox = (float(card_left), float(card_top), float(card_right), float(card_bottom))
+    called_panel_bbox: Tuple[float, float, float, float] | None = None
+    if has_called_panel:
+        called_left = float(card_right + int(called_panel_gap))
+        called_panel_bbox = (
+            float(called_left),
+            float(card_top),
+            float(called_left + int(called_panel_width)),
+            float(card_bottom),
+        )
     card_left, card_top, card_right, card_bottom = [float(value) for value in card_bbox]
 
     panel_bbox: Tuple[int, int, int, int] | None = None
@@ -132,10 +165,10 @@ def render_bingo_card_scene(
         panel_pad_top = max(24, int(round(float(params.title_band_height_px) * 0.34)))
         panel_pad_bottom = max(20, int(round(float(params.panel_margin_px) * 0.38)))
         panel_bbox = (
-            max(4, int(round(card_left)) - panel_pad_x),
-            max(4, int(round(card_top)) - panel_pad_top),
-            min(int(params.canvas_width) - 4, int(round(card_right)) + panel_pad_x),
-            min(int(params.canvas_height) - 4, int(round(card_bottom)) + panel_pad_bottom),
+            max(4, int(round(group_left)) - panel_pad_x),
+            max(4, int(round(group_top)) - panel_pad_top),
+            min(int(params.canvas_width) - 4, int(round(group_right)) + panel_pad_x),
+            min(int(params.canvas_height) - 4, int(round(group_bottom)) + panel_pad_bottom),
         )
         draw_panel_scene_chrome(
             draw,
@@ -161,6 +194,116 @@ def render_bingo_card_scene(
         outline=tuple(int(value) for value in theme.card_border_rgb),
         width=int(theme.card_border_width_px),
     )
+
+    scene_entities: List[Dict[str, Any]] = []
+    called_number_bboxes: Dict[str, List[float]] = {}
+    if called_panel_bbox is not None:
+        _draw_shadow(
+            image,
+            bbox_px=called_panel_bbox,
+            radius_px=int(params.card_corner_radius_px),
+            shadow_rgb=tuple(int(value) for value in theme.shadow_rgb),
+            shadow_alpha=max(18, int(theme.shadow_alpha * 0.72)),
+            shadow_offset_px=tuple(int(value) for value in theme.shadow_offset_px),
+        )
+        draw.rounded_rectangle(
+            called_panel_bbox,
+            radius=int(params.card_corner_radius_px),
+            fill=tuple(int(value) for value in theme.card_fill_rgb),
+            outline=tuple(int(value) for value in theme.card_border_rgb),
+            width=int(theme.card_border_width_px),
+        )
+        panel_left, panel_top, panel_right, panel_bottom = called_panel_bbox
+        called_title = "CALLED"
+        called_title_font = fit_font_to_box(
+            draw,
+            text=called_title,
+            max_width=max(40.0, float(panel_right - panel_left) * 0.78),
+            max_height=max(14.0, float(params.title_band_height_px) * 0.58),
+            bold=True,
+            min_size_px=11,
+            max_size_px=max(11, int(params.called_panel_title_font_size_px)),
+            fill_ratio=0.98,
+            font_family=str(params.font_family) or None,
+        )
+        called_title_bbox = draw.textbbox((0, 0), called_title, font=called_title_font, stroke_width=1)
+        called_title_origin = (
+            float(panel_left + 0.5 * ((panel_right - panel_left) - (called_title_bbox[2] - called_title_bbox[0]))),
+            float(panel_top + max(12.0, 0.28 * float(params.title_band_height_px))),
+        )
+        draw_text_traced(
+            draw,
+            called_title_origin,
+            called_title,
+            font=called_title_font,
+            fill=tuple(int(value) for value in theme.title_rgb),
+            stroke_width=1,
+            stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.title_rgb)),
+            role="readout",
+            required=False,
+        )
+        list_top = float(panel_top + int(params.title_band_height_px) + int(params.grid_gap_px))
+        list_bottom = float(panel_bottom - int(params.panel_margin_px) * 0.56)
+        item_gap = max(6.0, float(params.cell_gap_px) * 0.65)
+        item_count = max(1, len(called_values))
+        item_height = max(26.0, (list_bottom - list_top - ((item_count - 1) * item_gap)) / item_count)
+        item_left = float(panel_left + max(18, int(params.panel_margin_px) // 2))
+        item_right = float(panel_right - max(18, int(params.panel_margin_px) // 2))
+        called_number_font = fit_font_to_box(
+            draw,
+            text="75",
+            max_width=max(22.0, float(item_right - item_left) * 0.74),
+            max_height=max(16.0, float(item_height) * 0.60),
+            bold=True,
+            min_size_px=10,
+            max_size_px=max(10, int(params.called_panel_number_font_size_px)),
+            fill_ratio=0.98,
+            font_family=str(params.font_family) or None,
+        )
+        for item_index, value in enumerate(called_values):
+            item_top = float(list_top + item_index * (item_height + item_gap))
+            item_bottom = float(item_top + item_height)
+            item_bbox = (float(item_left), float(item_top), float(item_right), float(item_bottom))
+            draw.rounded_rectangle(
+                item_bbox,
+                radius=max(8, int(params.cell_corner_radius_px) - 2),
+                fill=tuple(int(value) for value in theme.cell_fill_rgb),
+                outline=tuple(int(value) for value in theme.grid_line_rgb),
+                width=2,
+            )
+            number_text = str(int(value))
+            number_bbox = draw.textbbox((0, 0), number_text, font=called_number_font, stroke_width=1)
+            number_origin = (
+                float(item_left + 0.5 * ((item_right - item_left) - (number_bbox[2] - number_bbox[0]))),
+                float(item_top + 0.5 * ((item_bottom - item_top) - (number_bbox[3] - number_bbox[1]))),
+            )
+            draw_text_traced(
+                draw,
+                number_origin,
+                number_text,
+                font=called_number_font,
+                fill=tuple(int(value) for value in theme.number_rgb),
+                stroke_width=1,
+                stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.number_rgb)),
+                role="readout",
+                required=False,
+            )
+            rounded_item_bbox = [
+                round(float(item_left), 3),
+                round(float(item_top), 3),
+                round(float(item_right), 3),
+                round(float(item_bottom), 3),
+            ]
+            called_number_bboxes[f"called_{int(item_index)}"] = list(rounded_item_bbox)
+            scene_entities.append(
+                {
+                    "entity_id": f"called_{int(item_index)}",
+                    "kind": "bingo_called_number",
+                    "bbox": list(rounded_item_bbox),
+                    "list_index": int(item_index),
+                    "number": int(value),
+                }
+            )
 
     title_text = "BINGO"
     title_font = fit_font_to_box(
@@ -249,7 +392,6 @@ def render_bingo_card_scene(
         ]
 
     cell_specs: List[RenderedBingoCellSpec] = []
-    scene_entities: List[Dict[str, Any]] = []
     cell_bbox_map: Dict[str, List[float]] = {}
     cell_mark_center_map: Dict[str, List[float]] = {}
     mark_overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
@@ -295,38 +437,71 @@ def render_bingo_card_scene(
         if bool(cell.is_marked):
             inset = int(params.mark_inset_px)
             mark_bbox = [left + inset, top + inset, right - inset, bottom - inset]
+            marker_style = resolve_semantic_marker_style(
+                instance_seed=int(params.instance_seed),
+                namespace=f"games.bingo.marked_cell.{cell.cell_id}",
+                role="bingo_marked_cell",
+                surface_rgbs=(
+                    tuple(int(value) for value in cell_fill_rgb),
+                    tuple(int(value) for value in theme.number_rgb),
+                ),
+                preferred_rgbs=(tuple(int(value) for value in theme.mark_outline_rgb),),
+            )
+            marker_fill_rgba = (
+                int(marker_style.inner_rgb[0]),
+                int(marker_style.inner_rgb[1]),
+                int(marker_style.inner_rgb[2]),
+                max(34, min(92, int(theme.mark_fill_rgba[3]))),
+            )
             if mark_shape == "cell":
-                mark_draw.rounded_rectangle(
+                draw_semantic_bbox_marker(
+                    mark_draw,
                     [left + 2, top + 2, right - 2, bottom - 2],
                     radius=max(2, int(params.cell_corner_radius_px) - 2),
-                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
-                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    style=marker_style,
                     width=3,
+                    fill_rgba=marker_fill_rgba,
+                    marker_kind="bingo_marked_cell_fill",
+                    extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
                 )
             elif mark_shape == "ring":
-                mark_draw.ellipse(
+                draw_semantic_ellipse_marker(
+                    mark_draw,
                     mark_bbox,
-                    fill=tuple(int(value) for value in (*theme.mark_fill_rgba[:3], max(28, int(theme.mark_fill_rgba[3]) // 3))),
-                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    style=marker_style,
                     width=5,
+                    fill_rgba=(
+                        int(marker_style.inner_rgb[0]),
+                        int(marker_style.inner_rgb[1]),
+                        int(marker_style.inner_rgb[2]),
+                        34,
+                    ),
+                    marker_kind="bingo_marked_cell_ring",
+                    extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
                 )
             elif mark_shape == "slash":
-                mark_draw.line(
+                marker_width = max(2, min(3, int(params.mark_inset_px) // 4))
+                draw_semantic_line_marker(
+                    mark_draw,
                     [(float(mark_bbox[0]), float(mark_bbox[3])), (float(mark_bbox[2]), float(mark_bbox[1]))],
-                    fill=tuple(int(value) for value in (*theme.mark_outline_rgb, 210)),
-                    width=max(8, int(params.mark_inset_px)),
-                )
-                mark_draw.line(
-                    [(float(mark_bbox[0]) + 4.0, float(mark_bbox[3])), (float(mark_bbox[2]), float(mark_bbox[1]) - 4.0)],
-                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
-                    width=max(4, int(params.mark_inset_px) // 2),
+                    style=marker_style,
+                    width=marker_width,
+                    pattern="dashed",
+                    dash_px=max(7.0, float(marker_width) * 3.5),
+                    gap_px=max(5.0, float(marker_width) * 2.5),
+                    alpha=138,
+                    marker_kind="bingo_marked_cell_dashed_slash",
+                    extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
                 )
             else:
-                mark_draw.ellipse(
+                draw_semantic_ellipse_marker(
+                    mark_draw,
                     mark_bbox,
-                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
-                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    style=marker_style,
                     width=3,
+                    fill_rgba=marker_fill_rgba,
+                    marker_kind="bingo_marked_cell_ellipse",
+                    extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
                 )
 
         rounded_bbox = [
@@ -371,10 +546,13 @@ def render_bingo_card_scene(
         scene_entities=tuple(scene_entities),
         render_map={
             "card_bbox_px": [round(float(value), 3) for value in card_bbox],
+            "called_panel_bbox_px": None if called_panel_bbox is None else [round(float(value), 3) for value in called_panel_bbox],
             "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
             "column_header_bboxes_px": dict(column_header_bboxes),
             "cell_bboxes_px": dict(cell_bbox_map),
             "cell_mark_centers_px": dict(cell_mark_center_map),
+            "called_number_bboxes_px": dict(called_number_bboxes),
+            "called_numbers": [int(value) for value in called_values],
             "mark_shape": str(mark_shape),
             "cell_fill_pattern": str(cell_fill_pattern),
             "style_variant": str(style_variant),

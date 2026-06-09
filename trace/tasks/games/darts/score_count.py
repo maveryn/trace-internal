@@ -69,6 +69,7 @@ class _TaskDefaults:
     count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     total_score_dart_count_support: Tuple[int, ...] = (1,)
     count_query_dart_count_support: Tuple[int, ...] = (5, 6, 7, 8)
+    score_option_count_support: Tuple[int, ...] = (4, 6)
     canvas_width: int = 1040
     canvas_height: int = 980
     board_center_x_px: int = 520
@@ -91,12 +92,15 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...] | None
     target_ring: str | None
     target_threshold: int | None
+    score_option_count: int
+    score_option_count_support: Tuple[int, ...]
     score_option_answer_label: str | None
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     dart_count_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float] | None
+    score_option_count_probabilities: Dict[str, float] | None
 
 
 @dataclass(frozen=True)
@@ -113,7 +117,7 @@ class _SampledDartScene:
     """One sampled darts scene with query-specific witness metadata."""
 
     darts: Tuple[DartInstance, ...]
-    evidence_dart_ids: Tuple[str, ...]
+    annotation_dart_ids: Tuple[str, ...]
     total_score: int
     score_options: Tuple[DartScoreOption, ...] = ()
     answer_label: str | None = None
@@ -168,7 +172,7 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -310,8 +314,28 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
 
     score_option_answer_label: str | None = None
+    score_option_count = 0
+    score_option_count_support: Tuple[int, ...] = tuple()
+    score_option_count_probabilities: Dict[str, float] | None = None
     if str(query_id) == "total_score":
-        labels = ("A", "B", "C", "D", "E")
+        score_option_count, score_option_count_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=cycle_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="score_option_count_support",
+            explicit_key="score_option_count",
+            fallback_support=_DEFAULTS.score_option_count_support,
+            namespace=f"{TASK_ID}.score_option_count",
+            balanced_flag_key="balanced_score_option_count_sampling",
+            namespace_support_permutation=True,
+        )
+        score_option_count_support = resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="score_option_count_support",
+            fallback=_DEFAULTS.score_option_count_support,
+        )
+        labels = ("A", "B", "C", "D", "E", "F")[: int(score_option_count)]
         sampling_index = params.get("_sample_cursor")
         if sampling_index is None:
             label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.score_option_answer_label")
@@ -328,12 +352,15 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer_support=None if target_answer_support is None else tuple(int(value) for value in target_answer_support),
         target_ring=None if target_ring is None else str(target_ring),
         target_threshold=None if target_threshold is None else int(target_threshold),
+        score_option_count=int(score_option_count),
+        score_option_count_support=tuple(int(value) for value in score_option_count_support),
         score_option_answer_label=None if score_option_answer_label is None else str(score_option_answer_label),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         dart_count_probabilities=dict(dart_count_probabilities),
         target_answer_probabilities=None if target_answer_probabilities is None else dict(target_answer_probabilities),
+        score_option_count_probabilities=None if score_option_count_probabilities is None else dict(score_option_count_probabilities),
     )
 
 
@@ -435,21 +462,25 @@ def _build_score_options(
     *,
     correct_score: int,
     correct_label: str | None,
+    option_count: int,
 ) -> Tuple[Tuple[DartScoreOption, ...], str]:
-    """Return five visible unique score options and the correct option label."""
+    """Return visible unique score options and the correct option label."""
 
-    labels = ("A", "B", "C", "D", "E")
+    labels = ("A", "B", "C", "D", "E", "F")[: int(option_count)]
+    if len(labels) < 2:
+        raise ValueError("darts score option count must be at least 2")
     resolved_correct_label = str(correct_label) if correct_label in labels else str(labels[0])
     possible_scores = sorted({int(slot.score) for slot in _SCORE_SLOTS})
     distractor_pool = [int(value) for value in possible_scores if int(value) != int(correct_score)]
     nearby_scores = sorted(distractor_pool, key=lambda value: (abs(int(value) - int(correct_score)), int(value)))
     candidate_scores = list(nearby_scores[:14])
     rng.shuffle(candidate_scores)
-    selected_scores = [int(value) for value in candidate_scores[:4]]
-    if len(set(selected_scores)) != 4 or int(correct_score) in set(selected_scores):
-        raise RuntimeError("failed to construct five unique darts score options")
+    distractor_count = int(len(labels) - 1)
+    selected_scores = [int(value) for value in candidate_scores[:distractor_count]]
+    if len(set(selected_scores)) != distractor_count or int(correct_score) in set(selected_scores):
+        raise RuntimeError("failed to construct unique darts score options")
     rng.shuffle(selected_scores)
-    distractor_by_label = dict(zip([label for label in labels if label != resolved_correct_label], selected_scores[:4]))
+    distractor_by_label = dict(zip([label for label in labels if label != resolved_correct_label], selected_scores[:distractor_count]))
     options = tuple(
         DartScoreOption(
             label=str(label),
@@ -471,7 +502,7 @@ def _sample_scene(
 
     if str(axes.query_id) == "total_score":
         selected_slots = [_sample_slot(rng, _SCORE_SLOTS) for _ in range(int(axes.dart_count))]
-        evidence_flags = [True for _ in selected_slots]
+        annotation_flags = [True for _ in selected_slots]
     else:
         target_answer = int(axes.target_answer or 0)
         qualifying_pool = [slot for slot in _SCORE_SLOTS if _qualifies(slot, axes=axes)]
@@ -481,24 +512,24 @@ def _sample_scene(
         ] + [
             _sample_slot(rng, nonqualifying_pool) for _ in range(max(0, int(axes.dart_count) - int(target_answer)))
         ]
-        evidence_flags = [True for _ in range(int(target_answer))] + [
+        annotation_flags = [True for _ in range(int(target_answer))] + [
             False for _ in range(max(0, int(axes.dart_count) - int(target_answer)))
         ]
-        combined = list(zip(selected_slots, evidence_flags))
+        combined = list(zip(selected_slots, annotation_flags))
         rng.shuffle(combined)
         selected_slots = [slot for slot, _ in combined]
-        evidence_flags = [flag for _, flag in combined]
+        annotation_flags = [flag for _, flag in combined]
 
     darts: List[DartInstance] = []
-    evidence_ids: List[str] = []
+    annotation_ids: List[str] = []
     points: List[Tuple[float, float]] = []
     for index, slot in enumerate(selected_slots):
         dart_id = f"dart_{index + 1:02d}"
         x_px, y_px = _sample_position_without_overlap(rng, slot=slot, params=render_params, existing_points=points)
         points.append((float(x_px), float(y_px)))
-        is_evidence = bool(evidence_flags[index])
-        if is_evidence:
-            evidence_ids.append(str(dart_id))
+        is_annotation = bool(annotation_flags[index])
+        if is_annotation:
+            annotation_ids.append(str(dart_id))
         darts.append(
             DartInstance(
                 dart_id=str(dart_id),
@@ -507,7 +538,7 @@ def _sample_scene(
                 score=int(slot.score),
                 x_px=float(x_px),
                 y_px=float(y_px),
-                is_evidence=bool(is_evidence),
+                is_annotation=bool(is_annotation),
             )
         )
     total_score = int(sum(int(slot.score) for slot in selected_slots))
@@ -518,11 +549,12 @@ def _sample_scene(
             rng,
             correct_score=int(total_score),
             correct_label=axes.score_option_answer_label,
+            option_count=int(axes.score_option_count),
         )
 
     return _SampledDartScene(
         darts=tuple(darts),
-        evidence_dart_ids=tuple(evidence_ids),
+        annotation_dart_ids=tuple(annotation_ids),
         total_score=int(total_score),
         score_options=tuple(score_options),
         answer_label=None if answer_label is None else str(answer_label),
@@ -533,13 +565,13 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active darts query semantics."""
 
     if str(query_id) == "total_score":
-        answer_and_evidence = {"evidence": [[411, 219]], "answer": "C"}
+        answer_and_annotation = {"annotation": [[411, 219]], "answer": "C"}
         answer_only = {"answer": "C"}
     else:
-        answer_and_evidence = {"evidence": [[411, 219], [525, 364]], "answer": 2}
+        answer_and_annotation = {"annotation": [[411, 219], [525, 364]], "answer": 2}
         answer_only = {"answer": 2}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -679,14 +711,14 @@ class GamesDartsScoreCountTask:
         is_total_score = str(axes.query_id) == "total_score"
         answer_value: int | str = str(sampled_scene.answer_label) if is_total_score else int(axes.target_answer or 0)
         numeric_target_answer = int(sampled_scene.total_score) if is_total_score else int(axes.target_answer or 0)
-        evidence_entity_ids = [str(dart_id) for dart_id in sampled_scene.evidence_dart_ids]
-        evidence_bboxes = [
+        annotation_entity_ids = [str(dart_id) for dart_id in sampled_scene.annotation_dart_ids]
+        annotation_bboxes = [
             list(rendered_scene.render_map["dart_bboxes_px"][str(dart_id)])
-            for dart_id in sampled_scene.evidence_dart_ids
+            for dart_id in sampled_scene.annotation_dart_ids
         ]
-        evidence_points = [
+        annotation_points = [
             list(rendered_scene.render_map["dart_centers_px"][str(dart_id)])
-            for dart_id in sampled_scene.evidence_dart_ids
+            for dart_id in sampled_scene.annotation_dart_ids
         ]
         if is_total_score and sampled_scene.answer_label is None:
             raise RuntimeError("total_score scene missing answer option label")
@@ -711,9 +743,9 @@ class GamesDartsScoreCountTask:
                 "answer_hint_total_score",
                 "answer_hint_ring_count",
                 "answer_hint_threshold_score_count",
-                "evidence_hint_total_score",
-                "evidence_hint_ring_count",
-                "evidence_hint_threshold_score_count",
+                "annotation_hint_total_score",
+                "annotation_hint_ring_count",
+                "annotation_hint_threshold_score_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -723,7 +755,7 @@ class GamesDartsScoreCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+            "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "scoring_rule_text": str(prompt_defaults["scoring_rule_text"]),
@@ -738,7 +770,7 @@ class GamesDartsScoreCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
@@ -748,7 +780,7 @@ class GamesDartsScoreCountTask:
             type="string" if is_total_score else "integer",
             value=str(answer_value) if is_total_score else int(answer_value),
         )
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -760,7 +792,7 @@ class GamesDartsScoreCountTask:
             query_id=str(axes.query_id),
             dart_count=int(axes.dart_count),
             target_answer=int(numeric_target_answer),
-            evidence_count=len(evidence_entity_ids),
+            annotation_count=len(annotation_entity_ids),
         )
 
         dart_specs = [
@@ -769,7 +801,7 @@ class GamesDartsScoreCountTask:
                 "sector_value": None if dart.sector_value is None else int(dart.sector_value),
                 "ring": str(dart.ring),
                 "score": int(dart.score),
-                "is_evidence": bool(dart.is_evidence),
+                "is_annotation": bool(dart.is_annotation),
             }
             for dart in sampled_scene.darts
         ]
@@ -793,10 +825,11 @@ class GamesDartsScoreCountTask:
             "target_threshold": None if axes.target_threshold is None else int(axes.target_threshold),
             "total_score": int(sampled_scene.total_score),
             "score_options": list(score_options),
+            "score_option_count": int(len(score_options)),
             "dart_fill_color": [int(v) for v in dart_fill_color],
             "dart_fill_min_lab_distance": round(float(dart_fill_min_lab_distance), 3),
             "dart_specs": list(dart_specs),
-            "evidence_entity_ids": list(evidence_entity_ids),
+            "annotation_entity_ids": list(annotation_entity_ids),
         }
         trace_payload = {
             "scene_ir": {
@@ -809,7 +842,8 @@ class GamesDartsScoreCountTask:
                     "dart_count": int(axes.dart_count),
                     "target_answer": int(numeric_target_answer),
                     "answer_label": None if sampled_scene.answer_label is None else str(sampled_scene.answer_label),
-                    "evidence_entity_ids": list(evidence_entity_ids),
+                    "score_option_count": int(len(sampled_scene.score_options)),
+                    "annotation_entity_ids": list(annotation_entity_ids),
                 },
             },
             "query_spec": {
@@ -829,6 +863,11 @@ class GamesDartsScoreCountTask:
                     "dart_count_probabilities": dict(axes.dart_count_probabilities),
                     "target_answer": int(numeric_target_answer),
                     "answer_label": None if sampled_scene.answer_label is None else str(sampled_scene.answer_label),
+                    "score_option_count": int(len(sampled_scene.score_options)),
+                    "score_option_count_support": [int(value) for value in axes.score_option_count_support],
+                    "score_option_count_probabilities": None
+                    if axes.score_option_count_probabilities is None
+                    else dict(axes.score_option_count_probabilities),
                     "score_options": list(score_options),
                     "target_answer_support": None if axes.target_answer_support is None else [int(value) for value in axes.target_answer_support],
                     "target_answer_probabilities": None
@@ -853,13 +892,13 @@ class GamesDartsScoreCountTask:
             "execution_trace": execution_trace,
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": list(evidence_entity_ids),
+                "ids": list(annotation_entity_ids),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -868,7 +907,7 @@ class GamesDartsScoreCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -888,17 +927,23 @@ class GamesDartsTotalScoreTask(FixedQueryVariantTaskMixin, GamesDartsScoreCountT
 
 
 @register_task
-class GamesDartsConditionCountTask(QuerySubsetTaskMixin, GamesDartsScoreCountTask):
-    """Count darts matching one sampled scoring condition."""
+class GamesDartsRingCountTask(QuerySubsetTaskMixin, GamesDartsScoreCountTask):
+    """Count darts landing in a sampled scoring ring."""
 
-    task_id = "task_games__darts__condition_count"
-    supported_query_ids = (
-        "ring_count",
-        "threshold_score_count",
-    )
+    task_id = "task_games__darts__ring_count"
+    supported_query_ids = ("ring_count",)
+
+
+@register_task
+class GamesDartsThresholdScoreCountTask(QuerySubsetTaskMixin, GamesDartsScoreCountTask):
+    """Count darts meeting a sampled score threshold."""
+
+    task_id = "task_games__darts__threshold_score_count"
+    supported_query_ids = ("threshold_score_count",)
 
 
 __all__ = [
-    "GamesDartsConditionCountTask",
+    "GamesDartsRingCountTask",
+    "GamesDartsThresholdScoreCountTask",
     "GamesDartsTotalScoreTask",
 ]

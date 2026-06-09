@@ -31,7 +31,7 @@ from .shared.color_board_common import (
     build_rectangular_color_board_scene,
 )
 from .shared.named_color_board import build_color_board_scene_entities
-from .shared.tile_evidence import coordinate_set_evidence_artifacts, sort_coords_row_major
+from .shared.tile_annotation import coordinate_set_annotation_artifacts, sort_coords_row_major
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 from .shared.complexity import (
     build_tile_complexity,
@@ -208,7 +208,7 @@ class TileColorCountTask:
         if not matching_coords:
             raise RuntimeError("sampled query color must appear at least once on the board")
 
-        evidence_artifacts = coordinate_set_evidence_artifacts(
+        annotation_artifacts = coordinate_set_annotation_artifacts(
             coords=matching_coords,
             bbox_map=scene.bbox_map,
         )
@@ -224,7 +224,7 @@ class TileColorCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -233,7 +233,7 @@ class TileColorCountTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             all_prompt_defaults,
-            evidence_value=[[168, 120], [120, 168], [216, 168]],
+            annotation_value=[[168, 120], [120, 168], [216, 168]],
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -242,14 +242,14 @@ class TileColorCountTask:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "query_color": str(query_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -285,7 +285,7 @@ class TileColorCountTask:
                         "predicate": {"color_name": str(query_color_name)},
                     },
                     {
-                        "out": "evidence",
+                        "out": "annotation",
                         "op": "project_coords",
                         "in": "query_cells",
                         "source_coord_space": "tile_grid",
@@ -328,11 +328,11 @@ class TileColorCountTask:
                 "available_color_count_answers": [int(answer) for answer in available_color_count_answers],
                 "counts_by_color_name": dict(counts_by_color),
                 "matching_coords": [[int(row), int(col)] for row, col in matching_coords],
-                "matching_ids": list(evidence_artifacts["private_witness"]["ids"]),
+                "matching_ids": list(annotation_artifacts["private_witness"]["ids"]),
                 "answer_value": int(answer_value),
             },
-            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
 
         board_cell_count = int(scene.rows) * int(scene.cols)
@@ -360,9 +360,9 @@ class TileColorCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

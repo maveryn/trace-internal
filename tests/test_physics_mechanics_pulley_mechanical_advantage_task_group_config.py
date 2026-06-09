@@ -70,10 +70,10 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
 
     assert "optional cut non-supporting strands" in str(prompt["object_description_open_block"])
 
-    assert "known_force" in str(prompt["evidence_hint_effort_force"])
+    assert "known_force" in str(prompt["annotation_hint_effort_force"])
 
-    assert "target_force" in str(prompt["evidence_hint_load_force"])
+    assert "target_force" in str(prompt["annotation_hint_load_force"])
 
-    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["evidence_hint_load_force"])
+    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["annotation_hint_load_force"])
 
-    assert "exclude" not in str(prompt["evidence_hint_load_force"]).lower()
+    assert "exclude" not in str(prompt["annotation_hint_load_force"]).lower()

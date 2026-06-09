@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <span>taxonomy</span>
+  <span>{{ taxonomy.round_id }}</span>
+</nav>
+
+<section class="summary-grid">
+  <div class="metric"><span>{{ taxonomy.summary.get('current_tasks', taxonomy.task_count) }}</span><label>current tasks</label></div>
+  <div class="metric"><span>{{ taxonomy.summary.get('proposed_tasks', 'n/a') }}</span><label>proposed task units</label></div>
+  <div class="metric"><span>{{ taxonomy.summary.get('base_program_contracts', 'n/a') }}</span><label>base program contracts</label></div>
+  <div class="metric"><span>{{ taxonomy.split_task_count }}</span><label>split tasks</label></div>
+  <div class="metric"><span>{{ taxonomy.query_count }}</span><label>query rows</label></div>
+  <div class="metric"><span>{{ taxonomy_review_progress.approved }}/{{ taxonomy_review_progress.total }}</span><label>approved decisions</label></div>
+  <div class="metric"><span>{{ '%.1f'|format(taxonomy_review_progress.percent) }}%</span><label>approval progress</label></div>
+  {% if selected_taxonomy_domain %}
+    {% set summary_open_issue_path = '/taxonomy/' ~ taxonomy_round_slug ~ '?domain=' ~ selected_taxonomy_domain ~ '&review=open_issues' %}
+    {% set summary_open_issue_count = taxonomy_domain_review_progress.open_issue_tasks %}
+  {% else %}
+    {% set summary_open_issue_path = '/taxonomy/' ~ taxonomy_round_slug ~ '?review=open_issues' %}
+    {% set summary_open_issue_count = taxonomy_review_progress.open_issue_tasks %}
+  {% endif %}
+  <a class="metric metric-link" href="{{ app_path(summary_open_issue_path) }}" aria-label="View taxonomy tasks with open issues">
+    <span>{{ summary_open_issue_count }}</span>
+    <label>tasks with open taxonomy issues</label>
+  </a>
+  <div class="metric"><span>{{ taxonomy.summary.get('program_argument_rows', 0) }}/{{ taxonomy.query_count }}</span><label>argument metadata rows</label></div>
+  <div class="metric"><span>{{ taxonomy.summary.get('program_argument_status_counts', {}).get('needs_review', 0) }}</span><label>argument rows needing review</label></div>
+</section>
+
+{% if selected_taxonomy_domain %}
+  <section class="notice taxonomy-progress-note">
+    <strong>{{ selected_taxonomy_domain }} approval:</strong>
+    <span>{{ taxonomy_domain_review_progress.approved }}/{{ taxonomy_domain_review_progress.total }} decisions approved; {{ taxonomy_domain_review_progress.open_issue_tasks }} task(s) have open taxonomy issues.</span>
+  </section>
+{% endif %}
+
+{% if taxonomy.errors %}
+  <section class="notice error">
+    <strong>{{ taxonomy.errors|length }} taxonomy issue(s)</strong>
+    <ul>
+      {% for error in taxonomy.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+<section class="table-panel compact taxonomy-browser-panel">
+  <div class="taxonomy-toolbar">
+    <div class="taxonomy-quick-actions">
+      <a class="button-link" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/tree') }}">Open program taxonomy tree</a>
+      {% if selected_taxonomy_domain %}
+        <a class="button-link" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/tree?domain=' ~ selected_taxonomy_domain) }}">Tree for {{ selected_taxonomy_domain }}</a>
+      {% endif %}
+      {% if selected_taxonomy_domain %}
+        {% set taxonomy_open_issue_path = '/taxonomy/' ~ taxonomy_round_slug ~ '?domain=' ~ selected_taxonomy_domain ~ '&review=open_issues' %}
+        {% set taxonomy_all_decisions_path = '/taxonomy/' ~ taxonomy_round_slug ~ '?domain=' ~ selected_taxonomy_domain %}
+        {% set taxonomy_open_issue_label = selected_taxonomy_domain ~ ' taxonomy issues only' %}
+        {% set taxonomy_open_issue_count = taxonomy_domain_review_progress.open_issue_tasks %}
+      {% else %}
+        {% set taxonomy_open_issue_path = '/taxonomy/' ~ taxonomy_round_slug ~ '?review=open_issues' %}
+        {% set taxonomy_all_decisions_path = '/taxonomy/' ~ taxonomy_round_slug %}
+        {% set taxonomy_open_issue_label = 'taxonomy issues only' %}
+        {% set taxonomy_open_issue_count = taxonomy_review_progress.open_issue_tasks %}
+      {% endif %}
+      <a class="button-link taxonomy-issue-filter-link {% if selected_taxonomy_review == 'open_issues' %}active{% endif %}" href="{{ app_path(taxonomy_open_issue_path) }}">
+        View {{ taxonomy_open_issue_label }} <span>{{ taxonomy_open_issue_count }}</span>
+      </a>
+      {% if selected_taxonomy_review == 'open_issues' %}
+        <a class="button-link" href="{{ app_path(taxonomy_all_decisions_path) }}">Show all taxonomy decisions</a>
+      {% endif %}
+    </div>
+    <div class="query-tabs taxonomy-domain-tabs">
+      <a class="pill {% if not selected_taxonomy_domain %}active{% endif %}" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug) }}">all</a>
+      {% for domain_name, summary in taxonomy.domain_summaries.items() %}
+        <a class="pill {% if selected_taxonomy_domain == domain_name %}active{% endif %}" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '?domain=' ~ domain_name) }}">
+          {{ domain_name }} <span>{{ summary.get('current_tasks', summary.get('current', 0)) }}→{{ summary.get('proposed_tasks', summary.get('proposed', 0)) }}</span>
+        </a>
+      {% endfor %}
+    </div>
+    <form class="taxonomy-filter-form" action="{{ app_path('/taxonomy/' ~ taxonomy_round_slug) }}" method="get">
+      {% if selected_taxonomy_domain %}<input type="hidden" name="domain" value="{{ selected_taxonomy_domain }}">{% endif %}
+      <select name="decision">
+        <option value="" {% if not selected_taxonomy_decision %}selected{% endif %}>all decisions</option>
+        <option value="keep" {% if selected_taxonomy_decision == 'keep' %}selected{% endif %}>keep</option>
+        <option value="split" {% if selected_taxonomy_decision == 'split' %}selected{% endif %}>split</option>
+        <option value="rename" {% if selected_taxonomy_decision == 'rename' %}selected{% endif %}>rename</option>
+        <option value="merge" {% if selected_taxonomy_decision == 'merge' %}selected{% endif %}>merge</option>
+        <option value="retire" {% if selected_taxonomy_decision == 'retire' %}selected{% endif %}>retire</option>
+      </select>
+      <select name="review">
+        <option value="" {% if not selected_taxonomy_review %}selected{% endif %}>all review states</option>
+        <option value="approved" {% if selected_taxonomy_review == 'approved' %}selected{% endif %}>approved</option>
+        <option value="pending" {% if selected_taxonomy_review == 'pending' %}selected{% endif %}>pending approval</option>
+        <option value="open_issues" {% if selected_taxonomy_review == 'open_issues' %}selected{% endif %}>open taxonomy issues</option>
+      </select>
+      <input type="search" name="q" value="{{ taxonomy_query }}" placeholder="Search task, query, proposed id, schema">
+      <button type="submit">Filter</button>
+    </form>
+  </div>
+
+  {% if taxonomy_domain_doc %}
+    <details class="taxonomy-doc-panel">
+      <summary>Detailed taxonomy notes for {{ selected_taxonomy_domain }}</summary>
+      <pre data-selectable-text>{{ taxonomy_domain_doc }}</pre>
+    </details>
+  {% endif %}
+
+  <table class="taxonomy-table">
+    <thead>
+      <tr>
+        <th>Current Task</th>
+        <th>Decision</th>
+        <th>Query Rows</th>
+        <th>Updated Task Unit(s)</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in taxonomy_tasks %}
+        {% set detail_path = '/taxonomy/' ~ taxonomy_round_slug ~ '/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.current_task_id %}
+        {% set decision_review = taxonomy_decision_reviews_by_task.get(task.task_key) %}
+        {% set open_issue_count = taxonomy_open_issue_counts.get(task.task_key, 0) %}
+        {% set open_issue_records = taxonomy_open_issues_by_task.get(task.task_key, []) %}
+        {% set first_open_issue = open_issue_records[0] if open_issue_records else none %}
+        {% set preview_uid = task.sample_uids[0] if task.sample_uids else '' %}
+        {% set sample = taxonomy_samples_by_uid.get(preview_uid) if preview_uid else none %}
+        <tr>
+          <td>
+            <a href="{{ app_path(detail_path) }}"><strong>{{ task.current_task_id }}</strong></a>
+            <div class="muted">{{ task.domain }} / {{ task.scene_id }}</div>
+            <div class="taxonomy-review-state">
+              {% if decision_review and decision_review.approved %}
+                <span class="status ok">decision approved</span>
+              {% else %}
+                <span class="status warn">approval pending</span>
+              {% endif %}
+              {% if open_issue_count %}
+                {% if first_open_issue %}
+                  <a class="status warn taxonomy-open-issue-link" href="{{ app_path('/issues/' ~ first_open_issue.id) }}">
+                    {{ open_issue_count }} open issue{% if open_issue_count != 1 %}s{% endif %}
+                  </a>
+                {% else %}
+                  <span class="status warn">{{ open_issue_count }} open issue{% if open_issue_count != 1 %}s{% endif %}</span>
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if not task.indexed %}<span class="badge">no review sample</span>{% endif %}
+          </td>
+          <td><span class="status {% if task.decision == 'split' %}warn{% else %}ok{% endif %}">{{ task.decision or 'unknown' }}</span></td>
+          <td>{{ task.current_query_count or task.queries|length }}</td>
+          <td>
+            {% for proposed_id in task.proposed_task_ids %}
+              <span class="badge taxonomy-proposed-id">{{ proposed_id }}</span>
+            {% endfor %}
+          </td>
+          <td>
+            {% if sample %}
+              <a class="taxonomy-preview-thumb" href="{{ app_path(detail_path) }}">
+                {% if sample.image_exists %}
+                  <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+                {% endif %}
+                <span>{{ sample.query_id }}</span>
+              </a>
+            {% else %}
+              <span class="muted">no sample</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5"><p class="muted">No taxonomy rows match this filter.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

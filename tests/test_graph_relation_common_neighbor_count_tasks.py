@@ -17,8 +17,8 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
-def _extract_evidence_format_sentence(prompt: str) -> str:
-    marker = "Evidence format: "
+def _extract_annotation_format_sentence(prompt: str) -> str:
+    marker = "Annotation format: "
     assert marker in str(prompt)
     return str(prompt).split(marker, 1)[1].split("\n", 1)[0]
 
@@ -43,11 +43,11 @@ def test_graph_relation_common_neighbor_undirected_contract_matches_trace() -> N
         entity for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"
     ]
 
-    assert "task_graph__node_link__common_neighbor_count" in TASK_REGISTRY
+    assert "task_graph__node_link__common_related_node_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
     assert out.query_id == "undirected_common_neighbor_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_common_neighbor_relation"
     assert execution["query_id"] == "undirected_common_neighbor_count"
@@ -65,13 +65,13 @@ def test_graph_relation_common_neighbor_undirected_contract_matches_trace() -> N
     matching_labels = [str(label) for label in execution["matching_labels"]]
     expected = sorted(adjacency[query_a] & adjacency[query_b])
     assert expected == sorted(matching_labels)
-    assert int(out.answer_gt.value) == len(matching_labels) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["labels"] == matching_labels
     assert trace["witness_symbolic"]["common_neighbor_mode"] == "undirected_common_neighbor"
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert sum(1 for node in node_entities if bool(node["is_common_neighbor_node"])) == len(matching_labels)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_relation_common_successor_and_predecessor_modes_use_edge_direction() -> None:
@@ -121,7 +121,7 @@ def test_graph_relation_common_successor_and_predecessor_modes_use_edge_directio
     assert predecessor_trace["question_format"] == "common_predecessor_count"
     assert sorted(predecessors[query_a] & predecessors[query_b]) == []
     assert predecessor_trace["matching_labels"] == []
-    assert predecessor_out.evidence_gt.value == []
+    assert predecessor_out.annotation_gt.value == []
     assert int(predecessor_out.answer_gt.value) == 0
 
 
@@ -137,14 +137,14 @@ def test_graph_relation_common_neighbor_prompt_examples_match_contract() -> None
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180]]
+    assert answer_and_annotation["answer"] == 2
 
 
-def test_graph_relation_common_neighbor_evidence_hint_matches_query_branch() -> None:
+def test_graph_relation_common_neighbor_annotation_hint_matches_query_branch() -> None:
     task = GraphRelationCommonNeighborCountTask()
     cases = [
         (
@@ -173,10 +173,10 @@ def test_graph_relation_common_neighbor_evidence_hint_matches_query_branch() -> 
             },
             max_attempts=200,
         )
-        evidence_sentence = _extract_evidence_format_sentence(out.prompt_variants["answer_and_evidence"])
-        assert required_phrase in evidence_sentence
+        annotation_sentence = _extract_annotation_format_sentence(out.prompt_variants["answer_and_annotation"])
+        assert required_phrase in annotation_sentence
         for phrase in forbidden_phrases:
-            assert phrase not in evidence_sentence
+            assert phrase not in annotation_sentence
 
 
 def test_graph_relation_common_neighbor_balanced_sampling_includes_zero() -> None:

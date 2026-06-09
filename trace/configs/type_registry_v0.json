@@ -9,11 +9,13 @@
     "index_list",
     "matrix"
   ],
-  "evidence_types": [
+  "annotation_types": [
     "bbox_sequence",
     "bbox_set",
     "keyed_bbox_map",
+    "keyed_bbox_set_map",
     "keyed_point_map",
+    "keyed_point_set_map",
     "point_pair_set",
     "point_sequence",
     "point_set"

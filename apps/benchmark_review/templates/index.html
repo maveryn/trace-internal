@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>{{ index.benchmarks|length }}</span><label>benchmarks</label></div>
+  <div class="metric"><span>{{ index.samples|length }}</span><label>samples</label></div>
+  <div class="metric"><span>{{ index.benchmarks.values()|sum(attribute='correct_count') }}</span><label>correct</label></div>
+  <div class="metric"><span>{{ index.benchmarks.values()|sum(attribute='incorrect_count') }}</span><label>incorrect</label></div>
+</section>
+
+<section class="card-grid">
+  {% for benchmark_name, item in index.benchmarks.items() %}
+    <a class="card" href="{{ app_path('/benchmarks/' ~ benchmark_name) }}">
+      <div class="thumb">
+        {% if item.preview_uid %}
+          {% set sample = index.samples[item.preview_uid] %}
+          {% if sample.image_exists %}
+            <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="card-title-row">
+        <h2>{{ item.display }}</h2>
+        <span class="status-pill">{{ item.accuracy|pct }}</span>
+      </div>
+      <p>{{ item.sample_count }} samples, {{ item.image_count }} images</p>
+      <div class="mini-stats">
+        <span class="ok">{{ item.correct_count }} correct</span>
+        <span class="bad">{{ item.incorrect_count }} incorrect</span>
+        {% if item.unknown_count %}<span>{{ item.unknown_count }} unknown</span>{% endif %}
+      </div>
+    </a>
+  {% endfor %}
+</section>
+{% endblock %}

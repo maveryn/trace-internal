@@ -3,23 +3,51 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `collision`
-- Task group: `mechanics`
-- Query id: `direction_choice`
-- Answer type: `option_letter`
-- Evidence type: `keyed_point_map`
+- Implementation task group: `mechanics`
+- Implementation source: `trace/tasks/physics/mechanics/sticky_collision.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__collision__sticky_collision_direction_choice` -> `task_physics__collision__sticky_collision_direction_choice`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows two pucks moving along perpendicular paths toward a sticky collision. Puck A moves horizontally and puck B moves vertically; each puck has visible mass, speed, and direction. The stuck `A+B` puck shows the combined mass, and six labeled candidate arrows show possible post-collision directions.
+## Task Contract
+Selects the final direction of two perpendicular pucks after a sticky collision using conserved momentum.
 
-The task asks which candidate arrow matches the direction of the stuck pair after conserving horizontal and vertical momentum.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Evidence
-Prompt-facing evidence is a `keyed_point_map` over the centers of puck roles `A`, `B`, and `A+B`. Puck speeds, masses, directions, and candidate arrows remain visible attributes and trace metadata.
+## Query Branches
 
-## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; scene key: `sticky_collision_diagram`; task key: `sticky_collision_query`; query key: `direction_choice`.
+| Query id | Program schema |
+| --- | --- |
+| `direction_choice` | `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice; query_branch=direction_choice` |
 
-Outputs `query_id="direction_choice"`. The trace records puck masses, input speeds, signed momenta, final velocity components, the correct option letter, option angles, and input-witness evidence entity ids.
+## Program Metadata
+- Program signatures: `physics.momentum_direction_choice`
+- Base program contract: `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `final_sticky_velocity`: semantic_role; allowed `velocity_after_sticky_collision`; source `program_schema_concrete`
+  - `pucks_a_b`: semantic_role; allowed `visible_input_pucks_A_B`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `direction_choice`
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized collision scene.
+## Answer Contract
+- Answer schema: `option_letter`
+- Generator `answer_gt.type`: `option_letter`
+- The answer value is the selected visible option letter.
+
+## Annotation Contract
+- Annotation schema: `keyed_point_map`
+- Generator `annotation_gt.type`: `keyed_point_map`
+- Annotation is keyed because point witnesses have distinct roles; each key maps to the final-image pixel point for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/collision/task_physics__collision__sticky_collision_direction_choice/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

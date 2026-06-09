@@ -9,6 +9,7 @@ from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.render_variation import resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
+from .params import resolve_puzzle_int_param
 from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 
 
@@ -34,17 +35,6 @@ FOLD_RESULT_MARK_TYPES: Tuple[str, ...] = (
     "hexagon",
     "star",
 )
-
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
 
 
 @dataclass(frozen=True)
@@ -531,6 +521,13 @@ def _resolve_correct_option_index(
 ) -> int:
     """Resolve a stable correct-option slot from the instance seed."""
 
+    explicit_index = params.get("correct_option_index")
+    if explicit_index is not None:
+        correct_index = int(explicit_index)
+        if not 0 <= int(correct_index) < int(option_count):
+            raise ValueError("correct_option_index must fall inside the option-count range")
+        return int(correct_index)
+
     # Use a short cycle larger than the option count so balanced query-id
     # seed partitions do not alias directly into one answer letter.
     cycle_modulus = (int(option_count) * 3) + 2
@@ -553,14 +550,14 @@ def build_fold_result_dataset_for_variant(
         raise ValueError(f"unsupported fold-result query id: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
-    option_count_min = int(_resolve_int_param(params, gen_defaults, "option_count_min", defaults.option_count_min))
-    option_count_max = int(_resolve_int_param(params, gen_defaults, "option_count_max", defaults.option_count_max))
+    option_count_min = int(resolve_puzzle_int_param(params, gen_defaults, "option_count_min", defaults.option_count_min))
+    option_count_max = int(resolve_puzzle_int_param(params, gen_defaults, "option_count_max", defaults.option_count_max))
     option_count = int(rng.randint(option_count_min, max(option_count_min, option_count_max)))
-    grid_size = int(_resolve_int_param(params, gen_defaults, "grid_size", defaults.grid_size))
+    grid_size = int(resolve_puzzle_int_param(params, gen_defaults, "grid_size", defaults.grid_size))
     if int(grid_size) % 2 != 0:
         raise ValueError("fold-result puzzles require an even grid_size")
-    mark_count_min = int(_resolve_int_param(params, gen_defaults, "mark_count_min", defaults.mark_count_min))
-    mark_count_max = int(_resolve_int_param(params, gen_defaults, "mark_count_max", defaults.mark_count_max))
+    mark_count_min = int(resolve_puzzle_int_param(params, gen_defaults, "mark_count_min", defaults.mark_count_min))
+    mark_count_max = int(resolve_puzzle_int_param(params, gen_defaults, "mark_count_max", defaults.mark_count_max))
     mark_count = int(rng.randint(mark_count_min, max(mark_count_min, mark_count_max)))
 
     axis = "vertical" if str(query_id) == "vertical_fold_result" else "horizontal"

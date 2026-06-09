@@ -35,19 +35,19 @@
     "scene:room": [
       "object_description"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -55,51 +55,51 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer field: {answer_hint}.\nEvidence field: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFor \"evidence\": {evidence_hint}.\nFor \"answer\": {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field contents: {evidence_hint}.\nAnswer field contents: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer field: {answer_hint}.\nAnnotation field: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
     "room": [
       "The image shows {object_description}.",
       "The scene shows {object_description}.",
-      "This 3D view shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The rendered scene shows {object_description}."
+      "The image presents {object_description}.",
+      "The picture shows {object_description}.",
+      "The view shows {object_description}."
     ]
   },
   "query_templates": {
     "closest_to_camera": [
-      "Which lettered wall-mounted object is closest to the camera?",
-      "From this room view, which lettered object on a wall is nearest to the camera?",
-      "Using the perspective depth cues, choose the wall object letter closest to the camera.",
-      "Which lettered object mounted on a wall is closest to the viewer?",
-      "Among the lettered wall-mounted objects, which one is nearest to the camera?"
+      "Which option describes the wall-mounted object closest to the camera?",
+      "From this room view, which option describes the wall object nearest to the camera?",
+      "Using the perspective depth cues, choose the option for the wall object closest to the camera.",
+      "Which option describes the wall-mounted object closest to the viewer?",
+      "Among the candidate wall-mounted objects, which option is nearest to the camera?"
     ],
     "same_wall_as_reference": [
-      "Which lettered wall-mounted object is on the same wall as the {reference_name}?",
-      "Choose the letter for the wall-mounted object on the same wall as the {reference_name}.",
-      "Which lettered object shares a wall with the {reference_name}?",
-      "From this room view, which wall object letter shares the wall with the {reference_name}?",
-      "Which lettered wall-mounted object is mounted on the same wall as the {reference_name}?"
+      "Which option describes the wall-mounted object on the same wall as the {reference_name}?",
+      "Choose the option for the wall-mounted object on the same wall as the {reference_name}.",
+      "Which option describes the object that shares a wall with the {reference_name}?",
+      "From this room view, which option describes the wall object that shares the wall with the {reference_name}?",
+      "Which option describes the wall-mounted object mounted on the same wall as the {reference_name}?"
     ],
     "left_of_reference_on_wall": [
-      "Which lettered wall-mounted object is to the left of the {reference_name} along the same wall?",
-      "Choose the letter for the object to the left of the {reference_name} on that wall.",
-      "Using the wall plane, which lettered object is left of the {reference_name}?",
-      "Which lettered object sits left of the {reference_name} along the wall?",
-      "On the wall with the {reference_name}, which lettered object is to its left?"
+      "Which option describes the wall-mounted object to the left of the {reference_name} along the same wall?",
+      "Choose the option for the object to the left of the {reference_name} on that wall.",
+      "Using the wall plane, which option describes the object left of the {reference_name}?",
+      "Which option describes the object sitting left of the {reference_name} along the wall?",
+      "On the wall with the {reference_name}, which option describes the object to its left?"
     ],
     "right_of_reference_on_wall": [
-      "Which lettered wall-mounted object is to the right of the {reference_name} along the same wall?",
-      "Choose the letter for the object to the right of the {reference_name} on that wall.",
-      "Using the wall plane, which lettered object is right of the {reference_name}?",
-      "Which lettered object sits right of the {reference_name} along the wall?",
-      "On the wall with the {reference_name}, which lettered object is to its right?"
+      "Which option describes the wall-mounted object to the right of the {reference_name} along the same wall?",
+      "Choose the option for the object to the right of the {reference_name} on that wall.",
+      "Using the wall plane, which option describes the object right of the {reference_name}?",
+      "Which option describes the object sitting right of the {reference_name} along the wall?",
+      "On the wall with the {reference_name}, which option describes the object to its right?"
     ],
     "tv_wall_mounted_count": [
       "How many TVs are hanging on the walls?",

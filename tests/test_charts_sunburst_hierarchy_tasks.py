@@ -13,10 +13,8 @@ SUNBURST_TASKS = {
         "highest_parent_total_label",
         "lowest_parent_total_label",
     },
-    "task_charts__sunburst__conditional_leaf_count": {
-        "leaf_threshold_count_under_parent",
-        "leaf_range_count_under_parent",
-    },
+    "task_charts__sunburst__leaf_threshold_count_under_parent": {"leaf_threshold_count_under_parent"},
+    "task_charts__sunburst__leaf_range_count_under_parent": {"leaf_range_count_under_parent"},
 }
 
 
@@ -36,10 +34,10 @@ def test_sunburst_tasks_generate_default_query_outputs() -> None:
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
         assert output.answer_gt.type in {"integer", "string"}
-        assert output.evidence_gt.type == "bbox_set"
-        assert output.evidence_gt.value
-        assert output.trace_payload["projected_evidence"]["type"] == "bbox_set"
-        assert output.trace_payload["projected_evidence"]["bbox_set"] == output.evidence_gt.value
+        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
+        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
         assert output.trace_payload["render_spec"]["not_to_scale"] is True
         assert output.trace_payload["render_spec"]["font_assets"]
         assert output.trace_payload["render_map"]["node_traces"]
@@ -58,9 +56,9 @@ def test_sunburst_tasks_generate_each_query_branch() -> None:
             assert output.scene_id == "sunburst"
             assert output.query_id == query_id
             assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id
-            assert output.evidence_gt.value
+            assert output.annotation_gt.value
             if query_id in {"highest_parent_total_label", "lowest_parent_total_label"}:
                 execution = output.trace_payload["execution_trace"]
-                assert set(execution["evidence_node_ids"]) == set(execution["leaf_ids"])
-                assert set(execution["answer_leaf_ids"]).issubset(set(execution["evidence_node_ids"]))
+                assert set(execution["annotation_node_ids"]) == set(execution["leaf_ids"])
+                assert set(execution["answer_leaf_ids"]).issubset(set(execution["annotation_node_ids"]))
             seed_index += 1

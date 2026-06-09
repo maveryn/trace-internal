@@ -333,7 +333,7 @@ class IllustrationsRelationFurnitureSideCountTask:
         )
         if len(counted_ids) != int(sample.target_count):
             raise RuntimeError("rendered furniture-side count did not match sample target")
-        evidence_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
+        annotation_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -343,7 +343,7 @@ class IllustrationsRelationFurnitureSideCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_furniture_side",
-                "evidence_hint_furniture_side",
+                "annotation_hint_furniture_side",
                 "json_example_furniture_side",
                 "json_example_answer_only_furniture_side",
             ],
@@ -368,7 +368,7 @@ class IllustrationsRelationFurnitureSideCountTask:
                 relation_word=str(relation_word),
                 furniture_name=str(sample.furniture_type),
             ),
-            "evidence_hint": str(prompt_defaults["evidence_hint_furniture_side"]).format(
+            "annotation_hint": str(prompt_defaults["annotation_hint_furniture_side"]).format(
                 object_name=str(sample.object_name),
                 relation_word=str(relation_word),
                 furniture_name=str(sample.furniture_type),
@@ -385,8 +385,8 @@ class IllustrationsRelationFurnitureSideCountTask:
             query_key=QUERY_ID,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -472,13 +472,13 @@ class IllustrationsRelationFurnitureSideCountTask:
                 "object_type": str(sample.object_type),
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

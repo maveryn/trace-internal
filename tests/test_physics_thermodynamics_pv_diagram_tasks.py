@@ -35,9 +35,9 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert int(out.answer_gt.value) == 24
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
 
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.annotation_gt.value) == 1
 
     assert out.scene_id == "pv_diagram"
 
@@ -49,7 +49,7 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert execution["internal_query_id"] == "work_value"
 
-    assert execution["evidence_entity_ids"] == ["work_witness_region"]
+    assert execution["annotation_entity_ids"] == ["work_witness_region"]
 
     assert str(scenario["work_mode"]) == "single_process"
 
@@ -61,10 +61,10 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert int(scenario["work_value"]) == 24
 
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pv_diagram_offset"
 
@@ -102,7 +102,7 @@ def test_physics_thermodynamics_pv_work_value_cycle_contract() -> None:
 
     assert int(scenario["work_value"]) == -12
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["work_witness_region"]
+    assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == ["work_witness_region"]
 
 
 def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
@@ -125,9 +125,9 @@ def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
 
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.annotation_gt.value) == 1
 
     assert out.query_id == "process_sign_choice"
 
@@ -135,15 +135,15 @@ def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
 
     assert execution["correct_option_letter"] == "D"
 
-    assert execution["evidence_entity_ids"] == ["option_D"]
+    assert execution["annotation_entity_ids"] == ["option_D_process"]
 
     assert sum(1 for candidate in candidates if candidate["sign"] == "zero") == 1
 
     assert [candidate for candidate in candidates if candidate["is_correct"]][0]["option_letter"] == "D"
 
     assert trace["render_map"]["option_signs"]["D"] == "zero"
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pv_diagram_offset"
 
@@ -162,7 +162,7 @@ def test_physics_thermodynamics_pv_tasks_are_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 
@@ -212,10 +212,22 @@ def test_physics_thermodynamics_pv_prompt_bundle_supports_variants() -> None:
     assert set(bundle["query_templates"]) == {
         "work_value",
         "process_sign_choice",
+        "constant_pressure_boundary_work",
+        "celsius_to_fahrenheit_value",
+        "fahrenheit_to_celsius_value",
+        "equal_amount_final_temperature",
     }
 
     assert len(bundle["query_templates"]["work_value"]) == 5
 
     assert len(bundle["query_templates"]["process_sign_choice"]) == 5
 
-    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5
+    assert len(bundle["query_templates"]["constant_pressure_boundary_work"]) == 5
+
+    assert len(bundle["query_templates"]["celsius_to_fahrenheit_value"]) == 5
+
+    assert len(bundle["query_templates"]["fahrenheit_to_celsius_value"]) == 5
+
+    assert len(bundle["query_templates"]["equal_amount_final_temperature"]) == 5
+
+    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5

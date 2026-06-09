@@ -11,7 +11,7 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `one_move_result_label|two_move_result_label|inverse_sequence_result_label`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence targets: exactly one bbox for the selected candidate net option panel
+4. Annotation type: `bbox_set`
+5. Annotation targets: exactly one bbox for the selected candidate net option panel
 6. Scene variants: `classic_net|paper_net|cool_net`
 7. Trace contract: the start state, final state, move sequence, optional base sequence for inverse queries, candidate states, and answer state signature are recorded in metadata.

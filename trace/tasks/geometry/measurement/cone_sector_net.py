@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import math
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
@@ -28,6 +27,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.prompt_json_example import dump_prompt_json_examples
 from ...shared.text_rendering import load_font
 from ..shared.complexity import (
     build_geometry_measurement_complexity,
@@ -47,6 +47,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -138,9 +139,9 @@ class _ResolvedProblem:
 class _RenderedConeSectorNetScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
-    evidence_keyed_points: Mapping[str, Point]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
+    annotation_keyed_points: Mapping[str, Point]
     label_bboxes: Dict[str, BBox]
     point_label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
@@ -263,37 +264,15 @@ def _draw_arrow(ctx: _RenderContext, start: Point, end: Point) -> None:
 
 
 def _build_keyed_point_prompt_examples(
-    evidence_keys: Sequence[str],
+    annotation_keys: Sequence[str],
     *,
     answer: float,
 ) -> tuple[str, str]:
-    evidence: Dict[str, list[int]] = {}
-    for index, key in enumerate(evidence_keys):
-        evidence[str(key)] = [130 + (42 * int(index)), 180 + (24 * int(index))]
+    annotation: Dict[str, list[int]] = {}
+    for index, key in enumerate(annotation_keys):
+        annotation[str(key)] = [130 + (42 * int(index)), 180 + (24 * int(index))]
     answer_value = float(answer)
-    return (
-        json.dumps(
-            {"evidence": evidence, "answer": answer_value},
-            ensure_ascii=False,
-            allow_nan=False,
-            separators=(",", ":"),
-        ),
-        json.dumps(
-            {"answer": answer_value},
-            ensure_ascii=False,
-            allow_nan=False,
-            separators=(",", ":"),
-        ),
-    )
-
-
-def _selected_probability_map(
-    values: Sequence[int | float], selected: int | float
-) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if _round1(value) == _round1(selected) else 0.0)
-        for value in values
-    }
+    return dump_prompt_json_examples(annotation=annotation, answer=answer_value, ensure_ascii=False)
 
 
 def _resolve_problem(
@@ -361,7 +340,10 @@ def _resolve_problem(
         arc_length=_round1(arc_length),
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(_round1(value) for value in support_values))), answer
+            tuple(sorted(set(_round1(value) for value in support_values))),
+            answer,
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: _round1(value) == _round1(selected),
         ),
     )
 
@@ -513,18 +495,18 @@ def _render_cone_sector_net_scene(
     else:
         raise ValueError(f"unsupported cone-sector-net query_id: {problem.query_id}")
 
-    evidence_keyed_points: Dict[str, Point] = {
+    annotation_keyed_points: Dict[str, Point] = {
         "S": sector_center,
         "P": p0,
         "Q": p1,
         "C": cone_base_center,
     }
     if problem.query_id == "base_radius_from_sector_angle":
-        evidence_keyed_points["R"] = cone_base_right
+        annotation_keyed_points["R"] = cone_base_right
     elif problem.query_id == "height_from_sector_angle":
-        evidence_keyed_points["A"] = cone_apex
-    evidence_roles = tuple(evidence_keyed_points.keys())
-    evidence_bboxes: tuple[BBox, ...] = tuple()
+        annotation_keyed_points["A"] = cone_apex
+    annotation_roles = tuple(annotation_keyed_points.keys())
+    annotation_bboxes: tuple[BBox, ...] = tuple()
 
     point_label_bboxes: Dict[str, BBox] = {}
     point_label_offsets: Dict[str, Point] = {
@@ -535,7 +517,7 @@ def _render_cone_sector_net_scene(
         "C": (-24.0, 20.0),
         "R": (24.0, 2.0),
     }
-    for label, point in evidence_keyed_points.items():
+    for label, point in annotation_keyed_points.items():
         px, py = float(point[0]), float(point[1])
         ctx.draw.ellipse((px - 3.5, py - 3.5, px + 3.5, py + 3.5), fill=ctx.line_color)
         ox, oy = point_label_offsets.get(str(label), (16.0, -16.0))
@@ -586,9 +568,9 @@ def _render_cone_sector_net_scene(
     return _RenderedConeSectorNetScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
-        evidence_keyed_points=dict(evidence_keyed_points),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
+        annotation_keyed_points=dict(annotation_keyed_points),
         label_bboxes=dict(label_bboxes),
         point_label_bboxes=dict(point_label_bboxes),
         scene_entities=scene_entities,
@@ -617,7 +599,7 @@ def _render_cone_sector_net_scene(
             },
             "construction_points": {
                 key: [round(point[0], 3), round(point[1], 3)]
-                for key, point in evidence_keyed_points.items()
+                for key, point in annotation_keyed_points.items()
             },
             "label_bboxes": {
                 key: _bbox_to_list(value) for key, value in label_bboxes.items()
@@ -637,6 +619,7 @@ class _ConeSectorNetBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "cone_sector_net"
@@ -730,10 +713,10 @@ class _ConeSectorNetBaseTask:
         return ctx, render_meta
 
     def _build_complexity(self, rendered: _RenderedConeSectorNetScene) -> TaskComplexity:
-        evidence_count = len(rendered.evidence_keyed_points)
+        annotation_count = len(rendered.annotation_keyed_points)
         visual_scan = clamp_unit_interval(
             0.44
-            + normalize_linear(evidence_count, min_value=3, max_value=5)
+            + normalize_linear(annotation_count, min_value=3, max_value=5)
             * 0.18
         )
         formula_family = str(rendered.witness.get("formula_family", ""))
@@ -742,7 +725,7 @@ class _ConeSectorNetBaseTask:
         ambiguity = 0.48 if is_base_radius else 0.56
         output_burden = clamp_unit_interval(
             0.44
-            + normalize_linear(evidence_count, min_value=3, max_value=5)
+            + normalize_linear(annotation_count, min_value=3, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -805,26 +788,26 @@ class _ConeSectorNetBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(key): [round(float(point[0]), 3), round(float(point[1]), 3)]
-            for key, point in rendered.evidence_keyed_points.items()
+            for key, point in rendered.annotation_keyed_points.items()
         }
-        evidence_key_list = ", ".join(f'"{key}"' for key in evidence_keyed_points)
-        evidence_hint_template = str(prompt_defaults["evidence_hint"])
-        evidence_hint = (
-            evidence_hint_template.format(evidence_keys=evidence_key_list)
-            if "{evidence_keys}" in evidence_hint_template
-            else evidence_hint_template
+        annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keyed_points)
+        annotation_hint_template = str(prompt_defaults["annotation_hint"])
+        annotation_hint = (
+            annotation_hint_template.format(annotation_keys=annotation_key_list)
+            if "{annotation_keys}" in annotation_hint_template
+            else annotation_hint_template
         )
         json_example, json_example_answer_only = _build_keyed_point_prompt_examples(
-            tuple(evidence_keyed_points.keys()),
+            tuple(annotation_keyed_points.keys()),
             answer=float(rendered.answer),
         )
         prompt_selection = render_task_prompt_variants(
@@ -834,14 +817,14 @@ class _ConeSectorNetBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -851,8 +834,8 @@ class _ConeSectorNetBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(
-            type="keyed_point_map", value=dict(evidence_keyed_points)
+        annotation_gt = TypedValue(
+            type="keyed_point_map", value=dict(annotation_keyed_points)
         )
         query_params = {
             "scene_id": SCENE_ID,
@@ -871,7 +854,7 @@ class _ConeSectorNetBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": "sector_net_to_cone",
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -900,7 +883,7 @@ class _ConeSectorNetBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 1
                 if problem.query_id == "base_radius_from_sector_angle"
                 else 2,
@@ -912,19 +895,19 @@ class _ConeSectorNetBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "keyed_point_map",
-                "original_evidence_value": dict(evidence_keyed_points),
+                "original_annotation_value": dict(annotation_keyed_points),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_point_map",
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -937,15 +920,25 @@ class _ConeSectorNetBaseTask:
 
 
 @register_task
-class GeometryConeSectorNetValueTask(_ConeSectorNetBaseTask):
-    """Compute a base-radius or height value from a cone sector net."""
+class GeometryConeNetBaseRadiusFromSectorAngleTask(_ConeSectorNetBaseTask):
+    """Compute the cone base radius from a sector angle and slant height."""
 
-    task_id = "task_geometry__cone_net__cone_sector_net_value"
-    supported_queries = _ALL_CONE_SECTOR_NET_QUERIES
+    task_id = "task_geometry__cone_net__base_radius_from_sector_angle"
+    supported_queries = _BASE_RADIUS_QUERIES
+    reasoning_kind = "cone_sector_net"
+
+
+@register_task
+class GeometryConeNetHeightFromSectorAngleTask(_ConeSectorNetBaseTask):
+    """Compute the cone height after deriving base radius from the sector angle."""
+
+    task_id = "task_geometry__cone_net__height_from_sector_angle"
+    supported_queries = _HEIGHT_QUERIES
     reasoning_kind = "cone_sector_net"
 
 
 __all__ = [
-    "GeometryConeSectorNetValueTask",
+    "GeometryConeNetBaseRadiusFromSectorAngleTask",
+    "GeometryConeNetHeightFromSectorAngleTask",
     "SCENE_ID",
 ]

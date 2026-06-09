@@ -12,7 +12,7 @@
 2. `query_id`: `minimum_spanning_tree_weight`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
-4. `evidence_gt.type`: `point_pair_set`
+4. `annotation_gt.type`: `point_pair_set`
 5. Scene contract:
    - one single-panel labeled connected weighted graph per image,
    - undirected graph only,
@@ -24,12 +24,12 @@
 6. Query contract:
    - the prompt defines a spanning tree as connecting every node without cycles and asks for the smallest total edge weight,
    - answer is the sum of the weights on the unique minimum spanning tree,
-   - evidence is the unordered set of MST edges, represented as endpoint-node-center pixel point pairs.
+   - annotation is the unordered set of MST edges, represented as endpoint-node-center pixel point pairs.
 7. Weight policy:
    - edge weights are distinct integers from `1..9`,
    - generation samples `1..2` non-tree edges,
    - the heaviest sampled weights are assigned to non-tree edges so the intended spanning tree is the unique MST by construction,
-   - the finalized weighted graph is rechecked with `networkx.minimum_spanning_tree(...)` before exposing answer or evidence.
+   - the finalized weighted graph is rechecked with `networkx.minimum_spanning_tree(...)` before exposing answer or annotation.
 8. Topology variation:
    - `topology_profile` values are `balanced`, `low_degree`, and `hub_heavy`,
    - topology profile affects both the spanning-tree shape and which non-tree edges are added,
@@ -54,15 +54,15 @@
    - scene: `object_description`
    - task: `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-5. Modes: `answer_only`, `answer_and_evidence`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":12}`
-7. Answer+evidence JSON shape: `{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}`
-8. Prompt-facing evidence uses `point_pair_set`; each edge is one endpoint-node-center point pair.
+7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}`
+8. Prompt-facing annotation uses `point_pair_set`; each edge is one endpoint-node-center point pair.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_pair_set` of endpoint-node-center pixel points for all MST edges.
-2. Each evidence item is a two-point endpoint pair and is unordered semantically for reward matching; the corresponding endpoint labels remain in `witness_symbolic`.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the `point_pair_set` of endpoint-node-center pixel points for all MST edges.
+2. Each annotation item is a two-point endpoint pair and is unordered semantically for reward matching; the corresponding endpoint labels remain in `witness_symbolic`.
 3. `scene_ir.entities` stores one node entity per rendered node plus one edge entity per rendered edge with:
    - endpoint labels,
    - rendered segment,
@@ -75,7 +75,7 @@
    - MST edge list,
    - adjacency map,
    - degree map.
-5. `projected_evidence` includes:
+5. `projected_annotation` includes:
    - `point_pair_set`
    - `point_pair_map`
 6. `execution_trace` records:
@@ -99,7 +99,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized weighted graph.
+2. Answers and annotation come from the same finalized weighted graph.
 3. Unique-answer policy: generation enforces a unique MST by construction and rejects any graph whose final weighted edges do not preserve that unique witness.
 4. Reject/resample conditions:
    - infeasible node-count / extra-edge-count / weight-range combination,

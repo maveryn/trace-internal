@@ -185,23 +185,23 @@ prompt:
     bundle_id: graph_optimization_v0
     scene_key: single_graph_optimization
     task_key: minimum_spanning_tree_weight_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_undirected: a labeled connected weighted graph
     object_description_directed: a directed capacity network with source S, sink T, and integer capacities on the arrows
     question_text_minimum_spanning_tree_weight: A spanning tree connects every node without cycles. The graph has one spanning tree with the smallest total edge weight. What is that total weight?
-    evidence_hint: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one edge in that minimum spanning tree
+    annotation_hint: set "annotation" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one edge in that minimum spanning tree
     answer_hint: set "answer" to the total weight of that minimum spanning tree as an integer
-    json_example: '{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}'
+    json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}'
     json_example_answer_only: '{"answer":12}'
   task_overrides:
     task_graph__adjacency__mst_weight:
       scene_key: adjacency_matrix_optimization
       task_key: adjacency_matrix_mst_weight_query
       object_description: a connected undirected weighted graph shown as a weighted adjacency matrix
-      evidence_hint: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around one matrix cell for each edge in the minimum spanning tree
+      annotation_hint: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around one matrix cell for each edge in the minimum spanning tree
       answer_hint: set "answer" to the total weight of the minimum spanning tree as an integer
-      json_example: '{"evidence":[[278,182,328,232],[328,282,378,332],[378,332,428,382]],"answer":12}'
+      json_example: '{"annotation":[[278,182,328,232],[328,282,378,332],[378,332,428,382]],"answer":12}'
       json_example_answer_only: '{"answer":12}'
     task_graph__flow_network__max_flow_value:
       scene_key: single_graph_optimization
@@ -209,10 +209,10 @@ prompt:
       object_description_directed: a directed capacity network with source S, sink T, and integer capacities on the arrows
       answer_hint_max_flow_value: set "answer" to the maximum flow value from source S to sink T as an integer
       answer_hint_minimum_cut_edge_count: set "answer" to the number of directed edges in the unique minimum cut as an integer
-      evidence_hint_minimum_cut_edges: set "evidence" to an array of directed edge point-pairs for every edge in the unique minimum cut; each point-pair contains the [x,y] pixel centers of the two endpoint nodes of that directed edge
-      json_example_max_flow_value: '{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
+      annotation_hint_minimum_cut_edges: set "annotation" to an array of directed edge point-pairs for every edge in the unique minimum cut; each point-pair contains the [x,y] pixel centers of the two endpoint nodes of that directed edge
+      json_example_max_flow_value: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
       json_example_answer_only_max_flow_value: '{"answer":7}'
-      json_example_minimum_cut_edge_count: '{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
+      json_example_minimum_cut_edge_count: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
       json_example_answer_only_minimum_cut_edge_count: '{"answer":2}'
     task_graph__flow_network__min_cut_edge_count:
       scene_key: single_graph_optimization
@@ -220,8 +220,8 @@ prompt:
       object_description_directed: a directed capacity network with source S, sink T, and integer capacities on the arrows
       answer_hint_max_flow_value: set "answer" to the maximum flow value from source S to sink T as an integer
       answer_hint_minimum_cut_edge_count: set "answer" to the number of directed edges in the unique minimum cut as an integer
-      evidence_hint_minimum_cut_edges: set "evidence" to an array of directed edge point-pairs for every edge in the unique minimum cut; each point-pair contains the [x,y] pixel centers of the two endpoint nodes of that directed edge
-      json_example_max_flow_value: '{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
+      annotation_hint_minimum_cut_edges: set "annotation" to an array of directed edge point-pairs for every edge in the unique minimum cut; each point-pair contains the [x,y] pixel centers of the two endpoint nodes of that directed edge
+      json_example_max_flow_value: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
       json_example_answer_only_max_flow_value: '{"answer":7}'
-      json_example_minimum_cut_edge_count: '{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
+      json_example_minimum_cut_edge_count: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
       json_example_answer_only_minimum_cut_edge_count: '{"answer":2}'

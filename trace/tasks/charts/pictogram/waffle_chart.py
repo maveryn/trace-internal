@@ -96,7 +96,7 @@ class _Query:
     query_id: str
     answer: int
     answer_type: str
-    evidence_category_ids: Tuple[str, ...]
+    annotation_category_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -390,7 +390,7 @@ def _build_category_total_query(
         query_id="category_total_value",
         answer=int(answer),
         answer_type="integer",
-        evidence_category_ids=(f"cat_{target_index}",),
+        annotation_category_ids=(f"cat_{target_index}",),
         params={
             "target_category_id": f"cat_{target_index}",
             "target_category_index": int(target_index),
@@ -444,7 +444,7 @@ def _build_group_difference_query(
         query_id="group_difference_value",
         answer=int(answer),
         answer_type="integer",
-        evidence_category_ids=(f"cat_{pair[0]}", f"cat_{pair[1]}"),
+        annotation_category_ids=(f"cat_{pair[0]}", f"cat_{pair[1]}"),
         params={
             "category_id_a": f"cat_{pair[0]}",
             "category_id_b": f"cat_{pair[1]}",
@@ -505,7 +505,7 @@ def _build_threshold_query(
         query_id="threshold_count",
         answer=int(target_count),
         answer_type="integer",
-        evidence_category_ids=tuple(f"cat_{index}" for index in sorted(target_indices)),
+        annotation_category_ids=tuple(f"cat_{index}" for index in sorted(target_indices)),
         params={
             "threshold_direction": str(direction),
             "threshold_direction_probabilities": dict(direction_probs),
@@ -608,7 +608,7 @@ def _construct_dataset(
         query_id=str(query.query_id),
         answer=int(query.answer),
         answer_type=str(query.answer_type),
-        evidence_category_ids=tuple(str(value) for value in query.evidence_category_ids),
+        annotation_category_ids=tuple(str(value) for value in query.annotation_category_ids),
         params=qparams,
     )
     title_options = ("Unit Quantity Chart", "Category Unit Chart", "Pictogram Totals", "Repeated-Mark Summary")
@@ -897,14 +897,14 @@ def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tupl
     )
 
 
-def _evidence_for_query(
+def _annotation_for_query(
     *,
     query_id: str,
-    evidence_category_ids: Sequence[str],
+    annotation_category_ids: Sequence[str],
     category_id_to_label: Mapping[str, str],
     category_bboxes_px: Mapping[str, BBox],
 ) -> Tuple[str, Dict[str, BBox] | List[BBox], Dict[str, Any]]:
-    ids = [str(value) for value in evidence_category_ids]
+    ids = [str(value) for value in annotation_category_ids]
     if str(query_id) in {"category_total_value", "group_difference_value"}:
         keyed = {
             str(category_id_to_label[str(category_id)]): list(category_bboxes_px[str(category_id)])
@@ -984,9 +984,9 @@ class ChartsPictogramChartTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint_category_total_value",
-                "evidence_hint_group_difference_value",
-                "evidence_hint_threshold_count",
+                "annotation_hint_category_total_value",
+                "annotation_hint_group_difference_value",
+                "annotation_hint_threshold_count",
                 "object_description_waffle_grid_blocks",
                 "object_description_pictogram_rows",
                 "json_example_category_total_value",
@@ -1008,13 +1008,13 @@ class ChartsPictogramChartTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "unit_scale": int(dataset.unit_scale),
@@ -1027,26 +1027,26 @@ class ChartsPictogramChartTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_category_ids = [str(value) for value in dataset.query.evidence_category_ids]
+        annotation_category_ids = [str(value) for value in dataset.query.annotation_category_ids]
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=int(dataset.query.answer))
         totals_by_category = {category.label: int(category.total) for category in dataset.categories}
         mark_counts_by_category = {category.label: int(category.mark_count) for category in dataset.categories}
         category_id_to_label = {category.category_id: str(category.label) for category in dataset.categories}
-        evidence_labels = [str(category_id_to_label[category_id]) for category_id in evidence_category_ids]
-        evidence_type, evidence_value, projected_evidence = _evidence_for_query(
+        annotation_labels = [str(category_id_to_label[category_id]) for category_id in annotation_category_ids]
+        annotation_type, annotation_value, projected_annotation = _annotation_for_query(
             query_id=str(query_id),
-            evidence_category_ids=evidence_category_ids,
+            annotation_category_ids=annotation_category_ids,
             category_id_to_label=category_id_to_label,
             category_bboxes_px=rendered.category_bboxes_px,
         )
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
 
         visual_scan = clamp_unit_interval(
             0.55 * normalize_int_with_bounds(len(dataset.categories), [6, 10])
             + 0.45 * normalize_int_with_bounds(max(category.mark_count for category in dataset.categories), [4, 16])
         )
-        evidence_scan = normalize_int_with_bounds(len(evidence_category_ids), [1, 6])
-        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)]) + (0.08 * evidence_scan))
+        annotation_scan = normalize_int_with_bounds(len(annotation_category_ids), [1, 6])
+        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)]) + (0.08 * annotation_scan))
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1077,7 +1077,7 @@ class ChartsPictogramChartTask:
                     "scene_variant": str(scene_variant),
                     "unit_scale": int(dataset.unit_scale),
                     "answer_value": int(dataset.query.answer),
-                    "evidence_category_ids": list(evidence_category_ids),
+                    "annotation_category_ids": list(annotation_category_ids),
                 },
             },
             "query_spec": {
@@ -1120,16 +1120,16 @@ class ChartsPictogramChartTask:
                 "totals_by_category": dict(totals_by_category),
                 "answer_value": int(dataset.query.answer),
                 "answer_type": str(dataset.query.answer_type),
-                "evidence_category_ids": list(evidence_category_ids),
-                "evidence_labels": list(evidence_labels),
+                "annotation_category_ids": list(annotation_category_ids),
+                "annotation_labels": list(annotation_labels),
                 **dict(qparams),
             },
             "witness_symbolic": {
                 "type": "pictogram_quantity_witness",
                 "answer_value": int(dataset.query.answer),
-                "evidence_category_ids": list(evidence_category_ids),
+                "annotation_category_ids": list(annotation_category_ids),
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }
@@ -1137,7 +1137,7 @@ class ChartsPictogramChartTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1149,11 +1149,19 @@ class ChartsPictogramChartTask:
 
 
 @register_task
-class ChartsPictogramGroupArithmeticValueTask(MergedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
-    """Read or compare group totals from repeated unit marks."""
+class ChartsPictogramCategoryTotalValueTask(MergedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
+    """Read one category total from repeated unit marks."""
 
-    task_id = "task_charts__pictogram__group_arithmetic_value"
-    allowed_query_ids = ("category_total_value", "group_difference_value")
+    task_id = "task_charts__pictogram__category_total_value"
+    allowed_query_ids = ("category_total_value",)
+
+
+@register_task
+class ChartsPictogramGroupDifferenceValueTask(MergedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
+    """Compute the difference between two pictogram group totals."""
+
+    task_id = "task_charts__pictogram__group_difference_value"
+    allowed_query_ids = ("group_difference_value",)
 
 
 @register_task
@@ -1165,8 +1173,9 @@ class ChartsPictogramThresholdCountTask(FixedChartQueryVariantTaskMixin, ChartsP
 
 
 __all__ = [
+    "ChartsPictogramCategoryTotalValueTask",
     "ChartsPictogramChartTask",
-    "ChartsPictogramGroupArithmeticValueTask",
+    "ChartsPictogramGroupDifferenceValueTask",
     "ChartsPictogramThresholdCountTask",
     "SUPPORTED_GLYPHS",
     "SUPPORTED_SCENE_VARIANTS",

@@ -32,7 +32,7 @@ def _build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str
         "prompt_variants": dict(train_instance.get("prompt_variants", {})),
         "images": images,
         "answer_gt": train_instance.get("answer_gt"),
-        "evidence_gt": train_instance.get("evidence_gt"),
+        "annotation_gt": train_instance.get("annotation_gt"),
         "reward_contract": train_instance.get("reward_contract"),
         "versions": train_instance.get("versions", {}),
     }

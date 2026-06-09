@@ -16,13 +16,13 @@ def test_icons_relation_between_two_anchors_count_deterministic() -> None:
     out_a = task.generate(14920, params={}, max_attempts=200)
     out_b = task.generate(14920, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "bbox_set"
+    assert out_a.annotation_gt.type == "bbox_set"
 
 
 def test_icons_relation_between_two_anchors_count_build_smoke(tmp_path: Path) -> None:

@@ -18,7 +18,7 @@ from ...shared.font_assets import font_asset_version, get_font_family_record, sa
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, temporary_default_font_family
-from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -724,18 +724,18 @@ def _build_maze_exit_dataset(
             answer_exit = reachable_exits[0]
             answer_value: str | int = str(answer_exit["label"])
             supporting_item_ids = [str(answer_exit["item_id"])]
-            evidence_policy = "single_reachable_exit_bbox"
+            annotation_policy = "single_reachable_exit_bbox"
             query_details: Dict[str, Any] = {"target_reachability": str(resolved_target_reachability)}
         elif bool(is_label_variant) and str(resolved_target_reachability) == "unreachable":
             answer_exit = unreachable_exits[0]
             answer_value = str(answer_exit["label"])
             supporting_item_ids = [str(answer_exit["item_id"])]
-            evidence_policy = "single_unreachable_exit_bbox"
+            annotation_policy = "single_unreachable_exit_bbox"
             query_details = {"target_reachability": str(resolved_target_reachability)}
         else:
             answer_value = int(len(reachable_exits))
             supporting_item_ids = [str(exit_spec["item_id"]) for exit_spec in sorted(reachable_exits, key=lambda item: str(item["label"]))]
-            evidence_policy = "reachable_exit_bboxes_by_label"
+            annotation_policy = "reachable_exit_bboxes_by_label"
             query_details = {"reachable_exit_count": int(answer_value)}
             reachable_count_range = locals().get("reachable_count_range", [1, 5])
 
@@ -764,7 +764,7 @@ def _build_maze_exit_dataset(
             "unreachable_exit_labels": list(unreachable_labels),
             "answer_value": answer_value,
             "supporting_item_ids": list(supporting_item_ids),
-            "evidence_policy": str(evidence_policy),
+            "annotation_policy": str(annotation_policy),
             "query_details": dict(query_details),
             "solver_trace": {
                 "start_cell": [int(start[0]), int(start[1])],
@@ -773,7 +773,7 @@ def _build_maze_exit_dataset(
                 "target_reachability": str(resolved_target_reachability) if resolved_target_reachability is not None else None,
                 "answer_value": answer_value,
                 "supporting_item_ids": list(supporting_item_ids),
-                "evidence_policy": str(evidence_policy),
+                "annotation_policy": str(annotation_policy),
                 **dict(query_details),
             },
         }
@@ -1278,8 +1278,8 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "object_description_block_wall_maze",
                 "answer_hint_exit_reachability_label",
                 "answer_hint_reachable_exit_count",
-                "evidence_hint_exit_reachability_label",
-                "evidence_hint_reachable_exit_count",
+                "annotation_hint_exit_reachability_label",
+                "annotation_hint_reachable_exit_count",
                 "json_example_exit_reachability_label",
                 "json_example_reachable_exit_count",
                 "json_example_answer_only_exit_reachability_label",
@@ -1294,7 +1294,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
         answer_hint = str(prompt_defaults[f"answer_hint_{str(query_id)}"]).format(
             target_reachability_description=str(target_reachability_description),
         )
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"]).format(
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"]).format(
             target_reachability_description=str(target_reachability_description),
         )
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
@@ -1306,12 +1306,12 @@ class _PuzzlesTopologyMazeExitBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1331,15 +1331,15 @@ class _PuzzlesTopologyMazeExitBaseTask:
             str(key): [round(float(value), 3) for value in bbox]
             for key, bbox in rendered_scene.cell_bbox_map.items()
         }
-        evidence_projection = projected_puzzle_bbox_evidence(rounded_item_bbox_map, supporting_item_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
-        supporting_evidence_source = "item_bboxes_px"
+        annotation_projection = projected_puzzle_bbox_annotation(rounded_item_bbox_map, supporting_item_ids)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        supporting_annotation_source = "item_bboxes_px"
         witness_type = "bbox_set"
-        witness_value = list(evidence_bboxes)
-        evidence_count = len(evidence_bboxes)
-        if len(evidence_bboxes) != len(supporting_item_ids):
-            raise ValueError("maze-exit evidence projection does not match supporting item ids")
+        witness_value = list(annotation_bboxes)
+        annotation_count = len(annotation_bboxes)
+        if len(annotation_bboxes) != len(supporting_item_ids):
+            raise ValueError("maze-exit annotation projection does not match supporting item ids")
         answer_value = dataset["answer_value"]
         if str(query_id) == "reachable_exit_count":
             answer_gt = TypedValue(type="integer", value=int(answer_value))
@@ -1349,14 +1349,14 @@ class _PuzzlesTopologyMazeExitBaseTask:
         exit_scan = normalize_int_with_bounds(int(dataset["exit_count"]), list(dataset["exit_count_range"]))
         row_scan = normalize_int_with_bounds(int(dataset["maze_rows"]), list(dataset["maze_rows_range"]))
         col_scan = normalize_int_with_bounds(int(dataset["maze_cols"]), list(dataset["maze_cols_range"]))
-        evidence_denominator = max(1.0, float(dataset["exit_count_range"][1]))
-        evidence_load = min(1.0, float(evidence_count) / float(evidence_denominator))
+        annotation_denominator = max(1.0, float(dataset["exit_count_range"][1]))
+        annotation_load = min(1.0, float(annotation_count) / float(annotation_denominator))
         reasoning_load = min(
             1.0,
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + float(_TARGET_REACHABILITY_LOAD.get(str(target_reachability), 0.0))
             + (0.08 * float(exit_scan))
-            + (0.10 * float(evidence_load)),
+            + (0.10 * float(annotation_load)),
         )
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,
@@ -1429,7 +1429,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "item_bboxes_px": {str(key): list(value) for key, value in rounded_item_bbox_map.items()},
                 "cell_bboxes_px": {str(key): list(value) for key, value in rounded_cell_bbox_map.items()},
-                "evidence_source": str(supporting_evidence_source),
+                "annotation_source": str(supporting_annotation_source),
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 "query_id": str(query_id),
@@ -1453,8 +1453,8 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "unreachable_exit_labels": [str(value) for value in dataset["unreachable_exit_labels"]],
                 "answer_value": answer_value,
                 "supporting_item_ids": list(supporting_item_ids),
-                "supporting_evidence_source": str(supporting_evidence_source),
-                "evidence_policy": str(dataset["evidence_policy"]),
+                "supporting_annotation_source": str(supporting_annotation_source),
+                "annotation_policy": str(dataset["annotation_policy"]),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "target_reachability_probabilities": dict(target_reachability_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1466,9 +1466,9 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "value": list(witness_value),
                 "ordered_item_ids": list(supporting_item_ids),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
 
@@ -1485,7 +1485,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -1,4 +1,4 @@
-"""Shared evidence-overlay helpers for review/sample workbooks."""
+"""Shared annotation-overlay helpers for review/sample workbooks."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image as PILImage
 from PIL import ImageDraw as PILImageDraw
 
-__all__ = ["render_evidence_overlay", "resolve_overlay_evidence"]
+__all__ = ["render_annotation_overlay", "resolve_overlay_annotation"]
 
 
-_EVIDENCE_COLORS: List[Tuple[int, int, int]] = [
+_ANNOTATION_COLORS: List[Tuple[int, int, int]] = [
     (230, 57, 70),
     (69, 123, 157),
     (46, 139, 87),
@@ -56,7 +56,7 @@ def _parse_bbox(value: Any) -> Tuple[float, float, float, float] | None:
 
 
 def _extract_points(value: Any) -> List[Tuple[float, float]]:
-    """Extract point payloads from one evidence structure."""
+    """Extract point payloads from one annotation structure."""
     point = _parse_point(value)
     if point is not None:
         return [point]
@@ -78,7 +78,7 @@ def _extract_points(value: Any) -> List[Tuple[float, float]]:
 
 
 def _extract_point_map(value: Any) -> Dict[str, Tuple[float, float]]:
-    """Extract labeled point payloads from one evidence structure."""
+    """Extract labeled point payloads from one annotation structure."""
     if not isinstance(value, Mapping):
         return {}
     out: Dict[str, Tuple[float, float]] = {}
@@ -90,8 +90,23 @@ def _extract_point_map(value: Any) -> Dict[str, Tuple[float, float]]:
     return out
 
 
+def _extract_keyed_point_sets(value: Any) -> Dict[str, List[Tuple[float, float]]]:
+    """Extract labeled unordered point-set payloads from one annotation structure."""
+
+    if not isinstance(value, Mapping):
+        return {}
+    out: Dict[str, List[Tuple[float, float]]] = {}
+    for key, item in value.items():
+        points = _extract_points(item)
+        if points:
+            out[str(key)] = points
+        elif isinstance(item, list) and not item:
+            out[str(key)] = []
+    return out
+
+
 def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
-    """Extract bbox payloads from one evidence structure."""
+    """Extract bbox payloads from one annotation structure."""
     bbox = _parse_bbox(value)
     if bbox is not None:
         return [bbox]
@@ -106,7 +121,7 @@ def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
 
 
 def _extract_bbox_map(value: Any) -> Dict[str, Tuple[float, float, float, float]]:
-    """Extract labeled bbox payloads from one evidence structure."""
+    """Extract labeled bbox payloads from one annotation structure."""
     if not isinstance(value, Mapping):
         return {}
     out: Dict[str, Tuple[float, float, float, float]] = {}
@@ -118,8 +133,23 @@ def _extract_bbox_map(value: Any) -> Dict[str, Tuple[float, float, float, float]
     return out
 
 
+def _extract_keyed_bbox_sets(value: Any) -> Dict[str, List[Tuple[float, float, float, float]]]:
+    """Extract labeled unordered bbox-set payloads from one annotation structure."""
+
+    if not isinstance(value, Mapping):
+        return {}
+    out: Dict[str, List[Tuple[float, float, float, float]]] = {}
+    for key, item in value.items():
+        bboxes = _extract_bboxes(item)
+        if bboxes:
+            out[str(key)] = bboxes
+        elif isinstance(item, list) and not item:
+            out[str(key)] = []
+    return out
+
+
 def _extract_edge_segments(value: Any) -> List[Tuple[Tuple[float, float], Tuple[float, float]]]:
-    """Extract edge-segment payloads from one evidence structure."""
+    """Extract edge-segment payloads from one annotation structure."""
 
     def _parse_segment(item: Any) -> Tuple[Tuple[float, float], Tuple[float, float]] | None:
         if not isinstance(item, (list, tuple)) or len(item) != 2:
@@ -165,7 +195,7 @@ def _draw_point_marker(
     radius: int,
     line_width: int,
 ) -> None:
-    """Draw one high-contrast X marker for point evidence.
+    """Draw one high-contrast X marker for point annotation.
 
     Filled circles are easy to confuse with board pieces, stones, bubbles, and
     darts, so review overlays use an X-shaped annotation for point witnesses.
@@ -188,40 +218,42 @@ def _draw_point_marker(
         draw.line(segment, fill=(color[0], color[1], color[2], 255), width=stroke)
 
 
-def resolve_overlay_evidence(
+def resolve_overlay_annotation(
     *,
-    evidence_type: str,
-    evidence_value: Any,
+    annotation_type: str,
+    annotation_value: Any,
     trace_payload: Mapping[str, Any] | None,
 ) -> Tuple[str, Any]:
-    """Resolve review-overlay evidence into pixel-space payloads when possible."""
-    projected = trace_payload.get("projected_evidence", {}) if isinstance(trace_payload, Mapping) else {}
+    """Resolve review-overlay annotation into pixel-space payloads when possible."""
+    projected = trace_payload.get("projected_annotation", {}) if isinstance(trace_payload, Mapping) else {}
     if not isinstance(projected, Mapping):
-        return str(evidence_type), evidence_value
+        return str(annotation_type), annotation_value
 
-    evidence_kind = str(evidence_type)
-    if evidence_kind in {
+    annotation_kind = str(annotation_type)
+    if annotation_kind in {
         "bbox_sequence",
         "bbox_set",
         "keyed_bbox_map",
+        "keyed_bbox_set_map",
         "keyed_point_map",
+        "keyed_point_set_map",
         "point_pair_set",
         "point_sequence",
         "point_set",
     }:
-        if evidence_kind in projected:
-            return evidence_kind, projected.get(evidence_kind)
-        pixel_key = f"pixel_{evidence_kind}"
+        if annotation_kind in projected:
+            return annotation_kind, projected.get(annotation_kind)
+        pixel_key = f"pixel_{annotation_kind}"
         if pixel_key in projected:
-            return evidence_kind, projected.get(pixel_key)
-    return str(evidence_type), evidence_value
+            return annotation_kind, projected.get(pixel_key)
+    return str(annotation_type), annotation_value
 
 
-def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evidence_value: Any) -> PILImage.Image:
-    """Render one evidence-overlay image for manual review workbooks.
+def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, annotation_value: Any) -> PILImage.Image:
+    """Render one annotation-overlay image for manual review workbooks.
 
     Review overlays operate in pixel space. Callers should pass public image-level
-    evidence payloads or projected public pixel evidence.
+    annotation payloads or projected public pixel annotation.
     """
 
     image = source.convert("RGB")
@@ -231,9 +263,9 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
     line_width = max(3, int(round(min(width, height) * 0.008)))
     label_offset_x = float(radius) + 6.0
     label_offset_y = float(radius) + 3.0
-    evidence_kind = str(evidence_type)
+    annotation_kind = str(annotation_type)
 
-    if evidence_kind in {
+    if annotation_kind in {
         "point_map",
         "pixel_point_map",
         "keyed_point_map",
@@ -241,58 +273,79 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
         "annotation_centers",
         "pixel_annotation_centers",
     }:
-        point_map = _extract_point_map(evidence_value)
+        point_map = _extract_point_map(annotation_value)
         for idx, (label, point) in enumerate(point_map.items()):
             x, y = point
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
             _draw_point_marker(draw, point, color=color, radius=radius, line_width=line_width)
             draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if evidence_kind in {"keyed_bbox_map", "pixel_keyed_bbox_map"}:
-        bbox_map = _extract_bbox_map(evidence_value)
+    if annotation_kind in {"keyed_point_set_map", "pixel_keyed_point_set_map"}:
+        point_sets = _extract_keyed_point_sets(annotation_value)
+        for idx, (label, points) in enumerate(point_sets.items()):
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
+            for point_index, (x, y) in enumerate(points):
+                _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
+                if point_index == 0:
+                    draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
+        return image
+
+    if annotation_kind in {"keyed_bbox_map", "pixel_keyed_bbox_map"}:
+        bbox_map = _extract_bbox_map(annotation_value)
         for idx, (label, bbox) in enumerate(bbox_map.items()):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
             _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
             x0, y0, _x1, _y1 = bbox
             draw.text((x0 + 4.0, max(0.0, y0 - 16.0)), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if evidence_kind in {
+    if annotation_kind in {"keyed_bbox_set_map", "pixel_keyed_bbox_set_map"}:
+        bbox_sets = _extract_keyed_bbox_sets(annotation_value)
+        for idx, (label, bboxes) in enumerate(bbox_sets.items()):
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
+            for bbox_index, bbox in enumerate(bboxes):
+                _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
+                if bbox_index == 0:
+                    x0, y0, _x1, _y1 = bbox
+                    draw.text((x0 + 4.0, max(0.0, y0 - 16.0)), str(label), fill=(color[0], color[1], color[2], 255))
+        return image
+
+    if annotation_kind in {
         "point",
         "point_set",
         "pixel_point_set",
         "point_sequence",
         "pixel_point_sequence",
     }:
-        points = _extract_points(evidence_value)
-        if evidence_kind in {"point_sequence", "pixel_point_sequence"} and len(points) >= 2:
+        points = _extract_points(annotation_value)
+        if annotation_kind in {"point_sequence", "pixel_point_sequence"} and len(points) >= 2:
             draw.line(points, fill=(220, 20, 60, 180), width=line_width)
         for idx, (x, y) in enumerate(points):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
             _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
         return image
 
-    if evidence_kind == "point_pair_set":
-        edge_segments = _extract_edge_segments(evidence_value)
+    if annotation_kind == "point_pair_set":
+        edge_segments = _extract_edge_segments(annotation_value)
         for idx, (left, right) in enumerate(edge_segments):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
             draw.line([left, right], fill=(color[0], color[1], color[2], 220), width=line_width)
             for x, y in (left, right):
                 _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
         return image
 
-    if evidence_kind in {"bbox", "bbox_sequence", "bbox_set"}:
-        bboxes = _extract_bboxes(evidence_value)
+    if annotation_kind in {"bbox", "bbox_sequence", "bbox_set"}:
+        bboxes = _extract_bboxes(annotation_value)
         for idx, bbox in enumerate(bboxes):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
             _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
         return image
 
-    for idx, (x, y) in enumerate(_extract_points(evidence_value)):
-        color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+    for idx, (x, y) in enumerate(_extract_points(annotation_value)):
+        color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
         _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
-    for idx, bbox in enumerate(_extract_bboxes(evidence_value)):
-        color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+    for idx, bbox in enumerate(_extract_bboxes(annotation_value)):
+        color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
         _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
     return image

@@ -10,13 +10,18 @@ from PIL import ImageDraw
 
 from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
 from .object_schema import ObjectRecord
-from .person_rendering import draw_person_hair_back, draw_person_hair_front, draw_person_skirt, normalize_person_gender
+from .object_variants import (
+    RENDERER_STYLE_VECTOR,
+    normalize_object_variant_id,
+    variant_visual_metadata,
+)
+from .person_rendering import normalize_person_gender
+from .style_registry import STYLE_IDS, style_object_colors, style_outline_params
+from .vector_person_rendering import draw_vector_person
 
 
 BBox = Tuple[float, float, float, float]
 RGB = Tuple[int, int, int]
-
-STYLE_IDS: Tuple[str, ...] = ("flat_vector", "outlined_cartoon", "paper_cutout", "soft_shadow")
 
 PART_PLURALS: Dict[str, str] = {
     "arm": "arms",
@@ -265,6 +270,18 @@ def _union(bboxes: Iterable[BBox]) -> BBox:
     )
 
 
+def _blend_rgb(a: RGB, b: RGB, t: float) -> RGB:
+    mix = max(0.0, min(1.0, float(t)))
+    return tuple(
+        int(round((1.0 - mix) * int(left) + mix * int(right)))
+        for left, right in zip(a, b)
+    )  # type: ignore[return-value]
+
+
+def _shade_rgb(rgb: RGB, amount: int) -> RGB:
+    return tuple(max(0, min(255, int(value) + int(amount))) for value in rgb)  # type: ignore[return-value]
+
+
 def _rel_bbox(box: BBox, rx0: float, ry0: float, rx1: float, ry1: float) -> BBox:
     x0, y0, x1, y1 = box
     w = float(x1) - float(x0)
@@ -310,14 +327,7 @@ def _regular_polygon_points(cx: float, cy: float, radius: float, sides: int, *, 
 
 
 def _style_params(style_id: str) -> Tuple[RGB | None, int, bool]:
-    style = str(style_id)
-    if style == "flat_vector":
-        return SOFT_OUTLINE_RGB, 1, False
-    if style == "paper_cutout":
-        return (252, 252, 247), 5, True
-    if style == "soft_shadow":
-        return SOFT_OUTLINE_RGB, 1, True
-    return OUTLINE_RGB, 3, False
+    return style_outline_params(str(style_id))
 
 
 def _draw_shadow(draw: ImageDraw.ImageDraw, bbox: BBox, *, scale: int) -> None:
@@ -496,16 +506,48 @@ def _draw_bicycle(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent:
     wheels = (_rel_bbox(box, 0.10, 0.50, 0.35, 0.82), _rel_bbox(box, 0.66, 0.50, 0.91, 0.82))
     for wheel in wheels:
         _ellipse(draw, wheel, fill=(245, 247, 250), outline=OUTLINE_RGB, width=max(2, width), scale=scale)
+        hub = _rel_bbox(wheel, 0.40, 0.40, 0.60, 0.60)
+        _ellipse(draw, hub, fill=SOFT_OUTLINE_RGB, outline=None, width=1, scale=scale)
+        center = ((hub[0] + hub[2]) * 0.5, (hub[1] + hub[3]) * 0.5)
+        for angle in (0, 60, 120):
+            rx = 0.5 * (wheel[2] - wheel[0])
+            ry = 0.5 * (wheel[3] - wheel[1])
+            dx = rx * math.cos(math.radians(angle))
+            dy = ry * math.sin(math.radians(angle))
+            _line(
+                draw,
+                [(center[0] - dx, center[1] - dy), (center[0] + dx, center[1] + dy)],
+                fill=(160, 168, 176),
+                width=max(1, width - 1),
+                scale=scale,
+            )
         parts.add("wheel", wheel)
-    points = [(box[0] + 0.225 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])), (box[0] + 0.48 * (box[2] - box[0]), box[1] + 0.40 * (box[3] - box[1])), (box[0] + 0.785 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])), (box[0] + 0.40 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])), (box[0] + 0.62 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])), (box[0] + 0.48 * (box[2] - box[0]), box[1] + 0.40 * (box[3] - box[1]))]
-    _line(draw, points, fill=primary, width=max(3, width + 1), scale=scale)
-    handle = _rel_bbox(box, 0.76, 0.31, 0.94, 0.44)
-    _line(draw, [(handle[0], handle[3]), (handle[2], handle[1])], fill=primary, width=max(3, width + 1), scale=scale)
+    x0, y0, x1, y1 = box
+    bw = x1 - x0
+    bh = y1 - y0
+    crank = (x0 + 0.50 * bw, y0 + 0.64 * bh)
+    seat = _rel_bbox(box, 0.40, 0.29, 0.58, 0.36)
+    handle = _rel_bbox(box, 0.74, 0.27, 0.94, 0.45)
+    frame_points = (
+        (x0 + 0.225 * bw, y0 + 0.66 * bh),
+        (x0 + 0.48 * bw, y0 + 0.40 * bh),
+        (x0 + 0.785 * bw, y0 + 0.66 * bh),
+        (x0 + 0.50 * bw, y0 + 0.64 * bh),
+        (x0 + 0.225 * bw, y0 + 0.66 * bh),
+        (x0 + 0.62 * bw, y0 + 0.66 * bh),
+        (x0 + 0.48 * bw, y0 + 0.40 * bh),
+    )
+    _line(draw, frame_points, fill=primary, width=max(3, width + 1), scale=scale)
+    _line(draw, [(x0 + 0.48 * bw, y0 + 0.40 * bh), (seat[0] + 0.5 * (seat[2] - seat[0]), seat[1])], fill=primary, width=max(2, width), scale=scale)
+    _rect(draw, seat, fill=SOFT_OUTLINE_RGB, outline=outline, width=1, scale=scale, radius=4)
+    _ellipse(draw, (crank[0] - 3.5, crank[1] - 3.5, crank[0] + 3.5, crank[1] + 3.5), fill=accent, outline=outline, width=1, scale=scale)
+    _line(draw, [(handle[0], handle[3]), (x0 + 0.80 * bw, y0 + 0.35 * bh), (handle[2], handle[1])], fill=primary, width=max(3, width + 1), scale=scale)
+    _line(draw, [(handle[2] - 0.04 * bw, handle[1]), (handle[2] + 0.04 * bw, handle[1])], fill=SOFT_OUTLINE_RGB, width=max(2, width), scale=scale)
     parts.add("handle", _expand(handle, 4.0))
     light = _rel_bbox(box, 0.88, 0.38, 0.94, 0.45)
     _ellipse(draw, light, fill=(248, 224, 109), outline=outline, width=1, scale=scale)
     parts.add("light", light)
-    return [*wheels, _rel_bbox(box, 0.10, 0.31, 0.94, 0.82)]
+    return [*wheels, seat, _rel_bbox(box, 0.10, 0.27, 0.96, 0.82)]
 
 
 def _draw_scooter(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
@@ -564,48 +606,158 @@ def _draw_sailboat(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent
 
 
 def _draw_canoe(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
-    hull = [(box[0] + 0.04 * (box[2] - box[0]), box[1] + 0.55 * (box[3] - box[1])), (box[0] + 0.18 * (box[2] - box[0]), box[1] + 0.42 * (box[3] - box[1])), (box[0] + 0.82 * (box[2] - box[0]), box[1] + 0.42 * (box[3] - box[1])), (box[0] + 0.96 * (box[2] - box[0]), box[1] + 0.55 * (box[3] - box[1])), (box[0] + 0.78 * (box[2] - box[0]), box[1] + 0.70 * (box[3] - box[1])), (box[0] + 0.22 * (box[2] - box[0]), box[1] + 0.70 * (box[3] - box[1]))]
+    x0, y0, x1, y1 = box
+    bw = x1 - x0
+    bh = y1 - y0
+    hull = (
+        (x0 + 0.04 * bw, y0 + 0.56 * bh),
+        (x0 + 0.17 * bw, y0 + 0.40 * bh),
+        (x0 + 0.50 * bw, y0 + 0.34 * bh),
+        (x0 + 0.83 * bw, y0 + 0.40 * bh),
+        (x0 + 0.96 * bw, y0 + 0.56 * bh),
+        (x0 + 0.84 * bw, y0 + 0.72 * bh),
+        (x0 + 0.50 * bw, y0 + 0.78 * bh),
+        (x0 + 0.16 * bw, y0 + 0.72 * bh),
+    )
+    inner = _rel_bbox(box, 0.20, 0.48, 0.80, 0.66)
     _poly(draw, hull, fill=primary, outline=outline, width=width, scale=scale)
-    _line(draw, [(box[0] + 0.28 * (box[2] - box[0]), box[1] + 0.54 * (box[3] - box[1])), (box[0] + 0.72 * (box[2] - box[0]), box[1] + 0.54 * (box[3] - box[1]))], fill=accent, width=max(2, width), scale=scale)
-    return [_rel_bbox(box, 0.04, 0.42, 0.96, 0.70)]
+    _ellipse(draw, inner, fill=_blend_rgb(primary, (0, 0, 0), 0.16), outline=outline, width=max(1, width - 1), scale=scale)
+    for tx in (0.34, 0.50, 0.66):
+        _line(
+            draw,
+            [(x0 + (tx - 0.06) * bw, y0 + 0.56 * bh), (x0 + (tx + 0.06) * bw, y0 + 0.56 * bh)],
+            fill=accent,
+            width=max(2, width),
+            scale=scale,
+        )
+    _line(draw, [(x0 + 0.16 * bw, y0 + 0.46 * bh), (x0 + 0.84 * bw, y0 + 0.46 * bh)], fill=_shade_rgb(primary, 28), width=max(1, width), scale=scale)
+    _line(draw, [(x0 + 0.18 * bw, y0 + 0.68 * bh), (x0 + 0.82 * bw, y0 + 0.68 * bh)], fill=_blend_rgb(primary, (0, 0, 0), 0.20), width=max(1, width), scale=scale)
+    return [_rel_bbox(box, 0.04, 0.34, 0.96, 0.78)]
 
 
-def _draw_person_like(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder, gender_id: str) -> List[BBox]:
-    head = _rel_bbox(box, 0.32, 0.04, 0.68, 0.28)
-    body = _rel_bbox(box, 0.28, 0.28, 0.72, 0.60)
-    gender = normalize_person_gender(gender_id)
-    draw_person_hair_back(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    _ellipse(draw, head, fill=(199, 139, 96), outline=outline, width=width, scale=scale)
-    draw_person_hair_front(draw, head_bbox=head, gender_id=gender, scale=scale, outline=outline)
-    if gender == "female":
-        torso = _rel_bbox(box, 0.30, 0.28, 0.70, 0.50)
-        _rect(draw, torso, fill=primary, outline=outline, width=width, scale=scale, radius=7)
-        skirt = draw_person_skirt(draw, torso_bbox=torso, bottom_y=box[1] + 0.74 * (box[3] - box[1]), fill=primary, outline=outline, scale=scale, width=width)
-        body_boxes = [torso, skirt]
-    else:
-        _rect(draw, body, fill=primary, outline=outline, width=width, scale=scale, radius=8)
-        body_boxes = [body]
-    parts.add("head", head)
-    arm_boxes = (_rel_bbox(box, 0.14, 0.34, 0.31, 0.58), _rel_bbox(box, 0.69, 0.34, 0.86, 0.58))
-    for arm in arm_boxes:
-        _line(draw, [(arm[0], arm[1]), (arm[2], arm[3])], fill=primary, width=max(3, width + 1), scale=scale)
-        parts.add("arm", _expand(arm, 3.0))
-    leg_boxes = (_rel_bbox(box, 0.32, 0.72 if gender == "female" else 0.58, 0.44, 0.92), _rel_bbox(box, 0.56, 0.72 if gender == "female" else 0.58, 0.68, 0.92))
-    for leg in leg_boxes:
-        _rect(draw, leg, fill=(78, 83, 99), outline=outline, width=1, scale=scale, radius=3)
-        parts.add("leg", leg)
-    boxes = [head, *body_boxes, *arm_boxes, *leg_boxes]
-    if object_type == "pedestrian_with_bag":
-        bag = _rel_bbox(box, 0.70, 0.42, 0.92, 0.66)
-        _rect(draw, bag, fill=accent, outline=outline, width=width, scale=scale, radius=5)
-        parts.add("bag", bag)
-        boxes.append(bag)
-    return boxes
+def _draw_person_like(
+    draw: ImageDraw.ImageDraw,
+    *,
+    object_id: str,
+    box: BBox,
+    object_type: str,
+    primary: RGB,
+    accent: RGB,
+    outline: RGB | None,
+    width: int,
+    scale: int,
+    style_id: str,
+    parts: _PartBuilder,
+    gender_id: str,
+    person_variant_id: str = "adult",
+) -> List[BBox]:
+    _ = outline, width
+    rendered = draw_vector_person(
+        draw,
+        object_id=str(object_id),
+        object_type=str(object_type),
+        bbox_xyxy=box,
+        renderer_id="object_library_person",
+        style_id=str(style_id),
+        render_scale=int(scale),
+        primary_color_rgb=primary,
+        accent_color_rgb=accent,
+        skin_color_rgb=(199, 139, 96),
+        gender_id=str(gender_id),
+        person_variant_id=str(person_variant_id),
+        apply_style_colors=False,
+        draw_shadow=False,
+    )
+    for part in rendered.parts:
+        attrs = part.get("attributes", {}) if isinstance(part, Mapping) else {}
+        parts.add(
+            str(part["part_kind"]),
+            tuple(float(value) for value in part["bbox"]),  # type: ignore[arg-type]
+            **(dict(attrs) if isinstance(attrs, Mapping) else {}),
+        )
+    return [tuple(float(value) for value in rendered.bbox_xyxy)]
 
 
-def _draw_plant(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
+def _draw_plant(
+    draw: ImageDraw.ImageDraw,
+    *,
+    box: BBox,
+    object_type: str,
+    primary: RGB,
+    accent: RGB,
+    outline: RGB | None,
+    width: int,
+    scale: int,
+    parts: _PartBuilder,
+    object_variant_id: str | None = None,
+) -> List[BBox]:
     boxes: List[BBox] = []
     if object_type == "tree":
+        if object_variant_id is not None:
+            tree_variant = normalize_object_variant_id("tree", str(object_variant_id))
+            trunk = _rel_bbox(box, 0.44, 0.50, 0.57, 0.91)
+            _rect(draw, trunk, fill=(123, 87, 55), outline=outline, width=max(1, width - 1), scale=scale, radius=4)
+            boxes.append(trunk)
+            if tree_variant == "pine":
+                leaf_specs = (
+                    _rel_bbox(box, 0.37, 0.08, 0.63, 0.32),
+                    _rel_bbox(box, 0.28, 0.24, 0.72, 0.52),
+                    _rel_bbox(box, 0.20, 0.42, 0.80, 0.72),
+                )
+                for index, leaf_box in enumerate(leaf_specs):
+                    x0, y0, x1, y1 = leaf_box
+                    points = ((0.5 * (x0 + x1), y0), (x1, y1), (x0, y1))
+                    _poly(draw, points, fill=primary, outline=outline, width=max(1, width - 1), scale=scale)
+                    parts.add("leaf", leaf_box)
+                    boxes.append(leaf_box)
+                    if index < 3:
+                        parts.add("leaf", _expand(leaf_box, -2.0))
+                return boxes
+            leaf_centers = {
+                "oak": ((0.35, 0.28), (0.50, 0.17), (0.65, 0.28), (0.29, 0.44), (0.50, 0.42), (0.71, 0.44)),
+                "maple": ((0.34, 0.26), (0.50, 0.17), (0.66, 0.26), (0.27, 0.43), (0.50, 0.45), (0.73, 0.43)),
+                "fruit_tree": ((0.35, 0.30), (0.50, 0.18), (0.64, 0.30), (0.28, 0.45), (0.50, 0.42), (0.72, 0.45)),
+            }.get(tree_variant, ((0.35, 0.30), (0.50, 0.18), (0.64, 0.30), (0.28, 0.45), (0.50, 0.42), (0.72, 0.45)))
+            if tree_variant == "maple":
+                crown = (
+                    (box[0] + 0.50 * (box[2] - box[0]), box[1] + 0.06 * (box[3] - box[1])),
+                    (box[0] + 0.75 * (box[2] - box[0]), box[1] + 0.23 * (box[3] - box[1])),
+                    (box[0] + 0.86 * (box[2] - box[0]), box[1] + 0.47 * (box[3] - box[1])),
+                    (box[0] + 0.67 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])),
+                    (box[0] + 0.50 * (box[2] - box[0]), box[1] + 0.58 * (box[3] - box[1])),
+                    (box[0] + 0.33 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1])),
+                    (box[0] + 0.14 * (box[2] - box[0]), box[1] + 0.47 * (box[3] - box[1])),
+                    (box[0] + 0.25 * (box[2] - box[0]), box[1] + 0.23 * (box[3] - box[1])),
+                )
+                _poly(draw, crown, fill=_blend_rgb(primary, (255, 255, 255), 0.08), outline=outline, width=max(1, width - 1), scale=scale)
+                boxes.append(_rel_bbox(box, 0.14, 0.06, 0.86, 0.66))
+            for cx, cy in leaf_centers:
+                leaf_w = 0.17 if tree_variant == "maple" else 0.13
+                leaf_h = 0.15 if tree_variant == "maple" else 0.12
+                leaf = _rel_bbox(box, cx - leaf_w, cy - leaf_h, cx + leaf_w, cy + leaf_h)
+                if tree_variant == "maple":
+                    points = (
+                        (leaf[0] + 0.50 * (leaf[2] - leaf[0]), leaf[1]),
+                        (leaf[0] + 0.78 * (leaf[2] - leaf[0]), leaf[1] + 0.33 * (leaf[3] - leaf[1])),
+                        (leaf[2], leaf[1] + 0.54 * (leaf[3] - leaf[1])),
+                        (leaf[0] + 0.62 * (leaf[2] - leaf[0]), leaf[1] + 0.64 * (leaf[3] - leaf[1])),
+                        (leaf[0] + 0.54 * (leaf[2] - leaf[0]), leaf[3]),
+                        (leaf[0] + 0.40 * (leaf[2] - leaf[0]), leaf[1] + 0.66 * (leaf[3] - leaf[1])),
+                        (leaf[0], leaf[1] + 0.56 * (leaf[3] - leaf[1])),
+                        (leaf[0] + 0.22 * (leaf[2] - leaf[0]), leaf[1] + 0.34 * (leaf[3] - leaf[1])),
+                    )
+                    _poly(draw, points, fill=primary, outline=outline, width=max(1, width - 1), scale=scale)
+                else:
+                    _ellipse(draw, leaf, fill=primary, outline=outline, width=max(1, width - 1), scale=scale)
+                parts.add("leaf", leaf)
+                boxes.append(leaf)
+            if tree_variant == "fruit_tree":
+                for fx, fy in ((0.42, 0.31), (0.56, 0.27), (0.34, 0.45), (0.62, 0.48)):
+                    fruit = _rel_bbox(box, fx - 0.035, fy - 0.035, fx + 0.035, fy + 0.035)
+                    _ellipse(draw, fruit, fill=accent, outline=None, width=1, scale=scale)
+                    parts.add("fruit", fruit)
+                    boxes.append(fruit)
+            return boxes
         trunk = _rel_bbox(box, 0.44, 0.48, 0.57, 0.90)
         _rect(draw, trunk, fill=(123, 87, 55), outline=outline, width=max(1, width - 1), scale=scale, radius=4)
         leaf_centers = ((0.35, 0.30), (0.50, 0.18), (0.64, 0.30), (0.28, 0.45), (0.50, 0.42), (0.72, 0.45))
@@ -658,12 +810,46 @@ def _draw_plant(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str, prima
             parts.add("fruit", fruit)
         boxes.extend([pot, *leaf_boxes])
     elif object_type == "lily_pad":
-        leaf = _rel_bbox(box, 0.10, 0.28, 0.90, 0.78)
-        notch = [(box[0] + 0.52 * (box[2] - box[0]), box[1] + 0.52 * (box[3] - box[1])), (box[0] + 0.88 * (box[2] - box[0]), box[1] + 0.38 * (box[3] - box[1])), (box[0] + 0.88 * (box[2] - box[0]), box[1] + 0.66 * (box[3] - box[1]))]
-        _ellipse(draw, leaf, fill=primary, outline=outline, width=width, scale=scale)
+        x0, y0, x1, y1 = box
+        bw = x1 - x0
+        bh = y1 - y0
+        leaf_points = (
+            (x0 + 0.10 * bw, y0 + 0.56 * bh),
+            (x0 + 0.18 * bw, y0 + 0.34 * bh),
+            (x0 + 0.38 * bw, y0 + 0.23 * bh),
+            (x0 + 0.62 * bw, y0 + 0.24 * bh),
+            (x0 + 0.84 * bw, y0 + 0.39 * bh),
+            (x0 + 0.90 * bw, y0 + 0.58 * bh),
+            (x0 + 0.76 * bw, y0 + 0.76 * bh),
+            (x0 + 0.45 * bw, y0 + 0.82 * bh),
+            (x0 + 0.20 * bw, y0 + 0.72 * bh),
+        )
+        leaf = _rel_bbox(box, 0.10, 0.23, 0.90, 0.82)
+        _poly(draw, leaf_points, fill=primary, outline=outline, width=width, scale=scale)
+        notch = (
+            (x0 + 0.58 * bw, y0 + 0.54 * bh),
+            (x0 + 0.90 * bw, y0 + 0.42 * bh),
+            (x0 + 0.88 * bw, y0 + 0.66 * bh),
+        )
         _poly(draw, notch, fill=(88, 169, 205), outline=None, width=1, scale=scale)
-        flower = _rel_bbox(box, 0.36, 0.16, 0.58, 0.38)
-        _ellipse(draw, flower, fill=accent, outline=outline, width=1, scale=scale)
+        center = (x0 + 0.55 * bw, y0 + 0.54 * bh)
+        for end in ((0.30, 0.40), (0.27, 0.64), (0.66, 0.32), (0.74, 0.70)):
+            _line(
+                draw,
+                [center, (x0 + end[0] * bw, y0 + end[1] * bh)],
+                fill=_blend_rgb(primary, (255, 255, 255), 0.26),
+                width=max(1, width - 1),
+                scale=scale,
+            )
+        flower = _rel_bbox(box, 0.34, 0.15, 0.54, 0.34)
+        for petal in (
+            _rel_bbox(box, 0.39, 0.13, 0.49, 0.24),
+            _rel_bbox(box, 0.30, 0.20, 0.43, 0.31),
+            _rel_bbox(box, 0.46, 0.20, 0.59, 0.31),
+            _rel_bbox(box, 0.39, 0.27, 0.49, 0.38),
+        ):
+            _ellipse(draw, petal, fill=accent, outline=outline, width=1, scale=scale)
+        _ellipse(draw, _rel_bbox(box, 0.42, 0.23, 0.47, 0.28), fill=(248, 229, 132), outline=None, width=1, scale=scale)
         parts.add("leaf", leaf)
         parts.add("flower", flower)
         boxes.extend([leaf, flower])
@@ -768,11 +954,30 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
             parts.add("leg", leg)
         boxes.extend([seat, back])
     elif object_type == "trash_bin":
-        body = _rel_bbox(box, 0.25, 0.24, 0.75, 0.86)
-        lid = _rel_bbox(box, 0.18, 0.16, 0.82, 0.28)
-        _rect(draw, body, fill=primary, outline=outline, width=width, scale=scale, radius=7)
-        _rect(draw, lid, fill=accent, outline=outline, width=width, scale=scale, radius=4)
-        boxes.extend([body, lid])
+        x0, y0, x1, y1 = box
+        bw = x1 - x0
+        bh = y1 - y0
+        body_points = (
+            (x0 + 0.28 * bw, y0 + 0.28 * bh),
+            (x0 + 0.72 * bw, y0 + 0.28 * bh),
+            (x0 + 0.66 * bw, y0 + 0.88 * bh),
+            (x0 + 0.34 * bw, y0 + 0.88 * bh),
+        )
+        body = _rel_bbox(box, 0.28, 0.28, 0.72, 0.88)
+        lid = _rel_bbox(box, 0.18, 0.17, 0.82, 0.30)
+        base = _rel_bbox(box, 0.32, 0.84, 0.68, 0.91)
+        _poly(draw, body_points, fill=primary, outline=outline, width=width, scale=scale)
+        _rect(draw, lid, fill=accent, outline=outline, width=width, scale=scale, radius=5)
+        _rect(draw, base, fill=_blend_rgb(primary, (0, 0, 0), 0.22), outline=outline, width=max(1, width - 1), scale=scale, radius=3)
+        for rx in (0.40, 0.50, 0.60):
+            _line(
+                draw,
+                [(x0 + rx * bw, y0 + 0.34 * bh), (x0 + (rx - 0.02) * bw, y0 + 0.80 * bh)],
+                fill=_blend_rgb(primary, (255, 255, 255), 0.22),
+                width=max(1, width - 1),
+                scale=scale,
+            )
+        boxes.extend([body, lid, base])
     elif object_type == "backpack":
         body = _rel_bbox(box, 0.22, 0.22, 0.78, 0.86)
         pocket = _rel_bbox(box, 0.32, 0.54, 0.68, 0.78)
@@ -814,21 +1019,24 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         cy = (ball[1] + ball[3]) * 0.5
         radius = (ball[2] - ball[0]) * 0.5
         panel = (36, 40, 48)
-        seam = (80, 87, 96)
-        center_poly = _regular_polygon_points(cx, cy, radius * 0.21, 5, start_degrees=-90.0)
+        seam = (58, 64, 74)
+        center_poly = _regular_polygon_points(cx, cy, radius * 0.24, 5, start_degrees=-90.0)
         outer_centers: list[tuple[float, float]] = []
         for angle in (-90, -18, 54, 126, 198):
             a = math.radians(float(angle))
-            outer_centers.append((cx + radius * 0.56 * math.cos(a), cy + radius * 0.56 * math.sin(a)))
+            outer_centers.append((cx + radius * 0.57 * math.cos(a), cy + radius * 0.57 * math.sin(a)))
         for index, point in enumerate(center_poly):
-            _line(draw, [point, outer_centers[index]], fill=seam, width=max(1, width - 1), scale=scale)
+            _line(draw, [point, outer_centers[index]], fill=seam, width=max(2, width), scale=scale)
         for angle, center in zip((-90, -18, 54, 126, 198), outer_centers):
             ex = cx + radius * 0.86 * math.cos(math.radians(float(angle)))
             ey = cy + radius * 0.86 * math.sin(math.radians(float(angle)))
-            _line(draw, [center, (ex, ey)], fill=seam, width=max(1, width - 1), scale=scale)
-        _poly(draw, center_poly, fill=panel, outline=None, width=1, scale=scale)
+            _line(draw, [center, (ex, ey)], fill=seam, width=max(1, width), scale=scale)
+        _poly(draw, center_poly, fill=panel, outline=seam, width=max(1, width - 1), scale=scale)
         for angle, center in zip((-90, -18, 54, 126, 198), outer_centers):
-            _poly(draw, _regular_polygon_points(center[0], center[1], radius * 0.13, 5, start_degrees=float(angle)), fill=panel, outline=None, width=1, scale=scale)
+            outer_poly = _regular_polygon_points(center[0], center[1], radius * 0.16, 5, start_degrees=float(angle))
+            _poly(draw, outer_poly, fill=panel, outline=seam, width=max(1, width - 1), scale=scale)
+        highlight = _rel_bbox(box, 0.26, 0.22, 0.42, 0.34)
+        _arc(draw, highlight, start=205, end=335, fill=(255, 255, 255), width=max(1, width - 1), scale=scale)
         boxes.append(ball)
     elif object_type == "rugby_ball":
         ball_points: list[tuple[float, float]] = []
@@ -871,18 +1079,44 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _ellipse(draw, well, fill=(220, 228, 228), outline=(178, 187, 188) if outline else None, width=max(1, width - 1), scale=scale)
         boxes.append(rim)
     elif object_type == "book":
-        cover = _rel_bbox(box, 0.12, 0.20, 0.88, 0.82)
-        pages = _rel_bbox(box, 0.18, 0.26, 0.90, 0.88)
-        _rect(draw, pages, fill=(238, 228, 204), outline=outline, width=max(1, width - 1), scale=scale, radius=3)
-        _rect(draw, cover, fill=primary, outline=outline, width=width, scale=scale, radius=4)
+        pages = _rel_bbox(box, 0.18, 0.30, 0.90, 0.88)
+        cover = _rel_bbox(box, 0.10, 0.20, 0.86, 0.80)
+        spine = _rel_bbox(box, 0.10, 0.20, 0.24, 0.82)
+        fore_edge = _rel_bbox(box, 0.78, 0.30, 0.90, 0.88)
+        page_fill = (242, 232, 205)
+        _poly(
+            draw,
+            (
+                (pages[0], pages[1]),
+                (pages[2], pages[1] + 0.08 * (pages[3] - pages[1])),
+                (pages[2], pages[3]),
+                (pages[0], pages[3] - 0.06 * (pages[3] - pages[1])),
+            ),
+            fill=page_fill,
+            outline=outline,
+            width=max(1, width - 1),
+            scale=scale,
+        )
+        _rect(draw, cover, fill=primary, outline=outline, width=width, scale=scale, radius=5)
+        _rect(draw, spine, fill=_blend_rgb(primary, (0, 0, 0), 0.20), outline=outline, width=max(1, width - 1), scale=scale, radius=4)
+        _line(draw, [(fore_edge[0], fore_edge[1]), (fore_edge[0], fore_edge[3])], fill=_shade_rgb(page_fill, -42), width=max(1, width), scale=scale)
+        for line_y in (0.38, 0.50, 0.62, 0.74):
+            y = pages[1] + line_y * (pages[3] - pages[1])
+            _line(
+                draw,
+                [(fore_edge[0] + 2.0, y), (fore_edge[2] - 2.0, y + 0.02 * (pages[3] - pages[1]))],
+                fill=_shade_rgb(page_fill, -34),
+                width=max(1, width - 1),
+                scale=scale,
+            )
         _line(
             draw,
-            [(cover[0] + 0.50 * (cover[2] - cover[0]), cover[1]), (cover[0] + 0.50 * (cover[2] - cover[0]), cover[3])],
+            [(spine[2] + 0.06 * (cover[2] - cover[0]), cover[1] + 4.0), (spine[2] + 0.06 * (cover[2] - cover[0]), cover[3] - 4.0)],
             fill=accent,
             width=max(2, width),
             scale=scale,
         )
-        boxes.extend([cover, pages])
+        boxes.extend([cover, pages, spine])
     elif object_type == "camera":
         body = _rel_bbox(box, 0.12, 0.28, 0.88, 0.78)
         top = _rel_bbox(box, 0.27, 0.18, 0.54, 0.34)
@@ -1071,12 +1305,32 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
             parts.add("leg", leg)
         boxes.extend([back, seat])
     elif object_type == "table":
-        top = _rel_bbox(box, 0.10, 0.32, 0.90, 0.48)
-        _rect(draw, top, fill=primary, outline=outline, width=width, scale=scale, radius=5)
-        for leg in (_rel_bbox(box, 0.17, 0.46, 0.25, 0.88), _rel_bbox(box, 0.34, 0.46, 0.42, 0.88), _rel_bbox(box, 0.58, 0.46, 0.66, 0.88), _rel_bbox(box, 0.75, 0.46, 0.83, 0.88)):
-            _rect(draw, leg, fill=primary, outline=outline, width=1, scale=scale, radius=2)
+        top = _rel_bbox(box, 0.10, 0.26, 0.90, 0.46)
+        lip = _rel_bbox(box, 0.14, 0.45, 0.86, 0.56)
+        top_poly = (
+            (top[0] + 0.08 * (top[2] - top[0]), top[1]),
+            (top[2] - 0.08 * (top[2] - top[0]), top[1]),
+            (top[2], top[3]),
+            (top[0], top[3]),
+        )
+        _poly(draw, top_poly, fill=_blend_rgb(primary, (255, 255, 255), 0.12), outline=outline, width=width, scale=scale)
+        _rect(draw, lip, fill=primary, outline=outline, width=max(1, width - 1), scale=scale, radius=4)
+        leg_specs = (
+            _rel_bbox(box, 0.18, 0.52, 0.27, 0.88),
+            _rel_bbox(box, 0.33, 0.52, 0.42, 0.86),
+            _rel_bbox(box, 0.58, 0.52, 0.67, 0.86),
+            _rel_bbox(box, 0.73, 0.52, 0.82, 0.88),
+        )
+        for leg in leg_specs:
+            leg_points = (
+                (leg[0] + 0.12 * (leg[2] - leg[0]), leg[1]),
+                (leg[2] - 0.12 * (leg[2] - leg[0]), leg[1]),
+                (leg[2], leg[3]),
+                (leg[0], leg[3]),
+            )
+            _poly(draw, leg_points, fill=_blend_rgb(primary, (0, 0, 0), 0.12), outline=outline, width=1, scale=scale)
             parts.add("leg", leg)
-        boxes.append(top)
+        boxes.extend([top, lip])
     elif object_type == "lamp":
         shade = _rel_bbox(box, 0.24, 0.14, 0.76, 0.42)
         stand = _rel_bbox(box, 0.47, 0.40, 0.54, 0.78)
@@ -1113,10 +1367,24 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
                 width=max(1, width - 1),
                 scale=scale,
             )
+        for scallop in (_rel_bbox(box, 0.12, 0.48, 0.34, 0.62), _rel_bbox(box, 0.32, 0.50, 0.52, 0.64), _rel_bbox(box, 0.50, 0.50, 0.70, 0.64), _rel_bbox(box, 0.68, 0.48, 0.90, 0.62)):
+            _arc(draw, scallop, start=0, end=180, fill=outline or SOFT_OUTLINE_RGB, width=max(1, width), scale=scale)
         shaft = _rel_bbox(box, 0.48, 0.48, 0.53, 0.82)
         _rect(draw, shaft, fill=SOFT_OUTLINE_RGB, outline=None, width=1, scale=scale)
-        handle = _rel_bbox(box, 0.44, 0.75, 0.64, 0.92)
-        _line(draw, [(handle[0], handle[1]), (handle[0], handle[3]), (handle[2], handle[3])], fill=SOFT_OUTLINE_RGB, width=max(3, width), scale=scale)
+        handle = _rel_bbox(box, 0.39, 0.74, 0.65, 0.94)
+        _line(
+            draw,
+            [
+                (handle[0] + 0.44 * (handle[2] - handle[0]), handle[1]),
+                (handle[0] + 0.44 * (handle[2] - handle[0]), handle[3] - 0.20 * (handle[3] - handle[1])),
+                (handle[2], handle[3] - 0.20 * (handle[3] - handle[1])),
+                (handle[2] - 0.08 * (handle[2] - handle[0]), handle[3]),
+                (handle[0] + 0.52 * (handle[2] - handle[0]), handle[3]),
+            ],
+            fill=SOFT_OUTLINE_RGB,
+            width=max(3, width),
+            scale=scale,
+        )
         parts.add("handle", _expand(handle, 4.0))
         boxes.extend([canopy, shaft, handle])
     elif object_type == "kite":
@@ -1213,11 +1481,17 @@ def draw_illustration_object(
     style_id: str,
     render_scale: int,
     gender_id: str | None = None,
+    object_variant_id: str | None = None,
 ) -> IllustrationObject:
     """Draw one object and return semantic bbox metadata for all visible parts."""
 
     template = OBJECT_TEMPLATES[str(object_type)]
     outline, width, shadow = _style_params(str(style_id))
+    primary_color_rgb, accent_color_rgb = style_object_colors(
+        str(style_id),
+        tuple(int(v) for v in primary_color_rgb),
+        tuple(int(v) for v in accent_color_rgb),
+    )
     box = tuple(float(v) for v in bbox_xyxy)
     if shadow:
         _draw_shadow(draw, box, scale=int(render_scale))
@@ -1249,9 +1523,10 @@ def draw_illustration_object(
         boxes = _draw_canoe(draw, box=box, primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
     elif family == "person":
         gender = normalize_person_gender(gender_id)
-        boxes = _draw_person_like(draw, box=box, object_type=str(object_type), primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts, gender_id=gender)
+        person_variant_id = normalize_object_variant_id("person", object_variant_id) if object_variant_id is not None else "adult"
+        boxes = _draw_person_like(draw, object_id=str(object_id), box=box, object_type=str(object_type), primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), style_id=str(style_id), parts=parts, gender_id=gender, person_variant_id=person_variant_id)
     elif family == "plant":
-        boxes = _draw_plant(draw, box=box, object_type=str(object_type), primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
+        boxes = _draw_plant(draw, box=box, object_type=str(object_type), primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts, object_variant_id=object_variant_id)
     else:
         boxes = _draw_object_item(draw, box=box, object_type=str(object_type), primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
     object_bbox = _expand(_union([*boxes, *(part.bbox_xyxy for part in parts.parts)]), 2.0)
@@ -1262,6 +1537,9 @@ def draw_illustration_object(
     }
     if family == "person":
         attributes["gender_id"] = normalize_person_gender(gender_id)
+    if object_variant_id is not None and object_type in {"person", "pedestrian_with_bag", "tree"}:
+        variant_object_type = "person" if family == "person" else str(object_type)
+        attributes.update(variant_visual_metadata(variant_object_type, object_variant_id, RENDERER_STYLE_VECTOR))
     return IllustrationObject(
         object_id=str(object_id),
         object_type=str(object_type),
@@ -1294,9 +1572,28 @@ def serialize_object(rendered: IllustrationObject) -> Dict[str, Any]:
     }
     if isinstance(rendered.attributes, Mapping) and "gender_id" in rendered.attributes:
         visual_attributes["gender_id"] = str(rendered.attributes["gender_id"])
+    variant_visual_keys = (
+        "accessory",
+        "crown_shape",
+        "fruit_visible",
+        "object_variant_id",
+        "object_variant_public_name",
+        "object_variant_queryable",
+        "person_variant_id",
+        "renderer_style",
+        "renderer_variant_id",
+        "scale",
+        "tree_style",
+    )
+    if isinstance(rendered.attributes, Mapping):
+        for key in variant_visual_keys:
+            if key in rendered.attributes:
+                visual_attributes[key] = rendered.attributes[key]
     role = str(rendered.attributes.get("role", "distractor")) if isinstance(rendered.attributes, Mapping) else "distractor"
     semantic_attributes = dict(rendered.attributes)
     semantic_attributes.pop("gender_id", None)
+    for key in variant_visual_keys:
+        semantic_attributes.pop(key, None)
     object_record = ObjectRecord(
         object_id=str(rendered.object_id),
         object_type=str(rendered.object_type),

@@ -30,6 +30,18 @@ _FONT_CANDIDATES_REGULAR: Sequence[str] = (
     "LiberationSans-Bold.ttf",
 )
 _DEFAULT_FONT_FAMILY: ContextVar[str] = ContextVar("trace_default_font_family", default="")
+_SYMBOL_SAFE_FONT_FAMILY = "vollkorn"
+_SYMBOL_SAFE_CODEPOINTS = frozenset(
+    ord(char)
+    for char in (
+        "∠",
+        "θ",
+        "β",
+        "π",
+        "√",
+        "−",
+    )
+)
 
 
 @contextmanager
@@ -82,6 +94,41 @@ def _load_font_cached(size_px: int, *, bold: bool = True, font_family: str = "")
     return ImageFont.load_default()
 
 
+def text_needs_symbol_safe_font(text: str) -> bool:
+    """Return whether text contains glyphs missing from most readout fonts."""
+
+    return any(ord(char) in _SYMBOL_SAFE_CODEPOINTS for char in str(text))
+
+
+def _font_is_bold(font: ImageFont.ImageFont) -> bool:
+    """Best-effort boldness check for matching symbol fallback style."""
+
+    try:
+        _family, style = font.getname()  # type: ignore[attr-defined]
+        return "bold" in str(style).casefold()
+    except Exception:
+        return True
+
+
+def symbol_safe_font_for_text(text: str, font: ImageFont.ImageFont) -> ImageFont.ImageFont:
+    """Return a font that can render TRACE math symbols used in readouts.
+
+    The readout font pool is optimized for compact Latin text; most families do
+    not include glyphs such as the angle sign.  When one of these symbols is
+    present, use a fixed vendored readout-pool family with broad math-symbol
+    coverage for that token so bbox calculation and drawing agree.
+    """
+
+    if not text_needs_symbol_safe_font(str(text)):
+        return font
+    size = int(getattr(font, "size", 14))
+    return load_font(
+        size,
+        bold=_font_is_bold(font),
+        font_family=_SYMBOL_SAFE_FONT_FAMILY,
+    )
+
+
 def resolve_label_font_size_px(
     *,
     canvas_size: int,
@@ -127,11 +174,12 @@ def _text_bbox(
     when requested so callers can center or fit the *rendered* text rather than
     the unstroked glyph box.
     """
+    effective_font = symbol_safe_font_for_text(str(text), font)
     try:
-        bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
+        bbox = draw.textbbox((0, 0), str(text), font=effective_font, stroke_width=max(0, int(stroke_width)))
         return (float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3]))
     except Exception:
-        width, height = draw.textsize(str(text), font=font)
+        width, height = draw.textsize(str(text), font=effective_font)
         return (0.0, 0.0, float(width), float(height))
 
 
@@ -380,9 +428,10 @@ def draw_text_centered(
     stroke_width: int | None = None,
 ) -> None:
     """Draw text centered around a point with optional outline stroke."""
-    size_hint = int(getattr(font, "size", 14))
+    effective_font = symbol_safe_font_for_text(str(text), font)
+    size_hint = int(getattr(effective_font, "size", 14))
     outline_width = int(stroke_width) if stroke_width is not None else max(1, int(round(0.08 * float(size_hint))))
-    bbox = _text_bbox(draw, str(text), font, stroke_width=max(0, int(outline_width)))
+    bbox = _text_bbox(draw, str(text), effective_font, stroke_width=max(0, int(outline_width)))
     center_x, center_y = float(center[0]), float(center[1])
     tx = center_x - (0.5 * float(bbox[0] + bbox[2]))
     ty = center_y - (0.5 * float(bbox[1] + bbox[3]))
@@ -390,7 +439,7 @@ def draw_text_centered(
         draw,
         xy=(float(tx), float(ty)),
         text=str(text),
-        font=font,
+        font=effective_font,
         fill_rgb=tuple(int(value) for value in fill),
         stroke_rgb=tuple(int(value) for value in stroke_fill),
         stroke_width=max(0, int(outline_width)),

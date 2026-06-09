@@ -55,5 +55,5 @@ def test_physics_circuits_equivalent_defaults_expose_scene_task_and_answer_suppo
     assert str(prompt["task_key"]) == "equivalent_component_query"
     assert "one or two labeled parallel resistor blocks" in str(prompt["object_description_series_parallel_total_resistance"])
     assert "one or two labeled parallel capacitor blocks" in str(prompt["object_description_series_parallel_total_capacitance"])
-    assert "object mapping each visible resistor label" in str(prompt["evidence_hint_total_resistance"])
-    assert "object mapping each visible capacitor label" in str(prompt["evidence_hint_total_capacitance"])
+    assert "object mapping each visible resistor label" in str(prompt["annotation_hint_total_resistance"])
+    assert "object mapping each visible capacitor label" in str(prompt["annotation_hint_total_capacitance"])

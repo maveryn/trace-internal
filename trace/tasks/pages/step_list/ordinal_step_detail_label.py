@@ -27,15 +27,19 @@ from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
+from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
 
-TASK_ID = "task_pages__step_list__ordinal_step_detail_label"
+TASK_ID = "pages_step_list_ordinal_step_detail_source"
 PUBLIC_SCENE_ID = "step_list"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "nth_step_title",
     "nth_step_detail",
     "step_after_named_step",
+    "step_title_for_detail",
+    "step_number_for_detail",
 )
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "vertical_cards",
@@ -44,55 +48,6 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 )
 SUPPORTED_ORDINAL_REFERENCES: Tuple[str, ...] = ("first", "interior", "final")
 
-_TITLE_POOL: Tuple[str, ...] = (
-    "Intake",
-    "Verify",
-    "Plan",
-    "Assign",
-    "Prepare",
-    "Review",
-    "Approve",
-    "Notify",
-    "Archive",
-    "Close",
-    "Screen",
-    "Route",
-    "Package",
-    "Confirm",
-    "Publish",
-    "Escalate",
-)
-_DETAIL_POOL: Tuple[str, ...] = (
-    "Collect signed form",
-    "Check account code",
-    "Mark priority flag",
-    "Attach receipt copy",
-    "Send status note",
-    "Schedule team call",
-    "Record owner initials",
-    "Update shared log",
-    "Lock delivery slot",
-    "Print final packet",
-    "Match reference id",
-    "Store backup file",
-    "Forward to supervisor",
-    "Stamp due date",
-    "Post closing memo",
-    "Check address line",
-)
-_PANEL_TITLES: Tuple[str, ...] = (
-    "Workflow Cards",
-    "Stage Checklist",
-    "Action Notes",
-    "Checkpoint List",
-    "Handoff Sheet",
-)
-_PANEL_SUBTITLES: Tuple[str, ...] = (
-    "numbered instruction cards",
-    "ordered action notes",
-    "details for each stage",
-    "handoff messages by stage",
-)
 _CARD_PALETTE: Tuple[Tuple[int, int, int], ...] = (
     (61, 119, 175),
     (45, 142, 113),
@@ -112,6 +67,8 @@ _REASONING_LOAD_BY_QUERY: Dict[str, float] = {
     "nth_step_title": 0.38,
     "nth_step_detail": 0.44,
     "step_after_named_step": 0.58,
+    "step_title_for_detail": 0.54,
+    "step_number_for_detail": 0.50,
 }
 
 
@@ -279,6 +236,23 @@ def _resolve_target_index(
         reference = _ordinal_label(int(target_index), final_index=int(step_count) - 1)
         return int(target_index), None, str(reference), {str(reference): 1.0}
 
+    if str(query_id) in {"step_title_for_detail", "step_number_for_detail"}:
+        target_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.detail_lookup_step_index.{query_id}.{step_count}",
+            )
+            % int(step_count)
+        )
+        probabilities = {str(index + 1): 1.0 / float(step_count) for index in range(int(step_count))}
+        return (
+            int(target_index),
+            None,
+            _ordinal_label(int(target_index), final_index=int(step_count) - 1),
+            dict(probabilities),
+        )
+
     ordinal_reference, ordinal_probabilities = _resolve_named_variant(
         params=params,
         instance_seed=int(instance_seed),
@@ -408,16 +382,43 @@ def _layout_card_bboxes(
     return bboxes, {"layout_columns": int(columns), "layout_rows": int(rows)}
 
 
-def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec], str, str]:
+def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec], str, str, Dict[str, Any]]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.steps")
-    titles = list(_TITLE_POOL)
-    details = list(_DETAIL_POOL)
-    rng.shuffle(titles)
-    rng.shuffle(details)
-    if int(step_count) > min(len(titles), len(details)):
-        raise ValueError("step_count exceeds available unique step text pools")
-    panel_title = str(rng.choice(_PANEL_TITLES))
-    panel_subtitle = str(rng.choice(_PANEL_SUBTITLES))
+    title_batch = sample_page_context_batch(
+        rng,
+        role="step_list_panel_title",
+        count=1,
+        manifest_names=("phrases/headlines.txt",),
+        max_chars=28,
+    )
+    subtitle_batch = sample_page_context_batch(
+        rng,
+        role="step_list_panel_subtitle",
+        count=1,
+        manifest_names=("phrases/captions.txt", "phrases/legend_notes.txt"),
+        max_chars=40,
+    )
+    step_title_batch = sample_page_label_batch(
+        rng,
+        role="step_list_step_title",
+        count=int(step_count),
+        manifest_name="panel_titles/technical_topics.txt",
+        min_chars=3,
+        max_chars=10,
+        allow_spaces=True,
+        allow_punctuation=False,
+    )
+    detail_batch = sample_page_context_batch(
+        rng,
+        role="step_list_step_detail",
+        count=int(step_count),
+        manifest_names=("phrases/callout_phrases.txt",),
+        max_chars=16,
+    )
+    titles = list(step_title_batch.values)
+    details = list(detail_batch.values)
+    panel_title = str(title_batch.values[0])
+    panel_subtitle = str(subtitle_batch.values[0])
     steps: List[_StepSpec] = []
     color_offset = int(rng.randrange(len(_CARD_PALETTE)))
     for index in range(int(step_count)):
@@ -432,7 +433,12 @@ def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec
                 accent_rgb=tuple(int(channel) for channel in accent),
             )
         )
-    return steps, panel_title, panel_subtitle
+    return (
+        steps,
+        panel_title,
+        panel_subtitle,
+        page_text_resource_metadata(title_batch, subtitle_batch, step_title_batch, detail_batch),
+    )
 
 
 def _render_step_list(
@@ -587,18 +593,20 @@ def _render_step_list(
 
 def _bbox_maps(
     card_traces: Sequence[Mapping[str, Any]],
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, List[float]]]:
+) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, List[float]], Dict[str, List[float]]]:
     card_map = {str(card["step_id"]): [float(value) for value in card["card_bbox_px"]] for card in card_traces}
+    number_map = {str(card["step_id"]): [float(value) for value in card["number_bbox_px"]] for card in card_traces}
     title_map = {str(card["step_id"]): [float(value) for value in card["title_bbox_px"]] for card in card_traces}
     detail_map = {str(card["step_id"]): [float(value) for value in card["detail_bbox_px"]] for card in card_traces}
-    return card_map, title_map, detail_map
+    return card_map, number_map, title_map, detail_map
 
 
-def _evidence_bbox_map(
+def _annotation_bbox_map(
     *,
     query_id: str,
     target_step_id: str,
     source_step_id: str | None,
+    number_bbox_map: Mapping[str, Sequence[float]],
     title_bbox_map: Mapping[str, Sequence[float]],
     detail_bbox_map: Mapping[str, Sequence[float]],
 ) -> Dict[str, List[float]]:
@@ -613,25 +621,39 @@ def _evidence_bbox_map(
             "source_title": [float(value) for value in title_bbox_map[str(source_step_id)]],
             "target_title": [float(value) for value in title_bbox_map[str(target_step_id)]],
         }
+    if str(query_id) == "step_title_for_detail":
+        return {
+            "source_detail": [float(value) for value in detail_bbox_map[str(target_step_id)]],
+            "target_title": [float(value) for value in title_bbox_map[str(target_step_id)]],
+        }
+    if str(query_id) == "step_number_for_detail":
+        return {
+            "source_detail": [float(value) for value in detail_bbox_map[str(target_step_id)]],
+            "target_number": [float(value) for value in number_bbox_map[str(target_step_id)]],
+        }
     raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _build_prompt_examples(*, query_id: str) -> Tuple[str, str]:
     example_answer = "Review packet" if str(query_id) == "nth_step_detail" else "Review"
-    evidence: Dict[str, List[int]] = {"target_title": [220, 216, 340, 244]}
+    annotation: Dict[str, List[int]] = {"target_title": [220, 216, 340, 244]}
     if str(query_id) == "nth_step_detail":
-        evidence = {"target_detail": [220, 216, 370, 244]}
+        annotation = {"target_detail": [220, 216, 370, 244]}
     if str(query_id) == "step_after_named_step":
-        evidence = {"source_title": [120, 160, 210, 188], "target_title": [220, 216, 300, 244]}
-    answer_and_evidence = {"evidence": evidence, "answer": example_answer}
+        annotation = {"source_title": [120, 160, 210, 188], "target_title": [220, 216, 300, 244]}
+    if str(query_id) == "step_title_for_detail":
+        annotation = {"source_detail": [220, 250, 370, 278], "target_title": [220, 216, 340, 244]}
+    if str(query_id) == "step_number_for_detail":
+        example_answer = "3"
+        annotation = {"source_detail": [220, 250, 370, 278], "target_number": [170, 214, 200, 244]}
+    answer_and_annotation = {"annotation": annotation, "answer": example_answer}
     answer_only = {"answer": example_answer}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
 
-@register_task
 class PagesStepListOrdinalStepDetailLabelTask:
     """Read one title/detail from a numbered page step-list."""
 
@@ -670,11 +692,16 @@ class PagesStepListOrdinalStepDetailLabelTask:
             step_count=int(step_count),
             instance_seed=int(instance_seed),
         )
-        steps, panel_title, panel_subtitle = _build_steps(step_count=int(step_count), instance_seed=int(instance_seed))
+        steps, panel_title, panel_subtitle, page_text_resources = _build_steps(
+            step_count=int(step_count),
+            instance_seed=int(instance_seed),
+        )
         target_step = steps[int(target_index)]
         source_step = steps[int(source_index)] if source_index is not None else None
-        if str(query_id) in {"nth_step_title", "step_after_named_step"}:
+        if str(query_id) in {"nth_step_title", "step_after_named_step", "step_title_for_detail"}:
             answer_value = str(target_step.title)
+        elif str(query_id) == "step_number_for_detail":
+            answer_value = str(target_step.step_number)
         else:
             answer_value = str(target_step.detail)
 
@@ -700,11 +727,12 @@ class PagesStepListOrdinalStepDetailLabelTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        card_bbox_map, title_bbox_map, detail_bbox_map = _bbox_maps(rendered.card_traces)
-        evidence_bbox_map = _evidence_bbox_map(
+        card_bbox_map, number_bbox_map, title_bbox_map, detail_bbox_map = _bbox_maps(rendered.card_traces)
+        annotation_bbox_map = _annotation_bbox_map(
             query_id=str(query_id),
             target_step_id=str(target_step.step_id),
             source_step_id=str(source_step.step_id) if source_step is not None else None,
+            number_bbox_map=number_bbox_map,
             title_bbox_map=title_bbox_map,
             detail_bbox_map=detail_bbox_map,
         )
@@ -718,7 +746,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                f"evidence_hint_{str(query_id)}",
+                f"annotation_hint_{str(query_id)}",
                 "object_description_vertical_cards",
                 "object_description_horizontal_cards",
                 "object_description_two_column_cards",
@@ -734,15 +762,16 @@ class PagesStepListOrdinalStepDetailLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "step_reference": str(step_reference),
                 "source_step_title": f'"{str(source_step.title)}"' if source_step is not None else "",
+                "source_step_detail": f'"{str(target_step.detail)}"',
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -751,7 +780,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
         source_step_payload = None
         if source_step is not None:
             source_step_payload = {
@@ -793,6 +822,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
                     "scene_variant": str(scene_variant),
                     "step_count": int(step_count),
                     "step_reference": str(step_reference),
+                    "source_step_detail": str(target_step.detail),
                     "target_step_index": int(target_index),
                     "source_step_index": int(source_index) if source_index is not None else None,
                     "target_answer": str(answer_value),
@@ -817,12 +847,14 @@ class PagesStepListOrdinalStepDetailLabelTask:
                     "step_title_font_size_px": int(render_params.step_title_font_size_px),
                     "step_detail_font_size_px": int(render_params.step_detail_font_size_px),
                 },
+                "page_text_resources": dict(page_text_resources),
             },
             "render_map": {
                 "image_id": "img0",
                 "panel_bbox_px": list(rendered.panel_bbox_px),
                 "document_title_bbox_px": list(rendered.title_bbox_px),
                 "card_bboxes_px": dict(card_bbox_map),
+                "number_bboxes_px": dict(number_bbox_map),
                 "title_bboxes_px": dict(title_bbox_map),
                 "detail_bboxes_px": dict(detail_bbox_map),
             },
@@ -833,10 +865,12 @@ class PagesStepListOrdinalStepDetailLabelTask:
                 "step_count": int(step_count),
                 "step_count_support": [int(value) for value in step_count_support],
                 "step_reference": str(step_reference),
+                "source_step_detail": str(target_step.detail),
                 "target_step": dict(target_step_payload),
                 "source_step": dict(source_step_payload) if source_step_payload is not None else None,
                 "answer_value": str(answer_value),
                 "steps": [dict(card) for card in rendered.card_traces],
+                "page_text_resources": dict(page_text_resources),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "ordinal_reference_probabilities": dict(ordinal_reference_probabilities),
@@ -847,12 +881,12 @@ class PagesStepListOrdinalStepDetailLabelTask:
                 "target_step_id": str(target_step.step_id),
                 "source_step_id": str(source_step.step_id) if source_step is not None else "",
                 "answer_value": str(answer_value),
-                "evidence_roles": sorted(str(key) for key in evidence_bbox_map.keys()),
+                "annotation_roles": sorted(str(key) for key in annotation_bbox_map.keys()),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
                 "target_step_id": str(target_step.step_id),
                 "source_step_id": str(source_step.step_id) if source_step is not None else "",
             },
@@ -871,7 +905,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -882,8 +916,60 @@ class PagesStepListOrdinalStepDetailLabelTask:
         )
 
 
+@register_task
+class PagesStepListNthStepTitleLabelTask(FixedPagesQueryTaskMixin):
+    """Return the title of an ordinally referenced step."""
+
+    task_id = "task_pages__step_list__nth_step_title_label"
+    domain = "pages"
+    task_group = "step_list"
+    public_scene_id = PUBLIC_SCENE_ID
+    fixed_query_id = "nth_step_title"
+    source_task_cls = PagesStepListOrdinalStepDetailLabelTask
+
+
+@register_task
+class PagesStepListNthStepDetailLabelTask(FixedPagesQueryTaskMixin):
+    """Return the detail text of an ordinally referenced step."""
+
+    task_id = "task_pages__step_list__nth_step_detail_label"
+    domain = "pages"
+    task_group = "step_list"
+    public_scene_id = PUBLIC_SCENE_ID
+    fixed_query_id = "nth_step_detail"
+    source_task_cls = PagesStepListOrdinalStepDetailLabelTask
+
+
+@register_task
+class PagesStepListStepAfterNamedStepLabelTask(FixedPagesQueryTaskMixin):
+    """Return the step title immediately after a named source step."""
+
+    task_id = "task_pages__step_list__step_after_named_step_label"
+    domain = "pages"
+    task_group = "step_list"
+    public_scene_id = PUBLIC_SCENE_ID
+    fixed_query_id = "step_after_named_step"
+    source_task_cls = PagesStepListOrdinalStepDetailLabelTask
+
+
+@register_task
+class PagesStepListStepForDetailLabelTask(MergedPagesQueryTaskMixin):
+    """Return the owning step title or number for a named detail line."""
+
+    task_id = "task_pages__step_list__step_for_detail_label"
+    domain = "pages"
+    task_group = "step_list"
+    public_scene_id = PUBLIC_SCENE_ID
+    allowed_query_ids = ("step_title_for_detail", "step_number_for_detail")
+    source_task_cls = PagesStepListOrdinalStepDetailLabelTask
+
+
 __all__ = [
+    "PagesStepListNthStepDetailLabelTask",
+    "PagesStepListNthStepTitleLabelTask",
     "PagesStepListOrdinalStepDetailLabelTask",
+    "PagesStepListStepAfterNamedStepLabelTask",
+    "PagesStepListStepForDetailLabelTask",
     "SUPPORTED_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
 ]

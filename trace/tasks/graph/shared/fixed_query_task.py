@@ -17,15 +17,27 @@ def forced_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[
     return force_query_id_params(params, query_id=str(query_id))
 
 
-def rewrite_graph_query_output(output: TaskOutput, *, query_id: str) -> TaskOutput:
+def rewrite_graph_query_output(
+    output: TaskOutput,
+    *,
+    query_id: str,
+    query_id_probabilities: Mapping[str, float] | None = None,
+) -> TaskOutput:
     """Rewrite generated graph output to a concrete public graph query id."""
 
-    rewritten = rewrite_public_query_output(
-        output,
-        query_id=str(query_id),
-        params_query_id_probabilities={"default": 1.0},
-        preserve_internal_query_id_as="internal_query_id",
+    params_probabilities: Mapping[str, float] = (
+        {"default": 1.0}
+        if query_id_probabilities is None
+        else {str(key): float(value) for key, value in query_id_probabilities.items()}
     )
+    rewrite_kwargs: Dict[str, Any] = {
+        "query_id": str(query_id),
+        "params_query_id_probabilities": params_probabilities,
+        "preserve_internal_query_id_as": "internal_query_id",
+    }
+    if query_id_probabilities is not None:
+        rewrite_kwargs["query_id_probabilities"] = params_probabilities
+    rewritten = rewrite_public_query_output(output, **rewrite_kwargs)
     if rewritten.scene_id:
         return rewritten
     return replace(rewritten, scene_id=infer_graph_scene_id(str(query_id)))
@@ -75,7 +87,7 @@ def select_merged_graph_query_id(
     if forced is not None:
         return str(forced)
 
-    raw_weights = params.get("query_id_weights", params.get("query_id_weights"))
+    raw_weights = params.get("query_id_weights", params.get("query_variant_weights"))
     if isinstance(raw_weights, Mapping):
         weighted: list[str] = []
         canonical_weights = {str(query_id): 0.0 for query_id in supported}
@@ -108,7 +120,7 @@ def forced_merged_graph_query_id(
     supported = tuple(str(query_id) for query_id in supported_query_ids)
     alias_map = {str(key): str(value) for key, value in (aliases or {}).items()}
     supported_set = set(supported)
-    for key in ("query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         value = params.get(str(key))
         if value is None:
             continue
@@ -143,6 +155,63 @@ def decoupled_merged_branch_params(
     return branch_params
 
 
+class FixedGraphQueryTaskMixin:
+    """Expose one internal graph query branch as one public task id."""
+
+    default_dataset_enabled = True
+    fixed_query_id: str
+    source_task_cls: type
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        source_task = self.source_task_cls()
+        output = source_task.generate(
+            int(instance_seed),
+            params=forced_query_id_params(params, query_id=str(self.fixed_query_id)),
+            max_attempts=int(max_attempts),
+        )
+        return rewrite_graph_public_task_output(
+            output,
+            task_id=str(self.task_id),
+            query_id=output.query_id or str(self.fixed_query_id),
+        )
+
+
+class MergedGraphQueryTaskMixin:
+    """Expose a restricted set of internal graph query branches as one public task id."""
+
+    default_dataset_enabled = True
+    source_task_cls: type
+    supported_query_ids: Sequence[str] = ()
+    query_aliases: Mapping[str, str] = {}
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        supported = tuple(str(query_id) for query_id in self.supported_query_ids)
+        branch_base_params = decoupled_merged_branch_params(
+            params,
+            instance_seed=int(instance_seed),
+            task_id=str(self.task_id),
+            supported_query_ids=supported,
+            aliases=self.query_aliases,
+        )
+        query_id = select_merged_graph_query_id(
+            params=params,
+            instance_seed=int(instance_seed),
+            task_id=str(self.task_id),
+            supported_query_ids=supported,
+            aliases=self.query_aliases,
+        )
+        output = self.source_task_cls().generate(
+            int(instance_seed),
+            params=forced_query_id_params(branch_base_params, query_id=str(query_id)),
+            max_attempts=int(max_attempts),
+        )
+        return rewrite_graph_public_task_output(
+            output,
+            task_id=str(self.task_id),
+            query_id=output.query_id or str(query_id),
+        )
+
+
 __all__ = [
     "forced_query_id_params",
     "rewrite_graph_query_output",
@@ -150,4 +219,6 @@ __all__ = [
     "decoupled_merged_branch_params",
     "forced_merged_graph_query_id",
     "select_merged_graph_query_id",
+    "FixedGraphQueryTaskMixin",
+    "MergedGraphQueryTaskMixin",
 ]

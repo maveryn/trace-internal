@@ -16,11 +16,11 @@
    - option count: `6..8`
    - scene variant: `word_search_classic|word_search_notebook|word_search_card`
 
-## Answer And Evidence
+## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label of the correct option.
-3. `evidence_gt.type = bbox_set`
-4. Evidence contains the selected option box followed by ordered cell boxes for the target word path.
+3. `annotation_gt.type = bbox_set`
+4. Annotation contains the selected option box followed by ordered cell boxes for the target word path.
 
 ## Trace Contract
 1. `execution_trace.placements` records the target word, 1-based start cell, direction, and ordered grid cells.

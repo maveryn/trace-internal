@@ -7,10 +7,10 @@
 4. Query ids: `most_loose_endpoints`, `fewest_loose_endpoints`
 5. Objective: choose the labeled stick arrangement with the unique largest or smallest loose-endpoint count.
 
-## Answer And Evidence
+## Answer And Annotation
 1. Answer type: `option_letter`
-2. Evidence type: `bbox_set`
-3. User-facing evidence contains the selected option-panel bbox.
+2. Annotation type: `bbox_set`
+3. User-facing annotation contains the selected option-panel bbox.
 4. The trace records each option edge set, each option loose-endpoint count, the selected extremum query, and grid size.
 
 ## Rendering

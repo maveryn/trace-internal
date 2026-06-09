@@ -115,7 +115,22 @@ generation:
         chalk_sticks: 1.0
         neon_rods: 1.0
         metal_rods: 1.0
-    task_puzzles__arithmetic_constraint__arithmetic_constraint_value:
+    task_puzzles__arithmetic_constraint__consecutive_window_sum_value:
+      answer_min: 1
+      answer_max: 24
+      visible_value_min: 1
+      visible_value_max: 18
+      window_sequence_length_min: 6
+      window_sequence_length_max: 9
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        consecutive_window_sum_value: 1.0
+      scene_variant_weights:
+        constraint_sheet: 1.0
+        constraint_card: 1.0
+        constraint_outline: 1.0
+    task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value:
       answer_min: 1
       answer_max: 24
       visible_value_min: 1
@@ -126,13 +141,45 @@ generation:
       balanced_scene_variant_sampling: true
       query_id_weights:
         equal_sum_line_constraint_value: 1.0
-        paired_cluster_sum_relation_value: 1.0
-        consecutive_window_sum_value: 1.0
       scene_variant_weights:
         constraint_sheet: 1.0
         constraint_card: 1.0
         constraint_outline: 1.0
-    task_puzzles__arithmetic_constraint__cryptarithm_digit_value:
+    task_puzzles__arithmetic_constraint__paired_cluster_sum_relation_value:
+      answer_min: 1
+      answer_max: 24
+      visible_value_min: 1
+      visible_value_max: 18
+      window_sequence_length_min: 6
+      window_sequence_length_max: 9
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        paired_cluster_sum_relation_value: 1.0
+      scene_variant_weights:
+        constraint_sheet: 1.0
+        constraint_card: 1.0
+        constraint_outline: 1.0
+    task_puzzles__arithmetic_constraint__letter_digit_value:
+      answer_min: 0
+      answer_max: 9
+      hidden_number_width_min: 2
+      hidden_number_width_max: 4
+      hidden_addend_count_min: 2
+      hidden_addend_count_max: 3
+      letter_count_min: 3
+      letter_count_max: 5
+      letter_extra_equation_count_min: 0
+      letter_extra_equation_count_max: 1
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        letter_digit_value: 1.0
+      scene_variant_weights:
+        constraint_sheet: 1.0
+        constraint_card: 1.0
+        constraint_outline: 1.0
+    task_puzzles__arithmetic_constraint__vertical_arithmetic_hidden_digit_value:
       answer_min: 0
       answer_max: 9
       hidden_number_width_min: 2
@@ -148,12 +195,33 @@ generation:
       query_id_weights:
         hidden_addition_digit_value: 1.0
         hidden_subtraction_digit_value: 1.0
-        letter_digit_value: 1.0
       scene_variant_weights:
         constraint_sheet: 1.0
         constraint_card: 1.0
         constraint_outline: 1.0
-    task_puzzles__arithmetic_constraint__operator_grid_value:
+    task_puzzles__arithmetic_constraint__operation_table_cell_value:
+      answer_min: 1
+      answer_max: 24
+      operator_grid_value_min: 1
+      operator_grid_value_max: 9
+      operation_table_header_max: 12
+      sum_grid_rows_min: 3
+      sum_grid_rows_max: 5
+      sum_grid_cols_min: 3
+      sum_grid_cols_max: 5
+      operation_table_rows_min: 2
+      operation_table_rows_max: 4
+      operation_table_cols_min: 2
+      operation_table_cols_max: 4
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        operation_table_cell_value: 1.0
+      scene_variant_weights:
+        constraint_sheet: 1.0
+        constraint_card: 1.0
+        constraint_outline: 1.0
+    task_puzzles__arithmetic_constraint__row_column_total_missing_value:
       answer_min: 1
       answer_max: 24
       operator_grid_value_min: 1
@@ -171,7 +239,6 @@ generation:
       balanced_scene_variant_sampling: true
       query_id_weights:
         row_column_total_missing_value: 1.0
-        operation_table_cell_value: 1.0
       scene_variant_weights:
         constraint_sheet: 1.0
         constraint_card: 1.0
@@ -204,6 +271,49 @@ generation:
         constraint_sheet: 1.0
         constraint_card: 1.0
         constraint_outline: 1.0
+    task_puzzles__balance_scale__missing_object_weight_value:
+      answer_min: 1
+      answer_max: 20
+      scale_panel_count_min: 2
+      scale_panel_count_max: 3
+      numeric_weight_max: 80
+      balanced_scene_variant_sampling: true
+      balanced_target_cue_mode_sampling: true
+      scene_variant_weights:
+        balance_sheet: 1.0
+        balance_card: 1.0
+        balance_outline: 1.0
+      target_cue_mode_weights:
+        query_row_only: 1.0
+        query_row_and_highlight: 1.0
+    task_puzzles__balance_scale__equivalent_object_count_value:
+      answer_min: 2
+      answer_max: 8
+      scale_panel_count_min: 2
+      scale_panel_count_max: 3
+      numeric_weight_max: 80
+      repeated_object_weight_max: 10
+      balanced_scene_variant_sampling: true
+      balanced_target_cue_mode_sampling: true
+      scene_variant_weights:
+        balance_sheet: 1.0
+        balance_card: 1.0
+        balance_outline: 1.0
+      target_cue_mode_weights:
+        query_row_only: 1.0
+        query_row_and_highlight: 1.0
+    task_puzzles__balance_scale__weight_order_label:
+      object_count_min: 3
+      object_count_max: 4
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        heaviest_object_label: 1.0
+        lightest_object_label: 1.0
+      scene_variant_weights:
+        balance_sheet: 1.0
+        balance_card: 1.0
+        balance_outline: 1.0
     task_puzzles__tents__tents_missing_tent_cell_label:
       grid_rows_min: 6
       grid_rows_max: 8
@@ -245,17 +355,31 @@ generation:
         lake: 1.0
         violet: 1.0
         slate: 1.0
-    task_puzzles__star_battle__star_battle_valid_cell_label:
+    task_puzzles__star_battle__valid_cell_anywhere_label:
       grid_size_min: 6
       grid_size_max: 9
       option_count_min: 5
       option_count_max: 8
-      visible_star_fraction_min: 0.30
+      visible_star_fraction_min: 0.3
       visible_star_fraction_max: 0.55
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       query_id_weights:
         valid_cell_anywhere_label: 1.0
+      scene_variant_weights:
+        star_battle_classic: 1.0
+        star_battle_pastel: 1.0
+        star_battle_blueprint: 1.0
+    task_puzzles__star_battle__scoped_valid_cell_label:
+      grid_size_min: 6
+      grid_size_max: 9
+      option_count_min: 5
+      option_count_max: 8
+      visible_star_fraction_min: 0.3
+      visible_star_fraction_max: 0.55
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
         valid_cell_in_marked_region_label: 1.0
         valid_cell_for_marked_row_label: 1.0
       scene_variant_weights:
@@ -279,11 +403,9 @@ generation:
         star_battle_classic: 1.0
         star_battle_pastel: 1.0
         star_battle_blueprint: 1.0
-
 visual:
   noise:
     apply_prob: 0.15
-
 rendering:
   task_overrides:
     puzzles_logic_grid_completion_internal:
@@ -311,35 +433,92 @@ rendering:
       panel_corner_radius_px: 28
       value_font_size_px: 36
       option_label_font_size_px: 30
-      panel_fill_rgb: [248, 249, 252]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
       panel_fill_rgb_options:
-        - [248, 249, 252]
-        - [244, 250, 248]
-        - [252, 248, 240]
-      cell_fill_rgb: [252, 252, 255]
+      - - 248
+        - 249
+        - 252
+      - - 244
+        - 250
+        - 248
+      - - 252
+        - 248
+        - 240
+      cell_fill_rgb:
+      - 252
+      - 252
+      - 255
       cell_fill_rgb_options:
-        - [252, 252, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      unknown_cell_fill_rgb: [242, 246, 255]
-      option_panel_fill_rgb: [251, 251, 255]
+      - - 252
+        - 252
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      unknown_cell_fill_rgb:
+      - 242
+      - 246
+      - 255
+      option_panel_fill_rgb:
+      - 251
+      - 251
+      - 255
       option_panel_fill_rgb_options:
-        - [251, 251, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      option_symbol_fill_rgb: [252, 252, 255]
-      border_color_rgb: [86, 94, 108]
+      - - 251
+        - 251
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      option_symbol_fill_rgb:
+      - 252
+      - 252
+      - 255
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
       border_color_rgb_options:
-        - [86, 94, 108]
-        - [78, 105, 107]
-        - [113, 97, 82]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
-      accent_color_rgb: [54, 102, 180]
+      - - 86
+        - 94
+        - 108
+      - - 78
+        - 105
+        - 107
+      - - 113
+        - 97
+        - 82
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      accent_color_rgb:
+      - 54
+      - 102
+      - 180
       accent_color_rgb_options:
-        - [54, 102, 180]
-        - [47, 128, 117]
-        - [161, 94, 68]
+      - - 54
+        - 102
+        - 180
+      - - 47
+        - 128
+        - 117
+      - - 161
+        - 94
+        - 68
     task_puzzles__toggle_grid__toggle_result_label:
       canvas_width: 1120
       canvas_height: 860
@@ -379,35 +558,92 @@ rendering:
       panel_corner_radius_px: 28
       value_font_size_px: 52
       option_label_font_size_px: 30
-      panel_fill_rgb: [248, 249, 252]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
       panel_fill_rgb_options:
-        - [248, 249, 252]
-        - [244, 250, 248]
-        - [252, 248, 240]
-      cell_fill_rgb: [252, 252, 255]
+      - - 248
+        - 249
+        - 252
+      - - 244
+        - 250
+        - 248
+      - - 252
+        - 248
+        - 240
+      cell_fill_rgb:
+      - 252
+      - 252
+      - 255
       cell_fill_rgb_options:
-        - [252, 252, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      unknown_cell_fill_rgb: [242, 246, 255]
-      option_panel_fill_rgb: [251, 251, 255]
+      - - 252
+        - 252
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      unknown_cell_fill_rgb:
+      - 242
+      - 246
+      - 255
+      option_panel_fill_rgb:
+      - 251
+      - 251
+      - 255
       option_panel_fill_rgb_options:
-        - [251, 251, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      option_symbol_fill_rgb: [252, 252, 255]
-      border_color_rgb: [86, 94, 108]
+      - - 251
+        - 251
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      option_symbol_fill_rgb:
+      - 252
+      - 252
+      - 255
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
       border_color_rgb_options:
-        - [86, 94, 108]
-        - [78, 105, 107]
-        - [113, 97, 82]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
-      accent_color_rgb: [54, 102, 180]
+      - - 86
+        - 94
+        - 108
+      - - 78
+        - 105
+        - 107
+      - - 113
+        - 97
+        - 82
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      accent_color_rgb:
+      - 54
+      - 102
+      - 180
       accent_color_rgb_options:
-        - [54, 102, 180]
-        - [47, 128, 117]
-        - [161, 94, 68]
+      - - 54
+        - 102
+        - 180
+      - - 47
+        - 128
+        - 117
+      - - 161
+        - 94
+        - 68
     task_puzzles__nonogram__nonogram_line_completion_label:
       canvas_width: 1200
       canvas_height: 900
@@ -460,8 +696,14 @@ rendering:
       panel_corner_radius_px: 18
       clue_font_size_px: 28
       candidate_font_size_px: 30
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_puzzles__tents__tents_valid_candidate_count:
       canvas_width: 1100
       canvas_height: 860
@@ -476,9 +718,15 @@ rendering:
       panel_corner_radius_px: 18
       clue_font_size_px: 28
       candidate_font_size_px: 30
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
-    task_puzzles__arithmetic_constraint__arithmetic_constraint_value:
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+    task_puzzles__arithmetic_constraint__consecutive_window_sum_value:
       canvas_width: 1080
       canvas_height: 760
       panel_padding_px: 26
@@ -493,7 +741,7 @@ rendering:
       symbol_font_size_px: 30
       unit_size_scale_min: 0.5
       unit_size_scale_max: 1.0
-    task_puzzles__arithmetic_constraint__cryptarithm_digit_value:
+    task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value:
       canvas_width: 1080
       canvas_height: 760
       panel_padding_px: 26
@@ -508,7 +756,67 @@ rendering:
       symbol_font_size_px: 30
       unit_size_scale_min: 0.5
       unit_size_scale_max: 1.0
-    task_puzzles__arithmetic_constraint__operator_grid_value:
+    task_puzzles__arithmetic_constraint__paired_cluster_sum_relation_value:
+      canvas_width: 1080
+      canvas_height: 760
+      panel_padding_px: 26
+      panel_corner_radius_px: 22
+      panel_border_width_px: 3
+      node_radius_px: 38
+      cell_width_px: 84
+      cell_height_px: 72
+      line_width_px: 4
+      value_font_size_px: 34
+      note_font_size_px: 25
+      symbol_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__arithmetic_constraint__letter_digit_value:
+      canvas_width: 1080
+      canvas_height: 760
+      panel_padding_px: 26
+      panel_corner_radius_px: 22
+      panel_border_width_px: 3
+      node_radius_px: 38
+      cell_width_px: 84
+      cell_height_px: 72
+      line_width_px: 4
+      value_font_size_px: 34
+      note_font_size_px: 25
+      symbol_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__arithmetic_constraint__vertical_arithmetic_hidden_digit_value:
+      canvas_width: 1080
+      canvas_height: 760
+      panel_padding_px: 26
+      panel_corner_radius_px: 22
+      panel_border_width_px: 3
+      node_radius_px: 38
+      cell_width_px: 84
+      cell_height_px: 72
+      line_width_px: 4
+      value_font_size_px: 34
+      note_font_size_px: 25
+      symbol_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__arithmetic_constraint__operation_table_cell_value:
+      canvas_width: 1080
+      canvas_height: 760
+      panel_padding_px: 26
+      panel_corner_radius_px: 22
+      panel_border_width_px: 3
+      node_radius_px: 38
+      cell_width_px: 84
+      cell_height_px: 72
+      line_width_px: 4
+      value_font_size_px: 34
+      note_font_size_px: 25
+      symbol_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__arithmetic_constraint__row_column_total_missing_value:
       canvas_width: 1080
       canvas_height: 760
       panel_padding_px: 26
@@ -538,7 +846,76 @@ rendering:
       symbol_font_size_px: 30
       unit_size_scale_min: 0.5
       unit_size_scale_max: 1.0
-    task_puzzles__star_battle__star_battle_valid_cell_label:
+    task_puzzles__balance_scale__missing_object_weight_value:
+      canvas_width: 1120
+      canvas_height: 840
+      scene_margin_left_px: 54
+      scene_margin_right_px: 54
+      scene_margin_top_px: 48
+      scene_margin_bottom_px: 48
+      panel_padding_px: 26
+      panel_corner_radius_px: 20
+      panel_border_width_px: 3
+      scale_panel_gap_px: 20
+      query_row_height_px: 116
+      beam_width_px: 620
+      pan_width_px: 230
+      pan_height_px: 82
+      token_size_px: 46
+      token_gap_px: 8
+      line_width_px: 3
+      value_font_size_px: 24
+      label_font_size_px: 22
+      query_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__balance_scale__equivalent_object_count_value:
+      canvas_width: 1120
+      canvas_height: 840
+      scene_margin_left_px: 54
+      scene_margin_right_px: 54
+      scene_margin_top_px: 48
+      scene_margin_bottom_px: 48
+      panel_padding_px: 26
+      panel_corner_radius_px: 20
+      panel_border_width_px: 3
+      scale_panel_gap_px: 20
+      query_row_height_px: 116
+      beam_width_px: 620
+      pan_width_px: 230
+      pan_height_px: 82
+      token_size_px: 46
+      token_gap_px: 8
+      line_width_px: 3
+      value_font_size_px: 24
+      label_font_size_px: 22
+      query_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__balance_scale__weight_order_label:
+      canvas_width: 1120
+      canvas_height: 840
+      scene_margin_left_px: 54
+      scene_margin_right_px: 54
+      scene_margin_top_px: 48
+      scene_margin_bottom_px: 48
+      panel_padding_px: 26
+      panel_corner_radius_px: 20
+      panel_border_width_px: 3
+      scale_panel_gap_px: 20
+      query_row_height_px: 116
+      beam_width_px: 620
+      pan_width_px: 230
+      pan_height_px: 82
+      token_size_px: 46
+      token_gap_px: 8
+      line_width_px: 3
+      value_font_size_px: 24
+      label_font_size_px: 22
+      query_font_size_px: 30
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+    task_puzzles__star_battle__valid_cell_anywhere_label:
       canvas_width: 1080
       canvas_height: 900
       cell_size_px: 64
@@ -552,8 +929,36 @@ rendering:
       candidate_font_size_px: 28
       clue_font_size_px: 24
       title_font_size_px: 20
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+    task_puzzles__star_battle__scoped_valid_cell_label:
+      canvas_width: 1080
+      canvas_height: 900
+      cell_size_px: 64
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+      panel_padding_px: 28
+      panel_corner_radius_px: 18
+      grid_line_width_px: 2
+      heavy_line_width_px: 4
+      clue_size_px: 54
+      candidate_font_size_px: 28
+      clue_font_size_px: 24
+      title_font_size_px: 20
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_puzzles__star_battle__star_battle_remaining_count:
       canvas_width: 1080
       canvas_height: 900
@@ -568,8 +973,14 @@ rendering:
       candidate_font_size_px: 28
       clue_font_size_px: 24
       title_font_size_px: 20
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_puzzles__matchstick__matchstick_number_transform_label:
       canvas_width: 1200
       canvas_height: 900
@@ -598,7 +1009,6 @@ rendering:
       option_label_font_size_px: 26
       caption_font_size_px: 21
       source_caption_font_size_px: 24
-
 prompt:
   shared:
     bundle_id: puzzles_logic_v0
@@ -608,32 +1018,43 @@ prompt:
       scene_key: logic_option_completion_puzzle
       task_key: grid_completion_query
       object_description_logic_strip: a shape-logic puzzle grid with one marked cell and six labeled image options underneath
-      object_description_logic_card: a card-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
-      object_description_logic_outline: an outline-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
-      evidence_hint_axis_uniqueness: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
-      evidence_hint_row_and_column_uniqueness: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
-      evidence_hint_king_non_touch: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
-      json_example_axis_uniqueness: '{"evidence":{"source_grid":[330,92,870,632],"selected_option":[176,650,320,822]},"answer":"C"}'
-      json_example_row_and_column_uniqueness: '{"evidence":{"source_grid":[330,92,870,632],"selected_option":[504,650,648,822]},"answer":"B"}'
-      json_example_king_non_touch: '{"evidence":{"source_grid":[396,98,804,506],"selected_option":[118,621,262,793]},"answer":"A"}'
+      object_description_logic_card: a card-style shape-logic puzzle grid with one marked cell and six labeled image options
+        underneath
+      object_description_logic_outline: an outline-style shape-logic puzzle grid with one marked cell and six labeled image
+        options underneath
+      annotation_hint_axis_uniqueness: set "annotation" to an object with keys "source_grid" and "selected_option", each mapped
+        to a bounding box [x0, y0, x1, y1]
+      annotation_hint_row_and_column_uniqueness: set "annotation" to an object with keys "source_grid" and "selected_option",
+        each mapped to a bounding box [x0, y0, x1, y1]
+      annotation_hint_king_non_touch: set "annotation" to an object with keys "source_grid" and "selected_option", each mapped
+        to a bounding box [x0, y0, x1, y1]
+      json_example_axis_uniqueness: '{"annotation":{"source_grid":[330,92,870,632],"selected_option":[176,650,320,822]},"answer":"C"}'
+      json_example_row_and_column_uniqueness: '{"annotation":{"source_grid":[330,92,870,632],"selected_option":[504,650,648,822]},"answer":"B"}'
+      json_example_king_non_touch: '{"annotation":{"source_grid":[396,98,804,506],"selected_option":[118,621,262,793]},"answer":"A"}'
       json_example_answer_only_axis_uniqueness: '{"answer":"C"}'
       json_example_answer_only_row_and_column_uniqueness: '{"answer":"B"}'
       json_example_answer_only_king_non_touch: '{"answer":"A"}'
     task_puzzles__toggle_grid__toggle_result_label:
       scene_key: toggle_grid
       task_key: toggle_grid_query
-      object_description: a Lights-Out-style toggle grid with numbered switches marked on the start grid and labeled candidate result grids
+      object_description: a Lights-Out-style toggle grid with numbered switches marked on the start grid and labeled candidate
+        result grids
       answer_hint_option_letter: set "answer" to the single option letter of the result grid after pressing the numbered switches
-      evidence_hint: set "evidence" to an array containing the start-grid panel box followed by the selected result-option panel box
-      json_example: '{"evidence":[[54,54,1066,486],[452,584,632,806]],"answer":"C"}'
+      annotation_hint: set "annotation" to an array containing the start-grid panel pixel bounding box [x0, y0, x1, y1] followed
+        by the selected result-option panel pixel bounding box [x0, y0, x1, y1]
+      json_example: '{"annotation":[[54,54,1066,486],[452,584,632,806]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_puzzles__toggle_grid__toggle_repair_switch_label:
       scene_key: toggle_grid
       task_key: toggle_grid_query
-      object_description: a Lights-Out-style toggle puzzle with a start grid, a target grid, and lettered candidate switches drawn on the start grid
-      answer_hint_option_letter: set "answer" to the single option letter of the switch that changes the start grid into the target grid
-      evidence_hint: set "evidence" to an array containing the start-grid panel box, the target-grid panel box, and the selected switch-cell box
-      json_example: '{"evidence":[[54,74,540,786],[580,74,1066,786],[210,286,282,358]],"answer":"C"}'
+      object_description: a Lights-Out-style toggle puzzle with a start grid, a target grid, and lettered candidate switches
+        drawn on the start grid
+      answer_hint_option_letter: set "answer" to the single option letter of the switch that changes the start grid into the
+        target grid
+      annotation_hint: set "annotation" to an array containing the start-grid panel pixel bounding box [x0, y0, x1, y1], the
+        target-grid panel pixel bounding box [x0, y0, x1, y1], and the selected switch-cell pixel bounding box [x0, y0,
+        x1, y1]
+      json_example: '{"annotation":[[54,74,540,786],[580,74,1066,786],[210,286,282,358]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     puzzles_logic_raven_matrix_internal:
       scene_key: raven_matrix_puzzle
@@ -641,16 +1062,21 @@ prompt:
       object_description_raven_strip: a 3 by 3 visual matrix puzzle with six labeled image options underneath
       object_description_raven_card: a card-style 3 by 3 visual matrix puzzle with six labeled image options underneath
       object_description_raven_outline: an outline-style 3 by 3 visual matrix puzzle with six labeled image options underneath
-      evidence_hint_count_progression_matrix: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_spatial_transform_matrix: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_set_operation_matrix: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_analogical_transform_matrix: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_position_progression_matrix: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      json_example_count_progression_matrix: '{"evidence":[[504,650,648,822]],"answer":"B"}'
-      json_example_spatial_transform_matrix: '{"evidence":[[668,650,812,822]],"answer":"D"}'
-      json_example_set_operation_matrix: '{"evidence":[[832,650,976,822]],"answer":"E"}'
-      json_example_analogical_transform_matrix: '{"evidence":[[996,650,1140,822]],"answer":"F"}'
-      json_example_position_progression_matrix: '{"evidence":[[12,650,156,822]],"answer":"A"}'
+      annotation_hint_count_progression_matrix: set "annotation" to an array containing exactly one bounding box [x0, y0, x1,
+        y1] for the correct option panel
+      annotation_hint_spatial_transform_matrix: set "annotation" to an array containing exactly one bounding box [x0, y0, x1,
+        y1] for the correct option panel
+      annotation_hint_set_operation_matrix: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1]
+        for the correct option panel
+      annotation_hint_analogical_transform_matrix: set "annotation" to an array containing exactly one bounding box [x0, y0, x1,
+        y1] for the correct option panel
+      annotation_hint_position_progression_matrix: set "annotation" to an array containing exactly one bounding box [x0, y0, x1,
+        y1] for the correct option panel
+      json_example_count_progression_matrix: '{"annotation":[[504,650,648,822]],"answer":"B"}'
+      json_example_spatial_transform_matrix: '{"annotation":[[668,650,812,822]],"answer":"D"}'
+      json_example_set_operation_matrix: '{"annotation":[[832,650,976,822]],"answer":"E"}'
+      json_example_analogical_transform_matrix: '{"annotation":[[996,650,1140,822]],"answer":"F"}'
+      json_example_position_progression_matrix: '{"annotation":[[12,650,156,822]],"answer":"A"}'
       json_example_answer_only_count_progression_matrix: '{"answer":"B"}'
       json_example_answer_only_spatial_transform_matrix: '{"answer":"D"}'
       json_example_answer_only_set_operation_matrix: '{"answer":"E"}'
@@ -659,22 +1085,34 @@ prompt:
     task_puzzles__nonogram__nonogram_line_completion_label:
       scene_key: nonogram
       task_key: nonogram_line_completion_query
-      object_description_nonogram_classic: a partially filled nonogram grid with row and column clue rails, one marked row, and labeled row-strip options
-      object_description_nonogram_card: a card-style partially filled nonogram grid with row and column clue rails, one marked row, and labeled row-strip options
-      object_description_nonogram_blueprint: a blueprint-style partially filled nonogram grid with row and column clue rails, one marked row, and labeled row-strip options
-      answer_hint_line_completion_label: set "answer" to the single option letter of the row strip that satisfies the marked row clue and the visible cells
-      evidence_hint_line_completion_label: set "evidence" to an array containing the marked row clue box, the marked row box, and the selected option panel box
-      json_example_line_completion_label: '{"evidence":[[142,266,314,314],[314,266,650,314],[520,650,680,782]],"answer":"C"}'
+      object_description_nonogram_classic: a partially filled nonogram grid with row and column clue rails, one marked row,
+        and labeled row-strip options
+      object_description_nonogram_card: a card-style partially filled nonogram grid with row and column clue rails, one marked
+        row, and labeled row-strip options
+      object_description_nonogram_blueprint: a blueprint-style partially filled nonogram grid with row and column clue rails,
+        one marked row, and labeled row-strip options
+      answer_hint_line_completion_label: set "answer" to the single option letter of the row strip that satisfies the marked
+        row clue and the visible cells
+      annotation_hint_line_completion_label: set "annotation" to an array containing the marked row clue pixel bounding box [x0,
+        y0, x1, y1], the marked row pixel bounding box [x0, y0, x1, y1], and the selected option panel pixel bounding box
+        [x0, y0, x1, y1]
+      json_example_line_completion_label: '{"annotation":[[142,266,314,314],[314,266,650,314],[520,650,680,782]],"answer":"C"}'
       json_example_answer_only_line_completion_label: '{"answer":"C"}'
     task_puzzles__nonogram__nonogram_candidate_solution_label:
       scene_key: nonogram
       task_key: nonogram_candidate_solution_query
-      object_description_nonogram_classic: a nonogram clue grid with row and column clue rails and labeled candidate filled-grid options
-      object_description_nonogram_card: a card-style nonogram clue grid with row and column clue rails and labeled candidate filled-grid options
-      object_description_nonogram_blueprint: a blueprint-style nonogram clue grid with row and column clue rails and labeled candidate filled-grid options
-      answer_hint_candidate_solution_label: set "answer" to the single option letter of the candidate grid that satisfies all row and column clues
-      evidence_hint_candidate_solution_label: set "evidence" to an array containing the row-clue rail box, the column-clue rail box, and the selected candidate panel box
-      json_example_candidate_solution_label: '{"evidence":[[142,170,314,602],[314,54,746,170],[694,650,854,782]],"answer":"D"}'
+      object_description_nonogram_classic: a nonogram clue grid with row and column clue rails and labeled candidate filled-grid
+        options
+      object_description_nonogram_card: a card-style nonogram clue grid with row and column clue rails and labeled candidate
+        filled-grid options
+      object_description_nonogram_blueprint: a blueprint-style nonogram clue grid with row and column clue rails and labeled
+        candidate filled-grid options
+      answer_hint_candidate_solution_label: set "answer" to the single option letter of the candidate grid that satisfies
+        all row and column clues
+      annotation_hint_candidate_solution_label: set "annotation" to an array containing the row-clue rail pixel bounding box [x0,
+        y0, x1, y1], the column-clue rail pixel bounding box [x0, y0, x1, y1], and the selected candidate panel pixel bounding
+        box [x0, y0, x1, y1]
+      json_example_candidate_solution_label: '{"annotation":[[142,170,314,602],[314,54,746,170],[694,650,854,782]],"answer":"D"}'
       json_example_answer_only_candidate_solution_label: '{"answer":"D"}'
     task_puzzles__matchstick__matchstick_number_transform_label:
       scene_key: matchstick
@@ -685,11 +1123,14 @@ prompt:
       object_description_metal_rods: a Source metal-rod number and labeled candidate numbers
       task_key: matchstick_number_transform_query
       answer_hint_add_one_stick: set "answer" to the single option letter of the number reachable by adding exactly one stick
-      answer_hint_remove_one_stick: set "answer" to the single option letter of the number reachable by removing exactly one stick
-      evidence_hint_add_one_stick: set "evidence" to an object with keys "source_number" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
-      evidence_hint_remove_one_stick: set "evidence" to an object with keys "source_number" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
-      json_example_add_one_stick: '{"evidence":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
-      json_example_remove_one_stick: '{"evidence":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
+      answer_hint_remove_one_stick: set "answer" to the single option letter of the number reachable by removing exactly one
+        stick
+      annotation_hint_add_one_stick: set "annotation" to an object with keys "source_number" and "selected_option", each mapped
+        to a bounding box [x0, y0, x1, y1]
+      annotation_hint_remove_one_stick: set "annotation" to an object with keys "source_number" and "selected_option", each mapped
+        to a bounding box [x0, y0, x1, y1]
+      json_example_add_one_stick: '{"annotation":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
+      json_example_remove_one_stick: '{"annotation":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
       json_example_answer_only_add_one_stick: '{"answer":"B"}'
       json_example_answer_only_remove_one_stick: '{"answer":"B"}'
     task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label:
@@ -701,76 +1142,186 @@ prompt:
       object_description_neon_rods: six labeled neon-rod arrangements on dark panels
       object_description_metal_rods: six labeled metal-rod arrangements
       answer_hint_most_loose_endpoints: set "answer" to the single option letter of the arrangement with the most loose endpoints
-      answer_hint_fewest_loose_endpoints: set "answer" to the single option letter of the arrangement with the fewest loose endpoints
-      evidence_hint_most_loose_endpoints: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the selected option panel
-      evidence_hint_fewest_loose_endpoints: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the selected option panel
-      json_example_most_loose_endpoints: '{"evidence":[[786,606,1106,824]],"answer":"F"}'
-      json_example_fewest_loose_endpoints: '{"evidence":[[786,606,1106,824]],"answer":"F"}'
+      answer_hint_fewest_loose_endpoints: set "answer" to the single option letter of the arrangement with the fewest loose
+        endpoints
+      annotation_hint_most_loose_endpoints: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] for the
+        selected option panel
+      annotation_hint_fewest_loose_endpoints: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] for the
+        selected option panel
+      json_example_most_loose_endpoints: '{"annotation":[[786,606,1106,824]],"answer":"F"}'
+      json_example_fewest_loose_endpoints: '{"annotation":[[786,606,1106,824]],"answer":"F"}'
       json_example_answer_only_most_loose_endpoints: '{"answer":"F"}'
       json_example_answer_only_fewest_loose_endpoints: '{"answer":"F"}'
     task_puzzles__tents__tents_missing_tent_cell_label:
       scene_key: tents
       task_key: tents_missing_tent_query
-      object_description_tents_classic: a tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and six labeled candidate cells
-      object_description_tents_card: a card-style tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and six labeled candidate cells
-      object_description_tents_blueprint: a blueprint-style tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and six labeled candidate cells
-      answer_hint_missing_tent_cell_label: set "answer" to the single option letter of the labeled cell that can contain the missing tent for the marked tree
-      evidence_hint_missing_tent_cell_label: set "evidence" to an array containing the selected candidate cell box, the marked tree box, its row clue box, and its column clue box
-      json_example_missing_tent_cell_label: '{"evidence":[[512,386,574,448],[450,386,512,448],[294,386,372,448],[512,230,574,308]],"answer":"C"}'
+      object_description_tents_classic: a tents puzzle grid with row and column tent counts, visible trees and tents, one
+        marked tree, and six labeled candidate cells
+      object_description_tents_card: a card-style tents puzzle grid with row and column tent counts, visible trees and tents,
+        one marked tree, and six labeled candidate cells
+      object_description_tents_blueprint: a blueprint-style tents puzzle grid with row and column tent counts, visible trees
+        and tents, one marked tree, and six labeled candidate cells
+      answer_hint_missing_tent_cell_label: set "answer" to the single option letter of the labeled cell that can contain the
+        missing tent for the marked tree
+      annotation_hint_missing_tent_cell_label: set "annotation" to an array containing the selected candidate cell pixel bounding
+        box [x0, y0, x1, y1], the marked tree pixel bounding box [x0, y0, x1, y1], its row clue pixel bounding box [x0, y0,
+        x1, y1], and its column clue pixel bounding box [x0, y0, x1, y1]
+      json_example_missing_tent_cell_label: '{"annotation":[[512,386,574,448],[450,386,512,448],[294,386,372,448],[512,230,574,308]],"answer":"C"}'
       json_example_answer_only_missing_tent_cell_label: '{"answer":"C"}'
     task_puzzles__tents__tents_valid_candidate_count:
       scene_key: tents
       task_key: tents_valid_candidate_count_query
-      object_description_tents_classic: a tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and four labeled candidate cells around it
-      object_description_tents_card: a card-style tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and four labeled candidate cells around it
-      object_description_tents_blueprint: a blueprint-style tents puzzle grid with row and column tent counts, visible trees and tents, one marked tree, and four labeled candidate cells around it
-      answer_hint_valid_candidate_count: set "answer" to the integer count of labeled candidate cells where a tent could legally be added for the marked tree
-      evidence_hint_valid_candidate_count: set "evidence" to an array containing the marked tree box followed by the boxes for every legal labeled candidate cell; if none are legal, include only the marked tree box
-      json_example_valid_candidate_count: '{"evidence":[[450,386,512,448],[512,386,574,448],[450,324,512,386]],"answer":2}'
+      object_description_tents_classic: a tents puzzle grid with row and column tent counts, visible trees and tents, one
+        marked tree, and four labeled candidate cells around it
+      object_description_tents_card: a card-style tents puzzle grid with row and column tent counts, visible trees and tents,
+        one marked tree, and four labeled candidate cells around it
+      object_description_tents_blueprint: a blueprint-style tents puzzle grid with row and column tent counts, visible trees
+        and tents, one marked tree, and four labeled candidate cells around it
+      answer_hint_valid_candidate_count: set "answer" to the integer count of labeled candidate cells where a tent could legally
+        be added for the marked tree
+      annotation_hint_valid_candidate_count: set "annotation" to an array containing the marked tree pixel bounding box [x0, y0,
+        x1, y1] followed by one pixel bounding box [x0, y0, x1, y1] for every legal labeled candidate cell; if none are
+        legal, include only the marked tree box
+      json_example_valid_candidate_count: '{"annotation":[[450,386,512,448],[512,386,574,448],[450,324,512,386]],"answer":2}'
       json_example_answer_only_valid_candidate_count: '{"answer":2}'
-    task_puzzles__arithmetic_constraint__arithmetic_constraint_value:
+    task_puzzles__arithmetic_constraint__consecutive_window_sum_value:
       scene_key: arithmetic_constraint
       task_key: arithmetic_constraint_value_query
-      object_description_constraint_sheet: a compact arithmetic-constraint diagram with numbered shapes, one question-mark target, and a visible rule note
-      object_description_constraint_card: a card-style arithmetic-constraint diagram with numbered shapes, one question-mark target, and a visible rule note
-      object_description_constraint_outline: an outline-style arithmetic-constraint diagram with numbered shapes, one question-mark target, and a visible rule note
+      object_description_constraint_sheet: a compact arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_card: a card-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_outline: an outline-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_equal_sum_line_constraint_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark node
-      evidence_hint_paired_cluster_sum_relation_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark node
-      evidence_hint_consecutive_window_sum_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark cell
-      json_example_equal_sum_line_constraint_value: '{"evidence":[[546,470,622,546]],"answer":8}'
-      json_example_paired_cluster_sum_relation_value: '{"evidence":[[730,406,806,482]],"answer":12}'
-      json_example_consecutive_window_sum_value: '{"evidence":[[498,408,582,480]],"answer":6}'
+      annotation_hint_equal_sum_line_constraint_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_paired_cluster_sum_relation_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_consecutive_window_sum_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark cell
+      json_example_equal_sum_line_constraint_value: '{"annotation":[[546,470,622,546]],"answer":8}'
+      json_example_paired_cluster_sum_relation_value: '{"annotation":[[730,406,806,482]],"answer":12}'
+      json_example_consecutive_window_sum_value: '{"annotation":[[498,408,582,480]],"answer":6}'
       json_example_answer_only_equal_sum_line_constraint_value: '{"answer":8}'
       json_example_answer_only_paired_cluster_sum_relation_value: '{"answer":12}'
       json_example_answer_only_consecutive_window_sum_value: '{"answer":6}'
-    task_puzzles__arithmetic_constraint__cryptarithm_digit_value:
+    task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value:
       scene_key: arithmetic_constraint
       task_key: arithmetic_constraint_value_query
-      object_description_constraint_sheet: a compact cryptarithm puzzle with one question-mark digit or highlighted target letter
-      object_description_constraint_card: a card-style cryptarithm puzzle with one question-mark digit or highlighted target letter
-      object_description_constraint_outline: an outline-style cryptarithm puzzle with one question-mark digit or highlighted target letter
+      object_description_constraint_sheet: a compact arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_card: a card-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_outline: an outline-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      answer_hint: set "answer" to the exact integer value requested by the puzzle
+      annotation_hint_equal_sum_line_constraint_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_paired_cluster_sum_relation_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_consecutive_window_sum_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark cell
+      json_example_equal_sum_line_constraint_value: '{"annotation":[[546,470,622,546]],"answer":8}'
+      json_example_paired_cluster_sum_relation_value: '{"annotation":[[730,406,806,482]],"answer":12}'
+      json_example_consecutive_window_sum_value: '{"annotation":[[498,408,582,480]],"answer":6}'
+      json_example_answer_only_equal_sum_line_constraint_value: '{"answer":8}'
+      json_example_answer_only_paired_cluster_sum_relation_value: '{"answer":12}'
+      json_example_answer_only_consecutive_window_sum_value: '{"answer":6}'
+    task_puzzles__arithmetic_constraint__paired_cluster_sum_relation_value:
+      scene_key: arithmetic_constraint
+      task_key: arithmetic_constraint_value_query
+      object_description_constraint_sheet: a compact arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_card: a card-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      object_description_constraint_outline: an outline-style arithmetic-constraint diagram with numbered shapes, one question-mark
+        target, and a visible rule note
+      answer_hint: set "answer" to the exact integer value requested by the puzzle
+      annotation_hint_equal_sum_line_constraint_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_paired_cluster_sum_relation_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark node
+      annotation_hint_consecutive_window_sum_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark cell
+      json_example_equal_sum_line_constraint_value: '{"annotation":[[546,470,622,546]],"answer":8}'
+      json_example_paired_cluster_sum_relation_value: '{"annotation":[[730,406,806,482]],"answer":12}'
+      json_example_consecutive_window_sum_value: '{"annotation":[[498,408,582,480]],"answer":6}'
+      json_example_answer_only_equal_sum_line_constraint_value: '{"answer":8}'
+      json_example_answer_only_paired_cluster_sum_relation_value: '{"answer":12}'
+      json_example_answer_only_consecutive_window_sum_value: '{"answer":6}'
+    task_puzzles__arithmetic_constraint__letter_digit_value:
+      scene_key: arithmetic_constraint
+      task_key: arithmetic_constraint_value_query
+      object_description_constraint_sheet: a compact cryptarithm puzzle with one question-mark digit or highlighted target
+        letter
+      object_description_constraint_card: a card-style cryptarithm puzzle with one question-mark digit or highlighted target
+        letter
+      object_description_constraint_outline: an outline-style cryptarithm puzzle with one question-mark digit or highlighted
+        target letter
       answer_hint: set "answer" to the exact digit requested by the puzzle
-      evidence_hint_hidden_addition_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark digit cell
-      evidence_hint_hidden_subtraction_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark digit cell
-      evidence_hint_letter_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the highlighted target-letter box
-      json_example_hidden_addition_digit_value: '{"evidence":[[560,302,644,374]],"answer":7}'
-      json_example_hidden_subtraction_digit_value: '{"evidence":[[476,386,560,458]],"answer":4}'
-      json_example_letter_digit_value: '{"evidence":[[392,272,476,344]],"answer":5}'
+      annotation_hint_hidden_addition_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark digit cell
+      annotation_hint_hidden_subtraction_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark digit cell
+      annotation_hint_letter_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding box for
+        the highlighted target-letter box
+      json_example_hidden_addition_digit_value: '{"annotation":[[560,302,644,374]],"answer":7}'
+      json_example_hidden_subtraction_digit_value: '{"annotation":[[476,386,560,458]],"answer":4}'
+      json_example_letter_digit_value: '{"annotation":[[392,272,476,344]],"answer":5}'
       json_example_answer_only_hidden_addition_digit_value: '{"answer":7}'
       json_example_answer_only_hidden_subtraction_digit_value: '{"answer":4}'
       json_example_answer_only_letter_digit_value: '{"answer":5}'
-    task_puzzles__arithmetic_constraint__operator_grid_value:
+    task_puzzles__arithmetic_constraint__vertical_arithmetic_hidden_digit_value:
+      scene_key: arithmetic_constraint
+      task_key: arithmetic_constraint_value_query
+      object_description_constraint_sheet: a compact cryptarithm puzzle with one question-mark digit or highlighted target
+        letter
+      object_description_constraint_card: a card-style cryptarithm puzzle with one question-mark digit or highlighted target
+        letter
+      object_description_constraint_outline: an outline-style cryptarithm puzzle with one question-mark digit or highlighted
+        target letter
+      answer_hint: set "answer" to the exact digit requested by the puzzle
+      annotation_hint_hidden_addition_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark digit cell
+      annotation_hint_hidden_subtraction_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark digit cell
+      annotation_hint_letter_digit_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding box for
+        the highlighted target-letter box
+      json_example_hidden_addition_digit_value: '{"annotation":[[560,302,644,374]],"answer":7}'
+      json_example_hidden_subtraction_digit_value: '{"annotation":[[476,386,560,458]],"answer":4}'
+      json_example_letter_digit_value: '{"annotation":[[392,272,476,344]],"answer":5}'
+      json_example_answer_only_hidden_addition_digit_value: '{"answer":7}'
+      json_example_answer_only_hidden_subtraction_digit_value: '{"answer":4}'
+      json_example_answer_only_letter_digit_value: '{"answer":5}'
+    task_puzzles__arithmetic_constraint__operation_table_cell_value:
       scene_key: arithmetic_constraint
       task_key: arithmetic_constraint_value_query
       object_description_constraint_sheet: a compact arithmetic grid/table puzzle with one question-mark target cell
       object_description_constraint_card: a card-style arithmetic grid/table puzzle with one question-mark target cell
       object_description_constraint_outline: an outline-style arithmetic grid/table puzzle with one question-mark target cell
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_row_column_total_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark grid cell
-      evidence_hint_operation_table_cell_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark table cell
-      json_example_row_column_total_missing_value: '{"evidence":[[498,332,582,404]],"answer":8}'
-      json_example_operation_table_cell_value: '{"evidence":[[582,404,666,476]],"answer":15}'
+      annotation_hint_row_column_total_missing_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark grid cell
+      annotation_hint_operation_table_cell_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark table cell
+      json_example_row_column_total_missing_value: '{"annotation":[[498,332,582,404]],"answer":8}'
+      json_example_operation_table_cell_value: '{"annotation":[[582,404,666,476]],"answer":15}'
+      json_example_answer_only_row_column_total_missing_value: '{"answer":8}'
+      json_example_answer_only_operation_table_cell_value: '{"answer":15}'
+    task_puzzles__arithmetic_constraint__row_column_total_missing_value:
+      scene_key: arithmetic_constraint
+      task_key: arithmetic_constraint_value_query
+      object_description_constraint_sheet: a compact arithmetic grid/table puzzle with one question-mark target cell
+      object_description_constraint_card: a card-style arithmetic grid/table puzzle with one question-mark target cell
+      object_description_constraint_outline: an outline-style arithmetic grid/table puzzle with one question-mark target cell
+      answer_hint: set "answer" to the exact integer value requested by the puzzle
+      annotation_hint_row_column_total_missing_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark grid cell
+      annotation_hint_operation_table_cell_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark table cell
+      json_example_row_column_total_missing_value: '{"annotation":[[498,332,582,404]],"answer":8}'
+      json_example_operation_table_cell_value: '{"annotation":[[582,404,666,476]],"answer":15}'
       json_example_answer_only_row_column_total_missing_value: '{"answer":8}'
       json_example_answer_only_operation_table_cell_value: '{"answer":15}'
     task_puzzles__arithmetic_constraint__number_wall_value:
@@ -780,30 +1331,117 @@ prompt:
       object_description_constraint_card: a card-style number-wall puzzle with one question-mark brick
       object_description_constraint_outline: an outline-style number-wall puzzle with one question-mark brick
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_addition_wall_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
-      evidence_hint_difference_wall_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
-      evidence_hint_multiplication_pyramid_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
-      json_example_addition_wall_missing_value: '{"evidence":[[498,416,600,488]],"answer":9}'
-      json_example_difference_wall_missing_value: '{"evidence":[[498,416,600,488]],"answer":4}'
-      json_example_multiplication_pyramid_value: '{"evidence":[[434,416,536,488]],"answer":12}'
+      annotation_hint_addition_wall_missing_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark brick
+      annotation_hint_difference_wall_missing_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark brick
+      annotation_hint_multiplication_pyramid_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel bounding
+        box for the marked question-mark brick
+      json_example_addition_wall_missing_value: '{"annotation":[[498,416,600,488]],"answer":9}'
+      json_example_difference_wall_missing_value: '{"annotation":[[498,416,600,488]],"answer":4}'
+      json_example_multiplication_pyramid_value: '{"annotation":[[434,416,536,488]],"answer":12}'
       json_example_answer_only_addition_wall_missing_value: '{"answer":9}'
       json_example_answer_only_difference_wall_missing_value: '{"answer":4}'
       json_example_answer_only_multiplication_pyramid_value: '{"answer":12}'
-    task_puzzles__star_battle__star_battle_valid_cell_label:
+    task_puzzles__balance_scale__missing_object_weight_value:
+      scene_key: balance_scale
+      task_key: balance_scale_missing_object_weight_query
+      object_description_balance_sheet: a balance-scale puzzle with balanced pan scales and a query row showing one object
+        equal to a question mark
+      object_description_balance_card: a card-style balance-scale puzzle with balanced pan scales and a query row showing
+        one object equal to a question mark
+      object_description_balance_outline: an outline-style balance-scale puzzle with balanced pan scales and a query row
+        showing one object equal to a question mark
+      answer_hint: set "answer" to the integer value of the query object
+      annotation_hint_missing_object_weight_value: set "annotation" to an object with keys "query_object" and "missing_value_box",
+        each mapped to a bounding box [x0, y0, x1, y1]
+      json_example_missing_object_weight_value: '{"annotation":{"query_object":[428,652,482,706],"missing_value_box":[630,646,696,712]},"answer":8}'
+      json_example_answer_only_missing_object_weight_value: '{"answer":8}'
+    task_puzzles__balance_scale__equivalent_object_count_value:
+      scene_key: balance_scale
+      task_key: balance_scale_equivalent_object_count_query
+      object_description_balance_sheet: a balance-scale puzzle with balanced pan scales and a query row asking how many
+        copies of one object equal another object
+      object_description_balance_card: a card-style balance-scale puzzle with balanced pan scales and a query row asking
+        how many copies of one object equal another object
+      object_description_balance_outline: an outline-style balance-scale puzzle with balanced pan scales and a query row
+        asking how many copies of one object equal another object
+      answer_hint: set "answer" to the integer count in the question-mark box
+      annotation_hint_equivalent_object_count_value: set "annotation" to an object with keys "source_object", "missing_count_box",
+        and "repeated_object", each mapped to a bounding box [x0, y0, x1, y1]
+      json_example_equivalent_object_count_value: '{"annotation":{"source_object":[410,652,462,704],"missing_count_box":[570,648,628,708],"repeated_object":[690,652,742,704]},"answer":4}'
+      json_example_answer_only_equivalent_object_count_value: '{"answer":4}'
+    task_puzzles__balance_scale__weight_order_label:
+      scene_key: balance_scale
+      task_key: balance_scale_weight_order_query
+      object_description_balance_sheet: a balance-scale puzzle with tilted pan scales and a query row listing candidate
+        objects
+      object_description_balance_card: a card-style balance-scale puzzle with tilted pan scales and a query row listing
+        candidate objects
+      object_description_balance_outline: an outline-style balance-scale puzzle with tilted pan scales and a query row
+        listing candidate objects
+      answer_hint: set "answer" to the visible object label, such as "A"
+      annotation_hint_heaviest_object_label: set "annotation" to an object with keys "comparison_scale_1", "comparison_scale_2",
+        and "selected_object"; include "comparison_scale_3" when a third comparison scale is visible. Each key maps to
+        a bounding box [x0, y0, x1, y1]
+      annotation_hint_lightest_object_label: set "annotation" to an object with keys "comparison_scale_1", "comparison_scale_2",
+        and "selected_object"; include "comparison_scale_3" when a third comparison scale is visible. Each key maps to
+        a bounding box [x0, y0, x1, y1]
+      json_example_heaviest_object_label: '{"annotation":{"comparison_scale_1":[80,92,1040,260],"comparison_scale_2":[80,284,1040,452],"selected_object":[602,696,650,744]},"answer":"C"}'
+      json_example_lightest_object_label: '{"annotation":{"comparison_scale_1":[80,92,1040,260],"comparison_scale_2":[80,284,1040,452],"selected_object":[486,696,534,744]},"answer":"A"}'
+      json_example_answer_only_heaviest_object_label: '{"answer":"C"}'
+      json_example_answer_only_lightest_object_label: '{"answer":"A"}'
+    task_puzzles__star_battle__valid_cell_anywhere_label:
       scene_key: star_battle
       task_key: star_battle_valid_cell_query
-      object_description_star_battle_classic: a partially filled Star Battle puzzle with colored regions, visible stars, and labeled candidate cells
-      object_description_star_battle_pastel: a pastel partially filled Star Battle puzzle with colored regions, visible stars, and labeled candidate cells
-      object_description_star_battle_blueprint: a blueprint-style partially filled Star Battle puzzle with colored regions, visible stars, and labeled candidate cells
-      answer_hint_valid_cell_anywhere_label: set "answer" to the single option letter of the labeled cell where a star can be legally placed
-      answer_hint_valid_cell_in_marked_region_label: set "answer" to the single option letter of the labeled cell in the marked region where a star can be legally placed
-      answer_hint_valid_cell_for_marked_row_label: set "answer" to the single option letter of the labeled cell in the marked row where a star can be legally placed
-      evidence_hint_valid_cell_anywhere_label: set "evidence" to an array containing the selected candidate cell box
-      evidence_hint_valid_cell_in_marked_region_label: set "evidence" to an array containing the selected candidate cell box followed by the marked region box
-      evidence_hint_valid_cell_for_marked_row_label: set "evidence" to an array containing the selected candidate cell box followed by the marked row clue box
-      json_example_valid_cell_anywhere_label: '{"evidence":[[402,276,466,340]],"answer":"C"}'
-      json_example_valid_cell_in_marked_region_label: '{"evidence":[[402,276,466,340],[338,212,530,468]],"answer":"C"}'
-      json_example_valid_cell_for_marked_row_label: '{"evidence":[[402,276,466,340],[220,276,274,340]],"answer":"C"}'
+      object_description_star_battle_classic: a partially filled Star Battle puzzle with colored regions, visible stars, and
+        labeled candidate cells
+      object_description_star_battle_pastel: a pastel partially filled Star Battle puzzle with colored regions, visible stars,
+        and labeled candidate cells
+      object_description_star_battle_blueprint: a blueprint-style partially filled Star Battle puzzle with colored regions,
+        visible stars, and labeled candidate cells
+      answer_hint_valid_cell_anywhere_label: set "answer" to the single option letter of the labeled cell where a star can
+        be legally placed
+      answer_hint_valid_cell_in_marked_region_label: set "answer" to the single option letter of the labeled cell in the marked
+        region where a star can be legally placed
+      answer_hint_valid_cell_for_marked_row_label: set "answer" to the single option letter of the labeled cell in the marked
+        row where a star can be legally placed
+      annotation_hint_valid_cell_anywhere_label: set "annotation" to an array containing the selected candidate cell pixel bounding
+        box [x0, y0, x1, y1]
+      annotation_hint_valid_cell_in_marked_region_label: set "annotation" to an array containing the selected candidate cell pixel
+        bounding box [x0, y0, x1, y1] followed by the marked region pixel bounding box [x0, y0, x1, y1]
+      annotation_hint_valid_cell_for_marked_row_label: set "annotation" to an array containing the selected candidate cell pixel
+        bounding box [x0, y0, x1, y1] followed by the marked row clue pixel bounding box [x0, y0, x1, y1]
+      json_example_valid_cell_anywhere_label: '{"annotation":[[402,276,466,340]],"answer":"C"}'
+      json_example_valid_cell_in_marked_region_label: '{"annotation":[[402,276,466,340],[338,212,530,468]],"answer":"C"}'
+      json_example_valid_cell_for_marked_row_label: '{"annotation":[[402,276,466,340],[220,276,274,340]],"answer":"C"}'
+      json_example_answer_only_valid_cell_anywhere_label: '{"answer":"C"}'
+      json_example_answer_only_valid_cell_in_marked_region_label: '{"answer":"C"}'
+      json_example_answer_only_valid_cell_for_marked_row_label: '{"answer":"C"}'
+    task_puzzles__star_battle__scoped_valid_cell_label:
+      scene_key: star_battle
+      task_key: star_battle_valid_cell_query
+      object_description_star_battle_classic: a partially filled Star Battle puzzle with colored regions, visible stars, and
+        labeled candidate cells
+      object_description_star_battle_pastel: a pastel partially filled Star Battle puzzle with colored regions, visible stars,
+        and labeled candidate cells
+      object_description_star_battle_blueprint: a blueprint-style partially filled Star Battle puzzle with colored regions,
+        visible stars, and labeled candidate cells
+      answer_hint_valid_cell_anywhere_label: set "answer" to the single option letter of the labeled cell where a star can
+        be legally placed
+      answer_hint_valid_cell_in_marked_region_label: set "answer" to the single option letter of the labeled cell in the marked
+        region where a star can be legally placed
+      answer_hint_valid_cell_for_marked_row_label: set "answer" to the single option letter of the labeled cell in the marked
+        row where a star can be legally placed
+      annotation_hint_valid_cell_anywhere_label: set "annotation" to an array containing the selected candidate cell pixel bounding
+        box [x0, y0, x1, y1]
+      annotation_hint_valid_cell_in_marked_region_label: set "annotation" to an array containing the selected candidate cell pixel
+        bounding box [x0, y0, x1, y1] followed by the marked region pixel bounding box [x0, y0, x1, y1]
+      annotation_hint_valid_cell_for_marked_row_label: set "annotation" to an array containing the selected candidate cell pixel
+        bounding box [x0, y0, x1, y1] followed by the marked row clue pixel bounding box [x0, y0, x1, y1]
+      json_example_valid_cell_anywhere_label: '{"annotation":[[402,276,466,340]],"answer":"C"}'
+      json_example_valid_cell_in_marked_region_label: '{"annotation":[[402,276,466,340],[338,212,530,468]],"answer":"C"}'
+      json_example_valid_cell_for_marked_row_label: '{"annotation":[[402,276,466,340],[220,276,274,340]],"answer":"C"}'
       json_example_answer_only_valid_cell_anywhere_label: '{"answer":"C"}'
       json_example_answer_only_valid_cell_in_marked_region_label: '{"answer":"C"}'
       json_example_answer_only_valid_cell_for_marked_row_label: '{"answer":"C"}'
@@ -811,100 +1449,149 @@ prompt:
       scene_key: star_battle
       task_key: star_battle_remaining_count_query
       object_description_star_battle_classic: a partially filled Star Battle puzzle with colored regions and visible stars
-      object_description_star_battle_pastel: a pastel partially filled Star Battle puzzle with colored regions and visible stars
-      object_description_star_battle_blueprint: a blueprint-style partially filled Star Battle puzzle with colored regions and visible stars
-      answer_hint_remaining_valid_cells_in_marked_region_count: set "answer" to the integer count of cells in the marked region where a star can still be legally placed
-      answer_hint_remaining_valid_cells_in_marked_row_count: set "answer" to the integer count of cells in the marked row where a star can still be legally placed
-      answer_hint_remaining_valid_cells_in_marked_column_count: set "answer" to the integer count of cells in the marked column where a star can still be legally placed
-      evidence_hint_remaining_valid_cells_in_marked_region_count: set "evidence" to an array containing the marked region box followed by the boxes for every legal cell in that region
-      evidence_hint_remaining_valid_cells_in_marked_row_count: set "evidence" to an array containing the marked row clue box followed by the boxes for every legal cell in that row
-      evidence_hint_remaining_valid_cells_in_marked_column_count: set "evidence" to an array containing the marked column clue box followed by the boxes for every legal cell in that column
-      json_example_remaining_valid_cells_in_marked_region_count: '{"evidence":[[338,212,530,468],[402,276,466,340],[466,340,530,404]],"answer":2}'
-      json_example_remaining_valid_cells_in_marked_row_count: '{"evidence":[[220,276,274,340],[402,276,466,340],[530,276,594,340]],"answer":2}'
-      json_example_remaining_valid_cells_in_marked_column_count: '{"evidence":[[402,158,466,212],[402,276,466,340],[402,468,466,532]],"answer":2}'
+      object_description_star_battle_pastel: a pastel partially filled Star Battle puzzle with colored regions and visible
+        stars
+      object_description_star_battle_blueprint: a blueprint-style partially filled Star Battle puzzle with colored regions
+        and visible stars
+      answer_hint_remaining_valid_cells_in_marked_region_count: set "answer" to the integer count of cells in the marked region
+        where a star can still be legally placed
+      answer_hint_remaining_valid_cells_in_marked_row_count: set "answer" to the integer count of cells in the marked row
+        where a star can still be legally placed
+      answer_hint_remaining_valid_cells_in_marked_column_count: set "answer" to the integer count of cells in the marked column
+        where a star can still be legally placed
+      annotation_hint_remaining_valid_cells_in_marked_region_count: set "annotation" to an array containing the marked region
+        pixel bounding box [x0, y0, x1, y1] followed by one pixel bounding box [x0, y0, x1, y1] for every legal cell in that
+        region
+      annotation_hint_remaining_valid_cells_in_marked_row_count: set "annotation" to an array containing the marked row clue pixel
+        bounding box [x0, y0, x1, y1] followed by one pixel bounding box [x0, y0, x1, y1] for every legal cell in that row
+      annotation_hint_remaining_valid_cells_in_marked_column_count: set "annotation" to an array containing the marked column
+        clue pixel bounding box [x0, y0, x1, y1] followed by one pixel bounding box [x0, y0, x1, y1] for every legal cell
+        in that column
+      json_example_remaining_valid_cells_in_marked_region_count: '{"annotation":[[338,212,530,468],[402,276,466,340],[466,340,530,404]],"answer":2}'
+      json_example_remaining_valid_cells_in_marked_row_count: '{"annotation":[[220,276,274,340],[402,276,466,340],[530,276,594,340]],"answer":2}'
+      json_example_remaining_valid_cells_in_marked_column_count: '{"annotation":[[402,158,466,212],[402,276,466,340],[402,468,466,532]],"answer":2}'
       json_example_answer_only_remaining_valid_cells_in_marked_region_count: '{"answer":2}'
       json_example_answer_only_remaining_valid_cells_in_marked_row_count: '{"answer":2}'
       json_example_answer_only_remaining_valid_cells_in_marked_column_count: '{"answer":2}'
-
 complexity:
   task_overrides:
     puzzles_logic_grid_completion_internal:
       criteria_weights:
-        visual_scan: 0.20
+        visual_scan: 0.2
         reasoning_load: 0.75
         scene_variant_load: 0.05
     puzzles_logic_raven_matrix_internal:
       criteria_weights:
         visual_scan: 0.25
         reasoning_load: 0.65
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__nonogram__nonogram_line_completion_label:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__nonogram__nonogram_candidate_solution_label:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__matchstick__matchstick_number_transform_label:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label:
       criteria_weights:
         visual_scan: 0.38
         reasoning_load: 0.52
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__tents__tents_missing_tent_cell_label:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__tents__tents_valid_candidate_count:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
-    task_puzzles__arithmetic_constraint__arithmetic_constraint_value:
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__consecutive_window_sum_value:
       criteria_weights:
-        visual_scan: 0.30
-        reasoning_load: 0.60
-        scene_variant_load: 0.10
-    task_puzzles__arithmetic_constraint__cryptarithm_digit_value:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value:
       criteria_weights:
-        visual_scan: 0.30
-        reasoning_load: 0.60
-        scene_variant_load: 0.10
-    task_puzzles__arithmetic_constraint__operator_grid_value:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__paired_cluster_sum_relation_value:
+      criteria_weights:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__letter_digit_value:
+      criteria_weights:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__vertical_arithmetic_hidden_digit_value:
+      criteria_weights:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__operation_table_cell_value:
       criteria_weights:
         visual_scan: 0.32
         reasoning_load: 0.58
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
+    task_puzzles__arithmetic_constraint__row_column_total_missing_value:
+      criteria_weights:
+        visual_scan: 0.32
+        reasoning_load: 0.58
+        scene_variant_load: 0.1
     task_puzzles__arithmetic_constraint__number_wall_value:
       criteria_weights:
-        visual_scan: 0.30
-        reasoning_load: 0.60
-        scene_variant_load: 0.10
-    task_puzzles__star_battle__star_battle_valid_cell_label:
+        visual_scan: 0.3
+        reasoning_load: 0.6
+        scene_variant_load: 0.1
+    task_puzzles__balance_scale__missing_object_weight_value:
+      criteria_weights:
+        visual_scan: 0.32
+        reasoning_load: 0.58
+        scene_variant_load: 0.1
+    task_puzzles__balance_scale__equivalent_object_count_value:
+      criteria_weights:
+        visual_scan: 0.32
+        reasoning_load: 0.58
+        scene_variant_load: 0.1
+    task_puzzles__balance_scale__weight_order_label:
+      criteria_weights:
+        visual_scan: 0.34
+        reasoning_load: 0.56
+        scene_variant_load: 0.1
+    task_puzzles__star_battle__valid_cell_anywhere_label:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
+    task_puzzles__star_battle__scoped_valid_cell_label:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.55
+        scene_variant_load: 0.1
     task_puzzles__star_battle__star_battle_remaining_count:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__toggle_grid__toggle_result_label:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.54
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1
     task_puzzles__toggle_grid__toggle_repair_switch_label:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.54
-        scene_variant_load: 0.10
+        scene_variant_load: 0.1

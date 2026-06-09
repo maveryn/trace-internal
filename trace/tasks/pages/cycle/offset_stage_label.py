@@ -18,7 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.diagram.common import projected_diagram_bbox_evidence
+from ..shared.diagram.common import projected_diagram_bbox_annotation
 from ..shared.diagram.complexity import (
     build_diagrams_complexity,
     clamp_unit_interval,
@@ -66,11 +66,11 @@ def _build_prompt_json_examples() -> tuple[str, str]:
     """Return prompt JSON examples for the cycle offset-stage task."""
 
     answer_value = "Mina"
-    evidence_bbox = [[747, 242, 869, 300]]
-    answer_and_evidence = {"evidence": evidence_bbox, "answer": str(answer_value)}
+    annotation_bbox = [[747, 242, 869, 300]]
+    answer_and_annotation = {"annotation": annotation_bbox, "answer": str(answer_value)}
     answer_only = {"answer": str(answer_value)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -152,7 +152,7 @@ class PagesCycleOffsetStageLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint_offset_stage_label",
+                "annotation_hint_offset_stage_label",
                 "object_description_cycle_ring",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -165,13 +165,13 @@ class PagesCycleOffsetStageLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_cycle_ring"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_offset_stage_label"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_offset_stage_label"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -181,11 +181,11 @@ class PagesCycleOffsetStageLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_stage_bbox_id = str(dataset["answer_stage_bbox_id"])
-        evidence_projection = projected_diagram_bbox_evidence(rendered_scene.stage_bbox_map, [str(answer_stage_bbox_id)])
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_diagram_bbox_annotation(rendered_scene.stage_bbox_map, [str(answer_stage_bbox_id)])
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_value = str(dataset["answer_stage_label"])
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         stage_scan = normalize_int_with_bounds(int(dataset["stage_count"]), [5, 12])
         step_scan = normalize_int_with_bounds(int(dataset["step_count"]), [2, 11])
@@ -283,7 +283,7 @@ class PagesCycleOffsetStageLabelTask:
                 "type": "object_set",
                 "ids": [str(dataset["answer_stage_id"])],
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -292,7 +292,7 @@ class PagesCycleOffsetStageLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

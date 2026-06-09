@@ -22,7 +22,7 @@ from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.complexity import build_geometry_comparison_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
@@ -352,27 +352,27 @@ class GeometryComparisonAreaTask:
             or line_width is None
         ):
             raise RuntimeError("failed to generate source_geometry_comparison_area instance") from last_error
-        ordered_evidence_labels = (
+        ordered_annotation_labels = (
             ("vertex_1", "vertex_2", "vertex_3")
             if str(shape_family) == "triangle"
             else ("vertex_1", "vertex_2", "vertex_3", "vertex_4")
         )
-        evidence_point_count = len(ordered_evidence_labels)
-        evidence = graph_point_set_evidence_artifacts(
-            points_by_label=scene_payload.evidence_points_by_label,
+        annotation_point_count = len(ordered_annotation_labels)
+        annotation = graph_point_set_annotation_artifacts(
+            points_by_label=scene_payload.annotation_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
             witness_type=f"winning_{shape_family}_vertices",
-            ordered_labels=ordered_evidence_labels,
+            ordered_labels=ordered_annotation_labels,
         )
-        evidence_value = evidence.get("evidence_value", [])
+        annotation_value = annotation.get("annotation_value", [])
         if (
-            not isinstance(evidence_value, list)
-            or len(evidence_value) != int(evidence_point_count)
-            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
+            not isinstance(annotation_value, list)
+            or len(annotation_value) != int(annotation_point_count)
+            or any(not isinstance(point, list) or len(point) != 2 for point in annotation_value)
+            or any(not isinstance(coord, (int, float)) for point in annotation_value for coord in point)
         ):
-            raise RuntimeError("comparison-area evidence must include pixel polygon vertices")
+            raise RuntimeError("comparison-area annotation must include pixel polygon vertices")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -394,8 +394,8 @@ class GeometryComparisonAreaTask:
                 "object_description_triangle",
                 "question_text_largest_triangle",
                 "question_text_smallest_triangle",
-                "evidence_hint",
-                "evidence_hint_triangle",
+                "annotation_hint",
+                "annotation_hint_triangle",
                 "answer_hint",
                 "answer_hint_triangle",
             ),
@@ -407,10 +407,10 @@ class GeometryComparisonAreaTask:
         object_description = str(
             prompt_defaults.get(f"object_description_{shape_family}", prompt_defaults["object_description"])
         )
-        evidence_hint = str(prompt_defaults.get(f"evidence_hint_{shape_family}", prompt_defaults["evidence_hint"]))
+        annotation_hint = str(prompt_defaults.get(f"annotation_hint_{shape_family}", prompt_defaults["annotation_hint"]))
         answer_hint = str(prompt_defaults.get(f"answer_hint_{shape_family}", prompt_defaults["answer_hint"]))
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -419,13 +419,13 @@ class GeometryComparisonAreaTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -435,7 +435,7 @@ class GeometryComparisonAreaTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         winner_label = str(scene_payload.winner_label)
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
-        evidence_gt = TypedValue(type=str(evidence["evidence_type"]), value=list(evidence_value))
+        annotation_gt = TypedValue(type=str(annotation["annotation_type"]), value=list(annotation_value))
         scene_variant_name = f"{shape_family}_set"
         values_by_label = {str(obj.label): trace_numeric_value(float(obj.area_square_units)) for obj in scene_payload.objects}
         query_params = {
@@ -561,14 +561,14 @@ class GeometryComparisonAreaTask:
                 "runner_up_value": float(scene_payload.winner_metrics.runner_up_value),
                 "winner_gap_abs": float(scene_payload.winner_metrics.gap_abs),
                 "winner_gap_normalized": float(scene_payload.winner_metrics.gap_normalized),
-                "required_evidence_labels": list(ordered_evidence_labels),
+                "required_annotation_labels": list(ordered_annotation_labels),
                 "question_format": "label_choice_no_text_options",
             },
             "witness_symbolic": {
-                **dict(evidence["witness_symbolic"]),
+                **dict(annotation["witness_symbolic"]),
                 "winner_label": str(winner_label),
             },
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
         complexity = build_geometry_comparison_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -579,12 +579,12 @@ class GeometryComparisonAreaTask:
             gap_normalized=float(scene_payload.winner_metrics.gap_normalized),
             min_normalized_gap=float(_GEN_DEFAULTS["min_normalized_gap"]),
             comparison_kind="area",
-            evidence_point_count=int(evidence_point_count),
+            annotation_point_count=int(annotation_point_count),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

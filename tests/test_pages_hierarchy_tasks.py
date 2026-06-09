@@ -7,15 +7,16 @@ from collections import Counter, defaultdict
 from trace.core.seed import hash64
 from trace.tasks.pages.hierarchy.tree_count import (
     PagesHierarchyPathLengthCountTask,
-    PagesHierarchySubtreeNodeCountTask,
+    PagesHierarchySubtreeDescendantCountTask,
+    PagesHierarchySubtreeLeafCountTask,
 )
 from tests.helpers import extract_prompt_json_example
 
 
-def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
+def test_pages_hierarchy_tree_count_contract_matches_counted_annotation() -> None:
     task_cases = (
-        (PagesHierarchySubtreeNodeCountTask(), "subtree_descendant_count"),
-        (PagesHierarchySubtreeNodeCountTask(), "subtree_leaf_count"),
+        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count"),
+        (PagesHierarchySubtreeLeafCountTask(), "subtree_leaf_count"),
         (PagesHierarchyPathLengthCountTask(), "path_length_between_two_nodes"),
     )
 
@@ -29,13 +30,13 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         render_map = trace["render_map"]
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
-        evidence_bbox_ids = [str(bbox_id) for bbox_id in execution["evidence_node_bbox_ids"]]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
+        annotation_bbox_ids = [str(bbox_id) for bbox_id in execution["annotation_node_bbox_ids"]]
 
         assert out.answer_gt.type == "integer"
-        expected_evidence_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
-        assert out.evidence_gt.type == expected_evidence_type
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        expected_annotation_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
+        assert out.annotation_gt.type == expected_annotation_type
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(out.query_id) == str(query_id)
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["source_query_id"]) == str(query_id)
@@ -43,11 +44,11 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
         assert str(execution["question_format"]) == "hierarchy_tree_count"
         assert str(execution["view_family"]) == "rooted_tree_diagram"
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        if str(expected_evidence_type) == "bbox_sequence":
-            assert trace["projected_evidence"]["type"] == "bbox_sequence"
-            assert trace["projected_evidence"]["bbox_sequence"] == evidence_bboxes
+        if str(expected_annotation_type) == "bbox_sequence":
+            assert trace["projected_annotation"]["type"] == "bbox_sequence"
+            assert trace["projected_annotation"]["bbox_sequence"] == annotation_bboxes
         else:
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
         assert int(out.answer_gt.value) == int(execution["answer_count"])
         assert 16 <= int(execution["tree_node_count"]) <= 30
         assert 4 <= int(execution["tree_depth"]) <= 8
@@ -56,56 +57,56 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
 
         expected_bboxes = [
             [float(value) for value in render_map["node_bboxes_px"][str(bbox_id)]]
-            for bbox_id in evidence_bbox_ids
+            for bbox_id in annotation_bbox_ids
         ]
-        assert evidence_bboxes == expected_bboxes
-        assert [str(item) for item in execution["supporting_node_bbox_ids"]] == evidence_bbox_ids
+        assert annotation_bboxes == expected_bboxes
+        assert [str(item) for item in execution["supporting_node_bbox_ids"]] == annotation_bbox_ids
         assert len(execution["node_specs"]) == int(execution["tree_node_count"])
         assert len(render_map["node_bboxes_px"]) == int(execution["tree_node_count"])
         assert len(render_map["edge_bboxes_px"]) == len(execution["edge_specs"])
 
         if str(query_id) == "subtree_descendant_count":
             assert int(execution["answer_count"]) == int(execution["descendant_count"])
-            assert len(execution["evidence_node_ids"]) == int(execution["answer_count"])
-            assert str(execution["evidence_semantics"]) == "descendant_nodes_unordered"
+            assert len(execution["annotation_node_ids"]) == int(execution["answer_count"])
+            assert str(execution["annotation_semantics"]) == "descendant_nodes_unordered"
         elif str(query_id) == "subtree_leaf_count":
             assert int(execution["answer_count"]) == int(execution["leaf_descendant_count"])
-            assert len(execution["evidence_node_ids"]) == int(execution["answer_count"])
-            assert str(execution["evidence_semantics"]) == "leaf_descendant_nodes_unordered"
+            assert len(execution["annotation_node_ids"]) == int(execution["answer_count"])
+            assert str(execution["annotation_semantics"]) == "leaf_descendant_nodes_unordered"
         else:
             assert int(execution["answer_count"]) == int(execution["path_length_between_nodes"])
-            assert len(execution["evidence_node_ids"]) == int(execution["answer_count"]) + 1
-            assert execution["evidence_node_ids"] == execution["path_node_ids"]
+            assert len(execution["annotation_node_ids"]) == int(execution["answer_count"]) + 1
+            assert execution["annotation_node_ids"] == execution["path_node_ids"]
             assert len(execution["query_node_ids"]) == 2
-            assert str(execution["evidence_node_ids"][0]) == str(execution["query_node_ids"][0])
-            assert str(execution["evidence_node_ids"][-1]) == str(execution["query_node_ids"][1])
-            assert str(execution["evidence_semantics"]) == "path_nodes_between_query_nodes_ordered"
+            assert str(execution["annotation_node_ids"][0]) == str(execution["query_node_ids"][0])
+            assert str(execution["annotation_node_ids"][-1]) == str(execution["query_node_ids"][1])
+            assert str(execution["annotation_semantics"]) == "path_nodes_between_query_nodes_ordered"
 
 
 def test_pages_hierarchy_tree_count_prompt_examples_match_integer_contract() -> None:
     expected = (
-        (PagesHierarchySubtreeNodeCountTask(), "subtree_descendant_count", 4),
-        (PagesHierarchySubtreeNodeCountTask(), "subtree_leaf_count", 3),
+        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count", 4),
+        (PagesHierarchySubtreeLeafCountTask(), "subtree_leaf_count", 3),
         (PagesHierarchyPathLengthCountTask(), "path_length_between_two_nodes", 4),
     )
 
     for index, (task, query_id, expected_answer) in enumerate(expected, start=61460):
         out = task.generate(index, params={"query_id": query_id, "scene_variant": "rooted_tree"}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert int(answer_and_evidence["answer"]) == int(expected_answer)
+        assert int(answer_and_annotation["answer"]) == int(expected_answer)
         assert int(answer_only["answer"]) == int(expected_answer)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_pages_hierarchy_tree_count_is_deterministic() -> None:
-    task = PagesHierarchySubtreeNodeCountTask()
+    task = PagesHierarchySubtreeLeafCountTask()
     params = {"query_id": "subtree_leaf_count", "scene_variant": "rooted_tree"}
     out_a = task.generate(61510, params=params, max_attempts=10)
     out_b = task.generate(61510, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -113,7 +114,11 @@ def test_pages_hierarchy_tree_count_is_deterministic() -> None:
 
 
 def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answers() -> None:
-    tasks = (PagesHierarchySubtreeNodeCountTask(), PagesHierarchyPathLengthCountTask())
+    tasks = (
+        PagesHierarchySubtreeDescendantCountTask(),
+        PagesHierarchySubtreeLeafCountTask(),
+        PagesHierarchyPathLengthCountTask(),
+    )
     query_ids: Counter[str] = Counter()
     answers_by_variant: dict[str, set[int]] = defaultdict(set)
 
@@ -141,7 +146,7 @@ def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answer
 
 
 def test_pages_hierarchy_tree_count_layout_keeps_same_depth_nodes_separated() -> None:
-    task = PagesHierarchySubtreeNodeCountTask()
+    task = PagesHierarchySubtreeDescendantCountTask()
 
     for index in range(100):
         out = task.generate(

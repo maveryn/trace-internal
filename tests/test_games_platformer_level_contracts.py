@@ -10,6 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.platformer.level_tasks import (
     GamesPlatformerCollectibleCountTask,
+    GamesPlatformerJumpCollectibleScoreValueTask,
     GamesPlatformerJumpLandingLabelTask,
     GamesPlatformerLevelTask,
 )
@@ -31,6 +32,12 @@ from tests.helpers import read_jsonl
             "collectible_count",
             ("integer", "point_set"),
         ),
+        (
+            GamesPlatformerJumpCollectibleScoreValueTask,
+            {"style_variant": "neon"},
+            "jump_collectible_score_value",
+            ("integer", "point_set"),
+        ),
     ),
 )
 def test_games_platformer_public_tasks_emit_expected_contract(
@@ -43,16 +50,16 @@ def test_games_platformer_public_tasks_emit_expected_contract(
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    expected_answer_type, expected_evidence_type = expected_type
+    expected_answer_type, expected_annotation_type = expected_type
     assert out.answer_gt.type == expected_answer_type
-    assert out.evidence_gt.type == expected_evidence_type
+    assert out.annotation_gt.type == expected_annotation_type
     assert out.query_id == expected_query
     assert out.scene_id == "platformer"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_evidence"][expected_evidence_type] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
+    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
 def test_games_platformer_landing_answer_matches_target_platform() -> None:
@@ -66,8 +73,12 @@ def test_games_platformer_landing_answer_matches_target_platform() -> None:
     target_platform = next(platform for platform in execution["platforms"] if str(platform["platform_id"]) == target_id)
 
     assert str(out.answer_gt.value) == str(target_platform["label"])
-    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert list(execution["annotation_entity_ids"]) == [target_id]
     assert 4 <= len(execution["platforms"]) <= 7
+    path = execution["path_points_norm"]
+    peak_index = min(range(len(path)), key=lambda index: float(path[int(index)][1]))
+    peak_fraction = float(peak_index) / float(max(1, len(path) - 1))
+    assert peak_fraction + 0.08 <= float(execution["visible_path_fraction"]) <= peak_fraction + 0.14
 
 
 def test_games_platformer_collectible_count_matches_on_path_coins() -> None:
@@ -80,9 +91,50 @@ def test_games_platformer_collectible_count_matches_on_path_coins() -> None:
     on_path_ids = [str(coin["collectible_id"]) for coin in execution["collectibles"] if bool(coin["on_path"])]
 
     assert int(out.answer_gt.value) == len(on_path_ids) == 7
-    assert list(execution["evidence_entity_ids"]) == on_path_ids
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == 7
+    assert list(execution["annotation_entity_ids"]) == on_path_ids
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == 7
+
+
+def test_games_platformer_score_value_matches_on_arc_collectibles() -> None:
+    out = GamesPlatformerJumpCollectibleScoreValueTask().generate(
+        97240,
+        params={},
+        max_attempts=512,
+    )
+    execution = out.trace_payload["execution_trace"]
+    target_ids = [str(collectible_id) for collectible_id in execution["target_collectible_ids"]]
+    collectible_by_id = {str(coin["collectible_id"]): coin for coin in execution["collectibles"]}
+
+    assert target_ids
+    assert list(execution["annotation_entity_ids"]) == target_ids
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(target_ids)
+
+    score = 0
+    has_coin = False
+    has_bonus = False
+    for collectible_id in target_ids:
+        collectible = collectible_by_id[collectible_id]
+        assert bool(collectible["on_path"]) is True
+        value = int(collectible["score_value"])
+        score += value
+        if str(collectible["kind"]) == "coin":
+            has_coin = True
+            assert value == 1
+        else:
+            has_bonus = True
+            assert value > 1
+            assert str(collectible["display_text"]) == str(value)
+
+    assert has_coin is True
+    assert has_bonus is True
+    assert any(
+        not bool(coin["on_path"]) and int(coin["score_value"]) > 1
+        for coin in execution["collectibles"]
+    )
+    assert int(out.answer_gt.value) == score
+    assert "Coins score 1; bonus items score their printed value." in out.prompt
 
 
 def test_games_platformer_build_smoke(tmp_path: Path) -> None:
@@ -95,6 +147,7 @@ def test_games_platformer_build_smoke(tmp_path: Path) -> None:
         tasks=[
             BuildTaskConfig(task_id="task_games__platformer__jump_landing_label", count=1, params={}),
             BuildTaskConfig(task_id="task_games__platformer__collectible_count", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__platformer__jump_collectible_score_value", count=1, params={}),
         ],
         max_attempts_per_instance=512,
         workers=1,
@@ -102,6 +155,6 @@ def test_games_platformer_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-platformer-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 2
+    assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
     assert all(row["task_group"] == "platformer" for row in rows)

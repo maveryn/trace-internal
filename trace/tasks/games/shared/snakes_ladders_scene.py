@@ -8,7 +8,8 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.drawing import draw_rounded_rect
+from .text import draw_centered_game_text as draw_centered_text
 from ...shared.text_rendering import fit_font_to_box
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -406,6 +407,7 @@ def render_snakes_ladders_board_scene(
     start_square: int,
     die_value: int | None = None,
     horizon_roll_count: int | None = None,
+    show_roll_panel: bool = True,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSnakesLaddersScene:
     """Render one Snakes and Ladders board scene."""
@@ -420,12 +422,14 @@ def render_snakes_ladders_board_scene(
     side_top = float(board_bbox[1])
     side_right = min(float(params.canvas_width - 48), float(side_left + params.side_panel_width_px))
     side_bottom = float(board_bbox[3])
+    show_side_panel = bool(die_value is not None or show_roll_panel or horizon_roll_count is not None)
     if panel_style is not None:
         panel_pad = 18.0
+        content_right = float(side_right) if bool(show_side_panel) else float(board_bbox[2])
         panel_bbox = (
             int(round(max(6.0, float(board_bbox[0]) - panel_pad))),
             int(round(max(6.0, float(board_bbox[1]) - panel_pad))),
-            int(round(min(float(params.canvas_width) - 6.0, float(side_right) + panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(content_right) + panel_pad))),
             int(round(min(float(params.canvas_height) - 6.0, float(board_bbox[3]) + panel_pad))),
         )
         draw_panel_scene_chrome(
@@ -435,14 +439,15 @@ def render_snakes_ladders_board_scene(
             radius=24,
             border_width=2,
         )
-    draw_rounded_rect(
-        draw,
-        (side_left, side_top, side_right, side_bottom),
-        radius=18,
-        fill=theme.panel_fill_rgb,
-        outline=theme.panel_outline_rgb,
-        width=4,
-    )
+    if bool(show_side_panel):
+        draw_rounded_rect(
+            draw,
+            (side_left, side_top, side_right, side_bottom),
+            radius=18,
+            fill=theme.panel_fill_rgb,
+            outline=theme.panel_outline_rgb,
+            width=4,
+        )
     draw_rounded_rect(
         draw,
         board_bbox,
@@ -564,74 +569,75 @@ def render_snakes_ladders_board_scene(
         }
     )
 
-    title_font = fit_font_to_box(
-        draw,
-        text="ROLL",
-        max_width=float(side_right - side_left - 24),
-        max_height=32,
-        bold=True,
-        font_family=str(params.font_family),
-        min_size_px=16,
-        max_size_px=26,
-    )
-    if die_value is not None:
-        draw_centered_text(
+    if bool(show_side_panel):
+        title_font = fit_font_to_box(
             draw,
-            text="DIE",
-            center=(float((side_left + side_right) / 2.0), float(side_top + 40)),
-            font=title_font,
-            fill=theme.note_rgb,
-            stroke_fill=theme.note_rgb,
-            stroke_width=0,
-        )
-        die_bbox = (
-            float((side_left + side_right - params.die_size_px) / 2.0),
-            float(side_top + 66),
-            float((side_left + side_right + params.die_size_px) / 2.0),
-            float(side_top + 66 + params.die_size_px),
-        )
-        _draw_die(draw, bbox=die_bbox, value=int(die_value), theme=theme)
-        entity_bboxes["die"] = tuple(float(v) for v in die_bbox)
-        entities.append({"id": "die", "type": "die", "value": int(die_value), "bbox_px": [float(v) for v in die_bbox]})
-    else:
-        draw_centered_text(
-            draw,
-            text="ROLLS 1-6",
-            center=(float((side_left + side_right) / 2.0), float(side_top + 44)),
-            font=title_font,
-            fill=theme.note_rgb,
-            stroke_fill=theme.note_rgb,
-            stroke_width=0,
-        )
-        small = max(30, int(params.die_size_px * 0.48))
-        top = float(side_top + 76)
-        for idx, value in enumerate((1, 2, 3, 4, 5, 6)):
-            row = int(idx // 3)
-            col = int(idx % 3)
-            left = float(side_left + 24 + col * (small + 12))
-            die_bbox = (left, top + row * (small + 12), left + small, top + row * (small + 12) + small)
-            _draw_die(draw, bbox=die_bbox, value=int(value), theme=theme)
-
-    if horizon_roll_count is not None:
-        note_font = fit_font_to_box(
-            draw,
-            text="3 ROLLS",
+            text="ROLL",
             max_width=float(side_right - side_left - 24),
-            max_height=34,
+            max_height=32,
             bold=True,
             font_family=str(params.font_family),
-            min_size_px=14,
-            max_size_px=24,
+            min_size_px=16,
+            max_size_px=26,
         )
-        draw_centered_text(
-            draw,
-            text=f"{int(horizon_roll_count)} ROLL{'S' if int(horizon_roll_count) != 1 else ''}",
-            center=(float((side_left + side_right) / 2.0), float(side_bottom - 60)),
-            font=note_font,
-            fill=theme.note_rgb,
-            stroke_fill=theme.note_rgb,
-            stroke_width=0,
-        )
+        if die_value is not None:
+            draw_centered_text(
+                draw,
+                text="DIE",
+                center=(float((side_left + side_right) / 2.0), float(side_top + 40)),
+                font=title_font,
+                fill=theme.note_rgb,
+                stroke_fill=theme.note_rgb,
+                stroke_width=0,
+            )
+            die_bbox = (
+                float((side_left + side_right - params.die_size_px) / 2.0),
+                float(side_top + 66),
+                float((side_left + side_right + params.die_size_px) / 2.0),
+                float(side_top + 66 + params.die_size_px),
+            )
+            _draw_die(draw, bbox=die_bbox, value=int(die_value), theme=theme)
+            entity_bboxes["die"] = tuple(float(v) for v in die_bbox)
+            entities.append({"id": "die", "type": "die", "value": int(die_value), "bbox_px": [float(v) for v in die_bbox]})
+        elif bool(show_roll_panel):
+            draw_centered_text(
+                draw,
+                text="ROLLS 1-6",
+                center=(float((side_left + side_right) / 2.0), float(side_top + 44)),
+                font=title_font,
+                fill=theme.note_rgb,
+                stroke_fill=theme.note_rgb,
+                stroke_width=0,
+            )
+            small = max(30, int(params.die_size_px * 0.48))
+            top = float(side_top + 76)
+            for idx, value in enumerate((1, 2, 3, 4, 5, 6)):
+                row = int(idx // 3)
+                col = int(idx % 3)
+                left = float(side_left + 24 + col * (small + 12))
+                die_bbox = (left, top + row * (small + 12), left + small, top + row * (small + 12) + small)
+                _draw_die(draw, bbox=die_bbox, value=int(value), theme=theme)
+
+        if horizon_roll_count is not None:
+            note_font = fit_font_to_box(
+                draw,
+                text="3 ROLLS",
+                max_width=float(side_right - side_left - 24),
+                max_height=34,
+                bold=True,
+                font_family=str(params.font_family),
+                min_size_px=14,
+                max_size_px=24,
+            )
+            draw_centered_text(
+                draw,
+                text=f"{int(horizon_roll_count)} ROLL{'S' if int(horizon_roll_count) != 1 else ''}",
+                center=(float((side_left + side_right) / 2.0), float(side_bottom - 60)),
+                font=note_font,
+                fill=theme.note_rgb,
+                stroke_fill=theme.note_rgb,
+                stroke_width=0,
+            )
 
     render_map = {
         "entity_bboxes_px": {str(key): [float(v) for v in bbox] for key, bbox in entity_bboxes.items()},

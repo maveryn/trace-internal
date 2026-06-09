@@ -46,6 +46,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -180,8 +181,8 @@ class _ResolvedProblem:
 class _RenderedSolidRevolutionScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -413,13 +414,6 @@ def _draw_frustum_preview(ctx: _RenderContext, center: Point) -> BBox:
     )
 
 
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if _round1(value) == _round1(selected) else 0.0)
-        for value in values
-    }
-
-
 def _volume_for_case(query_id: str, case: Sequence[Any]) -> float:
     if query_id == "cylinder_volume_from_rectangle":
         if isinstance(case[0], str):
@@ -600,6 +594,8 @@ def _resolve_problem(
         support_probabilities=_selected_probability_map(
             tuple(sorted(set(float(value) for value in support_values))),
             _volume_for_case(query_id, selected_support_case),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: _round1(value) == _round1(selected),
         ),
     )
 
@@ -614,7 +610,7 @@ def _render_solid_revolution_scene(
     mid_y = (top_y + bottom_y) / 2.0
     preview_center = (638.0, 288.0)
     label_bboxes: Dict[str, BBox] = {}
-    evidence_roles: Tuple[str, ...]
+    annotation_roles: Tuple[str, ...]
     figure_points: Tuple[Point, ...]
 
     if problem.query_id == "cylinder_volume_from_rectangle":
@@ -646,7 +642,7 @@ def _render_solid_revolution_scene(
                 f"q={_fmt_number(problem.diagonal)}",
                 label_offset=(34.0, -16.0),
             )
-            evidence_roles = ("target_volume_cue", "diagonal_label", "height_label")
+            annotation_roles = ("target_volume_cue", "diagonal_label", "height_label")
         else:
             label_bboxes["diameter"] = _draw_dimension(
                 ctx,
@@ -655,7 +651,7 @@ def _render_solid_revolution_scene(
                 f"d={_fmt_number(problem.diameter or 0)}",
                 label_offset=(0.0, 26.0),
             )
-            evidence_roles = ("target_volume_cue", "diameter_label", "height_label")
+            annotation_roles = ("target_volume_cue", "diameter_label", "height_label")
         solid_bbox = _draw_cylinder_preview(ctx, preview_center)
     elif problem.query_id == "cone_volume_from_right_triangle":
         figure_points = ((left_x, top_y), (left_x, bottom_y), (right_x, bottom_y))
@@ -679,7 +675,7 @@ def _render_solid_revolution_scene(
             label_offset=(30.0, -16.0),
         )
         solid_bbox = _draw_cone_preview(ctx, preview_center)
-        evidence_roles = ("target_volume_cue", "slant_height_label", "height_label")
+        annotation_roles = ("target_volume_cue", "slant_height_label", "height_label")
     elif problem.query_id == "double_cone_volume_from_triangle":
         figure_points = ((left_x, top_y), (left_x, bottom_y), (right_x, mid_y))
         ctx.draw.polygon(figure_points, fill=ctx.fill_color)
@@ -701,7 +697,7 @@ def _render_solid_revolution_scene(
             label_offset=(0.0, 26.0),
         )
         solid_bbox = _draw_double_cone_preview(ctx, preview_center)
-        evidence_roles = ("target_volume_cue", "radius_label", "half_height_label")
+        annotation_roles = ("target_volume_cue", "radius_label", "half_height_label")
     elif problem.query_id == "frustum_volume_from_trapezoid":
         top_right = left_x + 86.0
         bottom_right = right_x
@@ -733,7 +729,7 @@ def _render_solid_revolution_scene(
             label_offset=(0.0, 26.0),
         )
         solid_bbox = _draw_frustum_preview(ctx, preview_center)
-        evidence_roles = (
+        annotation_roles = (
             "target_volume_cue",
             "top_radius_label",
             "bottom_radius_label",
@@ -747,7 +743,7 @@ def _render_solid_revolution_scene(
     _draw_arrow(ctx, (395.0, 288.0), (494.0, 288.0))
     label_bboxes["target"] = _draw_label(ctx, "V=?", (preview_center[0], preview_center[1] - 168.0), small=True)
 
-    evidence_lookup = {
+    annotation_lookup = {
         "target_volume_cue": label_bboxes["target"],
         "diameter_label": label_bboxes.get("diameter"),
         "diagonal_label": label_bboxes.get("diagonal"),
@@ -759,8 +755,8 @@ def _render_solid_revolution_scene(
         "top_radius_label": label_bboxes.get("top_radius"),
         "bottom_radius_label": label_bboxes.get("bottom_radius"),
     }
-    evidence_bboxes = tuple(
-        bbox for role in evidence_roles for bbox in (evidence_lookup.get(role),) if bbox is not None
+    annotation_bboxes = tuple(
+        bbox for role in annotation_roles for bbox in (annotation_lookup.get(role),) if bbox is not None
     )
     figure_bbox = _bbox_from_points(figure_points, width=ctx.width, height=ctx.height, pad=48.0)
     scene_entities = (
@@ -796,8 +792,8 @@ def _render_solid_revolution_scene(
     return _RenderedSolidRevolutionScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -824,6 +820,7 @@ class _SolidRevolutionBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "solid_revolution"
@@ -921,7 +918,7 @@ class _SolidRevolutionBaseTask:
     def _build_complexity(self, rendered: _RenderedSolidRevolutionScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.46
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=4)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=4)
             * 0.20
         )
         precision_by_kind = {
@@ -939,7 +936,7 @@ class _SolidRevolutionBaseTask:
         solid_kind = str(rendered.witness.get("solid_kind", "cylinder"))
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=4)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=4)
             * 0.16
         )
         return build_geometry_measurement_complexity(
@@ -1002,7 +999,7 @@ class _SolidRevolutionBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -1016,14 +1013,14 @@ class _SolidRevolutionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -1034,16 +1031,16 @@ class _SolidRevolutionBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.solid_kind),
@@ -1061,7 +1058,7 @@ class _SolidRevolutionBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.solid_kind),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -1090,7 +1087,7 @@ class _SolidRevolutionBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 1 if problem.solid_kind in {"cylinder", "cone"} else 2,
                 **dict(rendered.witness),
             },
@@ -1100,21 +1097,21 @@ class _SolidRevolutionBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

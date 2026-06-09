@@ -17,6 +17,7 @@ from trace.tasks.three_d.room.wall_object_side_relation import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize(
@@ -29,7 +30,7 @@ from trace.tasks.three_d.room.wall_object_side_relation import (
         ("right", "right_of_reference_on_wall", "right_of_reference_on_wall_by_label"),
     ],
 )
-def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
+def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
     reference_wall: str,
     query_id: str,
     relation_key: str,
@@ -79,8 +80,15 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert selected_relation_labels == [answer_label]
     assert generic_relation_labels == [answer_label]
@@ -118,7 +126,6 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
         render_map["reference_object_bbox_px"]
         == render_map["object_bboxes_px"][str(reference["object_id"])]
     )
-    assert output.image.size == (1180, 900)
 
 
 def test_room_wall_object_side_relation_registered() -> None:

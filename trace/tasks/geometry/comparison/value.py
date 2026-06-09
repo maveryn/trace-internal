@@ -84,7 +84,7 @@ def _inject_balanced_winner_label(
         namespace=f"{TASK_ID}.winner_label.{query_id}",
     )
     query_index = int(_SUPPORTED_QUERY_IDS.index(str(query_id)))
-    explicit_query = any(key in params for key in ("query_id", "query_id"))
+    explicit_query = "query_id" in params
     if explicit_query:
         label_index = int(sampling_index) % len(COMPARISON_ANSWER_LABEL_POOL)
     else:
@@ -99,9 +99,6 @@ def _params_with_source_query_aliases(params: Mapping[str, Any]) -> Dict[str, An
 
     alias_params = dict(params)
     explicit_query = alias_params.get("query_id")
-    if explicit_query is None and alias_params.get("query_id") is not None:
-        explicit_query = alias_params.get("query_id")
-        alias_params["query_id"] = explicit_query
     if explicit_query is None:
         return alias_params
     canonical = _SOURCE_QUERY_ALIASES.get(str(explicit_query))
@@ -122,7 +119,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
     """Return true when the query axis is using the default balanced cycle."""
 
     normalized_params = _params_with_source_query_aliases(params)
-    if normalized_params.get("query_id") is not None or normalized_params.get("query_id") is not None:
+    if normalized_params.get("query_id") is not None:
         return False
     enabled = bool(
         normalized_params.get(
@@ -256,6 +253,7 @@ class GeometryComparisonAngleExtremumLabelTask(FixedGeometryQueryTaskMixin, Geom
 
     task_id = "task_geometry__graph_paper__angle_extremum_label"
     fixed_query_id = "angle_extremum"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("angle",)
 
@@ -266,6 +264,7 @@ class GeometryComparisonLengthExtremumLabelTask(FixedGeometryQueryTaskMixin, Geo
 
     task_id = "task_geometry__graph_paper__length_extremum_label"
     fixed_query_id = "length_extremum"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("segment",)
 
@@ -276,6 +275,7 @@ class GeometryComparisonAreaExtremumLabelTask(FixedGeometryQueryTaskMixin, Geome
 
     task_id = "task_geometry__graph_paper__area_extremum_label"
     fixed_query_id = "area_extremum"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("rectangle", "triangle")
 
@@ -286,5 +286,6 @@ class GeometryComparisonPerimeterExtremumLabelTask(FixedGeometryQueryTaskMixin, 
 
     task_id = "task_geometry__graph_paper__perimeter_extremum_label"
     fixed_query_id = "perimeter_extremum"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("rectangle", "triangle")

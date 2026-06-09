@@ -53,25 +53,28 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 3
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert len(references) == 2
         assert set(references) == {"A", "B"}
         assert len(targets) == 7
         assert all(str(entity["shape_id"]) == "star" for entity in targets)
         assert all(str(entity["shape_id"]) != "star" for entity in references.values())
         assert len(counted) == 3
-        assert len(out.evidence_gt.value) == 3
+        assert len(out.annotation_gt.value) == 3
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted}
-        assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted)
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-        assert trace["render_spec"]["style"]["text_legibility"]["required_role_count"] >= 2
+        assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
         assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
-        assert "reference_label_stroke_rgb" in trace["render_spec"]["style"]
-        assert "reference A" in out.prompt
-        assert "reference B" in out.prompt
-        assert "star icons" in out.prompt
+        assert "reference_label_stroke_rgb" not in trace["render_spec"]["style"]
+        assert all(entity["label_bbox_xyxy"] is None for entity in references.values())
+        assert trace["execution_trace"]["question_format"] == "count_named_shape_icons_closer_to_named_reference"
+        assert '"circle" icon' in out.prompt
+        assert '"square" icon' in out.prompt
+        assert '"star" icons' in out.prompt
+        assert "reference A" not in out.prompt
+        assert "reference B" not in out.prompt
 
 
 def test_icons_counting_named_shape_closer_to_reference_supports_zero_answer() -> None:
@@ -89,7 +92,7 @@ def test_icons_counting_named_shape_closer_to_reference_supports_zero_answer() -
     )
     trace = out.trace_payload
     assert out.answer_gt.value == 0
-    assert len(out.evidence_gt.value) == 0
+    assert len(out.annotation_gt.value) == 0
     assert trace["execution_trace"]["closer_count_by_reference"]["A"] == 0
     assert trace["execution_trace"]["target_icon_count"] == 5
 
@@ -111,7 +114,7 @@ def test_icons_counting_named_shape_closer_to_reference_sampling_distribution() 
         axes.add(int(execution["reference_axis_degrees"]))
         assert 4 <= int(execution["target_icon_count"]) <= 8
         assert 0 <= int(out.answer_gt.value) <= 4
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
     assert set(query_counts) == set(QUERY_IDS)
     assert set(answer_counts).issubset(set(range(0, 5)))

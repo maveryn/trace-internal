@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from trace.tasks.puzzles.cell_board.symmetry_violation_count import TileSymmetryViolationCountTask
-from tests.cell_board_evidence_helpers import tile_coords_from_points, tile_ids_from_points
+from tests.cell_board_annotation_helpers import tile_coords_from_points, tile_ids_from_points
 
 
 def _assert_normalized_complexity(out: object) -> None:
@@ -54,31 +54,31 @@ def test_cell_board_symmetry_outputs_expected_contract() -> None:
 
     assert str(out.query_id) == "symmetry_violation_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(render["tiling_type"]) == "rectangular_tiling"
     assert int(render["rows"]) == 5
     assert int(render["cols"]) == 5
     assert out.image.size == (int(render["canvas_width_px"]), int(render["canvas_height_px"]))
 
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    evidence_coords = tile_coords_from_points(trace, out.evidence_gt.value)
-    assert evidence_coords == execution["violation_coords"]
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    annotation_coords = tile_coords_from_points(trace, out.annotation_gt.value)
+    assert annotation_coords == execution["violation_coords"]
     assert int(out.answer_gt.value) == 2
-    assert int(out.answer_gt.value) == len(evidence_coords)
+    assert int(out.answer_gt.value) == len(annotation_coords)
     assert execution["target_violation_count_range"] == [2, 2]
     assert execution["mirror_axis"] == "vertical"
     assert execution["counted_side"] == "right side"
-    assert all(int(coord[1]) >= 3 for coord in evidence_coords)
+    assert all(int(coord[1]) >= 3 for coord in annotation_coords)
 
     violating_entities = [
         entity
         for entity in trace["scene_ir"]["entities"]
         if bool(entity["attrs"]["is_violation"])
     ]
-    assert len(violating_entities) == len(evidence_coords)
+    assert len(violating_entities) == len(annotation_coords)
     assert all(bool(entity["attrs"]["is_counted_side"]) for entity in violating_entities)
     _assert_normalized_complexity(out)
 
@@ -97,7 +97,7 @@ def test_cell_board_symmetry_is_deterministic() -> None:
     out_b = task.generate(8817, params=params, max_attempts=80)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -108,9 +108,9 @@ def test_cell_board_symmetry_is_deterministic() -> None:
 def test_cell_board_symmetry_prompt_example_matches_contract() -> None:
     task = TileSymmetryViolationCountTask()
     out = task.generate(8833, params={}, max_attempts=80)
-    example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert list(example.keys()) == ["evidence", "answer"]
-    assert example["evidence"] == [[216, 120], [216, 168]]
+    example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    assert list(example.keys()) == ["annotation", "answer"]
+    assert example["annotation"] == [[216, 120], [216, 168]]
     assert int(example["answer"]) == 2
 
 

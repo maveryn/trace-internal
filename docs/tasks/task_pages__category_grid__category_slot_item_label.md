@@ -1,0 +1,23 @@
+# `task_pages__category_grid__category_slot_item_label`
+
+## Identity
+1. Domain: `pages`
+2. Scene id: `category_grid`
+3. Source task group: `document_lookup`
+4. Task id: `task_pages__category_grid__category_slot_item_label`
+
+## Contract
+1. Objective: find a named category and subcategory, then read the item label at a requested ordinal slot.
+2. Branch metadata: `query_id`
+3. `query_id`: `category_slot_item_label`
+4. Answer type: `string`
+5. Annotation type: `keyed_bbox_map` with `category_header`, `subcategory_header`, and `target_item` boxes.
+6. Query knobs: target category, target subcategory, target slot, category count, subcategory count, item-count support, and scene layout variant.
+
+## Prompt + Trace
+1. Prompt bundle: `pages_document_lookup_v0`
+2. Scene key: `category_grid`
+3. Task key: `category_grid_lookup_query`
+4. Internal prompt variant key: `category_slot_item_label`
+5. Trace records category headers, subcategory headers, item order, item labels, final bboxes, sampled style metadata, and layout geometry.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized category-grid render metadata.

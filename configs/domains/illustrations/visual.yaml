@@ -1,37 +1,29 @@
 generation:
   shared:
     source_task_id_support:
-      - task_illustrations__object_field__object_type_count
-      - task_illustrations__environment__feature_relation_count
+      - task_illustrations__environment__on_feature_object_count
       - task_illustrations__indoor_room__surface_object_count
-      - task_illustrations__library__section_book_count
-      - task_illustrations__park_playground__person_count
-      - task_illustrations__transit_terminal__entity_location_count
+      - task_illustrations__library__books_in_section_count
+      - task_illustrations__park_playground__activity_person_count
+      - task_illustrations__transit_terminal__person_in_boarding_area_count
       - task_illustrations__construction_site__worker_attribute_count
   task_overrides:
-    task_illustrations__difference_pair__object_difference_count:
-      query_id_support:
-        - added_object_count
-        - removed_object_count
-        - changed_color_object_count
-        - moved_object_count
-      object_count_min: 8
-      object_count_max: 13
-      target_count_min: 1
-      target_count_max: 5
-      moved_min_center_distance_px: 72
     task_illustrations__image_cutout_board__jigsaw_piece_order:
       source_task_id_support:
-        - task_illustrations__library__section_book_count
-        - task_illustrations__park_playground__person_count
+        - task_illustrations__environment__on_feature_object_count
+        - task_illustrations__library__books_in_section_count
+        - task_illustrations__park_playground__activity_person_count
+        - task_illustrations__transit_terminal__person_in_boarding_area_count
         - task_illustrations__construction_site__worker_attribute_count
       board_shape_support:
         - board_1x3
         - board_2x2
     task_illustrations__image_cutout_board__rotated_tile_label:
       source_task_id_support:
-        - task_illustrations__library__section_book_count
-        - task_illustrations__park_playground__person_count
+        - task_illustrations__environment__on_feature_object_count
+        - task_illustrations__library__books_in_section_count
+        - task_illustrations__park_playground__activity_person_count
+        - task_illustrations__transit_terminal__person_in_boarding_area_count
         - task_illustrations__construction_site__worker_attribute_count
       rotation_degrees_support:
         - 90
@@ -39,8 +31,10 @@ generation:
         - 270
     task_illustrations__missing_patch__missing_patch_label:
       source_task_id_support:
-        - task_illustrations__library__section_book_count
-        - task_illustrations__park_playground__person_count
+        - task_illustrations__environment__on_feature_object_count
+        - task_illustrations__library__books_in_section_count
+        - task_illustrations__park_playground__activity_person_count
+        - task_illustrations__transit_terminal__person_in_boarding_area_count
         - task_illustrations__construction_site__worker_attribute_count
       patch_mode_support:
         - plain_patch_label
@@ -52,24 +46,6 @@ generation:
       patch_height_min: 100
       patch_height_max: 142
       crop_margin_px: 48
-    task_illustrations__scene_options__odd_scene_label:
-      option_count: 6
-      source_query_support:
-        - environment_road
-        - environment_river
-        - park_sitting
-        - park_walking
-        - park_standing
-        - construction_tools
-      count_pair_support:
-        - [2, 3]
-        - [3, 2]
-        - [3, 4]
-        - [4, 3]
-        - [4, 5]
-        - [5, 4]
-        - [5, 6]
-
 rendering:
   shared:
     canvas_width: 640
@@ -88,6 +64,22 @@ rendering:
       outlined_cartoon: 1.0
       paper_cutout: 1.0
       soft_shadow: 1.0
+    art_style_support:
+      - flat_vector
+      - outlined_cartoon
+      - paper_cutout
+      - soft_shadow
+      - ink_sketch
+      - watercolor_wash
+      - blueprint_line
+    art_style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
+      ink_sketch: 1.0
+      watercolor_wash: 1.0
+      blueprint_line: 1.0
     background_weights:
       studio: 1.0
       meadow: 1.0
@@ -95,51 +87,34 @@ rendering:
       tabletop: 1.0
       paper: 1.0
       shelf: 1.0
-
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
   task_overrides:
-    task_illustrations__difference_pair__object_difference_count:
-      bundle_id: illustrations_visual_v0
-      scene_key: illustration_difference_pair
-      task_key: object_difference_count_task
-      answer_hint_object_difference_count: set "answer" to the count as an integer
-      evidence_hint_object_difference_count: 'set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in final image pixel coordinates around the objects counted by the question; for added, moved, and color-changed objects use their Scene B boxes; for removed objects use their Scene A boxes'
-      json_example_object_difference_count: '{"evidence":[[72,118,132,188],[752,204,812,274]],"answer":2}'
-      json_example_answer_only_object_difference_count: '{"answer":2}'
     task_illustrations__image_cutout_board__jigsaw_piece_order:
       bundle_id: illustrations_visual_v0
       scene_key: illustration_jigsaw_board
       task_key: jigsaw_piece_order_task
       answer_hint_jigsaw_piece_order: 'set "answer" to a string containing the {piece_count} remaining piece labels in {empty_cell_order} order, separated by spaces'
-      evidence_hint_jigsaw_piece_order: 'set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in final image pixel coordinates around the selected piece-option images, listed in the same order as the answer labels'
-      json_example_jigsaw_piece_order_2: '{"evidence":[[72,540,300,720],[360,540,588,720]],"answer":"2 1"}'
+      annotation_hint_jigsaw_piece_order: 'set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in final image pixel coordinates around the selected piece-option images, listed in the same order as the answer labels'
+      json_example_jigsaw_piece_order_2: '{"annotation":[[72,540,300,720],[360,540,588,720]],"answer":"2 1"}'
       json_example_answer_only_jigsaw_piece_order_2: '{"answer":"2 1"}'
-      json_example_jigsaw_piece_order_3: '{"evidence":[[320,542,580,712],[36,542,296,712],[604,542,864,712]],"answer":"2 1 3"}'
+      json_example_jigsaw_piece_order_3: '{"annotation":[[320,542,580,712],[36,542,296,712],[604,542,864,712]],"answer":"2 1 3"}'
       json_example_answer_only_jigsaw_piece_order_3: '{"answer":"2 1 3"}'
     task_illustrations__image_cutout_board__rotated_tile_label:
       bundle_id: illustrations_visual_v0
       scene_key: illustration_rotated_tile_grid
       task_key: rotated_tile_label_task
       answer_hint_rotated_tile_label: 'set "answer" to one tile label from {option_labels}'
-      evidence_hint_rotated_tile_label: 'set "evidence" to a JSON array containing one [x0, y0, x1, y1] box in final image pixel coordinates around the whole selected rotated grid tile'
-      json_example_rotated_tile_label: '{"evidence":[[240,240,440,440]],"answer":"E"}'
+      annotation_hint_rotated_tile_label: 'set "annotation" to a JSON array containing one [x0, y0, x1, y1] box in final image pixel coordinates around the whole selected rotated grid tile'
+      json_example_rotated_tile_label: '{"annotation":[[240,240,440,440]],"answer":"E"}'
       json_example_answer_only_rotated_tile_label: '{"answer":"E"}'
     task_illustrations__missing_patch__missing_patch_label:
       bundle_id: illustrations_visual_v0
       scene_key: illustration_missing_patch_options
       task_key: missing_patch_label_task
       answer_hint_missing_patch_label: 'set "answer" to one option label from {option_labels}'
-      evidence_hint_missing_patch_label: 'set "evidence" to a JSON object with keys "missing_region" and "selected_option"; each value is one [x0, y0, x1, y1] box in final image pixel coordinates around the Source missing region and the selected option image'
-      json_example_missing_patch_label: '{"evidence":{"missing_region":[280,156,432,282],"selected_option":[420,548,590,674]},"answer":"C"}'
+      annotation_hint_missing_patch_label: 'set "annotation" to a JSON object with keys "missing_region" and "selected_option"; each value is one [x0, y0, x1, y1] box in final image pixel coordinates around the Source missing region and the selected option image'
+      json_example_missing_patch_label: '{"annotation":{"missing_region":[280,156,432,282],"selected_option":[420,548,590,674]},"answer":"C"}'
       json_example_answer_only_missing_patch_label: '{"answer":"C"}'
-    task_illustrations__scene_options__odd_scene_label:
-      bundle_id: illustrations_visual_v0
-      scene_key: illustration_odd_scene_options
-      task_key: odd_scene_label_task
-      answer_hint_odd_scene_label: 'set "answer" to one option label from {option_labels}'
-      evidence_hint_odd_scene_label: 'set "evidence" to a JSON array containing one [x0, y0, x1, y1] box in final image pixel coordinates around the full selected odd panel image'
-      json_example_odd_scene_label: '{"evidence":[[356,244,656,440]],"answer":"E"}'
-      json_example_answer_only_odd_scene_label: '{"answer":"E"}'

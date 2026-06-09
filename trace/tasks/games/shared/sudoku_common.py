@@ -37,7 +37,7 @@ class SudokuSample:
     solution: Board
     query_id: str
     answer: int
-    evidence_coords: Tuple[Coord, ...]
+    annotation_coords: Tuple[Coord, ...]
     marked_cell: Coord | None
     highlighted_unit_type: str | None
     highlighted_unit_index: int | None

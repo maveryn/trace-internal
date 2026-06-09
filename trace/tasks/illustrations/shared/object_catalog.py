@@ -309,7 +309,7 @@ _CONSTRUCTION_SETTINGS = ("urban_build", "roadwork", "foundation_yard", "scaffol
 
 def _background_entries() -> Tuple[CatalogEntry, ...]:
     specs = (
-        ("mixed_background", "object_field", _MIXED_BACKGROUNDS),
+        ("mixed_background", "mixed_object", _MIXED_BACKGROUNDS),
         ("environment_theme", "environment", _ENVIRONMENT_THEMES),
         ("indoor_theme", "indoor_room", _INDOOR_THEMES),
         ("library_setting", "library", _LIBRARY_SETTINGS),

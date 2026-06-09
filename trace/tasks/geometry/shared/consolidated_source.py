@@ -27,13 +27,18 @@ _CONSOLIDATED_KEYS = {
     "scene_variant",
     "scene_variant_weights",
     "balanced_scene_variant_sampling",
-    "query_id",
     "query_id_weights",
     "balanced_query_id_sampling",
     "extremum_direction",
     "extremum_direction_weights",
     "balanced_extremum_direction_sampling",
 }
+
+
+def _sorted_float_map(probabilities: Mapping[str, float]) -> Dict[str, float]:
+    """Return a stable string-keyed probability map for trace metadata."""
+
+    return {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
 def strip_consolidated_params(params: Mapping[str, Any]) -> Dict[str, Any]:
@@ -72,16 +77,8 @@ def normalize_source_geometry_output(
         execution_trace["source_query_id"] = str(prior_query_id)
     execution_trace["scene_variant"] = str(scene_variant)
     execution_trace["query_id"] = str(query_id)
-    execution_trace["query_id"] = str(query_id)
-    execution_trace["scene_variant_probabilities"] = {
-        str(key): float(value) for key, value in sorted(scene_variant_probabilities.items())
-    }
-    execution_trace["query_id_probabilities"] = {
-        str(key): float(value) for key, value in sorted(query_id_probabilities.items())
-    }
-    execution_trace["query_id_probabilities"] = {
-        str(key): float(value) for key, value in sorted(query_id_probabilities.items())
-    }
+    execution_trace["scene_variant_probabilities"] = _sorted_float_map(scene_variant_probabilities)
+    execution_trace["query_id_probabilities"] = _sorted_float_map(query_id_probabilities)
     if extra_query_params:
         execution_trace.update({str(key): value for key, value in dict(extra_query_params).items()})
     trace_payload["execution_trace"] = execution_trace
@@ -102,15 +99,8 @@ def normalize_source_geometry_output(
     query_params["source_task_id"] = str(source_task_id)
     query_params["scene_variant"] = str(scene_variant)
     query_params["query_id"] = str(query_id)
-    query_params["scene_variant_probabilities"] = {
-        str(key): float(value) for key, value in sorted(scene_variant_probabilities.items())
-    }
-    query_params["query_id_probabilities"] = {
-        str(key): float(value) for key, value in sorted(query_id_probabilities.items())
-    }
-    query_params["query_id_probabilities"] = {
-        str(key): float(value) for key, value in sorted(query_id_probabilities.items())
-    }
+    query_params["scene_variant_probabilities"] = _sorted_float_map(scene_variant_probabilities)
+    query_params["query_id_probabilities"] = _sorted_float_map(query_id_probabilities)
     if extra_query_params:
         query_params.update({str(key): value for key, value in dict(extra_query_params).items()})
     query_spec["params"] = query_params

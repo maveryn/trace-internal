@@ -37,7 +37,7 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 ## Read as needed
 - General policy and config shape: `references/policy.md`
 - Domain-specific guidance: every active domain must have `references/<domain>.md`.
-- For migrated scene types, use the domain where the task now lives. For example, clock scenes use the puzzles reference, while calendar, schedule, and timeline scenes use the pages reference.
+- For migrated scene types, use the domain where the task now lives. For example, clock scenes use the misc reference, while calendar, schedule, and timeline scenes use the pages reference.
 
 ## Update discipline
 - When adding a new domain, add the corresponding domain reference in this skill in the same change and run `PYTHONPATH=. python scripts/check_skill_consistency.py`.

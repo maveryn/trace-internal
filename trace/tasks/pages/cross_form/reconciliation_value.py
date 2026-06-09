@@ -34,11 +34,12 @@ from ..shared.reconciliation_common import (
     resolve_reconciliation_query_id,
 )
 from ..shared.reconciliation_scene import render_reconciliation_scene
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
 
-TASK_ID = "task_pages__paired_forms__reconciliation_value"
+TASK_ID = "pages_paired_forms_reconciliation_source"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DOCUMENT_RECONCILIATION_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_VARIANT = {
@@ -62,29 +63,28 @@ POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="cross_form", a
 def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
     """Return stable JSON examples that match the active reconciliation variant."""
 
-    def _example_evidence() -> list[list[int]]:
-        evidence: list[list[int]] = []
+    def _example_annotation() -> list[list[int]]:
+        annotation: list[list[int]] = []
         for index in range(1, 4):
             y0 = 300 + (index * 48)
             y1 = y0 + 22
-            evidence.append([850, y0 - 8, 1268, y1 + 8])
-        return evidence
+            annotation.append([850, y0 - 8, 1268, y1 + 8])
+        return annotation
 
     examples = {
-        "total_amount_delta": (_example_evidence(), 864),
-        "shortfall_minus_overage_value": (_example_evidence(), 324),
-        "sum_absolute_quantity_differences": (_example_evidence(), 42),
+        "total_amount_delta": (_example_annotation(), 864),
+        "shortfall_minus_overage_value": (_example_annotation(), 324),
+        "sum_absolute_quantity_differences": (_example_annotation(), 42),
     }
-    evidence_map, answer_value = examples[str(query_id)]
-    answer_and_evidence = {"evidence": evidence_map, "answer": int(answer_value)}
+    annotation_map, answer_value = examples[str(query_id)]
+    answer_and_annotation = {"annotation": annotation_map, "answer": int(answer_value)}
     answer_only = {"answer": int(answer_value)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
 
-@register_task
 class PagesCrossFormReconciliationValueTask:
     """Compute a numeric reconciliation value across two matched document forms."""
 
@@ -150,9 +150,9 @@ class PagesCrossFormReconciliationValueTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint_total_amount_delta",
-                "evidence_hint_shortfall_minus_overage_value",
-                "evidence_hint_sum_absolute_quantity_differences",
+                "annotation_hint_total_amount_delta",
+                "annotation_hint_shortfall_minus_overage_value",
+                "annotation_hint_sum_absolute_quantity_differences",
                 "object_description_purchase_receipt_pair",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -165,13 +165,13 @@ class PagesCrossFormReconciliationValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_purchase_receipt_pair"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -180,22 +180,22 @@ class PagesCrossFormReconciliationValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bbox_ids = [str(value) for value in dataset["evidence_bbox_ids"]]
-        evidence_bboxes = [
+        annotation_bbox_ids = [str(value) for value in dataset["annotation_bbox_ids"]]
+        annotation_bboxes = [
             [round(float(value), 3) for value in rendered_scene.row_bbox_map[str(bbox_id)]]
-            for bbox_id in evidence_bbox_ids
+            for bbox_id in annotation_bbox_ids
         ]
         supporting_cell_bbox_ids = {str(key): str(value) for key, value in dict(dataset["supporting_cell_bbox_ids"]).items()}
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         item_scan = normalize_int_with_bounds(int(dataset["item_count"]), list(dataset["item_count_range"]))
-        evidence_scan = normalize_int_with_bounds(len(evidence_bbox_ids), [4, 60])
+        annotation_scan = normalize_int_with_bounds(len(annotation_bbox_ids), [4, 60])
         mismatch_scan = normalize_int_with_bounds(len(dataset["mismatch_item_ids"]), [4, int(dataset["item_count"])])
         reasoning_load = clamp_unit_interval(
             (0.60 * float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]))
-            + (0.25 * float(evidence_scan))
+            + (0.25 * float(annotation_scan))
             + (0.15 * float(mismatch_scan))
         )
         complexity = build_pages_complexity(
@@ -232,7 +232,7 @@ class PagesCrossFormReconciliationValueTask:
                     "item_count": int(dataset["item_count"]),
                     "mismatch_count_range": list(dataset["mismatch_count_range"]),
                     "direction_count_min": int(dataset["direction_count_min"]),
-                    "evidence_bbox_count": int(len(evidence_bbox_ids)),
+                    "annotation_bbox_count": int(len(annotation_bbox_ids)),
                 },
             },
             "render_spec": {
@@ -279,33 +279,33 @@ class PagesCrossFormReconciliationValueTask:
                 "overage_item_ids": [str(item) for item in dataset["overage_item_ids"]],
                 "mismatch_item_ids": [str(item) for item in dataset["mismatch_item_ids"]],
                 "answer_value": int(answer_value),
-                "evidence_bbox_ids": list(evidence_bbox_ids),
+                "annotation_bbox_ids": list(annotation_bbox_ids),
                 "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
-                "supporting_bbox_ids": list(evidence_bbox_ids),
-                "evidence_semantics": str(query_id),
+                "supporting_bbox_ids": list(annotation_bbox_ids),
+                "annotation_semantics": str(query_id),
             },
             "witness_symbolic": {
                 "type": "receiving_row_bbox_ids",
-                "ids": list(evidence_bbox_ids),
+                "ids": list(annotation_bbox_ids),
                 "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "evidence_bbox_ids": list(evidence_bbox_ids),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "annotation_bbox_ids": list(annotation_bbox_ids),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -321,4 +321,45 @@ class PagesCrossFormReconciliationValueTask:
         )
 
 
-__all__ = ["PagesCrossFormReconciliationValueTask"]
+@register_task
+class PagesPairedFormsTotalAmountDeltaValueTask(FixedPagesQueryTaskMixin):
+    """Compute the total amount delta across mismatched paired-form rows."""
+
+    task_id = "task_pages__paired_forms__total_amount_delta_value"
+    domain = "pages"
+    task_group = "cross_form"
+    public_scene_id = "paired_forms"
+    fixed_query_id = "total_amount_delta"
+    source_task_cls = PagesCrossFormReconciliationValueTask
+
+
+@register_task
+class PagesPairedFormsShortfallMinusOverageValueTask(FixedPagesQueryTaskMixin):
+    """Compute shortfall minus overage across mismatched paired-form rows."""
+
+    task_id = "task_pages__paired_forms__shortfall_minus_overage_value"
+    domain = "pages"
+    task_group = "cross_form"
+    public_scene_id = "paired_forms"
+    fixed_query_id = "shortfall_minus_overage_value"
+    source_task_cls = PagesCrossFormReconciliationValueTask
+
+
+@register_task
+class PagesPairedFormsSumAbsoluteQuantityDifferencesValueTask(FixedPagesQueryTaskMixin):
+    """Compute the sum of absolute quantity differences across paired-form rows."""
+
+    task_id = "task_pages__paired_forms__sum_absolute_quantity_differences_value"
+    domain = "pages"
+    task_group = "cross_form"
+    public_scene_id = "paired_forms"
+    fixed_query_id = "sum_absolute_quantity_differences"
+    source_task_cls = PagesCrossFormReconciliationValueTask
+
+
+__all__ = [
+    "PagesCrossFormReconciliationValueTask",
+    "PagesPairedFormsShortfallMinusOverageValueTask",
+    "PagesPairedFormsSumAbsoluteQuantityDifferencesValueTask",
+    "PagesPairedFormsTotalAmountDeltaValueTask",
+]

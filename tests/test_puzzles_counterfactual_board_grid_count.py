@@ -8,9 +8,11 @@ from trace.core.seed import hash64
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.puzzles.counterfactual.board_grid_count import (
+    BOARD_DIMENSION_COUNT_TASK_ID,
+    BOARD_LINE_COUNT_TASK_ID,
     SCENE_ID,
-    TASK_ID,
-    PuzzlesCounterfactualBoardGridCountTask,
+    PuzzlesCounterfactualBoardDimensionCountTask,
+    PuzzlesCounterfactualBoardLineCountTask,
 )
 
 
@@ -21,11 +23,18 @@ def _assert_bbox_in_image(bbox: list[float], image_size: tuple[int, int]) -> Non
 
 
 def test_counterfactual_board_grid_count_task_is_registered() -> None:
-    assert TASK_ID in TASK_REGISTRY
-    taxonomy = resolve_task_taxonomy(TASK_ID)
-    assert taxonomy.domain == "puzzles"
-    assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "counterfactual"
+    for task_id in (BOARD_DIMENSION_COUNT_TASK_ID, BOARD_LINE_COUNT_TASK_ID):
+        assert task_id in TASK_REGISTRY
+        taxonomy = resolve_task_taxonomy(task_id)
+        assert taxonomy.domain == "puzzles"
+        assert taxonomy.scene_id == SCENE_ID
+        assert taxonomy.source_task_group == "counterfactual"
+
+
+def _task_for_query(query_id: object):
+    if str(query_id) in {"row_count", "column_count"}:
+        return PuzzlesCounterfactualBoardDimensionCountTask(), BOARD_DIMENSION_COUNT_TASK_ID
+    return PuzzlesCounterfactualBoardLineCountTask(), BOARD_LINE_COUNT_TASK_ID
 
 
 @pytest.mark.parametrize(
@@ -69,12 +78,13 @@ def test_counterfactual_board_grid_count_task_is_registered() -> None:
         ),
     ],
 )
-def test_counterfactual_board_grid_count_evidence_tracks_counted_units(
+def test_counterfactual_board_grid_count_annotation_tracks_counted_units(
     seed_suffix: int,
     params: dict[str, object],
 ) -> None:
-    out = PuzzlesCounterfactualBoardGridCountTask().generate(
-        int(hash64(20260529, TASK_ID, seed_suffix)),
+    task, task_id = _task_for_query(params["query_id"])
+    out = task.generate(
+        int(hash64(20260529, task_id, seed_suffix)),
         params=params,
         max_attempts=20,
     )
@@ -82,20 +92,20 @@ def test_counterfactual_board_grid_count_evidence_tracks_counted_units(
     assert out.scene_id == SCENE_ID
     assert out.query_id == params["query_id"]
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
     trace = out.trace_payload
     execution = trace["execution_trace"]
     expected_bboxes = [[float(value) for value in bbox] for bbox in execution["counted_element_bboxes_px"]]
-    assert out.evidence_gt.value == expected_bboxes
-    assert trace["render_map"]["evidence_source"] == "counted_element_bboxes_px"
+    assert out.annotation_gt.value == expected_bboxes
+    assert trace["render_map"]["annotation_source"] == "counted_element_bboxes_px"
     assert execution["supporting_item_ids"] == execution["counted_element_ids"]
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["witness_symbolic"]["value"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["witness_symbolic"]["value"] == out.annotation_gt.value
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_in_image(bbox, out.image.size)
 
     noise = trace["render_spec"]["post_image_noise"]
@@ -111,8 +121,8 @@ def test_counterfactual_board_grid_count_evidence_tracks_counted_units(
 
 
 def test_counterfactual_board_grid_count_prompt_is_neutral_about_size_change() -> None:
-    out = PuzzlesCounterfactualBoardGridCountTask().generate(
-        int(hash64(20260529, TASK_ID, 50)),
+    out = PuzzlesCounterfactualBoardDimensionCountTask().generate(
+        int(hash64(20260529, BOARD_DIMENSION_COUNT_TASK_ID, 50)),
         params={
             "board_style": "chess_checkers",
             "query_id": "column_count",
@@ -131,8 +141,8 @@ def test_counterfactual_board_grid_count_prompt_is_neutral_about_size_change() -
 
 
 def test_counterfactual_board_grid_count_is_deterministic() -> None:
-    task = PuzzlesCounterfactualBoardGridCountTask()
-    seed = int(hash64(20260529, TASK_ID, 99))
+    task = PuzzlesCounterfactualBoardDimensionCountTask()
+    seed = int(hash64(20260529, BOARD_DIMENSION_COUNT_TASK_ID, 99))
     params = {
         "board_style": "sudoku",
         "query_id": "row_count",
@@ -145,7 +155,7 @@ def test_counterfactual_board_grid_count_is_deterministic() -> None:
 
     assert left.prompt == right.prompt
     assert left.answer_gt == right.answer_gt
-    assert left.evidence_gt == right.evidence_gt
+    assert left.annotation_gt == right.annotation_gt
     assert left.trace_payload["execution_trace"] == right.trace_payload["execution_trace"]
     assert left.trace_payload["render_spec"]["label_style"] == right.trace_payload["render_spec"]["label_style"]
     assert left.image.tobytes() == right.image.tobytes()

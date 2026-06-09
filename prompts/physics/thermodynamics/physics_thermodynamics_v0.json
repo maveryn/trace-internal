@@ -8,28 +8,58 @@
       "",
       "",
       ""
+    ],
+    "piston_cylinder_boundary_work_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "temperature_conversion_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "thermal_mixing_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:thermodynamics_pv_diagram": [
       "object_description"
     ],
+    "scene:piston_cylinder_apparatus": [
+      "object_description"
+    ],
+    "scene:thermometer_scale": [
+      "object_description"
+    ],
+    "scene:thermal_mixing_setup": [
+      "object_description"
+    ],
     "query:process_sign_choice": [
       "target_sign"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -37,12 +67,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -52,6 +82,27 @@
       "This figure shows {object_description}.",
       "The visual shows {object_description}.",
       "The pressure-volume diagram shows {object_description}."
+    ],
+    "piston_cylinder_apparatus": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The piston-cylinder diagram shows {object_description}."
+    ],
+    "thermometer_scale": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The thermometer diagram shows {object_description}."
+    ],
+    "thermal_mixing_setup": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The thermal-mixing setup shows {object_description}."
     ]
   },
   "query_templates": {
@@ -68,6 +119,34 @@
       "Among the labeled candidate processes, which one has {target_sign} work done by the gas?",
       "Using the direction of volume change on each mini PV diagram, which option has {target_sign} gas work?",
       "Which labeled PV process matches the requested work sign: {target_sign}?"
+    ],
+    "constant_pressure_boundary_work": [
+      "Compute the signed boundary work for the constant-pressure piston process. Use W = P x (V_final - V_initial) and 1 MPa*L = 1 kJ.",
+      "Using the initial and final state labels, what signed integer boundary work is done by the gas in kJ?",
+      "For this constant-pressure process, calculate P times the change in volume. Expansion is positive and compression is negative.",
+      "Read P, V_i, and V_f from the diagram. What is the signed boundary work in kJ?",
+      "What integer value gives the gas boundary work for the shown piston-cylinder process?"
+    ],
+    "celsius_to_fahrenheit_value": [
+      "Read the Celsius temperature from the thermometer and convert it to Fahrenheit using F = 9C/5 + 32. What integer Fahrenheit temperature is equivalent?",
+      "The thermometer scale is in Celsius. Using F = 9C/5 + 32, what is the equivalent integer temperature in degrees Fahrenheit?",
+      "First read the Celsius value shown by the liquid level. Then convert it with F = 9C/5 + 32. What integer Fahrenheit value results?",
+      "What is the displayed thermometer temperature in degrees Fahrenheit? Read the Celsius scale and use F = 9C/5 + 32.",
+      "Convert the visible Celsius thermometer reading to degrees Fahrenheit. What integer value should be returned?"
+    ],
+    "fahrenheit_to_celsius_value": [
+      "Read the Fahrenheit temperature from the thermometer and convert it to Celsius using C = 5(F - 32)/9. What integer Celsius temperature is equivalent?",
+      "The thermometer scale is in Fahrenheit. Using C = 5(F - 32)/9, what is the equivalent integer temperature in degrees Celsius?",
+      "First read the Fahrenheit value shown by the liquid level. Then convert it with C = 5(F - 32)/9. What integer Celsius value results?",
+      "What is the displayed thermometer temperature in degrees Celsius? Read the Fahrenheit scale and use C = 5(F - 32)/9.",
+      "Convert the visible Fahrenheit thermometer reading to degrees Celsius. What integer value should be returned?"
+    ],
+    "equal_amount_final_temperature": [
+      "The cups contain equal amounts of the same liquid and are mixed in the insulated container. What is the final equilibrium temperature in degrees Celsius?",
+      "Assume no heat is lost. Equal amounts of the same liquid are mixed. What integer final temperature in degrees Celsius results?",
+      "Using the visible cup temperatures, find the average temperature after the equal liquid amounts are mixed in the insulated container.",
+      "The same liquid from all cups is mixed in equal amounts. What final Celsius temperature should the insulated mixer reach?",
+      "Average the visible initial temperatures for the equal amounts of liquid. What is the final equilibrium temperature in degrees Celsius?"
     ]
   },
   "allow_empty_task_templates": true

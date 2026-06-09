@@ -8,6 +8,8 @@ generation:
       higher_sum_than_reference_count: 1.0
       sum_to_target_count: 1.0
       double_count: 1.0
+      second_play_candidate_count: 1.0
+      extendable_first_play_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -47,13 +49,19 @@ generation:
     - 3
     - 4
     - 5
-    two_step_extension_target_answer_support:
+    second_play_candidate_target_answer_support:
     - 0
     - 1
     - 2
     - 3
     - 4
     - 5
+    extendable_first_play_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
     single_row_candidate_count_support:
     - 7
     - 8
@@ -111,22 +119,28 @@ prompt:
     pip_sum_rule_text: The pip sum of a domino is the total number of pips across
       its two halves.
     double_rule_text: A double has the same number of pips on both halves.
-    two_step_rule_text: First attach one loose domino to the `REF` tile's open right
-      end. Then attach a second loose domino to the new open end created by that
-      first play.
-    evidence_hint_matching_end_count: set "evidence" to a JSON array of bounding
+    second_play_rule_text: Exactly one loose domino can connect directly to `REF`;
+      after playing it, count the remaining loose dominoes that could connect to the
+      new open end.
+    extendable_first_play_rule_text: Count loose dominoes that can connect directly
+      to `REF` and would leave a new open end that at least one remaining loose
+      domino could connect to.
+    annotation_hint_matching_end_count: set "annotation" to a JSON array of bounding
       boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's
       open right end
-    evidence_hint_higher_sum_than_reference_count: set "evidence" to a JSON array
+    annotation_hint_higher_sum_than_reference_count: set "annotation" to a JSON array
       of bounding boxes [x0, y0, x1, y1] for every loose domino with a larger pip
       sum than `REF`
-    evidence_hint_sum_to_target_count: set "evidence" to a JSON array of bounding
+    annotation_hint_sum_to_target_count: set "annotation" to a JSON array of bounding
       boxes [x0, y0, x1, y1] for every loose domino with the target pip sum
-    evidence_hint_double_count: set "evidence" to a JSON array of bounding boxes
+    annotation_hint_double_count: set "annotation" to a JSON array of bounding boxes
       [x0, y0, x1, y1] for every loose domino that is a double
-    evidence_hint_two_step_extension_label: set "evidence" to a JSON object with
-      keys "first_step_domino" and "second_step_domino", each mapped to the bounding
-      box [x0, y0, x1, y1] for that loose domino
+    annotation_hint_second_play_candidate_count: set "annotation" to a JSON array of
+      bounding boxes [x0, y0, x1, y1] for every remaining loose domino that could
+      be played second on the new open end
+    annotation_hint_extendable_first_play_count: set "annotation" to a JSON array of
+      bounding boxes [x0, y0, x1, y1] for every loose domino that can be played on
+      `REF` and would allow a second play afterward
     answer_hint_matching_end_count: set "answer" to the count of loose dominoes that
       match the `REF` tile's open right end
     answer_hint_higher_sum_than_reference_count: set "answer" to the count of loose
@@ -134,5 +148,7 @@ prompt:
     answer_hint_sum_to_target_count: set "answer" to the count of loose dominoes with
       the target pip sum
     answer_hint_double_count: set "answer" to the count of loose doubles
-    answer_hint_two_step_extension_label: set "answer" to the option letter of the
-      loose domino that can be played second in the two-step extension
+    answer_hint_second_play_candidate_count: set "answer" to the count of remaining
+      loose dominoes that could be played second
+    answer_hint_extendable_first_play_count: set "answer" to the count of loose
+      dominoes that can be played first and would allow a second play afterward

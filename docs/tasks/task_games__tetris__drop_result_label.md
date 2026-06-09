@@ -1,13 +1,16 @@
 # `task_games__tetris__drop_result_label`
 
+## Contract
 1. Domain: `games`
-2. Scene id: `tetris`
-3. Public task id: `task_games__tetris__drop_result_label`
-4. Answer type: string option label
-5. Evidence: `bbox_set` containing the selected result-board bounding box.
+2. Task group: `tetris`
+3. Scene id: `tetris`
+4. Public task id: `task_games__tetris__drop_result_label`
+5. Supported `query_id` values: `multi_clear_result`, `no_clear_result`, `single_clear_result`
+6. Answer schema: `string_label`
+7. Annotation schema: `bbox_set`
+8. Program schema: `label(select_option(drop_options, option_result = simulate_drop(board, piece, option))); scene=tetris; scope=drop_result_label; query_branch=multi_clear_result`
 
-The scene shows a START Tetris board with the falling piece drawn at the top in its current column and orientation, plus five labeled result boards. The piece falls straight down without moving sideways or rotating. The options show final locked board states only, with no falling piece.
-
-Internal query ids are `no_clear_result`, `single_clear_result`, and `multi_clear_result`.
-
-Current generation samples board sizes from 7..11 columns by 10..15 rows. Rendering combines shared games panel backgrounds, layout jitter, sampled fonts, post-image noise, and five scene-local tetromino block styles.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

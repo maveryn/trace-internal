@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 from ....core.seed import hash64
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .space_shooter_common import SpaceBlocker, SpaceEnemy, SpaceProjectile, lane_entity_id
@@ -230,11 +230,12 @@ def _draw_enemy(
     ]
     draw.polygon(body, fill=tuple(int(v) for v in theme.enemy_fill_rgb), outline=tuple(int(v) for v in theme.enemy_outline_rgb))
     draw.line(body + [body[0]], fill=tuple(int(v) for v in theme.enemy_outline_rgb), width=max(2, int(round(0.05 * height))))
-    label_box = (left + 0.28 * width, top + 0.24 * height, right - 0.28 * width, bottom - 0.28 * height)
+    display_text = str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label)
+    label_box = (left + 0.18 * width, top + 0.24 * height, right - 0.18 * width, bottom - 0.28 * height)
     _fit_text(
         draw,
         bbox=label_box,
-        text=str(enemy.label),
+        text=str(display_text),
         fill=theme.enemy_text_rgb,
         max_size_px=int(label_font_size_px),
         font_family=str(font_family),
@@ -543,6 +544,8 @@ def render_space_shooter_scene(
                 "entity_id": str(enemy.enemy_id),
                 "entity_type": "enemy_ship",
                 "label": str(enemy.label),
+                "score_value": None if enemy.score_value is None else int(enemy.score_value),
+                "display_text": str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label),
                 "lane": int(enemy.lane),
                 "y_slot": int(enemy.y_slot),
                 "bbox_px": list(bbox),

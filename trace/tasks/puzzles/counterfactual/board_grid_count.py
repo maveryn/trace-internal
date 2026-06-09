@@ -29,7 +29,8 @@ from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzz
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
 
 
-TASK_ID = "task_puzzles__counterfactual_board__board_grid_count"
+BOARD_DIMENSION_COUNT_TASK_ID = "task_puzzles__counterfactual_board__board_dimension_count"
+BOARD_LINE_COUNT_TASK_ID = "task_puzzles__counterfactual_board__board_line_count"
 SCENE_ID = "counterfactual_board"
 
 CHESS_STYLE = "chess_checkers"
@@ -48,6 +49,8 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     HORIZONTAL_LINE_COUNT_QUERY,
     VERTICAL_LINE_COUNT_QUERY,
 )
+DIMENSION_QUERY_IDS: Tuple[str, ...] = (ROW_COUNT_QUERY, COLUMN_COUNT_QUERY)
+LINE_QUERY_IDS: Tuple[str, ...] = (HORIZONTAL_LINE_COUNT_QUERY, VERTICAL_LINE_COUNT_QUERY)
 
 _STYLE_SPECS: Dict[str, Dict[str, Any]] = {
     CHESS_STYLE: {
@@ -77,9 +80,18 @@ _STYLE_SPECS: Dict[str, Dict[str, Any]] = {
 }
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "counterfactual")
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="counterfactual", apply_prob=0.5)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="counterfactual")
+
+
+def _load_defaults(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
+    group_defaults = get_task_group_defaults("puzzles", "counterfactual")
+    gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        group_defaults,
+        task_id=str(task_id),
+    )
+    complexity_weights = resolve_puzzle_complexity_weights(group_defaults, task_id=str(task_id))
+    return dict(gen_defaults), dict(render_defaults), dict(prompt_defaults), dict(complexity_weights)
 
 
 @dataclass(frozen=True)
@@ -108,6 +120,7 @@ class _RenderedBoard:
 
 def _sample_counterfactual_font(
     *,
+    task_id: str,
     instance_seed: int,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
@@ -117,7 +130,7 @@ def _sample_counterfactual_font(
     return sample_font_family(
         role="decorative",
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.decorative_board_text_font",
+        namespace=f"{task_id}.decorative_board_text_font",
         params={**dict(render_defaults), **dict(params)},
     )
 
@@ -232,21 +245,35 @@ def _compatible_styles_for_query(query_id: str) -> Tuple[str, ...]:
     return tuple(style for style in SUPPORTED_BOARD_STYLES if str(query_id) in _valid_queries_for_style(style))
 
 
-def _resolve_style(gen_defaults: Mapping[str, Any], params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_style(
+    gen_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    *,
+    task_id: str,
+    supported_board_styles: Sequence[str],
+    supported_query_ids: Sequence[str],
+    instance_seed: int,
+) -> Tuple[str, Dict[str, float]]:
     probabilities = _style_probability_map(gen_defaults, params)
+    allowed_styles = tuple(str(style) for style in supported_board_styles)
+    allowed_queries = tuple(str(query_id) for query_id in supported_query_ids)
     explicit = params.get("board_style")
     if explicit is not None:
         style = str(explicit)
-        if style not in SUPPORTED_BOARD_STYLES:
+        if style not in allowed_styles:
             raise ValueError(f"unsupported board_style: {style!r}")
         return style, dict(probabilities)
     explicit_query = params.get("query_id")
-    candidate_styles = SUPPORTED_BOARD_STYLES
+    candidate_styles = allowed_styles
     if explicit_query is not None:
-        candidate_styles = _compatible_styles_for_query(str(explicit_query))
+        query_id = str(explicit_query)
+        if query_id not in allowed_queries:
+            raise ValueError(f"unsupported query for {task_id}: {query_id!r}")
+        compatible_styles = set(_compatible_styles_for_query(query_id))
+        candidate_styles = tuple(style for style in allowed_styles if style in compatible_styles)
         if not candidate_styles:
             raise ValueError(f"query_id is incompatible with all board styles: {explicit_query!r}")
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:board_style")
+    rng = spawn_rng(int(instance_seed), f"{task_id}:board_style")
     compatible_probabilities = normalize_positive_weights(
         {style: float(probabilities.get(style, 0.0)) for style in candidate_styles},
         default_keys=candidate_styles,
@@ -259,17 +286,22 @@ def _resolve_query(
     gen_defaults: Mapping[str, Any],
     params: Mapping[str, Any],
     *,
+    task_id: str,
+    supported_query_ids: Sequence[str],
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float]]:
     probabilities = _query_probability_map(gen_defaults, params)
-    valid_queries = _valid_queries_for_style(str(style))
+    allowed_queries = tuple(str(query_id) for query_id in supported_query_ids)
+    valid_queries = tuple(query_id for query_id in _valid_queries_for_style(str(style)) if query_id in allowed_queries)
+    if not valid_queries:
+        raise ValueError(f"board_style {style!r} has no valid queries for {task_id}")
     explicit = params.get("query_id")
     if explicit is not None:
         query_id = str(explicit)
         if query_id not in valid_queries:
             raise ValueError(f"query_id {query_id!r} is not compatible with board_style {style!r}")
         return query_id, dict(probabilities)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query_id")
+    rng = spawn_rng(int(instance_seed), f"{task_id}:query_id")
     compatible_probabilities = normalize_positive_weights(
         {query: float(probabilities.get(query, 0.0)) for query in valid_queries},
         default_keys=valid_queries,
@@ -296,6 +328,7 @@ def _select_from_support(
 
 def _resolve_dimensions(
     *,
+    task_id: str,
     style: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -311,7 +344,7 @@ def _resolve_dimensions(
             support=row_support,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:{style}:rows",
+            namespace=f"{task_id}:{style}:rows",
             sampling_index=dimension_index,
         )
     else:
@@ -324,7 +357,7 @@ def _resolve_dimensions(
             support=col_support,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:{style}:columns",
+            namespace=f"{task_id}:{style}:columns",
             sampling_index=col_index,
         )
     else:
@@ -726,6 +759,7 @@ def _render_xiangqi_fillers(
 
 def _render_scene(
     *,
+    task_id: str,
     query_id: str,
     style: str,
     rows: int,
@@ -742,11 +776,11 @@ def _render_scene(
         params,
         render_defaults,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.unit_size",
+        namespace=f"{task_id}.unit_size",
     )
-    evidence_padding = float(
+    annotation_padding = float(
         scale_puzzle_px(
-            params.get("evidence_padding_px", group_default(render_defaults, "evidence_padding_px", 3)),
+            params.get("annotation_padding_px", group_default(render_defaults, "annotation_padding_px", 3)),
             unit_size_scale,
             min_px=1,
         )
@@ -755,7 +789,7 @@ def _render_scene(
     outline_rgb = _rgb(group_default(render_defaults, "outline_rgb", [33, 37, 45]), [33, 37, 45])
     scene_style, scene_style_meta = resolve_puzzle_scene_style(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.counterfactual_board_background",
+        namespace=f"{task_id}.counterfactual_board_background",
     )
     image, background_meta = make_puzzle_scene_background(
         canvas_width=int(width) * int(scale),
@@ -831,7 +865,7 @@ def _render_scene(
         rows=int(rows),
         cols=int(cols),
         board_bbox=board_bbox,
-        padding=float(evidence_padding),
+        padding=float(annotation_padding),
     )
     board_bbox_round = _round_bbox(board_bbox)
     entities: List[Dict[str, Any]] = [
@@ -892,6 +926,7 @@ def _render_scene(
 
 def _build_prompt(
     *,
+    task_id: str,
     prompt_defaults: Mapping[str, Any],
     query_id: str,
     instance_seed: int,
@@ -905,12 +940,12 @@ def _build_prompt(
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "evidence_hint",
+            "annotation_hint",
             "answer_hint",
             "json_example",
             "json_example_answer_only",
         ),
-        context=f"prompt defaults for {TASK_ID}",
+        context=f"prompt defaults for {task_id}",
     )
     prompt_selection = render_task_prompt_variants(
         domain="puzzles",
@@ -919,12 +954,12 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_values["object_description"]),
             "json_output_contract": str(prompt_values["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_values["evidence_hint"]),
+            "annotation_hint": str(prompt_values["annotation_hint"]),
             "answer_hint": str(prompt_values["answer_hint"]),
             "json_example": str(prompt_values["json_example"]),
             "json_example_answer_only": str(prompt_values["json_example_answer_only"]),
@@ -940,22 +975,36 @@ def _build_prompt(
     }
 
 
-@register_task
-class PuzzlesCounterfactualBoardGridCountTask:
-    """Count rows, columns, or board lines when a familiar board size changes."""
+class _PuzzlesCounterfactualBoardCountTask:
+    """Shared renderer for counterfactual board dimension and line-count tasks."""
 
-    task_id = TASK_ID
     domain = "puzzles"
     task_group = "counterfactual"
     default_dataset_enabled = True
+    supported_board_styles: Tuple[str, ...] = SUPPORTED_BOARD_STYLES
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        group_defaults = get_task_group_defaults("puzzles", "counterfactual")
-        gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(group_defaults, task_id=TASK_ID)
-        style, style_probabilities = _resolve_style(gen_defaults, params, instance_seed=int(instance_seed))
-        query_id, query_probabilities = _resolve_query(str(style), gen_defaults, params, instance_seed=int(instance_seed))
+        gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(str(self.task_id))
+        style, style_probabilities = _resolve_style(
+            gen_defaults,
+            params,
+            task_id=str(self.task_id),
+            supported_board_styles=self.supported_board_styles,
+            supported_query_ids=self.supported_query_ids,
+            instance_seed=int(instance_seed),
+        )
+        query_id, query_probabilities = _resolve_query(
+            str(style),
+            gen_defaults,
+            params,
+            task_id=str(self.task_id),
+            supported_query_ids=self.supported_query_ids,
+            instance_seed=int(instance_seed),
+        )
         rows, cols, row_probabilities, col_probabilities = _resolve_dimensions(
+            task_id=str(self.task_id),
             style=str(style),
             params=params,
             instance_seed=int(instance_seed),
@@ -963,12 +1012,14 @@ class PuzzlesCounterfactualBoardGridCountTask:
         answer = _target_answer(str(query_id), int(rows), int(cols))
         canonical_answer = _canonical_answer(str(query_id), str(style))
         font_family = _sample_counterfactual_font(
+            task_id=str(self.task_id),
             instance_seed=int(instance_seed),
             params=params,
             render_defaults=render_defaults,
         )
         with temporary_default_font_family(str(font_family)):
             rendered, render_meta = _render_scene(
+                task_id=str(self.task_id),
                 query_id=str(query_id),
                 style=str(style),
                 rows=int(rows),
@@ -984,13 +1035,14 @@ class PuzzlesCounterfactualBoardGridCountTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         prompt, prompt_variants, prompt_meta = _build_prompt(
+            task_id=str(self.task_id),
             prompt_defaults=prompt_defaults,
             query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
-        evidence_bboxes = [list(element.bbox) for element in rendered.counted_elements]
+        annotation_bboxes = [list(element.bbox) for element in rendered.counted_elements]
         answer_gt = TypedValue(type="integer", value=int(answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         counterfactual_delta = int(answer) - int(canonical_answer)
         query_params = {
             "query_id": str(query_id),
@@ -1044,7 +1096,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
             "render_map": {
                 "image_id": "img0",
                 **with_puzzle_unit_size_jitter(rendered.render_map, rendered.render_map.get("unit_size_jitter", {})),
-                "evidence_source": "counted_element_bboxes_px",
+                "annotation_source": "counted_element_bboxes_px",
             },
             "execution_trace": {
                 **dict(query_params),
@@ -1060,22 +1112,22 @@ class PuzzlesCounterfactualBoardGridCountTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
                 "counted_element_ids": [str(element.element_id) for element in rendered.counted_elements],
                 "visible_element_count": int(answer),
                 "canonical_bias_answer": int(canonical_answer),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "value": list(annotation_bboxes),
             },
         }
         answer_support = _answer_support()
         visual_scan = normalize_int_with_bounds(int(answer), [min(answer_support), max(answer_support)])
         conflict = clamp_unit_interval(abs(float(counterfactual_delta)) / max(1.0, float(canonical_answer) * 0.25))
         complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
+            weights=complexity_weights,
             components={
                 "visual_scan": float(visual_scan),
                 "reasoning_load": float(0.22 + 0.28 * conflict),
@@ -1085,7 +1137,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1095,6 +1147,24 @@ class PuzzlesCounterfactualBoardGridCountTask:
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),
         )
+
+
+@register_task
+class PuzzlesCounterfactualBoardDimensionCountTask(_PuzzlesCounterfactualBoardCountTask):
+    """Count visible rows or columns after a board-size change."""
+
+    task_id = BOARD_DIMENSION_COUNT_TASK_ID
+    supported_board_styles = (CHESS_STYLE, SUDOKU_STYLE)
+    supported_query_ids = DIMENSION_QUERY_IDS
+
+
+@register_task
+class PuzzlesCounterfactualBoardLineCountTask(_PuzzlesCounterfactualBoardCountTask):
+    """Count visible board lines after a line-board size change."""
+
+    task_id = BOARD_LINE_COUNT_TASK_ID
+    supported_board_styles = (XIANGQI_STYLE,)
+    supported_query_ids = LINE_QUERY_IDS
 
 
 def _answer_support() -> Tuple[int, ...]:
@@ -1113,17 +1183,21 @@ def _answer_support() -> Tuple[int, ...]:
 
 
 __all__ = [
+    "BOARD_DIMENSION_COUNT_TASK_ID",
+    "BOARD_LINE_COUNT_TASK_ID",
     "CELL_COUNT_QUERY",
     "CHESS_STYLE",
     "COLUMN_COUNT_QUERY",
+    "DIMENSION_QUERY_IDS",
     "HORIZONTAL_LINE_COUNT_QUERY",
-    "PuzzlesCounterfactualBoardGridCountTask",
+    "LINE_QUERY_IDS",
+    "PuzzlesCounterfactualBoardDimensionCountTask",
+    "PuzzlesCounterfactualBoardLineCountTask",
     "ROW_COUNT_QUERY",
     "SCENE_ID",
     "SUDOKU_STYLE",
     "SUPPORTED_BOARD_STYLES",
     "SUPPORTED_QUERY_IDS",
-    "TASK_ID",
     "VERTICAL_LINE_COUNT_QUERY",
     "XIANGQI_STYLE",
 ]

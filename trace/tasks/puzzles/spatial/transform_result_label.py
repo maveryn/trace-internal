@@ -17,7 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import (
     build_puzzle_complexity,
     clamp_unit_interval,
@@ -316,55 +316,11 @@ def _builder_params_for_option_balance(
     internal_query_id: str,
     fold_count: int | None = None,
 ) -> Dict[str, Any]:
-    """Pass a local option-letter cycle to the internal fold builders."""
+    """Return builder params with the internal query grammar selected."""
 
     builder_params = dict(params)
     builder_params["query_id"] = str(internal_query_id)
-    factor = _axis_decoupling_factor(
-        params,
-        query_id=str(query_id),
-        fold_count=fold_count,
-        include_scene_axis=True,
-    )
-    _ = int(factor)
-    _inject_public_variant_correct_option_index(
-        builder_params,
-        params=params,
-        query_id=str(query_id),
-        fallback_option_count_min=(
-            int(_FOLD_CUT_DEFAULTS.option_count_min)
-            if str(query_id) == "paper_fold_cut_result"
-            else int(_FOLD_RESULT_DEFAULTS.option_count_min)
-        ),
-    )
     return builder_params
-
-
-def _inject_public_variant_correct_option_index(
-    builder_params: Dict[str, Any],
-    *,
-    params: Mapping[str, Any],
-    query_id: str,
-    fallback_option_count_min: int,
-) -> None:
-    """Balance answer-letter support inside each merged public query id."""
-
-    if params.get("correct_option_index") is not None:
-        return
-    option_count_floor = int(
-        params.get(
-            "option_count_min",
-            _GEN_DEFAULTS.get("option_count_min", int(fallback_option_count_min)),
-        )
-    )
-    option_count_floor = max(2, int(option_count_floor))
-    within_variant_index = 0
-    variant_offset = {
-        "paper_fold_result": 0,
-        "paper_fold_cut_result": 1,
-        "overlay_result": 2,
-    }.get(str(query_id), 0)
-    builder_params["correct_option_index"] = int(((int(within_variant_index) * 7) + int(variant_offset)) % int(option_count_floor))
 
 
 class _PuzzlesSpatialTransformResultBaseTask:
@@ -525,8 +481,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 "object_description_fold_strip",
                 "object_description_fold_card",
                 "object_description_fold_outline",
-                "evidence_hint_paper_fold_result",
-                "evidence_hint_paper_fold_cut_result",
+                "annotation_hint_paper_fold_result",
+                "annotation_hint_paper_fold_cut_result",
                 "json_example_paper_fold_result",
                 "json_example_paper_fold_cut_result",
                 "json_example_answer_only_paper_fold_result",
@@ -535,7 +491,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -546,12 +502,12 @@ class _PuzzlesSpatialTransformResultBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -561,17 +517,17 @@ class _PuzzlesSpatialTransformResultBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_choice_id = str(dataset["correct_option_choice_id"])
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.option_choice_bbox_map,
             [str(correct_option_choice_id)],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         if is_fold_cut_variant:
             visual_scan = normalize_int_with_bounds(int(dataset["unfolded_hole_count"]), [2, 8])
@@ -734,11 +690,11 @@ class _PuzzlesSpatialTransformResultBaseTask:
             "execution_trace": execution_trace,
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
-            "projected_evidence": dict(evidence_projection),
+            "annotation_gt": annotation_gt.to_dict(),
+            "projected_annotation": dict(annotation_projection),
             "complexity": complexity.to_dict(),
         }
 
@@ -770,7 +726,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -803,12 +759,6 @@ class _PuzzlesSpatialTransformResultBaseTask:
         )
         builder_params = dict(params)
         builder_params["query_id"] = "overlay_union_same_grid"
-        _inject_public_variant_correct_option_index(
-            builder_params,
-            params=params,
-            query_id="overlay_result",
-            fallback_option_count_min=int(_OVERLAY_DEFAULTS.option_count_min),
-        )
         dataset = build_overlay_dataset_for_variant(
             query_id="overlay_union_same_grid",
             params=builder_params,
@@ -872,7 +822,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 "object_description_overlay_strip",
                 "object_description_overlay_card",
                 "object_description_overlay_outline",
-                "evidence_hint_overlay_result",
+                "annotation_hint_overlay_result",
                 "json_example_overlay_result",
                 "json_example_answer_only_overlay_result",
             ),
@@ -885,12 +835,12 @@ class _PuzzlesSpatialTransformResultBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key="overlay_result",
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_overlay_result"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_overlay_result"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example_overlay_result"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only_overlay_result"]),
@@ -900,17 +850,17 @@ class _PuzzlesSpatialTransformResultBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_choice_id = str(dataset["correct_option_choice_id"])
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.option_choice_bbox_map,
             [str(correct_option_choice_id)],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         sheet_scan = max(
             normalize_int_with_bounds(int(dataset["left_mark_count"]), [2, 5]),
@@ -1037,18 +987,18 @@ class _PuzzlesSpatialTransformResultBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
-            "projected_evidence": dict(evidence_projection),
+            "annotation_gt": annotation_gt.to_dict(),
+            "projected_annotation": dict(annotation_projection),
             "complexity": complexity.to_dict(),
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

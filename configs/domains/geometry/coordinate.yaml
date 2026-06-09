@@ -3,45 +3,139 @@ generation:
     segment_candidate_count: 6
     segment_endpoint_abs_max: 8
     segment_half_vectors:
-      - [3, 0]
-      - [0, 3]
-      - [3, 1]
-      - [1, 3]
-      - [3, -1]
-      - [1, -3]
-      - [2, 2]
-      - [2, -2]
-    segment_target_support: [0, 1, 2, 3, 4, 5, 6]
+    - - 3
+      - 0
+    - - 0
+      - 3
+    - - 3
+      - 1
+    - - 1
+      - 3
+    - - 3
+      - -1
+    - - 1
+      - -3
+    - - 2
+      - 2
+    - - 2
+      - -2
+    segment_target_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
     collinear_candidate_count: 8
     collinear_point_abs_max: 8
     collinear_direction_vectors:
-      - [1, 0]
-      - [0, 1]
-      - [1, 1]
-      - [1, -1]
-      - [2, 1]
-      - [1, 2]
-      - [2, -1]
-      - [1, -2]
-    collinear_target_support: [0, 1, 2, 3, 4, 5, 6]
-    quadrant_reference_label: "A"
-    quadrant_candidate_labels: ["B", "C", "D", "E", "F", "G", "H", "I"]
-    same_quadrant_target_support: [0, 1, 2, 3, 4, 5, 6]
-    point_in_shape_target_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    - - 1
+      - 0
+    - - 0
+      - 1
+    - - 1
+      - 1
+    - - 1
+      - -1
+    - - 2
+      - 1
+    - - 1
+      - 2
+    - - 2
+      - -1
+    - - 1
+      - -2
+    collinear_target_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    quadrant_reference_label: A
+    quadrant_candidate_labels:
+    - B
+    - C
+    - D
+    - E
+    - F
+    - G
+    - H
+    - I
+    same_quadrant_target_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    point_in_shape_target_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
     completion_graph_abs_max: 7
-    completion_candidate_count: 6
-    completion_candidate_labels: ["A", "B", "C", "D", "E", "F"]
+    completion_candidate_count_weights:
+      '4': 1.0
+      '6': 1.0
+    completion_candidate_labels:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
     panel_graph_abs_max: 4
-    panel_count: 6
-    panel_labels: ["A", "B", "C", "D", "E", "F"]
+    panel_count_weights:
+      '4': 1.0
+      '6': 1.0
+    panel_labels:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
     algebra_graph_abs_max: 7
-    algebra_candidate_count: 6
-    algebra_candidate_labels: ["A", "B", "C", "D", "E", "F"]
+    algebra_candidate_count_weights:
+      '4': 1.0
+      '6': 1.0
+    algebra_candidate_labels:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
     locus_graph_abs_max: 6
-    locus_candidate_count: 6
-    locus_candidate_labels: ["A", "B", "C", "D", "E", "F"]
-    locus_panel_count: 6
-    locus_panel_labels: ["A", "B", "C", "D", "E", "F"]
+    locus_candidate_count_weights:
+      '4': 1.0
+      '6': 1.0
+    locus_candidate_labels:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    locus_panel_count_weights:
+      '4': 1.0
+      '6': 1.0
+    locus_panel_labels:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
   task_overrides:
     geometry_coordinate_relation_base:
       scene_variant_weights:
@@ -57,7 +151,14 @@ generation:
         point_in_shape_count: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_id_sampling: true
-
+    task_geometry__coordinate_composite__intersection_point_count:
+      query_id_weights:
+        line_circle_intersection_count: 1.0
+        circle_circle_intersection_count: 1.0
+        line_polygon_intersection_count: 1.0
+        circle_polygon_intersection_count: 1.0
+        mixed_object_intersection_count: 1.0
+      balanced_query_id_sampling: true
 rendering:
   shared:
     canvas_size_min: 640
@@ -68,8 +169,8 @@ rendering:
     segment_canvas_size_max: 720
     segment_graph_cells_min: 20
     segment_graph_cells_max: 20
-    segment_graph_origin_fraction_x: 0.50
-    segment_graph_origin_fraction_y: 0.50
+    segment_graph_origin_fraction_x: 0.5
+    segment_graph_origin_fraction_y: 0.5
     collinear_canvas_size_min: 640
     collinear_canvas_size_max: 700
     collinear_graph_cells_min: 20
@@ -95,7 +196,7 @@ rendering:
     label_font_size_max: 28
     label_stroke_width: 1
     label_stroke_width_min: 1
-    label_stroke_width_max: 2
+    label_stroke_width_max: 1
     label_offset_px: 14
     completion_canvas_size_min: 660
     completion_canvas_size_max: 740
@@ -126,7 +227,12 @@ rendering:
     locus_panel_grid_max: 6
     locus_panel_top_reserved_px: 58
     locus_condition_label_font_size: 18
-
+    coordinate_composite_canvas_size_min: 660
+    coordinate_composite_canvas_size_max: 740
+    coordinate_composite_graph_cells_min: 18
+    coordinate_composite_graph_cells_max: 20
+    coordinate_composite_line_width_min: 3
+    coordinate_composite_line_width_max: 5
 prompt:
   shared:
     bundle_id: geometry_coordinate_v0
@@ -136,12 +242,16 @@ prompt:
     object_description_line_points: labeled points A and B plus unlabeled dot points
     object_description_quadrant_points: one X-marked reference point and unlabeled dot points
     object_description_polygon_lattice: one polygon drawn on graph paper
-    evidence_hint_segment_endpoints: 'set "evidence" to an array containing both endpoint pixel points [x,y] for each non-AB segment satisfying the question'
-    evidence_hint_collinear_pixel_point_set: 'set "evidence" to an array of every pixel point [x,y] for the dot points that lie on the same line as A and B'
-    evidence_hint_quadrant_pixel_point_set: 'set "evidence" to an array of every pixel point [x,y] that lies in the same quadrant as the marked point'
-    evidence_hint_pixel_point_set: 'set "evidence" to an array containing every pixel point [x,y] for each integer lattice point that lies strictly inside the polygon'
-    answer_hint_integer: 'set "answer" to the integer count requested by the question'
-    json_example_segment_count: '{"evidence":[[120,120],[180,120],[240,180],[300,180]],"answer":2}'
+    annotation_hint_segment_endpoints: set "annotation" to an array containing both endpoint pixel points [x,y] for each non-AB
+      segment satisfying the question
+    annotation_hint_collinear_pixel_point_set: set "annotation" to an array of every pixel point [x,y] for the dot points that
+      lie on the same line as A and B
+    annotation_hint_quadrant_pixel_point_set: set "annotation" to an array of every pixel point [x,y] that lies in the same quadrant
+      as the marked point
+    annotation_hint_pixel_point_set: set "annotation" to an array containing every pixel point [x,y] for each integer lattice
+      point that lies strictly inside the polygon
+    answer_hint_integer: set "answer" to the integer count requested by the question
+    json_example_segment_count: '{"annotation":[[120,120],[180,120],[240,180],[300,180]],"answer":2}'
     json_example_segment_count_answer_only: '{"answer":2}'
   task_overrides:
     task_geometry__coordinate_plane__quadrilateral_completion_label:
@@ -149,65 +259,101 @@ prompt:
       scene_key: coordinate_quadrilateral_candidate_scene
       task_key: coordinate_quadrilateral_query
       object_description: a coordinate grid with three unlabeled points and lettered candidate points
-      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
-      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_panels__quadrilateral_shape_match_label:
       bundle_id: geometry_coordinate_quadrilateral_v0
       scene_key: coordinate_panels_scene
       task_key: coordinate_quadrilateral_query
-      object_description: six labeled coordinate panels, each containing four unlabeled points
-      evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
+      object_description: labeled coordinate panels, each containing four unlabeled points
+      annotation_hint_selected_panel_bbox: set "annotation" to an array containing exactly one bounding box [x0,y0,x1,y1] around
+        the selected panel
       answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
-      json_example: '{"evidence":[[361,32,661,344]],"answer":"B"}'
+      json_example: '{"annotation":[[361,32,661,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__missing_endpoint_label:
       bundle_id: geometry_coordinate_algebra_v0
       scene_key: coordinate_algebra_midpoint_scene
       task_key: coordinate_algebra_query
       object_description: a coordinate grid with a labeled endpoint, labeled midpoint, and lettered candidate points
-      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
-      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__section_point_label:
       bundle_id: geometry_coordinate_algebra_v0
       scene_key: coordinate_algebra_section_scene
       task_key: coordinate_algebra_query
       object_description: a coordinate grid with segment PQ and lettered candidate section points
-      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
-      json_example: '{"evidence":[[420,344]],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
-    task_geometry__coordinate_plane__transformed_point_label:
-      bundle_id: geometry_coordinate_algebra_v0
-      scene_key: coordinate_algebra_transform_scene
-      task_key: coordinate_algebra_query
-      object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
-      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
-      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_point_label:
       bundle_id: geometry_coordinate_locus_v0
       scene_key: coordinate_locus_candidate_scene
       task_key: coordinate_locus_query
       object_description: a coordinate grid with one shaded locus region and lettered candidate points
-      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
-      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_panel_match_label:
       bundle_id: geometry_coordinate_locus_v0
       scene_key: coordinate_locus_panel_grid_scene
       task_key: coordinate_locus_query
-      object_description: six labeled coordinate panels with shaded locus regions and a condition box
-      evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
+      object_description: labeled coordinate panels with shaded locus regions and a condition box
+      annotation_hint_selected_panel_bbox: set "annotation" to an array containing exactly one bounding box [x0,y0,x1,y1] around
+        the selected panel
       answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
-      json_example: '{"evidence":[[361,32,661,344]],"answer":"B"}'
+      json_example: '{"annotation":[[361,32,661,344]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
-
+    task_geometry__coordinate_plane__reflected_point_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_transform_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+    task_geometry__coordinate_plane__rotated_point_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_transform_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+    task_geometry__coordinate_plane__translated_point_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_transform_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
+      annotation_hint_candidate_point: set "annotation" to an array containing exactly one pixel point [x,y] at the center of
+        the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"annotation":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+    task_geometry__coordinate_composite__intersection_point_count:
+      bundle_id: geometry_coordinate_composite_v0
+      scene_key: coordinate_composite_scene
+      task_key: coordinate_composite_query
+      object_description: a coordinate grid with multiple unlabeled geometric objects
+      annotation_hint_intersection_points: set "annotation" to an array containing the pixel point [x,y] for each visible
+        intersection point; use an empty array if there are none
+      answer_hint_integer: set "answer" to the integer count requested by the question
+      json_example: '{"annotation":[[320,240],[380,240]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
 complexity:
   shared:
     criteria_weights:

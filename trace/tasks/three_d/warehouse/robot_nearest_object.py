@@ -6,8 +6,6 @@ import math
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import (
     get_domain_defaults,
@@ -20,7 +18,6 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
@@ -31,7 +28,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
@@ -45,21 +41,14 @@ from ..shared.object_resources import (
 from ..shared.object_scene import (
     POINT_LABELS,
     _bbox_intersection_area,
-    _bbox_union,
     _build_projection_frame,
     _canvas_floor_polygon_xy,
-    _draw_line,
-    _draw_option_label,
-    _draw_sphere_object,
-    _grid_values_for_range,
     _object_reference_points,
     _object_screen_bbox,
-    _polygon_axis_line_segment,
-    _project_screen,
-    _project_xy,
     _sample_camera,
 )
-from .robot_forward_path import (
+from ..shared.option_panel import build_text_option_choices
+from .warehouse_scene_common import (
     MAX_CANDIDATE_BBOX_INTERSECTION_PX,
     MIN_CANDIDATE_CENTER_SEPARATION_PX,
     MIN_CANDIDATE_VISIBLE_PX,
@@ -70,27 +59,21 @@ from .robot_forward_path import (
     SUPPORTED_ROBOT_HEADINGS,
     SUPPORTED_SCENE_VARIANTS,
     WAREHOUSE_CAMERA_YAW_BANDS_DEGREES,
-    _RenderedWarehouseScene,
     _WarehouseRenderParams,
     _bbox_area,
     _dimensions_for_object,
-    _draw_ground_shadow,
-    _draw_warehouse_object,
-    _fill_for_object,
     _finalize_specs,
     _heading_vector,
     _heading_axis,
     _local_to_world,
     _make_object_spec,
-    _make_path_polygon,
-    _projected_bbox,
     _resolve_render_params,
     _sample_reference_and_objects,
-    _scene_palette,
 )
+from .warehouse_rendering import render_warehouse_robot_nearest_scene_3d
 
 
-TASK_ID = "task_three_d__warehouse__robot_nearest_object_label"
+TASK_ID = "task_three_d__warehouse__nearest_candidate_to_reference_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_robot_to_reference", "closest_object_to_robot")
 SUPPORTED_AISLE_HEADINGS: Tuple[str, ...] = tuple(SUPPORTED_ROBOT_HEADINGS)
 REFERENCE_OBJECT_TYPE = WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE
@@ -217,6 +200,23 @@ def _make_robot_candidate(
         }
     )
     return spec
+
+
+def _assign_unique_robot_option_colors(
+    robot_specs: Sequence[Mapping[str, Any]],
+    *,
+    rng,
+) -> List[Dict[str, Any]]:
+    colors = [tuple(int(channel) for channel in color) for color in ROBOT_BASE_COLORS]
+    rng.shuffle(colors)
+    if len(robot_specs) > len(colors):
+        raise ValueError("not enough unique robot colors for option descriptors")
+    updated_specs: List[Dict[str, Any]] = []
+    for spec, color in zip(robot_specs, colors):
+        updated = dict(spec)
+        updated["robot_base_rgb"] = [int(channel) for channel in color]
+        updated_specs.append(updated)
+    return list(updated_specs)
 
 
 def _make_object_candidate(
@@ -426,6 +426,7 @@ def _sample_reference_and_robot_candidates(
         placed.append(placed_spec)
         robot_specs.append(placed_spec)
 
+    robot_specs = _assign_unique_robot_option_colors(robot_specs, rng=rng)
     robot_specs, answer_meta = _attach_robot_nearest_answers(
         robot_specs,
         reference_spec,
@@ -624,225 +625,6 @@ def _visibility_ok_nearest(
     return True
 
 
-def _draw_warehouse_floor_without_path(
-    image: Image.Image,
-    *,
-    camera,
-    frame,
-    render_params: _WarehouseRenderParams,
-    scene_variant: str,
-    dataset: Mapping[str, Any],
-) -> Tuple[Image.Image, List[float], List[Dict[str, Any]]]:
-    draw = ImageDraw.Draw(image)
-    floor_rgb, grid_rgb, aisle_rgb, shelf_zone_rgb = _scene_palette(str(scene_variant), render_params)
-    draw.rectangle((0, 0, int(render_params.canvas_width), int(render_params.canvas_height)), fill=floor_rgb)
-    floor_polygon_xy = _canvas_floor_polygon_xy(camera=camera, frame=frame, render_params=render_params)
-    grid_world_bbox = None
-    if floor_polygon_xy:
-        min_x = min(float(point[0]) for point in floor_polygon_xy)
-        max_x = max(float(point[0]) for point in floor_polygon_xy)
-        min_y = min(float(point[1]) for point in floor_polygon_xy)
-        max_y = max(float(point[1]) for point in floor_polygon_xy)
-        grid_world_bbox = [round(min_x, 4), round(min_y, 4), round(max_x, 4), round(max_y, 4)]
-        for value in _grid_values_for_range(min_y, max_y, float(render_params.grid_step)):
-            segment = _polygon_axis_line_segment(floor_polygon_xy, axis="y", value=float(value))
-            if segment is None:
-                continue
-            _draw_line(draw, _project_xy((segment[0][0], segment[0][1], 0.0), camera, frame), _project_xy((segment[1][0], segment[1][1], 0.0), camera, frame), fill=grid_rgb, width=render_params.line_width_px)
-        for value in _grid_values_for_range(min_x, max_x, float(render_params.grid_step)):
-            segment = _polygon_axis_line_segment(floor_polygon_xy, axis="x", value=float(value))
-            if segment is None:
-                continue
-            _draw_line(draw, _project_xy((segment[0][0], segment[0][1], 0.0), camera, frame), _project_xy((segment[1][0], segment[1][1], 0.0), camera, frame), fill=grid_rgb, width=render_params.line_width_px)
-    for polygon_world, color in (
-        (dataset["shelf_zone_polygons_world"][0], shelf_zone_rgb),
-        (dataset["shelf_zone_polygons_world"][1], shelf_zone_rgb),
-        (dataset["main_aisle_polygon_world"], aisle_rgb),
-    ):
-        polygon_screen = [_project_xy(point, camera, frame) for point in polygon_world]
-        draw.polygon(polygon_screen, fill=color)
-    stage_bbox = [0.0, 0.0, float(render_params.canvas_width), float(render_params.canvas_height)]
-    entities = [
-        {
-            "entity_id": "warehouse_floor",
-            "entity_type": "three_d_warehouse_floor",
-            "bbox_px": list(stage_bbox),
-            "attrs": {
-                "scene_variant": str(scene_variant),
-                "full_bleed_floor": True,
-                "grid_mode": "screen_ray_floor_plane",
-                "grid_world_bbox": list(grid_world_bbox) if grid_world_bbox is not None else None,
-                "floor_rgb": list(floor_rgb),
-            },
-        }
-    ]
-    return image, stage_bbox, entities
-
-
-def _draw_reference_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera,
-    frame,
-    scene_variant: str,
-) -> Tuple[List[float], Tuple[int, int, int]]:
-    if str(spec["object_type"]) == REFERENCE_OBJECT_TYPE:
-        return _draw_sphere_object(draw, spec, camera=camera, frame=frame, fill=REFERENCE_OBJECT_RGB), REFERENCE_OBJECT_RGB
-    fill = _fill_for_object(spec, scene_variant=str(scene_variant))
-    return _draw_warehouse_object(draw, spec, camera=camera, frame=frame, fill=fill), fill
-
-
-def render_warehouse_robot_nearest_scene_3d(
-    background: Image.Image,
-    *,
-    dataset: Mapping[str, Any],
-    render_params: _WarehouseRenderParams,
-) -> _RenderedWarehouseScene:
-    image = background.convert("RGB")
-    camera = _camera_from_dataset(dataset)
-    frame = _frame_from_dataset(dataset)
-    scene_variant = str(dataset["scene_variant"])
-    image, warehouse_bbox, entities = _draw_warehouse_floor_without_path(
-        image,
-        camera=camera,
-        frame=frame,
-        render_params=render_params,
-        scene_variant=scene_variant,
-        dataset=dataset,
-    )
-    draw = ImageDraw.Draw(image)
-    from ...shared.text_rendering import load_font
-
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    candidate_specs = [dict(spec) for spec in dataset["candidate_specs"]]
-    reference_specs = [dict(spec) for spec in dataset["reference_specs"]]
-    context_specs = [dict(spec) for spec in dataset["context_object_specs"]]
-    all_specs = [*candidate_specs, *reference_specs, *context_specs]
-    shelf_specs = [spec for spec in all_specs if str(spec.get("object_type")) == "shelf_rack"]
-    non_shelf_specs = [spec for spec in all_specs if str(spec.get("object_type")) != "shelf_rack"]
-    ordered_specs = [
-        *sorted(shelf_specs, key=lambda item: float(item["camera_distance"]), reverse=True),
-        *sorted(non_shelf_specs, key=lambda item: float(item["camera_distance"]), reverse=True),
-    ]
-    for spec in ordered_specs:
-        _draw_ground_shadow(draw, spec, camera=camera, frame=frame)
-
-    point_bboxes: Dict[str, List[float]] = {}
-    point_centers: Dict[str, List[float]] = {}
-    object_bboxes: Dict[str, List[float]] = {}
-    object_centers: Dict[str, List[float]] = {}
-    context_bboxes: Dict[str, List[float]] = {}
-    context_centers: Dict[str, List[float]] = {}
-    reference_bboxes: Dict[str, List[float]] = {}
-    reference_centers: Dict[str, List[float]] = {}
-
-    for spec in ordered_specs:
-        if str(spec.get("object_role")) == "warehouse_reference_object":
-            bbox, fill = _draw_reference_object(draw, spec, camera=camera, frame=frame, scene_variant=scene_variant)
-        else:
-            fill = _fill_for_object(spec, scene_variant=scene_variant)
-            bbox = _draw_warehouse_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        raw_label = spec.get("point_label")
-        label = "" if raw_label is None else str(raw_label)
-        center = [round(float(spec["screen_xy"][0]), 3), round(float(spec["screen_xy"][1]), 3)]
-        if bool(spec.get("is_answer_candidate", False)):
-            label_bbox = _draw_option_label(draw, label=label, center=(float(center[0]), float(center[1])), font=label_font)
-            bbox = _bbox_union(bbox, label_bbox)
-            point_bboxes[str(label)] = list(bbox)
-            point_centers[str(label)] = list(center)
-        elif str(spec.get("object_role")) in {"warehouse_reference_object", "warehouse_reference_robot"}:
-            reference_bboxes[str(spec["object_id"])] = list(bbox)
-            reference_centers[str(spec["object_id"])] = list(center)
-        else:
-            context_bboxes[str(spec["object_id"])] = list(bbox)
-            context_centers[str(spec["object_id"])] = list(center)
-        object_bboxes[str(spec["object_id"])] = list(bbox)
-        object_centers[str(spec["object_id"])] = list(center)
-        entities.append(
-            {
-                "entity_id": str(spec["object_id"]),
-                "entity_type": (
-                    ("three_d_warehouse_robot_candidate" if str(spec.get("object_type")) == "warehouse_robot" else "three_d_warehouse_candidate_object")
-                    if bool(spec.get("is_answer_candidate", False))
-                    else (
-                        "three_d_warehouse_reference_object"
-                        if str(spec.get("object_role")) == "warehouse_reference_object"
-                        else ("three_d_warehouse_reference_robot" if str(spec.get("object_role")) == "warehouse_reference_robot" else "three_d_warehouse_context_object")
-                    )
-                ),
-                "bbox_px": list(bbox),
-                "attrs": {
-                    "point_label": str(label) if label else None,
-                    "object_label": str(label) if label else None,
-                    "object_type": str(spec["object_type"]),
-                    "object_name": str(spec.get("object_name", spec["object_type"])),
-                    "prompt_name": str(spec.get("prompt_name", spec.get("object_name", spec["object_type"]))),
-                    "object_role": str(spec["object_role"]),
-                    "robot_design": str(spec.get("robot_design")) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "robot_heading": str(spec.get("robot_heading")) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "robot_base_rgb": list(spec.get("robot_base_rgb", ())) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "robot_accent_rgb": list(spec.get("robot_accent_rgb", ())) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "gripper_tip_xyz": list(spec.get("gripper_tip_xyz", ())) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "shelf_style": str(spec.get("shelf_style")) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "shelf_levels": int(spec.get("shelf_levels", 0)) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "is_answer_candidate": bool(spec.get("is_answer_candidate", False)),
-                    "is_nearest_robot_to_reference": bool(spec.get("is_nearest_robot_to_reference", False)),
-                    "is_nearest_object_to_reference_robot": bool(spec.get("is_nearest_object_to_reference_robot", False)),
-                    "distance_to_reference_object": float(spec.get("distance_to_reference_object", 0.0)),
-                    "distance_to_reference_robot": float(spec.get("distance_to_reference_robot", 0.0)),
-                    "fill_rgb": [int(channel) for channel in fill],
-                    "world_xyz": list(spec["world_xyz"]),
-                    "base_xyz": list(spec["base_xyz"]),
-                    "dimensions_xyz": list(spec["dimensions_xyz"]),
-                    "screen_xy": list(center),
-                    "camera_distance": float(spec["camera_distance"]),
-                },
-            }
-        )
-
-    for label, center in sorted(point_centers.items()):
-        _draw_option_label(draw, label=str(label), center=(float(center[0]), float(center[1])), font=label_font)
-
-    answer_label = str(dataset["answer_label"])
-    evidence_bbox = list(point_bboxes[answer_label])
-    scene_bboxes = [list(warehouse_bbox)] + [list(bbox) for bbox in object_bboxes.values()]
-    scene_bbox = [
-        round(float(min(bbox[0] for bbox in scene_bboxes)), 3),
-        round(float(min(bbox[1] for bbox in scene_bboxes)), 3),
-        round(float(max(bbox[2] for bbox in scene_bboxes)), 3),
-        round(float(max(bbox[3] for bbox in scene_bboxes)), 3),
-    ]
-    return _RenderedWarehouseScene(
-        image=image,
-        entities=list(entities),
-        scene_bbox_px=list(scene_bbox),
-        warehouse_bbox_px=list(warehouse_bbox),
-        object_bboxes_px=dict(object_bboxes),
-        object_centers_px=dict(object_centers),
-        candidate_bboxes_px=dict(point_bboxes),
-        candidate_centers_px=dict(point_centers),
-        context_object_bboxes_px=dict(context_bboxes),
-        context_object_centers_px=dict(context_centers),
-        reference_object_bboxes_px=dict(reference_bboxes),
-        reference_object_centers_px=dict(reference_centers),
-        evidence_bboxes=[list(evidence_bbox)],
-        evidence_entity_ids=[str(dataset["answer_object_id"])],
-    )
-
-
-def _camera_from_dataset(dataset: Mapping[str, Any]):
-    from .robot_forward_path import _camera_from_dataset as _forward_camera_from_dataset
-
-    return _forward_camera_from_dataset(dataset)
-
-
-def _frame_from_dataset(dataset: Mapping[str, Any]):
-    from .robot_forward_path import _frame_from_dataset as _forward_frame_from_dataset
-
-    return _forward_frame_from_dataset(dataset)
-
-
 def _build_dataset(
     *,
     params: Mapping[str, Any],
@@ -905,7 +687,7 @@ def _build_dataset(
                 continue
             distance_by_label = {str(spec["point_label"]): round(float(spec["distance_to_reference_object"]), 4) for spec in finalized_candidates}
             nearest_by_label = {str(spec["point_label"]): bool(spec.get("is_nearest_robot_to_reference", False)) for spec in finalized_candidates}
-            predicate = f"lettered robot with the smallest ground-plane surface gap to the {REFERENCE_OBJECT_NAME}"
+            predicate = f"option-panel robot with the smallest ground-plane surface gap to the {REFERENCE_OBJECT_NAME}"
             reference_object_name = REFERENCE_OBJECT_NAME
             nearest_robot_by_label = dict(sorted(nearest_by_label.items()))
             nearest_object_by_label: Dict[str, bool] = {}
@@ -918,7 +700,7 @@ def _build_dataset(
                 continue
             distance_by_label = {str(spec["point_label"]): round(float(spec["distance_to_reference_robot"]), 4) for spec in finalized_candidates}
             nearest_by_label = {str(spec["point_label"]): bool(spec.get("is_nearest_object_to_reference_robot", False)) for spec in finalized_candidates}
-            predicate = "lettered warehouse object with the smallest ground-plane surface gap to the robot"
+            predicate = "option-panel warehouse object with the smallest ground-plane surface gap to the robot"
             reference_object_name = "robot"
             nearest_robot_by_label = {}
             nearest_object_by_label = dict(sorted(nearest_by_label.items()))
@@ -1130,8 +912,8 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
 
 
 @register_task
-class ThreeDWarehouseRobotNearestObjectLabelTask:
-    """Choose the lettered warehouse item closest to a reference item."""
+class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
+    """Choose the option-panel warehouse item closest to a reference item."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -1231,7 +1013,13 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_warehouse_robot_nearest_scene_3d(background, dataset=dataset, render_params=render_params)
+        option_choices = build_text_option_choices(dataset["candidate_specs"])
+        rendered_scene = render_warehouse_robot_nearest_scene_3d(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            option_choices=option_choices,
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1248,7 +1036,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -1257,7 +1045,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
         prompt_config = dict(_PROMPT_DEFAULTS)
         prompt_config.update(prompt_defaults)
         object_description = str(prompt_config.get(f"object_description_{query_id}", prompt_defaults["object_description"]))
-        evidence_hint = str(prompt_config.get(f"evidence_hint_{query_id}", prompt_defaults["evidence_hint"]))
+        annotation_hint = str(prompt_config.get(f"annotation_hint_{query_id}", prompt_defaults["annotation_hint"]))
         answer_hint = str(prompt_config.get(f"answer_hint_{query_id}", prompt_defaults["answer_hint"]))
         json_example = str(prompt_config.get(f"json_example_{query_id}", prompt_defaults["json_example"]))
         json_example_answer_only = str(
@@ -1270,14 +1058,14 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "reference_object_name": str(dataset["reference_object_name"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(answer_hint),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -1286,8 +1074,8 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.evidence_bboxes]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = _build_complexity(
             candidate_count=int(dataset["candidate_count"]),
             context_object_count=int(dataset["context_object_count"]),
@@ -1337,7 +1125,9 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -1355,6 +1145,12 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
                 "candidate_bboxes_px": {str(key): list(value) for key, value in rendered_scene.candidate_bboxes_px.items()},
                 "candidate_centers_px": {str(key): list(value) for key, value in rendered_scene.candidate_centers_px.items()},
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
                 "reference_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.reference_object_bboxes_px.items()},
@@ -1378,6 +1174,11 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "reference_object_specs": [dict(spec) for spec in dataset["reference_object_specs"]],
                 "reference_robot_specs": [dict(spec) for spec in dataset["reference_robot_specs"]],
                 "candidate_specs": [dict(spec) for spec in dataset["candidate_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "candidate_robot_specs": [dict(spec) for spec in dataset["candidate_robot_specs"]],
                 "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
                 "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
@@ -1409,7 +1210,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {"type": "object", "id": str(dataset["answer_object_id"]), "answer": str(answer_label)},
-            "projected_evidence": {"bbox_set": [list(bbox) for bbox in evidence_bboxes]},
+            "projected_annotation": {"bbox_set": [list(bbox) for bbox in annotation_bboxes]},
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }
@@ -1417,7 +1218,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1433,5 +1234,5 @@ __all__ = [
     "MIN_NEAREST_ROBOT_MARGIN",
     "SUPPORTED_QUERY_IDS",
     "TASK_ID",
-    "ThreeDWarehouseRobotNearestObjectLabelTask",
+    "ThreeDWarehouseNearestCandidateToReferenceLabelTask",
 ]

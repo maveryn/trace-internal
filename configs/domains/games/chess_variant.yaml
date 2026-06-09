@@ -6,6 +6,8 @@ generation:
     query_id_weights:
       marked_piece_move_count: 1.0
       marked_piece_capture_count: 1.0
+      white_piece_reaches_target_count: 1.0
+      black_piece_reaches_target_count: 1.0
     rule_family_weights:
       straight_range: 1.0
       diagonal_range: 1.0
@@ -27,6 +29,8 @@ generation:
     balanced_range_k_sampling: true
     marked_piece_move_count_support: [0, 1, 2, 3, 4]
     marked_piece_capture_count_support: [0, 1, 2, 3, 4]
+    white_piece_reaches_target_count_support: [0, 1, 2, 3, 4]
+    black_piece_reaches_target_count_support: [0, 1, 2, 3, 4]
     range_k_support: [2, 3, 4]
     queen_range_k_support: [2, 3]
     sparse_min_occupied_count: 7
@@ -49,7 +53,7 @@ rendering:
     piece_inset_fraction: 0.18
     marked_square_outline_width_px: 7
     rule_badge_font_size_px: 22
-    token_label_font_size_px: 20
+    piece_font_size_px: 78
     dynamic_canvas_size_enabled: true
     canvas_min_width_px: 560
     canvas_min_height_px: 560
@@ -67,23 +71,36 @@ prompt:
     bundle_id: games_chess_variant_v0
     scene_key: chess_variant_board
     task_key: chess_variant_query
-    object_description_sparse_board: a chess-like 8 by 8 board with a small set of white and black tokens and a visible movement rule card
-    object_description_crowded_board: a chess-like 8 by 8 board with many white and black tokens and a visible movement rule card
-    marked_piece_rule_text: Tokens labeled W are one side and tokens labeled B are the other side. The blue outlined square contains the marked token.
-    landing_rule_text: The marked token may land on an empty square or an opponent token, but not on a friendly token.
+    object_description_sparse_board: a chess-like 8 by 8 board with a small set of white and black chess pieces and a visible movement rule card
+    object_description_crowded_board: a chess-like 8 by 8 board with many white and black chess pieces and a visible movement rule card
+    marked_piece_rule_text: White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The red outlined square contains the marked piece.
+    target_square_rule_text: White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The blue outlined square is the target square.
+    landing_rule_text: The marked piece may land on an empty square or an opponent piece, but not on a friendly piece.
+    target_landing_rule_text: A counted piece may move to the target square if the target is empty or contains an opponent piece, but not if it contains a friendly piece.
     slider_block_rule_text: For range rules, movement stops at the first occupied square in each direction and cannot pass through it.
-    leaper_block_rule_text: For jump rules, the marked token may jump over occupied squares.
-    rule_text_straight_range: The rule card says the marked token moves horizontally or vertically up to {range_k} squares.
-    rule_text_diagonal_range: The rule card says the marked token moves diagonally up to {range_k} squares.
-    rule_text_straight_or_diagonal_range: The rule card says the marked token moves horizontally, vertically, or diagonally up to {range_k} squares.
-    rule_text_leaper_2_1: The rule card says the marked token jumps exactly 2 rows and 1 column, or 1 row and 2 columns.
-    rule_text_leaper_3_1: The rule card says the marked token jumps exactly 3 rows and 1 column, or 1 row and 3 columns.
+    leaper_block_rule_text: For jump rules, the marked piece may jump over occupied squares.
+    target_slider_block_rule_text: For range rules, movement stops at the first occupied square in each direction and cannot pass through it.
+    target_leaper_block_rule_text: For jump rules, pieces may jump over occupied squares.
+    rule_text_straight_range: The rule card says the marked piece moves horizontally or vertically up to {range_k} squares.
+    rule_text_diagonal_range: The rule card says the marked piece moves diagonally up to {range_k} squares.
+    rule_text_straight_or_diagonal_range: The rule card says the marked piece moves horizontally, vertically, or diagonally up to {range_k} squares.
+    rule_text_leaper_2_1: The rule card says the marked piece jumps exactly 2 rows and 1 column, or 1 row and 2 columns.
+    rule_text_leaper_3_1: The rule card says the marked piece jumps exactly 3 rows and 1 column, or 1 row and 3 columns.
+    target_rule_text_straight_range: The rule card says pieces move horizontally or vertically up to {range_k} squares.
+    target_rule_text_diagonal_range: The rule card says pieces move diagonally up to {range_k} squares.
+    target_rule_text_straight_or_diagonal_range: The rule card says pieces move horizontally, vertically, or diagonally up to {range_k} squares.
+    target_rule_text_leaper_2_1: The rule card says pieces jump exactly 2 rows and 1 column, or 1 row and 2 columns.
+    target_rule_text_leaper_3_1: The rule card says pieces jump exactly 3 rows and 1 column, or 1 row and 3 columns.
     rule_badge_straight_range: STRAIGHT <= {range_k}
     rule_badge_diagonal_range: DIAGONAL <= {range_k}
     rule_badge_straight_or_diagonal_range: ANY LINE <= {range_k}
     rule_badge_leaper_2_1: JUMP 2+1
     rule_badge_leaper_3_1: JUMP 3+1
-    evidence_hint_marked_piece_move_count: set "evidence" to a JSON array of bounding boxes [x0, y0, x1, y1] for every legal destination square of the marked token
-    answer_hint_marked_piece_move_count: set "answer" to the count of legal destination squares for the marked token
-    evidence_hint_marked_piece_capture_count: set "evidence" to a JSON array of bounding boxes [x0, y0, x1, y1] for every destination square occupied by an opponent token that the marked token can capture
-    answer_hint_marked_piece_capture_count: set "answer" to the count of capture destination squares for the marked token
+    annotation_hint_marked_piece_move_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for every legal destination square of the marked piece
+    answer_hint_marked_piece_move_count: set "answer" to the count of legal destination squares for the marked piece
+    annotation_hint_marked_piece_capture_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for every destination square occupied by an opponent piece that the marked piece can capture
+    answer_hint_marked_piece_capture_count: set "answer" to the count of capture destination squares for the marked piece
+    annotation_hint_white_piece_reaches_target_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every white piece that can legally move to the blue outlined target square
+    answer_hint_white_piece_reaches_target_count: set "answer" to the number of white pieces that can legally move to the blue outlined target square
+    annotation_hint_black_piece_reaches_target_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every black piece that can legally move to the blue outlined target square
+    answer_hint_black_piece_reaches_target_count: set "answer" to the number of black pieces that can legally move to the blue outlined target square

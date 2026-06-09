@@ -17,13 +17,13 @@ def test_icons_counting_singleton_type_deterministic() -> None:
     out_a = task.generate(18320, params=params, max_attempts=200)
     out_b = task.generate(18320, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "bbox_set"
+    assert out_a.annotation_gt.type == "bbox_set"
 
 
 def test_icons_counting_most_frequent_type_deterministic() -> None:
@@ -32,21 +32,21 @@ def test_icons_counting_most_frequent_type_deterministic() -> None:
     out_a = task.generate(18321, params=params, max_attempts=200)
     out_b = task.generate(18321, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.scene_id == "icon_field"
     assert out_a.query_id == "most_frequent_type_count"
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "bbox_set"
+    assert out_a.annotation_gt.type == "bbox_set"
 
     frequencies = out_a.trace_payload["execution_trace"]["type_frequencies"]
     max_frequency = max(int(value) for value in frequencies.values())
     assert int(out_a.answer_gt.value) == int(max_frequency)
     assert sum(1 for value in frequencies.values() if int(value) == int(max_frequency)) == 1
-    assert len(out_a.evidence_gt.value) == int(out_a.answer_gt.value)
+    assert len(out_a.annotation_gt.value) == int(out_a.answer_gt.value)
 
 
 def test_icons_counting_singleton_type_build_smoke(tmp_path: Path) -> None:

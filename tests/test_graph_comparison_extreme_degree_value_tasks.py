@@ -47,7 +47,7 @@ def test_graph_comparison_extreme_degree_value_undirected_contract_matches_trace
     assert out.scene_id == "node_link"
     assert out.query_id == "undirected_max_degree_value"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_extreme_degree_comparison"
     assert execution["query_id"] == "undirected_max_degree_value"
@@ -67,16 +67,16 @@ def test_graph_comparison_extreme_degree_value_undirected_contract_matches_trace
     assert sorted(
         label for label, degree in queried.items() if int(degree) == int(out.answer_gt.value)
     ) == sorted(matching_labels)
-    assert len(out.evidence_gt.value) == len(matching_labels)
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert len(out.annotation_gt.value) == len(matching_labels)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert sum(1 for node in node_entities if bool(node["is_extreme_degree_node"])) == len(matching_labels)
     assert all(
         int(node["queried_degree"]) == int(out.answer_gt.value)
         for node in node_entities
         if bool(node["is_extreme_degree_node"])
     )
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
 
 
@@ -118,7 +118,7 @@ def test_graph_comparison_extreme_degree_value_directed_modes_use_correct_degree
         assert execution["extremum_mode"] == extremum_mode
         assert int(out.answer_gt.value) == _observed_extreme(queried, extremum_mode=extremum_mode)
         assert int(out.answer_gt.value) == 2
-        assert len(out.evidence_gt.value) == len(execution["matching_labels"])
+        assert len(out.annotation_gt.value) == len(execution["matching_labels"])
         assert all(
             queried[str(label)] == int(out.answer_gt.value)
             for label in execution["matching_labels"]
@@ -136,6 +136,7 @@ def test_graph_comparison_extreme_degree_value_prompt_examples_match_contract() 
         20420,
         params={
             "graph_directionality": "undirected",
+            "degree_mode": "degree",
             "extremum_mode": "min",
             "node_count": 8,
             "target_degree": 1,
@@ -144,11 +145,11 @@ def test_graph_comparison_extreme_degree_value_prompt_examples_match_contract() 
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_graph_comparison_extreme_degree_value_balanced_sampling_defaults() -> None:
@@ -167,6 +168,7 @@ def test_graph_comparison_extreme_degree_value_balanced_sampling_defaults() -> N
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
+        assert abs(sum(float(value) for value in execution["query_id_probabilities"].values()) - 1.0) < 1e-9
         query_ids[str(execution["query_id"])] += 1
         directionality[str(execution["graph_directionality"])] += 1
         degree_modes[str(execution["degree_mode"])] += 1

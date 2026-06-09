@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .battleship_common import Coord, FLEET_SHAPES, all_coords, coord_to_cell_id, shape_orientations
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -82,6 +82,7 @@ def _draw_centered_label(
     max_size_px: int,
     bold: bool = False,
     font_family: str | None = None,
+    required: bool = False,
 ) -> None:
     """Draw text centered inside one bounding box."""
 
@@ -102,7 +103,15 @@ def _draw_centered_label(
     text_h = float(text_bbox[3] - text_bbox[1])
     text_x = float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0]))
     text_y = float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1]))
-    draw_text_traced(draw,(text_x, text_y), str(text), fill=tuple(int(v) for v in fill), font=font, role="readout", required=False)
+    draw_text_traced(
+        draw,
+        (text_x, text_y),
+        str(text),
+        fill=tuple(int(v) for v in fill),
+        font=font,
+        role="readout",
+        required=bool(required),
+    )
 
 
 def _draw_hit_marker(
@@ -180,6 +189,45 @@ def _draw_ship_body_cell(
         fill=tuple(int(v) for v in theme.ship_icon_fill_rgb) + (int(fill_alpha),),
         outline=tuple(int(v) for v in theme.ship_icon_outline_rgb) + (int(outline_alpha),),
         width=max(1, int(round(0.035 * min(float(right - left), float(bottom - top))))),
+    )
+
+
+def _draw_candidate_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    label: str,
+    params: BattleshipRenderParams,
+) -> None:
+    """Draw one visible option label badge inside a candidate board cell."""
+
+    left, top, right, bottom = bbox_px
+    width = float(right - left)
+    height = float(bottom - top)
+    cx = float(left + (0.5 * width))
+    cy = float(top + (0.5 * height))
+    radius = float(0.33 * min(width, height))
+    badge_bbox = (
+        round(cx - radius, 3),
+        round(cy - radius, 3),
+        round(cx + radius, 3),
+        round(cy + radius, 3),
+    )
+    draw.ellipse(
+        badge_bbox,
+        fill=(255, 244, 184, 244),
+        outline=(24, 38, 62, 255),
+        width=max(2, int(round(0.045 * min(width, height)))),
+    )
+    _draw_centered_label(
+        draw,
+        bbox_px=badge_bbox,
+        text=str(label),
+        fill=(20, 29, 45),
+        max_size_px=max(12, int(round(0.44 * min(width, height)))),
+        bold=True,
+        font_family=str(params.font_family) or None,
+        required=True,
     )
 
 
@@ -278,6 +326,23 @@ def _draw_fleet_panel(
     return icon_bboxes
 
 
+def _bbox_union(bboxes: Sequence[Sequence[float]]) -> List[float]:
+    """Return the tight axis-aligned union for non-empty bboxes."""
+
+    if not bboxes:
+        raise ValueError("cannot union an empty bbox list")
+    xs0 = [float(bbox[0]) for bbox in bboxes]
+    ys0 = [float(bbox[1]) for bbox in bboxes]
+    xs1 = [float(bbox[2]) for bbox in bboxes]
+    ys1 = [float(bbox[3]) for bbox in bboxes]
+    return [
+        round(float(min(xs0)), 3),
+        round(float(min(ys0)), 3),
+        round(float(max(xs1)), 3),
+        round(float(max(ys1)), 3),
+    ]
+
+
 def render_battleship_grid_scene(
     *,
     board_size: int,
@@ -289,6 +354,8 @@ def render_battleship_grid_scene(
     style_variant: str,
     params: BattleshipRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
+    show_ship_bodies: bool = True,
+    candidate_labels_by_coord: Mapping[Coord, str] | None = None,
 ) -> RenderedBattleshipScene:
     """Render one Battleship grid with visible ships, red hits, misses, and a fleet panel."""
 
@@ -364,6 +431,10 @@ def render_battleship_grid_scene(
 
     hits = {(int(row), int(col)) for row, col in hit_coords}
     misses = {(int(row), int(col)) for row, col in miss_coords}
+    candidate_labels = {
+        (int(row), int(col)): str(label)
+        for (row, col), label in dict(candidate_labels_by_coord or {}).items()
+    }
     ship_cells_by_coord: Dict[Coord, str] = {}
     for ship_id, coords in ship_cells_by_id.items():
         for row, col in coords:
@@ -394,7 +465,7 @@ def render_battleship_grid_scene(
         fill = theme.cell_alt_fill_rgb if (int(row) + int(col)) % 2 else theme.cell_fill_rgb
         draw.rectangle(full_bbox, fill=tuple(int(v) for v in fill))
         ship_id = ship_cells_by_coord.get(coord)
-        if ship_id is not None:
+        if ship_id is not None and bool(show_ship_bodies):
             _draw_ship_body_cell(
                 draw,
                 bbox_px=bbox_px,
@@ -454,12 +525,59 @@ def render_battleship_grid_scene(
         outline=tuple(int(v) for v in theme.board_border_rgb),
         width=int(params.board_border_width_px),
     )
+    candidate_label_cell_ids: Dict[str, str] = {}
+    candidate_label_bboxes_px: Dict[str, List[float]] = {}
+    candidate_label_points_px: Dict[str, List[float]] = {}
+    for coord, label in sorted(candidate_labels.items(), key=lambda item: str(item[1])):
+        row, col = coord
+        cell_id = coord_to_cell_id(coord)
+        bbox_px = tuple(float(value) for value in cell_bboxes_px[str(cell_id)])
+        _draw_candidate_label(
+            draw,
+            bbox_px=bbox_px,
+            label=str(label),
+            params=params,
+        )
+        point = [
+            round((float(bbox_px[0]) + float(bbox_px[2])) / 2.0, 3),
+            round((float(bbox_px[1]) + float(bbox_px[3])) / 2.0, 3),
+        ]
+        candidate_label_cell_ids[str(label)] = str(cell_id)
+        candidate_label_bboxes_px[str(label)] = [float(value) for value in bbox_px]
+        candidate_label_points_px[str(label)] = list(point)
+        scene_entities.append(
+            {
+                "entity_id": f"candidate_{str(label)}",
+                "entity_type": "battleship_candidate_cell",
+                "label": str(label),
+                "cell_id": str(cell_id),
+                "row": int(row),
+                "col": int(col),
+                "bbox_px": [float(value) for value in bbox_px],
+                "point_px": list(point),
+            }
+        )
     fleet_icon_bboxes_px = _draw_fleet_panel(
         draw,
         panel_bbox=panel_bbox,
         params=params,
         theme=theme,
     )
+    ship_bboxes_px: Dict[str, List[float]] = {}
+    for ship_id, coords in ship_cells_by_id.items():
+        cell_ids = [coord_to_cell_id((int(row), int(col))) for row, col in coords]
+        ship_bbox = _bbox_union([cell_bboxes_px[str(cell_id)] for cell_id in cell_ids])
+        ship_bboxes_px[str(ship_id)] = list(ship_bbox)
+        scene_entities.append(
+            {
+                "entity_id": str(ship_id),
+                "entity_type": "battleship_ship",
+                "ship_id": str(ship_id),
+                "cell_ids": [str(cell_id) for cell_id in cell_ids],
+                "bbox_px": list(ship_bbox),
+                "is_sunk": bool(str(ship_id) in sunk_ids),
+            }
+        )
 
     render_map = {
         "board_bbox_px": list(board_bbox),
@@ -478,7 +596,12 @@ def render_battleship_grid_scene(
             str(ship_id): [coord_to_cell_id(coord) for coord in sorted((int(row), int(col)) for row, col in coords)]
             for ship_id, coords in ship_cells_by_id.items()
         },
+        "ship_bboxes_px": dict(ship_bboxes_px),
         "fleet_icon_bboxes_px": dict(fleet_icon_bboxes_px),
+        "show_ship_bodies": bool(show_ship_bodies),
+        "candidate_label_cell_ids": dict(candidate_label_cell_ids),
+        "candidate_label_bboxes_px": dict(candidate_label_bboxes_px),
+        "candidate_label_points_px": dict(candidate_label_points_px),
         "layout_jitter": {
             **dict(layout_jitter),
             "jittered_bbox_kind": "board_fleet_group",

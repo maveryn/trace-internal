@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 
 from ...shared.color_distance import color_distance
 from ...shared.text_rendering import load_font
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
@@ -67,7 +67,7 @@ class DartInstance:
     score: int
     x_px: float
     y_px: float
-    is_evidence: bool
+    is_annotation: bool
 
 
 @dataclass(frozen=True)
@@ -105,7 +105,7 @@ class RenderedDartSpec:
     score: int
     center_px: Tuple[float, float]
     bbox_px: Tuple[float, float, float, float]
-    is_evidence: bool
+    is_annotation: bool
 
 
 @dataclass(frozen=True)
@@ -129,7 +129,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (246, 246, 238),
         "dart": (244, 198, 65),
         "dart_outline": (41, 45, 52),
-        "evidence": (252, 110, 74),
+        "annotation": (252, 110, 74),
     },
     "soft": {
         "board_frame": (51, 61, 68),
@@ -141,7 +141,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (252, 249, 239),
         "dart": (102, 180, 232),
         "dart_outline": (29, 45, 58),
-        "evidence": (242, 112, 96),
+        "annotation": (242, 112, 96),
     },
     "outlined": {
         "board_frame": (31, 41, 48),
@@ -153,7 +153,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (248, 248, 240),
         "dart": (250, 218, 93),
         "dart_outline": (13, 22, 30),
-        "evidence": (234, 98, 76),
+        "annotation": (234, 98, 76),
     },
     "league_blue": {
         "board_frame": (24, 48, 83),
@@ -165,7 +165,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (250, 252, 255),
         "dart": (247, 197, 72),
         "dart_outline": (9, 24, 44),
-        "evidence": (247, 126, 90),
+        "annotation": (247, 126, 90),
     },
     "parchment": {
         "board_frame": (76, 55, 38),
@@ -177,7 +177,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (255, 244, 218),
         "dart": (73, 142, 191),
         "dart_outline": (40, 28, 21),
-        "evidence": (231, 112, 76),
+        "annotation": (231, 112, 76),
     },
     "neon": {
         "board_frame": (17, 24, 39),
@@ -189,7 +189,7 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "number": (242, 250, 255),
         "dart": (250, 204, 21),
         "dart_outline": (4, 12, 24),
-        "evidence": (255, 121, 91),
+        "annotation": (255, 121, 91),
     },
 }
 
@@ -673,7 +673,7 @@ def render_darts_scene(
                 score=int(dart.score),
                 center_px=center,
                 bbox_px=bbox,
-                is_evidence=bool(dart.is_evidence),
+                is_annotation=bool(dart.is_annotation),
             )
         )
         scene_entities.append(
@@ -685,7 +685,7 @@ def render_darts_scene(
                     "sector_value": None if dart.sector_value is None else int(dart.sector_value),
                     "ring": str(dart.ring),
                     "score": int(dart.score),
-                    "is_evidence": bool(dart.is_evidence),
+                    "is_annotation": bool(dart.is_annotation),
                 },
             }
         )

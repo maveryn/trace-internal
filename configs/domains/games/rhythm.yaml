@@ -67,11 +67,11 @@ prompt:
     task_key: rhythm_query
     object_description_falling_notes: a rhythm-game lane grid with colored falling notes, lane numbers, and a bottom hit line
     rhythm_motion_rule_text: Notes fall one row per beat. The bottom line is the hit line. A long vertical note counts as one note.
-    evidence_hint_lane_hit_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane that reach the hit line within the stated number of beats
+    annotation_hint_lane_hit_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane that reach the hit line within the stated number of beats
     answer_hint_lane_hit_count: set "answer" to the integer count
-    evidence_hint_lane_color_hit_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane with the specified color that reach the hit line within the stated number of beats
+    annotation_hint_lane_color_hit_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane with the specified color that reach the hit line within the stated number of beats
     answer_hint_lane_color_hit_count: set "answer" to the integer count
-    evidence_hint_most_hits_lane_label: set "evidence" to bounding boxes [x0, y0, x1, y1] around the notes in the winning lane that reach the hit line within the stated number of beats
+    annotation_hint_most_hits_lane_label: set "annotation" to bounding boxes [x0, y0, x1, y1] around the notes in the winning lane that reach the hit line within the stated number of beats
     answer_hint_most_hits_lane_label: set "answer" to the winning lane number as an integer
-    evidence_hint_earliest_hit_lane_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the note that reaches the hit line earliest
+    annotation_hint_earliest_hit_lane_label: set "annotation" to one bounding box [x0, y0, x1, y1] around the note that reaches the hit line earliest
     answer_hint_earliest_hit_lane_label: set "answer" to the winning lane number as an integer

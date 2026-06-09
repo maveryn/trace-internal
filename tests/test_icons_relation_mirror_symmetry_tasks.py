@@ -31,11 +31,11 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert len(reference_entities) == 1
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
-    assert all(len(bbox) == 4 for bbox in out.evidence_gt.value)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert all(len(bbox) == 4 for bbox in out.annotation_gt.value)
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_mirror_symmetry_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_mirror_symmetry"
     assert out.query_id == "mirror_diagonal_main"
@@ -67,13 +67,13 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert len({str(entity["label"]) for entity in scene_entities}) == 6
     matching_labels = set(str(value) for value in execution["matching_cell_labels"])
     assert trace["witness_symbolic"]["matching_cell_labels"] == execution["matching_cell_labels"]
-    evidence_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
-    expected_evidence = [
-        evidence_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
+    annotation_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
+    expected_annotation = [
+        annotation_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
     ]
-    assert out.evidence_gt.value == expected_evidence
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.value == expected_annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["text_legibility"]["required_role_count"] >= 2
     assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
     assert "cell_label_stroke_rgb" in trace["render_spec"]["style"]
@@ -132,7 +132,7 @@ def test_icons_relation_mirror_symmetry_supports_zero_matches() -> None:
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
 
 
 def test_icons_relation_mirror_symmetry_prompt_example_matches_contract() -> None:
@@ -143,11 +143,11 @@ def test_icons_relation_mirror_symmetry_prompt_example_matches_contract() -> Non
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[360, 120, 560, 320], [590, 120, 790, 320]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[360, 120, 560, 320], [590, 120, 790, 320]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_relation_mirror_symmetry_supports_both_axes_reference() -> None:

@@ -119,8 +119,8 @@ class _Query:
     query_id: str
     answer: int | str
     answer_type: str
-    evidence_bar_ids: Tuple[str, ...]
-    evidence_extra_ids: Tuple[str, ...]
+    annotation_bar_ids: Tuple[str, ...]
+    annotation_extra_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -277,7 +277,7 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    for key in ("query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         raw = params.get(str(key))
         if raw is not None and str(raw) in SUPPORTED_QUERY_IDS:
             return str(raw), {str(raw): 1.0}
@@ -437,13 +437,13 @@ def _build_query(
     }
 
     if str(query_id) == RUNNING_TOTAL_QUERY_ID:
-        evidence = ("start",) + tuple(step.step_id for step in steps[: target_index + 1])
+        annotation = ("start",) + tuple(step.step_id for step in steps[: target_index + 1])
         return _Query(
             query_id=str(query_id),
             answer=int(target_step.running_after),
             answer_type="integer",
-            evidence_bar_ids=evidence,
-            evidence_extra_ids=(f"x_label:{target_step.step_id}",),
+            annotation_bar_ids=annotation,
+            annotation_extra_ids=(f"x_label:{target_step.step_id}",),
             params={
                 **base_params,
                 "target_step_id": str(target_step.step_id),
@@ -466,8 +466,8 @@ def _build_query(
                 query_id=str(query_id),
                 answer=UNANSWERABLE_ANSWER,
                 answer_type="string",
-                evidence_bar_ids=(),
-                evidence_extra_ids=(),
+                annotation_bar_ids=(),
+                annotation_extra_ids=(),
                 params={
                     **base_params,
                     "threshold_direction": str(direction),
@@ -490,13 +490,13 @@ def _build_query(
         option_index = int(index_seed) % len(options)
         crossing_index, threshold_value = options[option_index]
         crossing_step = steps[int(crossing_index)]
-        evidence = ("start",) + tuple(step.step_id for step in steps[: int(crossing_index) + 1])
+        annotation = ("start",) + tuple(step.step_id for step in steps[: int(crossing_index) + 1])
         return _Query(
             query_id=str(query_id),
             answer=str(crossing_step.label),
             answer_type="string",
-            evidence_bar_ids=evidence,
-            evidence_extra_ids=("threshold_label",),
+            annotation_bar_ids=annotation,
+            annotation_extra_ids=("threshold_label",),
             params={
                 **base_params,
                 "threshold_direction": str(direction),
@@ -520,8 +520,8 @@ def _build_query(
             query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
-            evidence_bar_ids=("final", str(target_step.step_id)),
-            evidence_extra_ids=(f"x_label:{target_step.step_id}",),
+            annotation_bar_ids=("final", str(target_step.step_id)),
+            annotation_extra_ids=(f"x_label:{target_step.step_id}",),
             params={
                 **base_params,
                 "target_step_id": str(target_step.step_id),
@@ -753,7 +753,7 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults["answer_hint_label" if is_label else "answer_hint_value"]),
-        "evidence_hint": str(prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_value"]),
+        "annotation_hint": str(prompt_defaults["annotation_hint_label" if is_label else "annotation_hint_value"]),
         "json_example": str(prompt_defaults["json_example_label" if is_label else "json_example_value"]),
         "json_example_answer_only": str(prompt_defaults["json_example_answer_only_label" if is_label else "json_example_answer_only_value"]),
         "unanswerable_instruction": str(prompt_defaults.get("unanswerable_instruction", "")),
@@ -837,8 +837,8 @@ class ChartsWaterfallPanelQueryTask:
                 "json_output_contract_answer_only",
                 "answer_hint_value",
                 "answer_hint_label",
-                "evidence_hint_value",
-                "evidence_hint_label",
+                "annotation_hint_value",
+                "annotation_hint_label",
                 "json_example_value",
                 "json_example_label",
                 "json_example_answer_only_value",
@@ -855,25 +855,25 @@ class ChartsWaterfallPanelQueryTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(dataset.query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_boxes: List[BBox] = []
-        for bar_id in dataset.query.evidence_bar_ids:
-            evidence_boxes.append(list(rendered.value_label_bboxes_px[str(bar_id)]))
-        for extra_id in dataset.query.evidence_extra_ids:
+        annotation_boxes: List[BBox] = []
+        for bar_id in dataset.query.annotation_bar_ids:
+            annotation_boxes.append(list(rendered.value_label_bboxes_px[str(bar_id)]))
+        for extra_id in dataset.query.annotation_extra_ids:
             if str(extra_id).startswith("x_label:"):
                 bar_id = str(extra_id).split(":", 1)[1]
-                evidence_boxes.append(list(rendered.x_label_bboxes_px[str(bar_id)]))
+                annotation_boxes.append(list(rendered.x_label_bboxes_px[str(bar_id)]))
             else:
-                evidence_boxes.append(list(rendered.extra_bboxes_px[str(extra_id)]))
+                annotation_boxes.append(list(rendered.extra_bboxes_px[str(extra_id)]))
 
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_boxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_boxes))
         step_rows = [
             {
                 "step_id": str(step.step_id),
@@ -899,8 +899,8 @@ class ChartsWaterfallPanelQueryTask:
                 "relations": {
                     "query_id": str(dataset.query.query_id),
                     "answer": answer_value,
-                    "evidence_bar_ids": list(dataset.query.evidence_bar_ids),
-                    "evidence_extra_ids": list(dataset.query.evidence_extra_ids),
+                    "annotation_bar_ids": list(dataset.query.annotation_bar_ids),
+                    "annotation_extra_ids": list(dataset.query.annotation_extra_ids),
                     "answerability": str(dataset.query.params.get("answerability", "answerable")),
                     **(
                         {"absence_proof": dict(dataset.query.params["absence_proof"])}
@@ -948,14 +948,14 @@ class ChartsWaterfallPanelQueryTask:
                 "final_value": int(dataset.final_value),
                 "step_count": int(len(dataset.steps)),
                 "steps": list(step_rows),
-                "evidence_bar_ids": list(dataset.query.evidence_bar_ids),
-                "evidence_extra_ids": list(dataset.query.evidence_extra_ids),
+                "annotation_bar_ids": list(dataset.query.annotation_bar_ids),
+                "annotation_extra_ids": list(dataset.query.annotation_extra_ids),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
                 "type": "waterfall_cumulative_witness",
-                "bar_ids": list(dataset.query.evidence_bar_ids),
-                "extra_ids": list(dataset.query.evidence_extra_ids),
+                "bar_ids": list(dataset.query.annotation_bar_ids),
+                "extra_ids": list(dataset.query.annotation_extra_ids),
                 "answer": answer_value,
                 "answerability": str(dataset.query.params.get("answerability", "answerable")),
                 **(
@@ -964,11 +964,11 @@ class ChartsWaterfallPanelQueryTask:
                     else {}
                 ),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_boxes),
-                "bar_ids": list(dataset.query.evidence_bar_ids),
-                "extra_ids": list(dataset.query.evidence_extra_ids),
+                "bbox_set": list(annotation_boxes),
+                "bar_ids": list(dataset.query.annotation_bar_ids),
+                "extra_ids": list(dataset.query.annotation_extra_ids),
             },
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),
@@ -976,7 +976,7 @@ class ChartsWaterfallPanelQueryTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1012,19 +1012,31 @@ class ChartsWaterfallThresholdCrossingLabelTask(
 
 
 @register_task
-class ChartsWaterfallCounterfactualFinalValueTask(
+class ChartsWaterfallRemoveStepFinalTotalTask(
     MergedChartQueryVariantTaskMixin,
     ChartsWaterfallPanelQueryTask,
 ):
-    """Compute the final total under a counterfactual contribution edit."""
+    """Compute the final total after removing one waterfall step."""
 
-    task_id = "task_charts__waterfall__counterfactual_final_value"
-    allowed_query_ids = COUNTERFACTUAL_QUERY_IDS
+    task_id = "task_charts__waterfall__remove_step_final_total"
+    allowed_query_ids = ("remove_step_final_total",)
+
+
+@register_task
+class ChartsWaterfallReverseStepFinalTotalTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsWaterfallPanelQueryTask,
+):
+    """Compute the final total after reversing one waterfall step."""
+
+    task_id = "task_charts__waterfall__reverse_step_final_total"
+    allowed_query_ids = ("reverse_step_final_total",)
 
 
 __all__ = [
-    "ChartsWaterfallCounterfactualFinalValueTask",
     "ChartsWaterfallPanelQueryTask",
+    "ChartsWaterfallRemoveStepFinalTotalTask",
+    "ChartsWaterfallReverseStepFinalTotalTask",
     "ChartsWaterfallRunningTotalValueTask",
     "ChartsWaterfallThresholdCrossingLabelTask",
     "SUPPORTED_QUERY_IDS",

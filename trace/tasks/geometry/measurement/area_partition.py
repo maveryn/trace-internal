@@ -37,6 +37,7 @@ from ..shared.diagram_style import (
     geometry_shape_style_from_diagram_style,
     prepare_geometry_diagram_style_and_background,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 from ..shared.measurement_rendering import (
     bbox_to_list as _bbox_to_list,
     clamp_bbox as _clamp_bbox,
@@ -44,6 +45,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -129,6 +131,7 @@ class _RenderContext:
     small_font: Any
     layout_offset: Point = (0.0, 0.0)
     font_family: str = ""
+    scene_transform: LazySceneTransform | None = None
 
 
 @dataclass(frozen=True)
@@ -148,9 +151,9 @@ class _ResolvedProblem:
 class _RenderedAreaPartitionScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_keyed_bboxes: Mapping[str, BBox]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_keyed_bboxes: Mapping[str, BBox]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -171,16 +174,28 @@ def _centroid(a: Point, b: Point, c: Point) -> Point:
 def _offset_point(ctx: _RenderContext, point: Point) -> Point:
     """Apply the resolved non-semantic scene placement jitter to one point."""
 
-    return (
+    offset_point = (
         float(point[0]) + float(ctx.layout_offset[0]),
         float(point[1]) + float(ctx.layout_offset[1]),
     )
+    if ctx.scene_transform is not None and ctx.scene_transform.resolved:
+        return ctx.scene_transform.point(offset_point)
+    return offset_point
 
 
 def _offset_points(ctx: _RenderContext, points: Sequence[Point]) -> tuple[Point, ...]:
     """Apply the resolved non-semantic scene placement jitter to several points."""
 
-    return tuple(_offset_point(ctx, point) for point in points)
+    offset_points = tuple(
+        (
+            float(point[0]) + float(ctx.layout_offset[0]),
+            float(point[1]) + float(ctx.layout_offset[1]),
+        )
+        for point in points
+    )
+    if ctx.scene_transform is not None:
+        return ctx.scene_transform.points(offset_points)
+    return offset_points
 
 
 def _draw_equal_ticks(ctx: _RenderContext, segments: Sequence[Tuple[Point, Point]]) -> BBox:
@@ -203,13 +218,6 @@ def _draw_equal_ticks(ctx: _RenderContext, segments: Sequence[Tuple[Point, Point
         max(bbox[2] for bbox in tick_bboxes),
         max(bbox[3] for bbox in tick_bboxes),
     )
-
-
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        str(int(value)): (1.0 if int(value) == int(selected) else 0.0)
-        for value in values
-    }
 
 
 def _resolve_problem(
@@ -274,7 +282,10 @@ def _resolve_problem(
         formula=f"total area = shaded area * {int(denominator)}",
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(float(value) for value in support_values))), float(answer)
+            tuple(sorted(set(float(value) for value in support_values))),
+            float(answer),
+            key_fn=lambda value: str(int(value)),
+            is_selected=lambda value, selected: int(value) == int(selected),
         ),
     )
 
@@ -404,15 +415,15 @@ def _render_area_partition_scene(
         ctx, f"shaded area={problem.shaded_area}", _offset_point(ctx, (570.0, 82.0)), small=True
     )
     label_bboxes["target"] = _draw_label(ctx, "total area=?", _offset_point(ctx, (570.0, 510.0)), small=True)
-    evidence_roles = (
+    annotation_roles = (
         "outer_shape",
         "shaded_region",
     )
-    evidence_bboxes = (
+    annotation_bboxes = (
         outer_bbox,
         shaded_bbox,
     )
-    evidence_keyed_bboxes = {
+    annotation_keyed_bboxes = {
         "outer_shape": outer_bbox,
         "shaded_region": shaded_bbox,
     }
@@ -443,9 +454,9 @@ def _render_area_partition_scene(
     return _RenderedAreaPartitionScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_keyed_bboxes=dict(evidence_keyed_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_keyed_bboxes=dict(annotation_keyed_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -581,6 +592,13 @@ class _AreaPartitionBaseTask:
             small_font=load_font(max(10, int(small_font_size)), bold=True, font_family=font_family),
             layout_offset=(float(rng.randint(-26, 24)), float(rng.randint(-14, 16))),
             font_family=str(font_family),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -599,7 +617,7 @@ class _AreaPartitionBaseTask:
             "layout_jitter": {
                 "offset_px": [round(float(ctx.layout_offset[0]), 3), round(float(ctx.layout_offset[1]), 3)],
                 "offset_range_px": [-26, 24, -14, 16],
-                "applied_before_evidence_projection": True,
+                "applied_before_annotation_projection": True,
             },
         }
         return ctx, render_meta
@@ -607,7 +625,7 @@ class _AreaPartitionBaseTask:
     def _build_complexity(self, rendered: _RenderedAreaPartitionScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.48
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.18
         )
         denominator = int(rendered.witness.get("shaded_fraction_denominator", 2))
@@ -615,7 +633,7 @@ class _AreaPartitionBaseTask:
         ambiguity = 0.48 + (0.08 if denominator >= 4 else 0.0) + (0.08 if denominator >= 6 else 0.0)
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -659,6 +677,8 @@ class _AreaPartitionBaseTask:
                 )
                 rendered = _render_area_partition_scene(ctx, problem)
                 render_meta = dict(render_meta_attempt)
+                if ctx.scene_transform is not None:
+                    render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -681,7 +701,7 @@ class _AreaPartitionBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -695,14 +715,14 @@ class _AreaPartitionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -713,20 +733,20 @@ class _AreaPartitionBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_keyed_bboxes = {
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_keyed_bboxes = {
             str(key): _bbox_to_list(bbox)
-            for key, bbox in rendered.evidence_keyed_bboxes.items()
+            for key, bbox in rendered.annotation_keyed_bboxes.items()
         }
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(key): [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for key, bbox in evidence_keyed_bboxes.items()
+            for key, bbox in annotation_keyed_bboxes.items()
         }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
         query_params = {
             "scene_id": scene_id,
             "scene_variant": str(problem.scene_variant),
@@ -744,7 +764,7 @@ class _AreaPartitionBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.scene_variant),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -773,7 +793,7 @@ class _AreaPartitionBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "integer",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 1,
                 **dict(rendered.witness),
             },
@@ -783,21 +803,21 @@ class _AreaPartitionBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "keyed_bbox_map",
-                "original_evidence_value": dict(evidence_keyed_bboxes),
+                "original_annotation_value": dict(annotation_keyed_bboxes),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -37,8 +37,15 @@ from ..shared.object_resources import (
     ROOM_CAMERA_DISTANCE_CANDIDATE_WALL_OBJECT_TYPES,
     ROOM_CAMERA_DISTANCE_CONTEXT_WALL_OBJECT_TYPES,
 )
-from ..shared.object_scene import POINT_LABELS, _bbox_intersection_area
-from .wall_mounted_object_count import (
+from ..shared.option_panel import build_text_option_choices
+from ..shared.camera_projection import build_projection_frame
+from ..shared.object_scene import (
+    POINT_LABELS,
+    bbox_intersection_area,
+    object_reference_points,
+    resolve_object_scene_render_params,
+)
+from .wall_mounted_common import (
     FLOOR_PROP_SHAPES,
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
@@ -46,11 +53,8 @@ from .wall_mounted_object_count import (
     SUPPORTED_SCENE_VARIANTS,
     WALL_BACK_Y,
     WALL_X,
-    _build_projection_frame,
     _finalize_specs,
     _make_floor_prop,
-    _object_reference_points,
-    _resolve_render_params,
     _room_object_bbox,
     _sample_room_camera,
     _wall_object_visible_bbox,
@@ -59,8 +63,8 @@ from .wall_mounted_object_count import (
     _wall_reference_points,
     _wall_spec,
     _with_picture_scenery,
-    render_room_scene_3d,
 )
+from .wall_mounted_rendering import render_room_scene_3d
 
 
 TASK_ID = "task_three_d__room__wall_object_camera_distance_label"
@@ -146,7 +150,7 @@ def _candidate_screen_separation_ok(candidate_specs: Sequence[Mapping[str, Any]]
         for other_index in range(index + 1, len(bboxes)):
             if math.hypot(centers[index][0] - centers[other_index][0], centers[index][1] - centers[other_index][1]) < 48.0:
                 return False
-            if _bbox_intersection_area(bbox, bboxes[other_index]) > 2100.0:
+            if bbox_intersection_area(bbox, bboxes[other_index]) > 2100.0:
                 return False
     return True
 
@@ -280,9 +284,9 @@ def _build_room_wall_camera_distance_dataset(
         for spec in [*candidate_wall_specs, *context_wall_specs]:
             all_reference_points.extend(_wall_reference_points(spec))
         for spec in floor_specs:
-            all_reference_points.extend(_object_reference_points(spec))
+            all_reference_points.extend(object_reference_points(spec))
 
-        frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=all_reference_points)
+        frame = build_projection_frame(camera=camera, render_params=render_params, point_worlds=all_reference_points)
         finalized_candidates = _finalize_specs(candidate_wall_specs, camera=camera, frame=frame)
         finalized_context_wall = _finalize_specs(context_wall_specs, camera=camera, frame=frame)
         finalized_floor = _finalize_specs(floor_specs, camera=camera, frame=frame)
@@ -384,7 +388,7 @@ def _build_room_wall_camera_distance_dataset(
                 "normalized_center_v": round(float(frame.normalized_center_v), 6),
             },
             "solver_trace": {
-                "predicate": "minimum finalized camera_distance among lettered wall-mounted candidates",
+                "predicate": "minimum finalized camera_distance among option-panel wall-mounted candidates",
                 "candidate_camera_distances_by_label": dict(sorted(candidate_camera_distances.items())),
                 "candidate_walls_by_label": dict(sorted(candidate_walls.items())),
                 "camera_distance_order_near_to_far": [str(spec["point_label"]) for spec in relabeled_by_original_distance],
@@ -447,7 +451,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 @register_task
 class ThreeDRoomWallObjectCameraDistanceLabelTask:
-    """Choose the lettered wall-mounted object closest to the camera."""
+    """Choose the option-panel wall-mounted object closest to the camera."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -524,7 +528,7 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
             lower=3,
             upper=8,
         )
-        render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
+        render_params = resolve_object_scene_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_room_wall_camera_distance_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -541,7 +545,13 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_room_scene_3d(background, dataset=dataset, render_params=render_params)
+        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
+        rendered_scene = render_room_scene_3d(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            option_choices=option_choices,
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -559,7 +569,7 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -572,13 +582,13 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -588,8 +598,8 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.evidence_bboxes]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             candidate_count=int(dataset["candidate_count"]),
@@ -646,7 +656,9 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -661,6 +673,12 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
                 "room_bbox_px": list(rendered_scene.room_bbox_px),
                 "object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.object_bboxes_px.items()},
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "wall_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.wall_object_bboxes_px.items()},
                 "wall_object_centers_px": {str(key): list(value) for key, value in rendered_scene.wall_object_centers_px.items()},
                 "floor_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.floor_object_bboxes_px.items()},
@@ -680,6 +698,11 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
                 "answer_wall": str(dataset["answer_wall"]),
                 "target_object_ids": [str(value) for value in dataset["target_object_ids"]],
                 "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "wall_object_specs": [dict(spec) for spec in dataset["wall_object_specs"]],
                 "floor_object_specs": [dict(spec) for spec in dataset["floor_object_specs"]],
                 "object_specs": [dict(spec) for spec in dataset["object_specs"]],
@@ -706,8 +729,8 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
                 "id": str(dataset["answer_object_id"]),
                 "answer": str(answer_label),
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -717,7 +740,7 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

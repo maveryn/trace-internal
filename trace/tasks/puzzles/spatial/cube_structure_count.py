@@ -18,7 +18,7 @@ from ...shared.named_colors import available_named_colors, darken_color, named_c
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.block_stack_scene import render_puzzle_block_comparison_scene, render_puzzle_block_structure_scene
-from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import (
     build_puzzle_complexity,
     clamp_unit_interval,
@@ -26,6 +26,7 @@ from ..shared.complexity import (
     resolve_puzzle_complexity_weights,
 )
 from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
+from ..shared.params import resolve_puzzle_int_param
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.spatial_blocks_common import (
     cube_records_from_height_rows,
@@ -105,10 +106,6 @@ _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, ta
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="spatial")
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
 _DEFAULT_CUBE_COLOR_NAME_SUPPORT: Tuple[str, ...] = ("orange", "blue", "green", "purple", "cyan", "magenta", "brown")
-
-
-def _resolve_int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), group_default(_GEN_DEFAULTS, str(key), int(fallback))))
 
 
 def _axis_positive_count(probabilities: Mapping[str, float], supported_values: Sequence[str]) -> int:
@@ -298,8 +295,8 @@ def _resolve_query_contract(params: Mapping[str, Any], *, instance_seed: int) ->
 
 
 def _support_range(params: Mapping[str, Any], *, key_min: str, key_max: str, fallback_min: int, fallback_max: int) -> Tuple[int, ...]:
-    low = int(_resolve_int_param(params, str(key_min), int(fallback_min)))
-    high = int(_resolve_int_param(params, str(key_max), int(fallback_max)))
+    low = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, str(key_min), int(fallback_min)))
+    high = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, str(key_max), int(fallback_max)))
     if int(low) > int(high):
         raise ValueError(f"{key_min}/{key_max} must form a non-empty support")
     return tuple(range(int(low), int(high) + 1))
@@ -378,12 +375,12 @@ def _sample_height_rows_with_total(
     params: Mapping[str, Any],
     target_max_height: int | None = None,
 ) -> Tuple[List[List[int]], Dict[str, int]]:
-    width_min = int(_resolve_int_param(params, "width_min", 2))
-    width_max = int(_resolve_int_param(params, "width_max", 4))
-    depth_min = int(_resolve_int_param(params, "depth_min", 2))
-    depth_max = int(_resolve_int_param(params, "depth_max", 4))
-    height_min = int(_resolve_int_param(params, "height_min", 2))
-    height_max = int(_resolve_int_param(params, "height_max", 4))
+    width_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_min", 2))
+    width_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_max", 4))
+    depth_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_min", 2))
+    depth_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_max", 4))
+    height_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "height_min", 2))
+    height_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "height_max", 4))
     for _ in range(600):
         if int(rng.randint(0, 1)) == 0:
             row_count = 1
@@ -429,12 +426,12 @@ def _sample_full_and_partial_cuboid(
     params: Mapping[str, Any],
     target_height: int | None = None,
 ) -> Tuple[List[List[int]], List[List[int]], Dict[str, int], List[Dict[str, int]]]:
-    width_min = int(_resolve_int_param(params, "cuboid_width_min", 2))
-    width_max = int(_resolve_int_param(params, "cuboid_width_max", 4))
-    depth_min = int(_resolve_int_param(params, "cuboid_depth_min", 2))
-    depth_max = int(_resolve_int_param(params, "cuboid_depth_max", 4))
-    height_min = int(_resolve_int_param(params, "cuboid_height_min", 2))
-    height_max = int(_resolve_int_param(params, "cuboid_height_max", 4))
+    width_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_width_min", 2))
+    width_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_width_max", 4))
+    depth_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_depth_min", 2))
+    depth_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_depth_max", 4))
+    height_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_height_min", 2))
+    height_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "cuboid_height_max", 4))
     for _ in range(600):
         if int(rng.randint(0, 1)) == 0:
             row_count = 1
@@ -537,10 +534,10 @@ def _painted_exterior_face_count_support(
     total_support: Sequence[int],
     target_max_height: int,
 ) -> Tuple[int, ...]:
-    width_min = int(_resolve_int_param(params, "width_min", 2))
-    width_max = int(_resolve_int_param(params, "width_max", 4))
-    depth_min = int(_resolve_int_param(params, "depth_min", 2))
-    depth_max = int(_resolve_int_param(params, "depth_max", 4))
+    width_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_min", 2))
+    width_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_max", 4))
+    depth_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_min", 2))
+    depth_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_max", 4))
     lengths = sorted(
         set(range(int(width_min), int(width_max) + 1))
         | set(range(int(depth_min), int(depth_max) + 1))
@@ -838,12 +835,12 @@ def _sample_readable_removal_pair(
         fallback_min=8,
         fallback_max=22,
     )
-    width_min = int(_resolve_int_param(params, "width_min", 2))
-    width_max = int(_resolve_int_param(params, "width_max", 4))
-    depth_min = int(_resolve_int_param(params, "depth_min", 2))
-    depth_max = int(_resolve_int_param(params, "depth_max", 4))
-    height_min = int(_resolve_int_param(params, "height_min", 2))
-    height_max = int(_resolve_int_param(params, "height_max", 4))
+    width_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_min", 2))
+    width_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "width_max", 4))
+    depth_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_min", 2))
+    depth_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "depth_max", 4))
+    height_min = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "height_min", 2))
+    height_max = int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "height_max", 4))
     for _ in range(800):
         if int(rng.randint(0, 1)) == 0:
             row_count = 1
@@ -1195,14 +1192,14 @@ class _PuzzlesSpatialCubeStructureBaseTask:
         )
 
         supporting_structure_ids = [str(item) for item in dataset["supporting_structure_ids"]]
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.structure_bbox_map, supporting_structure_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.structure_bbox_map, supporting_structure_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1222,11 +1219,11 @@ class _PuzzlesSpatialCubeStructureBaseTask:
                 "object_description_change_pair_stack_strip",
                 "object_description_change_pair_stack_card",
                 "object_description_change_pair_stack_outline",
-                "evidence_hint_total_cube_count",
-                "evidence_hint_missing_to_complete_cuboid_count",
-                "evidence_hint_removed_cube_count",
-                "evidence_hint_painted_exterior_face_count",
-                "evidence_hint_exact_k_painted_faces_cube_count",
+                "annotation_hint_total_cube_count",
+                "annotation_hint_missing_to_complete_cuboid_count",
+                "annotation_hint_removed_cube_count",
+                "annotation_hint_painted_exterior_face_count",
+                "annotation_hint_exact_k_painted_faces_cube_count",
                 "json_example_total_cube_count",
                 "json_example_missing_to_complete_cuboid_count",
                 "json_example_removed_cube_count",
@@ -1247,7 +1244,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(internal_query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults[
@@ -1259,7 +1256,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(internal_query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(internal_query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
                 "json_example": str(prompt_defaults[f"json_example_{str(internal_query_id)}"]),
                 "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(internal_query_id)}"]),
@@ -1275,8 +1272,8 @@ class _PuzzlesSpatialCubeStructureBaseTask:
         total_scan = normalize_int_with_bounds(
             int(total_for_scan),
             [
-                int(_resolve_int_param(params, "total_cube_count_min", 8)),
-                int(_resolve_int_param(params, "total_cube_count_max", 22)),
+                int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "total_cube_count_min", 8)),
+                int(resolve_puzzle_int_param(params, _GEN_DEFAULTS, "total_cube_count_max", 22)),
             ],
         )
         comparison_load = 0.20 if bool(dataset["is_comparison"]) else 0.0
@@ -1408,15 +1405,15 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             "execution_trace": dict(execution_trace),
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

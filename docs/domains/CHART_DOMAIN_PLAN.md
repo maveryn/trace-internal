@@ -21,7 +21,7 @@ Those active details belong in `docs/domains/CHART_TASK_SETUP.md` and `docs/proj
 ## Taxonomy direction
 1. Keep the public TRACE split: `domain -> scene_id -> task_id`.
 2. Public `task_id` is the default sampling unit. Mirror directions, threshold sides, rank choices, and other branches of the same objective should stay inside `query_id`.
-3. Chart type can be an internal render axis when the scene grammar and evidence contract stay the same. When the visual grammar changes materially, use a separate `scene_id`.
+3. Chart type can be an internal render axis when the scene grammar and annotation contract stay the same. When the visual grammar changes materially, use a separate `scene_id`.
 4. `task_group` remains only a source module/config grouping layer and should not drive public task enumeration.
 
 ## Long-term chart-type universe
@@ -65,7 +65,7 @@ These remain valid future targets, but they are not required for current chart c
 ## Scene Direction
 1. Active chart work is organized by public scenes such as `single_series`, `part_whole`, `table`, `dashboard`, `curve_panels`, `heatmap`, `sankey`, and `region_map`.
 2. Likely future chart expansion should first add tasks to existing scenes when the scene grammar already fits.
-3. Add a new scene only when Vero-style coverage requires a genuinely new visual grammar or evidence contract, such as chart/table combo figures or callout-annotation panels.
+3. Add a new scene only when Vero-style coverage requires a genuinely new visual grammar or annotation contract, such as chart/table combo figures or callout-annotation panels.
 
 ## Planning rules
 1. Do not force every chart type onto every task; chart support should stay selective and semantics-driven.

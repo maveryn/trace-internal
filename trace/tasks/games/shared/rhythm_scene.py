@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .rhythm_common import RhythmNote, lane_entity_id, lane_label
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata

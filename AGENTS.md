@@ -24,7 +24,8 @@ Each generated instance should include:
 ## Review app workflow
 - Generated task-review artifacts belong under `review/task-reviews/<domain>/<scene_id>/<task_id>/`; do not use stale review roots.
 - The browser review app is the default manual inspection surface. Reload its index after generated artifact changes, and restart it after app, template, CSS/JS, indexer, resource, feedback, or schema changes.
-- Reviewer feedback stays open until a human verifies the updated task/sample. When an agent fixes feedback, add a brief repair note to the relevant feedback item describing what changed and whether artifacts were regenerated or the app was refreshed; do not mark the feedback resolved unless explicitly instructed.
+- Reviewer-facing comments are **issues** and browser issue pages use `/issues`. Internal APIs, SQLite paths, and code identifiers still use `feedback`; legacy `/feedback` browser paths are compatibility redirects/aliases. Do not rename those internals without an explicit migration.
+- Reviewer issues stay open until a human verifies the updated task/sample. When an agent fixes an issue, add a brief repair note to the relevant issue item describing what changed and whether artifacts were regenerated or the app was refreshed; do not mark the issue resolved unless explicitly instructed.
 - Task completion requires both browser-app manual audit passing and accepted current solve-rate artifacts.
 
 ## Local vLLM serving
@@ -45,7 +46,7 @@ Each generated instance should include:
 - Generators must be deterministic given seeds/specs/versions.
 - No hidden randomness: all random sources must be explicit and recorded.
 - Verifiers must rely on metadata contracts and projections, not pixels as source of truth.
-- Answers and evidence must come from the same execution trace.
+- Answers and annotation must come from the same execution trace.
 - Task instances must have unique final answers by construction.
 - Never auto-relax semantic constraints to force acceptance.
 - Sidecar trace export is mandatory; each `TrainInstance` must include `trace_ref`.

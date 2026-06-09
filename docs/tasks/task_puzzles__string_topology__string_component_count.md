@@ -16,8 +16,8 @@ Status: accepted active default Puzzle task.
    - `closed_loop_count`: count closed loops, including knotted closed loops.
    - `knotted_component_count`: count components that contain at least one knot.
 3. `answer_gt.type`: `integer`
-4. `evidence_gt.type`: `bbox_set`
-5. Evidence contains one component bbox for each counted item.
+4. `annotation_gt.type`: `bbox_set`
+5. Annotation contains one component bbox for each counted item.
 
 ## Notes
 1. The renderer may use `string_strip`, `string_card`, or `string_outline` scene styling.

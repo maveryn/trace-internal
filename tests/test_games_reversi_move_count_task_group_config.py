@@ -23,15 +23,20 @@ def test_games_reversi_move_count_defaults_expose_scene_query_and_answer_axes() 
         "legal_move_count",
         "corner_move_count",
         "flip_count_for_marked_move",
+        "black_frontier_disc_count",
+        "white_frontier_disc_count",
     }
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_REVERSI_STYLE_VARIANTS)
     assert list(generation["legal_move_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["corner_move_count_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["flip_count_support"]) == [2, 3, 4, 5, 6]
+    assert list(generation["frontier_disc_count_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     assert int(rendering["max_board_size_px"]) > 0
     assert int(rendering["player_badge_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_reversi_v0"
     assert "6 by 6" in str(prompt["object_description_compact_board"])
-    assert "corner" in str(prompt["evidence_hint_corner_move_count"]).lower()
-    assert "pixel point" in str(prompt["evidence_hint_flip_count_for_marked_move"]).lower()
+    assert "corner" in str(prompt["annotation_hint_corner_move_count"]).lower()
+    assert "pixel point" in str(prompt["annotation_hint_flip_count_for_marked_move"]).lower()
     assert "flip" in str(prompt["answer_hint_flip_count_for_marked_move"]).lower()
+    assert "frontier" in str(prompt["frontier_rule_text"]).lower()
+    assert "black frontier" in str(prompt["answer_hint_black_frontier_disc_count"]).lower()

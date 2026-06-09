@@ -23,7 +23,7 @@ from trace.tasks.charts.table.shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
     build_counting_value_dataset_for_variant,
-    projected_table_bbox_evidence,
+    projected_table_bbox_annotation,
     resolve_table_axis_variant,
     resolve_table_render_params,
     table_render_style_spec,
@@ -38,7 +38,7 @@ from trace.tasks.charts.table.shared.visual_defaults import (
 )
 
 
-TASK_ID = "task_charts__table__value_predicate_count"
+TASK_ID = "charts_table_value_predicate_count_base"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "threshold_count",
     "in_interval",
@@ -242,9 +242,9 @@ class TablesCountingValueCountTask:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_threshold_count",
-                "evidence_hint_in_interval",
-                "evidence_hint_categorical_value_count",
+                "annotation_hint_threshold_count",
+                "annotation_hint_in_interval",
+                "annotation_hint_categorical_value_count",
                 "json_example_threshold_count",
                 "json_example_in_interval",
                 "json_example_categorical_value_count",
@@ -255,7 +255,7 @@ class TablesCountingValueCountTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         variant_slots = {"query_column": str(dataset["query_column"])}
@@ -275,12 +275,12 @@ class TablesCountingValueCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -297,14 +297,14 @@ class TablesCountingValueCountTask:
             )
             for row_index in dataset["matching_row_indices"]
         ]
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, supporting_cell_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_table_bbox_annotation(rendered_scene, supporting_cell_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         values_by_row = {
             str(row_label): {
@@ -432,11 +432,11 @@ class TablesCountingValueCountTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
             },
         }
 
@@ -464,7 +464,7 @@ class TablesCountingValueCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -476,18 +476,44 @@ class TablesCountingValueCountTask:
 
 
 @register_task
-class ChartsTableValuePredicateCountTask(MergedChartQueryVariantTaskMixin, TablesCountingValueCountTask):
-    """Count table rows matching one sampled value predicate."""
+class ChartsTableThresholdCountTask(MergedChartQueryVariantTaskMixin, TablesCountingValueCountTask):
+    """Count table rows satisfying a one-bound numeric predicate."""
 
-    task_id = "task_charts__table__value_predicate_count"
+    task_id = "task_charts__table__threshold_count"
     domain = "charts"
     task_group = "table_counting"
     prompt_domain = "charts"
     prompt_task_group = "table_counting"
-    allowed_query_ids = ("threshold_count", "in_interval", "categorical_value_count")
+    allowed_query_ids = ("threshold_count",)
+
+
+@register_task
+class ChartsTableIntervalValueCountTask(MergedChartQueryVariantTaskMixin, TablesCountingValueCountTask):
+    """Count table rows whose numeric values fall inside an interval."""
+
+    task_id = "task_charts__table__interval_value_count"
+    domain = "charts"
+    task_group = "table_counting"
+    prompt_domain = "charts"
+    prompt_task_group = "table_counting"
+    allowed_query_ids = ("in_interval",)
+
+
+@register_task
+class ChartsTableCategoricalValueCountTask(MergedChartQueryVariantTaskMixin, TablesCountingValueCountTask):
+    """Count table rows matching one categorical cell value."""
+
+    task_id = "task_charts__table__categorical_value_count"
+    domain = "charts"
+    task_group = "table_counting"
+    prompt_domain = "charts"
+    prompt_task_group = "table_counting"
+    allowed_query_ids = ("categorical_value_count",)
 
 
 __all__ = [
-    "ChartsTableValuePredicateCountTask",
+    "ChartsTableCategoricalValueCountTask",
+    "ChartsTableIntervalValueCountTask",
+    "ChartsTableThresholdCountTask",
     "TablesCountingValueCountTask",
 ]

@@ -161,7 +161,7 @@ custom_reward_function:
     trace_output_mode: "${oc.env:TRACE_OUTPUT_MODE,answer}"
     trace_reward_mode: "${oc.env:TRACE_REWARD_MODE,auto}"
     trace_answer_scoring: "${oc.env:TRACE_ANSWER_SCORING,exact_json}"
-    trace_evidence_reward_formula: "${oc.env:TRACE_EVIDENCE_REWARD_FORMULA,gated}"
+    trace_annotation_reward_formula: "${oc.env:TRACE_ANNOTATION_REWARD_FORMULA,gated}"
     trace_answer_weight: ${oc.decode:${oc.env:TRACE_ANSWER_WEIGHT,0.5}}
-    trace_evidence_weight: ${oc.decode:${oc.env:TRACE_EVIDENCE_WEIGHT,0.5}}
+    trace_annotation_weight: ${oc.decode:${oc.env:TRACE_ANNOTATION_WEIGHT,0.5}}
     trace_format_weight: ${oc.decode:${oc.env:TRACE_FORMAT_WEIGHT,0.05}}

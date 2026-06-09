@@ -28,7 +28,7 @@ from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
+    projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
@@ -39,11 +39,17 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
 SCENE_ID = "star_battle"
-VALID_CELL_TASK_ID = "task_puzzles__star_battle__star_battle_valid_cell_label"
+VALID_CELL_ANYWHERE_TASK_ID = "task_puzzles__star_battle__valid_cell_anywhere_label"
+SCOPED_VALID_CELL_TASK_ID = "task_puzzles__star_battle__scoped_valid_cell_label"
 REMAINING_COUNT_TASK_ID = "task_puzzles__star_battle__star_battle_remaining_count"
 
 VALID_CELL_QUERY_IDS: Tuple[str, ...] = (
     "valid_cell_anywhere_label",
+    "valid_cell_in_marked_region_label",
+    "valid_cell_for_marked_row_label",
+)
+VALID_CELL_ANYWHERE_QUERY_IDS: Tuple[str, ...] = ("valid_cell_anywhere_label",)
+SCOPED_VALID_CELL_QUERY_IDS: Tuple[str, ...] = (
     "valid_cell_in_marked_region_label",
     "valid_cell_for_marked_row_label",
 )
@@ -223,8 +229,8 @@ def _resolve_query_id(
     supported_queries: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     effective_params = dict(params)
-    if effective_params.get("query_id") is None and effective_params.get("query_id") is not None:
-        effective_params["query_id"] = str(effective_params["query_id"])
+    if effective_params.get("query_id") is None and effective_params.get("query_variant") is not None:
+        effective_params["query_id"] = str(effective_params["query_variant"])
     return resolve_puzzle_axis_variant(
         params=effective_params,
         gen_defaults=gen_defaults,
@@ -864,7 +870,7 @@ def _build_prompt(
         "json_output_contract_answer_only",
         f"object_description_{scene_variant}",
         f"answer_hint_{query_id}",
-        f"evidence_hint_{query_id}",
+        f"annotation_hint_{query_id}",
         f"json_example_{query_id}",
         f"json_example_answer_only_{query_id}",
     )
@@ -873,7 +879,7 @@ def _build_prompt(
         "object_description": str(prompt_values[f"object_description_{scene_variant}"]),
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
-        "evidence_hint": str(prompt_values[f"evidence_hint_{query_id}"]),
+        "annotation_hint": str(prompt_values[f"annotation_hint_{query_id}"]),
         "answer_hint": str(prompt_values[f"answer_hint_{query_id}"]),
         "json_example": str(prompt_values[f"json_example_{query_id}"]),
         "json_example_answer_only": str(prompt_values[f"json_example_answer_only_{query_id}"]),
@@ -885,7 +891,7 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -986,15 +992,15 @@ class _PuzzlesLogicStarBattleBaseTask:
             prompt_defaults=prompt_defaults,
             instance_seed=int(instance_seed),
         )
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.item_bbox_map,
             [str(item_id) for item_id in dataset["supporting_item_ids"]],
         )
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_type = str(dataset["answer_type"])
         answer_value = dataset["answer_value"]
         answer_gt = TypedValue(type=answer_type, value=int(answer_value) if answer_type == "integer" else str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         size = int(dataset["size"])
         candidate_specs = [
             {
@@ -1059,7 +1065,7 @@ class _PuzzlesLogicStarBattleBaseTask:
                 "col_bboxes_px": {str(key): list(value) for key, value in rendered_scene.col_bbox_map.items()},
                 "region_bboxes_px": {str(key): list(value) for key, value in rendered_scene.region_bbox_map.items()},
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 **dict(query_params),
@@ -1075,10 +1081,10 @@ class _PuzzlesLogicStarBattleBaseTask:
                 "supporting_item_ids": [str(item_id) for item_id in dataset["supporting_item_ids"]],
                 "question_format": str(query_id),
             },
-            "witness_symbolic": {"type": "bbox_set", "value": list(evidence_bboxes)},
-            "projected_evidence": {"type": "bbox_set", "bbox_set": list(evidence_bboxes), "value": list(evidence_bboxes)},
+            "witness_symbolic": {"type": "bbox_set", "value": list(annotation_bboxes)},
+            "projected_annotation": {"type": "bbox_set", "bbox_set": list(annotation_bboxes), "value": list(annotation_bboxes)},
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
         }
         if "correct_cell" in dataset:
             trace_payload["execution_trace"]["correct_cell"] = [int(value) for value in dataset["correct_cell"]]
@@ -1096,7 +1102,7 @@ class _PuzzlesLogicStarBattleBaseTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1109,11 +1115,19 @@ class _PuzzlesLogicStarBattleBaseTask:
 
 
 @register_task
-class PuzzlesLogicStarBattleValidCellLabelTask(_PuzzlesLogicStarBattleBaseTask):
-    """Choose the labeled cell where a Star Battle star can be legally placed."""
+class PuzzlesLogicStarBattleValidCellAnywhereLabelTask(_PuzzlesLogicStarBattleBaseTask):
+    """Choose a labeled cell where a Star Battle star can be legally placed anywhere."""
 
-    task_id = VALID_CELL_TASK_ID
-    supported_query_ids = VALID_CELL_QUERY_IDS
+    task_id = VALID_CELL_ANYWHERE_TASK_ID
+    supported_query_ids = VALID_CELL_ANYWHERE_QUERY_IDS
+
+
+@register_task
+class PuzzlesLogicStarBattleScopedValidCellLabelTask(_PuzzlesLogicStarBattleBaseTask):
+    """Choose a labeled cell where a Star Battle star can be legally placed in a marked scope."""
+
+    task_id = SCOPED_VALID_CELL_TASK_ID
+    supported_query_ids = SCOPED_VALID_CELL_QUERY_IDS
 
 
 @register_task
@@ -1126,5 +1140,6 @@ class PuzzlesLogicStarBattleRemainingCountTask(_PuzzlesLogicStarBattleBaseTask):
 
 __all__ = [
     "PuzzlesLogicStarBattleRemainingCountTask",
-    "PuzzlesLogicStarBattleValidCellLabelTask",
+    "PuzzlesLogicStarBattleScopedValidCellLabelTask",
+    "PuzzlesLogicStarBattleValidCellAnywhereLabelTask",
 ]

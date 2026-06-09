@@ -15,7 +15,7 @@ def test_games_rhythm_lanes_defaults_present() -> None:
     cfg = get_task_group_defaults("games", "rhythm")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__rhythm__hit_window_count",
+        task_id="task_games__rhythm__lane_hit_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -36,4 +36,4 @@ def test_games_rhythm_lanes_defaults_present() -> None:
     assert int(rendering["canvas_height"]) == 900
     assert str(prompt["bundle_id"]) == "games_rhythm_v0"
     assert "one row per beat" in str(prompt["rhythm_motion_rule_text"])
-    assert "bounding boxes" in str(prompt["evidence_hint_lane_hit_count"])
+    assert "bounding boxes" in str(prompt["annotation_hint_lane_hit_count"])

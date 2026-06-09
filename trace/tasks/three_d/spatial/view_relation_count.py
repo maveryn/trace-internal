@@ -1,4 +1,4 @@
-"""View-relative left/right counting task for a synthetic 3D object scene."""
+"""View-relative and camera-depth counting task for a synthetic 3D object scene."""
 
 from __future__ import annotations
 
@@ -53,11 +53,19 @@ from ..shared.object_scene import (
 )
 
 
-TASK_ID = "task_three_d__object_scene__view_relation_count"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID = "task_three_d__object_scene__image_plane_lateral_relation_count"
+CAMERA_DEPTH_RELATION_COUNT_TASK_ID = "task_three_d__object_scene__camera_depth_relation_count"
+TASK_ID = IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID
+SOURCE_ID = "three_d_object_scene_view_relation_count_source"
+SCREEN_SIDE_QUERY_IDS: Tuple[str, ...] = (
     "left_of_reference_in_view_count",
     "right_of_reference_in_view_count",
 )
+CAMERA_DEPTH_QUERY_IDS: Tuple[str, ...] = (
+    "closer_to_camera_than_reference_count",
+    "farther_from_camera_than_reference_count",
+)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = SCREEN_SIDE_QUERY_IDS + CAMERA_DEPTH_QUERY_IDS
 COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
 VIEW_SCENE_SLOTS: Tuple[Tuple[float, float], ...] = tuple(
     (x, y)
@@ -68,6 +76,7 @@ COUNTABLE_DIMENSION_SCALE = 1.08
 MIN_PROJECTED_OBJECT_AREA_PX = 520.0
 MAX_PAIRWISE_OVERLAP_PX = 3600.0
 MIN_REFERENCE_X_MARGIN_PX = 60.0
+MIN_REFERENCE_DEPTH_MARGIN = 0.28
 
 
 def _uniform_string_probability_map(values: Sequence[str]) -> Dict[str, float]:
@@ -124,7 +133,7 @@ def _make_countable_object(
         for channel in resolve_three_d_object_fill_rgb(
             spec,
             palette=CONTEXT_OBJECT_COLORS,
-            salt=f"{TASK_ID}.countable",
+            salt=f"{SOURCE_ID}.countable",
             variation_strength=0.32,
         )
     ]
@@ -223,37 +232,116 @@ def _select_reference_and_targets(
     query_id: str,
     target_count: int,
 ) -> Tuple[Dict[str, Any], List[str], Dict[str, bool], float]:
-    ordered = sorted(specs, key=lambda spec: (float(spec["screen_xy"][0]), str(spec["object_id"])))
+    if str(query_id) in SCREEN_SIDE_QUERY_IDS:
+        ordered = sorted(specs, key=lambda spec: (float(spec["screen_xy"][0]), str(spec["object_id"])))
+        if str(query_id) == "left_of_reference_in_view_count":
+            reference_index = int(target_count)
+        else:
+            reference_index = len(ordered) - int(target_count) - 1
+        if reference_index <= 0 or reference_index >= len(ordered) - 1:
+            raise ValueError("reference would be too close to the horizontal edge of the object set")
+
+        reference = dict(ordered[reference_index])
+        reference_x = float(reference["screen_xy"][0])
+        relation_status_by_object_id: Dict[str, bool] = {}
+        target_specs: List[Mapping[str, Any]] = []
+        min_relation_margin = float("inf")
+        for spec in ordered:
+            object_id = str(spec["object_id"])
+            if object_id == str(reference["object_id"]):
+                relation_status_by_object_id[object_id] = False
+                continue
+            dx = float(spec["screen_xy"][0]) - reference_x
+            min_relation_margin = min(float(min_relation_margin), abs(float(dx)))
+            if abs(float(dx)) < MIN_REFERENCE_X_MARGIN_PX:
+                raise ValueError("object center too close to reference x-position")
+            is_target = bool(dx < 0.0) if str(query_id) == "left_of_reference_in_view_count" else bool(dx > 0.0)
+            relation_status_by_object_id[object_id] = bool(is_target)
+            if is_target:
+                target_specs.append(spec)
+        if len(target_specs) != int(target_count):
+            raise ValueError("screen-side target count does not match requested target count")
+        return (
+            reference,
+            [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))],
+            relation_status_by_object_id,
+            float(min_relation_margin),
+        )
+
+    if str(query_id) in CAMERA_DEPTH_QUERY_IDS:
+        ordered = sorted(specs, key=lambda spec: (float(spec["camera_distance"]), str(spec["object_id"])))
+        if str(query_id) == "closer_to_camera_than_reference_count":
+            reference_index = int(target_count)
+        else:
+            reference_index = len(ordered) - int(target_count) - 1
+        if reference_index <= 0 or reference_index >= len(ordered) - 1:
+            raise ValueError("reference would be too close to the depth edge of the object set")
+
+        reference = dict(ordered[reference_index])
+        reference_distance = float(reference["camera_distance"])
+        relation_status_by_object_id = {}
+        target_specs = []
+        min_relation_margin = float("inf")
+        for spec in ordered:
+            object_id = str(spec["object_id"])
+            if object_id == str(reference["object_id"]):
+                relation_status_by_object_id[object_id] = False
+                continue
+            distance_delta = float(spec["camera_distance"]) - reference_distance
+            min_relation_margin = min(float(min_relation_margin), abs(float(distance_delta)))
+            if abs(float(distance_delta)) < MIN_REFERENCE_DEPTH_MARGIN:
+                raise ValueError("object camera distance too close to reference camera distance")
+            is_target = (
+                bool(distance_delta < 0.0)
+                if str(query_id) == "closer_to_camera_than_reference_count"
+                else bool(distance_delta > 0.0)
+            )
+            relation_status_by_object_id[object_id] = bool(is_target)
+            if is_target:
+                target_specs.append(spec)
+        if len(target_specs) != int(target_count):
+            raise ValueError("camera-depth target count does not match requested target count")
+        return (
+            reference,
+            [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))],
+            relation_status_by_object_id,
+            float(min_relation_margin),
+        )
+
+    raise ValueError(f"unsupported query_id: {query_id}")
+
+
+def _relation_metadata(query_id: str) -> Dict[str, str]:
     if str(query_id) == "left_of_reference_in_view_count":
-        reference_index = int(target_count)
-    elif str(query_id) == "right_of_reference_in_view_count":
-        reference_index = len(ordered) - int(target_count) - 1
+        return {
+            "view_relation": "left",
+            "relation_frame": "image_view",
+            "relation_axis": "screen_x",
+            "count_predicate": "projected object center is image-left of the named reference object in the final image",
+        }
+    if str(query_id) == "right_of_reference_in_view_count":
+        return {
+            "view_relation": "right",
+            "relation_frame": "image_view",
+            "relation_axis": "screen_x",
+            "count_predicate": "projected object center is image-right of the named reference object in the final image",
+        }
+    if str(query_id) == "closer_to_camera_than_reference_count":
+        return {
+            "view_relation": "closer_to_camera",
+            "relation_frame": "camera_distance",
+            "relation_axis": "camera_distance",
+            "count_predicate": "object camera distance is smaller than the named reference object's camera distance",
+        }
+    if str(query_id) == "farther_from_camera_than_reference_count":
+        return {
+            "view_relation": "farther_from_camera",
+            "relation_frame": "camera_distance",
+            "relation_axis": "camera_distance",
+            "count_predicate": "object camera distance is larger than the named reference object's camera distance",
+        }
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
-    if reference_index <= 0 or reference_index >= len(ordered) - 1:
-        raise ValueError("reference would be too close to the horizontal edge of the object set")
-
-    reference = dict(ordered[reference_index])
-    reference_x = float(reference["screen_xy"][0])
-    side_by_object_id: Dict[str, bool] = {}
-    target_specs: List[Mapping[str, Any]] = []
-    min_horizontal_margin = float("inf")
-    for spec in ordered:
-        object_id = str(spec["object_id"])
-        if object_id == str(reference["object_id"]):
-            side_by_object_id[object_id] = False
-            continue
-        dx = float(spec["screen_xy"][0]) - reference_x
-        min_horizontal_margin = min(float(min_horizontal_margin), abs(float(dx)))
-        if abs(float(dx)) < MIN_REFERENCE_X_MARGIN_PX:
-            raise ValueError("object center too close to reference x-position")
-        is_target = bool(dx < 0.0) if str(query_id) == "left_of_reference_in_view_count" else bool(dx > 0.0)
-        side_by_object_id[object_id] = bool(is_target)
-        if is_target:
-            target_specs.append(spec)
-    if len(target_specs) != int(target_count):
-        raise ValueError("screen-side target count does not match requested target count")
-    return reference, [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))], side_by_object_id, float(min_horizontal_margin)
 
 
 def _build_view_relation_count_scene_dataset(
@@ -265,7 +353,7 @@ def _build_view_relation_count_scene_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
+    rng = spawn_rng(int(instance_seed), f"{SOURCE_ID}.dataset")
     selected_camera_yaw_band = _camera_yaw_band_for_instance(int(instance_seed))
     for _attempt in range(520):
         camera = _sample_camera(rng, yaw_band_degrees=selected_camera_yaw_band)
@@ -280,7 +368,7 @@ def _build_view_relation_count_scene_dataset(
             continue
         finalized_specs = _finalize_specs(object_specs, camera=camera, frame=frame)
         try:
-            reference_spec, target_object_ids, side_status_by_object_id, min_horizontal_margin = _select_reference_and_targets(
+            reference_spec, target_object_ids, relation_status_by_object_id, min_relation_margin = _select_reference_and_targets(
                 finalized_specs,
                 query_id=str(query_id),
                 target_count=int(target_count),
@@ -288,14 +376,37 @@ def _build_view_relation_count_scene_dataset(
         except ValueError:
             continue
         finalized_by_id = {str(spec["object_id"]): dict(spec) for spec in finalized_specs}
-        for object_id, is_target in side_status_by_object_id.items():
+        for object_id, is_target in relation_status_by_object_id.items():
             finalized_by_id[str(object_id)]["matches_query"] = bool(is_target)
             finalized_by_id[str(object_id)]["count_role"] = "target" if bool(is_target) else "distractor"
         finalized_by_id[str(reference_spec["object_id"])]["is_reference_object"] = True
         finalized_by_id[str(reference_spec["object_id"])]["count_role"] = "reference"
         finalized_specs = sorted(finalized_by_id.values(), key=lambda spec: str(spec["object_id"]))
         distances = [float(spec["camera_distance"]) for spec in finalized_specs]
-        relation_label = "left" if str(query_id) == "left_of_reference_in_view_count" else "right"
+        relation_meta = _relation_metadata(str(query_id))
+        solver_trace = {
+            "count_predicate": str(relation_meta["count_predicate"]),
+            "relation_axis": str(relation_meta["relation_axis"]),
+            "relation_frame": str(relation_meta["relation_frame"]),
+            "view_relation": str(relation_meta["view_relation"]),
+            "reference_object_id": str(reference_spec["object_id"]),
+            "reference_object_name": str(reference_spec["prompt_name"]),
+            "reference_shape_type": str(reference_spec["shape_type"]),
+            "reference_screen_xy": list(reference_spec["screen_xy"]),
+            "reference_camera_distance": float(reference_spec["camera_distance"]),
+            "reference_prompt_name_count": int(prompt_name_counts[str(reference_spec["prompt_name"])]),
+            "target_count": int(target_count),
+            "target_object_ids": list(target_object_ids),
+            "view_relation_status_by_object_id": dict(sorted(relation_status_by_object_id.items())),
+            "minimum_reference_relation_margin": round(float(min_relation_margin), 4),
+            "minimum_pairwise_camera_distance_margin": round(float(_min_pairwise(distances)), 4),
+            "unique_integer_answer": True,
+        }
+        if str(relation_meta["relation_axis"]) == "screen_x":
+            solver_trace["screen_axis"] = "x"
+            solver_trace["minimum_reference_x_margin_px"] = round(float(min_relation_margin), 3)
+        else:
+            solver_trace["minimum_reference_camera_distance_margin"] = round(float(min_relation_margin), 4)
         return {
             "query_id": str(query_id),
             "scene_variant": str(scene_variant),
@@ -303,7 +414,9 @@ def _build_view_relation_count_scene_dataset(
             "countable_object_count": int(object_count),
             "target_count": int(target_count),
             "answer_value": int(target_count),
-            "view_relation": str(relation_label),
+            "view_relation": str(relation_meta["view_relation"]),
+            "view_relation_frame": str(relation_meta["relation_frame"]),
+            "view_relation_axis": str(relation_meta["relation_axis"]),
             "reference_object_id": str(reference_spec["object_id"]),
             "reference_object_name": str(reference_spec["prompt_name"]),
             "reference_shape_type": str(reference_spec["shape_type"]),
@@ -312,27 +425,11 @@ def _build_view_relation_count_scene_dataset(
             "object_specs": list(finalized_specs),
             "point_specs": list(finalized_specs),
             "context_object_specs": [],
-            "view_relation_status_by_object_id": dict(sorted(side_status_by_object_id.items())),
+            "view_relation_status_by_object_id": dict(sorted(relation_status_by_object_id.items())),
             "prompt_name_counts": {str(key): int(value) for key, value in sorted(prompt_name_counts.items())},
             "camera": _camera_record(camera, yaw_band=selected_camera_yaw_band),
             "projection_frame": _frame_record(frame),
-            "solver_trace": {
-                "count_predicate": f"projected object center is {relation_label} of the named reference object in the final image",
-                "screen_axis": "x",
-                "relation_frame": "image_view",
-                "view_relation": str(relation_label),
-                "reference_object_id": str(reference_spec["object_id"]),
-                "reference_object_name": str(reference_spec["prompt_name"]),
-                "reference_shape_type": str(reference_spec["shape_type"]),
-                "reference_screen_xy": list(reference_spec["screen_xy"]),
-                "reference_prompt_name_count": int(prompt_name_counts[str(reference_spec["prompt_name"])]),
-                "target_count": int(target_count),
-                "target_object_ids": list(target_object_ids),
-                "view_relation_status_by_object_id": dict(sorted(side_status_by_object_id.items())),
-                "minimum_reference_x_margin_px": round(float(min_horizontal_margin), 3),
-                "minimum_pairwise_camera_distance_margin": round(float(_min_pairwise(distances)), 4),
-                "unique_integer_answer": True,
-            },
+            "solver_trace": dict(solver_trace),
         }
     raise ValueError("could not construct a valid 3D view-relation count scene")
 
@@ -396,37 +493,42 @@ def _build_complexity(
 
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "spatial")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
-    task_id=TASK_ID,
-)
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
 _VISUAL_DEFAULTS = _DOMAIN_DEFAULTS.get("visual", {}) if isinstance(_DOMAIN_DEFAULTS, Mapping) else {}
 _BACKGROUND_DEFAULTS = _VISUAL_DEFAULTS.get("background", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
 _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
 
 
-@register_task
-class ThreeDSpatialViewRelationCountTask:
-    """Count objects left or right of a uniquely named small reference object in the image view."""
+def _resolve_task_defaults(task_id: str) -> Tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        task_id=str(task_id),
+    )
+    complexity_defaults = resolve_task_group_section_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        "complexity",
+        task_id=str(task_id),
+    )
+    return gen_defaults, render_defaults, prompt_defaults, complexity_defaults
+
+
+class _ThreeDSpatialViewRelationCountBase:
+    """Count objects by image-side or camera-depth relation to a named small reference."""
 
     task_id = TASK_ID
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
     domain = "three_d"
     task_group = "spatial"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        task_id = str(self.task_id)
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_seed = (
                 int(instance_seed)
                 if attempt_index == 0
-                else int(spawn_rng(int(instance_seed), f"{TASK_ID}.attempt_seed.{attempt_index}").randrange(1, 2**62))
+                else int(spawn_rng(int(instance_seed), f"{task_id}.attempt_seed.{attempt_index}").randrange(1, 2**62))
             )
             try:
                 return self._generate_once(int(attempt_seed), params=params)
@@ -435,12 +537,14 @@ class ThreeDSpatialViewRelationCountTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        task_id = str(self.task_id)
+        gen_defaults, render_defaults, prompt_defaults_config, complexity_defaults = _resolve_task_defaults(task_id)
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
+            task_id=task_id,
+            gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_IDS,
+            supported_variants=self.supported_query_ids,
             explicit_key="query_id",
             weights_key="query_id_weights",
             balance_flag_key="balanced_query_id_sampling",
@@ -448,8 +552,8 @@ class ThreeDSpatialViewRelationCountTask:
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
+            task_id=task_id,
+            gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
             supported_variants=SUPPORTED_SCENE_VARIANTS,
             explicit_key="scene_variant",
@@ -459,28 +563,28 @@ class ThreeDSpatialViewRelationCountTask:
         )
         object_count, object_count_probabilities = _shared_resolve_count(
             params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
+            task_id=task_id,
+            gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
             prefix="object_count",
-            minimum_default=int(group_default(_GEN_DEFAULTS, "object_count_min", 10)),
-            maximum_default=int(group_default(_GEN_DEFAULTS, "object_count_max", 13)),
+            minimum_default=int(group_default(gen_defaults, "object_count_min", 10)),
+            maximum_default=int(group_default(gen_defaults, "object_count_max", 13)),
             lower=7,
             upper=16,
         )
         target_count, target_count_probabilities = _shared_resolve_count(
             params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
+            task_id=task_id,
+            gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
             prefix="target_count",
-            minimum_default=int(group_default(_GEN_DEFAULTS, "target_count_min", 2)),
-            maximum_default=int(group_default(_GEN_DEFAULTS, "target_count_max", 5)),
+            minimum_default=int(group_default(gen_defaults, "target_count_min", 2)),
+            maximum_default=int(group_default(gen_defaults, "target_count_max", 5)),
             lower=1,
             upper=max(1, min(6, int(object_count) - 3)),
         )
 
-        render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
+        render_params = _resolve_render_params(params, render_defaults=render_defaults)
         dataset = _build_view_relation_count_scene_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -501,7 +605,7 @@ class ThreeDSpatialViewRelationCountTask:
             dataset=dataset,
             render_params=render_params,
             draw_candidate_labels=False,
-            compute_single_evidence=False,
+            compute_single_annotation=False,
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -510,10 +614,10 @@ class ThreeDSpatialViewRelationCountTask:
             default_config=_NOISE_DEFAULTS,
         )
         target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-        evidence_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+        annotation_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
 
         prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
+            prompt_defaults_config,
             (
                 "bundle_id",
                 "scene_key",
@@ -522,7 +626,7 @@ class ThreeDSpatialViewRelationCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -535,14 +639,14 @@ class ThreeDSpatialViewRelationCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "reference_name": str(dataset["reference_object_name"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -552,13 +656,13 @@ class ThreeDSpatialViewRelationCountTask:
 
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             object_count=int(object_count),
             target_count=int(answer_value),
             scene_variant=str(scene_variant),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
+            complexity_defaults=complexity_defaults,
         )
 
         trace_payload = {
@@ -572,6 +676,8 @@ class ThreeDSpatialViewRelationCountTask:
                     "target_count": int(answer_value),
                     "target_object_ids": list(target_object_ids),
                     "view_relation": str(dataset["view_relation"]),
+                    "view_relation_frame": str(dataset["view_relation_frame"]),
+                    "view_relation_axis": str(dataset["view_relation_axis"]),
                     "reference_object_id": str(dataset["reference_object_id"]),
                     "reference_object_name": str(dataset["reference_object_name"]),
                     "reference_shape_type": str(dataset["reference_shape_type"]),
@@ -634,6 +740,8 @@ class ThreeDSpatialViewRelationCountTask:
                 "target_count": int(answer_value),
                 "answer_value": int(answer_value),
                 "view_relation": str(dataset["view_relation"]),
+                "view_relation_frame": str(dataset["view_relation_frame"]),
+                "view_relation_axis": str(dataset["view_relation_axis"]),
                 "target_object_ids": list(target_object_ids),
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "reference_object_name": str(dataset["reference_object_name"]),
@@ -652,12 +760,13 @@ class ThreeDSpatialViewRelationCountTask:
                 "object_ids": list(target_object_ids),
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "view_relation": str(dataset["view_relation"]),
+                "view_relation_frame": str(dataset["view_relation_frame"]),
                 "answer_value": int(answer_value),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -667,7 +776,7 @@ class ThreeDSpatialViewRelationCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -678,4 +787,27 @@ class ThreeDSpatialViewRelationCountTask:
         )
 
 
-__all__ = ["ThreeDSpatialViewRelationCountTask"]
+@register_task
+class ThreeDObjectSceneImagePlaneLateralRelationCountTask(_ThreeDSpatialViewRelationCountBase):
+    """Count objects left or right of a named reference in the image plane."""
+
+    task_id = IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID
+    supported_query_ids = SCREEN_SIDE_QUERY_IDS
+
+
+@register_task
+class ThreeDObjectSceneCameraDepthRelationCountTask(_ThreeDSpatialViewRelationCountBase):
+    """Count objects closer or farther than a named reference in camera depth."""
+
+    task_id = CAMERA_DEPTH_RELATION_COUNT_TASK_ID
+    supported_query_ids = CAMERA_DEPTH_QUERY_IDS
+
+
+__all__ = [
+    "CAMERA_DEPTH_RELATION_COUNT_TASK_ID",
+    "IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID",
+    "MIN_REFERENCE_DEPTH_MARGIN",
+    "MIN_REFERENCE_X_MARGIN_PX",
+    "ThreeDObjectSceneCameraDepthRelationCountTask",
+    "ThreeDObjectSceneImagePlaneLateralRelationCountTask",
+]

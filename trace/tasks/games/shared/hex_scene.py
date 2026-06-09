@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .hex_common import BLUE, EMPTY, RED, Board, Coord, color_name, coord_to_cell_id
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -150,6 +150,7 @@ def render_hex_board_scene(
     player_color: str,
     candidate_labels_by_coord: Mapping[Coord, str],
     params: HexRenderParams,
+    reference_labels_by_coord: Mapping[Coord, str] | None = None,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedHexScene:
     """Render one Hex board with colored goal sides and optional candidate labels."""
@@ -223,6 +224,10 @@ def render_hex_board_scene(
         (int(coord[0]), int(coord[1])): str(label)
         for coord, label in candidate_labels_by_coord.items()
     }
+    reference_label_lookup = {
+        (int(coord[0]), int(coord[1])): str(label)
+        for coord, label in dict(reference_labels_by_coord or {}).items()
+    }
     player_value = RED if str(player_color).lower() == "red" else BLUE
     for row in range(size):
         for col in range(size):
@@ -278,12 +283,41 @@ def render_hex_board_scene(
                     "state": "empty" if int(value) == EMPTY else str(color_name(value)).lower(),
                     "is_candidate": bool(coord in candidate_label_lookup),
                     "candidate_label": candidate_label_lookup.get(coord),
+                    "is_reference": bool(coord in reference_label_lookup),
+                    "reference_label": reference_label_lookup.get(coord),
                     "is_query_player_stone": bool(int(value) == int(player_value)),
                     "bbox_px": [float(v) for v in cell_bbox],
                     "center_px": [float(v) for v in centers_px[cell_id]],
                     "stone_bbox_px": None if stone_bbox is None else [float(v) for v in stone_bbox],
                 }
             )
+
+    for coord, label in reference_label_lookup.items():
+        if coord not in center_by_coord:
+            continue
+        cx, cy = center_by_coord[coord]
+        badge_r = float(radius) * 0.38
+        badge_bbox = (
+            float(cx - badge_r),
+            float(cy - badge_r),
+            float(cx + badge_r),
+            float(cy + badge_r),
+        )
+        draw.ellipse(
+            badge_bbox,
+            fill=tuple(int(v) for v in theme.candidate_badge_fill_rgb),
+            outline=tuple(int(v) for v in theme.candidate_badge_outline_rgb),
+            width=max(2, int(round(0.04 * radius))),
+        )
+        _draw_centered_text(
+            draw,
+            bbox_px=badge_bbox,
+            text=str(label),
+            fill=tuple(int(v) for v in theme.candidate_badge_text_rgb),
+            max_size_px=int(params.candidate_label_font_size_px),
+            bold=True,
+            font_family=str(params.font_family),
+        )
 
     # Colored goal sides sit on the outside hex edges. They are drawn after cells
     # so they remain visible, but they never cut through interior cells.
@@ -342,6 +376,10 @@ def render_hex_board_scene(
         "candidate_labels_by_cell_id": {
             coord_to_cell_id(coord): str(label)
             for coord, label in candidate_label_lookup.items()
+        },
+        "reference_labels_by_cell_id": {
+            coord_to_cell_id(coord): str(label)
+            for coord, label in reference_label_lookup.items()
         },
         "player_color": str(player_color),
         "layout_jitter": {**dict(layout_jitter), "board_dx_px": float(dx), "board_dy_px": float(dy)},

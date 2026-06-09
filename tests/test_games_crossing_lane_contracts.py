@@ -8,16 +8,16 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.crossing.lane_tasks import (
-    GamesCrossingCollisionTimeValueTask,
     GamesCrossingLaneTask,
+    GamesCrossingMovingObjectDirectionCountTask,
     GamesCrossingMovingObjectCountTask,
 )
 from trace.tasks.games.shared.crossing_common import (
     CrossingRouteOption,
     CrossingVehicle,
     route_collision_vehicle_ids,
-    route_first_collision_tick,
 )
 from tests.helpers import read_jsonl
 
@@ -48,17 +48,8 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query", "expected_answer", "expected_answer_type", "expected_evidence_type", "evidence_count"),
+    ("task_cls", "params", "expected_query", "expected_answer", "expected_answer_type", "expected_annotation_type", "annotation_count"),
     (
-        (
-            GamesCrossingCollisionTimeValueTask,
-            {"target_answer": 4, "lane_count": 6, "row_count": 6, "style_variant": "night"},
-            "collision_time_value",
-            4,
-            "integer",
-            "keyed_bbox_map",
-            2,
-        ),
         (
             GamesCrossingMovingObjectCountTask,
             {"target_answer": 3, "lane_count": 6, "row_count": 6, "style_variant": "retro"},
@@ -68,6 +59,15 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
             "bbox_set",
             3,
         ),
+        (
+            GamesCrossingMovingObjectDirectionCountTask,
+            {"query_id": "left_moving_object_count", "target_answer": 4, "lane_count": 6, "row_count": 6},
+            "left_moving_object_count",
+            4,
+            "integer",
+            "bbox_set",
+            4,
+        ),
     ),
 )
 def test_games_crossing_public_tasks_emit_expected_contract(
@@ -76,8 +76,8 @@ def test_games_crossing_public_tasks_emit_expected_contract(
     expected_query: str,
     expected_answer: int | str,
     expected_answer_type: str,
-    expected_evidence_type: str,
-    evidence_count: int,
+    expected_annotation_type: str,
+    annotation_count: int,
 ) -> None:
     out = task_cls().generate(77100, params=params, max_attempts=512)
     trace = out.trace_payload
@@ -85,31 +85,16 @@ def test_games_crossing_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == expected_answer_type
     assert out.answer_gt.value == expected_answer
-    assert out.evidence_gt.type == expected_evidence_type
-    assert len(out.evidence_gt.value) == evidence_count
+    assert out.annotation_gt.type == expected_annotation_type
+    assert len(out.annotation_gt.value) == annotation_count
     assert out.query_id == expected_query
     assert out.scene_id == "crossing"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_evidence"]["type"] == expected_evidence_type
-    assert trace["projected_evidence"][expected_evidence_type] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
-
-
-def test_games_crossing_collision_time_matches_trace() -> None:
-    out = GamesCrossingCollisionTimeValueTask().generate(
-        77120,
-        params={"target_answer": 5, "lane_count": 7, "row_count": 7},
-        max_attempts=512,
-    )
-    execution = out.trace_payload["execution_trace"]
-    route = _routes(execution)[0]
-    vehicles = _vehicles(execution)
-
-    assert int(out.answer_gt.value) == 5
-    assert route_first_collision_tick(route, vehicles, lane_count=int(execution["lane_count"])) == 5
-    assert execution["evidence_entity_ids"][1] == "route_M_cell_4"
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
+    assert trace["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
+    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
 def test_games_crossing_moving_object_count_matches_trace() -> None:
@@ -125,7 +110,40 @@ def test_games_crossing_moving_object_count_matches_trace() -> None:
 
     assert int(out.answer_gt.value) == len(hit_ids) == 5
     assert tuple(execution["intersecting_vehicle_ids"]) == hit_ids
-    assert tuple(execution["evidence_entity_ids"]) == hit_ids
+    assert tuple(execution["annotation_entity_ids"]) == hit_ids
+
+
+@pytest.mark.parametrize(
+    ("query_id", "target_answer", "direction"),
+    (
+        ("left_moving_object_count", 6, -1),
+        ("right_moving_object_count", 5, 1),
+    ),
+)
+def test_games_crossing_direction_count_matches_trace(query_id: str, target_answer: int, direction: int) -> None:
+    out = GamesCrossingMovingObjectDirectionCountTask().generate(
+        77140 + int(target_answer),
+        params={"query_id": query_id, "target_answer": target_answer, "lane_count": 7, "row_count": 7},
+        max_attempts=512,
+    )
+    execution = out.trace_payload["execution_trace"]
+    matching_ids = tuple(
+        str(vehicle["vehicle_id"])
+        for vehicle in execution["vehicles"]
+        if int(vehicle["direction"]) == int(direction)
+    )
+
+    assert out.query_id == query_id
+    assert int(out.answer_gt.value) == len(matching_ids) == int(target_answer)
+    assert set(execution["annotation_entity_ids"]) == set(matching_ids)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == int(target_answer)
+    assert execution["route_options"] == []
+    assert execution["marked_route_label"] is None
+
+
+def test_games_crossing_direction_count_taxonomy() -> None:
+    assert resolve_task_taxonomy("task_games__crossing__moving_object_direction_count").scene_id == "crossing"
 
 
 def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
@@ -136,8 +154,12 @@ def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__crossing__collision_time_value", count=1, params={"target_answer": 3}),
             BuildTaskConfig(task_id="task_games__crossing__moving_object_count", count=1, params={"target_answer": 2}),
+            BuildTaskConfig(
+                task_id="task_games__crossing__moving_object_direction_count",
+                count=1,
+                params={"query_id": "right_moving_object_count", "target_answer": 3},
+            ),
         ],
         max_attempts_per_instance=512,
         workers=1,

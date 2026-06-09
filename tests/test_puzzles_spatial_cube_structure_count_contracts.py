@@ -96,18 +96,14 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         render_map = trace["render_map"]
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
-        assert str(query["query_id"]) == "default"
+        assert out.annotation_gt.type == "bbox_set"
         assert str(query["query_id"]) == str(query_id)
-        assert str(query["params"]["query_id"]) == "default"
         assert str(query["params"]["query_id"]) == str(query_id)
         assert str(query["params"]["internal_query_id"]) == str(internal_variant)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["internal_query_id"]) == str(internal_variant)
         assert str(execution["question_format"]) == str(internal_variant)
@@ -118,12 +114,12 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
         assert render["cube_color"] == execution["cube_color"]
         assert 0.50 <= float(render["voxel_scale"]) <= 1.00
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         _assert_wall_like_shape(execution)
 
         if internal_variant in {"missing_to_complete_cuboid_count", "removed_cube_count"}:
-            assert len(evidence_bboxes) == 2
+            assert len(annotation_bboxes) == 2
             expected_original_bbox = [
                 float(value)
                 for value in render_map["structure_bboxes_px"][str(execution["original_structure_bbox_id"])]
@@ -132,7 +128,7 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
                 float(value)
                 for value in render_map["structure_bboxes_px"][str(execution["remaining_structure_bbox_id"])]
             ]
-            assert evidence_bboxes == [expected_original_bbox, expected_remaining_bbox]
+            assert annotation_bboxes == [expected_original_bbox, expected_remaining_bbox]
             assert int(execution["original_total_cubes"]) > int(execution["remaining_total_cubes"])
             assert len(execution["original_cube_records"]) == int(execution["original_total_cubes"])
             assert len(execution["remaining_cube_records"]) == int(execution["remaining_total_cubes"])
@@ -141,9 +137,9 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
             if internal_variant == "removed_cube_count":
                 assert _actual_max_height(execution["original_height_rows"]) == int(execution["max_height"])
         else:
-            assert len(evidence_bboxes) == 1
+            assert len(annotation_bboxes) == 1
             expected_bbox = [float(value) for value in render_map["structure_bboxes_px"][str(execution["structure_bbox_id"])]]
-            assert evidence_bboxes == [expected_bbox]
+            assert annotation_bboxes == [expected_bbox]
             assert len(execution["cube_records"]) == int(execution["total_cubes"])
             assert _hidden_cube_count(execution["cube_records"]) == 0
             assert int(total_cubes_from_height_rows(execution["height_rows"])) == int(execution["total_cubes"])
@@ -196,17 +192,17 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
 
 def test_puzzle_spatial_cube_structure_prompt_examples_match_selected_queries() -> None:
     expected_examples = {
-        "total_cube_count": ({"evidence": [[310, 170, 890, 700]], "answer": 14}, {"answer": 14}),
+        "total_cube_count": ({"annotation": [[310, 170, 890, 700]], "answer": 14}, {"answer": 14}),
         "missing_to_complete_cuboid_count": (
-            {"evidence": [[132, 175, 459, 700], [750, 207, 1080, 700]], "answer": 5},
+            {"annotation": [[132, 175, 459, 700], [750, 207, 1080, 700]], "answer": 5},
             {"answer": 5},
         ),
         "removed_cube_count": (
-            {"evidence": [[132, 175, 459, 700], [750, 207, 1080, 700]], "answer": 4},
+            {"annotation": [[132, 175, 459, 700], [750, 207, 1080, 700]], "answer": 4},
             {"answer": 4},
         ),
-        "painted_exterior_face_count": ({"evidence": [[310, 170, 890, 700]], "answer": 42}, {"answer": 42}),
-        "exact_k_painted_faces_cube_count": ({"evidence": [[310, 170, 890, 700]], "answer": 3}, {"answer": 3}),
+        "painted_exterior_face_count": ({"annotation": [[310, 170, 890, 700]], "answer": 42}, {"answer": 42}),
+        "exact_k_painted_faces_cube_count": ({"annotation": [[310, 170, 890, 700]], "answer": 3}, {"answer": 3}),
     }
 
     for case_index, (task_cls, _task_id, _query_id, internal_variant, extra_params) in enumerate(CUBE_CASES):
@@ -215,9 +211,9 @@ def test_puzzle_spatial_cube_structure_prompt_examples_match_selected_queries() 
             params=dict(extra_params),
             max_attempts=10,
         )
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_examples[internal_variant][0]
+        assert answer_and_annotation == expected_examples[internal_variant][0]
         assert answer_only == expected_examples[internal_variant][1]
 
 
@@ -234,7 +230,6 @@ def test_puzzle_spatial_cube_count_sampling_covers_answers_and_heights() -> None
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == "cube_count"
         assert str(execution["internal_query_id"]) == "total_cube_count"
         answers.add(int(out.answer_gt.value))
@@ -263,7 +258,6 @@ def test_puzzle_spatial_cube_structure_change_sampling_covers_subqueries_and_ans
         )
         execution = out.trace_payload["execution_trace"]
         internal_variant = str(execution["internal_query_id"])
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == "cube_structure_change_count"
         assert internal_variant in answer_by_variant
         internal_counter[internal_variant] += 1
@@ -294,7 +288,6 @@ def test_puzzle_spatial_cube_painted_face_sampling_covers_subqueries() -> None:
         )
         execution = out.trace_payload["execution_trace"]
         internal_variant = str(execution["internal_query_id"])
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == "painted_face_count"
         assert internal_variant in answer_by_variant
         internal_counter[internal_variant] += 1
@@ -315,7 +308,7 @@ def test_puzzle_spatial_cube_structure_change_count_task_is_deterministic() -> N
     out_b = task.generate(31680, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

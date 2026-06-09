@@ -1,30 +1,14 @@
 {% extends "base.html" %}
-{% macro reviewer_comments_readonly(item) -%}
-  {% set comments = reviewer_comments_by_feedback.get(item.id, []) %}
-  {% if comments %}
-    <div class="reviewer-comment-list">
-      {% for comment in comments %}
-        <article class="reviewer-comment-item">
-          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
-          <p>{{ comment.comment }}</p>
+{% macro feedback_events_readonly(item) -%}
+  {% set events = feedback_thread_events_by_feedback.get(item.id, []) %}
+  {% if events %}
+    <div class="feedback-event-list compact">
+      {% for event in events %}
+        <article class="feedback-event-item {{ event.kind }}">
+          <div class="feedback-event-meta">{{ event.label }}{% if event.author %} · {{ event.author }}{% endif %} · {{ event.created_at }}</div>
+          <p>{{ event.text }}</p>
         </article>
       {% endfor %}
-    </div>
-  {% endif %}
-{%- endmacro %}
-{% macro agent_notes_readonly(item) -%}
-  {% set notes = agent_notes_by_feedback.get(item.id, []) %}
-  {% if notes %}
-    <div class="agent-note-panel">
-      <div class="agent-note-heading">Agent repair notes</div>
-      <div class="agent-note-list">
-        {% for note in notes %}
-          <article class="agent-note-item">
-            <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
-            <p>{{ note.note }}</p>
-          </article>
-        {% endfor %}
-      </div>
     </div>
   {% endif %}
 {%- endmacro %}
@@ -47,17 +31,20 @@
   </div>
   <div class="task-audit-panel">
     <div class="task-state-row">
-      <span class="{% if task_status.complete %}status ok{% else %}status warn{% endif %}">
-        {% if task_status.complete %}completed{% else %}pending{% endif %}
+      <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">
+        review {% if task_status.review_pass %}done{% else %}pending{% endif %}
       </span>
-      <span class="muted">manual {{ task_status.manual_count|default(0) }}/{{ task_status.manual_total|default(5) }}</span>
-      <span class="muted">solve {% if task_status.solve_pass %}pass{% else %}pending{% endif %}</span>
+      <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(4) }}</span>
+      <span class="{% if task_status.solve_rate_pass %}status ok{% else %}status warn{% endif %}">
+        solve rate {% if task_status.solve_rate_pass %}done{% else %}pending{% endif %}
+      </span>
+      <span class="muted">artifact {% if task_status.solve_artifact_pass %}accepted{% else %}pending{% endif %}</span>
       {% if audit.updated_at %}<span class="muted">updated {{ audit.updated_at }}</span>{% endif %}
     </div>
     <form class="audit-toggle-form" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/audit') }}" method="post">
       <label><input type="checkbox" name="prompt_pass" value="1" {% if audit.prompt_pass %}checked{% endif %}> Prompt</label>
       <label><input type="checkbox" name="image_pass" value="1" {% if audit.image_pass %}checked{% endif %}> Image</label>
-      <label><input type="checkbox" name="evidence_pass" value="1" {% if audit.evidence_pass %}checked{% endif %}> Evidence</label>
+      <label><input type="checkbox" name="annotation_pass" value="1" {% if audit.annotation_pass %}checked{% endif %}> Annotation</label>
       <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
       <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
       <input name="updated_by" placeholder="reviewer">
@@ -80,7 +67,7 @@
     <div class="view-tabs" aria-label="Preview mode">
       <button type="button" class="pill {% if selected_view == 'rows' %}active{% endif %}" data-preview-switch="rows" aria-pressed="{% if selected_view == 'rows' %}true{% else %}false{% endif %}">Rows</button>
       <button type="button" class="pill {% if selected_view == 'images' %}active{% endif %}" data-preview-switch="images" aria-pressed="{% if selected_view == 'images' %}true{% else %}false{% endif %}">Images</button>
-      <button type="button" class="pill" data-open-feedback-filter aria-pressed="false">Open feedback only</button>
+      <button type="button" class="pill" data-open-feedback-filter aria-pressed="false">Open issues only</button>
     </div>
   </div>
 </section>
@@ -99,7 +86,7 @@
       <rect x="13" y="13" width="7" height="7" rx="1"></rect>
     </svg>
   </button>
-  <button type="button" data-task-feedback-toggle aria-expanded="false" title="Task feedback" aria-label="Task feedback">
+  <button type="button" data-task-feedback-toggle aria-expanded="false" title="Task issue" aria-label="Task issue">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
     </svg>
@@ -107,55 +94,54 @@
       <span class="floating-count">{{ task_open_feedback|length }}</span>
     {% endif %}
   </button>
-  <div class="task-floating-feedback-form" data-task-feedback-form hidden>
-    {% if primary_task_open_feedback %}
-      <form class="task-feedback-compose" action="{{ app_path('/feedback/' ~ primary_task_open_feedback.id ~ '/comments') }}" method="post">
-        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
-        <label>
-          <span>Continue task feedback</span>
-          <textarea name="comment" rows="5" placeholder="Add a reviewer follow-up to the current task feedback" required></textarea>
-        </label>
-        <div class="task-floating-feedback-actions">
-          <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ primary_task_open_feedback.id) }}">Open thread</a>
-          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
-          <button type="submit" class="task-feedback-save">Save</button>
-        </div>
-      </form>
-    {% else %}
-      <form class="task-feedback-compose" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/feedback') }}" method="post">
-        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
-        <input type="hidden" name="category" value="other">
-        <input type="hidden" name="severity" value="issue">
-        <label>
-          <span>Task feedback</span>
-          <textarea name="comment" rows="5" placeholder="Feedback for this task as a whole" required></textarea>
-        </label>
-        <div class="task-floating-feedback-actions">
-          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
-          <button type="submit" class="task-feedback-save">Save</button>
-        </div>
-      </form>
-    {% endif %}
+  <div class="task-floating-feedback-form {% if task_open_feedback %}has-open-feedback{% endif %}" data-task-feedback-form hidden>
     {% if task_open_feedback %}
       <div class="task-feedback-thread">
-        <div class="task-feedback-thread-header">Open feedback</div>
+        <div class="task-feedback-thread-header">Open issues</div>
         <div class="open-feedback-list task-open-feedback-list" tabindex="0">
           {% for item in task_open_feedback %}
             <article class="open-feedback-item">
               <p>{{ item.comment }}</p>
               <div class="feedback-item-actions">
-                <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
-                <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Thread</a>
+                <form action="{{ app_path('/issues/' ~ item.id) }}" method="post">
                   <input type="hidden" name="status" value="resolved">
                   <button type="submit" class="feedback-resolve-button">Resolve</button>
                 </form>
               </div>
-              {{ reviewer_comments_readonly(item) }}
-              {{ agent_notes_readonly(item) }}
+              {{ feedback_events_readonly(item) }}
             </article>
           {% endfor %}
         </div>
       </div>
+    {% endif %}
+    {% if primary_task_open_feedback %}
+      <form class="task-feedback-compose" action="{{ app_path('/issues/' ~ primary_task_open_feedback.id ~ '/comments') }}" method="post">
+        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+        <label>
+          <span>Continue task issue</span>
+          <textarea name="comment" rows="5" placeholder="Add a reviewer follow-up to the current task issue" required></textarea>
+        </label>
+        <div class="task-floating-feedback-actions">
+          <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ primary_task_open_feedback.id) }}">Open thread</a>
+          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
+          <button type="submit" class="task-feedback-save">Save</button>
+        </div>
+      </form>
+    {% else %}
+      <form class="task-feedback-compose" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/issues') }}" method="post">
+        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+        <input type="hidden" name="category" value="other">
+        <input type="hidden" name="severity" value="issue">
+        <label>
+          <span>Task issue</span>
+          <textarea name="comment" rows="5" placeholder="Issue for this task as a whole" required></textarea>
+        </label>
+        <div class="task-floating-feedback-actions">
+          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
+          <button type="submit" class="task-feedback-save">Save</button>
+        </div>
+      </form>
     {% endif %}
   </div>
 </nav>
@@ -178,6 +164,21 @@
         Failed query ids: {{ distribution.failed_query_ids|join(', ') or 'none' }}.
         Incomplete query ids: {{ distribution.incomplete_query_ids|join(', ') or 'none' }}.
       </p>
+    {% endif %}
+    {% if distribution.warnings %}
+      <div class="notice-list">
+        {% for warning in distribution.warnings %}
+          <p class="muted">
+            Warning: {{ warning.message }}
+            {% if warning.branches %}
+              Branches:
+              {% for branch in warning.branches %}
+                {{ branch.query_id }}={{ branch.sample_count }}{% if not loop.last %}, {% endif %}
+              {% endfor %}.
+            {% endif %}
+          </p>
+        {% endfor %}
+      </div>
     {% endif %}
     <table>
       <thead>
@@ -286,18 +287,18 @@
       {% set primary_sample_feedback = primary_open_feedback_by_sample.get(sample.uid) %}
       <article class="image-only-card" data-sample-uid="{{ sample.uid }}" data-open-feedback="{{ feedback.open|default(0) }}">
         {% if primary_sample_feedback %}
-          <form class="inline-feedback-form" action="{{ app_path('/feedback/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
+          <form class="inline-feedback-form" action="{{ app_path('/issues/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
             <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
-            <textarea name="comment" rows="2" placeholder="Continue existing sample feedback" required></textarea>
+            <textarea name="comment" rows="2" placeholder="Continue existing sample issue" required></textarea>
             <button type="submit">Save</button>
-            <a class="badge feedback-thread-badge" href="{{ app_path('/feedback/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
+            <a class="badge feedback-thread-badge" href="{{ app_path('/issues/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
           </form>
         {% else %}
-          <form class="inline-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+          <form class="inline-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/issues') }}" method="post">
             <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
             <input type="hidden" name="category" value="other">
             <input type="hidden" name="severity" value="issue">
-            <textarea name="comment" rows="2" placeholder="Feedback for this sample" required></textarea>
+            <textarea name="comment" rows="2" placeholder="Issue for this sample" required></textarea>
             <button type="submit">Save</button>
             {% if feedback.total %}
               <span class="badge">{{ feedback.open }} open / {{ feedback.total }} total</span>
@@ -311,14 +312,13 @@
                 <article class="open-feedback-item">
                   <p>{{ item.comment }}</p>
                   <div class="feedback-item-actions">
-                    <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
-                    <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                    <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Thread</a>
+                    <form action="{{ app_path('/issues/' ~ item.id) }}" method="post">
                       <input type="hidden" name="status" value="resolved">
                       <button type="submit" class="feedback-resolve-button">Resolve</button>
                     </form>
                   </div>
-                  {{ reviewer_comments_readonly(item) }}
-                  {{ agent_notes_readonly(item) }}
+                  {{ feedback_events_readonly(item) }}
                 </article>
               {% endif %}
             {% endfor %}
@@ -331,8 +331,8 @@
               <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="original preview">
             </figure>
             <figure class="image-pair-card">
-              <figcaption>Evidence</figcaption>
-              <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="evidence preview">
+              <figcaption>Annotation</figcaption>
+              <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="annotation preview">
             </figure>
           {% else %}
             <span>missing image</span>
@@ -350,21 +350,21 @@
       {% set feedback = feedback_by_sample.get(sample.uid, {}) %}
       {% set sample_feedback = sample_feedback_by_sample.get(sample.uid, []) %}
       {% set primary_sample_feedback = primary_open_feedback_by_sample.get(sample.uid) %}
-      <article class="sample-row" data-sample-uid="{{ sample.uid }}" data-open-feedback="{{ feedback.open|default(0) }}">
-        {% set prompt_preview = sample.prompt_answer_and_evidence or sample.prompt %}
+      <article id="sample-{{ sample.uid }}" class="sample-row" data-sample-uid="{{ sample.uid }}" data-open-feedback="{{ feedback.open|default(0) }}">
+        {% set prompt_preview = sample.prompt_answer_and_annotation or sample.prompt %}
         {% if primary_sample_feedback %}
-          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/feedback/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
+          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/issues/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
             <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
-            <textarea name="comment" rows="2" placeholder="Continue existing sample feedback" required></textarea>
+            <textarea name="comment" rows="2" placeholder="Continue existing sample issue" required></textarea>
             <button type="submit">Save</button>
-            <a class="badge feedback-thread-badge" href="{{ app_path('/feedback/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
+            <a class="badge feedback-thread-badge" href="{{ app_path('/issues/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
           </form>
         {% else %}
-          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/issues') }}" method="post">
             <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
             <input type="hidden" name="category" value="other">
             <input type="hidden" name="severity" value="issue">
-            <textarea name="comment" rows="2" placeholder="Feedback for this sample" required></textarea>
+            <textarea name="comment" rows="2" placeholder="Issue for this sample" required></textarea>
             <button type="submit">Save</button>
             {% if feedback.total %}
               <span class="badge">{{ feedback.open }} open / {{ feedback.total }} total</span>
@@ -378,14 +378,13 @@
                 <article class="open-feedback-item">
                   <p>{{ item.comment }}</p>
                   <div class="feedback-item-actions">
-                    <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
-                    <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                    <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Thread</a>
+                    <form action="{{ app_path('/issues/' ~ item.id) }}" method="post">
                       <input type="hidden" name="status" value="resolved">
                       <button type="submit" class="feedback-resolve-button">Resolve</button>
                     </form>
                   </div>
-                  {{ reviewer_comments_readonly(item) }}
-                  {{ agent_notes_readonly(item) }}
+                  {{ feedback_events_readonly(item) }}
                 </article>
               {% endif %}
             {% endfor %}
@@ -398,21 +397,21 @@
             <span>missing image</span>
           {% endif %}
         </a>
-        <a class="sample-row-main" href="{{ app_path('/samples/' ~ sample.uid) }}">
+        <a class="sample-row-main" href="{{ app_path('/samples/' ~ sample.uid) }}" draggable="false">
           <div class="sample-row-title">
             <strong>{{ sample.query_id }}</strong>
             <span>seed {{ sample.instance_seed }}</span>
           </div>
-          <p>{{ prompt_preview }}</p>
+          <p data-selectable-text>{{ prompt_preview }}</p>
         </a>
-        <a class="sample-row-facts" href="{{ app_path('/samples/' ~ sample.uid) }}">
+        <a class="sample-row-facts" href="{{ app_path('/samples/' ~ sample.uid) }}" draggable="false">
           <div>
             <label>answer</label>
-            <pre>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json|excerpt(160) }}</pre>
+            <pre data-selectable-text>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json|excerpt(160) }}</pre>
           </div>
           <div>
-            <label>evidence</label>
-            <pre>{{ {"type": sample.evidence_type, "value": sample.evidence_value}|pretty_json|excerpt(220) }}</pre>
+            <label>annotation</label>
+            <pre data-selectable-text>{{ {"type": sample.annotation_type, "value": sample.annotation_value}|pretty_json|excerpt(220) }}</pre>
           </div>
         </a>
       </article>

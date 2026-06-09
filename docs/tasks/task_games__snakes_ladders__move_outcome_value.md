@@ -4,15 +4,13 @@
 1. Domain: `games`
 2. Task group: `snakes_ladders`
 3. Scene id: `snakes_ladders`
-4. Query id: `move_outcome_value`
-5. Objective: compute the final square after the shown die roll, including one immediate snake or ladder if the direct landing square starts one.
-6. Answer type: `integer`
-7. Evidence type: `keyed_bbox_map` over the role-bound start square and final end square.
+4. Public task id: `task_games__snakes_ladders__move_outcome_value`
+5. Supported `query_id` values: `move_outcome_value`
+6. Answer schema: `integer_value`
+7. Annotation schema: `keyed_bbox_map`
+8. Program schema: `value(simulate(start_square, rules=jumps, action=die_value).final_square); scene=snakes_ladders; scope=move_outcome_value`
 
 ## Generation Notes
-1. The scene shows a 5 x 5, 6 x 6, or 7 x 7 numbered serpentine Snakes and Ladders board with one visible token.
-2. The die value is shown in the side panel.
-3. The final square is sampled from broad explicit support and is unique by construction.
-4. The query branch is retained as `query_id` and trace metadata.
-5. Default generation samples jump-triggered move outcomes with probability `0.30`; snakes and ladders remain visible as board context.
-6. The board uses shared games-domain panel backgrounds, sampled fonts, layout jitter, and five scene-local board palettes.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

@@ -245,5 +245,5 @@ prompt:
       task_key: offset_stage_query
       object_description_cycle_ring: a directed cycle with labeled stages connected
         by arrows
-      evidence_hint_offset_stage_label: set "evidence" to an array containing exactly
+      annotation_hint_offset_stage_label: set "annotation" to an array containing exactly
         one bounding box [x0, y0, x1, y1] for the correct stage box

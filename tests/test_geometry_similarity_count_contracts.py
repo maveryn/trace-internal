@@ -23,9 +23,9 @@ def test_geometry_similarity_count_emits_expected_contract(
     out = GeometrySimilarityCountTask().generate(23201, params=params, max_attempts=30)
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == int(expected_answer)
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == int(expected_answer)
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
 

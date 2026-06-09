@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.drawing import draw_centered_text
+from .text import draw_centered_game_text as draw_centered_text
 from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
 from .backgammon_common import (
     PLAYER_BLACK,

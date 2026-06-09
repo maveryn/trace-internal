@@ -95,7 +95,7 @@ class _Query:
     query_id: str
     answer: str | int
     answer_type: str
-    evidence_row_ids: Tuple[str, ...]
+    annotation_row_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -383,7 +383,7 @@ def _sample_rows(
     if int(gap_min) < 1 or int(gap_max) <= int(gap_min):
         raise ValueError("gap range must be positive and ordered")
 
-    evidence_indices: List[int] = []
+    annotation_indices: List[int] = []
     gap_by_index: Dict[int, int] = {}
     signed_direction_by_index: Dict[int, int] = {}
     trace_params: Dict[str, Any] = {}
@@ -401,7 +401,7 @@ def _sample_rows(
         remaining = [gap for gap in gaps_sorted if int(gap) != int(answer_gap)]
         for index in range(int(row_count)):
             gap_by_index[index] = int(answer_gap if index == int(target_row_index) else remaining.pop())
-        evidence_indices = [int(target_row_index)]
+        annotation_indices = [int(target_row_index)]
         trace_params.update(
             {
                 "rank_order": str(rank_order),
@@ -416,7 +416,7 @@ def _sample_rows(
         assert side_direction is not None
         target_count = min(int(target_count), int(row_count))
         target_indices = sorted(rng.sample(list(range(int(row_count))), int(target_count)))
-        evidence_indices = list(target_indices)
+        annotation_indices = list(target_indices)
         for index in range(int(row_count)):
             is_target = int(index) in set(target_indices)
             if is_target:
@@ -443,7 +443,7 @@ def _sample_rows(
         target_count = min(int(target_count), int(row_count))
         target_indices = sorted(rng.sample(list(range(int(row_count))), int(target_count)))
         target_index_set = set(target_indices)
-        evidence_indices = list(target_indices)
+        annotation_indices = list(target_indices)
         if str(gap_threshold_relation) == "at_least":
             target_support = [gap for gap in range(int(threshold), int(gap_max) + 1)]
             distractor_support = [gap for gap in range(int(gap_min), int(threshold))]
@@ -484,7 +484,7 @@ def _sample_rows(
             value_b = int(lower_value + int(gap))
         rows.append(_Row(row_id=f"row_{index}", label=str(label), value_a=int(value_a), value_b=int(value_b)))
 
-    return tuple(rows), tuple(f"row_{index}" for index in evidence_indices), dict(trace_params)
+    return tuple(rows), tuple(f"row_{index}" for index in annotation_indices), dict(trace_params)
 
 
 def _rank_phrase(rank_order: str, rank_n: int) -> str:
@@ -609,7 +609,7 @@ def _build_dataset(
             instance_seed=int(instance_seed),
         )
 
-    rows, evidence_row_ids, trace_params = _sample_rows(
+    rows, annotation_row_ids, trace_params = _sample_rows(
         params=params,
         instance_seed=int(instance_seed),
         row_count=int(row_count),
@@ -626,10 +626,10 @@ def _build_dataset(
 
     rows_by_id = {row.row_id: row for row in rows}
     if str(query_id) in {"side_winner_count", "absolute_gap_threshold_count"}:
-        answer: str | int = int(len(evidence_row_ids))
+        answer: str | int = int(len(annotation_row_ids))
         answer_type = "integer"
     else:
-        answer = str(rows_by_id[str(evidence_row_ids[0])].label)
+        answer = str(rows_by_id[str(annotation_row_ids[0])].label)
         answer_type = "string"
 
     query_params = {
@@ -665,7 +665,7 @@ def _build_dataset(
             query_id=str(query_id),
             answer=answer,
             answer_type=str(answer_type),
-            evidence_row_ids=tuple(evidence_row_ids),
+            annotation_row_ids=tuple(annotation_row_ids),
             params=query_params,
         ),
     )
@@ -839,7 +839,7 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults["answer_hint_count" if is_count else "answer_hint_label"]),
-        "evidence_hint": str(prompt_defaults["evidence_hint_count" if is_count else "evidence_hint_label"]),
+        "annotation_hint": str(prompt_defaults["annotation_hint_count" if is_count else "annotation_hint_label"]),
         "json_example": str(prompt_defaults["json_example_count" if is_count else "json_example_label"]),
         "json_example_answer_only": str(prompt_defaults["json_example_answer_only_count" if is_count else "json_example_answer_only_label"]),
     }
@@ -942,8 +942,8 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "json_output_contract_answer_only",
                 "answer_hint_label",
                 "answer_hint_count",
-                "evidence_hint_label",
-                "evidence_hint_count",
+                "annotation_hint_label",
+                "annotation_hint_count",
                 "json_example_label",
                 "json_example_count",
                 "json_example_answer_only_label",
@@ -959,25 +959,25 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_row_ids = [str(row_id) for row_id in dataset.query.evidence_row_ids]
-        evidence_bboxes = [list(rendered.row_pair_bboxes_px[row_id]) for row_id in evidence_row_ids]
+        annotation_row_ids = [str(row_id) for row_id in dataset.query.annotation_row_ids]
+        annotation_bboxes = [list(rendered.row_pair_bboxes_px[row_id]) for row_id in annotation_row_ids]
         answer_value: str | int = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         rows_by_id = {row.row_id: row for row in dataset.rows}
-        projected_evidence = {
-            "bbox_set": list(evidence_bboxes),
-            "row_ids": list(evidence_row_ids),
-            "row_labels": [str(rows_by_id[row_id].label) for row_id in evidence_row_ids],
+        projected_annotation = {
+            "bbox_set": list(annotation_bboxes),
+            "row_ids": list(annotation_row_ids),
+            "row_labels": [str(rows_by_id[row_id].label) for row_id in annotation_row_ids],
             "row_pair_bboxes": {
                 str(row_id): list(rendered.row_pair_bboxes_px[str(row_id)])
-                for row_id in evidence_row_ids
+                for row_id in annotation_row_ids
             },
         }
 
@@ -1008,7 +1008,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                     "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
-                    "evidence_row_ids": list(evidence_row_ids),
+                    "annotation_row_ids": list(annotation_row_ids),
                 },
             },
             "query_spec": {
@@ -1054,23 +1054,23 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "row_count": int(len(dataset.rows)),
                 "row_labels": [str(row.label) for row in dataset.rows],
                 "rows": list(row_values),
-                "evidence_row_ids": list(evidence_row_ids),
+                "annotation_row_ids": list(annotation_row_ids),
                 "query_id_probabilities": dict(dataset.query.params.get("query_id_probabilities", {})),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
                 "type": "dumbbell_pairwise_witness",
-                "row_ids": list(evidence_row_ids),
+                "row_ids": list(annotation_row_ids),
                 "answer": answer_value,
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1093,20 +1093,32 @@ class ChartsDumbbellGapRankRowLabelTask(
 
 
 @register_task
-class ChartsDumbbellPairRelationCountTask(
+class ChartsDumbbellSideWinnerCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsDumbbellPairwiseComparisonQueryTask,
 ):
-    """Count rows satisfying a dumbbell pair relation."""
+    """Count rows where one side wins the dumbbell comparison."""
 
-    task_id = "task_charts__dumbbell__pair_relation_count"
-    allowed_query_ids = ("side_winner_count", "absolute_gap_threshold_count")
+    task_id = "task_charts__dumbbell__side_winner_count"
+    allowed_query_ids = ("side_winner_count",)
+
+
+@register_task
+class ChartsDumbbellAbsoluteGapThresholdCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDumbbellPairwiseComparisonQueryTask,
+):
+    """Count rows whose absolute dumbbell gap satisfies a threshold."""
+
+    task_id = "task_charts__dumbbell__absolute_gap_threshold_count"
+    allowed_query_ids = ("absolute_gap_threshold_count",)
 
 
 __all__ = [
+    "ChartsDumbbellAbsoluteGapThresholdCountTask",
     "ChartsDumbbellGapRankRowLabelTask",
-    "ChartsDumbbellPairRelationCountTask",
     "ChartsDumbbellPairwiseComparisonQueryTask",
+    "ChartsDumbbellSideWinnerCountTask",
     "SUPPORTED_SCENE_VARIANTS",
     "SUPPORTED_QUERY_IDS",
 ]

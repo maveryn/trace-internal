@@ -46,11 +46,11 @@ def resolve_pages_axis_variant(
     return str(balanced), {str(key): float(value) for key, value in probabilities.items()}
 
 
-def projected_document_bbox_evidence(
+def projected_document_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     item_ids: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered document item ids into prompt-facing `bbox_set` evidence."""
+    """Project ordered document item ids into prompt-facing `bbox_set` annotation."""
 
     return {
         "bbox_set": [
@@ -61,11 +61,11 @@ def projected_document_bbox_evidence(
     }
 
 
-def projected_document_keyed_bbox_evidence(
+def projected_document_keyed_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_to_item_id: Mapping[str, str],
 ) -> Dict[str, Any]:
-    """Project document item ids into role-bound `keyed_bbox_map` evidence."""
+    """Project document item ids into role-bound `keyed_bbox_map` annotation."""
 
     keyed_bboxes = {
         str(role): list(bbox_map[str(item_id)])
@@ -135,7 +135,7 @@ def build_document_section_specs(field_specs: Sequence[Mapping[str, str]]) -> Li
 __all__ = [
     "build_document_field_specs",
     "build_document_section_specs",
-    "projected_document_bbox_evidence",
-    "projected_document_keyed_bbox_evidence",
+    "projected_document_bbox_annotation",
+    "projected_document_keyed_bbox_annotation",
     "resolve_pages_axis_variant",
 ]

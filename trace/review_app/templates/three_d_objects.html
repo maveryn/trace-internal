@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="three-d-object-intro" id="three-d-object-top">
+  <div class="three-d-object-summary">
+    <a class="metric metric-link" href="{{ app_path('/three-d/objects' ~ ('?group=' ~ (three_d_object_review.selected_group|urlquote) if three_d_object_review.selected_group != 'all' else '')) }}">
+      <span data-three-d-review-count="shown">{{ three_d_object_review.summary.total }}</span><label>shown</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/three-d/objects' ~ ('?group=' ~ (three_d_object_review.selected_group|urlquote) ~ '&decision=approve' if three_d_object_review.selected_group != 'all' else '?decision=approve')) }}">
+      <span data-three-d-review-count="approve">{{ three_d_object_review.summary.approve }}</span><label>approved</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/three-d/objects' ~ ('?group=' ~ (three_d_object_review.selected_group|urlquote) ~ '&decision=improve' if three_d_object_review.selected_group != 'all' else '?decision=improve')) }}">
+      <span data-three-d-review-count="improve">{{ three_d_object_review.summary.improve }}</span><label>improve</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/three-d/objects' ~ ('?group=' ~ (three_d_object_review.selected_group|urlquote) ~ '&decision=remove' if three_d_object_review.selected_group != 'all' else '?decision=remove')) }}">
+      <span data-three-d-review-count="remove">{{ three_d_object_review.summary.remove }}</span><label>remove</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/three-d/objects' ~ ('?group=' ~ (three_d_object_review.selected_group|urlquote) ~ '&decision=unreviewed' if three_d_object_review.selected_group != 'all' else '?decision=unreviewed')) }}">
+      <span data-three-d-review-count="unreviewed">{{ three_d_object_review.summary.unreviewed }}</span><label>unreviewed</label>
+    </a>
+  </div>
+  <p class="muted">
+    Profile-level decisions are saved in the review SQLite DB and keyed to
+    <code>profile_id</code> from <code>trace/tasks/three_d/shared/object_resources.py</code>.
+  </p>
+</section>
+
+<nav class="resource-tabbar three-d-object-tabbar" aria-label="3D object groups" data-three-d-object-tabs>
+  {% for tab in three_d_object_review.group_tabs %}
+    <a
+      class="resource-tab {% if tab.active %}active{% endif %}"
+      href="{{ app_path(tab.href) }}"
+      data-tooltip="{{ tab.label }} · {{ tab.count }} profile(s)"
+      aria-label="{{ tab.label }}, {{ tab.count }} profile(s)"
+    >
+      <span>{{ tab.label }}</span>
+      <small>{{ tab.count }}</small>
+    </a>
+  {% endfor %}
+</nav>
+
+<nav class="resource-tabbar three-d-object-tabbar secondary" aria-label="3D object review decisions" data-three-d-object-tabs>
+  {% for tab in three_d_object_review.decision_tabs %}
+    <a
+      class="resource-tab {% if tab.active %}active{% endif %}"
+      href="{{ app_path(tab.href) }}"
+      data-tooltip="{{ tab.label }} · {{ tab.count }} profile(s)"
+      aria-label="{{ tab.label }}, {{ tab.count }} profile(s)"
+    >
+      <span>{{ tab.label }}</span>
+      <small>{{ tab.count }}</small>
+    </a>
+  {% endfor %}
+</nav>
+
+<section class="three-d-object-grid" data-selected-decision-filter="{{ three_d_object_review.selected_decision }}">
+  {% for entry in three_d_object_review.entries %}
+    {% set profile = entry.profile %}
+    {% set review = entry.review %}
+    <article class="three-d-object-card decision-{{ entry.decision }}" id="{{ entry.anchor_id }}" data-three-d-object-card data-decision="{{ entry.decision }}">
+      <div class="three-d-object-preview">
+        <a href="{{ app_path(entry.preview_path) }}" target="_blank" rel="noopener noreferrer">
+          <img src="{{ app_path(entry.preview_path) }}" alt="{{ profile.display_name }} preview" loading="lazy">
+        </a>
+      </div>
+      <div class="three-d-object-card-body">
+        <header>
+          <div>
+            <h2>{{ profile.display_name }}</h2>
+            <p class="muted">{{ entry.group_label }} · {{ profile.object_type }}</p>
+          </div>
+          <span class="three-d-object-status {{ entry.decision }}" data-three-d-object-status>{{ entry.status_label }}</span>
+        </header>
+
+        <dl class="three-d-object-meta">
+          <div><dt>Profile</dt><dd>{{ profile.profile_id }}</dd></div>
+          <div><dt>Canonical</dt><dd>{{ profile.canonical_id }}</dd></div>
+          <div><dt>Role</dt><dd>{{ profile.role }}</dd></div>
+          <div><dt>Kind</dt><dd>{{ profile.resource_kind }}</dd></div>
+          <div><dt>Size</dt><dd>{{ profile.size_class }}</dd></div>
+          <div><dt>Mounting</dt><dd>{{ profile.mounting|default("none", true) }}</dd></div>
+        </dl>
+
+        <form class="three-d-object-review-form" action="{{ app_path('/three-d/objects/reviews/' ~ (profile.profile_id|urlquote)) }}" method="post" data-three-d-review-form>
+          <input type="hidden" name="next" value="{{ entry.next_path }}">
+          <div class="three-d-object-decision-row" role="radiogroup" aria-label="Review decision for {{ profile.display_name }}">
+            {% for decision in three_d_object_review.decisions %}
+              <label class="{% if review.decision == decision.id %}selected{% endif %}">
+                <input type="radio" name="decision" value="{{ decision.id }}" {% if review.decision == decision.id %}checked{% endif %}>
+                <span>{{ decision.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <textarea name="notes" rows="2" placeholder="Note">{{ review.notes }}</textarea>
+          <div class="three-d-object-review-actions">
+            <input type="text" name="updated_by" value="{{ review.updated_by }}" placeholder="Reviewer">
+            <button type="submit">Save</button>
+          </div>
+          <p class="muted" data-three-d-review-saved {% if not review.updated_at %}hidden{% endif %}>Last saved {{ review.updated_at }}</p>
+        </form>
+      </div>
+    </article>
+  {% else %}
+    <div class="empty-panel">
+      <p class="muted">No 3D objects match this group and review filter.</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

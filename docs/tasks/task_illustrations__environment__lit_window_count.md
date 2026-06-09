@@ -1,48 +1,52 @@
-# task_illustrations__environment__lit_window_count
+# `task_illustrations__environment__lit_window_count`
 
-Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
-calibration pending.
+## Summary
+- Domain: `illustrations`
+- Scene id: `environment`
+- Implementation task group: `counting`
+- Implementation source: `trace/tasks/illustrations/counting/building_window_count.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_illustrations__environment__lit_window_count` -> `task_illustrations__environment__lit_window_count`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Identity
-- domain: `illustrations`
-- scene_id: `environment`
-- task_group: `counting`
-- task: `building_window_count`
-- module: `trace/tasks/illustrations/counting/building_window_count.py`
-- prompt bundle: `prompts/illustrations/counting/illustrations_counting_v0.json`
+## Task Contract
+Counts lit windows in rendered environment buildings.
 
-## Scene And Query
-The task renders an illustrated street or canal-city environment with building
-facades and visible lit/unlit windows.
+This public task id is a stable contract-v0 unit: one renderer scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-The task records
-`query_id=building_window_count`. The query asks how many lit windows are shown
-on the buildings.
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `building_window_count` | `count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count; query_branch=building_window_count` |
+
+## Program Metadata
+- Program signatures: `count.single_attribute_membership`
+- Base program contract: `count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `building_windows`: semantic_role; allowed `visible_building_windows`; source `program_schema_concrete`
+  - `window`: semantic_role; allowed `window_instance`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `building_window_count`
 
 ## Answer Contract
-- `answer_gt.type = integer`
-- value is the number of lit building windows
+- Answer schema: `integer_count`
+- Generator `answer_gt.type`: `integer`
+- The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
-## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for each counted lit window
-- evidence boxes are sorted deterministically by rendered position
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
-## Trace Contract
-- `scene_ir.entities` contains buildings, windows, environment features, and
-  non-query scene decor.
-- environment buildings record `building_style_id` in their attributes; style
-  variation changes facade treatment but not the lit-window answer contract.
-- `render_map.window_bboxes_px` stores visible building-window bboxes.
-- `render_map.counted_window_ids`, `witness_symbolic.counted_window_ids`, and
-  `projected_evidence.bbox_set` are derived from the same rendered windows.
+## Prompt And Trace Requirements
+- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
+- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
 
-## Prompt Contract
-- `scene_key = environment_object_canvas`
-- `task_key = building_window_count_task`
-- `query_id = building_window_count`
-- prompts ask for lit windows on buildings
-- scene prompt variants name the outdoor setting without mentioning unrelated
-  foreground-object counts
-- answer-only and answer+evidence modes both include contract-valid JSON
-  examples
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/illustrations/environment/task_illustrations__environment__lit_window_count/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

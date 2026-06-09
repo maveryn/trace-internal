@@ -8,6 +8,7 @@ from typing import Tuple
 
 SUPPORTED_SPACE_SHOOTER_QUERY_IDS: Tuple[str, ...] = (
     "clear_shot_count",
+    "clear_shot_score_value",
     "projectile_intercept_count",
     "highest_threat_label",
     "safe_lane_count",
@@ -32,6 +33,7 @@ class SpaceEnemy:
     y_slot: int
     dx_frac: float
     dy_px: float
+    score_value: int | None = None
 
 
 @dataclass(frozen=True)
@@ -74,7 +76,7 @@ class SpaceShooterSample:
     highest_threat_enemy_id: str
     highest_threat_label: str
     safe_lane_indices: Tuple[int, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     target_answer: int | None
     construction_mode: str
 
@@ -92,7 +94,7 @@ def sorted_entity_ids(values: Tuple[str, ...] | list[str]) -> Tuple[str, ...]:
 
 
 def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
-    """Validate that the generated answer and evidence match the active query."""
+    """Validate that the generated answer and annotation match the active query."""
 
     lane_count = int(sample.lane_count)
     if lane_count <= 0:
@@ -113,8 +115,8 @@ def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
     known_entities = set(enemy_ids) | set(projectile_ids) | set(blocker_ids) | {
         lane_entity_id(lane) for lane in range(lane_count)
     }
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("space shooter evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("space shooter annotation references unknown entities")
     if not set(sample.clear_enemy_ids) <= set(enemy_ids):
         raise ValueError("space shooter clear shot ids must reference enemies")
     if not set(sample.intercept_projectile_ids) <= set(projectile_ids):
@@ -129,22 +131,37 @@ def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
     query = str(sample.query_id)
     if query == "clear_shot_count":
         expected_answer: int | str = len(sample.clear_enemy_ids)
-        expected_evidence = set(sample.clear_enemy_ids)
+        expected_annotation = set(sample.clear_enemy_ids)
+    elif query == "clear_shot_score_value":
+        enemy_by_id = {str(enemy.enemy_id): enemy for enemy in sample.enemies}
+        if not sample.clear_enemy_ids:
+            raise ValueError("clear_shot_score_value requires at least one clear enemy")
+        expected_answer = 0
+        for enemy_id in sample.clear_enemy_ids:
+            enemy = enemy_by_id.get(str(enemy_id))
+            if enemy is None:
+                raise ValueError("clear_shot_score_value references unknown enemy")
+            if enemy.score_value is None or int(enemy.score_value) <= 0:
+                raise ValueError("clear_shot_score_value requires positive enemy scores")
+            expected_answer += int(enemy.score_value)
+        if not any(str(enemy.enemy_id) not in set(sample.clear_enemy_ids) and enemy.score_value is not None for enemy in sample.enemies):
+            raise ValueError("clear_shot_score_value requires scored blocked enemies as distractors")
+        expected_annotation = set(sample.clear_enemy_ids)
     elif query == "projectile_intercept_count":
         expected_answer = len(sample.intercept_projectile_ids)
-        expected_evidence = set(sample.intercept_projectile_ids)
+        expected_annotation = set(sample.intercept_projectile_ids)
     elif query == "highest_threat_label":
         expected_answer = str(sample.highest_threat_label)
-        expected_evidence = {str(sample.highest_threat_enemy_id)}
+        expected_annotation = {str(sample.highest_threat_enemy_id)}
     elif query == "safe_lane_count":
         expected_answer = len(sample.safe_lane_indices)
-        expected_evidence = {lane_entity_id(lane) for lane in sample.safe_lane_indices}
+        expected_annotation = {lane_entity_id(lane) for lane in sample.safe_lane_indices}
     else:
         raise ValueError(f"unsupported space shooter query_id: {sample.query_id}")
     if sample.answer != expected_answer:
         raise ValueError("space shooter answer does not match active query")
-    if set(sample.evidence_entity_ids) != expected_evidence:
-        raise ValueError("space shooter evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected_annotation:
+        raise ValueError("space shooter annotation ids do not match active query")
 
 
 __all__ = [

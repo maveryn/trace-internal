@@ -29,15 +29,14 @@ def test_pipe_flow_repair_tile_contract() -> None:
         max_attempts=80,
     )
 
-    assert out.query_id == "default"
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
-    assert 'Format for the "evidence" field:' in out.prompt_variants["answer_and_evidence"]
-    assert "[x0, y0, x1, y1]" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert "annotation" in out.prompt_variants["answer_and_annotation"].lower()
+    assert "[x0, y0, x1, y1]" in out.prompt_variants["answer_and_annotation"]
 
     trace = out.trace_payload["execution_trace"]
     assert trace["question_format"] == QUERY_ID
@@ -65,7 +64,7 @@ def test_pipe_flow_repair_tile_contract() -> None:
 
     correct_bbox = out.trace_payload["render_map"]["item_bboxes_px"][trace["correct_option_panel_id"]]
     missing_bbox = out.trace_payload["render_map"]["item_bboxes_px"][trace["missing_region_id"]]
-    assert out.evidence_gt.value == [[float(value) for value in correct_bbox], [float(value) for value in missing_bbox]]
+    assert out.annotation_gt.value == [[float(value) for value in correct_bbox], [float(value) for value in missing_bbox]]
 
 
 def test_pipe_flow_repair_tile_is_deterministic() -> None:
@@ -77,6 +76,6 @@ def test_pipe_flow_repair_tile_is_deterministic() -> None:
 
     assert left.prompt == right.prompt
     assert left.answer_gt == right.answer_gt
-    assert left.evidence_gt == right.evidence_gt
+    assert left.annotation_gt == right.annotation_gt
     assert left.trace_payload["execution_trace"] == right.trace_payload["execution_trace"]
     assert left.image.tobytes() == right.image.tobytes()

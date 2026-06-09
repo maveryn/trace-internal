@@ -10,6 +10,7 @@ generation:
     balanced_grid_width_sampling: true
     balanced_grid_depth_sampling: true
     balanced_answer_sampling: true
+    balanced_route_option_count_sampling: true
     grid_width_support:
       - 8
       - 9
@@ -18,21 +19,60 @@ generation:
       - 8
       - 9
       - 10
-    ore_answer_support:
+    top_ore_stack_answer_support:
       - 1
       - 2
       - 3
       - 4
       - 5
       - 6
-    tunnel_answer_support:
+    reachable_ore_stack_answer_support:
+      - 0
+      - 1
       - 2
       - 3
       - 4
       - 5
       - 6
+    reachable_line_length_support:
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+    reachable_grid_width_support:
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+    reachable_grid_depth_support:
+      - 5
+    balanced_reachable_line_length_sampling: true
     route_answer_support:
       - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    stack_height_answer_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    exact_target_height_support:
+      - 2
+      - 3
+      - 4
+      - 5
+    at_least_target_height_support:
+      - 2
+      - 3
+      - 4
+    stack_height_support:
       - 1
       - 2
       - 3
@@ -44,6 +84,9 @@ generation:
       - 8
       - 9
       - 10
+    route_option_count_support:
+      - 2
+      - 3
 rendering:
   shared:
     canvas_width: 840
@@ -67,15 +110,19 @@ prompt:
     bundle_id: games_minecraft_v0
     scene_key: visible_block_world
     task_key: minecraft_query
-    object_description_block_world: a Minecraft-like isometric block world with cube terrain, visible resource blocks, and any marked paths or mining routes needed for the question
-    minecraft_tunnel_rule_text: Only solid blocks sitting on the marked tunnel path must be mined; empty marked path cells and off-path blocks do not count.
+    object_description_block_world: a Minecraft-like isometric block world with cube terrain, visible cube stacks, resource blocks, and any marked paths or mining routes needed for the question
+    object_description_reachable_stack_line: a Minecraft-like isometric block world with one highlighted line of cube stacks arranged from left to right
     minecraft_route_cost_rule_text: For the named labeled route only, each raised stone or dirt block sitting on that route costs 1, and empty route cells cost 0. Ignore all other routes.
-    evidence_hint_ore_block_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around every counted ore block
-    answer_hint_ore_block_count: set "answer" to the integer number of counted ore blocks
-    evidence_hint_tunnel_clearance_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the solid blocks sitting on the marked tunnel path
-    answer_hint_tunnel_clearance_count: set "answer" to the integer number of solid blocks that must be mined from the marked tunnel path
-    evidence_hint_resource_route_cost: set "evidence" to bounding boxes [x0, y0, x1, y1] around the raised stone or dirt blocks on the named route only
+    annotation_hint_top_ore_stack_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack whose top cube is the named ore
+    answer_hint_top_ore_stack_count: set "answer" to the integer number of stacks whose top cube is the named ore
+    annotation_hint_reachable_ore_stack_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every reachable stack whose top cube is the named ore; use an empty array if none qualify
+    answer_hint_reachable_ore_stack_count: set "answer" to the integer number of reachable stacks whose top cube is the named ore
+    annotation_hint_resource_route_cost: set "annotation" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the named route only; use an empty array if the cost is 0
     answer_hint_resource_route_cost: set "answer" to the integer cost of the named route
+    annotation_hint_exact_height_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack that is exactly the named height
+    answer_hint_exact_height_count: set "answer" to the integer number of stacks that are exactly the named height
+    annotation_hint_at_least_height_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack that is at least the named height
+    answer_hint_at_least_height_count: set "answer" to the integer number of stacks that are at least the named height
 visual:
   noise:
     apply_prob: 0.5

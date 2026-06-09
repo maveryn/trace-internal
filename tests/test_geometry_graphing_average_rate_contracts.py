@@ -17,12 +17,10 @@ def test_geometry_graphing_average_rate_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "number"
     assert float(out.answer_gt.value) == 1.5
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == 2
-    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert out.query_id == "default"
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == 2
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert out.query_id == "average_rate_between_marked_points"
-    assert out.trace_payload["query_spec"]["params"]["query_id"] == "default"
     assert out.trace_payload["query_spec"]["params"]["query_id"] == "average_rate_between_marked_points"
     assert out.trace_payload["query_spec"]["params"]["target_rate"] == 1.5
     assert out.trace_payload["execution_trace"]["average_rate"] == 1.5

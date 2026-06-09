@@ -11,6 +11,7 @@ generation:
     excluded_metric_count_min: 2
     excluded_metric_count_max: 2
     section_except_included_count_min: 3
+    rank_position_support: [2, 3]
     balanced_query_id_sampling: true
     balanced_count_sampling: true
     query_id_weights:
@@ -18,6 +19,197 @@ generation:
       section_extrema_arithmetic: 1.0
       section_total_extrema_difference: 1.0
       section_total_except_named: 1.0
+  task_overrides:
+    task_pages__mixed_infographic_page__module_field_value_label:
+      module_count_support: [7, 8, 9]
+      item_count_support: [2, 3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        module_field_value_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__module_field_extremum_item_label:
+      module_count_support: [7, 8, 9]
+      item_count_support: [2, 3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      rank_direction_weights:
+        highest: 1.0
+        lowest: 1.0
+      query_id_weights:
+        module_field_extremum_item_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__module_field_ranked_item_label:
+      module_count_support: [7, 8, 9]
+      item_count_support: [3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      rank_direction_weights:
+        highest: 1.0
+        lowest: 1.0
+      query_id_weights:
+        module_field_ranked_item_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__page_field_extremum_module_label:
+      module_count_support: [7, 8, 9]
+      item_count_support: [2, 3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      rank_direction_weights:
+        highest: 1.0
+        lowest: 1.0
+      query_id_weights:
+        page_field_extremum_module_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__module_two_field_condition_item_label:
+      module_count_support: [7, 8]
+      item_count_support: [4, 5]
+      field_count_support: [3]
+      balanced_scene_variant_sampling: true
+      condition_operator_weights:
+        above: 1.0
+        below: 1.0
+        at_least: 1.0
+      query_id_weights:
+        module_two_field_condition_item_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__module_condition_item_count:
+      module_count_support: [5]
+      item_count_support: [6, 7, 8]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      condition_operator_weights:
+        above: 1.0
+        below: 1.0
+        at_least: 1.0
+      query_id_weights:
+        module_condition_item_count: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__module_field_total_value:
+      module_count_support: [7, 8, 9]
+      item_count_support: [2, 3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        module_field_total_value: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label:
+      module_count_support: [7, 8, 9]
+      item_count_support: [2, 3, 4]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        two_module_field_total_comparison_module_label: 1.0
+      scene_variant_weights:
+        masonry_report: 1.0
+        dashboard_blocks: 1.0
+        poster_sections: 1.0
+        compact_newsletter: 1.0
+        collage_board: 1.0
+        radial_mosaic: 1.0
+    task_pages__hero_callout_infographic__callout_field_value_label:
+      callout_count_support: [5, 6, 7]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        callout_field_value_label: 1.0
+      scene_variant_weights:
+        radial_halo: 1.0
+        side_rail_poster: 1.0
+        diagonal_chain: 1.0
+        split_poster: 1.0
+        stacked_feature: 1.0
+    task_pages__hero_callout_infographic__callout_metric_extremum_label:
+      callout_count_support: [5, 6, 7]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      rank_direction_weights:
+        highest: 1.0
+        lowest: 1.0
+      query_id_weights:
+        callout_metric_extremum_label: 1.0
+      scene_variant_weights:
+        radial_halo: 1.0
+        side_rail_poster: 1.0
+        diagonal_chain: 1.0
+        split_poster: 1.0
+        stacked_feature: 1.0
+    task_pages__hero_callout_infographic__callout_condition_count:
+      callout_count_support: [5, 6, 7]
+      field_count_support: [2, 3]
+      balanced_scene_variant_sampling: true
+      condition_operator_weights:
+        above: 1.0
+        below: 1.0
+        at_least: 1.0
+      query_id_weights:
+        callout_condition_count: 1.0
+      scene_variant_weights:
+        radial_halo: 1.0
+        side_rail_poster: 1.0
+        diagonal_chain: 1.0
+        split_poster: 1.0
+        stacked_feature: 1.0
+    task_pages__sectioned_infographic__section_item_count:
+      section_count_support: [3, 4, 5]
+      item_count_support: [3, 4, 5, 6, 7]
+      sectioned_query_id_weights:
+        section_item_count: 1.0
+      scene_variant_weights:
+        topic_cards: 1.0
+        bullet_columns: 1.0
+        checklist_bands: 1.0
+    task_pages__sectioned_infographic__section_filtered_item_label:
+      section_count_support: [3, 4, 5]
+      item_count_support: [3, 4, 5, 6, 7]
+      sectioned_query_id_weights:
+        section_filtered_item_label: 1.0
+      scene_variant_weights:
+        topic_cards: 1.0
+        bullet_columns: 1.0
+        checklist_bands: 1.0
 
 rendering:
   shared:
@@ -36,6 +228,226 @@ rendering:
     section_font_size_px: 20
     label_font_size_px: 18
     caption_font_size_px: 13
+  task_overrides:
+    task_pages__mixed_infographic_page__module_field_value_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__module_field_extremum_item_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__module_field_ranked_item_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__page_field_extremum_module_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__module_two_field_condition_item_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__module_condition_item_count:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__module_field_total_value:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 106
+      gap_px: 14
+      corner_radius_px: 10
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      module_title_font_size_px: 17
+      label_font_size_px: 13
+      value_font_size_px: 14
+      field_font_size_px: 11
+      native_text_footer_height_px: 138
+      native_text_block_count_support: [4, 5]
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__hero_callout_infographic__callout_field_value_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 104
+      callout_gap_px: 14
+      corner_radius_px: 14
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      callout_title_font_size_px: 17
+      field_font_size_px: 12
+      value_font_size_px: 15
+      hero_min_size_px: 260
+      hero_max_size_px: 380
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__hero_callout_infographic__callout_metric_extremum_label:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 104
+      callout_gap_px: 14
+      corner_radius_px: 14
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      callout_title_font_size_px: 17
+      field_font_size_px: 12
+      value_font_size_px: 15
+      hero_min_size_px: 260
+      hero_max_size_px: 380
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__hero_callout_infographic__callout_condition_count:
+      canvas_width: 1040
+      canvas_height: 1320
+      outer_margin_px: 36
+      header_height_px: 104
+      callout_gap_px: 14
+      corner_radius_px: 14
+      outline_width_px: 2
+      title_font_size_px: 32
+      subtitle_font_size_px: 17
+      callout_title_font_size_px: 17
+      field_font_size_px: 12
+      value_font_size_px: 15
+      hero_min_size_px: 260
+      hero_max_size_px: 380
+      information_scene_shadow_policy: none
+      page_backdrop_blend_scale: 0.35
+    task_pages__sectioned_infographic__section_item_count:
+      canvas_width: 1040
+      canvas_height: 980
+      outer_margin_px: 34
+      header_height_px: 86
+      gap_px: 14
+      corner_radius_px: 14
+      outline_width_px: 2
+      title_font_size_px: 30
+      subtitle_font_size_px: 17
+      section_title_font_size_px: 20
+      item_font_size_px: 16
+    task_pages__sectioned_infographic__section_filtered_item_label:
+      canvas_width: 1040
+      canvas_height: 980
+      outer_margin_px: 34
+      header_height_px: 86
+      gap_px: 14
+      corner_radius_px: 14
+      outline_width_px: 2
+      title_font_size_px: 30
+      subtitle_font_size_px: 17
+      section_title_font_size_px: 20
+      item_font_size_px: 16
 
 complexity:
   task_overrides:
@@ -44,20 +456,198 @@ complexity:
         visual_scan: 0.40
         reasoning_load: 0.45
         scene_variant_load: 0.15
+    task_pages__mixed_infographic_page__module_field_value_label:
+      criteria_weights:
+        lookup_reasoning: 0.35
+        visual_scan: 0.40
+        layout_load: 0.25
+    task_pages__mixed_infographic_page__module_field_extremum_item_label:
+      criteria_weights:
+        lookup_reasoning: 0.42
+        visual_scan: 0.38
+        layout_load: 0.20
+    task_pages__mixed_infographic_page__module_field_ranked_item_label:
+      criteria_weights:
+        lookup_reasoning: 0.45
+        visual_scan: 0.36
+        layout_load: 0.19
+    task_pages__mixed_infographic_page__page_field_extremum_module_label:
+      criteria_weights:
+        lookup_reasoning: 0.48
+        visual_scan: 0.37
+        layout_load: 0.15
+    task_pages__mixed_infographic_page__module_two_field_condition_item_label:
+      criteria_weights:
+        lookup_reasoning: 0.48
+        visual_scan: 0.35
+        layout_load: 0.17
+    task_pages__mixed_infographic_page__module_condition_item_count:
+      criteria_weights:
+        lookup_reasoning: 0.40
+        visual_scan: 0.42
+        layout_load: 0.18
+    task_pages__mixed_infographic_page__module_field_total_value:
+      criteria_weights:
+        lookup_reasoning: 0.44
+        visual_scan: 0.36
+        layout_load: 0.20
+    task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label:
+      criteria_weights:
+        lookup_reasoning: 0.50
+        visual_scan: 0.34
+        layout_load: 0.16
+    task_pages__hero_callout_infographic__callout_field_value_label:
+      criteria_weights:
+        lookup_reasoning: 0.34
+        visual_scan: 0.38
+        layout_load: 0.28
+    task_pages__hero_callout_infographic__callout_metric_extremum_label:
+      criteria_weights:
+        lookup_reasoning: 0.44
+        visual_scan: 0.38
+        layout_load: 0.18
+    task_pages__hero_callout_infographic__callout_condition_count:
+      criteria_weights:
+        lookup_reasoning: 0.40
+        visual_scan: 0.42
+        layout_load: 0.18
+    task_pages__sectioned_infographic__section_item_count:
+      criteria_weights:
+        lookup_reasoning: 0.30
+        visual_scan: 0.45
+        layout_load: 0.25
+    task_pages__sectioned_infographic__section_filtered_item_label:
+      criteria_weights:
+        lookup_reasoning: 0.35
+        visual_scan: 0.40
+        layout_load: 0.25
 
 prompt:
   shared:
     bundle_id: pages_infographic_v0
     scene_key: infographic_metric_arithmetic
     task_key: metric_arithmetic_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested integer
     answer_hint_label: set "answer" to the exact visible text requested by the question
-    evidence_hint: set "evidence" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
-    evidence_hint_label: set "evidence" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
+    annotation_hint: set "annotation" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
+    annotation_hint_label: set "annotation" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
+    annotation_hint_metric_ranked_item: set "annotation" to an object mapping target_metric and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected metric label and printed value
+    annotation_hint_metric_ranked_item_scoped: set "annotation" to an object mapping section_title, target_metric, and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected section title, metric label, and printed value
+  task_overrides:
+    task_pages__mixed_infographic_page__module_field_value_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible value requested by the question
+      annotation_hint: set "annotation" to an object mapping module_title, item_label, field_label, and value_cell to [x0,y0,x1,y1] pixel bounding boxes for the requested lookup
+    task_pages__mixed_infographic_page__module_field_extremum_item_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible item label requested by the question
+      annotation_hint: set "annotation" to an object mapping module_title, field_label, winning_item, winning_value, and candidate value keys to [x0,y0,x1,y1] pixel bounding boxes for the compared values
+    task_pages__mixed_infographic_page__module_field_ranked_item_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible item label requested by the question
+      annotation_hint: set "annotation" to an object mapping module_title, field_label, ranked_item, ranked_value, and candidate value keys to [x0,y0,x1,y1] pixel bounding boxes for the compared values
+    task_pages__mixed_infographic_page__page_field_extremum_module_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible module title requested by the question
+      annotation_hint: set "annotation" to an object mapping winning_module_title, winning_field_label, winning_item, winning_value, and candidate value keys to [x0,y0,x1,y1] pixel bounding boxes for the compared values
+    task_pages__mixed_infographic_page__module_two_field_condition_item_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible item label requested by the question
+      annotation_hint: set "annotation" to an object mapping module_title, numeric_field_label, category_field_label, matching_item, numeric_value_cell, and category_value_cell to [x0,y0,x1,y1] pixel bounding boxes for the two-condition match
+    task_pages__mixed_infographic_page__module_condition_item_count:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the requested integer count
+      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the matching value cells
+    task_pages__mixed_infographic_page__module_field_total_value:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the requested integer total
+      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for every value cell used in the sum
+    task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label:
+      scene_key: mixed_infographic_page
+      task_key: mixed_infographic_lookup_query
+      object_description: a dense mixed infographic with titled modules, circular callouts, compact item labels, field labels, icons, visible values, and short native callout notes
+      answer_hint: set "answer" to the exact visible module title with the larger total
+      annotation_hint: set "annotation" to an object mapping module_a_title, module_b_title, field_label_a, field_label_b, and module_a_value_N/module_b_value_N keys to [x0,y0,x1,y1] pixel bounding boxes for the compared totals
+    task_pages__hero_callout_infographic__callout_field_value_label:
+      scene_key: hero_callout_infographic
+      task_key: hero_callout_infographic_query
+      object_description: a poster-style infographic with one large hero visual and titled callout cards containing field labels, visible values, badges, and connector lines
+      answer_hint: set "answer" to the exact visible value requested by the question
+      annotation_hint: set "annotation" to an object mapping callout_title, field_label, and value_cell to [x0,y0,x1,y1] pixel bounding boxes for the requested lookup
+    task_pages__hero_callout_infographic__callout_metric_extremum_label:
+      scene_key: hero_callout_infographic
+      task_key: hero_callout_infographic_query
+      object_description: a poster-style infographic with one large hero visual and titled callout cards containing field labels, visible values, badges, and connector lines
+      answer_hint: set "answer" to the exact visible callout title requested by the question
+      annotation_hint: set "annotation" to an object mapping winning_callout_title, winning_field_label, winning_value, and candidate_N value keys to [x0,y0,x1,y1] pixel bounding boxes for the compared values
+    task_pages__hero_callout_infographic__callout_condition_count:
+      scene_key: hero_callout_infographic
+      task_key: hero_callout_infographic_query
+      object_description: a poster-style infographic with one large hero visual and titled callout cards containing field labels, visible values, badges, and connector lines
+      answer_hint: set "answer" to the requested integer count
+      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the matching value cells
+    task_pages__sectioned_infographic__section_item_count:
+      scene_key_sectioned: sectioned_infographic
+      task_key_sectioned: sectioned_infographic_query
+      answer_hint_section_item_count: set "answer" to the requested integer count
+      annotation_hint_section_item_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the visible item rows in the requested section
+    task_pages__sectioned_infographic__section_filtered_item_label:
+      scene_key_sectioned: sectioned_infographic
+      task_key_sectioned: sectioned_infographic_query
+      answer_hint_section_filtered_item: set "answer" to the exact visible item label requested by the question
+      annotation_hint_section_filtered_item: set "annotation" to an object mapping section_title, filter_marker, and target_item to [x0,y0,x1,y1] pixel bounding boxes
 
 visual:
+  task_overrides:
+    task_pages__mixed_infographic_page__module_field_value_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__module_field_extremum_item_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__module_field_ranked_item_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__page_field_extremum_module_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__module_two_field_condition_item_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__module_condition_item_count:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__module_field_total_value:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__hero_callout_infographic__callout_field_value_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__hero_callout_infographic__callout_metric_extremum_label:
+      context_text:
+        pages_context_text_enabled: false
+    task_pages__hero_callout_infographic__callout_condition_count:
+      context_text:
+        pages_context_text_enabled: false
   noise:
     apply_prob: 0.5
     edit_count_range: [1, 1]

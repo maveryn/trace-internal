@@ -22,11 +22,12 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_hex_board_complexity
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.hex_common import (
     BLUE,
     EMPTY,
     HEX_CANDIDATE_LABELS,
+    HEX_NEIGHBOR_QUERY_IDS,
     RED,
     SUPPORTED_HEX_PLAYER_COLORS,
     SUPPORTED_HEX_QUERY_IDS,
@@ -43,6 +44,7 @@ from ..shared.hex_common import (
     make_connection_path,
     minimum_connection_gap_sets,
     minimum_connection_path,
+    neighbors,
     sorted_coords,
     validate_hex_sample,
     winning_path_after_move,
@@ -64,8 +66,10 @@ class _TaskDefaults:
 
     board_size_support: Tuple[int, ...] = (5, 6, 7, 8)
     connection_gap_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    candidate_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
-    winning_move_label_support: Tuple[str, ...] = HEX_CANDIDATE_LABELS
+    neighbor_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    candidate_count_support: Tuple[int, ...] = (4, 5, 6)
+    winning_move_label_support: Tuple[str, ...] = HEX_CANDIDATE_LABELS[:6]
+    reference_cell_label: str = "C"
     min_extra_own_stones: int = 2
     max_extra_own_stones: int = 7
     min_extra_opponent_stones: int = 5
@@ -100,6 +104,8 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
     candidate_count: int
+    reference_label: str
+    neighbor_target_state: str | None
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -117,6 +123,17 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="hex", apply_prob=0.0)
+
+_NEIGHBOR_QUERY_TO_VALUE: Dict[str, int] = {
+    "red_neighbor_count": RED,
+    "blue_neighbor_count": BLUE,
+    "empty_neighbor_count": EMPTY,
+}
+_NEIGHBOR_QUERY_TO_STATE: Dict[str, str] = {
+    "red_neighbor_count": "red",
+    "blue_neighbor_count": "blue",
+    "empty_neighbor_count": "empty",
+}
 
 
 def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
@@ -209,7 +226,7 @@ def _resolve_label_choice(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -303,6 +320,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         key="winning_move_label_support",
         fallback=_DEFAULTS.winning_move_label_support,
     )
+    reference_label = str(
+        params.get(
+            "reference_cell_label",
+            group_default(_GEN_DEFAULTS, "reference_cell_label", _DEFAULTS.reference_cell_label),
+        )
+    ).strip() or _DEFAULTS.reference_cell_label
+    neighbor_target_state: str | None = None
     if str(query_id) == "connection_gap_count":
         target_answer, target_answer_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
@@ -315,6 +339,25 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
+    elif str(query_id) in HEX_NEIGHBOR_QUERY_IDS:
+        target_answer_support = resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="neighbor_count_support",
+            fallback=_DEFAULTS.neighbor_count_support,
+        )
+        target_answer, target_answer_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=answer_cycle_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="neighbor_count_support",
+            explicit_key="target_answer",
+            fallback_support=_DEFAULTS.neighbor_count_support,
+            namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
+            balanced_flag_key="balanced_target_answer_sampling",
+            namespace_support_permutation=True,
+        )
+        neighbor_target_state = str(_NEIGHBOR_QUERY_TO_STATE[str(query_id)])
     else:
         candidate_count, candidate_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
@@ -350,6 +393,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
         candidate_count=int(candidate_count),
+        reference_label=str(reference_label),
+        neighbor_target_state=neighbor_target_state,
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -553,7 +598,7 @@ def _sample_winning_move_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
             )
             for index, coord in enumerate(candidate_coords)
         )
-        evidence_coords = winning_path_after_move(
+        annotation_coords = winning_path_after_move(
             board,
             player_value=player_value,
             move_coord=winning_coord,
@@ -568,7 +613,7 @@ def _sample_winning_move_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
             answer=str(target_label),
             target_answer=str(target_label),
             candidate_specs=candidate_specs,
-            evidence_coords=tuple(evidence_coords),
+            annotation_coords=tuple(annotation_coords),
             winning_move_coord=tuple(winning_coord),
             min_gap_path=tuple(),
             min_gap_empty_coords=tuple(),
@@ -626,7 +671,7 @@ def _sample_gap_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
             answer=int(target),
             target_answer=int(target),
             candidate_specs=tuple(),
-            evidence_coords=tuple(gap_search.gap_sets[0]),
+            annotation_coords=tuple(gap_search.gap_sets[0]),
             winning_move_coord=None,
             min_gap_path=tuple(min_path),
             min_gap_empty_coords=tuple(gap_search.gap_sets[0]),
@@ -637,6 +682,76 @@ def _sample_gap_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
     raise ValueError("failed to sample Hex connection gap scene")
 
 
+def _sample_neighbor_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> HexSample:
+    """Sample a Hex position with an exact state count around one reference cell."""
+
+    del params
+    size = int(axes.board_size)
+    target = int(axes.target_answer or 0)
+    if target < 0 or target > 6:
+        raise ValueError("Hex neighbor count target must be in 0..6")
+    target_value = int(_NEIGHBOR_QUERY_TO_VALUE[str(axes.query_id)])
+    player_value = int(color_value(axes.player_color))
+    rows = [[EMPTY for _col in range(size)] for _row in range(size)]
+    interior_coords = tuple((row, col) for row in range(1, size - 1) for col in range(1, size - 1))
+    if not interior_coords:
+        raise ValueError("Hex neighbor-count board_size must provide interior cells")
+    reference_coord = tuple(rng.choice(interior_coords))
+    adjacent = list(neighbors(reference_coord, board_size=size))
+    if len(adjacent) != 6:
+        raise ValueError("Hex neighbor-count reference cell must have six neighbors")
+    rng.shuffle(adjacent)
+    matching = set(adjacent[:target])
+    non_target_values = tuple(value for value in (EMPTY, RED, BLUE) if int(value) != int(target_value))
+
+    rows[reference_coord[0]][reference_coord[1]] = int(rng.choice((EMPTY, RED, BLUE)))
+    for coord in adjacent:
+        if coord in matching:
+            rows[coord[0]][coord[1]] = int(target_value)
+        else:
+            rows[coord[0]][coord[1]] = int(rng.choice(non_target_values))
+
+    protected = set(adjacent)
+    protected.add(reference_coord)
+    if str(axes.scene_variant) == "open_board":
+        clutter_values = (EMPTY, EMPTY, EMPTY, RED, BLUE)
+    else:
+        clutter_values = (EMPTY, RED, BLUE, RED, BLUE)
+    for coord in all_coords(size):
+        if coord in protected:
+            continue
+        rows[coord[0]][coord[1]] = int(rng.choice(clutter_values))
+
+    board = board_from_rows(rows)
+    annotation_coords = sorted_coords(
+        coord
+        for coord in neighbors(reference_coord, board_size=size)
+        if int(board[coord[0]][coord[1]]) == int(target_value)
+    )
+    sample = HexSample(
+        board_size=size,
+        query_id=str(axes.query_id),
+        scene_variant=str(axes.scene_variant),
+        player_color=str(axes.player_color),
+        player_value=player_value,
+        board=board,
+        answer=int(len(annotation_coords)),
+        target_answer=int(target),
+        candidate_specs=tuple(),
+        annotation_coords=tuple(annotation_coords),
+        winning_move_coord=None,
+        min_gap_path=tuple(),
+        min_gap_empty_coords=tuple(),
+        construction_mode="reference_cell_adjacent_state_count",
+        reference_coord=tuple(reference_coord),
+        reference_label=str(axes.reference_label),
+        neighbor_target_state=str(axes.neighbor_target_state or ""),
+        neighbor_match_coords=tuple(annotation_coords),
+    )
+    validate_hex_sample(sample)
+    return sample
+
+
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> HexSample:
     """Construct one Hex scene for the requested axes."""
 
@@ -644,6 +759,8 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Hex
         return _sample_winning_move_scene(rng=rng, axes=axes, params=params)
     if str(axes.query_id) == "connection_gap_count":
         return _sample_gap_count_scene(rng=rng, axes=axes, params=params)
+    if str(axes.query_id) in HEX_NEIGHBOR_QUERY_IDS:
+        return _sample_neighbor_count_scene(rng=rng, axes=axes, params=params)
     raise ValueError(f"unsupported Hex query_id: {axes.query_id}")
 
 
@@ -652,12 +769,12 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "winning_move_cell_label":
         answer_value: str | int = "C"
-        evidence_value = [[210, 250]]
+        annotation_value = [[210, 250]]
     else:
         answer_value = 3
-        evidence_value = [[150, 220], [210, 250], [270, 280]]
+        annotation_value = [[150, 220], [210, 250], [270, 280]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -726,18 +843,23 @@ class GamesHexBoardTask:
                 for spec in sampled_scene.candidate_specs
             },
             params=render_params,
+            reference_labels_by_coord={
+                tuple(sampled_scene.reference_coord): str(sampled_scene.reference_label)
+            }
+            if sampled_scene.reference_coord is not None and sampled_scene.reference_label
+            else {},
             panel_style=panel_style,
         )
         if str(axes.query_id) == "winning_move_cell_label":
             if sampled_scene.winning_move_coord is None:
                 raise RuntimeError("Hex winning-move scene is missing winning_move_coord")
-            public_evidence_coords = (tuple(sampled_scene.winning_move_coord),)
+            public_annotation_coords = (tuple(sampled_scene.winning_move_coord),)
         else:
-            public_evidence_coords = tuple(sampled_scene.evidence_coords)
-        evidence_entity_ids = [coord_to_cell_id(coord) for coord in public_evidence_coords]
-        evidence_points = [
+            public_annotation_coords = tuple(sampled_scene.annotation_coords)
+        annotation_entity_ids = [coord_to_cell_id(coord) for coord in public_annotation_coords]
+        annotation_points = [
             list(rendered_scene.render_map["cell_centers_px"][str(entity_id)])
-            for entity_id in evidence_entity_ids
+            for entity_id in annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -760,16 +882,32 @@ class GamesHexBoardTask:
                 "red_goal_text",
                 "blue_goal_text",
                 "answer_hint_winning_move_cell_label",
-                "evidence_hint_winning_move_cell_label",
+                "annotation_hint_winning_move_cell_label",
                 "answer_hint_connection_gap_count",
-                "evidence_hint_connection_gap_count",
+                "annotation_hint_connection_gap_count",
+                "answer_hint_red_neighbor_count",
+                "annotation_hint_red_neighbor_count",
+                "answer_hint_blue_neighbor_count",
+                "annotation_hint_blue_neighbor_count",
+                "answer_hint_empty_neighbor_count",
+                "annotation_hint_empty_neighbor_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         query_player = color_name(sampled_scene.player_value)
         json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
-        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(query_player=query_player)
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(query_player=query_player)
+        reference_label = str(sampled_scene.reference_label or axes.reference_label)
+        neighbor_state = str(sampled_scene.neighbor_target_state or axes.neighbor_target_state or "")
+        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(
+            query_player=query_player,
+            reference_label=reference_label,
+            neighbor_state=neighbor_state,
+        )
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]).format(
+            query_player=query_player,
+            reference_label=reference_label,
+            neighbor_state=neighbor_state,
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -777,13 +915,13 @@ class GamesHexBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(answer_hint),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "hex_rule_text": str(prompt_defaults["hex_rule_text"]),
@@ -791,6 +929,8 @@ class GamesHexBoardTask:
                 "blue_goal_text": str(prompt_defaults["blue_goal_text"]),
                 "query_player": str(query_player),
                 "query_player_lower": str(query_player).lower(),
+                "reference_label": reference_label,
+                "neighbor_state": neighbor_state,
             },
             instance_seed=int(instance_seed),
         )
@@ -800,7 +940,7 @@ class GamesHexBoardTask:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -814,7 +954,7 @@ class GamesHexBoardTask:
             board_size=int(sampled_scene.board_size),
             occupied_count=int(occupied_count),
             target_answer=sampled_scene.target_answer,
-            evidence_count=len(evidence_entity_ids),
+            annotation_count=len(annotation_entity_ids),
             candidate_count=len(sampled_scene.candidate_specs),
         )
         candidate_trace = [
@@ -836,7 +976,7 @@ class GamesHexBoardTask:
                     "style_variant": str(axes.style_variant),
                     "player_color": str(axes.player_color),
                     "board_size": int(sampled_scene.board_size),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -864,6 +1004,8 @@ class GamesHexBoardTask:
                     "target_label_support": [str(value) for value in axes.target_label_support],
                     "target_label_probabilities": dict(axes.target_label_probabilities),
                     "candidate_count_probabilities": dict(axes.candidate_count_probabilities),
+                    "reference_label": reference_label,
+                    "neighbor_target_state": neighbor_state,
                     "occupied_count": int(occupied_count),
                 },
             },
@@ -890,24 +1032,33 @@ class GamesHexBoardTask:
                 "target_label": axes.target_label,
                 "target_label_support": [str(value) for value in axes.target_label_support],
                 "candidate_specs": candidate_trace,
+                "reference_coord": None
+                if sampled_scene.reference_coord is None
+                else [int(sampled_scene.reference_coord[0]), int(sampled_scene.reference_coord[1])],
+                "reference_cell_id": None
+                if sampled_scene.reference_coord is None
+                else coord_to_cell_id(sampled_scene.reference_coord),
+                "reference_label": reference_label,
+                "neighbor_target_state": neighbor_state,
+                "neighbor_match_coords": [[int(row), int(col)] for row, col in sampled_scene.neighbor_match_coords],
                 "winning_move_coord": None if sampled_scene.winning_move_coord is None else [int(sampled_scene.winning_move_coord[0]), int(sampled_scene.winning_move_coord[1])],
-                "completed_winning_path_coords": [[int(row), int(col)] for row, col in sampled_scene.evidence_coords]
+                "completed_winning_path_coords": [[int(row), int(col)] for row, col in sampled_scene.annotation_coords]
                 if str(axes.query_id) == "winning_move_cell_label"
                 else [],
                 "min_gap_path": [[int(row), int(col)] for row, col in sampled_scene.min_gap_path],
                 "min_gap_empty_coords": [[int(row), int(col)] for row, col in sampled_scene.min_gap_empty_coords],
-                "evidence_coords": [[int(row), int(col)] for row, col in public_evidence_coords],
-                "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                "annotation_coords": [[int(row), int(col)] for row, col in public_annotation_coords],
+                "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -916,7 +1067,7 @@ class GamesHexBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -943,8 +1094,17 @@ class GamesHexConnectionGapCountTask(FixedQueryVariantTaskMixin, GamesHexBoardTa
     fixed_query_id = "connection_gap_count"
 
 
+@register_task
+class GamesHexCandidateNeighborCountTask(QuerySubsetTaskMixin, GamesHexBoardTask):
+    """Count adjacent cells around one labeled Hex reference cell by requested state."""
+
+    task_id = "task_games__hex__candidate_neighbor_count"
+    supported_query_ids = HEX_NEIGHBOR_QUERY_IDS
+
+
 __all__ = [
     "GamesHexBoardTask",
+    "GamesHexCandidateNeighborCountTask",
     "GamesHexConnectionGapCountTask",
     "GamesHexWinningMoveCellLabelTask",
 ]

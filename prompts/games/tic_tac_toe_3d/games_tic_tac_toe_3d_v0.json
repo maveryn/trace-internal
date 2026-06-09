@@ -1,0 +1,97 @@
+{
+  "bundle_id": "games_tic_tac_toe_3d_v0",
+  "schema_version": "v0",
+  "allow_empty_task_templates": true,
+  "task_templates": {
+    "tic_tac_toe_3d_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:tic_tac_toe_3d_board": [
+      "object_description"
+    ],
+    "query:x_winning_move_label": [
+      "winning_rule_text"
+    ],
+    "query:o_winning_move_label": [
+      "winning_rule_text"
+    ],
+    "query:x_piece_count_in_layer": [
+      "target_layer_label"
+    ],
+    "query:o_piece_count_in_layer": [
+      "target_layer_label"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "tic_tac_toe_3d_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This game board shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "x_winning_move_label": [
+      "{winning_rule_text} Which labeled empty cell lets X complete a three-in-a-row?",
+      "{winning_rule_text} Which option is X's immediate winning move?",
+      "{winning_rule_text} Choose the labeled empty cell where X completes a line.",
+      "{winning_rule_text} Which labeled cell should X play to make three in a row?",
+      "{winning_rule_text} Which empty-cell label completes a line for X?"
+    ],
+    "o_winning_move_label": [
+      "{winning_rule_text} Which labeled empty cell lets O complete a three-in-a-row?",
+      "{winning_rule_text} Which option is O's immediate winning move?",
+      "{winning_rule_text} Choose the labeled empty cell where O completes a line.",
+      "{winning_rule_text} Which labeled cell should O play to make three in a row?",
+      "{winning_rule_text} Which empty-cell label completes a line for O?"
+    ],
+    "x_piece_count_in_layer": [
+      "How many X pieces are in the {target_layer_label} layer?",
+      "Count the X pieces in the {target_layer_label} layer.",
+      "What is the number of X pieces in the {target_layer_label} layer?",
+      "Determine how many X marks appear in the {target_layer_label} layer.",
+      "How many X marks are on the {target_layer_label} layer?"
+    ],
+    "o_piece_count_in_layer": [
+      "How many O pieces are in the {target_layer_label} layer?",
+      "Count the O pieces in the {target_layer_label} layer.",
+      "What is the number of O pieces in the {target_layer_label} layer?",
+      "Determine how many O marks appear in the {target_layer_label} layer.",
+      "How many O marks are on the {target_layer_label} layer?"
+    ]
+  }
+}

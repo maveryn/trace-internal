@@ -12,7 +12,7 @@
 2. `query_id`: `directed_longest_path_length`
 3. Supported `graph_directionality`: `directed`
 4. `answer_gt.type`: `integer`
-5. `evidence_gt.type`: `point_sequence`
+5. `annotation_gt.type`: `point_sequence`
 6. Scene contract:
    - one single-panel labeled directed node-link graph,
    - graph is a DAG,
@@ -29,28 +29,28 @@
 1. Bundle: `graph_path_v0`
 2. `scene_key`: `single_graph_path`
 3. `task_key`: `longest_path_length_query`
-4. Modes: `answer_only`, `answer_and_evidence`
+4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+evidence JSON shape: `{"evidence":[[180,220],[310,180],[430,260]],"answer":2}`
-7. Prompt-facing evidence uses an ordered pixel-space node-center sequence from the start of the longest path to its end.
+6. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180],[430,260]],"answer":2}`
+7. Prompt-facing annotation uses an ordered pixel-space node-center sequence from the start of the longest path to its end.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the ordered `point_sequence` of node-center pixel points along the unique longest directed path.
-2. `answer_gt.value == len(evidence_gt.value) - 1` by construction.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the ordered `point_sequence` of node-center pixel points along the unique longest directed path.
+2. `answer_gt.value == len(annotation_gt.value) - 1` by construction.
 3. `execution_trace.longest_path_labels` records the symbolic path in order.
 4. `execution_trace.source_label` and `execution_trace.goal_label` record the first and last nodes of the longest path.
 5. `scene_ir.entities` stores node labels, in-degrees, out-degrees, successors, predecessors, center points, node bboxes, and `is_on_longest_path`.
-6. `projected_evidence` includes `point_sequence`, `pixel_point_sequence`, and `pixel_bbox_set`.
+6. `projected_annotation` includes `point_sequence`, `pixel_point_sequence`, and `pixel_bbox_set`.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
 2. Directed edges render arrowheads.
 3. Node label format, edge routing, glyph style, named node color, layout transform, and layout are visual variation only.
-4. The prompt never refers to node position, color, or shape as semantic evidence.
+4. The prompt never refers to node position, color, or shape as semantic annotation.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized successor adjacency map.
+2. Answers and annotation come from the same finalized successor adjacency map.
 3. Generation starts from a directed backbone path of the requested length and only keeps side branches or extra edges when a longest-path DP check confirms that the global longest path is unique and unchanged.
 4. No semantic auto-relaxation: failures do not weaken the DAG, label, or unique-longest-path contract.
 

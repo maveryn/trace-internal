@@ -32,10 +32,6 @@
     <div class="app-shell">
       <header class="site-header">
         <div class="site-header-main">
-          <div class="brand">
-            <a href="{{ app_path('/') }}">TRACE Review</a>
-            <span>{{ index.samples|length if index is defined else 0 }} samples</span>
-          </div>
           <form class="search global-search" action="{{ app_path('/search') }}" method="get" role="search">
             <input
               id="review-search"
@@ -70,7 +66,8 @@
               </button>
             </div>
             <a class="button-link" href="{{ app_path('/resources') }}">Resources</a>
-            <a class="button-link" href="{{ app_path('/feedback') }}">Feedback{% if feedback_open_count|default(0) %} {{ feedback_open_count }}{% endif %}</a>
+            <a class="button-link" href="{{ app_path('/taxonomy') }}">Taxonomy</a>
+            <a class="button-link" href="{{ app_path('/issues') }}">Issues{% if feedback_open_count|default(0) %} {{ feedback_open_count }}{% endif %}</a>
             <form action="{{ app_path('/api/reload') }}" method="post">
               <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>Reload Index</button>
             </form>

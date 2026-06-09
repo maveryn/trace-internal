@@ -3,23 +3,52 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `electrostatic_field`
-- Task group: `electrostatics`
-- Query id: `field_direction_choice`
-- Answer type: `option_letter`
-- Evidence type: `keyed_point_map`
+- Implementation task group: `electrostatics`
+- Implementation source: `trace/tasks/physics/electrostatics/field_map.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__electrostatic_field__field_direction_choice` -> `task_physics__electrostatic_field__field_direction_choice`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows a coordinate grid with fixed point charges labeled by combined key/value tags such as `Q1=+4`, a marked point `P`, and eight labeled candidate direction arrows. The prompt asks which arrow points in the direction of the requested vector.
+## Task Contract
+Selects the direction of the electric field or force at a marked point from visible point charges.
 
-The internal `direction_mode` is `electric_field_direction|force_on_positive_charge|force_on_negative_charge`. Direction prompts include the positive/negative test-charge convention so force-direction branches remain explicit.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Evidence
-Prompt-facing evidence is a `keyed_point_map` over the fixed charge marker centers and the point `P` marker center, with keys `Q1`, `Q2`, `Q3`, and `P`. Candidate arrows remain visible answer options and trace metadata.
+## Query Branches
 
-## Prompt And Trace
-Prompt bundle: `physics_electrostatics_v0`; scene key: `electrostatics_field_map`; task key: `electrostatics_field_map_query`; query key: `field_direction_choice`.
+| Query id | Program schema |
+| --- | --- |
+| `field_direction_choice` | `option_letter(direction(net_field(charges_q1_q2_q3, point_p), mode=direction_mode)); scene=electrostatic_field; scope=field_direction_choice` |
 
-Outputs `query_id="field_direction_choice"`. The trace records the resolved direction mode, requested direction, charge coordinates, option-arrow directions, selected option letter, and input-witness evidence entity/key mapping.
+## Program Metadata
+- Program signatures: `physics.electric_field_direction_choice`
+- Base program contract: `option_letter(direction(net_field(charges_q1_q2_q3, point_p), mode=direction_mode)); scene=electrostatic_field; scope=field_direction_choice`
+- Parameter axes: `direction_mode`
+- Arguments:
+  - `charges_q1_q2_q3`: semantic_role; allowed `visible_point_charges_Q1_Q2_Q3`; source `program_schema_concrete`
+  - `direction_mode`: semantic_role; allowed `electric_field_direction`, `force_on_negative_charge`, `force_on_positive_charge`; source `program_schema_concrete`
+  - `point_p`: semantic_role; allowed `visible_point_P`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `field_direction_choice`
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized field-map scenario.
+## Answer Contract
+- Answer schema: `option_letter`
+- Generator `answer_gt.type`: `option_letter`
+- The answer value is the selected visible option letter.
+
+## Annotation Contract
+- Annotation schema: `keyed_point_map`
+- Generator `annotation_gt.type`: `keyed_point_map`
+- Annotation is keyed because point witnesses have distinct roles; each key maps to the final-image pixel point for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/electrostatic_field/task_physics__electrostatic_field__field_direction_choice/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

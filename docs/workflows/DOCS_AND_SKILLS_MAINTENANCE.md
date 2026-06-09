@@ -8,7 +8,7 @@ letting historical inventories or old task names become hidden policy.
 1. Runtime behavior lives in code, configs, prompts, and assets.
 2. Active task/domain inventory is generated in `docs/ACTIVE_TASK_INVENTORY.md`.
 3. Domain setup docs in `docs/domains/` define domain contracts, boundaries,
-   evidence policy, and scene-specific rules. They should not be the only
+   annotation policy, and scene-specific rules. They should not be the only
    exhaustive task inventory unless a generated check covers the list.
 4. Task docs in `docs/tasks/` define public task contracts.
 5. Project status lives in `docs/project/STATUS.md` and should stay compact.
@@ -20,7 +20,7 @@ letting historical inventories or old task names become hidden policy.
 Update docs and skills in the same patch when changing any of these surfaces:
 
 1. Active domain, scene, task id, task registration, or taxonomy mapping.
-2. Task answer schema, evidence schema, verifier contract, query ids, or prompt
+2. Task answer schema, annotation schema, verifier contract, query ids, or prompt
    output-mode examples.
 3. Prompt bundle path, bundle id, template layer behavior, or prompt wording
    policy.
@@ -56,7 +56,7 @@ For active task or taxonomy changes:
    `docs/ACTIVE_TASK_INVENTORY.md`, `docs/tasks/README.md`, and generated or
    checked task docs.
 4. Do not make a skill the only place where a behavior rule is written.
-5. Do not leave prompt examples, evidence hints, or task-review paths using a
+5. Do not leave prompt examples, annotation hints, or task-review paths using a
    task id that is not active.
 6. Do not describe a task with inactive public domain names. Use the active
    public domain and scene names from `docs/ACTIVE_TASK_INVENTORY.md`.

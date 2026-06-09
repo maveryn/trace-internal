@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
@@ -16,10 +16,18 @@ from .object_library import (
     aspect_ratio_for_object,
     choose_object_colors,
     display_name_for_object_type,
-    draw_illustration_object,
 )
 from .object_catalog import variant_ids_with_tag
-from .object_registry import make_object_record
+from .object_rendering import (
+    IllustrationObjectSpec,
+    RenderContext,
+    make_vector_scene_object_record,
+    object_record_for_spec,
+    render_illustration_object,
+    render_vector_scene_object,
+)
+from .object_variants import RENDERER_STYLE_VECTOR
+from .style_registry import style_outline_params
 
 
 INDOOR_THEME_IDS: Tuple[str, ...] = variant_ids_with_tag("indoor_theme")
@@ -38,6 +46,7 @@ class IndoorSurface:
     support_bbox_xyxy: BBox
     furniture_id: str | None
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -48,6 +57,7 @@ class IndoorContainer:
     bbox_xyxy: BBox
     interior_bbox_xyxy: BBox
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -57,6 +67,7 @@ class IndoorFurniture:
     label: str
     bbox_xyxy: BBox
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -86,6 +97,7 @@ class IndoorObjectPlacement:
     style_id: str
     relations: Mapping[str, Any]
     role: str
+    object_record: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -101,8 +113,6 @@ class RenderedIndoorRoomScene:
     canvas_height: int
     render_scale: int
     style_id: str
-
-
 
 
 def _choose_weighted(rng, weights: Mapping[str, float], support: Sequence[str]) -> str:
@@ -505,250 +515,184 @@ def _plane_point(plane: Mapping[str, Tuple[float, float]], *, x_fraction: float,
     )
 
 
-def _draw_surface_plane(
-    draw: ImageDraw.ImageDraw,
-    *,
-    surface_type: str | IndoorSurface,
-    top_fill: RGB,
-    lip_fill: RGB,
-    outline: RGB,
-    scale: int,
-    lip_bottom_y: float | None = None,
-) -> None:
-    s = int(scale)
-    plane = _surface_plane(surface_type)
-    top = [plane["back_left"], plane["back_right"], plane["front_right"], plane["front_left"]]
-    draw.polygon(_scale_points(top, s), fill=tuple(top_fill))
-    draw.line(_scale_points([*top, top[0]], s), fill=tuple(outline), width=max(1, 3 * s), joint="curve")
-    front_left = plane["front_left"]
-    front_right = plane["front_right"]
-    if lip_bottom_y is None and isinstance(surface_type, IndoorSurface):
-        lip_bottom_y = float(surface_type.attributes.get("lip_bottom_y", front_left[1] + 32.0))
-    if lip_bottom_y is None:
-        lip_bottom_y = float(front_left[1]) + 32.0
-    lip = [front_left, front_right, (front_right[0], float(lip_bottom_y)), (front_left[0], float(lip_bottom_y))]
-    draw.polygon(_scale_points(lip, s), fill=tuple(lip_fill))
-    draw.line(_scale_points([*lip, lip[0]], s), fill=tuple(outline), width=max(1, 3 * s), joint="curve")
-
-
-def _draw_room_furniture(
+def _render_room_fixtures(
     draw: ImageDraw.ImageDraw,
     *,
     furniture: Sequence[IndoorFurniture],
     surfaces: Sequence[IndoorSurface],
     containers: Sequence[IndoorContainer],
     scale: int,
-) -> None:
-    s = int(scale)
+) -> Tuple[Tuple[IndoorFurniture, ...], Tuple[IndoorSurface, ...], Tuple[IndoorContainer, ...]]:
     furniture_by_type = {item.furniture_type: item for item in furniture}
     surface_by_type = {item.surface_type: item for item in surfaces}
+    furniture_records: Dict[str, Mapping[str, Any]] = {}
+    surface_records: Dict[str, Mapping[str, Any]] = {}
+    container_records: Dict[str, Mapping[str, Any]] = {}
 
     table = furniture_by_type["table"]
-    table_attrs = dict(table.attributes)
-    rug_bbox = table_attrs.get("rug_bbox")
-    if isinstance(rug_bbox, Sequence) and not isinstance(rug_bbox, (str, bytes)) and len(rug_bbox) == 4:
-        rug_fill = _as_rgb(table_attrs.get("rug_fill_rgb"), (153, 130, 166))
-        rug_outline = _as_rgb(table_attrs.get("rug_outline_rgb"), (111, 95, 124))
-        draw.rounded_rectangle(
-            _scale_bbox(rug_bbox, s),
-            radius=max(1, 34 * s),
-            fill=rug_fill,
-            outline=rug_outline,
-            width=max(1, 3 * s),
-        )
-        rx0, ry0, rx1, ry1 = [float(v) for v in rug_bbox]
-        rug_pattern = str(table_attrs.get("rug_pattern", "plain"))
-        if rug_pattern == "border":
-            pad = 15.0
-            draw.rounded_rectangle(
-                _scale_bbox((rx0 + pad, ry0 + pad, rx1 - pad, ry1 - pad), s),
-                radius=max(1, 22 * s),
-                outline=_blend_rgb(rug_outline, rug_fill, 0.30),
-                width=max(1, 3 * s),
-            )
-        elif rug_pattern == "stripes":
-            stripe = _blend_rgb(rug_fill, rug_outline, 0.18)
-            for y in (ry0 + 0.25 * (ry1 - ry0), ry0 + 0.50 * (ry1 - ry0), ry0 + 0.75 * (ry1 - ry0)):
-                draw.line(_scale_points([(rx0 + 18.0, y), (rx1 - 18.0, y)], s), fill=stripe, width=max(1, 4 * s))
-        elif rug_pattern == "dots":
-            dot = _blend_rgb(rug_fill, (255, 255, 255), 0.28)
-            for col in range(4):
-                for row in range(2):
-                    cx = rx0 + (0.22 + 0.18 * col) * (rx1 - rx0)
-                    cy = ry0 + (0.34 + 0.28 * row) * (ry1 - ry0)
-                    draw.ellipse(_scale_bbox((cx - 5.0, cy - 5.0, cx + 5.0, cy + 5.0), s), fill=dot)
+    table_surface = surface_by_type["table"]
+    style_id = str(table.attributes.get("style_id", "flat_vector"))
+    table_semantic = {
+        "furniture_type": str(table.furniture_type),
+        "label": str(table.label),
+        **dict(table.attributes),
+    }
+    table_visual = {**dict(table.attributes), "surface_bbox": tuple(float(v) for v in table_surface.bbox_xyxy), "draw_phase": "rug"}
+    render_vector_scene_object(
+        draw,
+        object_id=str(table.furniture_id),
+        object_type="furniture",
+        bbox_xyxy=table.bbox_xyxy,
+        renderer_id="indoor_furniture",
+        renderer_variant_id=str(table.furniture_type),
+        semantic_attributes=table_semantic,
+        visual_attributes=table_visual,
+        source_entity_type="indoor_furniture",
+        render_scale=int(scale),
+        style_id=style_id,
+    )
 
     shelf = surface_by_type["shelf"]
-    shelf_attrs = dict(shelf.attributes)
-    board_bbox = shelf_attrs.get("board_bbox")
-    shelf_style = str(shelf_attrs.get("shelf_style", "plank"))
-    if isinstance(board_bbox, Sequence) and not isinstance(board_bbox, (str, bytes)) and len(board_bbox) == 4:
-        board_fill = _as_rgb(shelf_attrs.get("top_fill_rgb"), (170, 132, 88))
-        board_outline = _as_rgb(shelf_attrs.get("outline_rgb"), (91, 70, 52))
-        draw.rectangle(
-            _scale_bbox(board_bbox, s),
-            fill=board_fill,
-            outline=board_outline,
-            width=max(1, 3 * s),
-        )
-        bx0, by0, bx1, by1 = [float(v) for v in board_bbox]
-        if shelf_style == "brackets":
-            for bx in (bx0 + 0.18 * (bx1 - bx0), bx1 - 0.18 * (bx1 - bx0)):
-                bracket = [(bx - 15.0, by1), (bx + 15.0, by1), (bx, by1 + 38.0)]
-                draw.polygon(_scale_points(bracket, s), fill=_blend_rgb(board_fill, board_outline, 0.18), outline=board_outline)
-        elif shelf_style == "cubby":
-            for frac in (0.33, 0.66):
-                x = bx0 + frac * (bx1 - bx0)
-                draw.line(_scale_points([(x, by0 + 3.0), (x, by1 + 30.0)], s), fill=board_outline, width=max(1, 2 * s))
-    _draw_surface_plane(
+    rendered_shelf = render_vector_scene_object(
         draw,
-        surface_type=shelf,
-        top_fill=_as_rgb(shelf_attrs.get("top_fill_rgb"), (198, 154, 98)),
-        lip_fill=_as_rgb(shelf_attrs.get("lip_fill_rgb"), (112, 83, 56)),
-        outline=_as_rgb(shelf_attrs.get("outline_rgb"), (68, 51, 37)),
-        scale=s,
+        object_id=str(shelf.surface_id),
+        object_type="surface",
+        bbox_xyxy=shelf.bbox_xyxy,
+        renderer_id="indoor_surface",
+        renderer_variant_id=str(shelf.surface_type),
+        semantic_attributes={
+            "surface_type": str(shelf.surface_type),
+            "label": str(shelf.label),
+            "furniture_id": shelf.furniture_id,
+            **dict(shelf.attributes),
+        },
+        visual_attributes=dict(shelf.attributes),
+        source_entity_type="indoor_surface",
+        render_scale=int(scale),
+        style_id=style_id,
     )
+    surface_records[str(shelf.surface_id)] = rendered_shelf.object_record
 
     sofa = furniture_by_type["sofa"]
-    sofa_attrs = dict(sofa.attributes)
-    sx0, sy0, sx1, sy1 = [float(v) for v in sofa.bbox_xyxy]
-    sw = sx1 - sx0
-    sh = sy1 - sy0
-    sofa_outline = _as_rgb(sofa_attrs.get("outline_rgb"), (63, 83, 104))
-    sofa_fill = _as_rgb(sofa_attrs.get("fill_rgb"), (111, 142, 167))
-    sofa_back = _as_rgb(sofa_attrs.get("back_fill_rgb"), (126, 158, 183))
-    sofa_style = str(sofa_attrs.get("sofa_style", "block"))
-    draw.rounded_rectangle(
-        _scale_bbox((sx0, sy0 + 0.18 * sh, sx1, sy1), s),
-        radius=max(1, 28 * s),
-        fill=sofa_fill,
-        outline=sofa_outline,
-        width=max(1, 3 * s),
+    rendered_sofa = render_vector_scene_object(
+        draw,
+        object_id=str(sofa.furniture_id),
+        object_type="furniture",
+        bbox_xyxy=sofa.bbox_xyxy,
+        renderer_id="indoor_furniture",
+        renderer_variant_id=str(sofa.furniture_type),
+        semantic_attributes={
+            "furniture_type": str(sofa.furniture_type),
+            "label": str(sofa.label),
+            **dict(sofa.attributes),
+        },
+        visual_attributes=dict(sofa.attributes),
+        source_entity_type="indoor_furniture",
+        render_scale=int(scale),
+        style_id=style_id,
     )
-    draw.rounded_rectangle(
-        _scale_bbox((sx0 + 0.08 * sw, sy0, sx1 - 0.08 * sw, sy0 + 0.50 * sh), s),
-        radius=max(1, 26 * s),
-        fill=sofa_back,
-        outline=sofa_outline,
-        width=max(1, 3 * s),
-    )
-    if sofa_style == "rounded_arms":
-        arm_w = 0.16 * sw
-        arm_fill = _blend_rgb(sofa_fill, sofa_back, 0.35)
-        for arm in ((sx0, sy0 + 0.26 * sh, sx0 + arm_w, sy1), (sx1 - arm_w, sy0 + 0.26 * sh, sx1, sy1)):
-            draw.rounded_rectangle(_scale_bbox(arm, s), radius=max(1, 24 * s), fill=arm_fill, outline=sofa_outline, width=max(1, 3 * s))
-    elif sofa_style == "split_cushions":
-        seam = _blend_rgb(sofa_outline, sofa_fill, 0.35)
-        for frac in (0.36, 0.64):
-            x = sx0 + frac * sw
-            draw.line(_scale_points([(x, sy0 + 0.27 * sh), (x, sy1 - 10.0)], s), fill=seam, width=max(1, 2 * s))
-        draw.line(_scale_points([(sx0 + 0.08 * sw, sy0 + 0.59 * sh), (sx1 - 0.08 * sw, sy0 + 0.59 * sh)], s), fill=seam, width=max(1, 2 * s))
-    else:
-        leg_fill = _blend_rgb(sofa_outline, (35, 30, 27), 0.35)
-        for lx in (sx0 + 0.16 * sw, sx1 - 0.19 * sw):
-            draw.rectangle(_scale_bbox((lx, sy1 - 6.0, lx + 18.0, sy1 + 18.0), s), fill=leg_fill)
+    furniture_records[str(sofa.furniture_id)] = rendered_sofa.object_record
 
     cabinet = furniture_by_type["cabinet"]
-    cab_attrs = dict(cabinet.attributes)
-    cx0, cy0, cx1, cy1 = [float(v) for v in cabinet.bbox_xyxy]
-    cw = cx1 - cx0
-    ch = cy1 - cy0
-    cab_outline = _as_rgb(cab_attrs.get("outline_rgb"), (82, 60, 43))
-    cab_fill = _as_rgb(cab_attrs.get("fill_rgb"), (164, 122, 82))
-    cabinet_style = str(cab_attrs.get("cabinet_style", "panel_doors"))
-    draw.rectangle(_scale_bbox(cabinet.bbox_xyxy, s), fill=cab_fill, outline=cab_outline, width=max(1, 3 * s))
-    panel_fill = _as_rgb(cab_attrs.get("panel_rgb"), (187, 143, 94))
-    if cabinet_style == "open_shelves":
-        inner = (cx0 + 0.08 * cw, cy0 + 0.14 * ch, cx0 + 0.92 * cw, cy0 + 0.88 * ch)
-        draw.rectangle(_scale_bbox(inner, s), fill=_blend_rgb(cab_fill, (255, 255, 255), 0.10), outline=cab_outline, width=max(1, 2 * s))
-        for frac in (0.40, 0.66):
-            y = cy0 + frac * ch
-            draw.line(_scale_points([(inner[0], y), (inner[2], y)], s), fill=cab_outline, width=max(1, 2 * s))
-        x = cx0 + 0.50 * cw
-        draw.line(_scale_points([(x, inner[1]), (x, inner[3])], s), fill=cab_outline, width=max(1, 2 * s))
-    elif cabinet_style == "mixed_drawers":
-        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.15 * ch, cx0 + 0.91 * cw, cy0 + 0.34 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.39 * ch, cx0 + 0.46 * cw, cy0 + 0.88 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-        draw.rectangle(_scale_bbox((cx0 + 0.52 * cw, cy0 + 0.39 * ch, cx0 + 0.91 * cw, cy0 + 0.88 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-        for frac in (0.22, 0.50, 0.74):
-            y = cy0 + frac * ch
-            draw.line(_scale_points([(cx0 + 0.17 * cw, y), (cx0 + 0.82 * cw, y)], s), fill=_blend_rgb(cab_outline, panel_fill, 0.35), width=max(1, s))
-    else:
-        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.16 * ch, cx0 + 0.46 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-        draw.rectangle(_scale_bbox((cx0 + 0.51 * cw, cy0 + 0.16 * ch, cx0 + 0.91 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.56 * ch, cx0 + 0.91 * cw, cy0 + 0.90 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-    counter = surface_by_type["counter"]
-    counter_attrs = dict(counter.attributes)
-    _draw_surface_plane(
+    rendered_cabinet = render_vector_scene_object(
         draw,
-        surface_type=counter,
-        top_fill=_as_rgb(counter_attrs.get("top_fill_rgb"), (222, 211, 188)),
-        lip_fill=_as_rgb(counter_attrs.get("lip_fill_rgb"), (190, 155, 100)),
-        outline=_as_rgb(counter_attrs.get("outline_rgb"), (96, 82, 66)),
-        scale=s,
+        object_id=str(cabinet.furniture_id),
+        object_type="furniture",
+        bbox_xyxy=cabinet.bbox_xyxy,
+        renderer_id="indoor_furniture",
+        renderer_variant_id=str(cabinet.furniture_type),
+        semantic_attributes={
+            "furniture_type": str(cabinet.furniture_type),
+            "label": str(cabinet.label),
+            **dict(cabinet.attributes),
+        },
+        visual_attributes=dict(cabinet.attributes),
+        source_entity_type="indoor_furniture",
+        render_scale=int(scale),
+        style_id=style_id,
     )
+    furniture_records[str(cabinet.furniture_id)] = rendered_cabinet.object_record
 
-    table_surface = surface_by_type["table"]
-    table_surface_attrs = dict(table_surface.attributes)
-    _draw_surface_plane(
+    counter = surface_by_type["counter"]
+    rendered_counter = render_vector_scene_object(
         draw,
-        surface_type=table_surface,
-        top_fill=_as_rgb(table_surface_attrs.get("top_fill_rgb"), (195, 141, 86)),
-        lip_fill=_as_rgb(table_surface_attrs.get("lip_fill_rgb"), (166, 111, 67)),
-        outline=_as_rgb(table_surface_attrs.get("outline_rgb"), (91, 62, 41)),
-        scale=s,
+        object_id=str(counter.surface_id),
+        object_type="surface",
+        bbox_xyxy=counter.bbox_xyxy,
+        renderer_id="indoor_surface",
+        renderer_variant_id=str(counter.surface_type),
+        semantic_attributes={
+            "surface_type": str(counter.surface_type),
+            "label": str(counter.label),
+            "furniture_id": counter.furniture_id,
+            **dict(counter.attributes),
+        },
+        visual_attributes=dict(counter.attributes),
+        source_entity_type="indoor_surface",
+        render_scale=int(scale),
+        style_id=style_id,
     )
-    tx0, ty0, tx1, ty1 = [float(v) for v in table.bbox_xyxy]
-    tsx0, tsy0, tsx1, tsy1 = [float(v) for v in table_surface.bbox_xyxy]
-    leg_w = float(table_attrs.get("leg_width", 34.0))
-    table_dark = _as_rgb(table_attrs.get("dark_rgb"), (132, 86, 55))
-    table_outline = _as_rgb(table_surface_attrs.get("outline_rgb"), (91, 62, 41))
-    table_style = str(table_attrs.get("table_style", "straight_legs"))
-    if table_style == "trestle":
-        center_x = 0.5 * (tx0 + tx1)
-        draw.rectangle(_scale_bbox((center_x - 0.58 * leg_w, tsy1 - 4.0, center_x + 0.58 * leg_w, ty1 - 14.0), s), fill=table_dark, outline=table_outline, width=max(1, 2 * s))
-        draw.rectangle(_scale_bbox((tx0 + 0.18 * (tx1 - tx0), ty1 - 22.0, tx1 - 0.18 * (tx1 - tx0), ty1), s), fill=table_dark, outline=table_outline, width=max(1, 2 * s))
-    elif table_style == "tapered_legs":
-        for leg_x in (tx0 + 0.13 * (tx1 - tx0), tx1 - 0.13 * (tx1 - tx0) - leg_w):
-            points = [(leg_x, tsy1 - 4.0), (leg_x + leg_w, tsy1 - 4.0), (leg_x + 1.24 * leg_w, ty1), (leg_x - 0.20 * leg_w, ty1)]
-            draw.polygon(_scale_points(points, s), fill=table_dark, outline=table_outline)
-    else:
-        for leg_x in (tx0 + 0.13 * (tx1 - tx0), tx1 - 0.13 * (tx1 - tx0) - leg_w):
-            draw.rectangle(
-                _scale_bbox((leg_x, tsy1 - 4.0, leg_x + leg_w, ty1), s),
-                fill=table_dark,
-                outline=table_outline,
-                width=max(1, 2 * s),
-            )
+    surface_records[str(counter.surface_id)] = rendered_counter.object_record
+
+    rendered_table_surface = render_vector_scene_object(
+        draw,
+        object_id=str(table_surface.surface_id),
+        object_type="surface",
+        bbox_xyxy=table_surface.bbox_xyxy,
+        renderer_id="indoor_surface",
+        renderer_variant_id=str(table_surface.surface_type),
+        semantic_attributes={
+            "surface_type": str(table_surface.surface_type),
+            "label": str(table_surface.label),
+            "furniture_id": table_surface.furniture_id,
+            **dict(table_surface.attributes),
+        },
+        visual_attributes=dict(table_surface.attributes),
+        source_entity_type="indoor_surface",
+        render_scale=int(scale),
+        style_id=style_id,
+    )
+    surface_records[str(table_surface.surface_id)] = rendered_table_surface.object_record
+
+    rendered_table_legs = render_vector_scene_object(
+        draw,
+        object_id=str(table.furniture_id),
+        object_type="furniture",
+        bbox_xyxy=table.bbox_xyxy,
+        renderer_id="indoor_furniture",
+        renderer_variant_id=str(table.furniture_type),
+        semantic_attributes=table_semantic,
+        visual_attributes={**dict(table.attributes), **dict(table_surface.attributes), "surface_bbox": tuple(float(v) for v in table_surface.bbox_xyxy), "draw_phase": "legs"},
+        source_entity_type="indoor_furniture",
+        render_scale=int(scale),
+        style_id=style_id,
+    )
+    furniture_records[str(table.furniture_id)] = rendered_table_legs.object_record
 
     for container in containers:
-        box = container.bbox_xyxy
-        attrs = dict(container.attributes)
-        fill_rgb = _as_rgb(attrs.get("fill_rgb"), (193, 145, 86))
-        outline_rgb = _as_rgb(attrs.get("outline_rgb"), (94, 69, 42))
-        if container.container_type == "basket":
-            draw.rounded_rectangle(_scale_bbox(box, s), radius=max(1, 22 * s), fill=fill_rgb, outline=outline_rgb, width=max(1, 3 * s))
-            draw.arc(_scale_bbox((box[0] + 20, box[1] - 52, box[2] - 20, box[1] + 38), s), 180, 360, fill=outline_rgb, width=max(1, 5 * s))
-            if str(attrs.get("container_style", "plain")) in {"slatted", "woven"}:
-                for frac in (0.28, 0.45, 0.62, 0.79):
-                    x = box[0] + frac * (box[2] - box[0])
-                    draw.line(_scale_points([(x, box[1] + 16.0), (x, box[3] - 10.0)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
-        elif container.container_type == "box":
-            draw.polygon(_scale_points([(box[0], box[1] + 34), (box[2], box[1] + 34), (box[2] - 20, box[3]), (box[0] + 20, box[3])], s), fill=fill_rgb, outline=outline_rgb)
-            draw.line(_scale_points([(box[0] + 18, box[1] + 34), (box[0] + 2, box[1]), (box[2] - 2, box[1]), (box[2] - 18, box[1] + 34)], s), fill=outline_rgb, width=max(1, 3 * s))
-            if str(attrs.get("container_style", "plain")) == "slatted":
-                for frac in (0.44, 0.62, 0.80):
-                    y = box[1] + frac * (box[3] - box[1])
-                    draw.line(_scale_points([(box[0] + 18.0, y), (box[2] - 18.0, y)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
-        else:
-            draw.rectangle(_scale_bbox(box, s), fill=fill_rgb, outline=outline_rgb, width=max(1, 3 * s))
-            draw.line(_scale_points([(box[0] + 18, box[1] + 20), (box[2] - 18, box[1] + 20)], s), fill=outline_rgb, width=max(1, 3 * s))
-            if str(attrs.get("container_style", "plain")) in {"slatted", "woven"}:
-                draw.line(_scale_points([(box[0] + 18.0, box[1] + 0.58 * (box[3] - box[1])), (box[2] - 18.0, box[1] + 0.58 * (box[3] - box[1]))], s), fill=outline_rgb, width=max(1, 2 * s))
-            if str(attrs.get("container_style", "plain")) == "woven":
-                for frac in (0.30, 0.50, 0.70):
-                    x = box[0] + frac * (box[2] - box[0])
-                    draw.line(_scale_points([(x, box[1] + 24.0), (x, box[3] - 8.0)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
+        rendered_container = render_vector_scene_object(
+            draw,
+            object_id=str(container.container_id),
+            object_type="container",
+            bbox_xyxy=container.bbox_xyxy,
+            renderer_id="indoor_container",
+            renderer_variant_id=str(container.container_type),
+            semantic_attributes={
+                "container_type": str(container.container_type),
+                "label": str(container.label),
+                **dict(container.attributes),
+            },
+            visual_attributes=dict(container.attributes),
+            source_entity_type="indoor_container",
+            render_scale=int(scale),
+            style_id=style_id,
+        )
+        container_records[str(container.container_id)] = rendered_container.object_record
+    return (
+        tuple(replace(item, object_record=furniture_records.get(str(item.furniture_id))) for item in furniture),
+        tuple(replace(item, object_record=surface_records.get(str(item.surface_id))) for item in surfaces),
+        tuple(replace(item, object_record=container_records.get(str(item.container_id))) for item in containers),
+    )
 
 
 def _surface_map(surfaces: Sequence[IndoorSurface]) -> Dict[str, IndoorSurface]:
@@ -955,6 +899,7 @@ def render_indoor_room_scene(
     scale = max(1, int(render_scale))
     theme_id = _choose_weighted(rng, theme_weights or {theme: 1.0 for theme in INDOOR_THEME_IDS}, INDOOR_THEME_IDS)
     style_id = _choose_weighted(rng, style_weights or {style: 1.0 for style in STYLE_IDS}, STYLE_IDS)
+    _, _, draw_style_shadow = style_outline_params(str(style_id))
     furniture, surfaces, containers = _layout(rng, width=width, height=height, theme_id=str(theme_id), style_id=str(style_id))
     surfaces_by_type = _surface_map(surfaces)
     containers_by_type = _container_map(containers)
@@ -1015,7 +960,7 @@ def render_indoor_room_scene(
     image = Image.new("RGB", (width * scale, height * scale), (246, 246, 241))
     draw = ImageDraw.Draw(image)
     _draw_background(draw, rng=rng, theme_id=theme_id, style_id=str(style_id), width=width, height=height, scale=scale)
-    _draw_room_furniture(draw, furniture=furniture, surfaces=surfaces, containers=containers, scale=scale)
+    furniture, surfaces, containers = _render_room_fixtures(draw, furniture=furniture, surfaces=surfaces, containers=containers, scale=scale)
 
     placements: List[IndoorObjectPlacement] = []
     rendered_objects = []
@@ -1040,7 +985,12 @@ def render_indoor_room_scene(
             region_furniture_id = str(furniture_by_type[target_type].furniture_id)
         primary, accent = choose_object_colors(rng, str(spec.object_type))
         object_id = f"indoor_obj_{index:02d}"
-        if surface_contact_px is not None:
+        visual_attributes = {
+            "primary_color_rgb": primary,
+            "accent_color_rgb": accent,
+            "style_id": str(style_id),
+        }
+        if surface_contact_px is not None and draw_style_shadow:
             _draw_surface_shadow(
                 draw,
                 box=box,
@@ -1048,21 +998,47 @@ def render_indoor_room_scene(
                 depth=float(surface_depth or 0.75),
                 scale=scale,
             )
-        rendered_object = draw_illustration_object(
-            draw,
-            object_id=object_id,
-            object_type=str(spec.object_type),
-            bbox_xyxy=box,
-            primary_color_rgb=primary,
-            accent_color_rgb=accent,
-            style_id=str(style_id),
-            render_scale=scale,
+        rendered_object = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=object_id,
+                object_type=str(spec.object_type),
+                bbox_xyxy=box,
+                visual_attributes=visual_attributes,
+                role=str(spec.role),
+                source_entity_type="illustration_object",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=scale,
+            ),
         )
         actual_box = tuple(float(v) for v in rendered_object.bbox_xyxy)
         relations = {
             item.furniture_id: _relation_to_furniture(actual_box, item)
             for item in furniture
         }
+        object_record = object_record_for_spec(
+            IllustrationObjectSpec(
+                object_id=object_id,
+                object_type=str(spec.object_type),
+                bbox_xyxy=actual_box,
+                semantic_attributes={
+                    "placement_kind": str(spec.placement_kind),
+                    "surface_id": surface_id,
+                    "surface_type": surface_type,
+                    "container_id": container_id,
+                    "container_type": container_type,
+                    "region_relation": region_relation,
+                    "region_furniture_id": region_furniture_id,
+                    "relations": relations,
+                },
+                visual_attributes=visual_attributes,
+                role=str(spec.role),
+                source_entity_type="illustration_object",
+            ),
+            RenderContext(renderer_style=RENDERER_STYLE_VECTOR),
+        )
         placements.append(
             IndoorObjectPlacement(
                 object_id=object_id,
@@ -1082,6 +1058,7 @@ def render_indoor_room_scene(
                 style_id=str(style_id),
                 relations=relations,
                 role=str(spec.role),
+                object_record=object_record,
             )
         )
         rendered_objects.append(rendered_object)
@@ -1133,17 +1110,23 @@ def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]
 
     entities: List[Dict[str, Any]] = []
     for furniture in scene.furniture:
-        object_record = make_object_record(
-            object_id=str(furniture.furniture_id),
-            object_type="furniture",
-            bbox_xyxy=furniture.bbox_xyxy,
-            semantic_attributes={
-                "furniture_type": str(furniture.furniture_type),
-                "label": str(furniture.label),
-                **dict(furniture.attributes),
-            },
-            source_entity_type="indoor_furniture",
-        ).as_dict()
+        object_record = (
+            dict(furniture.object_record)
+            if furniture.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(furniture.furniture_id),
+                object_type="furniture",
+                bbox_xyxy=furniture.bbox_xyxy,
+                semantic_attributes={
+                    "furniture_type": str(furniture.furniture_type),
+                    "label": str(furniture.label),
+                    **dict(furniture.attributes),
+                },
+                source_entity_type="indoor_furniture",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(furniture.furniture_id),
@@ -1156,18 +1139,24 @@ def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]
             }
         )
     for surface in scene.surfaces:
-        object_record = make_object_record(
-            object_id=str(surface.surface_id),
-            object_type="surface",
-            bbox_xyxy=surface.bbox_xyxy,
-            semantic_attributes={
-                "surface_type": str(surface.surface_type),
-                "label": str(surface.label),
-                "furniture_id": surface.furniture_id,
-                **dict(surface.attributes),
-            },
-            source_entity_type="indoor_surface",
-        ).as_dict()
+        object_record = (
+            dict(surface.object_record)
+            if surface.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(surface.surface_id),
+                object_type="surface",
+                bbox_xyxy=surface.bbox_xyxy,
+                semantic_attributes={
+                    "surface_type": str(surface.surface_type),
+                    "label": str(surface.label),
+                    "furniture_id": surface.furniture_id,
+                    **dict(surface.attributes),
+                },
+                source_entity_type="indoor_surface",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(surface.surface_id),
@@ -1182,17 +1171,23 @@ def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]
             }
         )
     for container in scene.containers:
-        object_record = make_object_record(
-            object_id=str(container.container_id),
-            object_type="container",
-            bbox_xyxy=container.bbox_xyxy,
-            semantic_attributes={
-                "container_type": str(container.container_type),
-                "label": str(container.label),
-                **dict(container.attributes),
-            },
-            source_entity_type="indoor_container",
-        ).as_dict()
+        object_record = (
+            dict(container.object_record)
+            if container.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(container.container_id),
+                object_type="container",
+                bbox_xyxy=container.bbox_xyxy,
+                semantic_attributes={
+                    "container_type": str(container.container_type),
+                    "label": str(container.label),
+                    **dict(container.attributes),
+                },
+                source_entity_type="indoor_container",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(container.container_id),
@@ -1206,23 +1201,6 @@ def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]
             }
         )
     for placement in scene.placements:
-        object_record = make_object_record(
-            object_id=str(placement.object_id),
-            object_type=str(placement.object_type),
-            bbox_xyxy=placement.bbox_xyxy,
-            semantic_attributes={
-                "placement_kind": str(placement.placement_kind),
-                "surface_id": placement.surface_id,
-                "surface_type": placement.surface_type,
-                "container_id": placement.container_id,
-                "container_type": placement.container_type,
-                "region_relation": placement.region_relation,
-                "region_furniture_id": placement.region_furniture_id,
-                "relations": json_safe(placement.relations),
-            },
-            role=str(placement.role),
-            source_entity_type="illustration_object",
-        ).as_dict()
         entities.append(
             {
                 "entity_id": str(placement.object_id),
@@ -1241,7 +1219,7 @@ def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]
                 "region_furniture_id": placement.region_furniture_id,
                 "relations": json_safe(placement.relations),
                 "role": str(placement.role),
-                "object_record": object_record,
+                "object_record": placement.object_record,
             }
         )
     return entities

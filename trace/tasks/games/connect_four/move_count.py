@@ -70,6 +70,11 @@ SUPPORTED_SAFE_BOARD_SIZE_VARIANTS: Tuple[str, ...] = (
     *DEFAULT_SAFE_BOARD_SIZE_VARIANTS,
     *SUPPORTED_BOARD_SIZE_VARIANTS,
 )
+SUPPORTED_WINNING_MOVE_LABEL_THREAT_KINDS: Tuple[str, ...] = (
+    "vertical_threat",
+    "horizontal_threat",
+)
+COLUMN_LABELS: Tuple[str, ...] = tuple("ABCDEFG")
 
 
 @dataclass(frozen=True)
@@ -86,6 +91,7 @@ class _TaskDefaults:
     safe_midgame_max_occupied_count: int = 16
     safe_crowded_min_occupied_count: int = 16
     safe_crowded_max_occupied_count: int = 24
+    winning_move_label_threat_kind_weights: Dict[str, float] | None = None
     standard_board_rows: int = ROWS
     standard_board_columns: int = COLUMNS
     small_board_rows: int = 5
@@ -137,8 +143,8 @@ class _QueryEvaluation:
     """Query-specific evaluation payload derived from one finalized board."""
 
     answer: int
-    evidence_coords: Tuple[Coord, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_coords: Tuple[Coord, ...]
+    annotation_entity_ids: Tuple[str, ...]
     winning_move_coords: Tuple[Coord, ...]
     safe_move_coords: Tuple[Coord, ...]
 
@@ -152,6 +158,23 @@ class _SampledConnectFourScene:
     evaluation: _QueryEvaluation
     occupied_count: int
     construction_mode: str
+
+
+@dataclass(frozen=True)
+class _SampledConnectFourLabelScene:
+    """One Connect Four scene for a single winning-column label query."""
+
+    board: Board
+    current_player: int
+    evaluation: _QueryEvaluation
+    occupied_count: int
+    construction_mode: str
+    threat_kind: str
+    threat_kind_probabilities: Dict[str, float]
+    column_labels: Tuple[str, ...]
+    answer_label: str
+    answer_column: int
+    winning_line_coords: Tuple[Coord, ...]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -175,7 +198,7 @@ def _target_support_key(query_id: str) -> str:
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -353,6 +376,14 @@ def _style_variant_params_for_query_cycle(
     return style_params
 
 
+def _column_labels_for_columns(columns: int) -> Tuple[str, ...]:
+    """Return visible column labels for a Connect Four board width."""
+
+    if int(columns) > len(COLUMN_LABELS):
+        raise ValueError(f"Connect Four column labels only support up to {len(COLUMN_LABELS)} columns")
+    return tuple(str(label) for label in COLUMN_LABELS[: int(columns)])
+
+
 def _board_size_variant_to_dimensions(board_size_variant: str) -> Tuple[int, int]:
     """Return `(rows, columns)` for one supported Connect Four board-size variant."""
 
@@ -398,8 +429,8 @@ def _resolve_query_id(
     """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -601,6 +632,68 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         board_size_variant_probabilities=dict(board_size_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
+    )
+
+
+def _resolve_winning_move_column_label_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
+    """Resolve axes for the single winning-column label task."""
+
+    query_id_probabilities = {"winning_move_column_label": 1.0}
+    scene_variant, scene_variant_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="scene_variant.winning_move_column_label",
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_flag_key="balanced_scene_variant_sampling",
+        supported=SUPPORTED_SCENE_VARIANTS,
+    )
+    board_size_variant, board_rows, board_columns, board_size_variant_probabilities = _resolve_board_size_variant(
+        instance_seed=int(instance_seed),
+        params=params,
+        query_id_probabilities=query_id_probabilities,
+    )
+    style_variant, style_variant_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="style_variant.winning_move_column_label",
+        explicit_key="style_variant",
+        weights_key="style_variant_weights",
+        balance_flag_key="balanced_style_variant_sampling",
+        supported=SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS,
+    )
+    return _ResolvedAxes(
+        query_id="winning_move_column_label",
+        scene_variant=str(scene_variant),
+        board_size_variant=str(board_size_variant),
+        board_rows=int(board_rows),
+        board_columns=int(board_columns),
+        style_variant=str(style_variant),
+        target_answer=1,
+        target_answer_support=(1,),
+        query_id_probabilities=dict(query_id_probabilities),
+        scene_variant_probabilities=dict(scene_variant_probabilities),
+        board_size_variant_probabilities=dict(board_size_variant_probabilities),
+        style_variant_probabilities=dict(style_variant_probabilities),
+        target_answer_probabilities={"1": 1.0},
+    )
+
+
+def _resolve_winning_move_label_threat_kind(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve the constructed immediate-win pattern for the label task."""
+
+    return _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="winning_move_column_label.threat_kind",
+        explicit_key="winning_move_label_threat_kind",
+        weights_key="winning_move_label_threat_kind_weights",
+        balance_flag_key="balanced_winning_move_label_threat_kind_sampling",
+        supported=SUPPORTED_WINNING_MOVE_LABEL_THREAT_KINDS,
     )
 
 
@@ -814,16 +907,16 @@ def _evaluate_query(
     safe_coords = _safe_move_coords(board, current_player=int(current_player))
 
     if str(query_id) == "winning_move_count":
-        evidence_coords = winning_coords
+        annotation_coords = winning_coords
     elif str(query_id) == "safe_move_count":
-        evidence_coords = safe_coords
+        annotation_coords = safe_coords
     else:
         return None
 
     return _QueryEvaluation(
-        answer=int(len(evidence_coords)),
-        evidence_coords=tuple(tuple(coord) for coord in evidence_coords),
-        evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
+        answer=int(len(annotation_coords)),
+        annotation_coords=tuple(tuple(coord) for coord in annotation_coords),
+        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
         winning_move_coords=winning_coords,
         safe_move_coords=safe_coords,
     )
@@ -853,6 +946,87 @@ def _construct_vertical_threat_base(
         for row in range(int(rows) - 1, int(rows) - 4, -1):
             board[int(row)][int(col)] = int(current_player)
     return _freeze_board(board), "vertical_threats"
+
+
+def _target_column_for_label_task(
+    *,
+    rng,
+    params: Mapping[str, Any],
+    columns: int,
+) -> Tuple[int, str, Tuple[str, ...]]:
+    """Resolve the intended answer column for a winning-column label scene."""
+
+    column_labels = _column_labels_for_columns(int(columns))
+    label_to_col = {str(label): int(index) for index, label in enumerate(column_labels)}
+    explicit_label = params.get("target_column_label", params.get("answer_label"))
+    if explicit_label is not None:
+        label = str(explicit_label).strip().upper()
+        if label not in label_to_col:
+            raise ValueError(f"unsupported target_column_label={explicit_label!r} for {int(columns)} columns")
+        return int(label_to_col[str(label)]), str(label), tuple(column_labels)
+
+    explicit_column = params.get("target_column_index")
+    if explicit_column is not None:
+        column = int(explicit_column)
+        if not 0 <= int(column) < int(columns):
+            raise ValueError(f"target_column_index={int(column)} is outside a {int(columns)}-column board")
+        return int(column), str(column_labels[int(column)]), tuple(column_labels)
+
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is not None:
+        column = abs(int(sampling_index)) % int(columns)
+    else:
+        column = int(rng.randrange(int(columns)))
+    return int(column), str(column_labels[int(column)]), tuple(column_labels)
+
+
+def _horizontal_segment_for_target(*, rng, target_column: int, columns: int) -> Tuple[int, int]:
+    """Return a length-four horizontal segment containing the target column."""
+
+    start_min = max(0, int(target_column) - 3)
+    start_max = min(int(target_column), int(columns) - 4)
+    if int(start_min) > int(start_max):
+        raise ValueError("failed to place a horizontal Connect Four threat segment")
+    start = int(rng.randint(int(start_min), int(start_max)))
+    return int(start), int(start + 3)
+
+
+def _construct_winning_label_base(
+    *,
+    rng,
+    current_player: int,
+    target_column: int,
+    rows: int,
+    columns: int,
+    threat_kind: str,
+) -> Tuple[Board, str]:
+    """Construct a sparse board with exactly one intended immediate-winning drop column."""
+
+    if int(rows) < 4 or int(columns) < 4:
+        raise ValueError("Connect Four winning-column labels require at least 4 rows and 4 columns")
+    if not 0 <= int(target_column) < int(columns):
+        raise ValueError("target_column is outside the board")
+
+    board = _mutable_board(rows=int(rows), columns=int(columns))
+    if str(threat_kind) == "vertical_threat":
+        for row in range(int(rows) - 1, int(rows) - 4, -1):
+            board[int(row)][int(target_column)] = int(current_player)
+        return _freeze_board(board), "single_vertical_threat"
+
+    if str(threat_kind) == "horizontal_threat":
+        start, end = _horizontal_segment_for_target(
+            rng=rng,
+            target_column=int(target_column),
+            columns=int(columns),
+        )
+        bottom_row = int(rows) - 1
+        for col in range(int(start), int(end) + 1):
+            if int(col) == int(target_column):
+                continue
+            board[int(bottom_row)][int(col)] = int(current_player)
+        return _freeze_board(board), "single_horizontal_threat"
+
+    raise ValueError(f"unsupported winning_move_label_threat_kind: {threat_kind}")
 
 
 def _occupancy_bounds(scene_variant: str, *, rows: int, columns: int) -> Tuple[int, int]:
@@ -1110,13 +1284,87 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
     )
 
 
+def _sample_winning_column_label_scene(
+    *,
+    rng,
+    axes: _ResolvedAxes,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> _SampledConnectFourLabelScene:
+    """Construct one Connect Four scene with exactly one immediate winning column."""
+
+    current_player = _resolve_current_player(rng, params=params)
+    threat_kind, threat_kind_probabilities = _resolve_winning_move_label_threat_kind(
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+    target_column, answer_label, column_labels = _target_column_for_label_task(
+        rng=rng,
+        params=params,
+        columns=int(axes.board_columns),
+    )
+    base_board, construction_mode = _construct_winning_label_base(
+        rng=rng,
+        current_player=int(current_player),
+        target_column=int(target_column),
+        rows=int(axes.board_rows),
+        columns=int(axes.board_columns),
+        threat_kind=str(threat_kind),
+    )
+    board = _augment_board_density(
+        rng=rng,
+        board=base_board,
+        current_player=int(current_player),
+        query_id="winning_move_count",
+        target_answer=1,
+        scene_variant=str(axes.scene_variant),
+    )
+    evaluation = _evaluate_query(
+        board=board,
+        current_player=int(current_player),
+        query_id="winning_move_count",
+    )
+    if evaluation is None or int(evaluation.answer) != 1:
+        raise ValueError("final Connect Four board does not have exactly one winning move")
+    winning_map = winning_drop_map(board, int(current_player))
+    if set(winning_map.keys()) != {int(target_column)}:
+        raise ValueError("final Connect Four board did not preserve the target winning column")
+    _landing_coord, completed_lines = winning_map[int(target_column)]
+    if not completed_lines:
+        raise ValueError("target winning column has no completed line")
+    return _SampledConnectFourLabelScene(
+        board=board,
+        current_player=int(current_player),
+        evaluation=evaluation,
+        occupied_count=int(occupied_cell_count(board)),
+        construction_mode=str(construction_mode),
+        threat_kind=str(threat_kind),
+        threat_kind_probabilities=dict(threat_kind_probabilities),
+        column_labels=tuple(str(label) for label in column_labels),
+        answer_label=str(answer_label),
+        answer_column=int(target_column),
+        winning_line_coords=tuple(tuple(coord) for coord in completed_lines[0]),
+    )
+
+
 def _build_prompt_json_examples() -> Tuple[str, str]:
     """Return deterministic prompt examples for Connect Four JSON output."""
 
     answer_value = 2
-    evidence_value = [[210, 340, 300, 430], [390, 340, 480, 430]]
+    annotation_value = [[210, 340, 300, 430], [390, 340, 480, 430]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+    )
+
+
+def _build_winning_column_label_prompt_json_examples() -> Tuple[str, str]:
+    """Return deterministic prompt examples for a winning-column label JSON output."""
+
+    answer_value = "D"
+    annotation_value = [[390, 340, 480, 430]]
+    return (
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -1198,9 +1446,9 @@ class GamesConnectFourMoveCountTask:
             marked_square=None,
             panel_style=panel_style,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evaluation.evidence_entity_ids
+            for entity_id in sampled_scene.evaluation.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -1224,8 +1472,8 @@ class GamesConnectFourMoveCountTask:
                 "safety_rule_text",
                 "answer_hint_winning_move_count",
                 "answer_hint_safe_move_count",
-                "evidence_hint_winning_move_count",
-                "evidence_hint_safe_move_count",
+                "annotation_hint_winning_move_count",
+                "annotation_hint_safe_move_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -1239,7 +1487,7 @@ class GamesConnectFourMoveCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": _object_description(
                     prompt_defaults=prompt_defaults,
@@ -1249,7 +1497,7 @@ class GamesConnectFourMoveCountTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "current_player_name": str(current_player_name),
@@ -1263,7 +1511,7 @@ class GamesConnectFourMoveCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.evaluation.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -1275,7 +1523,7 @@ class GamesConnectFourMoveCountTask:
             query_id=str(axes.query_id),
             occupied_count=int(sampled_scene.occupied_count),
             target_answer=int(axes.target_answer),
-            evidence_count=len(sampled_scene.evaluation.evidence_entity_ids),
+            annotation_count=len(sampled_scene.evaluation.annotation_entity_ids),
         )
 
         trace_payload = {
@@ -1292,7 +1540,7 @@ class GamesConnectFourMoveCountTask:
                     "current_player": str(current_player_name),
                     "target_answer": int(sampled_scene.evaluation.answer),
                     "occupied_count": int(sampled_scene.occupied_count),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1350,15 +1598,15 @@ class GamesConnectFourMoveCountTask:
                 "board_rows": [[int(cell) for cell in row] for row in sampled_scene.board],
                 "winning_move_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.winning_move_coords],
                 "safe_move_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.safe_move_coords],
-                "evidence_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.evidence_coords],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                "annotation_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.annotation_coords],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1367,7 +1615,7 @@ class GamesConnectFourMoveCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1379,16 +1627,277 @@ class GamesConnectFourMoveCountTask:
 
 
 @register_task
-class GamesConnectFourMoveCountPublicTask(QuerySubsetTaskMixin, GamesConnectFourMoveCountTask):
-    """Count Connect Four drop columns matching one sampled move condition."""
+class GamesConnectFourWinningMoveColumnLabelTask:
+    """Select the labeled Connect Four column that wins immediately."""
 
-    task_id = "task_games__connect_four__move_count"
-    supported_query_ids = (
-        "winning_move_count",
-        "safe_move_count",
-    )
+    task_id = "task_games__connect_four__winning_move_column_label"
+    domain = "games"
+    task_group = "connect_four"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        axes = _resolve_winning_move_column_label_axes(int(instance_seed), params=params)
+        render_params = _render_params(params, instance_seed=int(instance_seed))
+
+        sampled_scene: _SampledConnectFourLabelScene | None = None
+        for attempt_index in range(max(1, int(max_attempts))):
+            attempt_rng = spawn_rng(int(instance_seed), f"{self.task_id}.attempt.{int(attempt_index)}")
+            try:
+                sampled_scene = _sample_winning_column_label_scene(
+                    rng=attempt_rng,
+                    axes=axes,
+                    params=params,
+                    instance_seed=int(instance_seed),
+                )
+            except ValueError:
+                continue
+            break
+        if sampled_scene is None:
+            raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
+
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.connect_four_board.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
+            canvas_width=int(render_params.canvas_width),
+            canvas_height=int(render_params.canvas_height),
+            style=panel_style,
+        )
+        rendered_scene = render_connect_four_board_scene(
+            board=sampled_scene.board,
+            background=background,
+            scene_variant=str(axes.scene_variant),
+            style_variant=str(axes.style_variant),
+            current_player=int(sampled_scene.current_player),
+            params=render_params,
+            marked_square=None,
+            panel_style=panel_style,
+            column_labels=sampled_scene.column_labels,
+        )
+        if len(sampled_scene.evaluation.annotation_entity_ids) != 1:
+            raise RuntimeError("winning-column label task expects exactly one landing-cell witness")
+        annotation_bboxes = [
+            list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
+            for entity_id in sampled_scene.evaluation.annotation_entity_ids
+        ]
+        image, post_noise_meta = apply_post_image_noise(
+            rendered_scene.image,
+            instance_seed=int(instance_seed),
+            params=params,
+            default_config=POST_IMAGE_NOISE_DEFAULTS,
+        )
+
+        prompt_defaults = required_group_defaults(
+            _PROMPT_DEFAULTS,
+            (
+                "bundle_id",
+                "scene_key",
+                "task_key",
+                "json_output_contract",
+                "json_output_contract_answer_only",
+                "object_description_midgame_board",
+                "object_description_crowded_board",
+                "legal_drop_rule_text",
+                "winning_rule_text",
+                "answer_hint_winning_move_column_label",
+                "annotation_hint_winning_move_column_label",
+            ),
+            context=f"prompt defaults for {self.task_id}",
+        )
+        json_example, json_example_answer_only = _build_winning_column_label_prompt_json_examples()
+        current_player_name = player_name(int(sampled_scene.current_player))
+        opponent_player_name = player_name(int(opponent(int(sampled_scene.current_player))))
+        prompt_selection = render_task_prompt_variants(
+            domain=self.domain,
+            task_group=self.task_group,
+            bundle_id=str(prompt_defaults["bundle_id"]),
+            scene_key=str(prompt_defaults["scene_key"]),
+            task_key=str(prompt_defaults["task_key"]),
+            query_key=str(axes.query_id),
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            slots={
+                "object_description": _object_description(
+                    prompt_defaults=prompt_defaults,
+                    scene_variant=str(axes.scene_variant),
+                    board_size_variant=str(axes.board_size_variant),
+                ),
+                "json_output_contract": str(prompt_defaults["json_output_contract"]),
+                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+                "answer_hint": str(prompt_defaults["answer_hint_winning_move_column_label"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_winning_move_column_label"]),
+                "json_example": str(json_example),
+                "json_example_answer_only": str(json_example_answer_only),
+                "current_player_name": str(current_player_name),
+                "opponent_player_name": str(opponent_player_name),
+                "legal_drop_rule_text": str(prompt_defaults["legal_drop_rule_text"]),
+                "winning_rule_text": str(prompt_defaults["winning_rule_text"]),
+            },
+            instance_seed=int(instance_seed),
+        )
+        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+
+        answer_gt = TypedValue(type="string", value=str(sampled_scene.answer_label))
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
+        complexity = build_games_connect_four_move_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            scene_variant=str(axes.scene_variant),
+            query_id=str(axes.query_id),
+            occupied_count=int(sampled_scene.occupied_count),
+            target_answer=1,
+            annotation_count=1,
+        )
+
+        winning_coord = sampled_scene.evaluation.annotation_coords[0]
+        trace_payload = {
+            "scene_ir": {
+                "scene_kind": f"games_connect_four_board_{str(axes.scene_variant)}_{str(axes.board_size_variant)}",
+                "entities": [dict(entity) for entity in rendered_scene.scene_entities],
+                "relations": {
+                    "scene_variant": str(axes.scene_variant),
+                    "query_id": str(axes.query_id),
+                    "board_size_variant": str(axes.board_size_variant),
+                    "board_row_count": int(axes.board_rows),
+                    "board_column_count": int(axes.board_columns),
+                    "style_variant": str(axes.style_variant),
+                    "current_player": str(current_player_name),
+                    "answer_label": str(sampled_scene.answer_label),
+                    "answer_column": int(sampled_scene.answer_column),
+                    "winning_move_coord": [int(winning_coord[0]), int(winning_coord[1])],
+                    "winning_move_entity_id": str(sampled_scene.evaluation.annotation_entity_ids[0]),
+                    "column_labels": [str(label) for label in sampled_scene.column_labels],
+                    "occupied_count": int(sampled_scene.occupied_count),
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
+                },
+            },
+            "query_spec": {
+                "query_id": str(axes.query_id),
+                "template_id": str(prompt_defaults["bundle_id"]),
+                "prompt_variant": dict(prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+                "params": {
+                    "scene_variant": str(axes.scene_variant),
+                    "query_id": str(axes.query_id),
+                    "board_size_variant": str(axes.board_size_variant),
+                    "board_row_count": int(axes.board_rows),
+                    "board_column_count": int(axes.board_columns),
+                    "style_variant": str(axes.style_variant),
+                    "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "board_size_variant_probabilities": dict(axes.board_size_variant_probabilities),
+                    "style_variant_probabilities": dict(axes.style_variant_probabilities),
+                    "threat_kind": str(sampled_scene.threat_kind),
+                    "threat_kind_probabilities": dict(sampled_scene.threat_kind_probabilities),
+                    "current_player": str(current_player_name),
+                    "opponent_player": str(opponent_player_name),
+                    "answer_label": str(sampled_scene.answer_label),
+                    "answer_column": int(sampled_scene.answer_column),
+                    "column_labels": [str(label) for label in sampled_scene.column_labels],
+                    "occupied_count": int(sampled_scene.occupied_count),
+                },
+            },
+            "render_spec": {
+                "scene_variant": str(axes.scene_variant),
+                "board_size_variant": str(axes.board_size_variant),
+                "board_row_count": int(axes.board_rows),
+                "board_column_count": int(axes.board_columns),
+                "style_variant": str(axes.style_variant),
+                "canvas_width": int(image.size[0]),
+                "canvas_height": int(image.size[1]),
+                "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
+                "effective_cell_size_px": rendered_scene.render_map.get("effective_cell_size_px"),
+            },
+            "render_map": dict(rendered_scene.render_map),
+            "execution_trace": {
+                "scene_variant": str(axes.scene_variant),
+                "query_id": str(axes.query_id),
+                "board_size_variant": str(axes.board_size_variant),
+                "board_row_count": int(axes.board_rows),
+                "board_column_count": int(axes.board_columns),
+                "style_variant": str(axes.style_variant),
+                "threat_kind": str(sampled_scene.threat_kind),
+                "current_player": str(current_player_name),
+                "opponent_player": str(opponent_player_name),
+                "answer_label": str(sampled_scene.answer_label),
+                "answer_column": int(sampled_scene.answer_column),
+                "column_labels": [str(label) for label in sampled_scene.column_labels],
+                "occupied_count": int(sampled_scene.occupied_count),
+                "construction_mode": str(sampled_scene.construction_mode),
+                "board_rows": [[int(cell) for cell in row] for row in sampled_scene.board],
+                "winning_move_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.winning_move_coords],
+                "winning_line_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.winning_line_coords],
+                "annotation_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.annotation_coords],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
+            },
+            "witness_symbolic": {
+                "type": "object_set",
+                "ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
+            },
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+            },
+            "background": background_meta,
+            "post_image_noise": post_noise_meta,
+        }
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            answer_gt=answer_gt,
+            annotation_gt=annotation_gt,
+            image=image,
+            image_id="img0",
+            trace_payload=trace_payload,
+            complexity=complexity,
+            task_versions=default_task_versions(),
+            query_id=str(axes.query_id),
+            scene_id="connect_four",
+        )
+
+
+@register_task
+class GamesConnectFourWinningMoveCountTask(QuerySubsetTaskMixin, GamesConnectFourMoveCountTask):
+    """Count Connect Four drop columns that win immediately."""
+
+    task_id = "task_games__connect_four__winning_move_count"
+    supported_query_ids = ("winning_move_count",)
+
+
+@register_task
+class GamesConnectFourSafeMoveCountTask(QuerySubsetTaskMixin, GamesConnectFourMoveCountTask):
+    """Count Connect Four drop columns that avoid an immediate reply win."""
+
+    task_id = "task_games__connect_four__safe_move_count"
+    supported_query_ids = ("safe_move_count",)
 
 
 __all__ = [
-    "GamesConnectFourMoveCountPublicTask",
+    "GamesConnectFourSafeMoveCountTask",
+    "GamesConnectFourWinningMoveColumnLabelTask",
+    "GamesConnectFourWinningMoveCountTask",
 ]

@@ -9,7 +9,7 @@ from trace.tasks import create_task
 from trace.tasks.icons.counting.named_shape_pair_arithmetic_count import DIFFERENCE_QUERY_IDS, TOTAL_QUERY_IDS
 
 
-TASK_ID = "task_icons__named_field__shape_pair_arithmetic_count"
+TASK_ID = "task_icons__named_field__count_arithmetic"
 
 
 def _matches(entity: dict[str, object], operand: dict[str, object], *, uses_color_binding: bool) -> bool:
@@ -25,16 +25,20 @@ def _bbox_sort_key(entity: dict[str, object]) -> tuple[int, int, int, int]:
     return (box[1], box[0], box[3], box[2])
 
 
-def _expected_operand_evidence(
+def _expected_operand_annotation(
     left_entities: list[dict[str, object]],
     right_entities: list[dict[str, object]],
-) -> dict[str, list[int]]:
-    expected: dict[str, list[int]] = {}
-    for index, entity in enumerate(sorted(left_entities, key=_bbox_sort_key), start=1):
-        expected[f"left_operand_{index}"] = list(entity["bbox_xyxy"])  # type: ignore[arg-type]
-    for index, entity in enumerate(sorted(right_entities, key=_bbox_sort_key), start=1):
-        expected[f"right_operand_{index}"] = list(entity["bbox_xyxy"])  # type: ignore[arg-type]
-    return expected
+) -> dict[str, list[list[int]]]:
+    return {
+        "left_operand": [
+            list(entity["bbox_xyxy"])  # type: ignore[arg-type]
+            for entity in sorted(left_entities, key=_bbox_sort_key)
+        ],
+        "right_operand": [
+            list(entity["bbox_xyxy"])  # type: ignore[arg-type]
+            for entity in sorted(right_entities, key=_bbox_sort_key)
+        ],
+    }
 
 
 def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> None:
@@ -79,20 +83,21 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == target_answer
         assert out.answer_gt.value == answer
-        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_bbox_set_map"
         assert len(left_entities) == 2
         assert len(right_entities) == 3
-        assert len(out.evidence_gt.value) == 5
+        assert sorted(out.annotation_gt.value.keys()) == ["left_operand", "right_operand"]
+        assert sum(len(value) for value in out.annotation_gt.value.values()) == 5
         assert set(trace["render_map"]["left_operand_instance_ids"]) == {str(entity["instance_id"]) for entity in left_entities}
         assert set(trace["render_map"]["right_operand_instance_ids"]) == {str(entity["instance_id"]) for entity in right_entities}
         assert set(trace["render_map"]["counted_instance_ids"]) == {
             str(entity["instance_id"]) for entity in left_entities + right_entities
         }
-        expected_evidence = _expected_operand_evidence(left_entities, right_entities)
-        assert out.evidence_gt.value == expected_evidence
-        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert trace["projected_evidence"]["keyed_bbox_map"] == expected_evidence
-        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_evidence
+        expected_annotation = _expected_operand_annotation(left_entities, right_entities)
+        assert out.annotation_gt.value == expected_annotation
+        assert trace["projected_annotation"]["type"] == "keyed_bbox_set_map"
+        assert trace["projected_annotation"]["keyed_bbox_set_map"] == expected_annotation
+        assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == expected_annotation
         assert str(left_operand["shape_name"]) in out.prompt
         assert str(right_operand["shape_name"]) in out.prompt
         if uses_color_binding:
@@ -122,8 +127,8 @@ def test_icons_counting_named_shape_pair_arithmetic_supports_zero_difference() -
     assert out.answer_gt.value == 0
     assert trace["execution_trace"]["left_count"] == 3
     assert trace["execution_trace"]["right_count"] == 3
-    assert len(out.evidence_gt.value) == 6
-    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert sum(len(value) for value in out.annotation_gt.value.values()) == 6
+    assert out.annotation_gt.type == "keyed_bbox_set_map"
 
 
 def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> None:
@@ -146,8 +151,10 @@ def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> N
             expected = abs(int(execution["left_count"]) - int(execution["right_count"]))
         assert out.answer_gt.value == expected
         assert 6 <= int(execution["object_count"]) <= 20
-        assert len(out.evidence_gt.value) == int(execution["left_count"]) + int(execution["right_count"])
-        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert sum(len(value) for value in out.annotation_gt.value.values()) == int(
+            execution["left_count"]
+        ) + int(execution["right_count"])
+        assert out.annotation_gt.type == "keyed_bbox_set_map"
 
     assert set(query_counts) == set(TOTAL_QUERY_IDS + DIFFERENCE_QUERY_IDS)
     assert set(answer_counts).issubset(set(range(0, 11)))

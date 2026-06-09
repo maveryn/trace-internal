@@ -18,7 +18,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_snakes_ladders_board_complexity
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
@@ -46,6 +46,10 @@ from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_snakes_ladders_board_base"
+SPECIAL_SQUARE_QUERY_IDS: Tuple[str, ...] = (
+    "ladder_start_ahead_count",
+    "snake_head_ahead_count",
+)
 
 
 @dataclass(frozen=True)
@@ -54,6 +58,7 @@ class _TaskDefaults:
 
     move_outcome_support: Tuple[int, ...] = tuple(range(7, 50))
     best_roll_value_support: Tuple[int, ...] = tuple(range(14, 50))
+    special_square_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     board_side_support: Tuple[int, ...] = SUPPORTED_BOARD_SIDES
     horizon_roll_count_support: Tuple[int, ...] = SUPPORTED_HORIZON_ROLL_COUNTS
     move_outcome_jump_probability: float = 0.30
@@ -108,6 +113,8 @@ def _support_for_query(query_id: str) -> Tuple[int, ...]:
         return _DEFAULTS.move_outcome_support
     if str(query_id) == "best_roll_value":
         return _DEFAULTS.best_roll_value_support
+    if str(query_id) in SPECIAL_SQUARE_QUERY_IDS:
+        return _DEFAULTS.special_square_count_support
     raise ValueError(f"unsupported query_id: {query_id}")
 
 
@@ -118,6 +125,8 @@ def _support_key_for_query(query_id: str) -> str:
         return "move_outcome_support"
     if str(query_id) == "best_roll_value":
         return "best_roll_value_support"
+    if str(query_id) in SPECIAL_SQUARE_QUERY_IDS:
+        return "special_square_count_support"
     raise ValueError(f"unsupported query_id: {query_id}")
 
 
@@ -171,7 +180,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis uses the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -518,6 +527,82 @@ def _add_random_jumps(
     return tuple(result)
 
 
+def _special_query_kind(query_id: str) -> str:
+    """Return the jump kind counted by one special-square query."""
+
+    if str(query_id) == "ladder_start_ahead_count":
+        return "ladder"
+    if str(query_id) == "snake_head_ahead_count":
+        return "snake"
+    raise ValueError(f"unsupported special-square query_id: {query_id}")
+
+
+def _valid_jump_starts(*, kind: str, board_side: int) -> Tuple[int, ...]:
+    """Return jump-start squares with at least one valid endpoint."""
+
+    side = int(board_side)
+    last_square = board_last_square(side)
+    min_span = max(4, int(side) - 1)
+    if str(kind) == "ladder":
+        return tuple(range(2, max(1, int(last_square) - int(min_span)) + 1))
+    return tuple(range(max(3, int(min_span) + 2), int(last_square)))
+
+
+def _special_square_entity_ids(
+    *,
+    jumps: Sequence[SnakesLaddersJump],
+    kind: str,
+    start_square: int,
+    board_side: int,
+) -> Tuple[str, ...]:
+    """Return square ids for counted jump starts ahead of the token."""
+
+    last_square = board_last_square(int(board_side))
+    squares = sorted(
+        int(jump.start_square)
+        for jump in jumps
+        if str(jump.kind) == str(kind)
+        and int(start_square) < int(jump.start_square) <= int(last_square)
+    )
+    return tuple(square_to_cell_id(int(square)) for square in squares)
+
+
+def _append_jumps_from_allowed_starts(
+    *,
+    rng,
+    jumps: Sequence[SnakesLaddersJump],
+    board_side: int,
+    kind: str,
+    allowed_starts: Sequence[int],
+    count: int,
+    required: bool,
+) -> Tuple[SnakesLaddersJump, ...] | None:
+    """Append up to `count` non-conflicting jumps of one kind from allowed starts."""
+
+    result = list(jumps)
+    used_starts = {int(jump.start_square) for jump in result}
+    candidates = [int(value) for value in allowed_starts if int(value) not in used_starts]
+    rng.shuffle(candidates)
+    target_count = max(0, int(count))
+    for start in candidates:
+        if target_count <= 0:
+            break
+        for _endpoint_attempt in range(12):
+            end = _random_jump_endpoint(rng, kind=str(kind), start=int(start), board_side=int(board_side))
+            if end is None:
+                continue
+            candidate = _make_jump(kind=str(kind), start=int(start), end=int(end))
+            if _jump_conflicts_with_existing(candidate, existing=tuple(result), board_side=int(board_side)):
+                continue
+            result.append(candidate)
+            used_starts.add(int(start))
+            target_count -= 1
+            break
+    if target_count > 0 and bool(required):
+        return None
+    return tuple(result)
+
+
 def _nearby_die_region(start_square: int, *, board_side: int) -> Tuple[int, ...]:
     """Return local squares kept visually clear around the token and die landings."""
 
@@ -594,7 +679,7 @@ def _sample_move_outcome_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSamp
         move = apply_die_roll(int(start_square), int(die_value), jumps_tuple, board_side=int(board_side))
         if int(move.final_square) != int(target_final):
             continue
-        evidence_ids = [square_to_cell_id(int(start_square)), square_to_cell_id(int(move.final_square))]
+        annotation_ids = [square_to_cell_id(int(start_square)), square_to_cell_id(int(move.final_square))]
         sample = SnakesLaddersSample(
             query_id="move_outcome_value",
             scene_variant=str(axes.scene_variant),
@@ -606,7 +691,7 @@ def _sample_move_outcome_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSamp
             move=move,
             horizon_roll_count=None,
             optimal_route=tuple(),
-            evidence_entity_ids=tuple(dict.fromkeys(evidence_ids)),
+            annotation_entity_ids=tuple(dict.fromkeys(annotation_ids)),
             construction_mode="single_die_move_outcome",
         )
         validate_snakes_ladders_sample(sample)
@@ -649,7 +734,7 @@ def _sample_best_roll_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
         if int(answer) != int(target_final):
             continue
         route = trace_best_route(int(start_square), int(horizon), jumps_tuple, board_side=int(board_side))
-        evidence_ids = (square_to_cell_id(int(target_final)),)
+        annotation_ids = (square_to_cell_id(int(target_final)),)
         sample = SnakesLaddersSample(
             query_id="best_roll_value",
             scene_variant=str(axes.scene_variant),
@@ -661,12 +746,105 @@ def _sample_best_roll_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
             move=None,
             horizon_roll_count=int(horizon),
             optimal_route=tuple(route),
-            evidence_entity_ids=tuple(evidence_ids),
+            annotation_entity_ids=tuple(annotation_ids),
             construction_mode="best_final_square_planning",
         )
         validate_snakes_ladders_sample(sample)
         return sample
     raise ValueError("failed to sample Snakes and Ladders best-final-square scene")
+
+
+def _sample_special_square_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
+    """Construct an interval count scene over visible snake/ladder starts."""
+
+    target_answer = int(axes.target_answer)
+    board_side = int(axes.board_side)
+    last_square = board_last_square(board_side)
+    query_kind = _special_query_kind(str(axes.query_id))
+    opposite_kind = "snake" if query_kind == "ladder" else "ladder"
+    valid_query_starts = _valid_jump_starts(kind=query_kind, board_side=int(board_side))
+    valid_opposite_starts = _valid_jump_starts(kind=opposite_kind, board_side=int(board_side))
+
+    candidate_start_squares = [
+        int(square)
+        for square in range(1, int(last_square))
+        if len([value for value in valid_query_starts if int(value) > int(square)]) >= int(target_answer)
+    ]
+    if int(target_answer) == 0:
+        candidate_start_squares = [
+            int(square)
+            for square in range(1, int(last_square) + 1)
+            if not any(int(value) > int(square) for value in valid_query_starts)
+        ]
+    if not candidate_start_squares:
+        raise ValueError("target special-square answer is incompatible with board side")
+
+    for _attempt in range(220):
+        start_square = int(rng.choice(tuple(candidate_start_squares)))
+        after_query_starts = [int(value) for value in valid_query_starts if int(value) > int(start_square)]
+        before_query_starts = [int(value) for value in valid_query_starts if int(value) < int(start_square)]
+        jumps: Tuple[SnakesLaddersJump, ...] = tuple()
+        jumps = _append_jumps_from_allowed_starts(
+            rng=rng,
+            jumps=jumps,
+            board_side=int(board_side),
+            kind=query_kind,
+            allowed_starts=tuple(after_query_starts),
+            count=int(target_answer),
+            required=True,
+        )
+        if jumps is None:
+            continue
+        distractor_same_count = int(rng.randint(0, min(2, len(before_query_starts)))) if before_query_starts else 0
+        jumps = _append_jumps_from_allowed_starts(
+            rng=rng,
+            jumps=jumps,
+            board_side=int(board_side),
+            kind=query_kind,
+            allowed_starts=tuple(before_query_starts),
+            count=int(distractor_same_count),
+            required=False,
+        )
+        if jumps is None:
+            continue
+        allowed_opposite_starts = [int(value) for value in valid_opposite_starts if int(value) != int(start_square)]
+        opposite_count = int(rng.randint(1, min(3, max(1, len(allowed_opposite_starts)))))
+        jumps = _append_jumps_from_allowed_starts(
+            rng=rng,
+            jumps=jumps,
+            board_side=int(board_side),
+            kind=opposite_kind,
+            allowed_starts=tuple(allowed_opposite_starts),
+            count=int(opposite_count),
+            required=False,
+        )
+        if jumps is None:
+            continue
+        annotation_ids = _special_square_entity_ids(
+            jumps=tuple(jumps),
+            kind=query_kind,
+            start_square=int(start_square),
+            board_side=int(board_side),
+        )
+        if len(annotation_ids) != int(target_answer):
+            continue
+        sample = SnakesLaddersSample(
+            query_id=str(axes.query_id),
+            scene_variant=str(axes.scene_variant),
+            style_variant=str(axes.style_variant),
+            board_side=int(board_side),
+            answer=int(target_answer),
+            start_square=int(start_square),
+            jumps=tuple(jumps),
+            move=None,
+            horizon_roll_count=None,
+            optimal_route=tuple(),
+            annotation_entity_ids=tuple(annotation_ids),
+            construction_mode="special_square_interval_count",
+        )
+        validate_snakes_ladders_sample(sample)
+        return sample
+    raise ValueError("failed to sample Snakes and Ladders special-square scene")
 
 
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
@@ -676,6 +854,8 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
         return _sample_move_outcome_scene(rng=rng, axes=axes)
     if str(axes.query_id) == "best_roll_value":
         return _sample_best_roll_scene(rng=rng, axes=axes)
+    if str(axes.query_id) in SPECIAL_SQUARE_QUERY_IDS:
+        return _sample_special_square_scene(rng=rng, axes=axes)
     raise ValueError(f"unsupported query_id: {axes.query_id}")
 
 
@@ -684,15 +864,18 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "move_outcome_value":
         answer_value = 0
-        evidence_value: Any = {
+        annotation_value: Any = {
             "start_square": [88, 682, 178, 772],
             "end_square": [462, 398, 552, 488],
         }
+    elif str(query_id) in SPECIAL_SQUARE_QUERY_IDS:
+        answer_value = 2
+        annotation_value = [[188, 682, 278, 772], [374, 496, 464, 586]]
     else:
         answer_value = 0
-        evidence_value = [[554, 302, 644, 392]]
+        annotation_value = [[554, 302, 644, 392]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -703,8 +886,8 @@ def _move_trace(move: SnakesLaddersMove) -> Dict[str, Any]:
     return move.to_trace()
 
 
-def _evidence_role_entity_ids(sample: SnakesLaddersSample) -> Dict[str, str]:
-    """Return role-bound witness ids when the query needs semantic evidence binding."""
+def _annotation_role_entity_ids(sample: SnakesLaddersSample) -> Dict[str, str]:
+    """Return role-bound witness ids when the query needs semantic annotation binding."""
 
     if str(sample.query_id) != "move_outcome_value" or sample.move is None:
         return {}
@@ -763,41 +946,42 @@ class GamesSnakesLaddersBoardTask:
             start_square=int(sampled_scene.start_square),
             die_value=int(axes.die_value) if str(axes.query_id) == "move_outcome_value" else None,
             horizon_roll_count=int(sampled_scene.horizon_roll_count) if sampled_scene.horizon_roll_count is not None else None,
+            show_roll_panel=str(axes.query_id) not in SPECIAL_SQUARE_QUERY_IDS,
             panel_style=panel_style,
         )
-        evidence_role_entity_ids = _evidence_role_entity_ids(sampled_scene)
-        if evidence_role_entity_ids:
-            evidence_value: Any = {
+        annotation_role_entity_ids = _annotation_role_entity_ids(sampled_scene)
+        if annotation_role_entity_ids:
+            annotation_value: Any = {
                 str(role): list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-                for role, entity_id in evidence_role_entity_ids.items()
+                for role, entity_id in annotation_role_entity_ids.items()
             }
-            evidence_type = "keyed_bbox_map"
-            projected_evidence = {
+            annotation_type = "keyed_bbox_map"
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_value),
-                "pixel_keyed_bbox_map": dict(evidence_value),
+                "keyed_bbox_map": dict(annotation_value),
+                "pixel_keyed_bbox_map": dict(annotation_value),
             }
             witness_symbolic = {
                 "type": "object_map",
-                "ids": dict(evidence_role_entity_ids),
+                "ids": dict(annotation_role_entity_ids),
             }
-            evidence_count = len(evidence_role_entity_ids)
+            annotation_count = len(annotation_role_entity_ids)
         else:
-            evidence_value = [
+            annotation_value = [
                 list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-                for entity_id in sampled_scene.evidence_entity_ids
+                for entity_id in sampled_scene.annotation_entity_ids
             ]
-            evidence_type = "bbox_set"
-            projected_evidence = {
+            annotation_type = "bbox_set"
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_value],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+                "bbox_set": [list(bbox) for bbox in annotation_value],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
             }
             witness_symbolic = {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             }
-            evidence_count = len(sampled_scene.evidence_entity_ids)
+            annotation_count = len(sampled_scene.annotation_entity_ids)
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -817,10 +1001,15 @@ class GamesSnakesLaddersBoardTask:
                 "movement_rule_text",
                 "overshoot_rule_text",
                 "planning_rule_text",
+                "special_square_count_rule_text",
                 "answer_hint_move_outcome_value",
-                "evidence_hint_move_outcome_value",
+                "annotation_hint_move_outcome_value",
                 "answer_hint_best_roll_value",
-                "evidence_hint_best_roll_value",
+                "annotation_hint_best_roll_value",
+                "answer_hint_ladder_start_ahead_count",
+                "annotation_hint_ladder_start_ahead_count",
+                "answer_hint_snake_head_ahead_count",
+                "annotation_hint_snake_head_ahead_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -832,7 +1021,7 @@ class GamesSnakesLaddersBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -840,11 +1029,12 @@ class GamesSnakesLaddersBoardTask:
                 "movement_rule_text": str(prompt_defaults["movement_rule_text"]),
                 "overshoot_rule_text": str(prompt_defaults["overshoot_rule_text"]),
                 "planning_rule_text": str(prompt_defaults["planning_rule_text"]),
+                "special_square_count_rule_text": str(prompt_defaults["special_square_count_rule_text"]),
                 "die_value": str(int(axes.die_value)),
                 "horizon_roll_count": str(int(axes.horizon_roll_count)),
                 "horizon_roll_label": f"{int(axes.horizon_roll_count)} roll{'s' if int(axes.horizon_roll_count) != 1 else ''}",
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -853,7 +1043,7 @@ class GamesSnakesLaddersBoardTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type=evidence_type, value=evidence_value)
+        annotation_gt = TypedValue(type=annotation_type, value=annotation_value)
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -866,7 +1056,7 @@ class GamesSnakesLaddersBoardTask:
             jump_count=len(sampled_scene.jumps),
             horizon_roll_count=int(sampled_scene.horizon_roll_count or 1),
             target_answer=int(sampled_scene.answer),
-            evidence_count=int(evidence_count),
+            annotation_count=int(annotation_count),
         )
         trace_payload = {
             "scene_ir": {
@@ -879,7 +1069,7 @@ class GamesSnakesLaddersBoardTask:
                     "board_side": int(axes.board_side),
                     "last_square": int(board_last_square(int(axes.board_side))),
                     "start_square": int(sampled_scene.start_square),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -940,13 +1130,20 @@ class GamesSnakesLaddersBoardTask:
                 )
                 if str(axes.query_id) == "best_roll_value"
                 else None,
+                "special_square_kind": _special_query_kind(str(axes.query_id)) if str(axes.query_id) in SPECIAL_SQUARE_QUERY_IDS else None,
+                "special_square_interval": {
+                    "start_exclusive": int(sampled_scene.start_square),
+                    "end_inclusive": int(board_last_square(int(axes.board_side))),
+                }
+                if str(axes.query_id) in SPECIAL_SQUARE_QUERY_IDS
+                else None,
                 "answer": int(sampled_scene.answer),
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
-                "evidence_role_entity_ids": dict(evidence_role_entity_ids),
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
+                "annotation_role_entity_ids": dict(annotation_role_entity_ids),
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -954,7 +1151,7 @@ class GamesSnakesLaddersBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -983,8 +1180,17 @@ class GamesSnakesLaddersBestRollValueTask(FixedQueryVariantTaskMixin, GamesSnake
     supported_query_ids = ("best_roll_value",)
 
 
+@register_task
+class GamesSnakesLaddersSpecialSquareCountTask(QuerySubsetTaskMixin, GamesSnakesLaddersBoardTask):
+    """Count visible snake or ladder start squares ahead of the token."""
+
+    task_id = "task_games__snakes_ladders__special_square_count"
+    supported_query_ids = SPECIAL_SQUARE_QUERY_IDS
+
+
 __all__ = [
     "GamesSnakesLaddersBestRollValueTask",
     "GamesSnakesLaddersBoardTask",
     "GamesSnakesLaddersMoveOutcomeValueTask",
+    "GamesSnakesLaddersSpecialSquareCountTask",
 ]

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ...shared.fixed_query import normalize_query_id_params
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 
@@ -16,11 +17,9 @@ def resolve_games_query_id(
     gen_defaults: Mapping[str, Any],
     supported_variants: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query axis, honoring `query_id` as an alias."""
+    """Resolve one balanced semantic query axis, honoring legacy aliases."""
 
-    alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    alias_params = normalize_query_id_params(params)
     rng = spawn_rng(int(instance_seed), f"{str(task_id)}.query_id")
     selected, probabilities = resolve_variant(
         rng,

@@ -43,6 +43,7 @@ from ..shared.pacman_common import (
     sorted_coords,
     validate_pacman_sample,
     visible_ghost_trace,
+    visible_item_trace,
     visible_pellet_trace,
 )
 from ..shared.pacman_scene import PacmanRenderParams, render_pacman_scene
@@ -56,6 +57,7 @@ ROUTE_PELLET_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "path_pellet_count",
     "pellet_count_before_ghost",
 )
+ROUTE_SCORE_BONUS_VALUE_SUPPORT: Tuple[int, ...] = (2, 3, 5, 10)
 
 
 @dataclass(frozen=True)
@@ -66,8 +68,12 @@ class _TaskDefaults:
     col_count_support: Tuple[int, ...] = (9, 11, 13)
     path_pellet_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     pellet_count_before_ghost_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    route_score_on_route_pellet_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+    route_score_on_route_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    route_score_off_route_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    route_score_bonus_value_support: Tuple[int, ...] = ROUTE_SCORE_BONUS_VALUE_SUPPORT
     next_item_label_support: Tuple[str, ...] = PACMAN_ITEM_LABELS
-    item_count_support: Tuple[int, ...] = (5, 6)
+    item_count_support: Tuple[int, ...] = (4, 5, 6)
     canvas_width: int = 980
     canvas_height: int = 760
     panel_margin_px: int = 38
@@ -96,6 +102,10 @@ class _ResolvedAxes:
     item_count: int
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
+    route_score_on_route_pellet_count_support: Tuple[int, ...]
+    route_score_on_route_bonus_count_support: Tuple[int, ...]
+    route_score_off_route_bonus_count_support: Tuple[int, ...]
+    route_score_bonus_value_support: Tuple[int, ...]
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -211,7 +221,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis uses the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -341,8 +351,35 @@ def _resolve_axes(
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
+    elif str(query_id) == "route_score_value":
+        target_answer_support = tuple()
     else:
         target_answer_support = tuple(_DEFAULTS.path_pellet_count_support)
+
+    route_score_on_route_pellet_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="route_score_on_route_pellet_count_support",
+        fallback=_DEFAULTS.route_score_on_route_pellet_count_support,
+    )
+    route_score_on_route_bonus_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="route_score_on_route_bonus_count_support",
+        fallback=_DEFAULTS.route_score_on_route_bonus_count_support,
+    )
+    route_score_off_route_bonus_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="route_score_off_route_bonus_count_support",
+        fallback=_DEFAULTS.route_score_off_route_bonus_count_support,
+    )
+    route_score_bonus_value_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="route_score_bonus_value_support",
+        fallback=_DEFAULTS.route_score_bonus_value_support,
+    )
 
     target_label = None
     target_label_probabilities: Dict[str, float] = {}
@@ -387,6 +424,10 @@ def _resolve_axes(
         item_count=int(item_count),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
+        route_score_on_route_pellet_count_support=tuple(int(value) for value in route_score_on_route_pellet_count_support),
+        route_score_on_route_bonus_count_support=tuple(int(value) for value in route_score_on_route_bonus_count_support),
+        route_score_off_route_bonus_count_support=tuple(int(value) for value in route_score_off_route_bonus_count_support),
+        route_score_bonus_value_support=tuple(int(value) for value in route_score_bonus_value_support),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -582,7 +623,7 @@ def _sample_path_pellet_count_scene(*, rng, axes: _ResolvedAxes) -> PacmanSample
         excluded=tuple(route) + tuple(pellets),
         start_index=1,
     )
-    evidence_ids = tuple(pellet_entity_id(coord) for coord in counted_pellets)
+    annotation_ids = tuple(pellet_entity_id(coord) for coord in counted_pellets)
     sample = PacmanSample(
         row_count=rows,
         col_count=cols,
@@ -598,7 +639,7 @@ def _sample_path_pellet_count_scene(*, rng, axes: _ResolvedAxes) -> PacmanSample
         ghosts=ghosts,
         answer=int(target),
         target_answer=int(target),
-        evidence_entity_ids=evidence_ids,
+        annotation_entity_ids=annotation_ids,
         construction_mode="count_visible_route_pellets",
     )
     validate_pacman_sample(sample)
@@ -640,7 +681,7 @@ def _sample_pellet_count_before_ghost_scene(*, rng, axes: _ResolvedAxes) -> Pacm
         max_count=3,
     )
     ghosts = (stop_ghost,) + decorative_ghosts
-    evidence_ids = tuple(pellet_entity_id(coord) for coord in counted_pellets) + (str(stop_ghost.ghost_id),)
+    annotation_ids = tuple(pellet_entity_id(coord) for coord in counted_pellets) + (str(stop_ghost.ghost_id),)
     sample = PacmanSample(
         row_count=rows,
         col_count=cols,
@@ -656,7 +697,7 @@ def _sample_pellet_count_before_ghost_scene(*, rng, axes: _ResolvedAxes) -> Pacm
         ghosts=ghosts,
         answer=int(target),
         target_answer=int(target),
-        evidence_entity_ids=evidence_ids,
+        annotation_entity_ids=annotation_ids,
         construction_mode="count_route_pellets_before_first_ghost",
     )
     validate_pacman_sample(sample)
@@ -744,8 +785,109 @@ def _sample_next_item_label_scene(*, rng, axes: _ResolvedAxes) -> PacmanSample:
         ghosts=ghosts,
         answer=str(target_label),
         target_answer=str(target_label),
-        evidence_entity_ids=(item_entity_id(target_label),),
+        annotation_entity_ids=(item_entity_id(target_label),),
         construction_mode="first_labeled_bonus_on_highlighted_route",
+    )
+    validate_pacman_sample(sample)
+    return sample
+
+
+def _sample_route_score_value_scene(*, rng, axes: _ResolvedAxes) -> PacmanSample:
+    """Construct a route score scene with normal pellets and scored bonus items."""
+
+    rows, cols = int(axes.row_count), int(axes.col_count)
+    on_route_pellet_count = int(rng.choice(tuple(axes.route_score_on_route_pellet_count_support)))
+    on_route_bonus_count = int(rng.choice(tuple(axes.route_score_on_route_bonus_count_support)))
+    max_bonus_count = len(PACMAN_ITEM_LABELS)
+    on_route_bonus_count = min(on_route_bonus_count, max_bonus_count)
+    off_route_bonus_count = int(rng.choice(tuple(axes.route_score_off_route_bonus_count_support)))
+    off_route_bonus_count = max(1, min(off_route_bonus_count, max_bonus_count - on_route_bonus_count))
+
+    route_collectible_count = int(on_route_pellet_count + on_route_bonus_count)
+    route_len = min(
+        max(route_collectible_count + int(rng.randint(5, 9)), 10),
+        max(10, (rows - 2) * (cols - 2) - 2),
+    )
+    route = _sample_route(rng=rng, rows=rows, cols=cols, length=route_len)
+    min_open = len(route) + on_route_pellet_count + on_route_bonus_count + off_route_bonus_count + int(rng.randint(12, 20))
+    open_cells = _expand_open_cells(rng=rng, rows=rows, cols=cols, route_coords=route, min_open_cells=min_open)
+
+    route_candidates = list(route[1:])
+    if len(route_candidates) < route_collectible_count:
+        raise ValueError("route too short for route score collectibles")
+    rng.shuffle(route_candidates)
+    on_route_bonus_coords = tuple(tuple(coord) for coord in route_candidates[:on_route_bonus_count])
+    on_route_pellet_coords = tuple(tuple(coord) for coord in route_candidates[on_route_bonus_count : route_collectible_count])
+
+    off_route_cells = list(_available_open_cells(open_cells, excluded=tuple(route)))
+    rng.shuffle(off_route_cells)
+    if len(off_route_cells) < off_route_bonus_count:
+        raise ValueError("not enough off-route cells for route score bonus distractors")
+    off_route_bonus_coords = tuple(tuple(coord) for coord in off_route_cells[:off_route_bonus_count])
+
+    used_item_coords = tuple(on_route_bonus_coords) + tuple(off_route_bonus_coords)
+    available_for_pellets = list(_available_open_cells(open_cells, excluded=tuple(route) + tuple(used_item_coords)))
+    rng.shuffle(available_for_pellets)
+    off_route_pellet_count = min(len(available_for_pellets), int(rng.randint(4, 9)))
+    pellets = sorted_coords(tuple(on_route_pellet_coords) + tuple(available_for_pellets[:off_route_pellet_count]))
+
+    labels = tuple(PACMAN_ITEM_LABELS[: int(on_route_bonus_count + off_route_bonus_count)])
+    bonus_coords = tuple(on_route_bonus_coords) + tuple(off_route_bonus_coords)
+    bonus_values = tuple(int(rng.choice(tuple(axes.route_score_bonus_value_support))) for _ in labels)
+    route_coord_set = {tuple(coord) for coord in route}
+    items = tuple(
+        PacmanItem(
+            label=str(label),
+            item_id=item_entity_id(str(label)),
+            coord=tuple(coord),
+            kind=str(PACMAN_ITEM_KINDS[index % len(PACMAN_ITEM_KINDS)]),
+            is_answer=tuple(coord) in route_coord_set,
+            score_value=int(bonus_values[index]),
+        )
+        for index, (label, coord) in enumerate(zip(labels, bonus_coords))
+    )
+    route_order = {tuple(coord): index for index, coord in enumerate(route)}
+    scored_entries = [
+        (int(route_order[tuple(coord)]), pellet_entity_id(tuple(coord)))
+        for coord in on_route_pellet_coords
+    ]
+    scored_entries.extend(
+        (int(route_order[tuple(item.coord)]), item_entity_id(str(item.label)))
+        for item in items
+        if tuple(item.coord) in route_coord_set
+    )
+    annotation_ids = tuple(str(entity_id) for _index, entity_id in sorted(scored_entries, key=lambda pair: pair[0]))
+    score_by_item_id = {item_entity_id(str(item.label)): int(item.score_value or 0) for item in items}
+    answer = sum(1 for entity_id in annotation_ids if str(entity_id).startswith("pellet_r")) + sum(
+        int(score_by_item_id[str(entity_id)])
+        for entity_id in annotation_ids
+        if str(entity_id).startswith("item_")
+    )
+    ghosts = _sample_decorative_ghosts(
+        rng=rng,
+        open_cells=open_cells,
+        excluded=tuple(route) + tuple(pellets) + tuple(used_item_coords),
+        start_index=1,
+        min_count=1,
+        max_count=2,
+    )
+    sample = PacmanSample(
+        row_count=rows,
+        col_count=cols,
+        query_id=str(axes.query_id),
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        open_cells=tuple(open_cells),
+        wall_cells=_wall_cells(rows=rows, cols=cols, open_cells=open_cells),
+        pacman_coord=tuple(route[0]),
+        route_coords=tuple(route),
+        pellets=tuple(pellets),
+        items=items,
+        ghosts=ghosts,
+        answer=int(answer),
+        target_answer=int(answer),
+        annotation_entity_ids=tuple(annotation_ids),
+        construction_mode="sum_route_collectible_scores",
     )
     validate_pacman_sample(sample)
     return sample
@@ -761,6 +903,8 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> PacmanSample:
         return _sample_next_item_label_scene(rng=rng, axes=axes)
     if query == "pellet_count_before_ghost":
         return _sample_pellet_count_before_ghost_scene(rng=rng, axes=axes)
+    if query == "route_score_value":
+        return _sample_route_score_value_scene(rng=rng, axes=axes)
     raise ValueError(f"unsupported Pac-Man query_id: {query}")
 
 
@@ -769,15 +913,18 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "next_item_label":
         answer_value: str | int = "D"
-        evidence_value = [[509, 305]]
+        annotation_value = [[509, 305]]
     elif str(query_id) == "pellet_count_before_ghost":
         answer_value = 4
-        evidence_value = [[355, 217], [415, 277], [548, 278]]
+        annotation_value = [[355, 217], [415, 277], [548, 278]]
+    elif str(query_id) == "route_score_value":
+        answer_value = 12
+        annotation_value = [[315, 209], [369, 209], [424, 264]]
     else:
         answer_value = 5
-        evidence_value = [[315, 209], [369, 209]]
+        annotation_value = [[315, 209], [369, 209]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -842,9 +989,9 @@ class GamesPacmanMazeTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_points = [
+        annotation_points = [
             list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -864,11 +1011,14 @@ class GamesPacmanMazeTask:
                 "object_description_compact_maze",
                 "object_description_wide_maze",
                 "answer_hint_path_pellet_count",
-                "evidence_hint_path_pellet_count",
+                "annotation_hint_path_pellet_count",
                 "answer_hint_next_item_label",
-                "evidence_hint_next_item_label",
+                "annotation_hint_next_item_label",
                 "answer_hint_pellet_count_before_ghost",
-                "evidence_hint_pellet_count_before_ghost",
+                "annotation_hint_pellet_count_before_ghost",
+                "answer_hint_route_score_value",
+                "annotation_hint_route_score_value",
+                "score_rule_text",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -880,13 +1030,14 @@ class GamesPacmanMazeTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
+                "score_rule_text": str(prompt_defaults["score_rule_text"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -899,7 +1050,7 @@ class GamesPacmanMazeTask:
             if str(axes.query_id) == "next_item_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -916,18 +1067,9 @@ class GamesPacmanMazeTask:
             item_count=len(sampled_scene.items),
             ghost_count=len(sampled_scene.ghosts),
             target_answer=sampled_scene.answer,
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
-        item_trace = [
-            {
-                "label": str(item.label),
-                "kind": str(item.kind),
-                "coord": [int(item.coord[0]), int(item.coord[1])],
-                "entity_id": item_entity_id(str(item.label)),
-                "is_answer": bool(item.is_answer),
-            }
-            for item in sampled_scene.items
-        ]
+        item_trace = list(visible_item_trace(sampled_scene.items))
         ghost_trace = list(visible_ghost_trace(sampled_scene.ghosts))
         trace_payload = {
             "scene_ir": {
@@ -939,7 +1081,7 @@ class GamesPacmanMazeTask:
                     "style_variant": str(axes.style_variant),
                     "row_count": int(sampled_scene.row_count),
                     "col_count": int(sampled_scene.col_count),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -970,6 +1112,10 @@ class GamesPacmanMazeTask:
                     "target_label_support": [str(value) for value in axes.target_label_support],
                     "target_label_probabilities": dict(axes.target_label_probabilities),
                     "item_count_probabilities": dict(axes.item_count_probabilities),
+                    "route_score_on_route_pellet_count_support": [int(value) for value in axes.route_score_on_route_pellet_count_support],
+                    "route_score_on_route_bonus_count_support": [int(value) for value in axes.route_score_on_route_bonus_count_support],
+                    "route_score_off_route_bonus_count_support": [int(value) for value in axes.route_score_off_route_bonus_count_support],
+                    "route_score_bonus_value_support": [int(value) for value in axes.route_score_bonus_value_support],
                 },
             },
             "render_spec": {
@@ -995,17 +1141,17 @@ class GamesPacmanMazeTask:
                 "pellets": list(visible_pellet_trace(sampled_scene.pellets)),
                 "items": item_trace,
                 "ghosts": ghost_trace,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1014,7 +1160,7 @@ class GamesPacmanMazeTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1025,12 +1171,8 @@ class GamesPacmanMazeTask:
         )
 
 
-@register_task
-class GamesPacmanRoutePelletCountTask(GamesPacmanMazeTask):
-    """Count route pellets, with or without a first-ghost stopping condition."""
-
-    task_id = "task_games__pacman__route_pellet_count"
-    supported_query_ids = ROUTE_PELLET_COUNT_QUERY_IDS
+class _GamesPacmanPelletRouteCountTask(GamesPacmanMazeTask):
+    """Shared wrapper for one Pac-Man route pellet count query."""
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
@@ -1048,6 +1190,22 @@ class GamesPacmanRoutePelletCountTask(GamesPacmanMazeTask):
 
 
 @register_task
+class GamesPacmanPathPelletCountTask(_GamesPacmanPelletRouteCountTask):
+    """Count pellets on the highlighted route."""
+
+    task_id = "task_games__pacman__path_pellet_count"
+    supported_query_ids = ("path_pellet_count",)
+
+
+@register_task
+class GamesPacmanPelletCountBeforeGhostTask(_GamesPacmanPelletRouteCountTask):
+    """Count route pellets before the first ghost is reached."""
+
+    task_id = "task_games__pacman__pellet_count_before_ghost"
+    supported_query_ids = ("pellet_count_before_ghost",)
+
+
+@register_task
 class GamesPacmanNextItemLabelTask(FixedQueryVariantTaskMixin, GamesPacmanMazeTask):
     """Choose the first labeled bonus item reached on the highlighted route."""
 
@@ -1056,8 +1214,19 @@ class GamesPacmanNextItemLabelTask(FixedQueryVariantTaskMixin, GamesPacmanMazeTa
     supported_query_ids = ("next_item_label",)
 
 
+@register_task
+class GamesPacmanRouteScoreValueTask(FixedQueryVariantTaskMixin, GamesPacmanMazeTask):
+    """Compute the score of collectibles on the highlighted route."""
+
+    task_id = "task_games__pacman__route_score_value"
+    fixed_query_id = "route_score_value"
+    supported_query_ids = ("route_score_value",)
+
+
 __all__ = [
     "GamesPacmanMazeTask",
     "GamesPacmanNextItemLabelTask",
-    "GamesPacmanRoutePelletCountTask",
+    "GamesPacmanPathPelletCountTask",
+    "GamesPacmanPelletCountBeforeGhostTask",
+    "GamesPacmanRouteScoreValueTask",
 ]

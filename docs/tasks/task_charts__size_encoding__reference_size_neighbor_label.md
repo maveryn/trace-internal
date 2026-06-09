@@ -11,9 +11,19 @@
 1. Registered class: `trace.tasks.charts.size_encoding.comparison_label.ChartsSizeEncodingReferenceSizeNeighborLabelTask`
 2. Prompt lookup domain/group: `charts/size_encoding`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and evidence are produced from the same metadata execution trace.
+4. Answers and annotation are produced from the same metadata execution trace.
 
-## Evidence
-1. Public evidence type: `keyed_bbox_map`.
-2. Required keys are `reference_item` and `answer_item`.
-3. Each value is the bbox around the corresponding visible item mark and label.
+## Annotation Contract
+1. Answer schema: `string_label`.
+2. Annotation schema: `keyed_bbox_map`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `reference_size_neighbor_label` | `selection.nearest_label` | `string_label` | `keyed_bbox_map` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

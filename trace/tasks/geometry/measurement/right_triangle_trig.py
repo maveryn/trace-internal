@@ -21,6 +21,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
 from ..shared.complexity import build_geometry_measurement_complexity, clamp_unit_interval, normalize_linear
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.measurement_rendering import (
     round1 as _round1,
@@ -146,8 +147,8 @@ class _RenderedRightTriangleScene:
     answer: float
     query_id: str
     scene_variant: str
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
@@ -184,10 +185,6 @@ def _draw_dimension(
         (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
     )
     return _draw_label(ctx, label, center, small=True)
-
-
-def _selected_probability_map(values: Sequence[int], selected: int | float) -> Dict[str, float]:
-    return {str(value): (1.0 if float(value) == float(selected) else 0.0) for value in values}
 
 
 def _cycle_index(
@@ -363,7 +360,11 @@ def _resolve_problem(
             "reasoning_steps": int(reasoning_steps),
         },
         query_probabilities=dict(query_probabilities),
-        support_probabilities=_selected_probability_map(support_values, support_selected),
+        support_probabilities=_selected_probability_map(
+            support_values,
+            support_selected,
+            is_selected=lambda value, selected: float(value) == float(selected),
+        ),
     )
 
 
@@ -483,11 +484,11 @@ def _render_right_triangle_scene(ctx: _RenderContext, problem: _ResolvedProblem)
 
     if str(problem.query_id) in _MISSING_SIDE_QUERIES:
         target_side = {"adjacent_side_cue": "adjacent", "opposite_side_cue": "opposite", "hypotenuse_side_cue": "hypotenuse"}[target_role]
-        evidence_roles = (target_role, angle_role, *tuple(side_roles[side] for side in visible_sides))
-        evidence_bboxes = (label_bboxes[target_side], angle_bbox, *tuple(label_bboxes[side] for side in visible_sides))
+        annotation_roles = (target_role, angle_role, *tuple(side_roles[side] for side in visible_sides))
+        annotation_bboxes = (label_bboxes[target_side], angle_bbox, *tuple(label_bboxes[side] for side in visible_sides))
     else:
-        evidence_roles = (angle_role, *tuple(side_roles[side] for side in visible_sides))
-        evidence_bboxes = (angle_bbox, *tuple(label_bboxes[side] for side in visible_sides))
+        annotation_roles = (angle_role, *tuple(side_roles[side] for side in visible_sides))
+        annotation_bboxes = (angle_bbox, *tuple(label_bboxes[side] for side in visible_sides))
 
     triangle_bbox = _bbox_from_points((a, b, c), width=ctx.width, height=ctx.height, pad=8.0)
     scene_entities = (
@@ -507,13 +508,13 @@ def _render_right_triangle_scene(ctx: _RenderContext, problem: _ResolvedProblem)
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         scene_entities=scene_entities,
         render_map={
-            "target_bbox": _bbox_to_list(evidence_bboxes[0]),
+            "target_bbox": _bbox_to_list(annotation_bboxes[0]),
             "triangle_bbox": _bbox_to_list(triangle_bbox),
-            "support_bboxes": [_bbox_to_list(bbox) for bbox in evidence_bboxes[1:]],
+            "support_bboxes": [_bbox_to_list(bbox) for bbox in annotation_bboxes[1:]],
             "vertices": {"angle_vertex": _bbox_to_list(_pad_bbox((a[0], a[1], a[0], a[1]), 3.0, width=ctx.width, height=ctx.height))},
             "coord_space": "pixel",
         },
@@ -531,6 +532,7 @@ class _RightTriangleTrigBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "right_triangle_trig"
@@ -602,9 +604,9 @@ class _RightTriangleTrigBaseTask:
             precision = 0.82
         if rendered.reasoning_steps > 1:
             precision += 0.06
-        visual_scan = clamp_unit_interval(0.40 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4) * 0.20)
+        visual_scan = clamp_unit_interval(0.40 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=4) * 0.20)
         ambiguity = 0.40 + (0.08 if rendered.reasoning_steps > 1 else 0.0)
-        output_burden = clamp_unit_interval(0.44 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4) * 0.16)
+        output_burden = clamp_unit_interval(0.44 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=4) * 0.16)
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -661,7 +663,7 @@ class _RightTriangleTrigBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -675,12 +677,12 @@ class _RightTriangleTrigBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -689,16 +691,16 @@ class _RightTriangleTrigBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.scene_variant),
@@ -716,7 +718,7 @@ class _RightTriangleTrigBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.scene_variant),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -746,7 +748,7 @@ class _RightTriangleTrigBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": int(rendered.reasoning_steps),
                 **dict(rendered.witness),
             },
@@ -756,21 +758,21 @@ class _RightTriangleTrigBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -783,24 +785,94 @@ class _RightTriangleTrigBaseTask:
 
 
 @register_task
-class GeometryRightTriangleMissingSideValueTask(_RightTriangleTrigBaseTask):
-    """Compute a missing right-triangle side from an angle and one side."""
+class GeometryRightTriangleGroundFromAngleAndHeightTask(_RightTriangleTrigBaseTask):
+    """Compute ground length from an angle and height."""
 
-    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value"
-    supported_queries = _MISSING_SIDE_QUERIES
+    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value_ground_from_angle_and_height"
+    supported_queries = ("ground_from_angle_and_height",)
     reasoning_kind = "right_triangle_missing_side"
 
 
 @register_task
-class GeometryRightTriangleAngleValueTask(_RightTriangleTrigBaseTask):
-    """Compute an acute angle or angle of elevation from side labels."""
+class GeometryRightTriangleGroundFromAngleAndHypotenuseTask(_RightTriangleTrigBaseTask):
+    """Compute ground length from an angle and hypotenuse."""
 
-    task_id = "task_geometry__triangle_relations__right_triangle_angle_value"
-    supported_queries = _ANGLE_QUERIES
+    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value_ground_from_angle_and_hypotenuse"
+    supported_queries = ("ground_from_angle_and_hypotenuse",)
+    reasoning_kind = "right_triangle_missing_side"
+
+
+@register_task
+class GeometryRightTriangleHeightFromAngleAndGroundTask(_RightTriangleTrigBaseTask):
+    """Compute height from an angle and ground length."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value_height_from_angle_and_ground"
+    supported_queries = ("height_from_angle_and_ground",)
+    reasoning_kind = "right_triangle_missing_side"
+
+
+@register_task
+class GeometryRightTriangleHeightFromAngleAndHypotenuseTask(_RightTriangleTrigBaseTask):
+    """Compute height from an angle and hypotenuse."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value_height_from_angle_and_hypotenuse"
+    supported_queries = ("height_from_angle_and_hypotenuse",)
+    reasoning_kind = "right_triangle_missing_side"
+
+
+@register_task
+class GeometryRightTriangleHypotenuseFromAngleAndHeightTask(_RightTriangleTrigBaseTask):
+    """Compute hypotenuse length from an angle and height."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_missing_side_value_hypotenuse_from_angle_and_height"
+    supported_queries = ("hypotenuse_from_angle_and_height",)
+    reasoning_kind = "right_triangle_missing_side"
+
+
+@register_task
+class GeometryAngleOfElevationValueTask(_RightTriangleTrigBaseTask):
+    """Compute an angle of elevation from height and horizontal distance."""
+
+    task_id = "task_geometry__triangle_relations__angle_of_elevation_value"
+    supported_queries = ("angle_of_elevation_from_height_and_distance",)
+    reasoning_kind = "right_triangle_angle"
+
+
+@register_task
+class GeometryRightTriangleAngleAdjacentHypotenuseTask(_RightTriangleTrigBaseTask):
+    """Compute an angle from adjacent side and hypotenuse."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse"
+    supported_queries = ("angle_from_adjacent_hypotenuse",)
+    reasoning_kind = "right_triangle_angle"
+
+
+@register_task
+class GeometryRightTriangleAngleOppositeAdjacentTask(_RightTriangleTrigBaseTask):
+    """Compute an angle from opposite and adjacent sides."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_opposite_adjacent"
+    supported_queries = ("angle_from_opposite_adjacent",)
+    reasoning_kind = "right_triangle_angle"
+
+
+@register_task
+class GeometryRightTriangleAngleOppositeHypotenuseTask(_RightTriangleTrigBaseTask):
+    """Compute an angle from opposite side and hypotenuse."""
+
+    task_id = "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse"
+    supported_queries = ("angle_from_opposite_hypotenuse",)
     reasoning_kind = "right_triangle_angle"
 
 
 __all__ = [
-    "GeometryRightTriangleMissingSideValueTask",
-    "GeometryRightTriangleAngleValueTask",
+    "GeometryAngleOfElevationValueTask",
+    "GeometryRightTriangleAngleAdjacentHypotenuseTask",
+    "GeometryRightTriangleAngleOppositeAdjacentTask",
+    "GeometryRightTriangleAngleOppositeHypotenuseTask",
+    "GeometryRightTriangleGroundFromAngleAndHeightTask",
+    "GeometryRightTriangleGroundFromAngleAndHypotenuseTask",
+    "GeometryRightTriangleHeightFromAngleAndGroundTask",
+    "GeometryRightTriangleHeightFromAngleAndHypotenuseTask",
+    "GeometryRightTriangleHypotenuseFromAngleAndHeightTask",
 ]

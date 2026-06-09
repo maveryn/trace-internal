@@ -27,6 +27,7 @@ from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
 from ..shared.gui_render_params import resolve_gui_window_render_params
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_SCENE_VARIANTS,
@@ -842,24 +843,24 @@ def _render_command_matrix_scene(
 
 
 def _prompt_json_examples(query_id: str) -> Tuple[str, str]:
-    evidence = {
+    annotation = {
         "action_cue_guide": [290, 150, 480, 190],
         "object_row": [70, 240, 270, 310],
         "action_code_header": [290, 200, 480, 235],
         "target_command_cell": [290, 320, 480, 390],
     }
     if str(query_id) == "dual_guide_command_label":
-        evidence = {
+        annotation = {
             "action_cue_guide": [290, 150, 480, 190],
             "object_cue_guide": [84, 248, 156, 302],
             "object_row": [70, 240, 270, 310],
             "action_code_header": [290, 200, 480, 235],
             "target_command_cell": [290, 320, 480, 390],
         }
-    answer_and_evidence = {"evidence": evidence, "answer": "G"}
+    answer_and_annotation = {"annotation": annotation, "answer": "G"}
     answer_only = {"answer": "G"}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -887,7 +888,6 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     )
 
 
-@register_task
 class PagesRelationCommandIntentTargetLabelTask:
     """Identify a labeled GUI command cell from a static instruction intent."""
 
@@ -923,7 +923,7 @@ class PagesRelationCommandIntentTargetLabelTask:
         )
 
         target_bbox = list(rendered.control_bboxes_by_id[str(query.target_control_id)])
-        evidence_support_ids = tuple(
+        annotation_support_ids = tuple(
             support_id
             for support_id in (
                 str(query.guide_support_id),
@@ -933,28 +933,28 @@ class PagesRelationCommandIntentTargetLabelTask:
             )
             if str(support_id)
         )
-        evidence_bbox_map: Dict[str, List[float]] = {
+        annotation_bbox_map: Dict[str, List[float]] = {
             "action_cue_guide": list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
             "object_row": list(rendered.support_bboxes_by_id[str(query.row_support_id)]),
             "action_code_header": list(rendered.support_bboxes_by_id[str(query.action_support_id)]),
             "target_command_cell": list(target_bbox),
         }
         if str(query.object_guide_support_id):
-            evidence_bbox_map = {
+            annotation_bbox_map = {
                 "action_cue_guide": list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
                 "object_cue_guide": list(rendered.support_bboxes_by_id[str(query.object_guide_support_id)]),
                 "object_row": list(rendered.support_bboxes_by_id[str(query.row_support_id)]),
                 "action_code_header": list(rendered.support_bboxes_by_id[str(query.action_support_id)]),
                 "target_command_cell": list(target_bbox),
             }
-        evidence_role_support_ids: Dict[str, str] = {
+        annotation_role_support_ids: Dict[str, str] = {
             "action_cue_guide": str(query.guide_support_id),
             "object_row": str(query.row_support_id),
             "action_code_header": str(query.action_support_id),
             "target_command_cell": str(query.target_control_id),
         }
         if str(query.object_guide_support_id):
-            evidence_role_support_ids = {
+            annotation_role_support_ids = {
                 "action_cue_guide": str(query.guide_support_id),
                 "object_cue_guide": str(query.object_guide_support_id),
                 "object_row": str(query.row_support_id),
@@ -962,7 +962,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "target_command_cell": str(query.target_control_id),
             }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -973,7 +973,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                f"evidence_hint_{query.query_id}",
+                f"annotation_hint_{query.query_id}",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -986,7 +986,7 @@ class PagesRelationCommandIntentTargetLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "object_label": str(query.object_label),
@@ -996,7 +996,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "instruction_text": str(query.instruction_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{query.query_id}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{query.query_id}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1010,9 +1010,9 @@ class PagesRelationCommandIntentTargetLabelTask:
         target_record = next(
             record for record in control_records if str(record["control_id"]) == str(query.target_control_id)
         )
-        evidence_support_records = [
+        annotation_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
-            for support_id in evidence_support_ids
+            for support_id in annotation_support_ids
         ]
         trace_payload = {
             "scene_ir": {
@@ -1053,8 +1053,8 @@ class PagesRelationCommandIntentTargetLabelTask:
                     "action_symbol": str(query.action_symbol),
                     "guide_support_id": str(query.guide_support_id),
                     "object_guide_support_id": str(query.object_guide_support_id),
-                    "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1118,8 +1118,8 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "candidate_label_badge_bboxes_by_id": dict(rendered.badge_bboxes_by_id),
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1139,9 +1139,9 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "guide_support_id": str(query.guide_support_id),
                 "object_guide_support_id": str(query.object_guide_support_id),
                 "guide_order": [int(value) for value in query.guide_order],
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
-                "evidence_support_records": [dict(record) for record in evidence_support_records],
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
+                "annotation_support_records": [dict(record) for record in annotation_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
                 "support_records": list(support_records),
@@ -1154,21 +1154,21 @@ class PagesRelationCommandIntentTargetLabelTask:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": dict(evidence_bbox_map),
+                "value": dict(annotation_bbox_map),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
             },
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1185,4 +1185,33 @@ class PagesRelationCommandIntentTargetLabelTask:
         )
 
 
-__all__ = ["PagesRelationCommandIntentTargetLabelTask", "SUPPORTED_QUERY_IDS"]
+@register_task
+class PagesCommandMatrixCommandIntentTargetLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the command cell matching one action cue and object row."""
+
+    task_id = "task_pages__command_matrix__command_intent_target_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "command_matrix"
+    fixed_query_id = "command_intent_target_label"
+    source_task_cls = PagesRelationCommandIntentTargetLabelTask
+
+
+@register_task
+class PagesCommandMatrixDualGuideCommandLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the command cell matching action and object guide cues."""
+
+    task_id = "task_pages__command_matrix__dual_guide_command_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "command_matrix"
+    fixed_query_id = "dual_guide_command_label"
+    source_task_cls = PagesRelationCommandIntentTargetLabelTask
+
+
+__all__ = [
+    "PagesCommandMatrixCommandIntentTargetLabelTask",
+    "PagesCommandMatrixDualGuideCommandLabelTask",
+    "PagesRelationCommandIntentTargetLabelTask",
+    "SUPPORTED_QUERY_IDS",
+]

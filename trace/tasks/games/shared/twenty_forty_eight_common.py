@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Tuple
 
 
@@ -15,7 +15,7 @@ SUPPORTED_2048_QUERY_IDS: Tuple[str, ...] = (
     "merge_count",
     "score_value",
     "max_tile_value",
-    "best_move_label",
+    "move_result_board_label",
 )
 MOVE_RESULT_QUERY_IDS: Tuple[str, ...] = (
     "merge_count",
@@ -31,8 +31,7 @@ SUPPORTED_2048_STYLE_VARIANTS: Tuple[str, ...] = (
     "pastel",
 )
 SUPPORTED_2048_DIRECTIONS: Tuple[str, ...] = ("up", "down", "left", "right")
-SUPPORTED_2048_GOAL_CELLS: Tuple[str, ...] = ("top_left", "top_right", "bottom_left", "bottom_right")
-SUPPORTED_2048_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
+SUPPORTED_2048_RESULT_BOARD_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(6))
 
 
 @dataclass(frozen=True)
@@ -58,12 +57,11 @@ class Sample2048:
     answer: str | int
     board: Board
     move_direction: str
-    move_label_by_direction: Mapping[str, str]
-    goal_cell: Coord | None
     move_result: Move2048Result
     all_move_results: Mapping[str, Move2048Result]
-    evidence_cell_ids: Tuple[str, ...]
+    annotation_cell_ids: Tuple[str, ...]
     construction_mode: str
+    result_option_boards: Mapping[str, Board] = field(default_factory=dict)
 
 
 def coord_to_cell_id(coord: Coord) -> str:
@@ -71,21 +69,6 @@ def coord_to_cell_id(coord: Coord) -> str:
 
     row, col = int(coord[0]), int(coord[1])
     return f"cell_r{row}_c{col}"
-
-
-def goal_cell_name_to_coord(name: str) -> Coord:
-    """Map a supported goal-cell name to a row/column coordinate."""
-
-    mapping = {
-        "top_left": (0, 0),
-        "top_right": (0, SIZE - 1),
-        "bottom_left": (SIZE - 1, 0),
-        "bottom_right": (SIZE - 1, SIZE - 1),
-    }
-    key = str(name)
-    if key not in mapping:
-        raise ValueError(f"unsupported 2048 goal cell: {name!r}")
-    return mapping[key]
 
 
 def validate_board(board: Board) -> None:
@@ -182,7 +165,7 @@ def board_max_tile(board: Board) -> int:
 
 
 def validate_2048_sample(sample: Sample2048) -> None:
-    """Validate answer/evidence consistency for one generated 2048 sample."""
+    """Validate answer/annotation consistency for one generated 2048 sample."""
 
     validate_board(sample.board)
     if str(sample.query_id) not in SUPPORTED_2048_QUERY_IDS:
@@ -203,29 +186,31 @@ def validate_2048_sample(sample: Sample2048) -> None:
         max_cells = [coord for coord, sources in sample.move_result.result_sources.items() if sample.move_result.after[coord[0]][coord[1]] == max_value and sources]
         expected_answer = int(max_value)
         expected_coords = tuple(coord for cell in max_cells for coord in sample.move_result.result_sources[cell])
-    elif str(sample.query_id) == "best_move_label":
-        if sample.goal_cell is None:
-            raise ValueError("best_move_label requires a goal cell")
-        values = {
-            str(direction): int(result.after[int(sample.goal_cell[0])][int(sample.goal_cell[1])])
-            for direction, result in sample.all_move_results.items()
-        }
-        best_value = max(values.values())
-        best_directions = [direction for direction, value in values.items() if int(value) == int(best_value)]
-        if len(best_directions) != 1 or int(best_value) <= 0:
-            raise ValueError("best_move_label requires one positive best direction")
-        best_direction = str(best_directions[0])
-        expected_answer = str(sample.move_label_by_direction[best_direction])
-        sources = sample.all_move_results[best_direction].result_sources.get(sample.goal_cell, tuple())
-        expected_coords = tuple(sources)
+    elif str(sample.query_id) == "move_result_board_label":
+        options = dict(sample.result_option_boards or {})
+        if not options:
+            raise ValueError("move_result_board_label requires result board options")
+        expected_labels = [
+            str(label)
+            for label, board in options.items()
+            if tuple(tuple(int(value) for value in row) for row in board) == sample.move_result.after
+        ]
+        if len(expected_labels) != 1:
+            raise ValueError("move_result_board_label requires exactly one matching option")
+        expected_answer = str(expected_labels[0])
+        expected_coords = tuple()
     else:  # pragma: no cover - guarded above.
         raise ValueError(f"unsupported 2048 query_id: {sample.query_id}")
 
     if sample.answer != expected_answer:
         raise ValueError("2048 answer does not match active query")
-    expected_ids = tuple(coord_to_cell_id(coord) for coord in expected_coords)
-    if tuple(sample.evidence_cell_ids) != expected_ids:
-        raise ValueError("2048 evidence ids do not match active query")
+    expected_ids = (
+        (f"result_option_{expected_answer}",)
+        if str(sample.query_id) == "move_result_board_label"
+        else tuple(coord_to_cell_id(coord) for coord in expected_coords)
+    )
+    if tuple(sample.annotation_cell_ids) != expected_ids:
+        raise ValueError("2048 annotation ids do not match active query")
 
 
 __all__ = [
@@ -235,9 +220,8 @@ __all__ = [
     "MOVE_RESULT_QUERY_IDS",
     "SIZE",
     "SUPPORTED_2048_DIRECTIONS",
-    "SUPPORTED_2048_GOAL_CELLS",
-    "SUPPORTED_2048_LABELS",
     "SUPPORTED_2048_QUERY_IDS",
+    "SUPPORTED_2048_RESULT_BOARD_LABELS",
     "SUPPORTED_2048_SCENE_VARIANTS",
     "SUPPORTED_2048_STYLE_VARIANTS",
     "Move2048Result",
@@ -245,7 +229,6 @@ __all__ = [
     "board_empty_count",
     "board_max_tile",
     "coord_to_cell_id",
-    "goal_cell_name_to_coord",
     "simulate_2048_move",
     "validate_2048_sample",
 ]

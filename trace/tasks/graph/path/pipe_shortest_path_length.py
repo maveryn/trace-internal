@@ -14,7 +14,7 @@ class GraphPathPipeShortestPathLengthTask(PipeJunctionGraphTaskBase):
     task_group = "path"
     query_id = "pipe_shortest_path_length"
     prompt_question_key = "question_text_shortest_path_length"
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = "shortest_path_length_query"
 
 

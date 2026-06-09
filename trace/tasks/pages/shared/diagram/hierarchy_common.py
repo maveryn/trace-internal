@@ -571,13 +571,13 @@ def _build_descendant_count_tree(
         builder.add_chain(str(query_node_id), edge_count=int(chain_length))
         remaining -= int(chain_length)
 
-    evidence_node_ids = _descendants(str(query_node_id), builder.children_by_parent)
-    if len(evidence_node_ids) != int(answer_count):
+    annotation_node_ids = _descendants(str(query_node_id), builder.children_by_parent)
+    if len(annotation_node_ids) != int(answer_count):
         raise ValueError("descendant-count tree construction produced the wrong answer")
     if max(builder.depths.values()) > int(target_depth):
         raise ValueError("descendant-count tree exceeded the target depth")
 
-    protected = [str(query_node_id), *evidence_node_ids]
+    protected = [str(query_node_id), *annotation_node_ids]
     final_node_count = max(int(target_node_count), len(builder.node_ids))
     _fill_to_node_count(
         builder=builder,
@@ -585,7 +585,7 @@ def _build_descendant_count_tree(
         target_depth=int(target_depth),
         protected_node_ids=protected,
     )
-    return str(query_node_id), [str(node_id) for node_id in evidence_node_ids], dict(builder.children_by_parent)
+    return str(query_node_id), [str(node_id) for node_id in annotation_node_ids], dict(builder.children_by_parent)
 
 
 def _build_leaf_count_tree(
@@ -603,8 +603,8 @@ def _build_leaf_count_tree(
     for _ in range(max(0, int(answer_count) - 1)):
         builder.add_child(str(query_node_id))
 
-    evidence_node_ids = _leaf_descendants(str(query_node_id), builder.children_by_parent)
-    if len(evidence_node_ids) != int(answer_count):
+    annotation_node_ids = _leaf_descendants(str(query_node_id), builder.children_by_parent)
+    if len(annotation_node_ids) != int(answer_count):
         raise ValueError("leaf-count tree construction produced the wrong answer")
     if max(builder.depths.values()) > int(target_depth):
         raise ValueError("leaf-count tree exceeded the target depth")
@@ -617,7 +617,7 @@ def _build_leaf_count_tree(
         target_depth=int(target_depth),
         protected_node_ids=protected,
     )
-    return str(query_node_id), [str(node_id) for node_id in evidence_node_ids], dict(builder.children_by_parent)
+    return str(query_node_id), [str(node_id) for node_id in annotation_node_ids], dict(builder.children_by_parent)
 
 
 def _path_branch_lengths(
@@ -687,8 +687,8 @@ def _build_node_pair_path_tree(
     right_query_node_id = str(right_nodes[-1])
 
     parent_by_child = _parent_map(builder.children_by_parent)
-    evidence_node_ids = _path_between_nodes(str(left_query_node_id), str(right_query_node_id), parent_by_child)
-    if len(evidence_node_ids) - 1 != int(answer_count):
+    annotation_node_ids = _path_between_nodes(str(left_query_node_id), str(right_query_node_id), parent_by_child)
+    if len(annotation_node_ids) - 1 != int(answer_count):
         raise ValueError("node-pair path tree construction produced the wrong answer")
     if max(builder.depths.values()) > int(target_depth):
         raise ValueError("node-pair path tree exceeded the target depth")
@@ -698,7 +698,7 @@ def _build_node_pair_path_tree(
     while len(builder.node_ids) < int(target_node_count) and not [
         node_id
         for node_id in builder.node_ids
-        if str(node_id) not in set(evidence_node_ids) and int(builder.depths[str(node_id)]) < int(target_depth)
+        if str(node_id) not in set(annotation_node_ids) and int(builder.depths[str(node_id)]) < int(target_depth)
     ]:
         builder.add_child("node_0")
 
@@ -707,14 +707,14 @@ def _build_node_pair_path_tree(
         builder=builder,
         target_node_count=int(final_node_count),
         target_depth=int(target_depth),
-        protected_node_ids=evidence_node_ids,
+        protected_node_ids=annotation_node_ids,
     )
     parent_by_child = _parent_map(builder.children_by_parent)
-    evidence_node_ids = _path_between_nodes(str(left_query_node_id), str(right_query_node_id), parent_by_child)
+    annotation_node_ids = _path_between_nodes(str(left_query_node_id), str(right_query_node_id), parent_by_child)
     return (
         str(left_query_node_id),
         str(right_query_node_id),
-        [str(node_id) for node_id in evidence_node_ids],
+        [str(node_id) for node_id in annotation_node_ids],
         dict(builder.children_by_parent),
     )
 
@@ -1039,13 +1039,13 @@ def build_hierarchy_tree_count_dataset(
             query_id=query_key,
             namespace="answer_count",
         )
-        query_node_id, evidence_node_ids, children_by_parent = _build_descendant_count_tree(
+        query_node_id, annotation_node_ids, children_by_parent = _build_descendant_count_tree(
             answer_count=int(answer_count),
             target_node_count=int(target_node_count),
             target_depth=int(target_depth),
         )
         query_relationship = "subtree_descendant_count"
-        evidence_semantics = "descendant_nodes_unordered"
+        annotation_semantics = "descendant_nodes_unordered"
     elif query_key == "subtree_leaf_count":
         answer_count = _select_from_support(
             support=range(int(leaf_min), int(leaf_max) + 1),
@@ -1055,13 +1055,13 @@ def build_hierarchy_tree_count_dataset(
             query_id=query_key,
             namespace="answer_count",
         )
-        query_node_id, evidence_node_ids, children_by_parent = _build_leaf_count_tree(
+        query_node_id, annotation_node_ids, children_by_parent = _build_leaf_count_tree(
             answer_count=int(answer_count),
             target_node_count=int(target_node_count),
             target_depth=int(target_depth),
         )
         query_relationship = "subtree_leaf_count"
-        evidence_semantics = "leaf_descendant_nodes_unordered"
+        annotation_semantics = "leaf_descendant_nodes_unordered"
     else:
         answer_count = _select_from_support(
             support=range(int(path_min), int(path_max) + 1),
@@ -1072,7 +1072,7 @@ def build_hierarchy_tree_count_dataset(
             namespace="answer_count",
         )
         target_depth = max(int(target_depth), (int(answer_count) + 1) // 2)
-        left_query_node_id, right_query_node_id, evidence_node_ids, children_by_parent = _build_node_pair_path_tree(
+        left_query_node_id, right_query_node_id, annotation_node_ids, children_by_parent = _build_node_pair_path_tree(
             answer_count=int(answer_count),
             target_node_count=int(target_node_count),
             target_depth=int(target_depth),
@@ -1083,7 +1083,7 @@ def build_hierarchy_tree_count_dataset(
         )
         query_node_id = str(left_query_node_id)
         query_relationship = "path_length_between_two_nodes"
-        evidence_semantics = "path_nodes_between_query_nodes_ordered"
+        annotation_semantics = "path_nodes_between_query_nodes_ordered"
 
     root_node_id = "node_0"
     node_ids = _all_node_ids(root_node_id, children_by_parent)
@@ -1143,7 +1143,7 @@ def build_hierarchy_tree_count_dataset(
         path_node_ids = _ancestors(str(query_node_id), parent_by_child)
         path_lca_node_id = str(query_node_id)
     leaf_count = sum(1 for node_id in node_ids if str(node_id) not in children_by_parent)
-    evidence_node_bbox_ids = [str(node_id).replace("node", "node_bbox") for node_id in evidence_node_ids]
+    annotation_node_bbox_ids = [str(node_id).replace("node", "node_bbox") for node_id in annotation_node_ids]
     return {
         "scene_title": _tree_title(rng=rng),
         "scene_variant": str(scene_variant),
@@ -1163,9 +1163,9 @@ def build_hierarchy_tree_count_dataset(
         "query_depths": [int(depths[str(node_id)]) for node_id in query_node_ids],
         "query_relationship": str(query_relationship),
         "answer_count": int(answer_count),
-        "evidence_node_ids": [str(node_id) for node_id in evidence_node_ids],
-        "evidence_node_bbox_ids": [str(bbox_id) for bbox_id in evidence_node_bbox_ids],
-        "evidence_semantics": str(evidence_semantics),
+        "annotation_node_ids": [str(node_id) for node_id in annotation_node_ids],
+        "annotation_node_bbox_ids": [str(bbox_id) for bbox_id in annotation_node_bbox_ids],
+        "annotation_semantics": str(annotation_semantics),
         "descendant_node_ids": [str(node_id) for node_id in descendant_node_ids],
         "descendant_count": int(len(descendant_node_ids)),
         "leaf_descendant_node_ids": [str(node_id) for node_id in leaf_descendant_node_ids],

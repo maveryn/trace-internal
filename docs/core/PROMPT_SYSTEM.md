@@ -9,16 +9,16 @@ Prompt text is externalized and deterministic.
    - scene,
    - task,
    - optional query,
-   - output mode (`answer_only`, `answer_and_evidence`).
+   - output mode (`answer_only`, `answer_and_annotation`).
 4. Selection is deterministic from seed namespaces.
 5. Each required template list must contain exactly 5 high-quality variants.
 6. All active tasks must provide task-specific JSON-format guidance in both output modes:
    - `answer_only` uses `{"answer": ...}`
-   - `answer_and_evidence` uses `{"answer": ..., "evidence": ...}`
+   - `answer_and_annotation` uses `{"answer": ..., "annotation": ...}`
    - the final JSON-object instruction is supplied by RLVR system prompts and the generic schema sentence is stripped from rendered user prompts
-   - rendered output-mode instructions should keep task-specific `evidence_hint` / `answer_hint` lines and JSON examples, not tell the model to respond with only that object or suppress intermediate reasoning
-7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config for compatibility, with task-level `evidence_hint`/`answer_hint`/example overrides).
-8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
+   - rendered output-mode instructions should keep task-specific `annotation_hint` / `answer_hint` lines and JSON examples, not tell the model to respond with only that object or suppress intermediate reasoning
+7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config for compatibility, with task-level `annotation_hint`/`answer_hint`/example overrides).
+8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, annotation/answer hint families).
 9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
 10. For reference-panel tasks, keep the scene layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
 11. When only some query branches need a slot, declare it under `required_slots_by_key["query:<query_key>"]` rather than under the shared `task:<task_key>` entry.
@@ -32,7 +32,7 @@ Required fields:
 2. `schema_version`
 3. `scene_templates`
 4. `task_templates`
-5. `answer_or_evidence_templates`
+5. `answer_or_annotation_templates`
 6. `required_slots_by_key`
 7. Optional: `query_templates`
 8. Optional: `allow_empty_task_templates`; use only when the query layer is the full question and any visible task-layer text would be redundant. The bundle must still provide exactly 5 task-template entries so deterministic variant metadata stays stable.

@@ -10,6 +10,18 @@ generation:
       no_clear_result: 1.0
       single_clear_result: 1.0
       multi_clear_result: 1.0
+    row_occupancy_status_count_query_weights:
+      full_row_count: 1.0
+      one_gap_row_count: 1.0
+    drop_collision_time_value_query_weights:
+      no_shift_collision_time: 1.0
+      left_shift_collision_time: 1.0
+      right_shift_collision_time: 1.0
+    edge_occupied_row_cell_count_query_weights:
+      top_occupied_row_filled_cell_count: 1.0
+      top_occupied_row_empty_cell_count: 1.0
+      bottom_occupied_row_filled_cell_count: 1.0
+      bottom_occupied_row_empty_cell_count: 1.0
     style_variant_weights:
       classic_blocks: 1.0
       beveled_blocks: 1.0
@@ -21,11 +33,16 @@ generation:
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_target_clear_count_sampling: true
+    balanced_shift_magnitude_sampling: true
     balanced_option_count_sampling: true
     balanced_board_size_sampling: true
     line_clear_count_support: [0, 1, 2, 3, 4]
     drop_result_clear_count_support: [0, 1, 2]
-    option_count_support: [5]
+    row_occupancy_status_count_support: [0, 1, 2, 3, 4, 5]
+    drop_collision_time_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    edge_occupied_row_cell_count_support: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    shift_magnitude_support: [1, 2, 3]
+    option_count_support: [4, 6]
     board_row_count_support: [10, 11, 12, 13, 14, 15]
     board_col_count_support: [7, 8, 9, 10, 11]
 
@@ -62,11 +79,18 @@ prompt:
     tetris_rule_text: A tetromino falls straight down until it rests on the stack or the bottom of the board.
     next_piece_rule_text: The NEXT piece may be rotated and moved sideways, then it falls straight down until it rests.
     fixed_drop_rule_text: In the START board, the falling piece drops straight down from its shown position without moving sideways or rotating.
+    collision_time_rule_text: A timestep is one successful downward move by one row after the horizontal shift; do not count the failed collision move.
     line_clear_rule_text: After the piece locks, every completely filled row clears and all rows above fall down by the number of cleared rows.
-    evidence_hint_line_clear_count: set "evidence" to an object mapping "board" and "next_piece" to their bounding boxes [x0, y0, x1, y1]
+    annotation_hint_line_clear_count: set "annotation" to an object mapping "board" and "next_piece" to their bounding boxes [x0, y0, x1, y1]
     answer_hint_line_clear_count: set "answer" to the maximum number of rows the NEXT piece can clear
-    evidence_hint_drop_result_label: set "evidence" to an array containing the selected result-board bounding box [x0, y0, x1, y1]
+    annotation_hint_drop_result_label: set "annotation" to an array containing the selected result-board bounding box [x0, y0, x1, y1]
     answer_hint_drop_result_label: set "answer" to only the selected option letter
+    annotation_hint_row_occupancy_status_count: set "annotation" to an array containing one whole-row bounding box [x0, y0, x1, y1] for each qualifying row
+    answer_hint_row_occupancy_status_count: set "answer" to the number of qualifying rows
+    annotation_hint_drop_collision_time_value: set "annotation" to an object mapping "start_piece" and "stop_witness" to arrays of cell bounding boxes [x0, y0, x1, y1]
+    answer_hint_drop_collision_time_value: set "answer" to the number of successful downward timesteps
+    annotation_hint_edge_occupied_row_cell_count: set "annotation" to an array containing one cell bounding box [x0, y0, x1, y1] for each counted cell in the selected row
+    answer_hint_edge_occupied_row_cell_count: set "answer" to the number of counted cells in the selected row
 
 visual:
   noise:

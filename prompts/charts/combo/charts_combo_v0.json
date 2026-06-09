@@ -37,6 +37,13 @@
       "",
       "",
       ""
+    ],
+    "series_threshold_crossing_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -108,29 +115,12 @@
       "upper_threshold_value",
       "line_threshold_value"
     ],
-    "query:line_change_minus_primary_change": [
+    "query:line_between_and_primary_above": [
       "primary_name",
       "line_name",
-      "start_label",
-      "end_label"
-    ],
-    "query:primary_change_minus_line_change": [
-      "primary_name",
-      "line_name",
-      "start_label",
-      "end_label"
-    ],
-    "query:absolute_change_gap": [
-      "primary_name",
-      "line_name",
-      "start_label",
-      "end_label"
-    ],
-    "query:larger_change_minus_smaller_change": [
-      "primary_name",
-      "line_name",
-      "start_label",
-      "end_label"
+      "lower_threshold_value",
+      "upper_threshold_value",
+      "primary_threshold_value"
     ],
     "query:largest_absolute_gap_label": [
       "primary_name",
@@ -148,19 +138,39 @@
       "primary_name",
       "line_name"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:primary_first_above_threshold_label": [
+      "target_series_name",
+      "threshold_value",
+      "comparison_phrase"
+    ],
+    "query:primary_first_below_threshold_label": [
+      "target_series_name",
+      "threshold_value",
+      "comparison_phrase"
+    ],
+    "query:line_first_above_threshold_label": [
+      "target_series_name",
+      "threshold_value",
+      "comparison_phrase"
+    ],
+    "query:line_first_below_threshold_label": [
+      "target_series_name",
+      "threshold_value",
+      "comparison_phrase"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -168,12 +178,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -270,33 +280,12 @@
       "How many category labels meet the \"{primary_name}\" interval condition and the \"{line_name}\" above-threshold condition?",
       "Count categories with \"{primary_name}\" in [{lower_threshold_value}, {upper_threshold_value}] and \"{line_name}\" above {line_threshold_value}."
     ],
-    "line_change_minus_primary_change": [
-      "From \"{start_label}\" to \"{end_label}\", what is the \"{line_name}\" change minus the \"{primary_name}\" change?",
-      "Compute the change in \"{line_name}\" from \"{start_label}\" to \"{end_label}\", then subtract the \"{primary_name}\" change over the same interval.",
-      "Between \"{start_label}\" and \"{end_label}\", what is (\"{line_name}\" change) - (\"{primary_name}\" change)?",
-      "Using the two endpoint categories, subtract the \"{primary_name}\" interval change from the \"{line_name}\" interval change.",
-      "What is the difference between the \"{line_name}\" change and the \"{primary_name}\" change from \"{start_label}\" to \"{end_label}\"?"
-    ],
-    "primary_change_minus_line_change": [
-      "From \"{start_label}\" to \"{end_label}\", what is the \"{primary_name}\" change minus the \"{line_name}\" change?",
-      "Compute the change in \"{primary_name}\" from \"{start_label}\" to \"{end_label}\", then subtract the \"{line_name}\" change over the same interval.",
-      "Between \"{start_label}\" and \"{end_label}\", what is (\"{primary_name}\" change) - (\"{line_name}\" change)?",
-      "Using the two endpoint categories, subtract the \"{line_name}\" interval change from the \"{primary_name}\" interval change.",
-      "What is the difference between the \"{primary_name}\" change and the \"{line_name}\" change from \"{start_label}\" to \"{end_label}\"?"
-    ],
-    "absolute_change_gap": [
-      "From \"{start_label}\" to \"{end_label}\", what is the absolute difference between the \"{primary_name}\" change and the \"{line_name}\" change?",
-      "Compute both interval changes from \"{start_label}\" to \"{end_label}\". What is the nonnegative gap between those changes?",
-      "Between \"{start_label}\" and \"{end_label}\", how far apart are the \"{primary_name}\" change and \"{line_name}\" change?",
-      "What is the absolute value of (\"{primary_name}\" change - \"{line_name}\" change) over the interval from \"{start_label}\" to \"{end_label}\"?",
-      "Using the endpoint values, find the absolute gap between the two series changes."
-    ],
-    "larger_change_minus_smaller_change": [
-      "From \"{start_label}\" to \"{end_label}\", subtract the smaller interval change from the larger interval change across \"{primary_name}\" and \"{line_name}\". What is the result?",
-      "Compute both interval changes. What is the larger change minus the smaller change from \"{start_label}\" to \"{end_label}\"?",
-      "Between \"{start_label}\" and \"{end_label}\", what is the larger-minus-smaller gap between the two changes?",
-      "Using the interval endpoints, how much larger is the larger change than the smaller change?",
-      "What positive gap separates the \"{primary_name}\" change and \"{line_name}\" change over this interval?"
+    "line_between_and_primary_above": [
+      "How many categories have \"{line_name}\" from {lower_threshold_value} through {upper_threshold_value}, inclusive, and \"{primary_name}\" above {primary_threshold_value}?",
+      "Count categories whose \"{line_name}\" value is between {lower_threshold_value} and {upper_threshold_value}, inclusive, while \"{primary_name}\" is greater than {primary_threshold_value}.",
+      "What is the number of categories satisfying {lower_threshold_value} <= \"{line_name}\" <= {upper_threshold_value} and \"{primary_name}\" > {primary_threshold_value}?",
+      "How many category labels meet the \"{line_name}\" interval condition and the \"{primary_name}\" above-threshold condition?",
+      "Count categories with \"{line_name}\" in [{lower_threshold_value}, {upper_threshold_value}] and \"{primary_name}\" above {primary_threshold_value}."
     ],
     "largest_absolute_gap_label": [
       "Which category has the largest absolute gap between \"{primary_name}\" and \"{line_name}\"?",
@@ -325,6 +314,34 @@
       "Looking only at categories with \"{line_name}\" above \"{primary_name}\", which label has the widest difference?",
       "Which category has the largest positive value of \"{line_name}\" minus \"{primary_name}\"?",
       "Identify the category where \"{line_name}\" is most above \"{primary_name}\"."
+    ],
+    "primary_first_above_threshold_label": [
+      "From left to right, which category label is first where \"{target_series_name}\" is above {threshold_value}?",
+      "Scan the categories left to right. What is the first label whose \"{target_series_name}\" value is above {threshold_value}?",
+      "Which category is the earliest one with \"{target_series_name}\" greater than {threshold_value}?",
+      "Using the displayed order, find the first category where \"{target_series_name}\" crosses above {threshold_value}.",
+      "What category label first satisfies \"{target_series_name}\" above {threshold_value}?"
+    ],
+    "primary_first_below_threshold_label": [
+      "From left to right, which category label is first where \"{target_series_name}\" is below {threshold_value}?",
+      "Scan the categories left to right. What is the first label whose \"{target_series_name}\" value is below {threshold_value}?",
+      "Which category is the earliest one with \"{target_series_name}\" less than {threshold_value}?",
+      "Using the displayed order, find the first category where \"{target_series_name}\" crosses below {threshold_value}.",
+      "What category label first satisfies \"{target_series_name}\" below {threshold_value}?"
+    ],
+    "line_first_above_threshold_label": [
+      "From left to right, which category label is first where \"{target_series_name}\" is above {threshold_value}?",
+      "Scan the categories left to right. What is the first label whose \"{target_series_name}\" value is above {threshold_value}?",
+      "Which category is the earliest one with \"{target_series_name}\" greater than {threshold_value}?",
+      "Using the displayed order, find the first category where \"{target_series_name}\" crosses above {threshold_value}.",
+      "What category label first satisfies \"{target_series_name}\" above {threshold_value}?"
+    ],
+    "line_first_below_threshold_label": [
+      "From left to right, which category label is first where \"{target_series_name}\" is below {threshold_value}?",
+      "Scan the categories left to right. What is the first label whose \"{target_series_name}\" value is below {threshold_value}?",
+      "Which category is the earliest one with \"{target_series_name}\" less than {threshold_value}?",
+      "Using the displayed order, find the first category where \"{target_series_name}\" crosses below {threshold_value}.",
+      "What category label first satisfies \"{target_series_name}\" below {threshold_value}?"
     ]
   }
 }

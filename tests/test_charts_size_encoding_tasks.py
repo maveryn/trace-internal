@@ -68,9 +68,9 @@ def test_chart_size_encoding_variants_match_contract(query_id: str) -> None:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "string"
-    expected_evidence_type = "keyed_bbox_map" if query_id == "reference_size_neighbor_label" else "bbox_set"
-    assert out.evidence_gt.type == expected_evidence_type
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    expected_annotation_type = "keyed_bbox_map" if query_id == "reference_size_neighbor_label" else "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "size_encoded_label_comparison"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -81,43 +81,43 @@ def test_chart_size_encoding_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution, query_params)
     assert str(out.answer_gt.value) == expected_answer
     assert str(execution["answer_label"]) == expected_answer
-    assert trace["projected_evidence"]["type"] == expected_evidence_type
-    if expected_evidence_type == "bbox_set":
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        evidence_boxes = [list(bbox) for bbox in out.evidence_gt.value]
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
+    if expected_annotation_type == "bbox_set":
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        annotation_boxes = [list(bbox) for bbox in out.annotation_gt.value]
     else:
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
-        assert set(out.evidence_gt.value) == {"reference_item", "answer_item"}
-        evidence_boxes = [list(bbox) for bbox in out.evidence_gt.value.values()]
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+        assert set(out.annotation_gt.value) == {"reference_item", "answer_item"}
+        annotation_boxes = [list(bbox) for bbox in out.annotation_gt.value.values()]
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
 
-    for bbox in evidence_boxes:
+    for bbox in annotation_boxes:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
             height=int(render["canvas_height"]),
         )
 
-    evidence_item_ids = [str(item_id) for item_id in trace["projected_evidence"]["evidence_item_ids"]]
-    expected_item_boxes = [render_map["item_bboxes_px"][item_id] for item_id in evidence_item_ids]
-    if expected_evidence_type == "bbox_set":
-        assert out.evidence_gt.value == expected_item_boxes
+    annotation_item_ids = [str(item_id) for item_id in trace["projected_annotation"]["annotation_item_ids"]]
+    expected_item_boxes = [render_map["item_bboxes_px"][item_id] for item_id in annotation_item_ids]
+    if expected_annotation_type == "bbox_set":
+        assert out.annotation_gt.value == expected_item_boxes
     else:
-        assert out.evidence_gt.value == {
+        assert out.annotation_gt.value == {
             "reference_item": expected_item_boxes[0],
             "answer_item": expected_item_boxes[1],
         }
 
     if query_id == "category_total_extremum_label":
         assert str(out.answer_gt.value) in execution["categories"]
-        assert len(out.evidence_gt.value) >= 2
+        assert len(out.annotation_gt.value) >= 2
     elif query_id == "reference_size_neighbor_label":
-        assert len(out.evidence_gt.value) == 2
-        assert execution["evidence_labels"][0] == query_params["reference_label"]
+        assert len(out.annotation_gt.value) == 2
+        assert execution["annotation_labels"][0] == query_params["reference_label"]
     else:
-        assert len(out.evidence_gt.value) == 1
+        assert len(out.annotation_gt.value) == 1
         assert 16 <= int(execution["winner_gap"]) <= 24
         assert int(execution["outside_extreme_count"]) >= 2
 
@@ -135,14 +135,14 @@ def test_chart_size_encoding_prompt_examples_match_contract() -> None:
     task = ChartsSizeEncodingComparisonLabelTask()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=78400):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert isinstance(answer_and_evidence["answer"], str)
+        assert isinstance(answer_and_annotation["answer"], str)
         if query_id == "reference_size_neighbor_label":
-            assert isinstance(answer_and_evidence["evidence"], dict)
-            assert set(answer_and_evidence["evidence"]) == {"reference_item", "answer_item"}
+            assert isinstance(answer_and_annotation["annotation"], dict)
+            assert set(answer_and_annotation["annotation"]) == {"reference_item", "answer_item"}
         else:
-            assert isinstance(answer_and_evidence["evidence"], list)
+            assert isinstance(answer_and_annotation["annotation"], list)
         assert isinstance(answer_only["answer"], str)
 
 
@@ -172,6 +172,6 @@ def test_chart_size_encoding_is_deterministic() -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.complexity.to_dict() == out_b.complexity.to_dict()

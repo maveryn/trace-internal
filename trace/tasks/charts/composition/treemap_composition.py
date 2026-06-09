@@ -141,7 +141,7 @@ class _Parent:
 class _Query:
     query_id: str
     answer: int
-    evidence_leaf_ids: Tuple[str, ...]
+    annotation_leaf_ids: Tuple[str, ...]
     trace: Dict[str, Any]
 
 
@@ -184,7 +184,7 @@ class _RenderedTreemap:
     entities: Tuple[Dict[str, Any], ...]
     leaf_traces: Tuple[Dict[str, Any], ...]
     parent_traces: Tuple[Dict[str, Any], ...]
-    evidence_bbox_by_leaf_id: Dict[str, BBox]
+    annotation_bbox_by_leaf_id: Dict[str, BBox]
     chart_bbox_px: BBox
     render_meta: Dict[str, Any]
 
@@ -375,16 +375,16 @@ def _build_query(
     leaves_by_id = {str(leaf.leaf_id): leaf for leaf in leaves}
     if str(query_id) == "treemap_group_total_value":
         parent = parents[abs(int(params.get("_sample_cursor", rng.randrange(len(parents))))) % len(parents)]
-        evidence_leaf_ids = tuple(str(leaf_id) for leaf_id in parent.leaf_ids)
+        annotation_leaf_ids = tuple(str(leaf_id) for leaf_id in parent.leaf_ids)
         return _Query(
             query_id=str(query_id),
             answer=int(parent.value),
-            evidence_leaf_ids=tuple(evidence_leaf_ids),
+            annotation_leaf_ids=tuple(annotation_leaf_ids),
             trace={
                 "parent_id": str(parent.parent_id),
                 "parent_label": str(parent.label),
-                "leaf_ids": [str(leaf_id) for leaf_id in evidence_leaf_ids],
-                "leaf_values": [int(leaves_by_id[leaf_id].value) for leaf_id in evidence_leaf_ids],
+                "leaf_ids": [str(leaf_id) for leaf_id in annotation_leaf_ids],
+                "leaf_values": [int(leaves_by_id[leaf_id].value) for leaf_id in annotation_leaf_ids],
                 "operation": "sum",
             },
         )
@@ -404,7 +404,7 @@ def _build_query(
         return _Query(
             query_id=str(query_id),
             answer=int(answer),
-            evidence_leaf_ids=tuple(str(leaf.leaf_id) for leaf in matching),
+            annotation_leaf_ids=tuple(str(leaf.leaf_id) for leaf in matching),
             trace={
                 "leaf_label": str(leaf_label),
                 "leaf_ids": [str(leaf.leaf_id) for leaf in matching],
@@ -582,7 +582,7 @@ def _render_treemap(
     entities: List[Dict[str, Any]] = []
     parent_traces: List[Dict[str, Any]] = []
     leaf_traces: List[Dict[str, Any]] = []
-    evidence_bbox_by_leaf_id: Dict[str, BBox] = {}
+    annotation_bbox_by_leaf_id: Dict[str, BBox] = {}
     for parent_index, parent in enumerate(dataset.parents):
         px0, py0, px1, py1 = parent_rects[str(parent.parent_id)]
         parent_rect = (px0 + 3, py0 + 3, px1 - 3, py1 - 3)
@@ -648,7 +648,7 @@ def _render_treemap(
                 stroke_width=rp.label_stroke_width_px,
             )
             leaf_bbox = _bbox(leaf_rect)
-            evidence_bbox_by_leaf_id[str(leaf.leaf_id)] = list(value_bbox)
+            annotation_bbox_by_leaf_id[str(leaf.leaf_id)] = list(value_bbox)
             entities.append(
                 {
                     "entity_id": str(leaf.leaf_id),
@@ -684,7 +684,7 @@ def _render_treemap(
         entities=tuple(dict(entity) for entity in entities),
         leaf_traces=tuple(dict(trace) for trace in leaf_traces),
         parent_traces=tuple(dict(trace) for trace in parent_traces),
-        evidence_bbox_by_leaf_id=dict(evidence_bbox_by_leaf_id),
+        annotation_bbox_by_leaf_id=dict(annotation_bbox_by_leaf_id),
         chart_bbox_px=_bbox(chart_bbox),
         render_meta=dict(render_meta),
     )
@@ -704,7 +704,7 @@ def _make_prompt(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -718,11 +718,11 @@ def _make_prompt(
     )
 
 
-def _evidence_hint_key(query_id: str) -> str:
+def _annotation_hint_key(query_id: str) -> str:
     if str(query_id) in set(GROUP_TOTAL_QUERY_IDS):
-        return "evidence_hint_treemap_group_total_value"
+        return "annotation_hint_treemap_group_total_value"
     if str(query_id) in set(REPEATED_LEAF_QUERY_IDS):
-        return "evidence_hint_treemap_repeated_leaf_aggregate_value"
+        return "annotation_hint_treemap_repeated_leaf_aggregate_value"
     raise ValueError(f"unsupported treemap query_id: {query_id}")
 
 
@@ -757,8 +757,8 @@ class ChartsCompositionTreemapTask:
                 "json_output_contract_answer_only",
                 "object_description_treemap",
                 "answer_hint_integer",
-                "evidence_hint_treemap_group_total_value",
-                "evidence_hint_treemap_repeated_leaf_aggregate_value",
+                "annotation_hint_treemap_group_total_value",
+                "annotation_hint_treemap_repeated_leaf_aggregate_value",
                 "json_example_treemap_group_total_value",
                 "json_example_treemap_repeated_leaf_aggregate_value",
                 "json_example_answer_only_treemap_group_total_value",
@@ -793,7 +793,7 @@ class ChartsCompositionTreemapTask:
             "leaf_label": str(query_trace.get("leaf_label", "")),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults[_evidence_hint_key(str(query_id))]),
+            "annotation_hint": str(prompt_defaults[_annotation_hint_key(str(query_id))]),
             "answer_hint": str(prompt_defaults["answer_hint_integer"]),
             "json_example": str(prompt_defaults[_json_example_key(str(query_id))]),
             "json_example_answer_only": str(prompt_defaults[_json_example_key(str(query_id), answer_only=True)]),
@@ -804,13 +804,13 @@ class ChartsCompositionTreemapTask:
             slots=slots,
             instance_seed=int(instance_seed),
         )
-        evidence_bboxes = [
-            list(rendered.evidence_bbox_by_leaf_id[str(leaf_id)])
-            for leaf_id in dataset.query.evidence_leaf_ids
-            if str(leaf_id) in rendered.evidence_bbox_by_leaf_id
+        annotation_bboxes = [
+            list(rendered.annotation_bbox_by_leaf_id[str(leaf_id)])
+            for leaf_id in dataset.query.annotation_leaf_ids
+            if str(leaf_id) in rendered.annotation_bbox_by_leaf_id
         ]
-        if not evidence_bboxes:
-            raise ValueError("treemap query produced no projected evidence")
+        if not annotation_bboxes:
+            raise ValueError("treemap query produced no projected annotation")
         parent_rows = [
             {
                 "parent_id": str(parent.parent_id),
@@ -837,7 +837,7 @@ class ChartsCompositionTreemapTask:
             "leaf_count_per_parent": int(len(dataset.parents[0].leaf_ids)) if dataset.parents else 0,
             "parent_labels": [str(parent.label) for parent in dataset.parents],
             "leaf_labels": sorted({str(leaf.label) for leaf in dataset.leaves}),
-            "evidence_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.evidence_leaf_ids],
+            "annotation_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.annotation_leaf_ids],
             "answer_value": int(dataset.query.answer),
             **dict(dataset.generation_ranges),
             **dict(query_trace),
@@ -872,9 +872,9 @@ class ChartsCompositionTreemapTask:
                 "chart_bbox_px": list(rendered.chart_bbox_px),
                 "parent_traces": [dict(trace) for trace in rendered.parent_traces],
                 "leaf_traces": [dict(trace) for trace in rendered.leaf_traces],
-                "evidence_bbox_by_leaf_id": {
+                "annotation_bbox_by_leaf_id": {
                     str(leaf_id): list(bbox)
-                    for leaf_id, bbox in rendered.evidence_bbox_by_leaf_id.items()
+                    for leaf_id, bbox in rendered.annotation_bbox_by_leaf_id.items()
                 },
             },
             "execution_trace": {
@@ -883,20 +883,20 @@ class ChartsCompositionTreemapTask:
                 "question_format": "numeric_open",
                 "parents": list(parent_rows),
                 "leaves": list(leaf_rows),
-                "evidence_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.evidence_leaf_ids],
+                "annotation_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.annotation_leaf_ids],
                 **dict(query_params),
             },
             "witness_symbolic": {
                 "type": "treemap_composition_values",
                 "query_id": str(query_id),
                 "answer_value": int(dataset.query.answer),
-                "evidence_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.evidence_leaf_ids],
+                "annotation_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.annotation_leaf_ids],
                 "calculation": dict(query_trace),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "evidence_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.evidence_leaf_ids],
+                "bbox_set": list(annotation_bboxes),
+                "annotation_leaf_ids": [str(leaf_id) for leaf_id in dataset.query.annotation_leaf_ids],
             },
         }
         max_leaf_count = int(dataset.generation_ranges["parent_count_range"][1]) * int(dataset.generation_ranges["leaf_count_range"][1])
@@ -911,7 +911,7 @@ class ChartsCompositionTreemapTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=TypedValue(type="integer", value=int(dataset.query.answer)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_bboxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

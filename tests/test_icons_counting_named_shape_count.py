@@ -9,7 +9,7 @@ from trace.tasks import create_task
 from trace.tasks.icons.shared.procedural_named_icons import PROCEDURAL_NAMED_ICON_SHAPES
 
 
-TASK_ID = "task_icons__named_field__shape_count"
+TASK_ID = "task_icons__named_field__single_attribute_membership_count"
 
 
 def test_icons_counting_named_shape_count_contract() -> None:
@@ -29,21 +29,21 @@ def test_icons_counting_named_shape_count_contract() -> None:
     assert out.query_id == "named_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert "star icons" in out.prompt
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert '"star" icons' in out.prompt
     assert trace["execution_trace"]["target_shape_id"] == "star"
     assert trace["execution_trace"]["target_shape_name"] == "star"
     assert trace["execution_trace"]["shape_counts"]["star"] == 3
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     counted_ids = set(trace["render_map"]["counted_instance_ids"])
     entity_by_id = {str(entity["instance_id"]): entity for entity in trace["scene_ir"]["entities"]}
     assert len(entity_by_id) == 22
     assert all(entity_by_id[instance_id]["shape_id"] == "star" for instance_id in counted_ids)
-    evidence_boxes = sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
-    assert sorted(out.evidence_gt.value) == evidence_boxes
+    annotation_boxes = sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
+    assert sorted(out.annotation_gt.value) == annotation_boxes
 
 
 def test_icons_counting_named_shape_count_targeted_generation_supports_all_shapes() -> None:
@@ -62,7 +62,7 @@ def test_icons_counting_named_shape_count_targeted_generation_supports_all_shape
         assert int(execution["object_count"]) >= int(out.answer_gt.value)
         assert int(execution["object_count"]) <= 36
         assert 1 <= int(out.answer_gt.value) <= 14
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert set(shape_counts) == set(PROCEDURAL_NAMED_ICON_SHAPES)
     assert set(answer_counts).issubset(set(range(1, 26)))
 
@@ -88,7 +88,7 @@ def test_icons_counting_named_shape_count_all_arrangement_modes_generate() -> No
         )
         execution = out.trace_payload["execution_trace"]
         observed.add(str(execution["arrangement_mode"]))
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert observed == modes
 
 

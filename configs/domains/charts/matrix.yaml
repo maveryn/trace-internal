@@ -84,7 +84,7 @@ prompt:
     bundle_id: charts_matrix_v0
     scene_key: matrix_cell
     task_key: matrix_cell_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_confusion_matrix_counts: a labeled confusion matrix with printed integer counts in each active cell
     object_description_annotated_heatmap_table: a labeled annotated heatmap table with printed integer values in each cell
@@ -94,12 +94,12 @@ prompt:
     answer_hint_integer: set "answer" to the requested integer value
     answer_hint_label: set "answer" to the exact visible row or column label as a string
     unanswerable_instruction: If the requested row or column label is not shown, answer exactly "unanswerable".
-    evidence_hint_axis_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the selected row or column
-    evidence_hint_off_diagonal_confusion_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the off-diagonal candidate cells in the actual-class row
-    evidence_hint_threshold_cell_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the cells matching the threshold
-    json_example_axis_extremum_label: '{"evidence":[[240,300,310,345],[320,300,390,345],[400,300,470,345]],"answer":"C7"}'
-    json_example_off_diagonal_confusion_label: '{"evidence":[[240,260,310,305],[320,260,390,305],[400,260,470,305]],"answer":"C5"}'
-    json_example_threshold_cell_count: '{"evidence":[[240,260,310,305],[320,260,390,305],[400,260,470,305],[480,260,550,305]],"answer":4}'
+    annotation_hint_axis_extremum_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the selected row or column
+    annotation_hint_off_diagonal_confusion_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the off-diagonal candidate cells in the actual-class row
+    annotation_hint_threshold_cell_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the cells matching the threshold
+    json_example_axis_extremum_label: '{"annotation":[[240,300,310,345],[320,300,390,345],[400,300,470,345]],"answer":"C7"}'
+    json_example_off_diagonal_confusion_label: '{"annotation":[[240,260,310,305],[320,260,390,305],[400,260,470,305]],"answer":"C5"}'
+    json_example_threshold_cell_count: '{"annotation":[[240,260,310,305],[320,260,390,305],[400,260,470,305],[480,260,550,305]],"answer":4}'
     json_example_answer_only_axis_extremum_label: '{"answer":"C7"}'
     json_example_answer_only_off_diagonal_confusion_label: '{"answer":"C5"}'
     json_example_answer_only_threshold_cell_count: '{"answer":4}'

@@ -32,9 +32,10 @@ from ..shared.coordinate_panel_grid import (
     panel_bbox_for_index,
     plot_bbox_for_panel,
 )
-from ..shared.fixed_query_task import select_geometry_query_id
+from ..shared.fixed_query_task import geometry_probability_map as _probability_map, select_geometry_query_id
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.noise_defaults import load_geometry_noise_defaults
+from ..shared.option_count import panel_grid_shape_for_option_count, resolve_geometry_option_count
 from ..shared.point_labels import draw_labeled_points
 from ..shared.quadrilateral_prototypes import classify_quadrilateral_kind
 from ..shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
@@ -134,7 +135,7 @@ class _TaskDefaults:
     label_offset_px: int = 18
     label_font_size_min: int = 17
     label_font_size_max: int = 28
-    label_stroke_width: int = 2
+    label_stroke_width: int = 1
 
 
 @dataclass(frozen=True)
@@ -162,6 +163,7 @@ class _CompletionScene:
     background_meta: Dict[str, Any]
     post_noise_meta: Dict[str, Any]
     render_spec_extra: Dict[str, Any]
+    option_count_probabilities: Dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -181,6 +183,7 @@ class _PanelScene:
     image: Image.Image
     background_meta: Dict[str, Any]
     post_noise_meta: Dict[str, Any]
+    option_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -271,14 +274,6 @@ def _split_defaults_for_task(task_id: str) -> Tuple[Dict[str, Any], Dict[str, An
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
-
-
-def _probability_map(values: Sequence[str]) -> Dict[str, float]:
-    support = tuple(str(value) for value in values)
-    if not support:
-        return {}
-    probability = 1.0 / float(len(support))
-    return {str(value): float(probability) for value in support}
 
 
 def _select_winner_label(
@@ -610,11 +605,13 @@ def _render_completion_scene(
     max_abs = _resolve_int_param(
         params, generation_defaults, "completion_graph_abs_max", _DEFAULTS.completion_graph_abs_max
     )
-    candidate_count = max(
-        4,
-        _resolve_int_param(
-            params, generation_defaults, "completion_candidate_count", _DEFAULTS.completion_candidate_count
-        ),
+    candidate_count, option_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=generation_defaults,
+        field_name="completion_candidate_count",
+        supported_counts=(4, 6),
+        task_id=COMPLETION_TASK_ID,
+        instance_seed=int(instance_seed),
     )
     if int(candidate_count) > len(query.label_pool):
         raise ValueError("completion_candidate_count cannot exceed candidate label pool length")
@@ -783,6 +780,7 @@ def _render_completion_scene(
             "scene_scale": int(context.scene_scale),
             **dict(context.graph_layout_metadata),
         },
+        option_count_probabilities=dict(option_count_probabilities),
     )
 
 
@@ -802,7 +800,14 @@ def _render_panel_scene(
 ) -> _PanelScene:
     rng = spawn_rng(int(instance_seed), f"{SHAPE_MATCH_TASK_ID}.render")
     max_abs = _resolve_int_param(params, generation_defaults, "panel_graph_abs_max", _DEFAULTS.panel_graph_abs_max)
-    panel_count = max(4, _resolve_int_param(params, generation_defaults, "panel_count", _DEFAULTS.panel_count))
+    panel_count, option_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=generation_defaults,
+        field_name="panel_count",
+        supported_counts=(4, 6),
+        task_id=SHAPE_MATCH_TASK_ID,
+        instance_seed=int(instance_seed),
+    )
     if int(panel_count) > len(query.label_pool):
         raise ValueError("panel_count cannot exceed panel label pool length")
     label_pool = tuple(query.label_pool[: int(panel_count)])
@@ -810,11 +815,12 @@ def _render_panel_scene(
         label_pool = tuple([str(query.winner_label), *[label for label in label_pool if label != str(query.winner_label)]])
         label_pool = label_pool[: int(panel_count)]
 
+    columns, rows = panel_grid_shape_for_option_count(int(panel_count))
     panel_config = CoordinatePanelConfig(
         grid_min=_resolve_int_param(params, rendering_defaults, "panel_grid_min", _DEFAULTS.panel_grid_min),
         grid_max=_resolve_int_param(params, rendering_defaults, "panel_grid_max", _DEFAULTS.panel_grid_max),
-        columns=3,
-        rows=2,
+        columns=int(columns),
+        rows=int(rows),
     )
     canvas_width = _resolve_int_param(params, rendering_defaults, "panel_canvas_width", _DEFAULTS.panel_canvas_width)
     canvas_height = _resolve_int_param(params, rendering_defaults, "panel_canvas_height", _DEFAULTS.panel_canvas_height)
@@ -900,6 +906,7 @@ def _render_panel_scene(
         image=image,
         background_meta=dict(background_meta),
         post_noise_meta=dict(post_noise_meta),
+        option_count_probabilities=dict(option_count_probabilities),
     )
 
 
@@ -937,7 +944,7 @@ def _completion_trace_payload(
     rendered: _CompletionScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    evidence_value: List[List[float]],
+    annotation_value: List[List[float]],
 ) -> Dict[str, Any]:
     candidate_trace = {
         str(label): {
@@ -994,6 +1001,7 @@ def _completion_trace_payload(
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
+                "completion_candidate_count_probabilities": dict(rendered.option_count_probabilities),
             },
         },
         "render_spec": {
@@ -1027,6 +1035,7 @@ def _completion_trace_payload(
             "candidate_points_by_label": dict(candidate_trace),
             "target_ordered_vertices": [[int(value) for value in point] for point in rendered.target_ordered_vertices],
             "query_id_probabilities": dict(query.query_probabilities),
+            "completion_candidate_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_quadrilateral_completion",
@@ -1035,10 +1044,10 @@ def _completion_trace_payload(
             "known_points_graph": [[int(value) for value in point] for point in rendered.known_points],
             "missing_point_graph": [int(value) for value in rendered.missing_point],
         },
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "point_set",
-            "point_set": list(evidence_value),
-            "pixel_point_set": list(evidence_value),
+            "point_set": list(annotation_value),
+            "pixel_point_set": list(annotation_value),
             "candidate_points_px_by_label": {
                 str(label): [float(value) for value in point]
                 for label, point in rendered.candidate_points_px_by_label.items()
@@ -1053,7 +1062,7 @@ def _panel_trace_payload(
     rendered: _PanelScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    evidence_value: List[List[int]],
+    annotation_value: List[List[int]],
 ) -> Dict[str, Any]:
     panels_trace = {
         str(label): {
@@ -1095,6 +1104,7 @@ def _panel_trace_payload(
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.panels_by_label.keys()),
+                "panel_count_probabilities": dict(rendered.option_count_probabilities),
             },
         },
         "render_spec": {
@@ -1103,6 +1113,7 @@ def _panel_trace_payload(
             "coord_space": "pixel",
             "scene_id": PANEL_SCENE_ID,
             "panel_count": int(len(rendered.panels_by_label)),
+            "panel_count_probabilities": dict(rendered.option_count_probabilities),
             "panel_style": dict(rendered.panel_style_meta),
             "marker_style": dict(rendered.marker_meta),
             "background_style": dict(rendered.background_meta),
@@ -1126,6 +1137,7 @@ def _panel_trace_payload(
             "target_shape_name": str(query.target_shape_name),
             "panels_by_label": dict(panels_trace),
             "query_id_probabilities": dict(query.query_probabilities),
+            "panel_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_quadrilateral_shape_panel_match",
@@ -1133,15 +1145,15 @@ def _panel_trace_payload(
             "target_kind": str(query.target_kind),
             "panels_by_label": dict(panels_trace),
         },
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "bbox_set",
-            "bbox_set": list(evidence_value),
+            "bbox_set": list(annotation_value),
             "panel_bbox_by_label": {str(label): list(spec.panel_bbox) for label, spec in rendered.panels_by_label.items()},
         },
     }
 
 
-def _completion_point_evidence(rendered: _CompletionScene, label: str) -> List[List[float]]:
+def _completion_point_annotation(rendered: _CompletionScene, label: str) -> List[List[float]]:
     point = rendered.candidate_points_px_by_label[str(label)]
     return [[float(point[0]), float(point[1])]]
 
@@ -1154,6 +1166,8 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
     domain = "geometry"
     task_group = "coordinate"
     default_dataset_enabled = True
+    scene_id = COMPLETION_SCENE_ID
+    public_scene_id = COMPLETION_SCENE_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1187,15 +1201,15 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_candidate_point",
+                "annotation_hint_candidate_point",
                 "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_value = _completion_point_evidence(rendered, str(query.winner_label))
+        annotation_value = _completion_point_annotation(rendered, str(query.winner_label))
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -1205,12 +1219,12 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_candidate_point"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_candidate_point"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1223,12 +1237,12 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             rendered=rendered,
             prompt_defaults=prompt_defaults,
             prompt_artifacts=prompt_artifacts,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-            evidence_gt=TypedValue(type="point_set", value=evidence_value),
+            annotation_gt=TypedValue(type="point_set", value=annotation_value),
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1252,6 +1266,8 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
     domain = "geometry"
     task_group = "coordinate"
     default_dataset_enabled = True
+    scene_id = PANEL_SCENE_ID
+    public_scene_id = PANEL_SCENE_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1280,15 +1296,15 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_selected_panel_bbox",
+                "annotation_hint_selected_panel_bbox",
                 "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_value = [list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)]
+        annotation_value = [list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)]
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -1298,12 +1314,12 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_selected_panel_bbox"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_bbox"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1316,12 +1332,12 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
             rendered=rendered,
             prompt_defaults=prompt_defaults,
             prompt_artifacts=prompt_artifacts,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-            evidence_gt=TypedValue(type="bbox_set", value=evidence_value),
+            annotation_gt=TypedValue(type="bbox_set", value=annotation_value),
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,

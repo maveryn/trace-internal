@@ -2,25 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `crossing`
-3. Source task group: `crossing`
-4. Query id: `moving_object_count`
-5. Objective: Count moving objects that intersect the marked route at their row-crossing ticks.
+2. Task group: `crossing`
+3. Scene id: `crossing`
+4. Public task id: `task_games__crossing__moving_object_count`
+5. Supported `query_id` values: `moving_object_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(moving_objects); scene=crossing; scope=moving_object_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over the moving objects that intersect the marked route.
-3. `moving_object_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games lane-crossing renderer.
-2. Prompt bundle: `games_crossing_v0`
-3. The count includes only moving objects occupying the same lane cell as the marked route at the tick when the route crosses that row.
-4. The marked route is visually emphasized with larger numbered route cells, and
-   the task uses lower non-intersecting traffic clutter than the shared scene
-   default.
-5. Rendering uses shared games/puzzles panel-scene treatments, layout jitter, and sampled text fonts.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Lane count, row count, target count, and visual style remain explicit params inside the task; the default answer support is `1..5`.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

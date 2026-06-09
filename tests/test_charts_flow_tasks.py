@@ -71,9 +71,6 @@ def _expected_radial_answer(execution: dict) -> int | str:
     if variant == "largest_source_for_target":
         ordered = sorted(details, key=lambda link: (-int(link["value"]), str(link["source_label"]), str(link["link_id"])))
         return str(ordered[0]["source_label"])
-    if variant == "second_largest_target_for_source":
-        ordered = sorted(details, key=lambda link: (-int(link["value"]), str(link["target_label"]), str(link["link_id"])))
-        return str(ordered[1]["target_label"])
     raise AssertionError(f"unsupported radial variant: {variant}")
 
 
@@ -92,8 +89,8 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) == "three_column_sankey"
     expected_question_format = "sankey_node_side_total_value" if query_id in NODE_SIDE_TOTAL_QUERY_IDS else "sankey_path_value"
     assert str(execution["question_format"]) == expected_question_format
@@ -124,16 +121,16 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
     assert int(out.answer_gt.value) == int(expected_answer)
     assert int(execution["answer_value"]) == int(expected_answer)
 
-    evidence_segment_ids = [str(segment_id) for segment_id in execution["evidence_segment_ids"]]
-    assert trace["projected_evidence"]["segment_ids"] == evidence_segment_ids
-    expected_bboxes = [render_map["segment_label_bboxes_px"][segment_id] for segment_id in evidence_segment_ids]
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert out.evidence_gt.value == expected_bboxes
+    annotation_segment_ids = [str(segment_id) for segment_id in execution["annotation_segment_ids"]]
+    assert trace["projected_annotation"]["segment_ids"] == annotation_segment_ids
+    expected_bboxes = [render_map["segment_label_bboxes_px"][segment_id] for segment_id in annotation_segment_ids]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == expected_bboxes
     assert trace["render_spec"]["font_assets"]["chart_font_family"]
     assert "background_style" in trace["render_spec"]
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -147,25 +144,25 @@ def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
         assert len(execution["query_path_ids"]) >= 2
         labels = {(str(path["source_label"]), str(path["target_label"])) for path in execution["query_path_details"]}
         assert len(labels) == 1
-        assert len(evidence_segment_ids) == 2 * len(execution["query_path_ids"])
-        assert len(out.evidence_gt.value) == len(evidence_segment_ids)
+        assert len(annotation_segment_ids) == 2 * len(execution["query_path_ids"])
+        assert len(out.annotation_gt.value) == len(annotation_segment_ids)
     elif query_id == "source_outgoing_total_flow":
         assert 2 <= len(execution["query_path_ids"]) <= 3
         labels = {str(path["source_label"]) for path in execution["query_path_details"]}
         assert len(labels) == 1
-        assert len(evidence_segment_ids) == len(execution["query_path_ids"])
-        assert all(str(segment_id).endswith(":source_middle") for segment_id in evidence_segment_ids)
+        assert len(annotation_segment_ids) == len(execution["query_path_ids"])
+        assert all(str(segment_id).endswith(":source_middle") for segment_id in annotation_segment_ids)
         assert int(execution["node_side_total"]) == sum(int(path["first_value"]) for path in execution["query_path_details"])
     elif query_id == "target_incoming_total_flow":
         assert 2 <= len(execution["query_path_ids"]) <= 3
         labels = {str(path["target_label"]) for path in execution["query_path_details"]}
         assert len(labels) == 1
-        assert len(evidence_segment_ids) == len(execution["query_path_ids"])
-        assert all(str(segment_id).endswith(":middle_target") for segment_id in evidence_segment_ids)
+        assert len(annotation_segment_ids) == len(execution["query_path_ids"])
+        assert all(str(segment_id).endswith(":middle_target") for segment_id in annotation_segment_ids)
         assert int(execution["node_side_total"]) == sum(int(path["second_value"]) for path in execution["query_path_details"])
     else:
         assert len(execution["query_path_ids"]) == 1
-        assert len(evidence_segment_ids) == 2
+        assert len(annotation_segment_ids) == 2
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -189,11 +186,11 @@ def test_chart_flow_sankey_prompt_examples_match_contract() -> None:
 
     for index, (query_id, answer) in enumerate(expected.items(), start=69200):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence["answer"] == answer
+        assert answer_and_annotation["answer"] == answer
         assert answer_only == {"answer": answer}
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_chart_flow_sankey_balanced_sampling_covers_variants() -> None:
@@ -232,7 +229,7 @@ def test_chart_flow_sankey_is_deterministic() -> None:
     out_b = task.generate(69400, params=params, max_attempts=10)
 
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
@@ -254,8 +251,8 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_id: str) -> None
     assert out.scene_id == "radial_sankey"
     expected_type = "integer" if query_id in TRANSFER_TOTAL_QUERY_IDS else "string"
     assert out.answer_gt.type == expected_type
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) == "radial_chord_sankey"
     expected_question_format = (
         "radial_sankey_transfer_total_value"
@@ -289,32 +286,30 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_id: str) -> None
     expected_answer = _expected_radial_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer_value"] == expected_answer
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["font_assets"]["chart_font_family"]
 
-    evidence_link_ids = [str(link_id) for link_id in execution["evidence_link_ids"]]
-    evidence_node_ids = [str(node_id) for node_id in execution["evidence_node_ids"]]
-    expected_bboxes = [render_map["link_label_bboxes_px"][link_id] for link_id in evidence_link_ids]
-    expected_bboxes += [render_map["node_bboxes_px"][node_id] for node_id in evidence_node_ids]
-    assert out.evidence_gt.value == expected_bboxes
+    annotation_link_ids = [str(link_id) for link_id in execution["annotation_link_ids"]]
+    annotation_node_ids = [str(node_id) for node_id in execution["annotation_node_ids"]]
+    expected_bboxes = [render_map["link_label_bboxes_px"][link_id] for link_id in annotation_link_ids]
+    expected_bboxes += [render_map["node_bboxes_px"][node_id] for node_id in annotation_node_ids]
+    assert out.annotation_gt.value == expected_bboxes
 
     if query_id == "source_to_targets_total":
         assert 2 <= len(execution["query_link_ids"]) <= 3
         assert len({str(link["source_label"]) for link in execution["query_link_details"]}) == 1
-        assert len(evidence_node_ids) == 0
+        assert len(annotation_node_ids) == 0
     elif query_id == "sources_to_target_total":
         assert 2 <= len(execution["query_link_ids"]) <= 3
         assert len({str(link["target_label"]) for link in execution["query_link_details"]}) == 1
-        assert len(evidence_node_ids) == 0
+        assert len(annotation_node_ids) == 0
     else:
         assert len(execution["query_link_ids"]) >= 2
-        assert len(evidence_node_ids) == 1
+        assert len(annotation_node_ids) == 1
         values = [int(link["value"]) for link in execution["query_link_details"]]
         assert len(set(values)) == len(values)
-        if query_id == "second_largest_target_for_source":
-            assert len(execution["query_link_ids"]) >= 3
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -330,18 +325,17 @@ def test_chart_flow_radial_sankey_prompt_examples_match_contract() -> None:
     expected = {
         "source_to_targets_total": 47,
         "sources_to_target_total": 39,
-        "largest_target_for_source": "Y",
-        "largest_source_for_target": "B",
-        "second_largest_target_for_source": "X",
+        "largest_target_for_source": "Y4M8",
+        "largest_source_for_target": "B7P2",
     }
 
     for index, (query_id, answer) in enumerate(expected.items(), start=69600):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence["answer"] == answer
+        assert answer_and_annotation["answer"] == answer
         assert answer_only == {"answer": answer}
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_chart_flow_radial_sankey_balanced_sampling_covers_variants() -> None:
@@ -355,7 +349,7 @@ def test_chart_flow_radial_sankey_balanced_sampling_covers_variants() -> None:
     assert_counter_support_within(
         variants,
         RADIAL_SUPPORTED_QUERY_IDS,
-        expected_per_key=10,
+        expected_per_key=12,
         tolerance=5,
     )
 
@@ -367,6 +361,6 @@ def test_chart_flow_radial_sankey_is_deterministic() -> None:
     out_b = task.generate(69800, params=params, max_attempts=10)
 
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()

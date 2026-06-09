@@ -29,7 +29,7 @@ from ..shared.distribution_chart_common import (
     build_boxplot_dataset_for_variant,
     build_boxplot_median_rank_difference_dataset,
     build_boxplot_paired_median_shift_dataset,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -307,7 +307,7 @@ def _median_rank_params_for_query(params: Mapping[str, Any], *, query_id: str) -
     return resolved
 
 
-def _median_rank_evidence_roles(query_id: str) -> Tuple[str, str]:
+def _median_rank_annotation_roles(query_id: str) -> Tuple[str, str]:
     """Return role names for the two median-rank witnesses."""
 
     if str(query_id) == "median_top_second_difference_value":
@@ -329,7 +329,7 @@ def _render_boxplot_public_output(
     mark_style: Mapping[str, Any],
     boxplots: Sequence[Any],
     answer_gt: TypedValue,
-    evidence_labels: Sequence[str],
+    annotation_labels: Sequence[str],
     trace_extras: Mapping[str, Any],
     query_id: str,
     query_id_probabilities: Mapping[str, float],
@@ -340,7 +340,7 @@ def _render_boxplot_public_output(
     reasoning_load: float,
     paired_boxplots: Tuple[Sequence[Any], Sequence[Any]] | None = None,
     slot_overrides: Mapping[str, Any] | None = None,
-    evidence_role_keys: Sequence[str] | None = None,
+    annotation_role_keys: Sequence[str] | None = None,
 ) -> TaskOutput:
     """Render a public boxplot task with default query_id and explicit query_id."""
 
@@ -387,12 +387,12 @@ def _render_boxplot_public_output(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_task_key),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint"]),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(prompt_defaults["json_example"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -402,38 +402,38 @@ def _render_boxplot_public_output(
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-    evidence_projection = projected_mark_evidence(rendered_scene, [str(label) for label in evidence_labels])
-    evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-    role_keys = [str(key) for key in evidence_role_keys or ()]
-    use_keyed_evidence = bool(role_keys) and len(role_keys) == len(evidence_points)
-    if use_keyed_evidence:
+    annotation_projection = projected_mark_annotation(rendered_scene, [str(label) for label in annotation_labels])
+    annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+    role_keys = [str(key) for key in annotation_role_keys or ()]
+    use_keyed_annotation = bool(role_keys) and len(role_keys) == len(annotation_points)
+    if use_keyed_annotation:
         keyed_points = {
             str(role): list(point)
-            for role, point in zip(role_keys, evidence_points)
+            for role, point in zip(role_keys, annotation_points)
         }
-        evidence_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
+        annotation_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
         witness_symbolic = {
             "type": "object_key_map",
             "keys": {
                 str(role): str(label)
-                for role, label in zip(role_keys, evidence_labels)
+                for role, label in zip(role_keys, annotation_labels)
             },
         }
-        projected_evidence = {
+        projected_annotation = {
             "type": "keyed_point_map",
             "keyed_point_map": dict(keyed_points),
             "pixel_keyed_point_map": dict(keyed_points),
         }
     else:
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
         witness_symbolic = {
             "type": "point_set",
-            "count": int(len(evidence_points)),
+            "count": int(len(annotation_points)),
         }
-        projected_evidence = {
+        projected_annotation = {
             "type": "point_set",
-            "point_set": list(evidence_points),
-            **dict(evidence_projection),
+            "point_set": list(annotation_points),
+            **dict(annotation_projection),
         }
     label_centers = {
         str(mark["label"]): list(mark["label_center_px"])
@@ -528,7 +528,7 @@ def _render_boxplot_public_output(
             },
         },
         "witness_symbolic": dict(witness_symbolic),
-        "projected_evidence": dict(projected_evidence),
+        "projected_annotation": dict(projected_annotation),
     }
 
     complexity = build_chart_complexity(
@@ -545,7 +545,7 @@ def _render_boxplot_public_output(
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=answer_gt,
-        evidence_gt=evidence_gt,
+        annotation_gt=annotation_gt,
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -604,7 +604,7 @@ class ChartsDistributionBoxplotLabelTask:
             scene_variant=SCENE_VARIANT,
             mark_count=1,
         )
-        boxplots, answer_label, evidence_value, trace_extras = build_boxplot_dataset_for_variant(
+        boxplots, answer_label, annotation_value, trace_extras = build_boxplot_dataset_for_variant(
             query_id=str(boxplot_variant),
             params=effective_params,
             instance_seed=int(instance_seed),
@@ -649,8 +649,8 @@ class ChartsDistributionBoxplotLabelTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_boxplot",
-                "evidence_hint_median_reference_label",
-                "evidence_hint_iqr_extremum_label",
+                "annotation_hint_median_reference_label",
+                "annotation_hint_iqr_extremum_label",
                 "json_example_median_reference_label",
                 "json_example_iqr_extremum_label",
                 "json_example_answer_only_median_reference_label",
@@ -669,12 +669,12 @@ class ChartsDistributionBoxplotLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_boxplot"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
                 "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
@@ -692,15 +692,15 @@ class ChartsDistributionBoxplotLabelTask:
             if "reference_label" in trace_extras
             else [str(answer_label)]
         )
-        evidence_projection = projected_mark_evidence(rendered_scene, projected_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
+        annotation_projection = projected_mark_annotation(rendered_scene, projected_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
         if str(query_id) == "median_reference_label":
             role_keys = ("reference_boxplot", "answer_boxplot")
             keyed_points = {
                 str(role): list(point)
-                for role, point in zip(role_keys, evidence_points)
+                for role, point in zip(role_keys, annotation_points)
             }
-            evidence_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
+            annotation_gt = TypedValue(type="keyed_point_map", value=dict(keyed_points))
             witness_symbolic = {
                 "type": "object_key_map",
                 "keys": {
@@ -708,21 +708,21 @@ class ChartsDistributionBoxplotLabelTask:
                     for role, label in zip(role_keys, projected_labels)
                 },
             }
-            projected_evidence = {
+            projected_annotation = {
                 "type": "keyed_point_map",
                 "keyed_point_map": dict(keyed_points),
                 "pixel_keyed_point_map": dict(keyed_points),
             }
         else:
-            evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+            annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
             witness_symbolic = {
                 "type": "point_set",
-                "count": int(len(evidence_points)),
+                "count": int(len(annotation_points)),
             }
-            projected_evidence = {
+            projected_annotation = {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             }
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
@@ -737,7 +737,7 @@ class ChartsDistributionBoxplotLabelTask:
                     "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
                     "answer_label": str(answer_label),
-                    "evidence_value": int(evidence_value),
+                    "annotation_value": int(annotation_value),
                     **(
                         {"median_reference_direction": str(median_reference_direction)}
                         if median_reference_direction is not None
@@ -869,7 +869,7 @@ class ChartsDistributionBoxplotLabelTask:
                 "query_id": str(query_id),
                 "scene_variant": SCENE_VARIANT,
                 "answer_label": str(answer_label),
-                "evidence_value": int(evidence_value),
+                "annotation_value": int(annotation_value),
                 "labels": [str(mark["label"]) for mark in rendered_scene.mark_traces],
                 "category_count": int(trace_extras["category_count"]),
                 "category_count_range": list(trace_extras["category_count_range"]),
@@ -925,7 +925,7 @@ class ChartsDistributionBoxplotLabelTask:
                 },
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
         }
 
         complexity = build_chart_complexity(
@@ -942,7 +942,7 @@ class ChartsDistributionBoxplotLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -954,14 +954,25 @@ class ChartsDistributionBoxplotLabelTask:
 
 
 @register_task
-class ChartsDistributionBoxplotSummaryLabelTask(
+class ChartsDistributionBoxplotMedianReferenceLabelTask(
     MergedChartQueryVariantTaskMixin,
     ChartsDistributionBoxplotLabelTask,
 ):
-    """Return a box label from one sampled boxplot summary query."""
+    """Return the box label selected by a median-vs-reference-quartile comparison."""
 
-    task_id = "task_charts__boxplot__summary_statistic_label"
-    allowed_query_ids = ("median_reference_label", "iqr_extremum_label")
+    task_id = "task_charts__boxplot__median_reference_label"
+    allowed_query_ids = ("median_reference_label",)
+
+
+@register_task
+class ChartsDistributionBoxplotIqrExtremumLabelTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionBoxplotLabelTask,
+):
+    """Return the box label with the extremal interquartile range."""
+
+    task_id = "task_charts__boxplot__iqr_extremum_label"
+    allowed_query_ids = ("iqr_extremum_label",)
 
 
 @register_task
@@ -982,7 +993,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
         )
         effective_params = _median_rank_params_for_query(base_params, query_id=str(query_id))
         supported_aliases = set(_SUPPORTED_MEDIAN_RANK_QUERY_IDS) | {"", "default", "median_rank_difference_value"}
-        for explicit_key in ("query_id", "query_id", "query_id"):
+        for explicit_key in ("query_id", "query_variant"):
             explicit_value = effective_params.get(str(explicit_key))
             if explicit_value is not None and str(explicit_value) not in supported_aliases:
                 raise ValueError(f"unsupported {explicit_key} for {self.task_id}: {explicit_value}")
@@ -994,7 +1005,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
             scene_variant=SCENE_VARIANT,
             mark_count=1,
         )
-        boxplots, answer, evidence_labels, trace_extras = build_boxplot_median_rank_difference_dataset(
+        boxplots, answer, annotation_labels, trace_extras = build_boxplot_median_rank_difference_dataset(
             params=effective_params,
             instance_seed=int(instance_seed),
             gen_defaults=_MEDIAN_RANK_GEN_DEFAULTS,
@@ -1012,7 +1023,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
                 "json_output_contract_answer_only",
                 "object_description_boxplot",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -1031,7 +1042,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
             mark_style=mark_style,
             boxplots=boxplots,
             answer_gt=TypedValue(type="integer", value=int(answer)),
-            evidence_labels=evidence_labels,
+            annotation_labels=annotation_labels,
             trace_extras=trace_extras,
             query_id=str(query_id),
             query_id_probabilities=dict(query_id_probabilities),
@@ -1040,7 +1051,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
             render_defaults=_MEDIAN_RANK_RENDER_DEFAULTS,
             complexity_weights=_MEDIAN_RANK_COMPLEXITY_WEIGHTS,
             reasoning_load=0.74,
-            evidence_role_keys=_median_rank_evidence_roles(str(query_id)),
+            annotation_role_keys=_median_rank_annotation_roles(str(query_id)),
         )
 
 
@@ -1073,7 +1084,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             scene_variant=SCENE_VARIANT,
             mark_count=1,
         )
-        before_boxplots, after_boxplots, answer_label, evidence_labels, trace_extras = build_boxplot_paired_median_shift_dataset(
+        before_boxplots, after_boxplots, answer_label, annotation_labels, trace_extras = build_boxplot_paired_median_shift_dataset(
             query_id=str(query_id),
             params=effective_params,
             instance_seed=int(instance_seed),
@@ -1093,7 +1104,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
                 "json_output_contract_answer_only",
                 "object_description_paired_boxplot",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -1113,7 +1124,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             boxplots=boxplots,
             paired_boxplots=(before_boxplots, after_boxplots),
             answer_gt=TypedValue(type="string", value=str(answer_label)),
-            evidence_labels=evidence_labels,
+            annotation_labels=annotation_labels,
             trace_extras=trace_extras,
             query_id=str(query_id),
             query_id_probabilities=dict(query_id_probabilities),
@@ -1122,13 +1133,14 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             render_defaults=_PAIRED_SHIFT_RENDER_DEFAULTS,
             complexity_weights=_PAIRED_SHIFT_COMPLEXITY_WEIGHTS,
             reasoning_load=float(_PAIRED_SHIFT_REASONING_LOAD_BY_VARIANT[str(query_id)]),
-            evidence_role_keys=("before_boxplot", "after_boxplot"),
+            annotation_role_keys=("before_boxplot", "after_boxplot"),
         )
 
 
 __all__ = [
+    "ChartsDistributionBoxplotIqrExtremumLabelTask",
     "ChartsDistributionBoxplotLabelTask",
+    "ChartsDistributionBoxplotMedianReferenceLabelTask",
     "ChartsDistributionBoxplotMedianRankDifferenceValueTask",
     "ChartsDistributionBoxplotPairedMedianShiftLabelTask",
-    "ChartsDistributionBoxplotSummaryLabelTask",
 ]

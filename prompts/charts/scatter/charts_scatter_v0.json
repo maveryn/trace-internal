@@ -9,6 +9,20 @@
       "",
       ""
     ],
+    "scatter_points_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "scatter_facet_grid_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "scatter_series_readout_query": [
       "",
       "",
@@ -19,6 +33,12 @@
   },
   "required_slots_by_key": {
     "scene:scatter_cluster": [
+      "object_description"
+    ],
+    "scene:scatter_points": [
+      "object_description"
+    ],
+    "scene:scatter_facet_grid": [
       "object_description"
     ],
     "scene:scatter_series_readout": [
@@ -34,6 +54,45 @@
     "query:cluster_spread_extremum_label": [
       "spread_extremum_phrase",
       "spread_axis_phrase"
+    ],
+    "query:largest_cluster_area_label": [
+      "area_rank_phrase"
+    ],
+    "query:second_largest_cluster_area_label": [
+      "area_rank_phrase"
+    ],
+    "query:smallest_cluster_area_label": [
+      "area_rank_phrase"
+    ],
+    "query:centroid_option_selection_label": [
+      "target_cluster_label"
+    ],
+    "query:axis_threshold_point_count": [
+      "axis_phrase",
+      "threshold_direction_phrase",
+      "threshold_value"
+    ],
+    "query:category_axis_mean_extremum_label": [
+      "mean_extremum_phrase",
+      "axis_phrase"
+    ],
+    "query:category_threshold_point_count": [
+      "target_category_label",
+      "axis_phrase",
+      "threshold_direction_phrase",
+      "threshold_value"
+    ],
+    "query:upper_right_density_extremum_label": [
+      "target_region_phrase"
+    ],
+    "query:upper_left_density_extremum_label": [
+      "target_region_phrase"
+    ],
+    "query:lower_right_density_extremum_label": [
+      "target_region_phrase"
+    ],
+    "query:lower_left_density_extremum_label": [
+      "target_region_phrase"
     ],
     "query:series_highest_x_label": [
       "series_label",
@@ -55,19 +114,19 @@
       "comparison_series_label",
       "target_y_value"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -75,16 +134,30 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
     "scatter_cluster": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ],
+    "scatter_points": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ],
+    "scatter_facet_grid": [
       "The image shows {object_description}.",
       "The image shows {object_description}.",
       "The image shows {object_description}.",
@@ -120,6 +193,83 @@
       "Compare the point-cloud shapes. Which cluster has the {spread_extremum_phrase} {spread_axis_phrase} spread?",
       "What cluster label has the {spread_extremum_phrase} spread in the {spread_axis_phrase} direction?",
       "Which cluster has points with the {spread_extremum_phrase} {spread_axis_phrase} spread?"
+    ],
+    "largest_cluster_area_label": [
+      "Using the shaded cluster footprints, which cluster has the {area_rank_phrase} displayed area?",
+      "Compare the shaded footprints. What cluster label has the {area_rank_phrase} footprint area?",
+      "Which labeled cluster has the {area_rank_phrase} shaded footprint by area?",
+      "Using the displayed shaded cluster areas, which cluster is {area_rank_phrase}?",
+      "Which cluster's shaded footprint has the {area_rank_phrase} area?"
+    ],
+    "second_largest_cluster_area_label": [
+      "Using the shaded cluster footprints, which cluster has the {area_rank_phrase} displayed area?",
+      "Compare the shaded footprints. What cluster label has the {area_rank_phrase} footprint area?",
+      "Which labeled cluster has the {area_rank_phrase} shaded footprint by area?",
+      "Using the displayed shaded cluster areas, which cluster is {area_rank_phrase}?",
+      "Which cluster's shaded footprint has the {area_rank_phrase} area?"
+    ],
+    "smallest_cluster_area_label": [
+      "Using the shaded cluster footprints, which cluster has the {area_rank_phrase} displayed area?",
+      "Compare the shaded footprints. What cluster label has the {area_rank_phrase} footprint area?",
+      "Which labeled cluster has the {area_rank_phrase} shaded footprint by area?",
+      "Using the displayed shaded cluster areas, which cluster is {area_rank_phrase}?",
+      "Which cluster's shaded footprint has the {area_rank_phrase} area?"
+    ],
+    "centroid_option_selection_label": [
+      "For cluster \"{target_cluster_label}\", which option marker is closest to the cluster's mean center?",
+      "Estimate the mean center of cluster \"{target_cluster_label}\". Which option marker is closest to it?",
+      "Using the points in cluster \"{target_cluster_label}\", choose the option marker nearest to that cluster's centroid.",
+      "Which option marker best matches the center of mass of cluster \"{target_cluster_label}\"?",
+      "Find the centroid of cluster \"{target_cluster_label}\" by eye. Which option marker is closest?"
+    ],
+    "axis_threshold_point_count": [
+      "How many data points have {axis_phrase}-axis values {threshold_direction_phrase} {threshold_value}?",
+      "Count the points whose {axis_phrase}-axis values are {threshold_direction_phrase} {threshold_value}.",
+      "Using the visible threshold guide, how many points are {threshold_direction_phrase} {threshold_value} on the {axis_phrase}-axis?",
+      "How many plotted points satisfy {axis_phrase} {threshold_direction_phrase} {threshold_value}?",
+      "What is the number of points with {axis_phrase}-axis values {threshold_direction_phrase} {threshold_value}?"
+    ],
+    "category_axis_mean_extremum_label": [
+      "Which category has the {mean_extremum_phrase} mean {axis_phrase}-axis value?",
+      "Compare the category point clouds. Which category has the {mean_extremum_phrase} average {axis_phrase}-axis position?",
+      "Using all points in each category, what category has the {mean_extremum_phrase} mean {axis_phrase}-axis value?",
+      "Which legend category's points have the {mean_extremum_phrase} mean {axis_phrase}-axis coordinate?",
+      "Find the category with the {mean_extremum_phrase} average value along the {axis_phrase}-axis."
+    ],
+    "category_threshold_point_count": [
+      "For category \"{target_category_label}\", how many points have {axis_phrase}-axis values {threshold_direction_phrase} {threshold_value}?",
+      "Use the legend to locate category \"{target_category_label}\". How many of its points are {threshold_direction_phrase} {threshold_value} on the {axis_phrase}-axis?",
+      "Within category \"{target_category_label}\", count the points whose {axis_phrase}-axis values are {threshold_direction_phrase} {threshold_value}.",
+      "How many plotted points from category \"{target_category_label}\" satisfy {axis_phrase} {threshold_direction_phrase} {threshold_value}?",
+      "For the visible category \"{target_category_label}\", what is the number of points with {axis_phrase}-axis values {threshold_direction_phrase} {threshold_value}?"
+    ],
+    "upper_right_density_extremum_label": [
+      "Which panel has the highest point density in the {target_region_phrase} region?",
+      "Compare the panels. What visible panel label has the densest point cluster in the {target_region_phrase} region?",
+      "Using the highlighted target regions, which panel is most densely packed in the {target_region_phrase} region?",
+      "Find the panel whose points are densest inside the {target_region_phrase} region.",
+      "Which panel label corresponds to the highest local point density in the {target_region_phrase} region?"
+    ],
+    "upper_left_density_extremum_label": [
+      "Which panel has the highest point density in the {target_region_phrase} region?",
+      "Compare the panels. What visible panel label has the densest point cluster in the {target_region_phrase} region?",
+      "Using the highlighted target regions, which panel is most densely packed in the {target_region_phrase} region?",
+      "Find the panel whose points are densest inside the {target_region_phrase} region.",
+      "Which panel label corresponds to the highest local point density in the {target_region_phrase} region?"
+    ],
+    "lower_right_density_extremum_label": [
+      "Which panel has the highest point density in the {target_region_phrase} region?",
+      "Compare the panels. What visible panel label has the densest point cluster in the {target_region_phrase} region?",
+      "Using the highlighted target regions, which panel is most densely packed in the {target_region_phrase} region?",
+      "Find the panel whose points are densest inside the {target_region_phrase} region.",
+      "Which panel label corresponds to the highest local point density in the {target_region_phrase} region?"
+    ],
+    "lower_left_density_extremum_label": [
+      "Which panel has the highest point density in the {target_region_phrase} region?",
+      "Compare the panels. What visible panel label has the densest point cluster in the {target_region_phrase} region?",
+      "Using the highlighted target regions, which panel is most densely packed in the {target_region_phrase} region?",
+      "Find the panel whose points are densest inside the {target_region_phrase} region.",
+      "Which panel label corresponds to the highest local point density in the {target_region_phrase} region?"
     ],
     "series_highest_x_label": [
       "For series \"{series_label}\", what x-axis label corresponds to its {extremum_phrase} y-axis value? {unanswerable_instruction}",

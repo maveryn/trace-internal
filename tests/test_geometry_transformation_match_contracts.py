@@ -26,11 +26,11 @@ def test_geometry_transformation_match_emits_expected_contract(
     assert out.answer_gt.type == "option_letter"
     assert isinstance(out.answer_gt.value, str)
     assert len(str(out.answer_gt.value)) == 1
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == expected_point_count
-    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == expected_point_count
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
-    assert out.trace_payload["execution_trace"]["required_evidence_labels"] == [
+    assert out.trace_payload["execution_trace"]["required_annotation_labels"] == [
         f"vertex_{index}" for index in range(1, expected_point_count + 1)
     ]
 

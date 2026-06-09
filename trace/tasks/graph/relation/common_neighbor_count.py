@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -29,8 +29,6 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_COMMON_NEIGHBOR_MODES,
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_common_neighbor_count,
     graph_label_sort_key,
@@ -38,13 +36,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import (
     format_graph_prompt_label,
     graph_query_probabilities_from_alias_map,
@@ -54,7 +50,7 @@ from ..shared.task_support import (
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__node_link__common_neighbor_count"
+TASK_ID = "task_graph__node_link__common_related_node_count"
 SCENE_ID = "node_link"
 
 QUERY_ID_BY_MODE = {
@@ -67,10 +63,10 @@ PROMPT_QUERY_KEY_BY_MODE = {
     "directed_common_successor": "common_successor_count",
     "directed_common_predecessor": "common_predecessor_count",
 }
-EVIDENCE_HINT_KEY_BY_PROMPT_QUERY = {
-    "common_neighbor_count": "evidence_hint_common_neighbor_count",
-    "common_successor_count": "evidence_hint_common_successor_count",
-    "common_predecessor_count": "evidence_hint_common_predecessor_count",
+ANNOTATION_HINT_KEY_BY_PROMPT_QUERY = {
+    "common_neighbor_count": "annotation_hint_common_neighbor_count",
+    "common_successor_count": "annotation_hint_common_successor_count",
+    "common_predecessor_count": "annotation_hint_common_predecessor_count",
 }
 GRAPH_DIRECTIONALITY_BY_MODE = {
     "undirected_common_neighbor": "undirected",
@@ -192,7 +188,7 @@ def _forced_common_neighbor_mode(params: Mapping[str, Any]) -> str | None:
         if mode is None:
             raise ValueError(f"unsupported common_neighbor_mode: {explicit}")
         return str(mode)
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         mode = _mode_from_query_alias(params.get(str(key)))
         if mode is not None:
             return str(mode)
@@ -224,11 +220,17 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(common_neighbor_mode)}:{int(target_count)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(common_neighbor_mode),
+            str(target_count),
+            str(topology_profile),
+        ),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -342,84 +344,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for common-neighbor count")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     common_neighbor_probabilities = {str(key): float(value) for key, value in common_neighbor_probabilities.items()}
     query_probabilities = graph_query_probabilities_from_alias_map(common_neighbor_probabilities, QUERY_ID_BY_MODE)
@@ -461,10 +403,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
 
-def _near_miss_count(*, graph_sample: Any, query: _ResolvedQuery, evidence_labels: Tuple[str, ...]) -> int:
+def _near_miss_count(*, graph_sample: Any, query: _ResolvedQuery, annotation_labels: Tuple[str, ...]) -> int:
     """Return nodes that satisfy exactly one side of the common relation."""
 
-    evidence_set = {str(label) for label in evidence_labels}
+    annotation_set = {str(label) for label in annotation_labels}
     query_a = str(graph_sample.query_label_a)
     query_b = str(graph_sample.query_label_b)
     if str(query.common_neighbor_mode) == "undirected_common_neighbor":
@@ -476,7 +418,7 @@ def _near_miss_count(*, graph_sample: Any, query: _ResolvedQuery, evidence_label
     else:
         left = set(str(label) for label in graph_sample.predecessors_by_label[str(query_a)])
         right = set(str(label) for label in graph_sample.predecessors_by_label[str(query_b)])
-    return sum(1 for label in (left ^ right) if str(label) not in evidence_set and str(label) not in {query_a, query_b})
+    return sum(1 for label in (left ^ right) if str(label) not in annotation_set and str(label) not in {query_a, query_b})
 
 
 def _build_complexity(
@@ -485,7 +427,7 @@ def _build_complexity(
     query: _ResolvedQuery,
     render_params: GraphRenderParams,
     rendered_scene: Any,
-    evidence_labels: Tuple[str, ...],
+    annotation_labels: Tuple[str, ...],
 ) -> Any:
     """Build one within-task normalized complexity record."""
 
@@ -494,7 +436,7 @@ def _build_complexity(
     max_edges = int(node_count * (node_count - 1)) if bool(directed) else int((node_count * (node_count - 1)) // 2)
     edge_density = 0.0 if int(max_edges) <= 0 else float(graph_sample.edge_count) / float(max_edges)
     crossing_norm = normalize_float_with_bounds(float(rendered_scene.crossing_count), (0.0, max(1.0, float(graph_sample.edge_count))))
-    near_miss = _near_miss_count(graph_sample=graph_sample, query=query, evidence_labels=evidence_labels)
+    near_miss = _near_miss_count(graph_sample=graph_sample, query=query, annotation_labels=annotation_labels)
     components = {
         "visual_scan": (0.60 * normalize_int_with_bounds(int(node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max)))
         + (0.40 * normalize_float_with_bounds(float(edge_density), (0.0, 1.0))),
@@ -600,16 +542,16 @@ class GraphRelationCommonNeighborCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "object_description_directed",
-                "evidence_hint_common_neighbor_count",
-                "evidence_hint_common_successor_count",
-                "evidence_hint_common_predecessor_count",
+                "annotation_hint_common_neighbor_count",
+                "annotation_hint_common_successor_count",
+                "annotation_hint_common_predecessor_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180]], answer_value=2)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[180, 220], [310, 180]], answer_value=2)
         prompt_query_label_a = format_graph_prompt_label(
             str(graph_sample.query_label_a),
             label_variant=str(query.label_variant),
@@ -619,7 +561,7 @@ class GraphRelationCommonNeighborCountTask:
             label_variant=str(query.label_variant),
         )
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description"
-        evidence_hint_key = EVIDENCE_HINT_KEY_BY_PROMPT_QUERY[str(query.prompt_query_key)]
+        annotation_hint_key = ANNOTATION_HINT_KEY_BY_PROMPT_QUERY[str(query.prompt_query_key)]
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -627,14 +569,14 @@ class GraphRelationCommonNeighborCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.prompt_query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[object_description_key]),
                 "query_label_a": str(prompt_query_label_a),
                 "query_label_b": str(prompt_query_label_b),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(
                     query_label_a=str(prompt_query_label_a),
                     query_label_b=str(prompt_query_label_b),
                 ),
@@ -646,12 +588,12 @@ class GraphRelationCommonNeighborCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
-        evidence_set = {str(label) for label in evidence_labels}
+        annotation_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels)))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
+        annotation_set = {str(label) for label in annotation_labels}
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -665,7 +607,7 @@ class GraphRelationCommonNeighborCountTask:
                 "predecessors": list(node.predecessors),
                 "is_query_node_a": bool(str(node.label) == str(graph_sample.query_label_a)),
                 "is_query_node_b": bool(str(node.label) == str(graph_sample.query_label_b)),
-                "is_common_neighbor_node": bool(str(node.label) in evidence_set),
+                "is_common_neighbor_node": bool(str(node.label) in annotation_set),
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
             }
@@ -689,7 +631,7 @@ class GraphRelationCommonNeighborCountTask:
             query=query,
             render_params=render_params,
             rendered_scene=rendered_scene,
-            evidence_labels=evidence_labels,
+            annotation_labels=annotation_labels,
         )
 
         common_relation_sets = {
@@ -712,7 +654,7 @@ class GraphRelationCommonNeighborCountTask:
                     "common_neighbor_mode": str(query.common_neighbor_mode),
                     "query_label_a": str(graph_sample.query_label_a),
                     "query_label_b": str(graph_sample.query_label_b),
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "common_neighbor_mode_probabilities": dict(query.common_neighbor_mode_probabilities),
                     **common_relation_sets,
@@ -818,7 +760,7 @@ class GraphRelationCommonNeighborCountTask:
                 "query_label_b": str(graph_sample.query_label_b),
                 "prompt_query_label_a": str(prompt_query_label_a),
                 "prompt_query_label_b": str(prompt_query_label_b),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 **common_relation_sets,
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
@@ -839,22 +781,22 @@ class GraphRelationCommonNeighborCountTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "query_label_a": str(graph_sample.query_label_a),
                 "query_label_b": str(graph_sample.query_label_b),
                 "common_neighbor_mode": str(query.common_neighbor_mode),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

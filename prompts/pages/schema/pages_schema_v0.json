@@ -31,6 +31,20 @@
       "What is the total number of schema relationships?",
       "Using the relationship lines between tables, how many relationships are shown?",
       "Across the schema, count every relationship line once."
+    ],
+    "relationship_endpoint_label_query": [
+      "From table \"{source_table_label}\", follow relationship \"{relationship_label}\". Which table is at the other end?",
+      "Starting at \"{source_table_label}\", what table does the \"{relationship_label}\" relationship connect to?",
+      "Use the relationship labeled \"{relationship_label}\" from \"{source_table_label}\". What is the target table label?",
+      "For the \"{relationship_label}\" relationship leaving \"{source_table_label}\", name the table at the other endpoint.",
+      "Which table is reached from \"{source_table_label}\" by following \"{relationship_label}\"?"
+    ],
+    "relationship_cardinality_label_query": [
+      "Between table \"{source_table_label}\" and table \"{target_table_label}\", what cardinality label do the endpoint markers show?",
+      "Read the cardinality markers on the relationship from \"{source_table_label}\" to \"{target_table_label}\". What normalized cardinality label is shown?",
+      "For the relationship connecting \"{source_table_label}\" and \"{target_table_label}\", identify the cardinality class.",
+      "Using the endpoint markers between \"{source_table_label}\" and \"{target_table_label}\", what cardinality label applies?",
+      "What normalized relationship cardinality is shown for \"{source_table_label}\" to \"{target_table_label}\"?"
     ]
   },
   "query_templates": {
@@ -54,9 +68,23 @@
       "Count each relationship once.",
       "Do not count cardinality markers as separate relationships.",
       "Do not count field rows."
+    ],
+    "target_table_for_relationship_label": [
+      "Use the named source table and relationship label.",
+      "Read the table label at the relationship's other endpoint.",
+      "Follow the labeled relationship line from the source table.",
+      "Use the visible relationship label to identify the connected target table.",
+      "What connected table label is shown in the schema?"
+    ],
+    "relationship_cardinality_between_tables": [
+      "Use the two named endpoint tables.",
+      "Read the source-side and target-side cardinality markers.",
+      "Interpret the endpoint markers as a normalized cardinality label.",
+      "Use the relationship line connecting the named tables.",
+      "What normalized cardinality class is shown by the markers?"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -64,12 +92,12 @@
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "required_slots_by_key": {
@@ -83,17 +111,27 @@
       "table_label"
     ],
     "task:total_relationship_count_query": [],
+    "task:relationship_endpoint_label_query": [
+      "source_table_label",
+      "relationship_label"
+    ],
+    "task:relationship_cardinality_label_query": [
+      "source_table_label",
+      "target_table_label"
+    ],
     "query:all_field_count": [],
     "query:attribute_field_count": [],
     "query:total_relationship_count": [],
-    "answer_or_evidence:answer_only": [
+    "query:target_table_for_relationship_label": [],
+    "query:relationship_cardinality_between_tables": [],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]

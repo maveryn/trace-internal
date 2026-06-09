@@ -27,7 +27,7 @@ If the task is domain-specific, also open the matching domain setup doc and `ski
 3. Put new helpers at the narrowest reusable layer that fits.
 4. Keep prompt text out of task modules and wire bundle/config keys instead.
 5. Register the task and import it from `trace/tasks/__init__.py`.
-6. Keep trace, projected evidence, and public answer/evidence derived from the same execution path.
+6. Keep trace, projected annotation, and public answer/annotation derived from the same execution path.
 7. Update docs in the same patch when module boundaries or helper placement change.
 
 ## Implementation checks

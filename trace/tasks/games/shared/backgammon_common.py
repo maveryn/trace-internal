@@ -6,11 +6,18 @@ from dataclasses import dataclass
 from typing import Mapping, Tuple
 
 
-BACKGAMMON_QUERY_IDS: Tuple[str, ...] = (
+BACKGAMMON_DESTINATION_QUERY_IDS: Tuple[str, ...] = (
     "legal_move_count",
     "hit_move_count",
     "blocked_destination_count",
 )
+BACKGAMMON_POINT_STATE_QUERY_IDS: Tuple[str, ...] = (
+    "black_single_checker_point_count",
+    "white_single_checker_point_count",
+    "black_two_or_more_checker_point_count",
+    "white_two_or_more_checker_point_count",
+)
+BACKGAMMON_QUERY_IDS: Tuple[str, ...] = BACKGAMMON_DESTINATION_QUERY_IDS + BACKGAMMON_POINT_STATE_QUERY_IDS
 BACKGAMMON_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic",
     "navy",
@@ -42,7 +49,7 @@ class BackgammonOutcome:
 
 @dataclass(frozen=True)
 class BackgammonSample:
-    """One generated Backgammon position plus answer/evidence contract."""
+    """One generated Backgammon position plus answer/annotation contract."""
 
     points: Mapping[int, BackgammonPoint]
     dice: Tuple[int, int]
@@ -53,6 +60,7 @@ class BackgammonSample:
     outcome: BackgammonOutcome
     style_variant: str
     target_answer: int
+    target_points: Tuple[int, ...] = ()
 
 
 def point_entity_id(point_id: int) -> str:
@@ -188,6 +196,31 @@ def target_destinations_for_query(outcome: BackgammonOutcome, *, query_id: str) 
     raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
+def point_matches_state_query(point: BackgammonPoint, *, query_id: str) -> bool:
+    """Return true when one point stack satisfies a point-state query."""
+
+    query = str(query_id)
+    if query == "black_single_checker_point_count":
+        return str(point.owner) == PLAYER_BLACK and int(point.count) == 1
+    if query == "white_single_checker_point_count":
+        return str(point.owner) == PLAYER_WHITE and int(point.count) == 1
+    if query == "black_two_or_more_checker_point_count":
+        return str(point.owner) == PLAYER_BLACK and int(point.count) >= 2
+    if query == "white_two_or_more_checker_point_count":
+        return str(point.owner) == PLAYER_WHITE and int(point.count) >= 2
+    raise ValueError(f"unsupported Backgammon point-state query_id: {query}")
+
+
+def target_points_for_state_query(points: Mapping[int, BackgammonPoint], *, query_id: str) -> Tuple[int, ...]:
+    """Return numbered board points satisfying one point-state query."""
+
+    return tuple(
+        int(point)
+        for point in POINT_IDS
+        if point_matches_state_query(stack_at(points, int(point)), query_id=str(query_id))
+    )
+
+
 def validate_backgammon_sample(sample: BackgammonSample) -> None:
     """Validate the generated Backgammon sample against the public contract."""
 
@@ -209,20 +242,36 @@ def validate_backgammon_sample(sample: BackgammonSample) -> None:
             raise ValueError("occupied points must have positive checker count")
     if str(sample.active_player) not in {PLAYER_BLACK, PLAYER_WHITE}:
         raise ValueError(f"unsupported active player: {sample.active_player}")
-    outcome = compute_single_die_destinations(
-        sample.points,
-        dice=sample.dice,
-        active_player=str(sample.active_player),
-    )
-    expected = target_destinations_for_query(outcome, query_id=str(sample.query_id))
-    if tuple(expected) != tuple(sample.target_destinations):
-        raise ValueError("target destinations do not match recomputed outcome")
-    if int(sample.answer) != len(expected):
-        raise ValueError("answer does not match target destination count")
+    if str(sample.query_id) in BACKGAMMON_DESTINATION_QUERY_IDS:
+        outcome = compute_single_die_destinations(
+            sample.points,
+            dice=sample.dice,
+            active_player=str(sample.active_player),
+        )
+        expected = target_destinations_for_query(outcome, query_id=str(sample.query_id))
+        if tuple(expected) != tuple(sample.target_destinations):
+            raise ValueError("target destinations do not match recomputed outcome")
+        if tuple(sample.target_points or sample.target_destinations) != tuple(expected):
+            raise ValueError("target points do not match target destinations")
+        if int(sample.answer) != len(expected):
+            raise ValueError("answer does not match target destination count")
+        return
+    if str(sample.query_id) in BACKGAMMON_POINT_STATE_QUERY_IDS:
+        expected_points = target_points_for_state_query(sample.points, query_id=str(sample.query_id))
+        if tuple(expected_points) != tuple(sample.target_points):
+            raise ValueError("target points do not match recomputed point-state query")
+        if tuple(sample.target_destinations):
+            raise ValueError("point-state queries must not report target destinations")
+        if int(sample.answer) != len(expected_points):
+            raise ValueError("answer does not match target point count")
+        return
+    raise ValueError(f"unsupported Backgammon query_id: {sample.query_id}")
 
 
 __all__ = [
     "BACKGAMMON_QUERY_IDS",
+    "BACKGAMMON_DESTINATION_QUERY_IDS",
+    "BACKGAMMON_POINT_STATE_QUERY_IDS",
     "BACKGAMMON_STYLE_VARIANTS",
     "PLAYER_BLACK",
     "PLAYER_WHITE",
@@ -241,8 +290,10 @@ __all__ = [
     "is_opponent_blot",
     "is_white_blot",
     "opponent_for_player",
+    "point_matches_state_query",
     "point_entity_id",
     "stack_at",
     "target_destinations_for_query",
+    "target_points_for_state_query",
     "validate_backgammon_sample",
 ]

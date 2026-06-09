@@ -15,7 +15,7 @@ def test_games_brick_breaker_defaults_present() -> None:
     cfg = get_task_group_defaults("games", "brick_breaker")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__brick_breaker__trajectory_target_label",
+        task_id="task_games__brick_breaker__next_hit_label",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -39,5 +39,5 @@ def test_games_brick_breaker_defaults_present() -> None:
     assert int(rendering["ball_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_brick_breaker_v0"
     assert "dashed arrow" in str(prompt["brick_breaker_motion_rule_text"]).lower()
-    assert "bounding box" in str(prompt["evidence_hint_next_hit_label"])
+    assert "bounding box" in str(prompt["annotation_hint_next_hit_label"])
     assert "row" in str(prompt["answer_hint_hit_row_remaining_count"])

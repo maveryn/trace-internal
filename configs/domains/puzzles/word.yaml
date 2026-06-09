@@ -35,6 +35,20 @@ generation:
         word_search_classic: 1.0
         word_search_notebook: 1.0
         word_search_card: 1.0
+    task_puzzles__code_grid__decoded_word_label:
+      grid_size_min: 4
+      grid_size_max: 5
+      target_word_length_min: 3
+      target_word_length_max: 6
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        decode_coordinate_sequence: 1.0
+        decode_spaced_coordinate_sequence: 1.0
+      scene_variant_weights:
+        code_grid_classic: 1.0
+        code_grid_notebook: 1.0
+        code_grid_card: 1.0
 
 rendering:
   shared:
@@ -69,6 +83,20 @@ rendering:
     chip_fill_rgb: [234, 245, 239]
     chip_border_rgb: [68, 122, 103]
     highlight_rgb: [255, 241, 142]
+  task_overrides:
+    task_puzzles__code_grid__decoded_word_label:
+      canvas_width: 900
+      canvas_height: 700
+      cell_size_px: 64
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+      header_size_px: 48
+      panel_padding_px: 28
+      panel_corner_radius_px: 18
+      grid_line_width_px: 2
+      letter_font_size_px: 28
+      index_font_size_px: 19
+      title_font_size_px: 24
 
 prompt:
   shared:
@@ -78,20 +106,37 @@ prompt:
     object_description_word_search_classic: a row-and-column labeled word-search grid
     object_description_word_search_notebook: a notebook-style row-and-column labeled word-search grid
     object_description_word_search_card: a card-style row-and-column labeled word-search grid
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    evidence_hint_word_location_label: set "evidence" to an array containing the selected option bounding box followed by the ordered grid-cell bounding boxes for the found word, each as [x0,y0,x1,y1] in pixels
+    annotation_hint_word_location_label: set "annotation" to an array containing the selected option bounding box followed by the ordered grid-cell bounding boxes for the found word, each as [x0,y0,x1,y1] in pixels
     answer_hint_word_location_label: set "answer" to the single capital-letter option label
-    json_example_word_location_label: '{"evidence":[[720,130,990,188],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":"C"}'
+    json_example_word_location_label: '{"annotation":[[720,130,990,188],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":"C"}'
     json_example_answer_only_word_location_label: '{"answer":"C"}'
-    evidence_hint_letter_count_value: set "evidence" to an array containing every grid-cell bounding box where the target letter appears, each as [x0,y0,x1,y1] in pixels
+    annotation_hint_letter_count_value: set "annotation" to an array containing every grid-cell bounding box where the target letter appears, each as [x0,y0,x1,y1] in pixels
     answer_hint_letter_count_value: set "answer" to the integer count of matching letters
-    json_example_letter_count_value: '{"evidence":[[194,222,252,280],[426,338,484,396]],"answer":2}'
+    json_example_letter_count_value: '{"annotation":[[194,222,252,280],[426,338,484,396]],"answer":2}'
     json_example_answer_only_letter_count_value: '{"answer":2}'
-    evidence_hint_present_word_count: set "evidence" to an array containing each present word-chip bounding box followed by the ordered grid-cell bounding boxes for those present words, each as [x0,y0,x1,y1] in pixels
+    annotation_hint_present_word_count: set "annotation" to an array containing each present word-chip bounding box followed by the ordered grid-cell bounding boxes for those present words, each as [x0,y0,x1,y1] in pixels
     answer_hint_present_word_count: set "answer" to the integer number of word-bank words that appear in the grid
-    json_example_present_word_count: '{"evidence":[[720,130,990,174],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":1}'
+    json_example_present_word_count: '{"annotation":[[720,130,990,174],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":1}'
     json_example_answer_only_present_word_count: '{"answer":1}'
+  task_overrides:
+    task_puzzles__code_grid__decoded_word_label:
+      scene_key: code_grid
+      task_key: code_grid_query
+      object_description_code_grid_classic: a row-letter and column-number labeled code grid
+      object_description_code_grid_notebook: a notebook-style row-letter and column-number labeled code grid
+      object_description_code_grid_card: a card-style row-letter and column-number labeled code grid
+      annotation_hint_decode_coordinate_sequence: set "annotation" to an object with ordered keys "cell_1", "cell_2",
+        and so on, each mapped to the corresponding grid-cell bounding box [x0,y0,x1,y1] in decode order
+      annotation_hint_decode_spaced_coordinate_sequence: set "annotation" to an object with ordered keys "cell_1", "cell_2",
+        and so on, each mapped to the corresponding grid-cell bounding box [x0,y0,x1,y1] in decode order
+      answer_hint_decode_coordinate_sequence: set "answer" to the decoded uppercase word
+      answer_hint_decode_spaced_coordinate_sequence: set "answer" to the decoded uppercase word
+      json_example_decode_coordinate_sequence: '{"annotation":{"cell_1":[154,172,218,236],"cell_2":[282,236,346,300],"cell_3":[346,364,410,428],"cell_4":[218,236,282,300]},"answer":"MATH"}'
+      json_example_decode_spaced_coordinate_sequence: '{"annotation":{"cell_1":[154,172,218,236],"cell_2":[282,236,346,300],"cell_3":[346,364,410,428],"cell_4":[218,236,282,300]},"answer":"MATH"}'
+      json_example_answer_only_decode_coordinate_sequence: '{"answer":"MATH"}'
+      json_example_answer_only_decode_spaced_coordinate_sequence: '{"answer":"MATH"}'
 
 visual:
   noise:

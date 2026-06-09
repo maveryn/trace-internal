@@ -75,9 +75,9 @@ def test_geometry_graphing_count_emits_expected_contract(
     out = GeometryGraphingCountTask().generate(23401, params=params, max_attempts=40)
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == int(expected_answer)
-    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == int(expected_answer)
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
     for key in ("reference_line_kind", "extremum_kind"):

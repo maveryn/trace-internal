@@ -62,7 +62,7 @@ generation:
     intent_edit_transform_action_pool: ["Copy", "Delete", "Move", "Rotate", "Resize"]
     intent_format_style_action_pool: ["Format", "Align", "Color", "Size", "Style"]
   task_overrides:
-    task_pages__navigation_flow__navigation_path_target_label:
+    pages_navigation_flow_path_target_source:
       menu_command_count_min: 3
       menu_command_count_max: 4
       ribbon_tab_count_min: 3
@@ -85,7 +85,7 @@ generation:
         edit_transform: 1.0
         format_style: 1.0
       balanced_intent_category_sampling: true
-    task_pages__workspace__professional_target_label:
+    pages_workspace_professional_target_source:
       context_count_min: 3
       context_count_max: 5
       query_id_weights:
@@ -94,7 +94,7 @@ generation:
         canvas_workspace_control_label: 1.0
         code_workspace_control_label: 1.0
         file_dialog_control_label: 1.0
-    task_pages__web_action__web_action_target_label:
+    pages_web_action_target_source:
       query_id_weights:
         click_target_label: 1.0
         type_field_label: 1.0
@@ -154,21 +154,21 @@ rendering:
     label_font_size_px_min: 15
     label_font_size_px_max: 17
   task_overrides:
-    task_pages__navigation_flow__navigation_path_target_label:
+    pages_navigation_flow_path_target_source:
       badge_size_px: 30
       badge_size_px_min: 28
       badge_size_px_max: 32
       label_font_size_px: 18
       label_font_size_px_min: 17
       label_font_size_px_max: 19
-    task_pages__workspace__professional_target_label:
+    pages_workspace_professional_target_source:
       badge_size_px: 30
       badge_size_px_min: 28
       badge_size_px_max: 32
       label_font_size_px: 18
       label_font_size_px_min: 17
       label_font_size_px_max: 19
-    task_pages__web_action__web_action_target_label:
+    pages_web_action_target_source:
       browser_margin_px: 34
       browser_margin_px_min: 32
       browser_margin_px_max: 38
@@ -196,38 +196,38 @@ prompt:
   shared:
     bundle_id: pages_relation_v0
   task_overrides:
-    task_pages__navigation_flow__navigation_path_target_label:
+    pages_navigation_flow_path_target_source:
       scene_key: gui_navigation_paths
       task_key: navigation_path_query
       object_description: menus, sidebar trees, ribbon groups, and labeled target controls in a desktop application
-      evidence_hint_menu_path_target_label: set "evidence" to an object mapping menu_root, menu_group, and target_command to [x0, y0, x1, y1] boxes
-      evidence_hint_sidebar_tree_target_label: set "evidence" to an object mapping sidebar_section, sidebar_group, and target_item to [x0, y0, x1, y1] boxes
-      evidence_hint_ribbon_group_command_label: set "evidence" to an object mapping ribbon_tab, ribbon_group, and target_command to [x0, y0, x1, y1] boxes
+      annotation_hint_menu_path_target_label: set "annotation" to an object mapping menu_root, menu_group, and target_command to [x0, y0, x1, y1] boxes
+      annotation_hint_sidebar_tree_target_label: set "annotation" to an object mapping sidebar_section, sidebar_group, and target_item to [x0, y0, x1, y1] boxes
+      annotation_hint_ribbon_group_command_label: set "annotation" to an object mapping ribbon_tab, ribbon_group, and target_command to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
     task_pages__command_matrix__command_intent_target_label:
       scene_key: gui_command_intents
       task_key: command_intent_query
       object_description: a command matrix with a shuffled intent guide, object cue chips, object rows, coded action headers, and labeled command controls
-      evidence_hint_command_intent_target_label: set "evidence" to an object mapping action_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
-      evidence_hint_dual_guide_command_label: set "evidence" to an object mapping action_cue_guide, object_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
+      annotation_hint_command_intent_target_label: set "annotation" to an object mapping action_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
+      annotation_hint_dual_guide_command_label: set "annotation" to an object mapping action_cue_guide, object_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
-    task_pages__workspace__professional_target_label:
+    pages_workspace_professional_target_source:
       scene_key: gui_professional_target_controls
       task_key: professional_target_query
       object_description: a professional application workspace with a shuffled guide, context rows, coded headers, and labeled controls
-      evidence_hint_toolbar_palette_control_label: set "evidence" to an object mapping tool_cue_card, tool_context_row, tool_code_header, and target_toolbar_palette_control to [x0, y0, x1, y1] boxes
-      evidence_hint_property_panel_control_label: set "evidence" to an object mapping setting_cue_card, inspector_section_row, setting_code_header, and target_property_panel_control to [x0, y0, x1, y1] boxes
-      evidence_hint_canvas_workspace_control_label: set "evidence" to an object mapping canvas_cue_card, canvas_target_row, canvas_code_header, and target_canvas_workspace_control to [x0, y0, x1, y1] boxes
-      evidence_hint_code_workspace_control_label: set "evidence" to an object mapping ide_cue_card, code_target_row, ide_code_header, and target_code_workspace_control to [x0, y0, x1, y1] boxes
-      evidence_hint_file_dialog_control_label: set "evidence" to an object mapping dialog_cue_card, dialog_location_row, dialog_code_header, and target_file_dialog_control to [x0, y0, x1, y1] boxes
+      annotation_hint_toolbar_palette_control_label: set "annotation" to an object mapping tool_cue_card, tool_context_row, tool_code_header, and target_toolbar_palette_control to [x0, y0, x1, y1] boxes
+      annotation_hint_property_panel_control_label: set "annotation" to an object mapping setting_cue_card, inspector_section_row, setting_code_header, and target_property_panel_control to [x0, y0, x1, y1] boxes
+      annotation_hint_canvas_workspace_control_label: set "annotation" to an object mapping canvas_cue_card, canvas_target_row, canvas_code_header, and target_canvas_workspace_control to [x0, y0, x1, y1] boxes
+      annotation_hint_code_workspace_control_label: set "annotation" to an object mapping ide_cue_card, code_target_row, ide_code_header, and target_code_workspace_control to [x0, y0, x1, y1] boxes
+      annotation_hint_file_dialog_control_label: set "annotation" to an object mapping dialog_cue_card, dialog_location_row, dialog_code_header, and target_file_dialog_control to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
-    task_pages__web_action__web_action_target_label:
+    pages_web_action_target_source:
       scene_key: gui_web_action_targets
       task_key: web_action_query
       object_description: a browser page with an action instruction banner, a visible cue-to-key guide, and candidate markers on targetable web controls
-      evidence_hint_click_target_label: set "evidence" to an object mapping instruction_banner, action_key_guide, item_card, and target_button to [x0, y0, x1, y1] boxes
-      evidence_hint_type_field_label: set "evidence" to an object mapping instruction_banner, field_key_guide, form_section, and target_input to [x0, y0, x1, y1] boxes
-      evidence_hint_select_option_label: set "evidence" to an object mapping instruction_banner, option_key_guide, option_group, and target_option to [x0, y0, x1, y1] boxes
+      annotation_hint_click_target_label: set "annotation" to an object mapping instruction_banner, action_key_guide, item_card, and target_button to [x0, y0, x1, y1] boxes
+      annotation_hint_type_field_label: set "annotation" to an object mapping instruction_banner, field_key_guide, form_section, and target_input to [x0, y0, x1, y1] boxes
+      annotation_hint_select_option_label: set "annotation" to an object mapping instruction_banner, option_key_guide, option_group, and target_option to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
 
 visual:

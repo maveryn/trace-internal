@@ -10,7 +10,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.public_query_task import rewrite_pages_query_output
+from ..shared.fixed_query_task import rewrite_pages_public_task_output
 from .control_filter_count import (
     SUPPORTED_QUERY_IDS as CONTROL_QUERY_IDS,
     GuiCountingControlFilterCountTask,
@@ -21,8 +21,13 @@ from .table_row_filter_count import (
 )
 
 
-CONTROL_FILTER_COUNT_TASK_ID = "task_pages__control_board__control_filter_count"
-ROW_FILTER_COUNT_TASK_ID = "task_pages__data_table__row_filter_count"
+DISABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID = "task_pages__control_board__disabled_controls_in_group_count"
+SELECTED_ENABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID = (
+    "task_pages__control_board__selected_enabled_controls_in_group_count"
+)
+ENABLED_ACTION_FOR_TYPE_COUNT_TASK_ID = "task_pages__record_table__enabled_action_for_type_count"
+SELECTED_ROWS_WITH_STATUS_COUNT_TASK_ID = "task_pages__record_table__selected_rows_with_status_count"
+VALUE_THRESHOLD_IN_GROUP_COUNT_TASK_ID = "task_pages__record_table__value_threshold_in_group_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = tuple(CONTROL_QUERY_IDS) + tuple(TABLE_QUERY_IDS)
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "counting")
 
@@ -87,10 +92,12 @@ class _PagesCountingFilterCountBase:
     task_group = "counting"
     scene_id = ""
     supported_query_ids: Tuple[str, ...] = ()
+    source_config_task_id = ""
     source_task_cls: type
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        gen_defaults, prompt_defaults = _resolve_defaults(str(self.task_id))
+        config_task_id = str(self.source_config_task_id or self.task_id)
+        gen_defaults, prompt_defaults = _resolve_defaults(config_task_id)
         query_id, probabilities = _resolve_query_id(
             int(instance_seed),
             params=params,
@@ -112,8 +119,9 @@ class _PagesCountingFilterCountBase:
         )
         output.query_id = str(query_id)
         _rewrite_query_id_probabilities(output.trace_payload, probabilities)
-        return rewrite_pages_query_output(
+        return rewrite_pages_public_task_output(
             output,
+            task_id=str(self.task_id),
             query_id=str(query_id),
             scene_id=str(self.scene_id),
             query_probabilities=probabilities,
@@ -121,31 +129,67 @@ class _PagesCountingFilterCountBase:
 
 
 @register_task
-class PagesControlBoardControlFilterCountTask(_PagesCountingFilterCountBase):
-    """Count grouped GUI controls satisfying a visible state predicate."""
+class PagesControlBoardDisabledControlsInGroupCountTask(_PagesCountingFilterCountBase):
+    """Count disabled controls in one visible control group."""
 
-    task_id = CONTROL_FILTER_COUNT_TASK_ID
+    task_id = DISABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID
     scene_id = "control_board"
-    supported_query_ids = CONTROL_QUERY_IDS
+    supported_query_ids = ("disabled_controls_in_group_count",)
     source_task_cls = GuiCountingControlFilterCountTask
 
 
 @register_task
-class PagesDataTableRowFilterCountTask(_PagesCountingFilterCountBase):
-    """Count sectioned GUI table rows satisfying a visible row predicate."""
+class PagesControlBoardSelectedEnabledControlsInGroupCountTask(_PagesCountingFilterCountBase):
+    """Count selected enabled controls in one visible control group."""
 
-    task_id = ROW_FILTER_COUNT_TASK_ID
-    scene_id = "data_table"
-    supported_query_ids = TABLE_QUERY_IDS
+    task_id = SELECTED_ENABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID
+    scene_id = "control_board"
+    supported_query_ids = ("selected_enabled_controls_in_group_count",)
+    source_task_cls = GuiCountingControlFilterCountTask
+
+
+@register_task
+class PagesRecordTableEnabledActionForTypeCountTask(_PagesCountingFilterCountBase):
+    """Count rows of one type whose visible action is enabled."""
+
+    task_id = ENABLED_ACTION_FOR_TYPE_COUNT_TASK_ID
+    scene_id = "record_table"
+    supported_query_ids = ("enabled_action_for_type_count",)
+    source_task_cls = GuiCountingTableRowFilterCountTask
+
+
+@register_task
+class PagesRecordTableSelectedRowsWithStatusCountTask(_PagesCountingFilterCountBase):
+    """Count selected table rows with the queried visible status."""
+
+    task_id = SELECTED_ROWS_WITH_STATUS_COUNT_TASK_ID
+    scene_id = "record_table"
+    supported_query_ids = ("selected_rows_with_status_count",)
+    source_task_cls = GuiCountingTableRowFilterCountTask
+
+
+@register_task
+class PagesRecordTableValueThresholdInGroupCountTask(_PagesCountingFilterCountBase):
+    """Count GUI table rows in a group whose visible value crosses a threshold."""
+
+    task_id = VALUE_THRESHOLD_IN_GROUP_COUNT_TASK_ID
+    scene_id = "record_table"
+    supported_query_ids = ("value_threshold_in_group_count",)
     source_task_cls = GuiCountingTableRowFilterCountTask
 
 
 __all__ = [
-    "CONTROL_FILTER_COUNT_TASK_ID",
-    "ROW_FILTER_COUNT_TASK_ID",
+    "DISABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID",
+    "SELECTED_ENABLED_CONTROLS_IN_GROUP_COUNT_TASK_ID",
+    "ENABLED_ACTION_FOR_TYPE_COUNT_TASK_ID",
+    "SELECTED_ROWS_WITH_STATUS_COUNT_TASK_ID",
+    "VALUE_THRESHOLD_IN_GROUP_COUNT_TASK_ID",
     "CONTROL_QUERY_IDS",
     "TABLE_QUERY_IDS",
     "SUPPORTED_QUERY_IDS",
-    "PagesControlBoardControlFilterCountTask",
-    "PagesDataTableRowFilterCountTask",
+    "PagesControlBoardDisabledControlsInGroupCountTask",
+    "PagesControlBoardSelectedEnabledControlsInGroupCountTask",
+    "PagesRecordTableEnabledActionForTypeCountTask",
+    "PagesRecordTableSelectedRowsWithStatusCountTask",
+    "PagesRecordTableValueThresholdInGroupCountTask",
 ]

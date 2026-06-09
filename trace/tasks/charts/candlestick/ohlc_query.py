@@ -71,6 +71,7 @@ _REASONING_LOAD_BY_QUERY: Dict[str, float] = {
 
 RGB = Tuple[int, int, int]
 BBox = List[float]
+Point = List[float]
 
 
 @dataclass(frozen=True)
@@ -100,9 +101,9 @@ class _Query:
     query_id: str
     answer: int | str
     answer_type: str
-    evidence_candle_ids: Tuple[str, ...]
-    evidence_label_ids: Tuple[str, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_candle_ids: Tuple[str, ...]
+    annotation_label_ids: Tuple[str, ...]
+    annotation_roles: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -160,6 +161,13 @@ class _Rendered:
 
 def _bbox(values: Sequence[float]) -> BBox:
     return [round(float(value), 3) for value in values]
+
+
+def _bbox_center(box: Sequence[float]) -> Point:
+    return [
+        round((float(box[0]) + float(box[2])) / 2.0, 3),
+        round((float(box[1]) + float(box[3])) / 2.0, 3),
+    ]
 
 
 def _text_bbox_at(
@@ -255,7 +263,7 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    for key in ("query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         raw = params.get(str(key))
         if raw is not None and str(raw) in SUPPORTED_QUERY_IDS:
             return str(raw), {str(raw): 1.0}
@@ -416,18 +424,18 @@ def _build_query(
         if str(range_kind) == "wick":
             value_ids = (f"{target.candle_id}:high", f"{target.candle_id}:low")
             range_phrase = "high-low wick range"
-            evidence_roles = ("answer_wick",)
+            annotation_roles = ("answer_wick",)
         else:
             value_ids = (f"{target.candle_id}:open", f"{target.candle_id}:close")
             range_phrase = "open-close body size"
-            evidence_roles = ("answer_body",)
+            annotation_roles = ("answer_body",)
         return _Query(
             query_id=str(query_id),
             answer=str(target.label),
             answer_type="string",
-            evidence_candle_ids=(str(target.candle_id),),
-            evidence_label_ids=(f"x_label:{target.candle_id}", *value_ids),
-            evidence_roles=tuple(evidence_roles),
+            annotation_candle_ids=(str(target.candle_id),),
+            annotation_label_ids=(f"x_label:{target.candle_id}", *value_ids),
+            annotation_roles=tuple(annotation_roles),
             params={
                 **base_params,
                 "range_kind": str(range_kind),
@@ -473,13 +481,13 @@ def _build_query(
                     query_id=str(query_id),
                     answer=int(answer),
                     answer_type="integer",
-                    evidence_candle_ids=(str(candidate.candle_id),),
-                    evidence_label_ids=(
+                    annotation_candle_ids=(str(candidate.candle_id),),
+                    annotation_label_ids=(
                         f"x_label:{candidate.candle_id}",
                         f"{candidate.candle_id}:open",
                         f"{candidate.candle_id}:close",
                     ),
-                    evidence_roles=("target_body",),
+                    annotation_roles=("target_body",),
                     params={
                         **base_params,
                         "target_candle_id": str(candidate.candle_id),
@@ -682,16 +690,16 @@ def _draw_candlesticks(
 
 def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -> Dict[str, Any]:
     is_label = str(dataset.query.answer_type) == "string"
-    evidence_hint_key = f"evidence_hint_{str(dataset.query.query_id)}"
+    annotation_hint_key = f"annotation_hint_{str(dataset.query.query_id)}"
     slots: Dict[str, Any] = {
         "object_description": str(prompt_defaults["object_description_candlestick"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults["answer_hint_label" if is_label else "answer_hint_value"]),
-        "evidence_hint": str(
+        "annotation_hint": str(
             prompt_defaults.get(
-                evidence_hint_key,
-                prompt_defaults["evidence_hint_label" if is_label else "evidence_hint_value"],
+                annotation_hint_key,
+                prompt_defaults["annotation_hint_label" if is_label else "annotation_hint_value"],
             )
         ),
         "json_example": str(prompt_defaults["json_example_label" if is_label else "json_example_value"]),
@@ -761,11 +769,11 @@ class ChartsCandlestickOHLCQueryTask:
                 "json_output_contract_answer_only",
                 "answer_hint_value",
                 "answer_hint_label",
-                "evidence_hint_value",
-                "evidence_hint_label",
-                "evidence_hint_wick_range_extremum_label",
-                "evidence_hint_body_range_extremum_label",
-                "evidence_hint_close_after_body_change_value",
+                "annotation_hint_value",
+                "annotation_hint_label",
+                "annotation_hint_wick_range_extremum_label",
+                "annotation_hint_body_range_extremum_label",
+                "annotation_hint_close_after_body_change_value",
                 "json_example_value",
                 "json_example_label",
                 "json_example_answer_only_value",
@@ -781,22 +789,30 @@ class ChartsCandlestickOHLCQueryTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(dataset.query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_boxes: List[BBox] = []
-        for role, candle_id in zip(dataset.query.evidence_roles, dataset.query.evidence_candle_ids):
+        annotation_boxes: List[BBox] = []
+        annotation_points: List[Point] = []
+        for role, candle_id in zip(dataset.query.annotation_roles, dataset.query.annotation_candle_ids):
             if str(role).endswith("_wick"):
-                evidence_boxes.append(list(rendered.wick_bboxes_px[str(candle_id)]))
+                annotation_box = list(rendered.wick_bboxes_px[str(candle_id)])
             else:
-                evidence_boxes.append(list(rendered.body_bboxes_px[str(candle_id)]))
+                annotation_box = list(rendered.body_bboxes_px[str(candle_id)])
+            annotation_boxes.append(list(annotation_box))
+            annotation_points.append(_bbox_center(annotation_box))
 
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_boxes))
+        range_extremum_query = str(dataset.query.query_id) in RANGE_EXTREMUM_QUERY_IDS
+        annotation_gt = (
+            TypedValue(type="point_set", value=list(annotation_points))
+            if range_extremum_query
+            else TypedValue(type="bbox_set", value=list(annotation_boxes))
+        )
         candle_rows = [
             {
                 "candle_id": str(candle.candle_id),
@@ -826,9 +842,9 @@ class ChartsCandlestickOHLCQueryTask:
                 "relations": {
                     "query_id": str(dataset.query.query_id),
                     "answer": answer_value,
-                    "evidence_candle_ids": list(dataset.query.evidence_candle_ids),
-                    "support_label_ids": list(dataset.query.evidence_label_ids),
-                    "evidence_roles": list(dataset.query.evidence_roles),
+                    "annotation_candle_ids": list(dataset.query.annotation_candle_ids),
+                    "support_label_ids": list(dataset.query.annotation_label_ids),
+                    "annotation_roles": list(dataset.query.annotation_roles),
                 },
             },
             "query_spec": {
@@ -866,31 +882,41 @@ class ChartsCandlestickOHLCQueryTask:
                 "answer_type": str(dataset.query.answer_type),
                 "candle_count": int(len(dataset.candles)),
                 "candles": list(candle_rows),
-                "evidence_candle_ids": list(dataset.query.evidence_candle_ids),
-                "support_label_ids": list(dataset.query.evidence_label_ids),
-                "evidence_roles": list(dataset.query.evidence_roles),
+                "annotation_candle_ids": list(dataset.query.annotation_candle_ids),
+                "support_label_ids": list(dataset.query.annotation_label_ids),
+                "annotation_roles": list(dataset.query.annotation_roles),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
                 "type": "candlestick_ohlc_witness",
-                "candle_ids": list(dataset.query.evidence_candle_ids),
-                "roles": list(dataset.query.evidence_roles),
-                "support_label_ids": list(dataset.query.evidence_label_ids),
+                "candle_ids": list(dataset.query.annotation_candle_ids),
+                "roles": list(dataset.query.annotation_roles),
+                "support_label_ids": list(dataset.query.annotation_label_ids),
                 "answer": answer_value,
             },
-            "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_boxes),
-                "candle_ids": list(dataset.query.evidence_candle_ids),
-                "roles": list(dataset.query.evidence_roles),
-            },
+            "projected_annotation": (
+                {
+                    "type": "point_set",
+                    "point_set": list(annotation_points),
+                    "pixel_point_set": list(annotation_points),
+                    "candle_ids": list(dataset.query.annotation_candle_ids),
+                    "roles": list(dataset.query.annotation_roles),
+                }
+                if range_extremum_query
+                else {
+                    "type": "bbox_set",
+                    "bbox_set": list(annotation_boxes),
+                    "candle_ids": list(dataset.query.annotation_candle_ids),
+                    "roles": list(dataset.query.annotation_roles),
+                }
+            ),
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

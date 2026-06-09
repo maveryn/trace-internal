@@ -23,7 +23,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_icons_counting_size_relation_complexity
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -106,7 +106,7 @@ class _ScenePayload:
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
-_SIZE_RELATION_TASK_ID = "task_icons__reference_canvas__reference_predicate_count"
+_SIZE_RELATION_TASK_ID = "task_icons__reference_canvas__reference_metric_relation_count"
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=_SIZE_RELATION_TASK_ID,
@@ -508,7 +508,7 @@ class IconsCountingSizeRelationTask:
                 "object_description",
                 "question_text_smaller",
                 "question_text_larger",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -521,13 +521,13 @@ class IconsCountingSizeRelationTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[f"question_text_{size_relation}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -536,14 +536,14 @@ class IconsCountingSizeRelationTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
         query_id = str(_PUBLIC_QUERY_ID)
         query_id_probabilities = {str(_PUBLIC_QUERY_ID): 1.0}
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_payload["evidence_type"]),
-            value=list(evidence_payload["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_payload["annotation_type"]),
+            value=list(annotation_payload["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -597,7 +597,7 @@ class IconsCountingSizeRelationTask:
                 "image_id": "img0",
                 "anchors": {
                     "reference_icon": dict(scene_payload.reference_instance),
-                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
+                    "matching_scene_boxes": list(annotation_payload["annotation_value"]),
                 },
             },
             "execution_trace": {
@@ -628,7 +628,7 @@ class IconsCountingSizeRelationTask:
                 "size_relation": str(size_relation),
                 "matching_scene_indices": list(scene_payload.match_indices),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         complexity = build_icons_counting_size_relation_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -648,7 +648,7 @@ class IconsCountingSizeRelationTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

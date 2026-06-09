@@ -105,34 +105,74 @@ from .object_scene_glyphs_nature_apparel import (
     _draw_umbrella_object,
 )
 from .object_scene_glyphs_tools_devices import (
-    _draw_scissors_object,
-    _draw_screwdriver_object,
     _draw_pencil_object,
-    _draw_spoon_object,
-    _draw_spatula_object,
-    _draw_toothbrush_object,
-    _draw_whistle_object,
-    _draw_flashlight_object,
-    _draw_calculator_object,
-    _draw_phone_object,
+    _draw_thumb_pin_object,
+    _draw_flat_rect_object,
+    _draw_ticket_tag_object,
+    _draw_puzzle_piece_object,
+    _draw_candy_disc_object,
+    _draw_cd_object,
+    _draw_berry_object,
+    _draw_marble_object,
+    _draw_bead_object,
+    _draw_dot_object,
+    _draw_button_object,
+    _draw_plate_object,
+    _draw_bowl_object,
+    _draw_screw_object,
+    _draw_bolt_object,
+    _draw_hex_nut_object,
+    _draw_washer_object,
+    _draw_paper_clip_object,
+    _draw_u_bolt_object,
+    _draw_nail_object,
+    _draw_rod_object,
+    _draw_stick_object,
+    _draw_straw_object,
+    _draw_tube_object,
+    _draw_clip_object,
+    _draw_socket_object,
+    _draw_magnet_object,
+    _draw_heater_object,
+    _draw_flower_object,
+    _draw_plant_pot_object,
+    _draw_glass_object,
+    _draw_jar_object,
+    _draw_can_object,
+    _draw_lid_object,
+    _draw_pillow_cushion_object,
+    _draw_stool_object,
+    _draw_drawer_object,
+    _draw_cap_object,
+    _draw_bucket_object,
+    _draw_tray_object,
+    _draw_coaster_object,
+    _draw_rose_object,
+    _draw_banana_object,
+    _draw_tomato_object,
+    _draw_peanut_object,
+    _draw_coffee_bean_object,
+    _draw_hook_object,
+    _draw_bracket_object,
+    _draw_battery_object,
+    _draw_tape_roll_object,
+    _draw_bag_object,
+    _draw_chess_piece_object,
+    _draw_hanger_object,
     _draw_light_bulb_object,
-    _draw_suitcase_object,
+    _draw_egg_object,
+    _draw_chili_object,
+    _draw_fork_object,
+    _draw_knife_object,
+    _draw_spoon_object,
+    _draw_calculator_object,
     _draw_dice_object,
-    _draw_rocket_object,
     _draw_kite_object,
-    _draw_paint_can_object,
     _draw_cactus_object,
 )
 from .object_scene_glyphs_misc import (
-    _draw_pumpkin_object,
-    _draw_acorn_object,
-    _draw_pinecone_object,
-    _draw_seashell_object,
-    _draw_magnet_object,
     _draw_guitar_object,
     _draw_drum_object,
-    _draw_shovel_object,
-    _draw_saw_object,
     _draw_pliers_object,
     _draw_telescope_object,
     _draw_ruler_object,
@@ -209,9 +249,13 @@ def _draw_room(
         draw.polygon(floor, fill=floor_fill)
         draw.line(floor + [floor[0]], fill=border_rgb, width=max(1, int(render_params.line_width_px) + 1))
 
-    grid_mode = "bounded_stage"
+    draw_grid = float(render_params.grid_step) > 0.0
+    grid_mode = "bounded_stage" if bool(draw_grid) else "none"
+    grid_extent = 0.0
     grid_world_bbox: List[float] | None = None
-    if full_bleed:
+    if not draw_grid:
+        grid_extent = 0.0
+    elif full_bleed:
         floor_polygon_xy = _canvas_floor_polygon_xy(camera=camera, frame=frame, render_params=render_params)
         if floor_polygon_xy:
             grid_mode = "screen_ray_floor_plane"
@@ -369,3 +413,13 @@ def _draw_option_label(
         stroke_fill=(24, 29, 38),
      role="readout", required=False,)
     return list(label_bbox)
+
+
+draw_open_box_object = _draw_open_box_object
+draw_table_object = _draw_table_object
+
+
+__all__ = [
+    "draw_open_box_object",
+    "draw_table_object",
+]

@@ -2,20 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `checkers`
-3. Source task group: `checkers`
-4. Query id: `max_capture_chain_length`
-5. Objective: Find the maximum number of opponent pieces the marked king checker can capture in one continuous jump chain.
+2. Task group: `checkers`
+3. Scene id: `checkers`
+4. Public task id: `task_games__checkers__max_capture_chain_length`
+5. Supported `query_id` values: `max_capture_chain_length`
+6. Answer schema: `integer_value`
+7. Annotation schema: `bbox_set`
+8. Program schema: `longest_path(capture_state_graph(marked_king, board_state), source=marked_king, target=terminal_no_capture_state); scene=checkers; scope=max_capture_chain_length`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over the opponent pieces captured along the longest chain.
-3. `max_capture_chain_length` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games scene renderer for its scene id.
-2. Prompt bundle: `games_checkers_v0`
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Semantic knobs such as player color, scene density, style, and target-answer support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

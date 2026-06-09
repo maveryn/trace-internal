@@ -3,17 +3,14 @@ from trace.tasks.three_d.street import intersection_rendering
 from trace.tasks.three_d.street import intersection_scene
 
 
-def test_intersection_nearest_reexports_shared_street_rendering_helpers() -> None:
-    assert intersection_nearest._draw_candidate_object is intersection_rendering._draw_candidate_object
-    assert intersection_nearest._canvas_floor_polygon_available is intersection_rendering._canvas_floor_polygon_available
-    assert intersection_nearest._dimensions_for_orientation is intersection_rendering._dimensions_for_orientation
+def test_intersection_nearest_uses_shared_street_scene_and_renderer_boundaries() -> None:
     assert intersection_nearest._StreetRenderParams is intersection_scene._StreetRenderParams
-    assert intersection_nearest.render_street_intersection_scene_3d is intersection_scene.render_street_intersection_scene_3d
+    assert intersection_nearest.render_street_intersection_scene_3d is intersection_rendering.render_street_intersection_scene_3d
     assert intersection_nearest._sample_context_specs is intersection_scene._sample_context_specs
 
 
 def test_street_orientation_dimensions_are_axis_aware() -> None:
-    x_dims = intersection_rendering._dimensions_for_orientation("car", orientation_axis="x", scale=1.0)
-    y_dims = intersection_rendering._dimensions_for_orientation("car", orientation_axis="y", scale=1.0)
+    x_dims = intersection_scene._dimensions_for_orientation("car", orientation_axis="x", scale=1.0)
+    y_dims = intersection_scene._dimensions_for_orientation("car", orientation_axis="y", scale=1.0)
     assert x_dims[0] == y_dims[1]
     assert x_dims[1] == y_dims[0]

@@ -1,0 +1,48 @@
+generation:
+  task_overrides:
+    physics_measurement_vernier_caliper_family:
+      query_id_weights:
+        main_scale_vernier_mm: 1.0
+      balanced_target_answer_sampling: true
+      main_mm_support: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]
+      aligned_vernier_tick_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+rendering:
+  task_overrides:
+    physics_measurement_vernier_caliper_family:
+      canvas_width: 1180
+      canvas_height: 720
+      panel_left_px: 58
+      panel_top_px: 54
+      panel_right_margin_px: 58
+      panel_bottom_margin_px: 58
+      main_scale_left_px: 174
+      main_scale_y_px: 266
+      mm_px: 13
+      main_scale_max_mm: 70
+      label_font_size_px: 22
+      small_font_size_px: 17
+      title_font_size_px: 28
+      jaw_top_px: 170
+      jaw_bottom_px: 510
+
+complexity:
+  task_overrides:
+    physics_measurement_vernier_caliper_family:
+      criteria_weights:
+        visual_readout: 0.46
+        vernier_alignment: 0.26
+        scale_mapping: 0.12
+        ambiguity: 0.08
+        output_burden: 0.08
+
+prompt:
+  shared:
+    bundle_id: physics_measurement_v0
+  task_overrides:
+    physics_measurement_vernier_caliper_family:
+      scene_key: vernier_caliper_diagram
+      task_key: vernier_caliper_readout_query
+      object_description: a Vernier caliper measuring an object, with a main scale in millimeters, a sliding vernier scale, and a 0.1 mm vernier resolution
+      annotation_hint_main_scale_vernier_mm: set "annotation" to a keyed object with [x0, y0, x1, y1] pixel boxes for "main_scale_region", "vernier_zero", "vernier_scale_region", and "aligned_vernier_tick"
+      answer_hint_main_scale_vernier_mm: set "answer" to the measured length in millimeters as a number with one decimal place and no unit

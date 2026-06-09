@@ -75,6 +75,6 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert "magnetic-field panel" in str(prompt["object_description_clean_panel"])
 
-    assert "field_orientation" in str(prompt["evidence_hint_force_direction_choice"])
+    assert "field_orientation" in str(prompt["annotation_hint_force_direction_choice"])
 
-    assert "charged particle" in str(prompt["evidence_hint_force_direction_choice"])
+    assert "charged particle" in str(prompt["annotation_hint_force_direction_choice"])

@@ -10,13 +10,16 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.warehouse.robot_forward_path import (
     MIN_FIRST_OBJECT_MARGIN,
-    SCENE_ID,
     SUPPORTED_QUERY_IDS,
+    TASK_ID,
+)
+from trace.tasks.three_d.warehouse.warehouse_scene_common import (
+    SCENE_ID,
     SUPPORTED_ROBOT_DESIGNS,
     SUPPORTED_ROBOT_HEADINGS,
     SUPPORTED_SHELF_RACK_STYLES,
-    TASK_ID,
 )
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize(
@@ -27,7 +30,7 @@ from trace.tasks.three_d.warehouse.robot_forward_path import (
         ("packing_floor", "west"),
     ],
 )
-def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
+def test_warehouse_robot_forward_path_answer_annotation_and_geometry(
     scene_variant: str,
     robot_heading: str,
 ) -> None:
@@ -62,8 +65,15 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
     assert output.query_id == "first_object_ahead"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1088),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert first_labels == [answer_label]
     assert trace["first_reached_candidate_labels"] == [answer_label]
@@ -74,6 +84,12 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
     assert str(reference["object_type"]) == "warehouse_robot"
     assert str(reference["object_role"]) == "warehouse_reference_robot"
     assert str(reference["robot_design"]) in SUPPORTED_ROBOT_DESIGNS
+    answer_entity = next(entity for entity in entities if str(entity["entity_id"]) == str(answer_spec["object_id"]))
+    answer_record = answer_entity["attrs"]["object_record"]
+    assert answer_record["object_id"] == str(answer_spec["object_id"])
+    assert answer_record["object_type"] == str(answer_spec["object_type"])
+    assert answer_record["visual_attributes"]["renderer_id"] == "warehouse_object"
+    assert answer_record["visual_attributes"]["renderer_style"] == "projected_3d"
     assert len(reference["robot_base_rgb"]) == 3
     assert len(reference["robot_accent_rgb"]) == 3
     assert str(trace["robot_heading"]) == str(robot_heading)
@@ -99,7 +115,6 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
     assert marker_entity["attrs"]["reference_marker"] == "red_bbox"
     assert marker_entity["attrs"]["reference_marker_bbox_px"] is not None
     assert marker_entity["attrs"]["reference_direction_marker_bbox_px"] is not None
-    assert output.image.size == (1180, 920)
     assert "red-boxed robot" in output.prompt
     assert "arrow" in output.prompt
     assert "{answer_hint}" not in output.prompt

@@ -31,13 +31,13 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
                 "Example JSON:\n"
                 '{"answer":3}'
             ),
-            "answer_and_evidence": (
+            "answer_and_annotation": (
                 "Count the marked dots and cite the supporting positions.\n"
-                'Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.\n'
-                'Required evidence format: set "evidence" to the supporting point list.\n'
+                'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.\n'
+                'Required annotation format: set "annotation" to the supporting point list.\n'
                 'Required answer format: set "answer" to the requested integer value.\n'
                 "Example JSON:\n"
-                '{"evidence":[[1,2]],"answer":3}'
+                '{"annotation":[[1,2]],"answer":3}'
             ),
         },
         "images": [
@@ -49,11 +49,11 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
             }
         ],
         "answer_gt": {"type": "integer", "value": 3},
-        "evidence_gt": {"type": "point_set", "value": [[1, 2], [3, 4], [5, 6]]},
+        "annotation_gt": {"type": "point_set", "value": [[1, 2], [3, 4], [5, 6]]},
         "reward_contract": {
             "reward_contract_version": "v0",
             "answer": {"id": "answer_exact_match_v0", "type": "integer"},
-            "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
+            "annotation": {"id": "point_set_soft_distance_v0", "type": "point_set"},
         },
         "task_complexity": {
             "complexity_score": 0.6,
@@ -97,12 +97,12 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
         "Example JSON:\n"
         '{"answer":3}'
     )
-    assert row["prompt_answer_and_evidence"] == (
+    assert row["prompt_answer_and_annotation"] == (
         "<image>Count the marked dots and cite the supporting positions.\n"
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
     assert row["prompt_active"] == "<image>active prompt"
     assert row["prompt_mode"] == "answer_only"
@@ -111,19 +111,19 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
         {"path": "../../trace_dataset/images/geometry/task_geometry__coordinate_plane__segment_relation_count/000000.png"}
     ]
     assert row["answer_gt"] == train_record["answer_gt"]
-    assert row["evidence_gt"] == train_record["evidence_gt"]
+    assert row["annotation_gt"] == train_record["annotation_gt"]
     assert row["reward_contract"] == train_record["reward_contract"]
 
 
 def test_build_rlvr_row_normalizes_existing_image_placeholders(tmp_path: Path) -> None:
     dataset_root, train_record = _write_trace_dataset(tmp_path)
-    train_record["prompt_variants"]["answer_and_evidence"] = (
+    train_record["prompt_variants"]["answer_and_annotation"] = (
         "<image>   Count the marked dots and cite the supporting positions.\n"
-        'Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.\n'
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
     export_parent = tmp_path / "exports" / "jsonl"
     export_parent.mkdir(parents=True, exist_ok=True)
@@ -132,20 +132,20 @@ def test_build_rlvr_row_normalizes_existing_image_placeholders(tmp_path: Path) -
         train_record,
         dataset_root=dataset_root,
         output_parent=export_parent,
-        prompt_variant="answer_and_evidence",
+        prompt_variant="answer_and_annotation",
         image_path_mode="relative",
     )
 
     assert row["prompt"] == (
         "<image>Count the marked dots and cite the supporting positions.\n"
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
 
 
-def test_build_rlvr_row_accepts_evidence_prompt_alias(tmp_path: Path) -> None:
+def test_build_rlvr_row_accepts_annotation_prompt_alias(tmp_path: Path) -> None:
     dataset_root, train_record = _write_trace_dataset(tmp_path)
     export_parent = tmp_path / "exports" / "jsonl"
     export_parent.mkdir(parents=True, exist_ok=True)
@@ -154,12 +154,12 @@ def test_build_rlvr_row_accepts_evidence_prompt_alias(tmp_path: Path) -> None:
         train_record,
         dataset_root=dataset_root,
         output_parent=export_parent,
-        prompt_variant="evidence",
+        prompt_variant="annotation",
         image_path_mode="relative",
     )
 
-    assert row["prompt_mode"] == "answer_and_evidence"
-    assert row["prompt"] == row["prompt_answer_and_evidence"]
+    assert row["prompt_mode"] == "answer_and_annotation"
+    assert row["prompt"] == row["prompt_answer_and_annotation"]
 
 
 def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
@@ -169,7 +169,7 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     jsonl_result = export_trace_dataset_to_rlvr(
         dataset_root,
         jsonl_path,
-        prompt_variant="answer_and_evidence",
+        prompt_variant="answer_and_annotation",
         image_path_mode="relative",
     )
     assert jsonl_result.output_path.name == "train.jsonl"
@@ -181,10 +181,10 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     assert len(jsonl_rows) == 1
     assert jsonl_rows[0]["prompt"] == (
         "<image>Count the marked dots and cite the supporting positions.\n"
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
     assert jsonl_rows[0]["prompt_answer_only"] == (
         "<image>Count the marked dots.\n"
@@ -192,12 +192,12 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         "Example JSON:\n"
         '{"answer":3}'
     )
-    assert jsonl_rows[0]["prompt_answer_and_evidence"] == (
+    assert jsonl_rows[0]["prompt_answer_and_annotation"] == (
         "<image>Count the marked dots and cite the supporting positions.\n"
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
     assert jsonl_rows[0]["complexity_score"] == 0.6
     assert jsonl_rows[0]["difficulty_bin"] == 0
@@ -226,12 +226,12 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         "Example JSON:\n"
         '{"answer":3}'
     )
-    assert parquet_rows[0]["prompt_answer_and_evidence"] == (
+    assert parquet_rows[0]["prompt_answer_and_annotation"] == (
         "<image>Count the marked dots and cite the supporting positions.\n"
-        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required annotation format: set "annotation" to the supporting point list.\n'
         'Required answer format: set "answer" to the requested integer value.\n'
         "Example JSON:\n"
-        '{"evidence":[[1,2]],"answer":3}'
+        '{"annotation":[[1,2]],"answer":3}'
     )
     assert parquet_rows[0]["complexity_score"] == 0.6
     assert parquet_rows[0]["difficulty_bin"] == 0
@@ -240,14 +240,14 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         "type": "integer",
         "value": 3,
     }
-    assert json.loads(parquet_rows[0]["evidence_gt"]) == {
+    assert json.loads(parquet_rows[0]["annotation_gt"]) == {
         "type": "point_set",
         "value": [[1, 2], [3, 4], [5, 6]],
     }
     assert json.loads(parquet_rows[0]["reward_contract"]) == {
         "reward_contract_version": "v0",
         "answer": {"id": "answer_exact_match_v0", "type": "integer"},
-        "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
+        "annotation": {"id": "point_set_soft_distance_v0", "type": "point_set"},
     }
     assert json.loads(parquet_rows[0]["trace_ref"]) == {
         "shard_id": "trace-0001",
@@ -279,7 +279,7 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_embedded_images(tmp_path:
         dataset_root,
         parquet_path,
         output_format="parquet",
-        prompt_variant="answer_and_evidence",
+        prompt_variant="answer_and_annotation",
         image_storage_mode="embedded_bytes",
         parquet_cpu_count=1,
     )
@@ -321,11 +321,11 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_type
             "prompt": "prompt a",
             "images": [{"path": "images/a.png"}],
             "answer_gt": {"type": "integer", "value": 3},
-            "evidence_gt": {"type": "point_set", "value": [[1, 2], [3, 4]]},
+            "annotation_gt": {"type": "point_set", "value": [[1, 2], [3, 4]]},
             "reward_contract": {
                 "reward_contract_version": "v0",
                 "answer": {"id": "answer_exact_match_v0", "type": "integer"},
-                "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
+                "annotation": {"id": "point_set_soft_distance_v0", "type": "point_set"},
             },
             "task_complexity": {"complexity_score": 0.4, "complexity_components": {}},
             "trace_ref": {"shard_id": "trace", "line_index": 0, "trace_record_hash": "ha"},
@@ -340,11 +340,11 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_type
             "prompt": "prompt b",
             "images": [{"path": "images/b.png"}],
             "answer_gt": {"type": "option_letter", "value": "K"},
-            "evidence_gt": {"type": "bbox_set", "value": [[10, 10, 20, 20]]},
+            "annotation_gt": {"type": "bbox_set", "value": [[10, 10, 20, 20]]},
             "reward_contract": {
                 "reward_contract_version": "v0",
                 "answer": {"id": "answer_exact_match_v0", "type": "option_letter"},
-                "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
+                "annotation": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
             },
             "task_complexity": {"complexity_score": 0.7, "complexity_components": {}},
             "trace_ref": {"shard_id": "trace", "line_index": 1, "trace_record_hash": "hb"},
@@ -383,17 +383,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
                 "instance_id": f"task-a-{index}",
                 "domain": "games",
                 "task_group": "cards",
-                "task": "task_games__cards__reference_condition_count",
+                "task": "task_games__cards__same_suit_as_reference_count",
                 "scene_id": "cards",
                 "query_id": "",
                 "prompt": f"prompt {index}",
                 "images": [{"path": f"images/{image_path.name}"}],
                 "answer_gt": {"type": "integer", "value": index},
-                "evidence_gt": {"type": "bbox_set", "value": []},
+                "annotation_gt": {"type": "bbox_set", "value": []},
                 "reward_contract": {
                     "reward_contract_version": "v0",
                     "answer": {"id": "answer_exact_match_v0", "type": "integer"},
-                    "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
+                    "annotation": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
                 },
                 "task_complexity": {"complexity_score": score, "complexity_components": {}},
                 "trace_ref": {"shard_id": "trace", "line_index": index, "trace_record_hash": f"h{index}"},
@@ -407,17 +407,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
                 "instance_id": f"task-b-{index}",
                 "domain": "games",
                 "task_group": "dominoes",
-                "task": "task_games__dominoes__property_count",
+                "task": "task_games__dominoes__double_count",
                 "scene_id": "dominoes",
                 "query_id": "",
                 "prompt": f"prompt-b {index}",
                 "images": [{"path": f"images/{image_path.name}"}],
                 "answer_gt": {"type": "integer", "value": index},
-                "evidence_gt": {"type": "bbox_set", "value": []},
+                "annotation_gt": {"type": "bbox_set", "value": []},
                 "reward_contract": {
                     "reward_contract_version": "v0",
                     "answer": {"id": "answer_exact_match_v0", "type": "integer"},
-                    "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
+                    "annotation": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
                 },
                 "task_complexity": {"complexity_score": score, "complexity_components": {}},
                 "trace_ref": {"shard_id": "trace", "line_index": 100 + index, "trace_record_hash": f"hb{index}"},
@@ -438,17 +438,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
     rows_by_id = {row["instance_id"]: row for row in rows}
 
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (1, 2)} == {
-        "task_games__cards__reference_condition_count::q0"
+        "task_games__cards__same_suit_as_reference_count::q0"
     }
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (3, 4)} == {
-        "task_games__cards__reference_condition_count::q1"
+        "task_games__cards__same_suit_as_reference_count::q1"
     }
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (5, 6)} == {
-        "task_games__cards__reference_condition_count::q2"
+        "task_games__cards__same_suit_as_reference_count::q2"
     }
 
-    assert rows_by_id["task-b-1"]["bucket_id_str"] == "task_games__dominoes__property_count::q0"
-    assert rows_by_id["task-b-2"]["bucket_id_str"] == "task_games__dominoes__property_count::q0"
-    assert rows_by_id["task-b-3"]["bucket_id_str"] == "task_games__dominoes__property_count::q1"
+    assert rows_by_id["task-b-1"]["bucket_id_str"] == "task_games__dominoes__double_count::q0"
+    assert rows_by_id["task-b-2"]["bucket_id_str"] == "task_games__dominoes__double_count::q0"
+    assert rows_by_id["task-b-3"]["bucket_id_str"] == "task_games__dominoes__double_count::q1"
     assert rows_by_id["task-b-1"]["difficulty_bin"] == 0
     assert rows_by_id["task-b-3"]["difficulty_bin"] == 1

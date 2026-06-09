@@ -8,9 +8,10 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.spatial.camera_distance import LARGE_CONTEXT_SHAPE_TYPES
 from trace.tasks.three_d.spatial.reference_nearest import TASK_ID
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
-def test_reference_nearest_answer_and_evidence() -> None:
+def test_reference_nearest_answer_and_annotation() -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -45,14 +46,21 @@ def test_reference_nearest_answer_and_evidence() -> None:
     assert str(context_specs[0]["prompt_name"]) == str(trace["reference_object_name"])
     assert str(context_specs[0]["prompt_name"]) not in {str(spec["prompt_name"]) for spec in point_specs}
     assert sum(1 for spec in point_specs if str(spec["shape_type"]) in set(LARGE_CONTEXT_SHAPE_TYPES)) == 2
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
-        output.trace_payload["render_map"]["point_bboxes_px"][expected_label]
-    ]
+    answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == (
+        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    )
+    assert_option_panel_matches_candidates(
+        output,
+        point_specs,
+        answer_label=expected_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
     assert trace["solver_trace"]["reference_nearest_order"][0] == expected_label
     assert trace["solver_trace"]["reference_excluded_from_options"] is True
     assert float(trace["solver_trace"]["reference_nearest_margin"]) >= 0.24
-    assert output.image.size == (1180, 900)
 
 
 def test_reference_nearest_task_registered_in_three_d_taxonomy() -> None:

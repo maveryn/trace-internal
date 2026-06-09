@@ -26,7 +26,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icons_sequence_rotation_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -567,7 +567,7 @@ class IconsPatternSequenceRotationViolationTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -580,13 +580,13 @@ class IconsPatternSequenceRotationViolationTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -595,14 +595,14 @@ class IconsPatternSequenceRotationViolationTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
         taxonomy = resolve_task_taxonomy(str(self.task_id))
         query_id = QUERY_ID
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        evidence_gt = TypedValue(
-            type=str(evidence_payload["evidence_type"]),
-            value=list(evidence_payload["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_payload["annotation_type"]),
+            value=list(annotation_payload["annotation_value"]),
         )
         common_ids = {
             "domain": taxonomy.domain,
@@ -698,7 +698,7 @@ class IconsPatternSequenceRotationViolationTask:
             "render_map": {
                 "image_id": "img0",
                 "anchors": {
-                    "violating_cell_bbox": list(evidence_payload["evidence_value"][0]),
+                    "violating_cell_bbox": list(annotation_payload["annotation_value"][0]),
                 },
             },
             "execution_trace": {
@@ -726,7 +726,7 @@ class IconsPatternSequenceRotationViolationTask:
                 "observed_sequence_rotations_degrees": list(scene_payload.observed_sequence_rotations_degrees),
                 "violation_cell_index": int(scene_payload.violation_cell_index),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         expected_rotation = int(scene_payload.expected_sequence_rotations_degrees[scene_payload.violation_cell_index])
         violation_rotation_difference_degrees = _minimal_rotation_difference_degrees(
@@ -747,7 +747,7 @@ class IconsPatternSequenceRotationViolationTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

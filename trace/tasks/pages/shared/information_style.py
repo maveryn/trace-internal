@@ -17,6 +17,38 @@ from .document_common import DocumentRenderParams
 PagesInformationStyle = InformationSceneStyle
 
 
+def _information_scene_shadows_enabled(params: Mapping[str, Any]) -> bool:
+    """Return whether pages adapters should draw shadow offsets for this scene."""
+
+    if "information_scene_shadows_enabled" in params:
+        return bool(params.get("information_scene_shadows_enabled"))
+    policy = str(params.get("information_scene_shadow_policy", "auto")).strip().lower()
+    return policy not in {"none", "off", "disabled", "disable"}
+
+
+def _suppress_information_scene_shadows(
+    style: PagesInformationStyle,
+    metadata: Mapping[str, Any],
+) -> tuple[PagesInformationStyle, dict[str, Any]]:
+    """Zero non-semantic shadow offsets and keep trace metadata in sync."""
+
+    original_shadow_offset = int(style.shadow_offset_px)
+    adjusted = replace(style, shadow_offset_px=0)
+    adjusted_meta = dict(metadata)
+    layout_style = dict(adjusted_meta.get("layout_style", {}))
+    layout_style["shadow_offset_px"] = 0
+    adjusted_meta["layout_style"] = layout_style
+    adapter_meta = dict(adjusted_meta.get("pages_adapter", {}))
+    adapter_meta.update(
+        {
+            "information_scene_shadow_policy": "none",
+            "original_shadow_offset_px": int(original_shadow_offset),
+        }
+    )
+    adjusted_meta["pages_adapter"] = adapter_meta
+    return adjusted, adjusted_meta
+
+
 def resolve_pages_information_style(
     *,
     instance_seed: int,
@@ -29,7 +61,7 @@ def resolve_pages_information_style(
     """Resolve one pages presentation style without changing visible values."""
 
     resolved_params = params or {}
-    return resolve_information_scene_style(
+    style, metadata = resolve_information_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"pages.{str(task_group)}.{str(scene_id)}.information_scene_style",
         treatments=resolved_params.get("information_scene_treatments"),
@@ -41,16 +73,26 @@ def resolve_pages_information_style(
         allow_dark=bool(allow_dark),
         protected_colors=protected_colors or (),
     )
+    if not _information_scene_shadows_enabled(resolved_params):
+        return _suppress_information_scene_shadows(style, metadata)
+
+    adapter_meta = dict(metadata.get("pages_adapter", {}))
+    adapter_meta.setdefault("information_scene_shadow_policy", "auto")
+    metadata["pages_adapter"] = adapter_meta
+    return style, metadata
 
 
 def apply_document_information_style(
     render_params: DocumentRenderParams,
     style: PagesInformationStyle,
+    *,
+    suppress_shadows: bool = False,
 ) -> DocumentRenderParams:
     """Map shared style roles into structured-document chrome."""
 
     return replace(
         render_params,
+        page_shadow_offset_px=0 if bool(suppress_shadows) else int(render_params.page_shadow_offset_px),
         page_fill_rgb=tuple(int(value) for value in style.surface_rgb),
         page_outline_rgb=tuple(int(value) for value in style.panel_border_rgb),
         page_shadow_rgb=tuple(int(value) for value in style.shadow_rgb),
@@ -83,7 +125,12 @@ def prepare_document_information_scene(
         protected_colors=protected_colors or (),
         allow_dark=bool(allow_dark),
     )
-    styled_render_params = apply_document_information_style(render_params, style)
+    suppress_shadows = not _information_scene_shadows_enabled(params)
+    styled_render_params = apply_document_information_style(
+        render_params,
+        style,
+        suppress_shadows=bool(suppress_shadows),
+    )
     background, background_meta = make_information_scene_background(
         canvas_width=int(styled_render_params.canvas_width),
         canvas_height=int(styled_render_params.canvas_height),

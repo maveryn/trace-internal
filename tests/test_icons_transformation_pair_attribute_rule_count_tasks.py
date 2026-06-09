@@ -35,8 +35,8 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     scene_entities = [entity for entity in trace["scene_ir"]["entities"] if str(entity.get("panel")) == "scene"]
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
     assert out.query_id == "color_and_size_change"
     assert execution["query_id"] == "color_and_size_change"
     assert execution["question_format"] == "count_scene_cells_matching_reference_attribute_rule"
@@ -44,7 +44,7 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 3
     assert len(scene_entities) == 6
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
@@ -54,12 +54,12 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     }
 
     matching_labels = set(str(value) for value in execution["matching_cell_labels"])
-    evidence_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
-    expected_evidence = [
-        evidence_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
+    annotation_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
+    expected_annotation = [
+        annotation_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
     ]
-    assert out.evidence_gt.value == expected_evidence
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.value == expected_annotation
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -93,22 +93,22 @@ def test_icons_transformation_pair_attribute_rule_count_deterministic_and_zero_m
     out_a = task.generate(51201, params={"attribute_rule": "color_only_change", "target_count": 0}, max_attempts=200)
     out_b = task.generate(51201, params={"attribute_rule": "color_only_change", "target_count": 0}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
     assert int(out_a.answer_gt.value) == 0
-    assert out_a.evidence_gt.value == []
+    assert out_a.annotation_gt.value == []
 
 
 def test_icons_transformation_pair_attribute_rule_count_prompt_example_matches_contract() -> None:
     task = IconsTransformationPairAttributeRuleCountTask()
     out = task.generate(51202, params={"attribute_rule": "size_only_change", "target_count": 2}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[336, 104, 506, 274], [532, 104, 702, 274], [728, 104, 898, 274]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[336, 104, 506, 274], [532, 104, 702, 274], [728, 104, 898, 274]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_icons_transformation_pair_attribute_rule_count_balanced_sampling_defaults() -> None:
@@ -132,7 +132,7 @@ def test_icons_transformation_pair_attribute_rule_count_balanced_sampling_defaul
 
 
 def test_icons_transformation_pair_attribute_rule_count_build_smoke(tmp_path: Path) -> None:
-    task_id = "task_icons__pair_grid__pair_relation_count"
+    task_id = "task_icons__pair_grid__attribute_delta_pair_count"
     output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),

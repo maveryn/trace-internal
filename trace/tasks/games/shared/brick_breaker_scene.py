@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.drawing import draw_arrow, draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .brick_breaker_common import BrickBreakerBrick, brick_entity_id, lane_entity_id, lane_label
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import (
@@ -492,7 +492,8 @@ def render_brick_breaker_scene(
 
     path_start: Tuple[float, float]
     path_end: Tuple[float, float]
-    if str(query_id) in {"next_hit_label", "hit_row_remaining_count"}:
+    is_brick_hit_query = str(query_id) in {"next_hit_label", "hit_row_remaining_count"}
+    if is_brick_hit_query:
         if target_brick_id is None or str(target_brick_id) not in brick_bboxes:
             raise ValueError("brick-hit render requires target brick bbox")
         if ball_start_lane_index is None:
@@ -506,7 +507,7 @@ def render_brick_breaker_scene(
         start_x = float(clip_left + ((start_lane + 0.5) * lane_width))
         path_start = (
             float(start_x),
-            float(lane_top - 98.0),
+            float(lane_top - 72.0),
         )
     else:
         if target_lane_index is None or ball_start_lane_index is None:
@@ -523,7 +524,7 @@ def render_brick_breaker_scene(
             float(target_lane[1] + 3.0),
         )
 
-    visible_fraction = 0.42 if str(query_id) == "paddle_catch_label" else 0.75
+    visible_fraction = 0.42 if str(query_id) == "paddle_catch_label" else 0.55
     visible_end = (
         float(path_start[0] + (float(visible_fraction) * (path_end[0] - path_start[0]))),
         float(path_start[1] + (float(visible_fraction) * (path_end[1] - path_start[1]))),
@@ -546,8 +547,8 @@ def render_brick_breaker_scene(
         end=visible_end,
         fill=tuple(int(v) for v in guide_line_rgb),
         width=int(params.path_width_px),
-        head_length_px=22,
-        head_width_px=18,
+        head_length_px=18 if is_brick_hit_query else 22,
+        head_width_px=14 if is_brick_hit_query else 18,
     )
     ball_bbox = _draw_ball(
         draw,

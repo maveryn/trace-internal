@@ -17,7 +17,7 @@ from ...shared.config_defaults import (
 )
 from ...shared.color_distance import color_distance
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
-from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
+from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -33,7 +33,7 @@ from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
 from ..shared.icon_noise import default_icon_noise_value_ranges
-from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
@@ -314,7 +314,7 @@ def _sample_scene(
     icon_a_id, icon_b_id = rng.sample(pool, 2)
     reference_front_role = str(rng.choice(("a", "b")))
     reference_order_id = _order_id_for_front_role(reference_front_role)
-    labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
+    labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(object_count)])
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
 
     palette_size = int(
@@ -594,7 +594,7 @@ class IconsRelationOcclusionOrderTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -607,13 +607,13 @@ class IconsRelationOcclusionOrderTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -622,15 +622,15 @@ class IconsRelationOcclusionOrderTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = list(scene_payload.matching_labels)
-        evidence_artifacts = matching_scene_cell_bbox_evidence(
+        annotation_labels = list(scene_payload.matching_labels)
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
-            matching_labels=evidence_labels,
+            matching_labels=annotation_labels,
         )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -698,9 +698,9 @@ class IconsRelationOcclusionOrderTask:
             },
             "witness_symbolic": {
                 "reference_order_id": str(scene_payload.reference_order_id),
-                **dict(evidence_artifacts["witness_symbolic"]),
+                **dict(annotation_artifacts["witness_symbolic"]),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         complexity = build_icons_relation_occlusion_order_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -718,7 +718,7 @@ class IconsRelationOcclusionOrderTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

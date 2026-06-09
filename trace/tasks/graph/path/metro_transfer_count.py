@@ -13,7 +13,7 @@ class GraphPathMetroTransferCountTask(MetroRouteGraphTaskBase):
     task_id = "task_graph__metro__transfer_count"
     task_group = "path"
     query_id = "metro_transfer_count"
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = "metro_transfer_count_query"
 
 

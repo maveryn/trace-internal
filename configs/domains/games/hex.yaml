@@ -6,6 +6,9 @@ generation:
     query_id_weights:
       winning_move_cell_label: 1.0
       connection_gap_count: 1.0
+      red_neighbor_count: 1.0
+      blue_neighbor_count: 1.0
+      empty_neighbor_count: 1.0
     player_color_weights:
       red: 1.0
       blue: 1.0
@@ -34,12 +37,18 @@ generation:
     - 3
     - 4
     - 5
+    neighbor_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
     candidate_count_support:
     - 4
     - 5
     - 6
-    - 7
-    - 8
     winning_move_label_support:
     - A
     - B
@@ -47,12 +56,11 @@ generation:
     - D
     - E
     - F
-    - G
-    - H
     min_extra_own_stones: 2
     max_extra_own_stones: 7
     min_extra_opponent_stones: 5
     max_extra_opponent_stones: 14
+    reference_cell_label: C
 rendering:
   shared:
     canvas_width: 980
@@ -88,7 +96,13 @@ prompt:
     hex_rule_text: In Hex, adjacent cells are the six cells sharing an edge.
     red_goal_text: Red connects the left and right red sides.
     blue_goal_text: Blue connects the top and bottom blue sides.
-    evidence_hint_winning_move_cell_label: set "evidence" to a JSON array containing one pixel-space point [x, y] at the center of the chosen winning cell
+    annotation_hint_winning_move_cell_label: set "annotation" to a JSON array containing one pixel-space point [x, y] at the center of the chosen winning cell
     answer_hint_winning_move_cell_label: set "answer" to the single candidate letter of the empty cell that lets {query_player} win immediately
-    evidence_hint_connection_gap_count: set "evidence" to a JSON array of pixel-space points [x, y] at the centers of the empty cells in the unique minimum connection gap for {query_player}
+    annotation_hint_connection_gap_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of the empty cells in the unique minimum connection gap for {query_player}
     answer_hint_connection_gap_count: set "answer" to the minimum number of empty cells {query_player} must fill to connect the required sides
+    annotation_hint_red_neighbor_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of red neighboring cells adjacent to cell {reference_label}; use [] if none match
+    answer_hint_red_neighbor_count: set "answer" to the number of red neighboring cells adjacent to cell {reference_label}
+    annotation_hint_blue_neighbor_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of blue neighboring cells adjacent to cell {reference_label}; use [] if none match
+    answer_hint_blue_neighbor_count: set "answer" to the number of blue neighboring cells adjacent to cell {reference_label}
+    annotation_hint_empty_neighbor_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of empty neighboring cells adjacent to cell {reference_label}; use [] if none match
+    answer_hint_empty_neighbor_count: set "answer" to the number of empty neighboring cells adjacent to cell {reference_label}

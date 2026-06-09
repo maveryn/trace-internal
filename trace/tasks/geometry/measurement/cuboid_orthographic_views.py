@@ -36,6 +36,7 @@ from ..shared.shape_style import (
     extract_background_anchor_colors,
     sample_geometry_shape_style,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 from ..shared.measurement_rendering import (
     bbox_to_list as _bbox_to_list,
     clamp_bbox as _clamp_bbox,
@@ -129,8 +130,8 @@ class _ResolvedProblem:
 class _RenderedCuboidViewsScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Mapping[str, BBox]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Mapping[str, BBox]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -205,13 +206,6 @@ def _answer_for_case(query_id: str, case: Sequence[int]) -> float:
     raise ValueError(f"unsupported cuboid orthographic query_id: {query_id}")
 
 
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        str(int(value)): (1.0 if int(value) == int(selected) else 0.0)
-        for value in values
-    }
-
-
 def _resolve_problem(
     *,
     task_id: str,
@@ -270,7 +264,10 @@ def _resolve_problem(
         right_view_perimeter=int(2 * (width + height)),
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(float(value) for value in support_values))), float(answer)
+            tuple(sorted(set(float(value) for value in support_values))),
+            float(answer),
+            key_fn=lambda value: str(int(value)),
+            is_selected=lambda value, selected: int(value) == int(selected),
         ),
     )
 
@@ -324,7 +321,7 @@ def _render_cuboid_views_scene(
     )
 
     # Light alignment guides make the three views read as projections without
-    # introducing additional numeric evidence.
+    # introducing additional numeric annotation.
     for x in (top_rect[0], top_rect[2]):
         ctx.draw.line(
             [(x, top_rect[3] + 10.0), (x, front_rect[1] - 14.0)],
@@ -340,12 +337,12 @@ def _render_cuboid_views_scene(
 
     label_bboxes["target"] = _draw_label(ctx, "SA=?", (642.0, 112.0), small=False)
 
-    evidence_roles = (
+    annotation_roles = (
         "top_view",
         "front_view",
         "right_view",
     )
-    evidence_bboxes = {
+    annotation_bboxes = {
         "top_view": top_rect,
         "front_view": front_rect,
         "right_view": right_rect,
@@ -393,8 +390,8 @@ def _render_cuboid_views_scene(
     return _RenderedCuboidViewsScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=dict(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=dict(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -418,6 +415,7 @@ class _CuboidOrthographicViewsBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "cuboid_orthographic_views"
@@ -513,12 +511,12 @@ class _CuboidOrthographicViewsBaseTask:
         return ctx, render_meta
 
     def _build_complexity(self, rendered: _RenderedCuboidViewsScene) -> TaskComplexity:
-        visual_scan = clamp_unit_interval(0.46 + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5) * 0.18)
+        visual_scan = clamp_unit_interval(0.46 + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5) * 0.18)
         precision = 0.68
         ambiguity = 0.54
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5) * 0.12
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5) * 0.12
         )
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -580,7 +578,7 @@ class _CuboidOrthographicViewsBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -594,14 +592,14 @@ class _CuboidOrthographicViewsBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -612,11 +610,11 @@ class _CuboidOrthographicViewsBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bbox_map = {
-            str(role): _bbox_to_list(bbox) for role, bbox in rendered.evidence_bboxes.items()
+        annotation_bbox_map = {
+            str(role): _bbox_to_list(bbox) for role, bbox in rendered.annotation_bboxes.items()
         }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": "three_view_cuboid_projection",
@@ -634,7 +632,7 @@ class _CuboidOrthographicViewsBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": "three_view_cuboid_projection",
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -663,7 +661,7 @@ class _CuboidOrthographicViewsBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "integer",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2,
                 **dict(rendered.witness),
             },
@@ -673,19 +671,19 @@ class _CuboidOrthographicViewsBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "keyed_bbox_map",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -205,9 +205,9 @@ def _sample_from_payload(
     answer_gt = payload.get("answer_gt", {})
     if not isinstance(answer_gt, Mapping):
         answer_gt = {}
-    evidence_gt = payload.get("evidence_gt", {})
-    if not isinstance(evidence_gt, Mapping):
-        evidence_gt = {}
+    annotation_gt = payload.get("annotation_gt", {})
+    if not isinstance(annotation_gt, Mapping):
+        annotation_gt = {}
     image_payload = payload.get("image", {})
     if not isinstance(image_payload, Mapping):
         image_payload = {}
@@ -229,7 +229,7 @@ def _sample_from_payload(
     instance_seed = int(payload.get("instance_seed", 0) or 0)
     prompt = str(payload.get("prompt", ""))
     prompt_answer_only = str(prompt_variants.get("answer_only", prompt))
-    prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", prompt))
+    prompt_answer_and_annotation = str(prompt_variants.get("answer_and_annotation", prompt))
 
     identity_payload = {
         "domain": domain,
@@ -241,7 +241,7 @@ def _sample_from_payload(
         "instance_seed": instance_seed,
         "prompt": prompt,
         "answer_gt": answer_gt,
-        "evidence_gt": evidence_gt,
+        "annotation_gt": annotation_gt,
     }
     content_hash = _stable_hash(identity_payload)
     return SampleRecord(
@@ -259,11 +259,11 @@ def _sample_from_payload(
         image_mtime_ns=image_mtime_ns,
         prompt=prompt,
         prompt_answer_only=prompt_answer_only,
-        prompt_answer_and_evidence=prompt_answer_and_evidence,
+        prompt_answer_and_annotation=prompt_answer_and_annotation,
         answer_type=str(answer_gt.get("type", "")),
         answer_value=answer_gt.get("value"),
-        evidence_type=str(evidence_gt.get("type", "")),
-        evidence_value=evidence_gt.get("value"),
+        annotation_type=str(annotation_gt.get("type", "")),
+        annotation_value=annotation_gt.get("value"),
     )
 
 
@@ -518,6 +518,7 @@ def _distribution_summary(distribution: Mapping[str, Any]) -> Dict[str, Any]:
         "has_query_ids": bool(distribution.get("has_query_ids", False)),
         "failed_query_ids": list(distribution.get("failed_query_ids", []) or []),
         "incomplete_query_ids": list(distribution.get("incomplete_query_ids", []) or []),
+        "warnings": list(distribution.get("warnings", []) or []),
         "sample_count": _maybe_int(overall.get("sample_count")),
         "unique_answers": _maybe_int(overall.get("unique_answers")),
         "max_answer_frequency": _maybe_float(overall.get("max_answer_frequency")),

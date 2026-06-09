@@ -578,7 +578,7 @@ def _sample_first_obstacle(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
             target_obstacle_label=str(target_obstacle.label),
             target_path_id=None,
             target_path_label=None,
-            evidence_entity_ids=(str(target_obstacle.obstacle_id),),
+            annotation_entity_ids=(str(target_obstacle.obstacle_id),),
             construction_mode="short_cue_first_obstacle_collision",
             cue_visible_fraction=float(rng.uniform(0.32, 0.43)),
             hidden_paths_norm={"shown_path": tuple(shown_path)},
@@ -728,7 +728,7 @@ def _sample_shot_path(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
             target_obstacle_label=None,
             target_path_id=str(target_option.path_id),
             target_path_label=str(target_option.label),
-            evidence_entity_ids=(str(target_option.path_id),),
+            annotation_entity_ids=(str(target_option.path_id),),
             construction_mode=f"unique_numbered_{mode}_cue_reaches_hole",
             cue_visible_fraction=0.36,
             hidden_paths_norm=dict(hidden_paths),
@@ -754,12 +754,12 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "shot_path_label":
         answer_value = "3"
-        evidence_value = [[[486, 562], [592, 520]]]
+        annotation_value = [[[486, 562], [592, 520]]]
     else:
         answer_value = "D"
-        evidence_value = [[486, 258]]
+        annotation_value = [[486, 258]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -830,24 +830,24 @@ class GamesMinigolfCourseTask:
         if str(axes.query_id) == "shot_path_label":
             if sampled_scene.target_path_id is None:
                 raise RuntimeError("shot_path_label missing target path id")
-            evidence_type = "point_pair_set"
-            evidence_value = [
+            annotation_type = "point_pair_set"
+            annotation_value = [
                 [list(point) for point in rendered_scene.render_map["path_point_pairs_px"][str(sampled_scene.target_path_id)]]
             ]
-            projected_evidence = {
+            projected_annotation = {
                 "type": "point_pair_set",
-                "point_pair_set": [list(pair) for pair in evidence_value],
+                "point_pair_set": [list(pair) for pair in annotation_value],
             }
         else:
-            evidence_type = "point_set"
-            evidence_value = [
+            annotation_type = "point_set"
+            annotation_value = [
                 list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
-                for entity_id in sampled_scene.evidence_entity_ids
+                for entity_id in sampled_scene.annotation_entity_ids
             ]
-            projected_evidence = {
+            projected_annotation = {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_value],
-                "pixel_point_set": [list(point) for point in evidence_value],
+                "point_set": [list(point) for point in annotation_value],
+                "pixel_point_set": [list(point) for point in annotation_value],
             }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -868,9 +868,9 @@ class GamesMinigolfCourseTask:
                 "minigolf_cue_rule_text",
                 "minigolf_bank_rule_text",
                 "answer_hint_first_obstacle_label",
-                "evidence_hint_first_obstacle_label",
+                "annotation_hint_first_obstacle_label",
                 "answer_hint_shot_path_label",
-                "evidence_hint_shot_path_label",
+                "annotation_hint_shot_path_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -882,7 +882,7 @@ class GamesMinigolfCourseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "minigolf_cue_rule_text": str(prompt_defaults["minigolf_cue_rule_text"]),
@@ -890,7 +890,7 @@ class GamesMinigolfCourseTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -899,7 +899,7 @@ class GamesMinigolfCourseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -911,7 +911,7 @@ class GamesMinigolfCourseTask:
             query_id=str(axes.query_id),
             obstacle_count=len(sampled_scene.obstacles),
             path_option_count=len(sampled_scene.shot_options),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         obstacle_trace = [
             {
@@ -946,7 +946,7 @@ class GamesMinigolfCourseTask:
                     "style_variant": str(axes.style_variant),
                     "obstacle_count": len(sampled_scene.obstacles),
                     "path_option_count": len(sampled_scene.shot_options),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -999,14 +999,14 @@ class GamesMinigolfCourseTask:
                 "target_path_label": sampled_scene.target_path_label,
                 "cue_visible_fraction": float(sampled_scene.cue_visible_fraction),
                 "hidden_paths_norm": hidden_paths_trace,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
-                "type": "point_pair_set" if str(evidence_type) == "point_pair_set" else "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "type": "point_pair_set" if str(annotation_type) == "point_pair_set" else "object_set",
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -1014,7 +1014,7 @@ class GamesMinigolfCourseTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

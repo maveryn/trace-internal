@@ -83,6 +83,10 @@
       "start_category",
       "end_category"
     ],
+    "query:subset_denominator_share_value": [
+      "subset_category_list_text",
+      "target_category"
+    ],
     "query:sector_share_to_angle": [
       "chart_order_phrase",
       "start_category",
@@ -117,19 +121,19 @@
     "query:treemap_repeated_leaf_average_value": [
       "leaf_label"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -137,12 +141,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -273,6 +277,13 @@
       "Starting at \"{start_category}\" and moving {chart_order_phrase} through \"{end_category}\", leave out those categories. How many items remain from the displayed total?",
       "Find the contiguous chart segment from \"{start_category}\" to \"{end_category}\" while moving {chart_order_phrase}. After excluding it, what remaining count is represented?",
       "What count is left after removing the {chart_order_phrase} run beginning with \"{start_category}\" and ending with \"{end_category}\"?"
+    ],
+    "subset_denominator_share_value": [
+      "Within the subset of categories {subset_category_list_text}, what percentage of that subset total is category \"{target_category}\"?",
+      "Use only categories {subset_category_list_text} as the denominator. What percent of that subset is category \"{target_category}\"?",
+      "Restrict the total to categories {subset_category_list_text}. What share of that restricted total belongs to \"{target_category}\"?",
+      "For the named subset {subset_category_list_text}, compute the percentage contributed by category \"{target_category}\".",
+      "Treat categories {subset_category_list_text} as 100% of the subset. What percentage is category \"{target_category}\"?"
     ],
     "sector_share_to_angle": [
       "Moving {chart_order_phrase} around the chart, what central angle in degrees is covered from category \"{start_category}\" through category \"{end_category}\", inclusive?",

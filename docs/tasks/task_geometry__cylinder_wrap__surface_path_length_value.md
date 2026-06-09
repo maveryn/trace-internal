@@ -4,34 +4,24 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `cylinder_wrap`
-4. Query id: `surface_path_length_value`
-5. Answer type: `number`
-6. Evidence type: `keyed_bbox_map`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+5. Query id: `surface_path_length_value`
+6. Answer schema: `decimal_value_1dp`
+7. Annotation schema: `keyed_bbox_map`
+
+## Program Contract
+- `solve_formula(visible_cylinder_wrap_measurements, unknown_role=length_measure, formula_schema=surface_path_length_value); scene=cylinder_wrap; scope=surface_path_length_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_cylinder_wrap_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Compute the length of a marked path on a cylinder side using the rectangular
-unwrapped net. The visible net labels provide the circumference and height,
-and cases are sampled from integer Pythagorean triples so the answer is a
-unique integer path length.
-
-## Evidence
-Prompt-facing evidence is a `keyed_bbox_map` with `marked_surface_path`,
-`circumference_dimension`, and `height_dimension`. The dimension bboxes cover
-the visible dimension annotation, including its numeric label. Verifier
-evidence is projected from the same pixel geometry used to render the scene and
-compute the answer.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt
-bundle version. Sampling axes, prompt bundle ids, selected visual style, font
-family, and render choices are recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/measurement.yaml`
-- Prompt bundle: `prompts/geometry/measurement/geometry_cylinder_wrap_v0.json`
 - Task module: `trace/tasks/geometry/measurement/cylinder_wrap.py`

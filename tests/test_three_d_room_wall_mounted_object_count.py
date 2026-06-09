@@ -18,7 +18,7 @@ from trace.tasks.three_d.room.wall_mounted_object_count import (
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
-def test_wall_mounted_object_count_answer_and_evidence(query_id: str) -> None:
+def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -58,8 +58,8 @@ def test_wall_mounted_object_count_answer_and_evidence(query_id: str) -> None:
     assert output.query_id == query_id
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == len(target_specs) == 2
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [
         render_map["object_bboxes_px"][object_id]
         for object_id in expected_ids
     ]
@@ -101,7 +101,7 @@ def test_wall_mounted_object_count_allows_zero_targets() -> None:
     trace = output.trace_payload["execution_trace"]
 
     assert output.answer_gt.value == 0
-    assert output.evidence_gt.value == []
+    assert output.annotation_gt.value == []
     assert trace["target_object_ids"] == []
     assert trace["same_type_floor_distractor_count"] >= 1
 

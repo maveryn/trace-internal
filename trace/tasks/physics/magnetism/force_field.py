@@ -16,7 +16,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
-from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.drawing import draw_centered_text, draw_rounded_rect
 from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
@@ -33,6 +33,7 @@ from ..shared.complexity import build_physics_magnetism_force_field_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES, build_physics_magnetism_theme
+from ..shared.vector_arrows import SEMANTIC_DIRECTION_VECTORS, direction_endpoint, draw_arrow_with_bbox
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
@@ -57,16 +58,7 @@ SUPPORTED_DIRECTIONS: Tuple[str, ...] = (
     "south",
     "southeast",
 )
-DIRECTION_VECTORS: Dict[str, Tuple[int, int]] = {
-    "east": (1, 0),
-    "northeast": (1, 1),
-    "north": (0, 1),
-    "northwest": (-1, 1),
-    "west": (-1, 0),
-    "southwest": (-1, -1),
-    "south": (0, -1),
-    "southeast": (1, -1),
-}
+DIRECTION_VECTORS: Dict[str, Tuple[int, int]] = dict(SEMANTIC_DIRECTION_VECTORS)
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
     "clean_panel": SUPPORTED_QUERY_IDS,
@@ -148,16 +140,16 @@ class _SceneSpec:
     direction_scenario: _DirectionScenario | None
     correct_option_letter: str | None
     target_answer: int | str
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered magnetism scene plus prompt-facing evidence metadata."""
+    """Rendered magnetism scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bbox_map: Dict[str, List[float]]
-    evidence_entity_ids: List[str]
+    annotation_bbox_map: Dict[str, List[float]]
+    annotation_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -435,29 +427,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any], i
         direction_scenario=scenario,
         correct_option_letter=str(axes.correct_option_letter),
         target_answer=str(axes.correct_option_letter),
-        evidence_entity_ids=("field_orientation_label", "particle", "velocity_vector"),
-    )
-
-
-def _arrow_bbox(start: Tuple[float, float], end: Tuple[float, float], *, padding_px: float) -> List[float]:
-    """Return a conservative bbox for one arrow."""
-
-    return [
-        round(float(min(start[0], end[0]) - padding_px), 3),
-        round(float(min(start[1], end[1]) - padding_px), 3),
-        round(float(max(start[0], end[0]) + padding_px), 3),
-        round(float(max(start[1], end[1]) + padding_px), 3),
-    ]
-
-
-def _direction_endpoint(center: Tuple[float, float], *, direction: str, length_px: float) -> Tuple[float, float]:
-    """Return an endpoint for one named direction and length."""
-
-    dx, dy = DIRECTION_VECTORS[str(direction)]
-    magnitude = math.sqrt(float(dx * dx + dy * dy))
-    return (
-        float(center[0]) + (float(dx) / float(magnitude)) * float(length_px),
-        float(center[1]) - (float(dy) / float(magnitude)) * float(length_px),
+        annotation_entity_ids=("field_orientation_label", "particle", "velocity_vector"),
     )
 
 
@@ -610,8 +580,8 @@ def _draw_vector_arrow(
 ) -> List[float]:
     """Draw one vector arrow from a center point."""
 
-    end = _direction_endpoint(center, direction=str(direction), length_px=float(length_px))
-    draw_arrow(
+    end = direction_endpoint(center, direction=str(direction), length_px=float(length_px), direction_vectors=DIRECTION_VECTORS)
+    bbox = draw_arrow_with_bbox(
         draw,
         start=(float(center[0]), float(center[1])),
         end=end,
@@ -619,10 +589,15 @@ def _draw_vector_arrow(
         width=max(1, int(render_defaults["arrow_width_px"])),
         head_length_px=float(render_defaults["arrow_head_length_px"]),
         head_width_px=float(render_defaults["arrow_head_width_px"]),
+        padding_px=18.0,
     )
-    bbox = _arrow_bbox((float(center[0]), float(center[1])), end, padding_px=18.0)
     if label:
-        label_center = _direction_endpoint(center, direction=str(direction), length_px=float(length_px) + float(label_offset))
+        label_center = direction_endpoint(
+            center,
+            direction=str(direction),
+            length_px=float(length_px) + float(label_offset),
+            direction_vectors=DIRECTION_VECTORS,
+        )
         text_bbox = draw_centered_text(
             draw,
             text=str(label),
@@ -673,8 +648,8 @@ def _draw_option_arrows(
         )
         center = (cell_left + 0.56 * cell_w, cell_top + 0.57 * cell_h)
         direction = str(option_directions[str(letter)])
-        end = _direction_endpoint(center, direction=direction, length_px=float(render_defaults["option_arrow_length_px"]))
-        draw_arrow(
+        end = direction_endpoint(center, direction=direction, length_px=float(render_defaults["option_arrow_length_px"]), direction_vectors=DIRECTION_VECTORS)
+        arrow_bbox = draw_arrow_with_bbox(
             draw,
             start=center,
             end=end,
@@ -682,8 +657,8 @@ def _draw_option_arrows(
             width=max(1, int(render_defaults["option_arrow_width_px"])),
             head_length_px=float(render_defaults["arrow_head_length_px"]),
             head_width_px=float(render_defaults["arrow_head_width_px"]),
+            padding_px=16.0,
         )
-        arrow_bbox = _arrow_bbox(center, end, padding_px=16.0)
         option_bbox = _bbox_union(label_bbox, arrow_bbox)
         option_bboxes[str(letter)] = option_bbox
         scene_entities.append(
@@ -724,7 +699,7 @@ def _resolve_magnetism_layout_placement(
     canvas_width: int,
     canvas_height: int,
 ) -> Tuple[Dict[str, int], Dict[str, Any]]:
-    """Resolve whole-diagram placement before rendering and evidence projection."""
+    """Resolve whole-diagram placement before rendering and annotation projection."""
 
     content_bbox = _magnetism_content_bbox(render_defaults=render_defaults)
     content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
@@ -840,7 +815,7 @@ def _render_scene(
     )
     scene_entities.append({"entity_id": "field_orientation_label", "entity_type": "field_label", "bbox": list(field_tag), "meta": {"field_orientation": str(scene_spec.field_orientation)}})
 
-    evidence_ids: List[str] = [str(entity_id) for entity_id in scene_spec.evidence_entity_ids]
+    annotation_ids: List[str] = [str(entity_id) for entity_id in scene_spec.annotation_entity_ids]
 
     if scene_spec.direction_scenario is None:
         raise ValueError("force direction render requires a direction scenario")
@@ -875,7 +850,7 @@ def _render_scene(
         option_font=option_font,
         scene_entities=scene_entities,
     )
-    evidence_bbox_map = {
+    annotation_bbox_map = {
         "field_orientation": list(field_tag),
         "charge": list(particle_bbox),
         "velocity": list(velocity_bbox),
@@ -887,15 +862,15 @@ def _render_scene(
             "velocity_vector_bbox_px": list(velocity_bbox),
             "option_bboxes_px": dict(option_bboxes),
             "correct_option_bbox_px": list(option_bboxes[str(scene_spec.correct_option_letter)]),
-            "evidence_bbox_map_px": {str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
-            "evidence_entity_ids": list(evidence_ids),
+            "annotation_bbox_map_px": {str(key): list(bbox) for key, bbox in annotation_bbox_map.items()},
+            "annotation_entity_ids": list(annotation_ids),
         }
     )
 
     return _RenderedScene(
         image=image,
-        evidence_bbox_map={str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
-        evidence_entity_ids=list(evidence_ids),
+        annotation_bbox_map={str(key): list(bbox) for key, bbox in annotation_bbox_map.items()},
+        annotation_entity_ids=list(annotation_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -915,7 +890,7 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) != "force_direction_choice":
         raise ValueError(f"unsupported magnetism query id: {query_id}")
     return build_prompt_json_examples(
-        evidence_value={
+        annotation_value={
             "field_orientation": [86, 72, 216, 110],
             "charge": [390, 270, 462, 342],
             "velocity": [426, 220, 560, 334],
@@ -1029,7 +1004,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "object_description_field_grid",
                     "object_description_lab_card",
                     "answer_hint_force_direction_choice",
-                    "evidence_hint_force_direction_choice",
+                    "annotation_hint_force_direction_choice",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1041,7 +1016,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1049,7 +1024,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 },
                 instance_seed=int(instance_seed),
             )
@@ -1058,9 +1033,9 @@ class _PhysicsMagnetismForceFieldBaseTask:
             answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str = scene_spec.target_answer
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(
+            annotation_gt = TypedValue(
                 type="keyed_bbox_map",
-                value={str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                value={str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()},
             )
             complexity = build_physics_magnetism_force_field_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1070,7 +1045,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 charge_sign=int(axes.charge_sign),
                 option_count=len(OPTION_LETTERS),
                 target_answer_magnitude=0,
-                evidence_count=len(rendered_scene.evidence_bbox_map),
+                annotation_count=len(rendered_scene.annotation_bbox_map),
             )
 
             direction_payload: Dict[str, Any] = {}
@@ -1098,7 +1073,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                         "target_answer": answer_value,
                         "answer_type": str(answer_type),
                         "direction_scenario": dict(direction_payload),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -1160,22 +1135,22 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "option_letters": list(OPTION_LETTERS),
                     "direction_scenario": dict(direction_payload),
                     "correct_option_letter": scene_spec.correct_option_letter,
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "object_map",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
                     "key_to_entity_id": {
                         "field_orientation": "field_orientation_label",
                         "charge": "particle",
                         "velocity": "velocity_vector",
                     },
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "keyed_bbox_map",
-                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()},
                     "pixel_keyed_bbox_map": {
-                        str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()
+                        str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()
                     },
                 },
                 "background": background_meta,
@@ -1185,7 +1160,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

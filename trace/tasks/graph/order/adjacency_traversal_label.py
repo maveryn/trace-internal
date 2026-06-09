@@ -178,7 +178,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
     return (
-        json.dumps({"evidence": [[70, 126, 158, 158], [70, 174, 158, 206], [70, 222, 158, 254]], "answer": "M"}, separators=(",", ":")),
+        json.dumps({"annotation": [[70, 126, 158, 158], [70, 174, 158, 206], [70, 222, 158, 254]], "answer": "M"}, separators=(",", ":")),
         json.dumps({"answer": "M"}, separators=(",", ":")),
     )
 
@@ -234,7 +234,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
         if int(query.traversal_position) > len(visit_order):
             raise ValueError("traversal_position exceeds visited node count")
         answer_value = str(visit_order[int(query.traversal_position) - 1])
-        evidence_labels = tuple(str(label) for label in visit_order[: int(query.traversal_position)])
+        annotation_labels = tuple(str(label) for label in visit_order[: int(query.traversal_position)])
 
         canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
@@ -263,13 +263,13 @@ class GraphOrderAdjacencyTraversalLabelTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_bboxes = [[round(float(value), 3) for value in rendered.row_label_bboxes[str(label)]] for label in evidence_labels]
+        annotation_bboxes = [[round(float(value), 3) for value in rendered.row_label_bboxes[str(label)]] for label in annotation_labels]
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_sequence", value=list(annotation_bboxes))
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -277,14 +277,14 @@ class GraphOrderAdjacencyTraversalLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "source_label": format_graph_prompt_label(source_label, label_variant=str(labels.label_variant)),
                 "traversal_position": str(query.traversal_position),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -302,7 +302,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
                 "bbox_xyxy": list(rendered.row_label_bboxes[str(label)]),
                 "is_source": bool(str(label) == source_label),
                 "is_answer": bool(str(label) == answer_value),
-                "is_in_evidence_prefix": bool(str(label) in set(evidence_labels)),
+                "is_in_annotation_prefix": bool(str(label) in set(annotation_labels)),
             }
             for label in sample.labels
         ]
@@ -379,7 +379,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
                 "representation_variant": str(rendered.representation_variant),
                 "source_label": str(source_label),
                 "answer": str(answer_value),
-                "evidence_labels": list(evidence_labels),
+                "annotation_labels": list(annotation_labels),
                 "visit_order": list(visit_order),
                 "node_count": int(query.node_count),
                 "edge_count": int(len(sample.edges)),
@@ -387,19 +387,19 @@ class GraphOrderAdjacencyTraversalLabelTask:
             },
             "witness_symbolic": {
                 "type": "adjacency_traversal_prefix",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "answer_label": str(answer_value),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_sequence",
-                "bbox_sequence": list(evidence_bboxes),
-                "pixel_bbox_sequence": list(evidence_bboxes),
+                "bbox_sequence": list(annotation_bboxes),
+                "pixel_bbox_sequence": list(annotation_bboxes),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

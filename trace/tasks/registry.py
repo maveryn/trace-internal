@@ -12,6 +12,7 @@ from ..core.taxonomy import resolve_task_query_id
 from .base import Task, TaskOutput
 from .shared.font_assets import font_role_trace, get_font_family_record, sample_font_family
 from .shared.fixed_query import rewrite_public_query_output
+from .shared.marker_legibility import collect_semantic_marker_records, semantic_marker_records_summary
 from .shared.text_legibility import collect_traced_text_records, traced_text_records_summary
 from .shared.text_rendering import temporary_default_font_family
 
@@ -75,6 +76,47 @@ def _attach_collected_text_legibility(
     return replace(output, trace_payload=payload)
 
 
+def _attach_collected_marker_legibility(
+    output: TaskOutput,
+    *,
+    marker_records: Sequence[Mapping[str, Any]],
+) -> TaskOutput:
+    """Copy automatically collected semantic marker metadata into render_spec."""
+
+    if not marker_records:
+        return output
+    trace_payload = output.trace_payload
+    if not isinstance(trace_payload, Mapping):
+        return output
+    payload = deepcopy(dict(trace_payload))
+    render_spec = payload.get("render_spec")
+    if not isinstance(render_spec, dict):
+        render_spec = {}
+        payload["render_spec"] = render_spec
+    drawn_markers = render_spec.setdefault("drawn_markers", {})
+    if not isinstance(drawn_markers, dict):
+        drawn_markers = {}
+        render_spec["drawn_markers"] = drawn_markers
+    drawn_markers["marker_legibility"] = semantic_marker_records_summary(marker_records)
+    return replace(output, trace_payload=payload)
+
+
+def _attach_collected_visual_legibility(
+    output: TaskOutput,
+    *,
+    drawn_text_records: Sequence[Mapping[str, Any]],
+    marker_records: Sequence[Mapping[str, Any]],
+) -> TaskOutput:
+    output = _attach_collected_text_legibility(
+        output,
+        drawn_text_records=drawn_text_records,
+    )
+    return _attach_collected_marker_legibility(
+        output,
+        marker_records=marker_records,
+    )
+
+
 def _sample_implicit_readout_font(
     *,
     task_id: str,
@@ -94,6 +136,7 @@ def _sample_implicit_readout_font(
 def _attach_implicit_readout_font(
     output: TaskOutput,
     *,
+    task_id: str,
     font_family: str,
 ) -> TaskOutput:
     """Record the implicit readout font made available during generation."""
@@ -115,6 +158,38 @@ def _attach_implicit_readout_font(
     font_record = get_font_family_record(str(font_family)).to_trace()
     font_record.update(font_role_trace(str(font_family), role="readout"))
     font_assets["implicit_readout_font_family"] = font_record
+    if str(task_id).startswith("task_charts__"):
+        font_assets.setdefault("chart_font_family", str(font_family))
+        font_assets.setdefault("chart_font_asset_version", str(font_record.get("font_asset_version", "")))
+    return replace(output, trace_payload=payload)
+
+
+def _attach_illustration_art_style_metadata(output: TaskOutput, *, task_id: str) -> TaskOutput:
+    """Expose canonical art-style metadata for illustration render specs."""
+
+    if not str(task_id).startswith("task_illustrations__"):
+        return output
+    trace_payload = output.trace_payload
+    if not isinstance(trace_payload, Mapping):
+        return output
+    payload = deepcopy(dict(trace_payload))
+    render_spec = payload.get("render_spec")
+    if not isinstance(render_spec, dict):
+        return output
+    style = render_spec.get("style")
+    if not isinstance(style, dict):
+        return output
+    try:
+        from .illustrations.shared.style_registry import ART_STYLE_REGISTRY_VERSION, ART_STYLES, art_style_trace
+    except Exception:
+        return output
+    if "art_style_id" not in style and str(style.get("style_id", "")) in ART_STYLES:
+        style.update(art_style_trace(str(style["style_id"])))
+    if "art_style_ids" not in style and isinstance(style.get("style_ids"), Sequence) and not isinstance(style.get("style_ids"), (str, bytes)):
+        art_style_ids = [str(value) for value in style.get("style_ids", []) if str(value) in ART_STYLES]
+        if art_style_ids:
+            style["art_style_ids"] = art_style_ids
+            style["art_style_registry_version"] = ART_STYLE_REGISTRY_VERSION
     return replace(output, trace_payload=payload)
 
 
@@ -126,6 +201,14 @@ def register_task(cls: Type[Task]) -> Type[Task]:
         raise KeyError(f"duplicate task_id: {task_id}")
     v0_match = _V0_TASK_ID_PATTERN.match(task_id)
     generate_impl = cls.generate
+    if str(getattr(cls, "domain", "")) == "charts":
+        from .charts.shared.render_audit_defaults import wrap_charts_generation
+
+        generate_impl = wrap_charts_generation(
+            generate_impl,
+            task_id=str(task_id),
+            task_group=str(getattr(cls, "task_group", "")),
+        )
     if str(getattr(cls, "domain", "")) == "pages":
         from .pages.shared.render_audit_defaults import wrap_pages_generation
 
@@ -146,17 +229,24 @@ def register_task(cls: Type[Task]) -> Type[Task]:
                 params=params,
             )
             with collect_traced_text_records() as drawn_text_records:
-                with temporary_default_font_family(implicit_font_family):
-                    output = original_generate(self, instance_seed, params=params, max_attempts=max_attempts)
-            output = _attach_implicit_readout_font(output, font_family=implicit_font_family)
+                with collect_semantic_marker_records() as marker_records:
+                    with temporary_default_font_family(implicit_font_family):
+                        output = original_generate(self, instance_seed, params=params, max_attempts=max_attempts)
+            output = _attach_implicit_readout_font(
+                output,
+                task_id=task_id,
+                font_family=implicit_font_family,
+            )
+            output = _attach_illustration_art_style_metadata(output, task_id=task_id)
             query_id = str(
                 output.query_id
                 or resolve_task_query_id(trace_payload=output.trace_payload)
             )
             if not query_id:
-                return _attach_collected_text_legibility(
+                return _attach_collected_visual_legibility(
                     output,
                     drawn_text_records=drawn_text_records,
+                    marker_records=marker_records,
                 )
             scene_id = str(output.scene_id or taxonomy_scene_id)
             output = rewrite_public_query_output(
@@ -165,9 +255,10 @@ def register_task(cls: Type[Task]) -> Type[Task]:
                 scene_id=scene_id,
                 preserve_internal_query_id_as="internal_query_id",
             )
-            return _attach_collected_text_legibility(
+            return _attach_collected_visual_legibility(
                 output,
                 drawn_text_records=drawn_text_records,
+                marker_records=marker_records,
             )
 
         cls.generate = _generate_with_public_query_contract  # type: ignore[method-assign]
@@ -180,12 +271,19 @@ def register_task(cls: Type[Task]) -> Type[Task]:
                 params=params,
             )
             with collect_traced_text_records() as drawn_text_records:
-                with temporary_default_font_family(implicit_font_family):
-                    output = generate_impl(self, instance_seed, params=params, max_attempts=max_attempts)
-            output = _attach_implicit_readout_font(output, font_family=implicit_font_family)
-            return _attach_collected_text_legibility(
+                with collect_semantic_marker_records() as marker_records:
+                    with temporary_default_font_family(implicit_font_family):
+                        output = generate_impl(self, instance_seed, params=params, max_attempts=max_attempts)
+            output = _attach_implicit_readout_font(
+                output,
+                task_id=task_id,
+                font_family=implicit_font_family,
+            )
+            output = _attach_illustration_art_style_metadata(output, task_id=task_id)
+            return _attach_collected_visual_legibility(
                 output,
                 drawn_text_records=drawn_text_records,
+                marker_records=marker_records,
             )
 
         cls.generate = _generate_with_text_collection  # type: ignore[method-assign]

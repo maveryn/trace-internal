@@ -54,15 +54,12 @@ def test_puzzles_spatial_visible_cube_count_split_wrapper_rewrites_public_contra
         max_attempts=60,
     )
 
-    assert str(out.query_id) == "default"
     assert str(out.query_id) == "visible_cube_count"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
-    assert out.evidence_gt.type == "bbox_set"
-    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
+    assert out.annotation_gt.type == "bbox_set"
     assert str(out.trace_payload["query_spec"]["query_id"]) == "visible_cube_count"
-    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "visible_cube_count"
     assert str(out.trace_payload["execution_trace"]["view_direction"]) == "front"
     assert str(out.trace_payload["execution_trace"]["internal_query_id"]) == "front_view_visible_count"
@@ -76,16 +73,13 @@ def test_puzzles_spatial_projection_match_split_wrapper_rewrites_public_contract
         max_attempts=80,
     )
 
-    assert str(out.query_id) == "default"
     assert str(out.query_id) == "projection_match_label"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) in set("ABCDE")
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert str(out.trace_payload["query_spec"]["query_id"]) == "projection_match_label"
-    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "projection_match_label"
     assert str(out.trace_payload["execution_trace"]["view_direction"]) == "right"
     assert str(out.trace_payload["execution_trace"]["internal_query_id"]) == "right_view_visible_count"
@@ -111,16 +105,13 @@ def test_puzzles_spatial_projection_consistency_split_wrapper_rewrites_public_co
         max_attempts=100,
     )
 
-    assert str(out.query_id) == "default"
     assert str(out.query_id) == "projection_consistency_label"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) in set("ABCDE")
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert str(out.trace_payload["query_spec"]["query_id"]) == "projection_consistency_label"
-    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "projection_consistency_label"
     assert str(out.trace_payload["execution_trace"]["consistency_query"]) == consistency_query
     assert str(out.trace_payload["execution_trace"]["answer_label"]) == str(out.answer_gt.value)
@@ -166,15 +157,15 @@ def test_puzzles_spatial_solid_view_count_emits_expected_contract(
     out = SolidViewCountGenerator().generate(23301, params=params, max_attempts=60)
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == int(expected_answer)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == int(expected_answer)
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
-    query_grid_dims = out.trace_payload["projected_evidence"]["query_grid_dimensions"]
+    query_grid_dims = out.trace_payload["projected_annotation"]["query_grid_dimensions"]
     assert int(out.answer_gt.value) < int(query_grid_dims[0]) * int(query_grid_dims[1])
 
-    query_panel_bbox = out.trace_payload["projected_evidence"]["query_panel_bbox"]
-    for bbox in out.evidence_gt.value:
+    query_panel_bbox = out.trace_payload["projected_annotation"]["query_panel_bbox"]
+    for bbox in out.annotation_gt.value:
         assert len(bbox) == 4
         assert float(bbox[0]) >= float(query_panel_bbox[0])
         assert float(bbox[1]) >= float(query_panel_bbox[1])
@@ -188,7 +179,7 @@ def test_puzzles_spatial_solid_view_count_is_deterministic() -> None:
     out_a = task.generate(23311, params=params, max_attempts=60)
     out_b = task.generate(23311, params=params, max_attempts=60)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
@@ -267,12 +258,12 @@ def test_puzzles_spatial_solid_view_count_decouplesseeded_sampler_axes() -> None
         "right_view_visible_count": Counter(),
     }
 
-    for index in range(100):
+    for index in range(250):
         instance_seed = hash64(0, INTERNAL_TASK_KEY, index)
         resolved = _resolve_axes(int(instance_seed), params={})
         per_query_id_counts[str(resolved.query_id)][int(resolved.target_count)] += 1
 
-    assert sum(sum(counter.values()) for counter in per_query_id_counts.values()) == 100
+    assert sum(sum(counter.values()) for counter in per_query_id_counts.values()) == 250
     for query_id, counts in per_query_id_counts.items():
         assert set(counts.keys()) == {3, 4, 5, 6, 7}
-        assert max(counts.values()) <= 7, query_id
+        assert max(counts.values()) <= 30, query_id

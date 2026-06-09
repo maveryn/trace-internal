@@ -216,7 +216,7 @@ class ParkPersonActivityBranch:
         counted_person_ids = tuple(str(person.person_id) for person in scene.persons if str(person.activity) == str(sample.activity))
         if len(counted_person_ids) != int(sample.target_count):
             raise RuntimeError("rendered person activity count did not match sample target")
-        evidence_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
+        annotation_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -227,7 +227,7 @@ class ParkPersonActivityBranch:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_person_activity",
-                "evidence_hint_person_activity",
+                "annotation_hint_person_activity",
                 "json_example_person_activity",
                 "json_example_answer_only_person_activity",
             ],
@@ -239,7 +239,7 @@ class ParkPersonActivityBranch:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_person_activity"]).format(activity_phrase=str(sample.activity_phrase)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_person_activity"]).format(activity_phrase=str(sample.activity_phrase)),
+            "annotation_hint": str(prompt_defaults["annotation_hint_person_activity"]).format(activity_phrase=str(sample.activity_phrase)),
             "json_example": str(prompt_defaults["json_example_person_activity"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_person_activity"]),
         }
@@ -252,8 +252,8 @@ class ParkPersonActivityBranch:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         activity_counts = dict(Counter(str(person.activity) for person in scene.persons))
@@ -317,13 +317,13 @@ class ParkPersonActivityBranch:
                 "target_activity": str(sample.activity),
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

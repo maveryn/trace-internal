@@ -1,0 +1,98 @@
+{
+  "approved_current_task_merge_count": 1,
+  "base_program_contract_count": 968,
+  "domains": {
+    "charts": {
+      "current_tasks": 188,
+      "delta": 0,
+      "proposed_tasks": 188,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "games": {
+      "current_tasks": 161,
+      "delta": 0,
+      "proposed_tasks": 161,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "geometry": {
+      "current_tasks": 192,
+      "delta": 0,
+      "proposed_tasks": 192,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "graph": {
+      "current_tasks": 61,
+      "delta": 0,
+      "proposed_tasks": 61,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "icons": {
+      "current_tasks": 40,
+      "delta": 0,
+      "proposed_tasks": 40,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "illustrations": {
+      "current_tasks": 26,
+      "delta": 0,
+      "proposed_tasks": 26,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "misc": {
+      "current_tasks": 42,
+      "delta": 0,
+      "proposed_tasks": 42,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "pages": {
+      "current_tasks": 92,
+      "delta": 0,
+      "proposed_tasks": 92,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "physics": {
+      "current_tasks": 53,
+      "delta": 0,
+      "proposed_tasks": 53,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "puzzles": {
+      "current_tasks": 80,
+      "delta": 0,
+      "proposed_tasks": 80,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    },
+    "three_d": {
+      "current_tasks": 33,
+      "delta": 0,
+      "proposed_tasks": 33,
+      "rename_tasks": 0,
+      "split_tasks": 0
+    }
+  },
+  "duplicate_base_program_contract_count": 0,
+  "live_task_count": 968,
+  "merge_candidate_count": 0,
+  "program_argument_row_count": 1160,
+  "program_argument_status_counts": {
+    "curated": 1029,
+    "inferred": 105,
+    "needs_review": 26
+  },
+  "program_signature_count": 137,
+  "proposed_task_count": 968,
+  "proposed_tasks_with_multiple_base_program_contracts": 0,
+  "query_row_count": 1160,
+  "rename_task_count": 0,
+  "split_task_count": 0
+}

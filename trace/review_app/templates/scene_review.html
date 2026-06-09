@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% macro feedback_events_readonly(item) -%}
+  {% set events = feedback_thread_events_by_feedback.get(item.id, []) %}
+  {% if events %}
+    <div class="feedback-event-list compact">
+      {% for event in events %}
+        <article class="feedback-event-item {{ event.kind }}">
+          <div class="feedback-event-meta">{{ event.label }}{% if event.author %} · {{ event.author }}{% endif %} · {{ event.created_at }}</div>
+          <p>{{ event.text }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/domains/' ~ scene.domain) }}">{{ scene.domain }}</a>
+  <a href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id) }}">{{ scene.scene_id }}</a>
+  <span>scene review</span>
+</nav>
+
+<section class="scene-review-header">
+  <div>
+    <h2>{{ scene.scene_id }}</h2>
+    <p class="muted">Two preview slots per query across every task in this scene.</p>
+  </div>
+  <div class="scene-review-actions">
+    <a class="button-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id) }}">Task Table</a>
+    <a class="button-link" href="{{ app_path('/issues?domain=' ~ (scene.domain|urlquote)) }}">Issues</a>
+  </div>
+</section>
+
+<section class="summary-grid">
+  <div class="metric"><span>{{ scene_review.summary.task_count }}</span><label>tasks</label></div>
+  <div class="metric"><span>{{ scene_review.summary.query_count }}</span><label>queries</label></div>
+  <div class="metric"><span>{{ scene_review.summary.requested_card_count }}</span><label>preview cards</label></div>
+  <div class="metric"><span>{{ scene_review.summary.sample_card_count }}</span><label>available samples</label></div>
+  <div class="metric"><span>{{ scene_review.summary.missing_card_count }}</span><label>missing samples</label></div>
+  <div class="metric"><span>{{ scene_open_feedback|length }}</span><label>open scene issues</label></div>
+</section>
+
+<section class="table-panel compact scene-feedback-panel" id="scene-feedback">
+  <div class="scene-feedback-header">
+    <div>
+      <h2>Scene-Level Issues</h2>
+      <p class="muted">Use this for feedback that applies to the scene family or rendering grammar, not one exact sample.</p>
+    </div>
+  </div>
+
+  {% if scene_level_feedback %}
+    <div class="open-feedback-list">
+      {% for item in scene_level_feedback %}
+        <article class="open-feedback-item">
+          <p>{{ item.comment }}</p>
+          <div class="feedback-item-actions">
+            <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Thread</a>
+            {% if item.status == 'open' %}
+              <form action="{{ app_path('/issues/' ~ item.id) }}" method="post">
+                <input type="hidden" name="status" value="resolved">
+                <input type="hidden" name="next" value="{{ request.url.path }}#scene-feedback">
+                <button type="submit" class="feedback-resolve-button">Resolve</button>
+              </form>
+            {% else %}
+              <span class="status ok">resolved</span>
+            {% endif %}
+          </div>
+          {{ feedback_events_readonly(item) }}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No scene-level issues have been filed for this scene.</p>
+  {% endif %}
+
+  <form class="feedback-form scene-feedback-form" action="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/issues') }}" method="post">
+    <input type="hidden" name="next" value="{{ request.url.path }}#scene-feedback">
+    <div class="form-row">
+      <label>Category
+        <select name="category">
+          <option value="rendering">rendering</option>
+          <option value="prompt">prompt</option>
+          <option value="annotation">annotation</option>
+          <option value="answer">answer</option>
+          <option value="calibration">calibration</option>
+          <option value="other">other</option>
+        </select>
+      </label>
+      <label>Severity
+        <select name="severity">
+          <option value="issue">issue</option>
+          <option value="blocker">blocker</option>
+          <option value="note">note</option>
+        </select>
+      </label>
+      <label>Author
+        <input name="author" placeholder="reviewer">
+      </label>
+    </div>
+    <textarea name="comment" rows="4" placeholder="Scene-level issue or note" required></textarea>
+    <button type="submit">Add Scene Issue</button>
+  </form>
+</section>
+
+<section class="scene-review-task-list">
+  {% for task_group in scene_review.task_groups %}
+    {% set task = task_group.task %}
+    <article class="scene-review-task">
+      <header class="scene-review-task-header">
+        <div>
+          <h2>{{ task.task_id }}</h2>
+          <p class="muted">{{ task.sample_count }} sample(s), {{ task.query_counts|length }} query id(s)</p>
+        </div>
+        <a class="button-link" href="{{ app_path(task_group.task_path ~ '?view=images') }}">Open Task Images</a>
+      </header>
+
+      {% for query_group in task_group.query_groups %}
+        <section class="scene-review-query">
+          <header class="scene-review-query-header">
+            <div>
+              <h3>{{ query_group.query_id }}</h3>
+              <p class="muted">{{ query_group.query_sample_count }} indexed sample(s)</p>
+            </div>
+            <a class="pill" href="{{ app_path(query_group.query_path) }}">open query</a>
+          </header>
+
+          <div class="scene-review-card-grid">
+            {% for card in query_group.cards %}
+              {% if card.sample %}
+                {% set sample = card.sample %}
+                <article class="scene-review-card" id="scene-sample-{{ sample.uid }}">
+                  <a class="scene-review-card-image" href="{{ app_path('/samples/' ~ sample.uid) }}">
+                    {% if sample.image_exists %}
+                      <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="review sample image">
+                    {% else %}
+                      <span class="status warn">image missing</span>
+                    {% endif %}
+                  </a>
+                  <div class="scene-review-card-body">
+                    <div class="sample-row-title">
+                      <strong>Slot {{ card.slot }}</strong>
+                      <span>{{ sample.query_id }}</span>
+                      <a class="pill" href="{{ app_path('/samples/' ~ sample.uid) }}">sample</a>
+                    </div>
+                    <p data-selectable-text>{{ sample.prompt|excerpt(260) }}</p>
+                    <div class="scene-review-card-facts">
+                      <span><strong>Answer</strong> {{ sample.answer_label }}</span>
+                      <span><strong>Annotation</strong> {{ sample.annotation_type }}</span>
+                    </div>
+                  </div>
+                </article>
+              {% else %}
+                <article class="scene-review-card missing">
+                  <div class="scene-review-card-image">
+                    <span class="status warn">missing sample</span>
+                  </div>
+                  <div class="scene-review-card-body">
+                    <div class="sample-row-title">
+                      <strong>Slot {{ card.slot }}</strong>
+                      <span>{{ query_group.query_id }}</span>
+                    </div>
+                    <p class="muted">This query has fewer than {{ scene_review.summary.samples_per_query }} indexed samples.</p>
+                  </div>
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

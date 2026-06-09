@@ -33,11 +33,12 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_graph_complexity_weights,
 )
+from ..shared.fixed_query_task import FixedGraphQueryTaskMixin
 from ..shared.graph_sampling import GraphTopologySample
 from ..shared.graph_scene import (
     GraphRenderParams,
     RenderedGraphScene,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
@@ -52,8 +53,10 @@ from .automaton_state_simulation_label import (
 )
 
 
-TASK_ID = "task_graph__automaton__accepted_string_label"
+TASK_ID = "graph_automaton_accepted_string_label_source"
 SCENE_ID = "automaton"
+AUTOMATON_DFA_ACCEPTED_STRING_TASK_ID = "task_graph__automaton__dfa_accepted_string_label"
+AUTOMATON_NFA_ACCEPTED_STRING_TASK_ID = "task_graph__automaton__nfa_accepted_string_label"
 
 DFA_ACCEPTED_STRING_QUERY_ID = "dfa_accepted_string_label"
 NFA_ACCEPTED_STRING_QUERY_ID = "nfa_accepted_string_label"
@@ -142,11 +145,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match accepted-path evidence."""
+    """Return prompt examples that match accepted-path annotation."""
 
-    example_evidence = [[150, 250], [310, 190], [480, 230]]
+    example_annotation = [[150, 250], [310, 190], [480, 230]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -171,7 +174,7 @@ def _query_id_from_alias(value: Any) -> str | None:
 def _forced_query_id(params: Mapping[str, Any]) -> str | None:
     """Resolve an explicitly requested query id, if present."""
 
-    for key in ("query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         query_id = _query_id_from_alias(params.get(str(key)))
         if query_id is not None:
             return str(query_id)
@@ -694,7 +697,6 @@ def _build_complexity(
     return build_graph_complexity(weights=_COMPLEXITY_WEIGHTS, components=components)
 
 
-@register_task
 class GraphRelationAutomatonStringAcceptanceLabelTask:
     """Choose which candidate input string is accepted by a finite automaton."""
 
@@ -799,8 +801,8 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_dfa_accepted_string_label",
-                "evidence_hint_nfa_accepted_string_label",
+                "annotation_hint_dfa_accepted_string_label",
+                "annotation_hint_nfa_accepted_string_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -808,7 +810,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -816,12 +818,12 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -830,12 +832,12 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_node_point_evidence(rendered_scene, sample.accepting_path_labels)
-        evidence_path = [[int(round(float(point[0]))), int(round(float(point[1])))] for point in evidence_projection["pixel_point_sequence"]]
-        if len(evidence_path) != len(sample.accepting_path_labels):
-            raise RuntimeError("automaton acceptance evidence path projection is incomplete")
+        annotation_projection = projected_node_point_annotation(rendered_scene, sample.accepting_path_labels)
+        annotation_path = [[int(round(float(point[0]))), int(round(float(point[1])))] for point in annotation_projection["pixel_point_sequence"]]
+        if len(annotation_path) != len(sample.accepting_path_labels):
+            raise RuntimeError("automaton acceptance annotation path projection is incomplete")
         answer_gt = TypedValue(type="string", value=str(sample.answer_option_label))
-        evidence_gt = TypedValue(type="point_sequence", value=list(evidence_path))
+        annotation_gt = TypedValue(type="point_sequence", value=list(annotation_path))
 
         path_label_set = set(str(label) for label in sample.accepting_path_labels)
         node_entities = [
@@ -845,7 +847,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "label": str(node.label),
                 "is_start_state": bool(str(node.label) == str(sample.start_label)),
                 "is_accepting_state": bool(str(node.label) in set(sample.accepting_labels)),
-                "is_in_evidence_path": bool(str(node.label) in path_label_set),
+                "is_in_annotation_path": bool(str(node.label) in path_label_set),
                 "path_positions": [int(index) for index, label in enumerate(sample.accepting_path_labels) if str(label) == str(node.label)],
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
@@ -1042,18 +1044,18 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "answer_input_string": str(sample.answer_input_string),
                 "state_path_labels": list(sample.accepting_path_labels),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_sequence",
-                "point_sequence": list(evidence_path),
-                "pixel_point_sequence": list(evidence_path),
-                "pixel_bbox_set": list(evidence_projection["pixel_bbox_set"]),
+                "point_sequence": list(annotation_path),
+                "pixel_point_sequence": list(annotation_path),
+                "pixel_bbox_set": list(annotation_projection["pixel_bbox_set"]),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1065,4 +1067,29 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
         )
 
 
-__all__ = ["GraphRelationAutomatonStringAcceptanceLabelTask"]
+@register_task
+class GraphRelationAutomatonDfaAcceptedStringLabelTask(FixedGraphQueryTaskMixin):
+    """Choose which candidate input string is accepted by a deterministic automaton."""
+
+    task_id = AUTOMATON_DFA_ACCEPTED_STRING_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = DFA_ACCEPTED_STRING_QUERY_ID
+    source_task_cls = GraphRelationAutomatonStringAcceptanceLabelTask
+
+
+@register_task
+class GraphRelationAutomatonNfaAcceptedStringLabelTask(FixedGraphQueryTaskMixin):
+    """Choose which candidate input string is accepted by a nondeterministic automaton."""
+
+    task_id = AUTOMATON_NFA_ACCEPTED_STRING_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = NFA_ACCEPTED_STRING_QUERY_ID
+    source_task_cls = GraphRelationAutomatonStringAcceptanceLabelTask
+
+
+__all__ = [
+    "GraphRelationAutomatonDfaAcceptedStringLabelTask",
+    "GraphRelationAutomatonNfaAcceptedStringLabelTask",
+]

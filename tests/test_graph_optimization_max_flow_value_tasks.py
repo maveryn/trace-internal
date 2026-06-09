@@ -84,9 +84,9 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
     assert out.scene_id == "flow_network"
     assert out.query_id == "max_flow_value"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "point_pair_set"
     assert int(out.answer_gt.value) == 5
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_capacity_flow_network"
     assert execution["graph_directionality"] == "directed"
     assert execution["source_label"] == "S"
@@ -100,10 +100,10 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
     min_cut_value, min_cut_edges = _unique_min_cut(graph)
     assert int(nx.maximum_flow_value(graph, "S", "T", capacity="capacity")) == int(min_cut_value) == 5
     assert tuple(tuple(edge) for edge in execution["original_min_cut_edges"]) == tuple(min_cut_edges)
-    assert tuple(tuple(edge) for edge in execution["evidence_edges"]) == tuple(min_cut_edges)
-    assert trace["projected_evidence"]["type"] == "point_pair_set"
-    assert trace["projected_evidence"]["point_pair_set"] == out.evidence_gt.value
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert tuple(tuple(edge) for edge in execution["annotation_edges"]) == tuple(min_cut_edges)
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_optimization_max_flow_all_query_contracts() -> None:
@@ -132,8 +132,8 @@ def test_graph_optimization_max_flow_all_query_contracts() -> None:
             assert int(out.answer_gt.value) == len(min_cut_edges) == int(target_answer)
         else:
             assert int(out.answer_gt.value) == int(min_cut_value) == int(target_answer)
-        assert tuple(tuple(edge) for edge in execution["evidence_edges"]) == tuple(min_cut_edges)
-        assert len(out.evidence_gt.value) == len(min_cut_edges)
+        assert tuple(tuple(edge) for edge in execution["annotation_edges"]) == tuple(min_cut_edges)
+        assert len(out.annotation_gt.value) == len(min_cut_edges)
 
 
 def test_graph_optimization_max_flow_prompt_examples_match_contract() -> None:
@@ -141,12 +141,12 @@ def test_graph_optimization_max_flow_prompt_examples_match_contract() -> None:
     out = task.generate(32020, params={}, max_attempts=100)
 
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
-    assert answer_and_evidence["answer"] == 2
-    assert "pixel centers of the two endpoint nodes" in out.prompt_variants["answer_and_evidence"]
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
+    assert answer_and_annotation["answer"] == 2
+    assert "pixel centers of the two endpoint nodes" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_optimization_max_flow_rejects_removed_edge_query() -> None:
@@ -178,7 +178,7 @@ def test_graph_optimization_max_flow_balanced_sampling_covers_queries() -> None:
         layout_variants[str(execution["layout_variant_requested"])] += 1
         edge_routing[str(execution["edge_routing_variant"])] += 1
         assert int(out.answer_gt.value) == int(execution["answer"])
-        assert len(out.evidence_gt.value) == len(execution["evidence_edges"])
+        assert len(out.annotation_gt.value) == len(execution["annotation_edges"])
 
     assert set(node_counts) == {5, 6}
     assert len(answers) >= 4

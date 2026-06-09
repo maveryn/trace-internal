@@ -23,7 +23,7 @@ from trace.tasks.charts.table.shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
     build_temporal_value_dataset_for_variant,
-    projected_table_bbox_evidence,
+    projected_table_bbox_annotation,
     resolve_table_axis_variant,
     resolve_table_render_params,
     table_render_style_spec,
@@ -37,7 +37,7 @@ from trace.tasks.charts.table.shared.visual_defaults import (
 )
 
 
-TASK_ID = "task_charts__table__temporal_row_interval_difference_value"
+TASK_ID = "charts_table_temporal_value_base"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "absolute_difference_between_rows_over_year_interval",
     "sum_absolute_differences_between_rows_over_year_interval",
@@ -152,8 +152,8 @@ class ChartsTableTemporalValueTaskBase:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_absolute_difference_between_rows_over_year_interval",
-                "evidence_hint_sum_absolute_differences_between_rows_over_year_interval",
+                "annotation_hint_absolute_difference_between_rows_over_year_interval",
+                "annotation_hint_sum_absolute_differences_between_rows_over_year_interval",
                 "json_example_absolute_difference_between_rows_over_year_interval",
                 "json_example_sum_absolute_differences_between_rows_over_year_interval",
                 "json_example_answer_only_absolute_difference_between_rows_over_year_interval",
@@ -162,7 +162,7 @@ class ChartsTableTemporalValueTaskBase:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -170,7 +170,7 @@ class ChartsTableTemporalValueTaskBase:
             "object_description": str(object_description),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(evidence_hint),
+            "annotation_hint": str(annotation_hint),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -188,7 +188,7 @@ class ChartsTableTemporalValueTaskBase:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=dict(prompt_slots),
             instance_seed=int(instance_seed),
         )
@@ -196,14 +196,14 @@ class ChartsTableTemporalValueTaskBase:
 
         query_cells = [dict(cell) for cell in dataset["query_cells"]]
         supporting_cell_ids = [str(cell["cell_id"]) for cell in query_cells]
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, supporting_cell_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_table_bbox_annotation(rendered_scene, supporting_cell_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         values_by_row = {
             str(row_label): {
@@ -216,7 +216,7 @@ class ChartsTableTemporalValueTaskBase:
             str(cell_trace["cell_id"]): list(cell_trace["bbox_px"])
             for cell_trace in rendered_scene.cell_traces
         }
-        evidence_order = "row_then_query_year_order"
+        annotation_order = "row_then_query_year_order"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"table_{str(scene_variant)}_temporal",
@@ -314,14 +314,14 @@ class ChartsTableTemporalValueTaskBase:
             },
             "verifier_spec": {
                 "answer_type": "integer",
-                "evidence_type": "bbox_set",
-                "evidence_order": str(evidence_order),
+                "annotation_type": "bbox_set",
+                "annotation_order": str(annotation_order),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
         }
 
         span_length = int(len(query_cells))
@@ -340,7 +340,7 @@ class ChartsTableTemporalValueTaskBase:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -352,21 +352,41 @@ class ChartsTableTemporalValueTaskBase:
 
 
 @register_task
-class ChartsTableTemporalRowIntervalDifferenceValueTask(MergedChartQueryVariantTaskMixin, ChartsTableTemporalValueTaskBase):
-    """Compute one sampled row-interval difference metric from a temporal table."""
+class ChartsTableAbsoluteDifferenceBetweenRowsOverYearIntervalTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsTableTemporalValueTaskBase,
+):
+    """Compute the absolute difference between two rows over a year interval."""
 
-    task_id = "task_charts__table__temporal_row_interval_difference_value"
+    task_id = "task_charts__table__absolute_difference_between_rows_over_year_interval"
     domain = "charts"
     task_group = "table_temporal"
     prompt_domain = "charts"
     prompt_task_group = "table_temporal"
     allowed_query_ids = (
         "absolute_difference_between_rows_over_year_interval",
+    )
+
+
+@register_task
+class ChartsTableSumAbsoluteDifferencesBetweenRowsOverYearIntervalTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsTableTemporalValueTaskBase,
+):
+    """Compute the sum of row-wise absolute differences over a year interval."""
+
+    task_id = "task_charts__table__sum_absolute_differences_between_rows_over_year_interval"
+    domain = "charts"
+    task_group = "table_temporal"
+    prompt_domain = "charts"
+    prompt_task_group = "table_temporal"
+    allowed_query_ids = (
         "sum_absolute_differences_between_rows_over_year_interval",
     )
 
 
 __all__ = [
-    "ChartsTableTemporalRowIntervalDifferenceValueTask",
+    "ChartsTableAbsoluteDifferenceBetweenRowsOverYearIntervalTask",
+    "ChartsTableSumAbsoluteDifferencesBetweenRowsOverYearIntervalTask",
     "ChartsTableTemporalValueTaskBase",
 ]

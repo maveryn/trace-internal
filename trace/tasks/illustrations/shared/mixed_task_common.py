@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.sampling import normalize_positive_weights
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from .mixed_object_scene import (
@@ -15,7 +14,9 @@ from .mixed_object_scene import (
     sample_placements,
     scene_entities,
 )
-from .object_library import STYLE_IDS, display_name_for_object_type, object_types, serialize_object
+from .object_library import STYLE_IDS, display_name_for_object_type, object_types
+from .object_rendering import serialize_rendered_illustration_object
+from .style_registry import resolve_art_style_weights
 
 
 MIXED_QUERY_OBJECT_TYPES: Tuple[str, ...] = tuple(
@@ -26,10 +27,7 @@ MIXED_QUERY_OBJECT_TYPES: Tuple[str, ...] = tuple(
 
 
 def positive_style_weights(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> Dict[str, float]:
-    raw = params.get("style_weights", group_default(render_defaults, "style_weights", {style: 1.0 for style in STYLE_IDS}))
-    if not isinstance(raw, Mapping):
-        raise ValueError("style_weights must be a mapping")
-    return normalize_positive_weights({str(key): float(value) for key, value in raw.items()}, default_keys=STYLE_IDS)
+    return resolve_art_style_weights(params, render_defaults, style_ids=STYLE_IDS)
 
 
 def positive_background_weights(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> Dict[str, float]:
@@ -127,7 +125,7 @@ def render_mixed_scene_from_types(
 
 
 def serialize_mixed_scene(scene) -> Tuple[list[dict[str, Any]], Dict[str, list[float]], Dict[str, list[float]]]:
-    serialized_objects = [serialize_object(obj) for obj in scene.objects]
+    serialized_objects = [serialize_rendered_illustration_object(obj) for obj in scene.objects]
     object_bboxes = {str(obj["object_id"]): list(obj["bbox"]) for obj in serialized_objects}
     part_bboxes = {
         str(part["part_id"]): list(part["bbox"])

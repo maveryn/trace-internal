@@ -204,7 +204,7 @@ rendering:
       canvas_height: 900
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_spreadsheet: a spreadsheet-style table with one Name column, several numeric columns, full grid lines,
       and a shaded header row
@@ -221,9 +221,9 @@ prompt:
     unanswerable_instruction: If the requested column is not shown, answer exactly "unanswerable".
   task_overrides:
     task_charts__table__column_rank_label:
-      evidence_hint_kth_rank_in_column: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for
+      annotation_hint_kth_rank_in_column: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for
         the supporting queried-column region
-      json_example_kth_rank_in_column: '{"evidence":[[260,180,372,520]],"answer":"Ava"}'
+      json_example_kth_rank_in_column: '{"annotation":[[260,180,372,520]],"answer":"Ava"}'
       json_example_answer_only_kth_rank_in_column: '{"answer":"Ava"}'
 visual:
   background:

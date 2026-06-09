@@ -138,24 +138,47 @@ def _example_like(value: Any, *, index: int) -> Any:
     return str(index + 2)
 
 
-def build_prompt_json_examples(*, evidence_value: Any, answer_type: str) -> Tuple[str, str]:
-    """Build deterministic `answer_and_evidence` and `answer_only` JSON examples."""
+def build_prompt_json_examples(*, annotation_value: Any, answer_type: str) -> Tuple[str, str]:
+    """Build deterministic `answer_and_annotation` and `answer_only` JSON examples."""
     answer_value = _example_answer_value(str(answer_type))
     example_answer_only = {"answer": answer_value}
-    example_answer_and_evidence = {
-        "evidence": _example_like(evidence_value, index=0),
+    example_answer_and_annotation = {
+        "annotation": _example_like(annotation_value, index=0),
         "answer": answer_value,
     }
     return (
-        json.dumps(example_answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(example_answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(example_answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+    )
+
+
+def dump_prompt_json_examples(
+    *,
+    annotation: Any,
+    answer: Any,
+    ensure_ascii: bool = True,
+) -> Tuple[str, str]:
+    """Dump explicit prompt JSON examples with the canonical compact formatting."""
+    return (
+        json.dumps(
+            {"annotation": annotation, "answer": answer},
+            ensure_ascii=bool(ensure_ascii),
+            allow_nan=False,
+            separators=(",", ":"),
+        ),
+        json.dumps(
+            {"answer": answer},
+            ensure_ascii=bool(ensure_ascii),
+            allow_nan=False,
+            separators=(",", ":"),
+        ),
     )
 
 
 def resolve_prompt_json_examples(
     prompt_defaults: Mapping[str, Any],
     *,
-    evidence_value: Any,
+    annotation_value: Any,
     answer_type: str,
 ) -> Tuple[str, str]:
     """Resolve configured prompt examples with deterministic generated fallback."""
@@ -164,7 +187,7 @@ def resolve_prompt_json_examples(
     if isinstance(json_example, str) and json_example.strip() and isinstance(json_example_answer_only, str) and json_example_answer_only.strip():
         return str(json_example), str(json_example_answer_only)
     generated_json_example, generated_json_example_answer_only = build_prompt_json_examples(
-        evidence_value=evidence_value,
+        annotation_value=annotation_value,
         answer_type=str(answer_type),
     )
     if not (isinstance(json_example, str) and json_example.strip()):
@@ -176,5 +199,6 @@ def resolve_prompt_json_examples(
 
 __all__ = [
     "build_prompt_json_examples",
+    "dump_prompt_json_examples",
     "resolve_prompt_json_examples",
 ]

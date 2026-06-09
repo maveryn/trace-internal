@@ -20,7 +20,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis
@@ -38,10 +38,16 @@ SCENE_ID = "tetris"
 
 QUERY_LINE_CLEAR_COUNT = "line_clear_count"
 QUERY_DROP_RESULT_LABEL = "drop_result_label"
+QUERY_ROW_OCCUPANCY_STATUS_COUNT = "row_occupancy_status_count"
+QUERY_DROP_COLLISION_TIME_VALUE = "drop_collision_time_value"
+QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT = "edge_occupied_row_cell_count"
 
 SUPPORTED_PUBLIC_QUERIES: Tuple[str, ...] = (
     QUERY_LINE_CLEAR_COUNT,
     QUERY_DROP_RESULT_LABEL,
+    QUERY_ROW_OCCUPANCY_STATUS_COUNT,
+    QUERY_DROP_COLLISION_TIME_VALUE,
+    QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT,
 )
 LINE_CLEAR_BRANCHES: Tuple[str, ...] = (
     "max_clear_with_next_piece",
@@ -51,6 +57,21 @@ DROP_RESULT_BRANCHES: Tuple[str, ...] = (
     "single_clear_result",
     "multi_clear_result",
 )
+ROW_OCCUPANCY_BRANCHES: Tuple[str, ...] = (
+    "full_row_count",
+    "one_gap_row_count",
+)
+DROP_COLLISION_TIME_BRANCHES: Tuple[str, ...] = (
+    "no_shift_collision_time",
+    "left_shift_collision_time",
+    "right_shift_collision_time",
+)
+EDGE_OCCUPIED_ROW_BRANCHES: Tuple[str, ...] = (
+    "top_occupied_row_filled_cell_count",
+    "top_occupied_row_empty_cell_count",
+    "bottom_occupied_row_filled_cell_count",
+    "bottom_occupied_row_empty_cell_count",
+)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("low_stack", "notched_stack", "high_stack")
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic_blocks",
@@ -59,7 +80,7 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "glass_blocks",
     "neon_blocks",
 )
-OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E")
+OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 EMPTY = "."
 Coord = Tuple[int, int]
@@ -111,7 +132,11 @@ class _TaskDefaults:
 
     line_clear_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     drop_result_clear_count_support: Tuple[int, ...] = (0, 1, 2)
-    option_count_support: Tuple[int, ...] = (5,)
+    row_occupancy_status_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    drop_collision_time_support: Tuple[int, ...] = tuple(range(0, 9))
+    edge_occupied_row_cell_count_support: Tuple[int, ...] = tuple(range(0, 12))
+    shift_magnitude_support: Tuple[int, ...] = (1, 2, 3)
+    option_count_support: Tuple[int, ...] = (4, 6)
     board_row_count_support: Tuple[int, ...] = tuple(range(10, 16))
     board_col_count_support: Tuple[int, ...] = tuple(range(7, 12))
     canvas_width: int = 1100
@@ -159,6 +184,19 @@ class _Outcome:
 
 
 @dataclass(frozen=True)
+class _DropCollision:
+    """Result of shifting a falling piece and dropping until collision."""
+
+    start_placement: _Placement
+    shifted_placement: _Placement
+    final_placement: _Placement
+    drop_steps: int
+    blocker_cells: Tuple[Coord, ...]
+    bottom_contact_cells: Tuple[Coord, ...]
+    collision_kind: str
+
+
+@dataclass(frozen=True)
 class _Option:
     """One labeled Tetris option panel."""
 
@@ -183,6 +221,10 @@ class _ResolvedAxes:
     scene_variant: str
     style_variant: str
     target_clear_count: int | None
+    target_row_count: int | None
+    target_drop_steps: int | None
+    target_cell_count: int | None
+    shift_delta: int
     option_count: int
     board_rows: int
     board_cols: int
@@ -191,6 +233,7 @@ class _ResolvedAxes:
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     answer_probabilities: Dict[str, float]
+    shift_delta_probabilities: Dict[str, float]
     option_count_probabilities: Dict[str, float]
     board_row_probabilities: Dict[str, float]
     board_col_probabilities: Dict[str, float]
@@ -230,8 +273,8 @@ class _Sample:
     falling_placement: _Placement | None
     outcome: _Outcome | None
     options: Tuple[_Option, ...]
-    evidence_entity_ids: Tuple[str, ...]
-    evidence_kind: str
+    annotation_entity_ids: Tuple[str, ...]
+    annotation_kind: str
     metadata: Dict[str, Any]
 
 
@@ -384,6 +427,61 @@ def _evaluate_outcome(board: Board, placement: _Placement) -> _Outcome:
     )
 
 
+def _shifted_placement(placement: _Placement, *, shift_delta: int) -> _Placement:
+    return _Placement(
+        str(placement.piece),
+        int(placement.orientation_index),
+        int(placement.col) + int(shift_delta),
+        int(placement.top),
+    )
+
+
+def _drop_collision(board: Board, placement: _Placement, *, shift_delta: int) -> _DropCollision | None:
+    shifted = _shifted_placement(placement, shift_delta=int(shift_delta))
+    if not _can_place(board, shifted):
+        return None
+    current = shifted
+    drop_steps = 0
+    while True:
+        candidate = _Placement(
+            str(current.piece),
+            int(current.orientation_index),
+            int(current.col),
+            int(current.top) + 1,
+        )
+        if _can_place(board, candidate):
+            current = candidate
+            drop_steps += 1
+            continue
+        board_rows, _board_cols = _board_size(board)
+        current_cells = set(_piece_cells(current))
+        blocker_cells: List[Coord] = []
+        bottom_contact_cells: List[Coord] = []
+        for row, col in current_cells:
+            below = (int(row) + 1, int(col))
+            if below in current_cells:
+                continue
+            if int(row) + 1 >= int(board_rows):
+                bottom_contact_cells.append((int(row), int(col)))
+            elif board[int(row) + 1][int(col)] != EMPTY:
+                blocker_cells.append((int(row) + 1, int(col)))
+        if blocker_cells:
+            collision_kind = "locked_block"
+        elif bottom_contact_cells:
+            collision_kind = "bottom_boundary"
+        else:
+            return None
+        return _DropCollision(
+            start_placement=placement,
+            shifted_placement=shifted,
+            final_placement=current,
+            drop_steps=int(drop_steps),
+            blocker_cells=tuple(sorted(set(blocker_cells))),
+            bottom_contact_cells=tuple(sorted(set(bottom_contact_cells))),
+            collision_kind=str(collision_kind),
+        )
+
+
 def _all_placements(board: Board, *, piece: str) -> Tuple[_Placement, ...]:
     _board_rows, board_cols = _board_size(board)
     placements: List[_Placement] = []
@@ -464,6 +562,12 @@ def _branches_for_public_query(public_query: str) -> Tuple[str, ...]:
         return LINE_CLEAR_BRANCHES
     if str(public_query) == QUERY_DROP_RESULT_LABEL:
         return DROP_RESULT_BRANCHES
+    if str(public_query) == QUERY_ROW_OCCUPANCY_STATUS_COUNT:
+        return ROW_OCCUPANCY_BRANCHES
+    if str(public_query) == QUERY_DROP_COLLISION_TIME_VALUE:
+        return DROP_COLLISION_TIME_BRANCHES
+    if str(public_query) == QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT:
+        return EDGE_OCCUPIED_ROW_BRANCHES
     raise ValueError(f"unsupported public query: {public_query}")
 
 
@@ -535,6 +639,11 @@ def _resolve_axes(
         balanced_flag_key="balanced_board_size_sampling",
     )
     target_clear_count: int | None = None
+    target_row_count: int | None = None
+    target_drop_steps: int | None = None
+    target_cell_count: int | None = None
+    shift_delta = 0
+    shift_delta_probabilities: Dict[str, float] = {"0": 1.0}
     answer_probabilities: Dict[str, float]
     target_label: str | None = None
     if str(public_query) == QUERY_LINE_CLEAR_COUNT:
@@ -571,12 +680,90 @@ def _resolve_axes(
             namespace=f"{task_id}.{public_query}.target_label",
             labels=OPTION_LABELS[: int(option_count)],
         )
+    elif str(public_query) == QUERY_ROW_OCCUPANCY_STATUS_COUNT:
+        target_row_count, answer_probabilities = _sample_integer_axis(
+            task_id=str(task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            support_key="row_occupancy_status_count_support",
+            explicit_key="target_row_count",
+            fallback_support=_DEFAULTS.row_occupancy_status_count_support,
+            namespace=f"{public_query}.target_row_count.{query_id}",
+            balanced_flag_key="balanced_target_answer_sampling",
+        )
+    elif str(public_query) == QUERY_DROP_COLLISION_TIME_VALUE:
+        target_drop_steps, answer_probabilities = _sample_integer_axis(
+            task_id=str(task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            support_key="drop_collision_time_support",
+            explicit_key="target_drop_steps",
+            fallback_support=_DEFAULTS.drop_collision_time_support,
+            namespace=f"{public_query}.target_drop_steps.{query_id}",
+            balanced_flag_key="balanced_target_answer_sampling",
+        )
+        if str(query_id) == "left_shift_collision_time":
+            magnitude, magnitude_probabilities = _sample_integer_axis(
+                task_id=str(task_id),
+                instance_seed=int(instance_seed),
+                params=params,
+                support_key="shift_magnitude_support",
+                explicit_key="shift_magnitude",
+                fallback_support=_DEFAULTS.shift_magnitude_support,
+                namespace=f"{public_query}.shift_magnitude.{query_id}",
+                balanced_flag_key="balanced_shift_magnitude_sampling",
+            )
+            shift_delta = -int(magnitude)
+            shift_delta_probabilities = {str(-int(key)): float(value) for key, value in magnitude_probabilities.items()}
+        elif str(query_id) == "right_shift_collision_time":
+            magnitude, magnitude_probabilities = _sample_integer_axis(
+                task_id=str(task_id),
+                instance_seed=int(instance_seed),
+                params=params,
+                support_key="shift_magnitude_support",
+                explicit_key="shift_magnitude",
+                fallback_support=_DEFAULTS.shift_magnitude_support,
+                namespace=f"{public_query}.shift_magnitude.{query_id}",
+                balanced_flag_key="balanced_shift_magnitude_sampling",
+            )
+            shift_delta = int(magnitude)
+            shift_delta_probabilities = {str(int(key)): float(value) for key, value in magnitude_probabilities.items()}
+    elif str(public_query) == QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT:
+        if "filled_cell_count" in str(query_id):
+            support = tuple(range(1, int(board_cols) + 1))
+        else:
+            support = tuple(range(0, int(board_cols)))
+        configured_support = tuple(
+            int(value)
+            for value in group_default(
+                _GEN_DEFAULTS,
+                "edge_occupied_row_cell_count_support",
+                _DEFAULTS.edge_occupied_row_cell_count_support,
+            )
+        )
+        feasible_support = tuple(value for value in configured_support if value in set(support))
+        if not feasible_support:
+            feasible_support = support
+        target_cell_count, answer_probabilities = _sample_integer_axis(
+            task_id=str(task_id),
+            instance_seed=int(instance_seed),
+            params={**dict(params), "edge_occupied_row_cell_count_support": list(feasible_support)},
+            support_key="edge_occupied_row_cell_count_support",
+            explicit_key="target_cell_count",
+            fallback_support=feasible_support,
+            namespace=f"{public_query}.target_cell_count.{query_id}",
+            balanced_flag_key="balanced_target_answer_sampling",
+        )
     return _ResolvedAxes(
         public_query=str(public_query),
         query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_clear_count=None if target_clear_count is None else int(target_clear_count),
+        target_row_count=None if target_row_count is None else int(target_row_count),
+        target_drop_steps=None if target_drop_steps is None else int(target_drop_steps),
+        target_cell_count=None if target_cell_count is None else int(target_cell_count),
+        shift_delta=int(shift_delta),
         option_count=int(option_count),
         board_rows=int(board_rows),
         board_cols=int(board_cols),
@@ -585,6 +772,7 @@ def _resolve_axes(
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         answer_probabilities=dict(answer_probabilities),
+        shift_delta_probabilities=dict(shift_delta_probabilities),
         option_count_probabilities=dict(option_count_probabilities),
         board_row_probabilities=dict(board_row_probabilities),
         board_col_probabilities=dict(board_col_probabilities),
@@ -753,6 +941,100 @@ def _avoid_prefilled_full_rows(rows: List[List[str]], *, protected_empty: set[Co
                 rows[row_index][int(rng.choice(candidates))] = EMPTY
 
 
+def _supported_stack_generation_meta(*, strategy: str) -> Dict[str, Any]:
+    """Return trace metadata for the visually-supported Tetris stack policy."""
+
+    return {
+        "board_generation": {
+            "mode": "natural_supported_stack",
+            "strategy": str(strategy),
+            "cell_support_policy": "every locked cell is supported by the bottom or a locked cell below",
+        }
+    }
+
+
+def _is_supported_stack_board(board: Board) -> bool:
+    """Return whether every occupied board cell has vertical support."""
+
+    board_rows, board_cols = _board_size(board)
+    for row in range(board_rows - 1):
+        for col in range(board_cols):
+            if board[row][col] != EMPTY and board[row + 1][col] == EMPTY:
+                return False
+    return True
+
+
+def _fill_supported_column(
+    rows: List[List[str]],
+    *,
+    col: int,
+    top_row: int,
+    rng,
+    protected_empty: set[Coord] | None = None,
+) -> None:
+    """Fill one column from bottom up to ``top_row`` without crossing protected gaps."""
+
+    protected = set(protected_empty or set())
+    board_rows = len(rows)
+    if board_rows <= 0:
+        return
+    top = max(0, min(int(top_row), board_rows - 1))
+    for row in range(board_rows - 1, top - 1, -1):
+        coord = (int(row), int(col))
+        if coord in protected:
+            break
+        if rows[int(row)][int(col)] == EMPTY:
+            rows[int(row)][int(col)] = str(rng.choice(PIECE_ORDER))
+
+
+def _supported_stack_from_heights(
+    rng,
+    *,
+    board_rows: int,
+    board_cols: int,
+    heights: Sequence[int],
+    protected_empty: set[Coord] | None = None,
+) -> Board:
+    """Build a board from contiguous per-column heights."""
+
+    rows = [[EMPTY for _ in range(int(board_cols))] for _ in range(int(board_rows))]
+    protected = set(protected_empty or set())
+    for col in range(int(board_cols)):
+        height = max(0, min(int(heights[int(col)]), int(board_rows)))
+        if height <= 0:
+            continue
+        top = int(board_rows) - int(height)
+        _fill_supported_column(rows, col=int(col), top_row=int(top), rng=rng, protected_empty=protected)
+    board = _freeze(rows)
+    if not _is_supported_stack_board(board):
+        raise ValueError("constructed unsupported Tetris stack")
+    return board
+
+
+def _random_supported_heights(
+    rng,
+    *,
+    scene_variant: str,
+    board_rows: int,
+    board_cols: int,
+    force_gap_column: bool = True,
+) -> List[int]:
+    """Sample contiguous column heights for a natural-looking static stack."""
+
+    height_low, height_high = {
+        "low_stack": (1, 3),
+        "notched_stack": (2, 5),
+        "high_stack": (3, 6),
+    }.get(str(scene_variant), (2, 5))
+    capped_high = min(int(height_high), max(1, int(board_rows) - 2))
+    capped_low = min(int(height_low), capped_high)
+    heights = [int(rng.randint(capped_low, capped_high)) for _ in range(int(board_cols))]
+    if force_gap_column and heights:
+        gap_col = int(rng.randrange(int(board_cols)))
+        heights[gap_col] = 0
+    return heights
+
+
 def _construct_board_with_target_clear(
     rng,
     *,
@@ -762,38 +1044,72 @@ def _construct_board_with_target_clear(
     board_cols: int,
 ) -> Tuple[Board, _Placement, _Outcome]:
     target = int(target_clear_count)
+    if target > 0:
+        # Use the canonical vertical-I well for exact 1..4-line clear
+        # construction. This preserves a coherent supported stack while keeping
+        # the answer balanced across the configured clear-count support.
+        piece = "I"
+        orientation_index = 1
+        shape = TETROMINOES[piece][orientation_index]
+        height, width = _shape_size(shape)
+        if int(height) > int(board_rows) or int(width) > int(board_cols):
+            raise ValueError("board is too small for Tetris clear-count construction")
+        gap_col = int(rng.randint(0, int(board_cols) - int(width)))
+        top = int(board_rows) - int(height)
+        placement = _Placement(piece, int(orientation_index), int(gap_col), int(top))
+        piece_cells = set(_piece_cells(placement))
+        notch_candidates = [col for col in range(int(board_cols)) if int(col) != int(gap_col)]
+        if not notch_candidates:
+            raise ValueError("board is too narrow for Tetris clear-count construction")
+        notch_col = int(rng.choice(notch_candidates))
+        heights: List[int] = []
+        for col in range(int(board_cols)):
+            if int(col) == int(gap_col):
+                heights.append(0)
+                continue
+            min_height = int(target)
+            max_extra = {
+                "low_stack": 1,
+                "notched_stack": 2,
+                "high_stack": 3,
+            }.get(str(scene_variant), 2)
+            max_height = min(int(height), int(target) + int(max_extra))
+            if int(col) == int(notch_col):
+                heights.append(int(target))
+            else:
+                heights.append(int(rng.randint(min_height, max_height)))
+        board = _supported_stack_from_heights(
+            rng,
+            board_rows=int(board_rows),
+            board_cols=int(board_cols),
+            heights=heights,
+            protected_empty=piece_cells,
+        )
+        dropped_top = _hard_drop_top(board, piece=piece, orientation_index=int(orientation_index), col=int(gap_col))
+        if dropped_top != int(top):
+            raise ValueError("guided Tetris well did not produce expected hard-drop top")
+        outcome = _evaluate_outcome(board, placement)
+        if int(outcome.clear_count) != int(target):
+            raise ValueError(f"guided Tetris well produced {outcome.clear_count} clears instead of {target}")
+        return board, placement, outcome
+
     for _attempt in range(900):
-        piece, orientation_index = _random_piece_with_min_rows(rng, min_rows=max(1, target))
+        piece, orientation_index = _random_piece_with_min_rows(rng, min_rows=1)
         shape = TETROMINOES[str(piece)][int(orientation_index)]
         height, width = _shape_size(shape)
         if int(width) > int(board_cols) or int(height) > int(board_rows):
             continue
         col = int(rng.randint(0, int(board_cols) - int(width)))
-        top = int(board_rows - int(height))
-        placement = _Placement(str(piece), int(orientation_index), int(col), int(top))
-        piece_cells = set(_piece_cells(placement))
-        piece_rows = sorted({row for row, _col in piece_cells})
-        target_rows = set(rng.sample(piece_rows, int(target))) if target > 0 else set()
-        rows = [[EMPTY for _ in range(int(board_cols))] for _ in range(int(board_rows))]
-        fill_base = {"low_stack": 0.12, "notched_stack": 0.18, "high_stack": 0.24}.get(str(scene_variant), 0.16)
-        for row in range(int(board_rows)):
-            if row in target_rows:
-                for col_index in range(int(board_cols)):
-                    if (row, col_index) not in piece_cells:
-                        rows[row][col_index] = str(rng.choice(PIECE_ORDER))
-                continue
-            if row >= top - 1:
-                row_prob = min(0.70, fill_base + (0.10 * (row - max(0, top - 1))))
-                for col_index in range(int(board_cols)):
-                    if (row, col_index) not in piece_cells and rng.random() < row_prob:
-                        rows[row][col_index] = str(rng.choice(PIECE_ORDER))
-        for row, col_index in piece_cells:
-            rows[int(row)][int(col_index)] = EMPTY
-        _avoid_prefilled_full_rows(rows, protected_empty=piece_cells, rng=rng)
-        board = _freeze(rows)
+        board = _random_stack_board(
+            rng,
+            scene_variant=str(scene_variant),
+            board_rows=int(board_rows),
+            board_cols=int(board_cols),
+        )
         dropped_top = _hard_drop_top(board, piece=str(piece), orientation_index=int(orientation_index), col=int(col))
-        if dropped_top != int(top):
+        if dropped_top is None:
             continue
+        placement = _Placement(str(piece), int(orientation_index), int(col), int(dropped_top))
         outcome = _evaluate_outcome(board, placement)
         if int(outcome.clear_count) == int(target):
             return board, placement, outcome
@@ -801,23 +1117,19 @@ def _construct_board_with_target_clear(
 
 
 def _random_stack_board(rng, *, scene_variant: str, board_rows: int, board_cols: int) -> Board:
-    rows = [[EMPTY for _ in range(int(board_cols))] for _ in range(int(board_rows))]
-    height_low, height_high = {
-        "low_stack": (1, 3),
-        "notched_stack": (2, 5),
-        "high_stack": (3, 6),
-    }.get(str(scene_variant), (2, 5))
-    capped_high = min(int(height_high), max(1, int(board_rows) - 2))
-    capped_low = min(int(height_low), capped_high)
-    heights = [int(rng.randint(capped_low, capped_high)) for _ in range(int(board_cols))]
-    for col in range(int(board_cols)):
-        for depth in range(heights[col]):
-            row = int(board_rows) - 1 - int(depth)
-            if rng.random() < 0.10 and depth > 0:
-                continue
-            rows[row][col] = str(rng.choice(PIECE_ORDER))
-    _avoid_prefilled_full_rows(rows, protected_empty=set(), rng=rng)
-    return _freeze(rows)
+    heights = _random_supported_heights(
+        rng,
+        scene_variant=str(scene_variant),
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+        force_gap_column=True,
+    )
+    return _supported_stack_from_heights(
+        rng,
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+        heights=heights,
+    )
 
 
 def _board_key(board: Board) -> Tuple[Tuple[str, ...], ...]:
@@ -860,9 +1172,10 @@ def _make_line_clear_sample(rng, axes: _ResolvedAxes) -> _Sample:
             falling_placement=None,
             outcome=best_outcome,
             options=(),
-            evidence_entity_ids=("main", "next_piece"),
-            evidence_kind="board_and_next_piece",
+            annotation_entity_ids=("main", "next_piece"),
+            annotation_kind="board_and_next_piece",
             metadata={
+                **_supported_stack_generation_meta(strategy="line_clear_guided_well" if target > 0 else "line_clear_supported_stack"),
                 "drop_instruction": str(axes.query_id),
                 "target_clear_count": int(best_clear),
                 "best_clear_count": int(best_clear),
@@ -885,21 +1198,12 @@ def _clear_without_gravity(outcome: _Outcome) -> Board:
 
 def _mutated_result_board(rng, board: Board) -> Board:
     board_rows, board_cols = _board_size(board)
-    rows = [list(row) for row in board]
-    filled = [(r, c) for r in range(board_rows) for c in range(board_cols) if rows[r][c] != EMPTY]
-    empties = [(r, c) for r in range(board_rows) for c in range(board_cols) if rows[r][c] == EMPTY]
-    if filled and empties and int(rng.randrange(2)) == 0:
-        source = tuple(rng.choice(filled))
-        target = tuple(rng.choice(empties))
-        rows[int(target[0])][int(target[1])] = rows[int(source[0])][int(source[1])]
-        rows[int(source[0])][int(source[1])] = EMPTY
-    elif empties:
-        target = tuple(rng.choice(empties))
-        rows[int(target[0])][int(target[1])] = str(rng.choice(PIECE_ORDER))
-    elif filled:
-        source = tuple(rng.choice(filled))
-        rows[int(source[0])][int(source[1])] = EMPTY
-    return _freeze(rows)
+    return _random_stack_board(
+        rng,
+        scene_variant=str(rng.choice(SUPPORTED_SCENE_VARIANTS)),
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+    )
 
 
 def _drop_result_distractor_boards(rng, board: Board, outcome: _Outcome) -> Tuple[Board, ...]:
@@ -913,7 +1217,6 @@ def _drop_result_distractor_boards(rng, board: Board, outcome: _Outcome) -> Tupl
             boards.append(candidate)
 
     add(_uncleared_board_after_lock(outcome))
-    add(_clear_without_gravity(outcome))
     for delta in (-1, 1, -2, 2):
         alt_top = _hard_drop_top(
             board,
@@ -929,7 +1232,9 @@ def _drop_result_distractor_boards(rng, board: Board, outcome: _Outcome) -> Tupl
                 int(alt_top),
             )
             if _can_place(board, alt):
-                add(_evaluate_outcome(board, alt).result_board)
+                alt_board = _evaluate_outcome(board, alt).result_board
+                if _is_supported_stack_board(alt_board):
+                    add(alt_board)
     orientations = TETROMINOES[str(outcome.placement.piece)]
     for orientation_index in range(len(orientations)):
         if int(orientation_index) == int(outcome.placement.orientation_index):
@@ -943,7 +1248,9 @@ def _drop_result_distractor_boards(rng, board: Board, outcome: _Outcome) -> Tupl
         if alt_top is not None:
             alt = _Placement(str(outcome.placement.piece), int(orientation_index), int(outcome.placement.col), int(alt_top))
             if _can_place(board, alt):
-                add(_evaluate_outcome(board, alt).result_board)
+                alt_board = _evaluate_outcome(board, alt).result_board
+                if _is_supported_stack_board(alt_board):
+                    add(alt_board)
     while len(boards) < 8:
         add(_mutated_result_board(rng, boards[-1] if boards else outcome.locked_board))
     return tuple(boards)
@@ -999,13 +1306,428 @@ def _make_drop_result_sample(rng, axes: _ResolvedAxes) -> _Sample:
         falling_placement=falling_placement,
         outcome=outcome,
         options=tuple(options),
-        evidence_entity_ids=(f"option_{answer_label.lower()}",),
-        evidence_kind="option_panel",
+        annotation_entity_ids=(f"option_{answer_label.lower()}",),
+        annotation_kind="option_panel",
         metadata={
+            **_supported_stack_generation_meta(strategy="drop_result_guided_well" if int(outcome.clear_count) > 0 else "drop_result_supported_stack"),
             "target_clear_count": int(outcome.clear_count),
             "drop_result_branch": str(axes.query_id),
         },
     )
+
+
+def _row_empty_count(row: Sequence[str]) -> int:
+    """Return the number of empty cells in one Tetris row."""
+
+    return sum(1 for cell in row if str(cell) == EMPTY)
+
+
+def _row_qualifies_for_query(row: Sequence[str], *, query_id: str) -> bool:
+    """Return whether one row satisfies the row-occupancy query."""
+
+    empty_count = _row_empty_count(row)
+    if str(query_id) == "full_row_count":
+        return int(empty_count) == 0
+    if str(query_id) == "one_gap_row_count":
+        return int(empty_count) == 1
+    raise ValueError(f"unsupported Tetris row-occupancy query: {query_id}")
+
+
+def _qualifying_row_indices(board: Board, *, query_id: str) -> Tuple[int, ...]:
+    """Return row indices satisfying the row-occupancy query."""
+
+    return tuple(
+        int(row_index)
+        for row_index, row in enumerate(board)
+        if _row_qualifies_for_query(row, query_id=str(query_id))
+    )
+
+
+def _make_row_with_empty_count(rng, *, board_cols: int, empty_count: int) -> Tuple[str, ...]:
+    """Build one row with exactly `empty_count` empty cells."""
+
+    empty_count = max(0, min(int(empty_count), int(board_cols)))
+    row = [str(rng.choice(PIECE_ORDER)) for _ in range(int(board_cols))]
+    for col in rng.sample(range(int(board_cols)), int(empty_count)):
+        row[int(col)] = EMPTY
+    return tuple(str(cell) for cell in row)
+
+
+def _nonqualifying_empty_count(rng, *, query_id: str, board_cols: int, row_index: int, active_start: int) -> int:
+    """Sample a row empty count that does not satisfy the active query."""
+
+    board_cols = int(board_cols)
+    top_band = int(row_index) < int(active_start)
+    if str(query_id) == "full_row_count":
+        if top_band:
+            return int(rng.randint(max(1, board_cols - 2), board_cols))
+        return int(rng.randint(1, min(board_cols, max(2, board_cols // 2 + 1))))
+    if str(query_id) == "one_gap_row_count":
+        if top_band:
+            return int(rng.randint(min(2, board_cols), board_cols))
+        choices = [0] + list(range(2, min(board_cols, max(3, board_cols // 2 + 1)) + 1))
+        return int(rng.choice(choices))
+    raise ValueError(f"unsupported Tetris row-occupancy query: {query_id}")
+
+
+def _active_row_depth(scene_variant: str, *, board_rows: int) -> int:
+    """Return the lower-board band used for denser static row-count patterns."""
+
+    base_depth = {
+        "low_stack": 6,
+        "notched_stack": 8,
+        "high_stack": 10,
+    }.get(str(scene_variant), 8)
+    return min(int(board_rows), max(5, int(base_depth)))
+
+
+def _make_row_occupancy_sample(rng, axes: _ResolvedAxes) -> _Sample:
+    """Construct one static Tetris board with an exact row-occupancy answer."""
+
+    target = int(axes.target_row_count or 0)
+    board_rows = int(axes.board_rows)
+    board_cols = int(axes.board_cols)
+    max_extra = {
+        "low_stack": 2,
+        "notched_stack": 4,
+        "high_stack": 6,
+    }.get(str(axes.scene_variant), 4)
+    max_height = min(int(board_rows) - 2, int(target) + int(max_extra))
+    if str(axes.query_id) == "full_row_count":
+        if target <= 0:
+            heights = _random_supported_heights(
+                rng,
+                scene_variant=str(axes.scene_variant),
+                board_rows=int(board_rows),
+                board_cols=int(board_cols),
+                force_gap_column=True,
+            )
+            heights[int(rng.randrange(board_cols))] = 0
+        else:
+            heights = [
+                int(rng.randint(int(target), max(int(target), int(max_height))))
+                for _ in range(int(board_cols))
+            ]
+            heights[int(rng.randrange(board_cols))] = int(target)
+        board = _supported_stack_from_heights(
+            rng,
+            board_rows=int(board_rows),
+            board_cols=int(board_cols),
+            heights=heights,
+        )
+    elif str(axes.query_id) == "one_gap_row_count":
+        if target <= 0:
+            first_gap = int(rng.randrange(board_cols))
+            second_gap = int((first_gap + 1 + rng.randrange(max(1, board_cols - 1))) % board_cols)
+            heights = [
+                int(rng.randint(1, max(1, int(max_height))))
+                for _ in range(int(board_cols))
+            ]
+            heights[first_gap] = 0
+            heights[second_gap] = 0
+        else:
+            gap_col = int(rng.randrange(board_cols))
+            stopper_candidates = [col for col in range(int(board_cols)) if int(col) != int(gap_col)]
+            stopper_col = int(rng.choice(stopper_candidates))
+            heights = [
+                int(rng.randint(int(target), max(int(target), int(max_height))))
+                for _ in range(int(board_cols))
+            ]
+            heights[gap_col] = 0
+            heights[stopper_col] = int(target)
+        board = _supported_stack_from_heights(
+            rng,
+            board_rows=int(board_rows),
+            board_cols=int(board_cols),
+            heights=heights,
+        )
+    else:
+        raise ValueError(f"unsupported Tetris row-occupancy query: {axes.query_id}")
+    qualifying_rows = _qualifying_row_indices(board, query_id=str(axes.query_id))
+    if len(qualifying_rows) != int(target):
+        raise ValueError("constructed Tetris row-occupancy board has wrong answer")
+    return _Sample(
+        answer=int(target),
+        answer_type="integer",
+        board=board,
+        piece="",
+        preview_orientation_index=0,
+        placement=None,
+        falling_placement=None,
+        outcome=None,
+        options=(),
+        annotation_entity_ids=tuple(f"main_row_{int(row)}" for row in qualifying_rows),
+        annotation_kind="row_set",
+        metadata={
+            **_supported_stack_generation_meta(strategy="row_occupancy_column_heights"),
+            "target_row_count": int(target),
+            "row_occupancy_query": str(axes.query_id),
+            "qualifying_rows": [int(row) for row in qualifying_rows],
+            "row_empty_counts": [int(_row_empty_count(row)) for row in board],
+        },
+    )
+
+
+def _edge_occupied_row_index(board: Board, *, edge: str) -> int:
+    """Return the topmost or bottommost occupied row index."""
+
+    rows = range(len(board)) if str(edge) == "top" else range(len(board) - 1, -1, -1)
+    for row in rows:
+        if any(str(cell) != EMPTY for cell in board[int(row)]):
+            return int(row)
+    raise ValueError("Tetris board has no occupied row")
+
+
+def _edge_row_query_parts(query_id: str) -> Tuple[str, str]:
+    """Parse edge-row query id into row edge and counted cell status."""
+
+    raw = str(query_id)
+    if raw.startswith("top_occupied_row_"):
+        edge = "top"
+    elif raw.startswith("bottom_occupied_row_"):
+        edge = "bottom"
+    else:
+        raise ValueError(f"unsupported Tetris edge-row query: {query_id}")
+    if raw.endswith("_filled_cell_count"):
+        status = "filled"
+    elif raw.endswith("_empty_cell_count"):
+        status = "empty"
+    else:
+        raise ValueError(f"unsupported Tetris edge-row query: {query_id}")
+    return str(edge), str(status)
+
+
+def _cell_ids_in_row_matching_status(board: Board, *, row_index: int, status: str, entity_prefix: str) -> Tuple[str, ...]:
+    """Return rendered cell ids in one row matching filled or empty status."""
+
+    ids: List[str] = []
+    for col, cell in enumerate(board[int(row_index)]):
+        is_filled = str(cell) != EMPTY
+        if (str(status) == "filled" and is_filled) or (str(status) == "empty" and not is_filled):
+            ids.append(f"{entity_prefix}_cell_{int(row_index)}_{int(col)}")
+    return tuple(ids)
+
+
+def _make_edge_occupied_row_cell_count_sample(rng, axes: _ResolvedAxes) -> _Sample:
+    """Construct a board where an edge occupied row has an exact cell count."""
+
+    board_rows = int(axes.board_rows)
+    board_cols = int(axes.board_cols)
+    target = int(axes.target_cell_count if axes.target_cell_count is not None else 0)
+    edge, status = _edge_row_query_parts(str(axes.query_id))
+    filled_in_selected_row = int(target) if str(status) == "filled" else int(board_cols) - int(target)
+    if filled_in_selected_row < 1 or filled_in_selected_row > int(board_cols):
+        raise ValueError("edge occupied row target is infeasible")
+
+    height_cap = {
+        "low_stack": 3,
+        "notched_stack": 5,
+        "high_stack": 7,
+    }.get(str(axes.scene_variant), 5)
+    height_cap = max(1, min(int(height_cap), int(board_rows) - 2))
+    active_cols = set(int(col) for col in rng.sample(range(int(board_cols)), int(filled_in_selected_row)))
+
+    if str(edge) == "top":
+        peak_height = int(rng.randint(1 if height_cap == 1 else 2, int(height_cap)))
+        heights = [
+            int(peak_height) if int(col) in active_cols else int(rng.randint(0, max(0, int(peak_height) - 1)))
+            for col in range(int(board_cols))
+        ]
+    else:
+        heights = [
+            int(rng.randint(1, int(height_cap))) if int(col) in active_cols else 0
+            for col in range(int(board_cols))
+        ]
+
+    board = _supported_stack_from_heights(
+        rng,
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+        heights=heights,
+    )
+    selected_row_index = _edge_occupied_row_index(board, edge=str(edge))
+    annotation_entity_ids = _cell_ids_in_row_matching_status(
+        board,
+        row_index=int(selected_row_index),
+        status=str(status),
+        entity_prefix="main",
+    )
+    if len(annotation_entity_ids) != int(target):
+        raise ValueError("constructed Tetris edge-row board has wrong answer")
+    selected_row = board[int(selected_row_index)]
+    return _Sample(
+        answer=int(target),
+        answer_type="integer",
+        board=board,
+        piece="",
+        preview_orientation_index=0,
+        placement=None,
+        falling_placement=None,
+        outcome=None,
+        options=(),
+        annotation_entity_ids=tuple(annotation_entity_ids),
+        annotation_kind="cell_set",
+        metadata={
+            **_supported_stack_generation_meta(strategy="edge_occupied_row_column_heights"),
+            "target_cell_count": int(target),
+            "edge_row_selector": str(edge),
+            "counted_cell_status": str(status),
+            "selected_row_index": int(selected_row_index),
+            "selected_row_filled_count": int(sum(1 for cell in selected_row if str(cell) != EMPTY)),
+            "selected_row_empty_count": int(sum(1 for cell in selected_row if str(cell) == EMPTY)),
+            "selected_cell_ids": [str(entity_id) for entity_id in annotation_entity_ids],
+            "column_heights": [int(value) for value in _column_heights(board)],
+        },
+    )
+
+
+def _shift_instruction_text(shift_delta: int) -> str:
+    if int(shift_delta) == 0:
+        return "do not move it sideways"
+    direction = "left" if int(shift_delta) < 0 else "right"
+    magnitude = abs(int(shift_delta))
+    unit = "column" if int(magnitude) == 1 else "columns"
+    return f"move it {int(magnitude)} {unit} {direction}"
+
+
+def _horizontal_sweep_cells(placement: _Placement, *, shift_delta: int) -> Tuple[Coord, ...]:
+    if int(shift_delta) == 0:
+        return _piece_cells(placement)
+    step = 1 if int(shift_delta) > 0 else -1
+    cells: List[Coord] = []
+    for delta in range(0, int(shift_delta) + step, step):
+        cells.extend(_piece_cells(_shifted_placement(placement, shift_delta=int(delta))))
+    return tuple(sorted(set(cells)))
+
+
+def _bottom_edge_below_cells(placement: _Placement) -> Tuple[Coord, ...]:
+    cells = set(_piece_cells(placement))
+    below_cells: List[Coord] = []
+    for row, col in cells:
+        below = (int(row) + 1, int(col))
+        if below not in cells:
+            below_cells.append(below)
+    return tuple(sorted(set(below_cells)))
+
+
+def _placement_trace(placement: _Placement) -> Dict[str, Any]:
+    return {
+        "piece": str(placement.piece),
+        "orientation_index": int(placement.orientation_index),
+        "col": int(placement.col),
+        "top": int(placement.top),
+        "cells": [[int(r), int(c)] for r, c in _piece_cells(placement)],
+    }
+
+
+def _make_drop_collision_time_sample(rng, axes: _ResolvedAxes) -> _Sample:
+    target = int(axes.target_drop_steps or 0)
+    board_rows = int(axes.board_rows)
+    board_cols = int(axes.board_cols)
+    shift_delta = int(axes.shift_delta)
+    for _attempt in range(1600):
+        piece = str(rng.choice(PIECE_ORDER))
+        orientation_index = int(rng.randrange(len(TETROMINOES[piece])))
+        shape = TETROMINOES[piece][orientation_index]
+        height, width = _shape_size(shape)
+        if int(width) > int(board_cols):
+            continue
+        final_top = int(target)
+        # Keep a visible locked-block stop below the final piece instead of
+        # relying on an image boundary as the stopping witness.
+        if final_top < 0 or final_top >= int(board_rows) - int(height):
+            continue
+        shifted_col_candidates = []
+        for shifted_col in range(0, int(board_cols) - int(width) + 1):
+            start_col = int(shifted_col) - int(shift_delta)
+            if 0 <= int(start_col) <= int(board_cols) - int(width):
+                shifted_col_candidates.append((int(start_col), int(shifted_col)))
+        if not shifted_col_candidates:
+            continue
+        start_col, shifted_col = tuple(rng.choice(shifted_col_candidates))
+        start_placement = _Placement(piece, int(orientation_index), int(start_col), 0)
+        final_placement = _Placement(piece, int(orientation_index), int(shifted_col), int(final_top))
+
+        path_cells: set[Coord] = set()
+        for top in range(0, int(final_top) + 1):
+            path_cells.update(_piece_cells(_Placement(piece, int(orientation_index), int(shifted_col), int(top))))
+        sweep_cells = set(_horizontal_sweep_cells(start_placement, shift_delta=int(shift_delta)))
+        blocker_cells = set(_bottom_edge_below_cells(final_placement))
+        blocker_cells = {(int(row), int(col)) for row, col in blocker_cells if 0 <= int(row) < int(board_rows)}
+        if not blocker_cells:
+            continue
+
+        rows = [[EMPTY for _ in range(int(board_cols))] for _ in range(int(board_rows))]
+        for row, col in blocker_cells:
+            _fill_supported_column(rows, col=int(col), top_row=int(row), rng=rng)
+
+        protected = set(path_cells) | set(sweep_cells) | set(blocker_cells)
+        height_cap = {
+            "low_stack": 3,
+            "notched_stack": 5,
+            "high_stack": 7,
+        }.get(str(axes.scene_variant), 5)
+        blocker_cols = {int(col) for _row, col in blocker_cells}
+        for col in range(int(board_cols)):
+            if int(col) in blocker_cols:
+                continue
+            protected_rows = [int(row) for row, protected_col in protected if int(protected_col) == int(col)]
+            top_limit = max(protected_rows) + 1 if protected_rows else 0
+            max_height = max(0, int(board_rows) - int(top_limit))
+            if max_height <= 0:
+                continue
+            if rng.random() > 0.70:
+                continue
+            height = int(rng.randint(1, min(int(height_cap), int(max_height))))
+            top_row = int(board_rows) - int(height)
+            if int(top_row) < int(top_limit):
+                top_row = int(top_limit)
+            _fill_supported_column(rows, col=int(col), top_row=int(top_row), rng=rng, protected_empty=set(path_cells) | set(sweep_cells))
+        board = _freeze(rows)
+        if not _is_supported_stack_board(board):
+            continue
+        collision = _drop_collision(board, start_placement, shift_delta=int(shift_delta))
+        if collision is None:
+            continue
+        if int(collision.drop_steps) != int(target):
+            continue
+        if str(collision.collision_kind) != "locked_block" or not collision.blocker_cells:
+            continue
+
+        start_ids = tuple(f"start_cell_{int(row)}_{int(col)}" for row, col in _piece_cells(start_placement))
+        stop_ids = tuple(f"start_cell_{int(row)}_{int(col)}" for row, col in collision.blocker_cells)
+        return _Sample(
+            answer=int(collision.drop_steps),
+            answer_type="integer",
+            board=board,
+            piece=str(piece),
+            preview_orientation_index=int(orientation_index),
+            placement=collision.final_placement,
+            falling_placement=start_placement,
+            outcome=None,
+            options=(),
+            annotation_entity_ids=tuple(start_ids + stop_ids),
+            annotation_kind="collision_keyed_cell_sets",
+            metadata={
+                **_supported_stack_generation_meta(strategy="drop_collision_supported_blockers"),
+                "target_drop_steps": int(target),
+                "drop_steps": int(collision.drop_steps),
+                "shift_delta": int(shift_delta),
+                "shift_magnitude": abs(int(shift_delta)),
+                "shift_instruction": _shift_instruction_text(int(shift_delta)),
+                "collision_kind": str(collision.collision_kind),
+                "start_placement": _placement_trace(collision.start_placement),
+                "shifted_placement": _placement_trace(collision.shifted_placement),
+                "final_placement": _placement_trace(collision.final_placement),
+                "collision_blocker_cells": [[int(r), int(c)] for r, c in collision.blocker_cells],
+                "bottom_contact_cells": [[int(r), int(c)] for r, c in collision.bottom_contact_cells],
+                "annotation_entity_id_map": {
+                    "start_piece": [str(entity_id) for entity_id in start_ids],
+                    "stop_witness": [str(entity_id) for entity_id in stop_ids],
+                },
+            },
+        )
+    raise ValueError("failed to construct Tetris drop-collision-time sample")
 
 
 def _sample_scene(rng, axes: _ResolvedAxes) -> _Sample:
@@ -1013,6 +1735,12 @@ def _sample_scene(rng, axes: _ResolvedAxes) -> _Sample:
         return _make_line_clear_sample(rng, axes)
     if str(axes.public_query) == QUERY_DROP_RESULT_LABEL:
         return _make_drop_result_sample(rng, axes)
+    if str(axes.public_query) == QUERY_ROW_OCCUPANCY_STATUS_COUNT:
+        return _make_row_occupancy_sample(rng, axes)
+    if str(axes.public_query) == QUERY_DROP_COLLISION_TIME_VALUE:
+        return _make_drop_collision_time_sample(rng, axes)
+    if str(axes.public_query) == QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT:
+        return _make_edge_occupied_row_cell_count_sample(rng, axes)
     raise ValueError(f"unsupported public query: {axes.public_query}")
 
 
@@ -1376,7 +2104,50 @@ def _render_scene(
         },
     }
 
-    if str(axes.public_query) == QUERY_LINE_CLEAR_COUNT:
+    if str(axes.public_query) in {
+        QUERY_ROW_OCCUPANCY_STATUS_COUNT,
+        QUERY_DROP_COLLISION_TIME_VALUE,
+        QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT,
+    }:
+        row_params = replace(params, cell_size_px=int(params.line_cell_size_px))
+        board_w, board_h = _board_panel_size(row_params, board_rows=board_rows, board_cols=board_cols)
+        left = int((int(row_params.canvas_width) - board_w) / 2.0)
+        top = int((int(row_params.canvas_height) - board_h) / 2.0)
+        group_bbox = (float(left), float(top), float(left + board_w), float(top + board_h))
+        _shifted, dx, dy, _resolved = apply_games_layout_jitter_to_bbox(
+            bbox_px=group_bbox,
+            canvas_width=int(row_params.canvas_width),
+            canvas_height=int(row_params.canvas_height),
+            jitter=row_params.layout_jitter_meta,
+        )
+        panel_bbox = (
+            int(left + round(dx)),
+            int(top + round(dy)),
+            int(left + round(dx) + board_w),
+            int(top + round(dy) + board_h),
+        )
+        panel_map, panel_entities = _draw_board_panel(
+            image,
+            panel_bbox=panel_bbox,
+            label="START" if str(axes.public_query) == QUERY_DROP_COLLISION_TIME_VALUE else "BOARD",
+            board=sample.board,
+            style=style,
+            params=row_params,
+            ghost_cells=(),
+            ghost_piece=None,
+            falling_cells=_piece_cells(sample.falling_placement) if sample.falling_placement is not None else (),
+            falling_piece=sample.piece,
+            selected_rows=(),
+            entity_prefix="start" if str(axes.public_query) == QUERY_DROP_COLLISION_TIME_VALUE else "main",
+            tetris_style_variant=str(axes.style_variant),
+        )
+        entities.extend(panel_entities)
+        panel_key = "start" if str(axes.public_query) == QUERY_DROP_COLLISION_TIME_VALUE else "main"
+        render_map["panels"][panel_key] = panel_map["panel_bbox_px"]
+        render_map["option_bboxes_px"][panel_key] = panel_map["panel_bbox_px"]
+        render_map["cell_bboxes_px"].update(panel_map["cell_bboxes_px"])
+        render_map["row_bboxes_px"].update(panel_map["row_bboxes_px"])
+    elif str(axes.public_query) == QUERY_LINE_CLEAR_COUNT:
         line_params = replace(params, cell_size_px=int(params.line_cell_size_px))
         board_w, board_h = _board_panel_size(line_params, board_rows=board_rows, board_cols=board_cols)
         preview_w, preview_h = _piece_preview_panel_size(line_params)
@@ -1496,32 +2267,58 @@ def _render_scene(
     )
 
 
-def _evidence_bboxes(sample: _Sample, render_map: Mapping[str, Any]) -> List[List[float]]:
+def _annotation_bboxes(sample: _Sample, render_map: Mapping[str, Any]) -> List[List[float]]:
     bboxes: List[List[float]] = []
-    if str(sample.evidence_kind) in {"option_panel", "board_and_next_piece"}:
+    if str(sample.annotation_kind) in {"option_panel", "board_and_next_piece"}:
         option_bboxes = render_map.get("option_bboxes_px", {})
-        for entity_id in sample.evidence_entity_ids:
+        for entity_id in sample.annotation_entity_ids:
             bboxes.append([float(v) for v in option_bboxes[str(entity_id)]])
         return bboxes
     cell_bboxes = render_map.get("cell_bboxes_px", {})
     row_bboxes = render_map.get("row_bboxes_px", {})
-    for entity_id in sample.evidence_entity_ids:
-        if str(entity_id).startswith("cleared_row_"):
+    for entity_id in sample.annotation_entity_ids:
+        if str(sample.annotation_kind) == "row_set" or str(entity_id).startswith("cleared_row_"):
             bboxes.append([float(v) for v in row_bboxes[str(entity_id)]])
         else:
             bboxes.append([float(v) for v in cell_bboxes[str(entity_id)]])
     return bboxes
 
 
+def _keyed_annotation_bbox_sets(sample: _Sample, render_map: Mapping[str, Any]) -> Dict[str, List[List[float]]]:
+    cell_bboxes = render_map.get("cell_bboxes_px", {})
+    raw_map = sample.metadata.get("annotation_entity_id_map", {})
+    if not isinstance(raw_map, Mapping):
+        raise ValueError("keyed annotation sample is missing annotation_entity_id_map")
+    result: Dict[str, List[List[float]]] = {}
+    for key, entity_ids in raw_map.items():
+        result[str(key)] = [
+            [float(v) for v in cell_bboxes[str(entity_id)]]
+            for entity_id in entity_ids
+        ]
+    return result
+
+
 def _build_prompt_json_examples(public_query: str) -> Tuple[str, str]:
     if str(public_query) == QUERY_LINE_CLEAR_COUNT:
         answer: int | str = 2
-        evidence: Any = {"board": [80, 170, 300, 620], "next_piece": [140, 60, 240, 155]}
+        annotation: Any = {"board": [80, 170, 300, 620], "next_piece": [140, 60, 240, 155]}
+    elif str(public_query) == QUERY_ROW_OCCUPANCY_STATUS_COUNT:
+        answer = 3
+        annotation = [[120, 310, 460, 344], [120, 380, 460, 414], [120, 450, 460, 484]]
+    elif str(public_query) == QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT:
+        answer = 4
+        annotation = [[120, 310, 154, 344], [156, 310, 190, 344], [192, 310, 226, 344], [228, 310, 262, 344]]
+    elif str(public_query) == QUERY_DROP_COLLISION_TIME_VALUE:
+        answer = 4
+        annotation = {
+            "start_piece": [[120, 90, 148, 118], [150, 90, 178, 118]],
+            "stop_witness": [[120, 238, 148, 266], [150, 238, 178, 266]],
+        }
     else:
         answer = "C"
-        evidence = [[80, 120, 180, 240]]
+        annotation = [[80, 120, 180, 240]]
     return (
-        json.dumps({"evidence": evidence, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -1530,26 +2327,34 @@ def _task_answer_hint_key(public_query: str) -> str:
     return f"answer_hint_{str(public_query)}"
 
 
-def _task_evidence_hint_key(public_query: str) -> str:
-    return f"evidence_hint_{str(public_query)}"
+def _task_annotation_hint_key(public_query: str) -> str:
+    return f"annotation_hint_{str(public_query)}"
 
 
 def _complexity_for_sample(task_id: str, axes: _ResolvedAxes, sample: _Sample) -> TaskComplexity:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
     filled_count = sum(1 for row in sample.board for cell in row if cell != EMPTY)
     option_count = len(sample.options)
-    clear_count = int(sample.outcome.clear_count) if sample.outcome is not None else int(sample.metadata.get("target_clear_count", 0))
+    step_count = int(sample.outcome.clear_count) if sample.outcome is not None else int(
+        sample.metadata.get(
+            "target_drop_steps",
+            sample.metadata.get("target_cell_count", sample.metadata.get("target_clear_count", 0)),
+        )
+    )
     reasoning_base = {
         QUERY_LINE_CLEAR_COUNT: 0.66,
         QUERY_DROP_RESULT_LABEL: 0.64,
+        QUERY_ROW_OCCUPANCY_STATUS_COUNT: 0.42,
+        QUERY_DROP_COLLISION_TIME_VALUE: 0.58,
+        QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT: 0.44,
     }.get(str(axes.public_query), 0.50)
     return build_games_complexity(
         weights=weights,
         components={
             "visual_scan": min(1.0, 0.36 * normalize_linear(filled_count, min_value=8.0, max_value=46.0) + 0.24 * normalize_linear(option_count, min_value=0.0, max_value=5.0)),
-            "state_reasoning": min(1.0, reasoning_base + 0.06 * normalize_linear(clear_count, min_value=0.0, max_value=4.0)),
-            "ambiguity": min(1.0, 0.12 * normalize_linear(option_count, min_value=0.0, max_value=5.0) + 0.08 * normalize_linear(len(sample.evidence_entity_ids), min_value=1.0, max_value=8.0)),
-            "output_burden": normalize_linear(len(sample.evidence_entity_ids), min_value=1.0, max_value=8.0),
+            "state_reasoning": min(1.0, reasoning_base + 0.06 * normalize_linear(step_count, min_value=0.0, max_value=8.0)),
+            "ambiguity": min(1.0, 0.12 * normalize_linear(option_count, min_value=0.0, max_value=5.0) + 0.08 * normalize_linear(len(sample.annotation_entity_ids), min_value=1.0, max_value=8.0)),
+            "output_burden": normalize_linear(len(sample.annotation_entity_ids), min_value=1.0, max_value=8.0),
         },
     )
 
@@ -1587,32 +2392,47 @@ class GamesTetrisBoardTask:
             params=render_params,
             instance_seed=int(instance_seed),
         )
-        if str(sample.evidence_kind) == "board_and_next_piece":
+        if str(sample.annotation_kind) == "board_and_next_piece":
             option_bboxes = rendered.render_map.get("option_bboxes_px", {})
-            evidence_value: Any = {
+            annotation_value: Any = {
                 "board": [float(v) for v in option_bboxes["main"]],
                 "next_piece": [float(v) for v in option_bboxes["next_piece"]],
             }
-            evidence_type = "keyed_bbox_map"
-            projected_evidence = {
+            annotation_type = "keyed_bbox_map"
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_value),
-                "pixel_keyed_bbox_map": dict(evidence_value),
+                "keyed_bbox_map": dict(annotation_value),
+                "pixel_keyed_bbox_map": dict(annotation_value),
             }
             witness_symbolic = {
                 "type": "object_map",
                 "ids": {"board": "main", "next_piece": "next_piece"},
             }
-        else:
-            evidence_bboxes = _evidence_bboxes(sample, rendered.render_map)
-            evidence_value = [list(bbox) for bbox in evidence_bboxes]
-            evidence_type = "bbox_set"
-            projected_evidence = {
-                "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_value],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+        elif str(sample.annotation_kind) == "collision_keyed_cell_sets":
+            annotation_value = _keyed_annotation_bbox_sets(sample, rendered.render_map)
+            annotation_type = "keyed_bbox_set_map"
+            projected_annotation = {
+                "type": "keyed_bbox_set_map",
+                "keyed_bbox_set_map": dict(annotation_value),
+                "pixel_keyed_bbox_set_map": dict(annotation_value),
             }
-            witness_symbolic = {"type": "object_set", "ids": [str(v) for v in sample.evidence_entity_ids]}
+            witness_symbolic = {
+                "type": "object_set_map",
+                "ids": {
+                    str(key): [str(entity_id) for entity_id in entity_ids]
+                    for key, entity_ids in sample.metadata.get("annotation_entity_id_map", {}).items()
+                },
+            }
+        else:
+            annotation_bboxes = _annotation_bboxes(sample, rendered.render_map)
+            annotation_value = [list(bbox) for bbox in annotation_bboxes]
+            annotation_type = "bbox_set"
+            projected_annotation = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in annotation_value],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
+            }
+            witness_symbolic = {"type": "object_set", "ids": [str(v) for v in sample.annotation_entity_ids]}
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1636,11 +2456,18 @@ class GamesTetrisBoardTask:
                 "tetris_rule_text",
                 "next_piece_rule_text",
                 "fixed_drop_rule_text",
+                "collision_time_rule_text",
                 "line_clear_rule_text",
                 "answer_hint_line_clear_count",
                 "answer_hint_drop_result_label",
-                "evidence_hint_line_clear_count",
-                "evidence_hint_drop_result_label",
+                "answer_hint_row_occupancy_status_count",
+                "answer_hint_drop_collision_time_value",
+                "answer_hint_edge_occupied_row_cell_count",
+                "annotation_hint_line_clear_count",
+                "annotation_hint_drop_result_label",
+                "annotation_hint_row_occupancy_status_count",
+                "annotation_hint_drop_collision_time_value",
+                "annotation_hint_edge_occupied_row_cell_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -1652,7 +2479,7 @@ class GamesTetrisBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_tetris_board"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1660,17 +2487,19 @@ class GamesTetrisBoardTask:
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "answer_hint": str(prompt_defaults[_task_answer_hint_key(str(axes.public_query))]),
-                "evidence_hint": str(prompt_defaults[_task_evidence_hint_key(str(axes.public_query))]),
+                "annotation_hint": str(prompt_defaults[_task_annotation_hint_key(str(axes.public_query))]),
                 "tetris_rule_text": str(prompt_defaults["tetris_rule_text"]),
                 "next_piece_rule_text": str(prompt_defaults["next_piece_rule_text"]),
                 "fixed_drop_rule_text": str(prompt_defaults["fixed_drop_rule_text"]),
+                "collision_time_rule_text": str(prompt_defaults["collision_time_rule_text"]),
                 "line_clear_rule_text": str(prompt_defaults["line_clear_rule_text"]),
+                "shift_instruction": str(sample.metadata.get("shift_instruction", "")),
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         complexity = _complexity_for_sample(str(self.task_id), axes, sample)
 
         trace_payload = {
@@ -1683,7 +2512,7 @@ class GamesTetrisBoardTask:
                     "public_query": str(axes.public_query),
                     "piece": str(sample.piece),
                     "answer": sample.answer,
-                    "evidence_entity_ids": [str(v) for v in sample.evidence_entity_ids],
+                    "annotation_entity_ids": [str(v) for v in sample.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1700,12 +2529,17 @@ class GamesTetrisBoardTask:
                     "board_rows": int(axes.board_rows),
                     "board_cols": int(axes.board_cols),
                     "target_clear_count": axes.target_clear_count,
+                    "target_row_count": axes.target_row_count,
+                    "target_drop_steps": axes.target_drop_steps,
+                    "target_cell_count": axes.target_cell_count,
+                    "shift_delta": int(axes.shift_delta),
                     "option_count": int(axes.option_count),
                     "target_label": axes.target_label,
                     "query_id_probabilities": dict(axes.query_probabilities),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),
+                    "shift_delta_probabilities": dict(axes.shift_delta_probabilities),
                     "option_count_probabilities": dict(axes.option_count_probabilities),
                     "board_row_probabilities": dict(axes.board_row_probabilities),
                     "board_col_probabilities": dict(axes.board_col_probabilities),
@@ -1766,12 +2600,12 @@ class GamesTetrisBoardTask:
                     for option in sample.options
                 ],
                 "answer": sample.answer,
-                "evidence_kind": str(sample.evidence_kind),
-                "evidence_entity_ids": [str(v) for v in sample.evidence_entity_ids],
+                "annotation_kind": str(sample.annotation_kind),
+                "annotation_entity_ids": [str(v) for v in sample.annotation_entity_ids],
                 **dict(sample.metadata),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": dict(rendered.background_meta),
             "post_image_noise": post_noise_meta,
         }
@@ -1779,7 +2613,7 @@ class GamesTetrisBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1806,8 +2640,35 @@ class GamesTetrisDropResultLabelTask(GamesTetrisBoardTask):
     public_query = QUERY_DROP_RESULT_LABEL
 
 
+@register_task
+class GamesTetrisRowOccupancyStatusCountTask(GamesTetrisBoardTask):
+    """Count rows matching a static occupancy status on a Tetris board."""
+
+    task_id = "task_games__tetris__row_occupancy_status_count"
+    public_query = QUERY_ROW_OCCUPANCY_STATUS_COUNT
+
+
+@register_task
+class GamesTetrisDropCollisionTimeValueTask(GamesTetrisBoardTask):
+    """Count downward timesteps after a fixed Tetris horizontal shift."""
+
+    task_id = "task_games__tetris__drop_collision_time_value"
+    public_query = QUERY_DROP_COLLISION_TIME_VALUE
+
+
+@register_task
+class GamesTetrisEdgeOccupiedRowCellCountTask(GamesTetrisBoardTask):
+    """Count cells in the topmost or bottommost occupied Tetris row."""
+
+    task_id = "task_games__tetris__edge_occupied_row_cell_count"
+    public_query = QUERY_EDGE_OCCUPIED_ROW_CELL_COUNT
+
+
 __all__ = [
     "GamesTetrisBoardTask",
+    "GamesTetrisDropCollisionTimeValueTask",
     "GamesTetrisDropResultLabelTask",
+    "GamesTetrisEdgeOccupiedRowCellCountTask",
     "GamesTetrisLineClearCountTask",
+    "GamesTetrisRowOccupancyStatusCountTask",
 ]

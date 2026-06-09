@@ -129,9 +129,9 @@ prompt:
       object_description_clean_grid_potential_value: an electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
       object_description_paper_grid_potential_value: a paper-style electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
       object_description_dense_grid_potential_value: a dense electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
-      evidence_hint_field_direction_choice: set "evidence" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
-      evidence_hint_zero_field_point_label: set "evidence" to an object with keys "Q1" and "Q2"; each value is the pixel point [x,y] at the center of the corresponding charge marker
-      evidence_hint_potential_value: set "evidence" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
+      annotation_hint_field_direction_choice: set "annotation" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
+      annotation_hint_zero_field_point_label: set "annotation" to an object with keys "Q1" and "Q2"; each value is the pixel point [x,y] at the center of the corresponding charge marker
+      annotation_hint_potential_value: set "annotation" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
       answer_hint_field_direction_choice: set "answer" to the option letter of the candidate arrow
       answer_hint_zero_field_point_label: set "answer" to the option letter of the labeled zero-field point
       answer_hint_potential_value: set "answer" to the signed integer electric potential at P

@@ -6,7 +6,6 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
@@ -18,7 +17,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
-from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
+from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -33,7 +32,7 @@ from ..shared.icon_pair_grid_scene import IconPairSpec, panel_geometry_to_trace,
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.icon_transform import IDENTITY_TRANSFORM_ID, NON_IDENTITY_TRANSFORM_IDS
-from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
@@ -104,7 +103,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-TASK_ID = "task_icons__pair_grid__pair_relation_count"
+TASK_ID = "task_icons__pair_grid__reference_transform_match_count"
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "transformation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -304,7 +303,7 @@ def _sample_scene(
 
     reference_icon_id, _ = candidate_records[0]
     scene_records = list(candidate_records[1 : 1 + int(object_count)])
-    labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
+    labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(object_count)])
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
     tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
         rng,
@@ -459,6 +458,7 @@ def _sample_scene(
     ), rendered.image
 
 
+@register_task
 class IconsTransformationPairCountTask:
     """Count scene grid cells that match a reference icon-pair transform."""
 
@@ -531,7 +531,7 @@ class IconsTransformationPairCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -544,13 +544,13 @@ class IconsTransformationPairCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -559,15 +559,15 @@ class IconsTransformationPairCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = list(scene_payload.matching_labels)
-        evidence_artifacts = matching_scene_cell_bbox_evidence(
+        annotation_labels = list(scene_payload.matching_labels)
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
-            matching_labels=evidence_labels,
+            matching_labels=annotation_labels,
         )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -637,9 +637,9 @@ class IconsTransformationPairCountTask:
             },
             "witness_symbolic": {
                 "reference_transform_id": str(scene_payload.reference_transform_id),
-                **dict(evidence_artifacts["witness_symbolic"]),
+                **dict(annotation_artifacts["witness_symbolic"]),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         complexity = build_icons_transformation_pair_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -657,7 +657,7 @@ class IconsTransformationPairCountTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -670,87 +670,9 @@ class IconsTransformationPairCountTask:
             output,
             query_id="same_pair_transform",
             scene_id="pair_grid",
+            task_id=str(self.task_id),
+            query_probabilities={"same_pair_transform": 1.0},
         )
 
 
-QUERY_IDS: Tuple[str, ...] = (
-    "color_only_change",
-    "size_only_change",
-    "color_and_size_change",
-    "same_pair_transform",
-)
-
-
-def _query_probabilities(params: Mapping[str, Any]) -> Dict[str, float]:
-    raw = params.get("query_id_weights", group_default(_GEN_DEFAULTS, "query_id_weights", {}))
-    if raw is None:
-        raw = {}
-    if not isinstance(raw, Mapping):
-        raise ValueError("query_id_weights must be a mapping")
-    return normalize_positive_weights(
-        {str(key): float(value) for key, value in raw.items() if str(key) in set(QUERY_IDS)},
-        default_keys=QUERY_IDS,
-    )
-
-
-def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
-    explicit = params.get("query_id")
-    probabilities = _query_probabilities(params)
-    if explicit is not None:
-        query_id = str(explicit)
-        if query_id not in set(QUERY_IDS):
-            raise ValueError(f"query_id must be one of {QUERY_IDS}")
-        return query_id, {key: (1.0 if key == query_id else 0.0) for key in QUERY_IDS}
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query_id")
-    query_id = str(weighted_choice(rng, probabilities, sort_keys=True))
-    return query_id, dict(probabilities)
-
-
-def _variant_params(query_id: str) -> Dict[str, Any]:
-    merged: Dict[str, Any] = {}
-    for defaults, key in ((_GEN_DEFAULTS, "variant_generation_params"), (_RENDER_DEFAULTS, "variant_render_params")):
-        raw = defaults.get(str(key), {})
-        if not isinstance(raw, Mapping):
-            continue
-        selected = raw.get(str(query_id), {})
-        if isinstance(selected, Mapping):
-            merged.update(dict(selected))
-    return merged
-
-
-@register_task
-class IconsTransformationPairRelationCountTask:
-    """Count Scene pair cells matching the Reference pair relation."""
-
-    task_id = TASK_ID
-    domain = "icons"
-    task_group = "transformation"
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, probabilities = _resolve_query_id(int(instance_seed), params)
-        forced_params = {**_variant_params(str(query_id)), **dict(params)}
-        forced_params["query_id"] = str(query_id)
-        if str(query_id) == "same_pair_transform":
-            output = IconsTransformationPairCountTask().generate(
-                int(instance_seed),
-                params=forced_params,
-                max_attempts=int(max_attempts),
-            )
-        else:
-            from .attribute_rule_count import IconsTransformationPairAttributeRuleCountTask
-
-            output = IconsTransformationPairAttributeRuleCountTask().generate(
-                int(instance_seed),
-                params=forced_params,
-                max_attempts=int(max_attempts),
-            )
-        return rewrite_icons_query_output(
-            output,
-            query_id=str(query_id),
-            scene_id="pair_grid",
-            task_id=self.task_id,
-            query_probabilities=dict(probabilities),
-        )
-
-
-__all__ = ["IconsTransformationPairRelationCountTask", "QUERY_IDS"]
+__all__ = ["IconsTransformationPairCountTask"]

@@ -297,7 +297,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             counted_worker_ids = tuple(str(worker.worker_id) for worker in scene.workers if worker.tool_type)
         if len(counted_worker_ids) != int(sample.target_count):
             raise RuntimeError("rendered worker count did not match sample target")
-        evidence_value = sort_construction_bboxes(construction_worker_bbox_map(scene), counted_worker_ids)
+        annotation_value = sort_construction_bboxes(construction_worker_bbox_map(scene), counted_worker_ids)
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
         prompt_defaults = required_group_defaults(
@@ -309,7 +309,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_worker_safety_gear",
-                "evidence_hint_worker_safety_gear",
+                "annotation_hint_worker_safety_gear",
                 "json_example_worker_safety_gear",
                 "json_example_answer_only_worker_safety_gear",
             ],
@@ -322,7 +322,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
+            "annotation_hint": str(prompt_defaults["annotation_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
             "json_example": str(prompt_defaults["json_example_worker_safety_gear"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_worker_safety_gear"]),
         }
@@ -335,8 +335,8 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -399,13 +399,13 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "scene": serialized_scene[0],
             },
             "witness_symbolic": {"counted_worker_ids": list(counted_worker_ids), "answer": int(sample.target_count)},
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

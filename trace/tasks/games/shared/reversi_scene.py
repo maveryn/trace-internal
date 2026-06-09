@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.marker_legibility import draw_semantic_bbox_marker, resolve_semantic_marker_style
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .reversi_common import BLACK, WHITE, Coord, coord_to_cell_id, player_name
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -34,6 +35,7 @@ class ReversiRenderParams:
     player_badge_font_size_px: int
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -288,17 +290,27 @@ def render_reversi_board_scene(
             if marked_move is not None and (int(row), int(col)) == (int(marked_move[0]), int(marked_move[1])):
                 marked_square_bbox_px = cell_bbox
                 inset = 6.0
-                draw.rounded_rectangle(
-                    [
-                        cell_bbox[0] + inset,
-                        cell_bbox[1] + inset,
-                        cell_bbox[2] - inset,
-                        cell_bbox[3] - inset,
-                    ],
+                marker_bbox = [
+                    cell_bbox[0] + inset,
+                    cell_bbox[1] + inset,
+                    cell_bbox[2] - inset,
+                    cell_bbox[3] - inset,
+                ]
+                marker_style = resolve_semantic_marker_style(
+                    instance_seed=int(params.instance_seed),
+                    namespace=f"games.reversi.marked_square.{row}.{col}",
+                    role="marked_square_outline",
+                    surface_rgbs=(theme.board_fill_rgb,),
+                    preferred_rgbs=(theme.marked_square_outline_rgb,),
+                )
+                draw_semantic_bbox_marker(
+                    draw,
+                    marker_bbox,
                     radius=max(8, int(0.18 * cell_size)),
-                    outline=tuple(int(value) for value in theme.marked_square_outline_rgb),
+                    style=marker_style,
                     width=int(params.marked_square_outline_width_px),
-                    fill=None,
+                    marker_kind="cell_outline",
+                    extra_metadata={"source": "games_reversi_marked_square", "cell_id": str(cell_id)},
                 )
             occupant_value = int(board[row][col])
             occupant_name = "empty" if int(occupant_value) == 0 else "black" if int(occupant_value) == int(BLACK) else "white"

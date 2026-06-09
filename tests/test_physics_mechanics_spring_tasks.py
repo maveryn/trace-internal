@@ -18,7 +18,7 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query_id", "expected_answer", "expected_evidence_count"),
+    ("task_cls", "params", "expected_query_id", "expected_answer", "expected_annotation_count"),
     (
         (
             PhysicsMechanicsSpringMissingValueTask,
@@ -48,7 +48,7 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
     params: dict[str, int | str],
     expected_query_id: str,
     expected_answer: int,
-    expected_evidence_count: int,
+    expected_annotation_count: int,
 ) -> None:
     out = task_cls().generate(28001, params=params, max_attempts=40)
     trace = out.trace_payload
@@ -60,17 +60,17 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
 
     if expected_query_id == "missing_value":
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert set(out.evidence_gt.value.keys()) == {
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert set(out.annotation_gt.value.keys()) == {
             "reference_weight",
             "reference_extension",
             "query_weight",
             "query_extension",
         }
-        assert len(out.evidence_gt.value) == int(expected_evidence_count)
+        assert len(out.annotation_gt.value) == int(expected_annotation_count)
     else:
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == int(expected_evidence_count)
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(expected_annotation_count)
 
     assert out.query_id == expected_query_id
 
@@ -91,15 +91,15 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
-    assert trace["projected_evidence"]["type"] == out.evidence_gt.type
+    assert trace["projected_annotation"]["type"] == out.annotation_gt.type
     if expected_query_id == "missing_value":
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
-        assert trace["render_map"]["evidence_bbox_map_px"] == out.evidence_gt.value
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+        assert trace["render_map"]["annotation_bbox_map_px"] == out.annotation_gt.value
     else:
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-        assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_spring_diagram_offset"
 
@@ -140,7 +140,7 @@ def test_physics_mechanics_spring_missing_value_is_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 

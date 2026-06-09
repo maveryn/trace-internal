@@ -27,6 +27,7 @@ from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
 from ..shared.gui_render_params import resolve_gui_window_render_params
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_SCENE_VARIANTS,
@@ -44,7 +45,7 @@ from .gui_relation_common import (
 )
 
 
-TASK_ID = "task_pages__navigation_flow__navigation_path_target_label"
+TASK_ID = "pages_navigation_flow_path_target_source"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "menu_path_target_label",
     "sidebar_tree_target_label",
@@ -937,8 +938,8 @@ def _support_ids_for_path(query: _ResolvedQuery) -> Tuple[str, ...]:
     return (f"support_ribbon_tab_{tab_index}", f"support_ribbon_tab_{tab_index}_group_{group_index}")
 
 
-def _evidence_roles_for_query(query_id: str) -> Tuple[str, str, str]:
-    """Return prompt-facing evidence role names for one navigation query."""
+def _annotation_roles_for_query(query_id: str) -> Tuple[str, str, str]:
+    """Return prompt-facing annotation role names for one navigation query."""
 
     if str(query_id) == "menu_path_target_label":
         return ("menu_root", "menu_group", "target_command")
@@ -948,9 +949,9 @@ def _evidence_roles_for_query(query_id: str) -> Tuple[str, str, str]:
 
 
 def _prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
-    first_role, second_role, target_role = _evidence_roles_for_query(str(query_id))
-    answer_and_evidence = {
-        "evidence": {
+    first_role, second_role, target_role = _annotation_roles_for_query(str(query_id))
+    answer_and_annotation = {
+        "annotation": {
             str(first_role): [82, 214, 308, 252],
             str(second_role): [104, 270, 286, 302],
             str(target_role): [112, 316, 286, 354],
@@ -959,7 +960,7 @@ def _prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     }
     answer_only = {"answer": "G"}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -984,7 +985,6 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     )
 
 
-@register_task
 class PagesRelationNavigationPathTargetLabelTask:
     """Identify a labeled GUI target by following a visible navigation path."""
 
@@ -1020,20 +1020,20 @@ class PagesRelationNavigationPathTargetLabelTask:
         )
 
         target_bbox = list(rendered.control_bboxes_by_id[str(query.target_control_id)])
-        evidence_support_ids = _support_ids_for_path(query)
-        first_role, second_role, target_role = _evidence_roles_for_query(str(query.query_id))
-        evidence_bbox_map: Dict[str, List[float]] = {
-            str(first_role): list(rendered.support_bboxes_by_id[str(evidence_support_ids[0])]),
-            str(second_role): list(rendered.support_bboxes_by_id[str(evidence_support_ids[1])]),
+        annotation_support_ids = _support_ids_for_path(query)
+        first_role, second_role, target_role = _annotation_roles_for_query(str(query.query_id))
+        annotation_bbox_map: Dict[str, List[float]] = {
+            str(first_role): list(rendered.support_bboxes_by_id[str(annotation_support_ids[0])]),
+            str(second_role): list(rendered.support_bboxes_by_id[str(annotation_support_ids[1])]),
             str(target_role): list(target_bbox),
         }
-        evidence_role_support_ids: Dict[str, str] = {
-            str(first_role): str(evidence_support_ids[0]),
-            str(second_role): str(evidence_support_ids[1]),
+        annotation_role_support_ids: Dict[str, str] = {
+            str(first_role): str(annotation_support_ids[0]),
+            str(second_role): str(annotation_support_ids[1]),
             str(target_role): str(query.target_control_id),
         }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1044,7 +1044,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                f"evidence_hint_{str(query.query_id)}",
+                f"annotation_hint_{str(query.query_id)}",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -1057,7 +1057,7 @@ class PagesRelationNavigationPathTargetLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "path_display": str(query.path_display),
@@ -1066,7 +1066,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "command_label": str(query.command_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query.query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1078,9 +1078,9 @@ class PagesRelationNavigationPathTargetLabelTask:
         control_records = [dict(record) for record in rendered.control_records]
         support_records = [dict(record) for record in rendered.support_records]
         target_record = next(record for record in control_records if str(record["control_id"]) == str(query.target_control_id))
-        evidence_support_records = [
+        annotation_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
-            for support_id in evidence_support_ids
+            for support_id in annotation_support_ids
         ]
         trace_payload = {
             "scene_ir": {
@@ -1113,8 +1113,8 @@ class PagesRelationNavigationPathTargetLabelTask:
                     "ribbon_tab_count": int(query.ribbon_tab_count),
                     "ribbon_group_count": int(query.ribbon_group_count),
                     "ribbon_command_count": int(query.ribbon_command_count),
-                    "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1143,7 +1143,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                     "ribbon_command_count": int(query.ribbon_command_count),
                     "ribbon_command_count_range": [int(value) for value in query.ribbon_command_count_range],
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -1176,8 +1176,8 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "candidate_label_badge_bboxes_by_id": dict(rendered.badge_bboxes_by_id),
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1188,9 +1188,9 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "path_labels": [str(value) for value in query.path_labels],
                 "path_display": str(query.path_display),
                 "command_label": str(query.command_label),
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
-                "evidence_support_records": [dict(record) for record in evidence_support_records],
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
+                "annotation_support_records": [dict(record) for record in annotation_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
                 "support_records": list(support_records),
@@ -1210,22 +1210,22 @@ class PagesRelationNavigationPathTargetLabelTask:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": dict(evidence_bbox_map),
+                "value": dict(annotation_bbox_map),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
             },
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1242,4 +1242,46 @@ class PagesRelationNavigationPathTargetLabelTask:
         )
 
 
-__all__ = ["PagesRelationNavigationPathTargetLabelTask", "SUPPORTED_QUERY_IDS"]
+@register_task
+class PagesNavigationFlowMenuPathTargetLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the menu command reached by a visible menu path."""
+
+    task_id = "task_pages__navigation_flow__menu_path_target_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "navigation_flow"
+    fixed_query_id = "menu_path_target_label"
+    source_task_cls = PagesRelationNavigationPathTargetLabelTask
+
+
+@register_task
+class PagesNavigationFlowSidebarTreeTargetLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the sidebar item reached by a visible tree path."""
+
+    task_id = "task_pages__navigation_flow__sidebar_tree_target_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "navigation_flow"
+    fixed_query_id = "sidebar_tree_target_label"
+    source_task_cls = PagesRelationNavigationPathTargetLabelTask
+
+
+@register_task
+class PagesNavigationFlowRibbonGroupCommandLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the ribbon command in a named tab and group."""
+
+    task_id = "task_pages__navigation_flow__ribbon_group_command_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "navigation_flow"
+    fixed_query_id = "ribbon_group_command_label"
+    source_task_cls = PagesRelationNavigationPathTargetLabelTask
+
+
+__all__ = [
+    "PagesNavigationFlowMenuPathTargetLabelTask",
+    "PagesNavigationFlowRibbonGroupCommandLabelTask",
+    "PagesNavigationFlowSidebarTreeTargetLabelTask",
+    "PagesRelationNavigationPathTargetLabelTask",
+    "SUPPORTED_QUERY_IDS",
+]

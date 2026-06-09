@@ -8,25 +8,45 @@
       "",
       "",
       ""
+    ],
+    "wire_magnetism_field_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "electromagnetic_induction_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:magnetic_force_field": [
       "object_description"
     ],
-    "answer_or_evidence:answer_only": [
+    "scene:wire_magnetism_field": [
+      "object_description"
+    ],
+    "scene:electromagnetic_induction_panel_grid": [
+      "object_description"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -34,12 +54,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -49,6 +69,20 @@
       "This figure shows {object_description}.",
       "The visual shows {object_description}.",
       "The magnetic-field diagram shows {object_description}."
+    ],
+    "wire_magnetism_field": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The wire-magnetism diagram shows {object_description}."
+    ],
+    "electromagnetic_induction_panel_grid": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The induction diagram shows {object_description}."
     ]
   },
   "query_templates": {
@@ -58,6 +92,34 @@
       "Which option A-H points in the direction of the force on the charged particle?",
       "From the shown charge sign, velocity, and magnetic-field direction, which labeled arrow gives the force direction?",
       "Apply the right-hand rule to the shown particle. Which candidate arrow is the force?"
+    ],
+    "field_direction_at_point": [
+      "Which option shows the magnetic-field direction at point P?",
+      "Use the right-hand rule around the shown current. Which labeled option gives the field at P?",
+      "For the current-carrying wire, choose the option for the magnetic field at P.",
+      "From the current arrow and the location of P, which option gives the field direction?",
+      "Which labeled direction option matches the magnetic field at the marked point P?"
+    ],
+    "clockwise_induced_current_count": [
+      "How many panels have a clockwise induced current in the loop?",
+      "Count the panels where the induced current would be clockwise.",
+      "Using the shown flux-change cues, how many loops have clockwise induced current?",
+      "How many of the six induction panels produce clockwise current?",
+      "Count the mini-panels whose loop current is induced clockwise."
+    ],
+    "counterclockwise_induced_current_count": [
+      "How many panels have a counterclockwise induced current in the loop?",
+      "Count the panels where the induced current would be counterclockwise.",
+      "Using the shown flux-change cues, how many loops have counterclockwise induced current?",
+      "How many of the six induction panels produce counterclockwise current?",
+      "Count the mini-panels whose loop current is induced counterclockwise."
+    ],
+    "no_induced_current_count": [
+      "How many panels have no induced current in the loop?",
+      "Count the panels where the loop would have no induced current.",
+      "Using the shown flux-change cues, how many loops have no induced current?",
+      "How many of the six induction panels produce no current?",
+      "Count the mini-panels whose loop has no induced current."
     ]
   },
   "allow_empty_task_templates": true

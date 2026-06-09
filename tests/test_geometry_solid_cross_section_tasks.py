@@ -8,16 +8,15 @@ import pytest
 
 from trace.tasks.geometry.measurement.solid_cross_section import (
     SCENE_ID,
-    GeometrySolidCrossSectionAreaValueTask,
+    GeometryConeParallelSliceAreaTask,
+    GeometrySquarePyramidParallelSliceAreaTask,
 )
 
-TASK_CLASSES = (GeometrySolidCrossSectionAreaValueTask,)
+TASK_CLASSES = (GeometryConeParallelSliceAreaTask, GeometrySquarePyramidParallelSliceAreaTask)
 
 QUERY_IDS_BY_TASK = {
-    GeometrySolidCrossSectionAreaValueTask: (
-        "cone_parallel_slice_area",
-        "square_pyramid_parallel_slice_area",
-    ),
+    GeometryConeParallelSliceAreaTask: ("cone_parallel_slice_area",),
+    GeometrySquarePyramidParallelSliceAreaTask: ("square_pyramid_parallel_slice_area",),
 }
 
 
@@ -27,20 +26,18 @@ def test_solid_cross_section_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(65001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 5
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 5
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["execution_trace"]["answer_rounding"] == "one_decimal"
 
 
@@ -53,7 +50,7 @@ def test_solid_cross_section_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert (
         out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     )
@@ -85,13 +82,13 @@ def test_solid_cross_section_tasks_support_every_explicit_query(task_cls) -> Non
             assert out.answer_gt.value == pytest.approx(round(math.pi * slice_radius**2, 1))
         elif query_id == "square_pyramid_parallel_slice_area":
             base_side = float(trace["base_side"])
-            slice_side = base_side * scale
-            assert trace["slice_side"] == pytest.approx(round(slice_side, 1))
-            assert out.answer_gt.value == pytest.approx(round(slice_side**2, 1))
+            exact_slice_side = base_side * scale
+            assert trace["slice_side"] == pytest.approx(round(exact_slice_side + 1e-9, 1))
+            assert out.answer_gt.value == pytest.approx(round(exact_slice_side**2 + 1e-9, 1))
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_solid_cross_section_evidence_stays_inside_canvas(task_cls) -> None:
+def test_solid_cross_section_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(
@@ -100,7 +97,7 @@ def test_solid_cross_section_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value:
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
@@ -108,6 +105,6 @@ def test_solid_cross_section_evidence_stays_inside_canvas(task_cls) -> None:
 
 
 def test_solid_cross_section_tasks_reject_unknown_query_id() -> None:
-    task = GeometrySolidCrossSectionAreaValueTask()
+    task = GeometryConeParallelSliceAreaTask()
     with pytest.raises(ValueError):
         task.generate(65031, params={"query_id": "not_a_query"}, max_attempts=20)

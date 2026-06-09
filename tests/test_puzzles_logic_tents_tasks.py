@@ -23,19 +23,17 @@ def test_tents_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(72001, params={}, max_attempts=40)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) >= 1
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) >= 1
+    assert "annotation" in out.prompt_variants["answer_and_annotation"].lower()
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["params"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
 
 
 def test_missing_tent_task_has_one_correct_labeled_cell() -> None:
@@ -74,5 +72,5 @@ def test_tents_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]

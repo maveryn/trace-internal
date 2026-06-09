@@ -2,12 +2,7 @@ generation:
   shared:
     balanced_sampling: true
   task_overrides:
-    task_illustrations__object_field__object_type_count:
-      object_count_min: 11
-      object_count_max: 20
-      target_count_min: 1
-      target_count_max: 10
-    task_illustrations__environment__feature_relation_count:
+    private_environment_feature_relation_count:
       query_id_support:
         - feature_side_object_count
         - on_feature_object_count
@@ -79,7 +74,7 @@ generation:
         - potted_plant
         - flower
         - mushroom
-    task_illustrations__library__section_book_count:
+    private_library_book_count:
       query_id_support:
         - books_in_section_count
         - book_color_in_section_count
@@ -112,15 +107,26 @@ generation:
         - purple
         - cyan
         - magenta
-    task_illustrations__park_playground__person_count:
+    task_illustrations__library__books_in_section_count:
+      query_id_support:
+        - books_in_section_count
+    task_illustrations__library__filtered_book_in_section_count:
+      query_id_support:
+        - book_color_in_section_count
+        - upright_book_in_section_count
+        - horizontal_book_in_section_count
+    task_illustrations__park_playground__activity_person_count:
       query_id_support:
         - sitting_person_count
         - walking_person_count
         - standing_person_count
         - playing_ball_person_count
+    task_illustrations__park_playground__area_person_count:
+      query_id_support:
         - playground_area_person_count
-        - picnic_area_person_count
         - garden_area_person_count
+    task_illustrations__park_playground__equipment_use_person_count:
+      query_id_support:
         - person_using_slide_count
         - person_using_swing_set_count
         - person_using_seesaw_count
@@ -156,6 +162,37 @@ generation:
         - swing_set
         - seesaw
         - climbing_frame
+    task_illustrations__pixel_village__object_type_count:
+      query_id_support:
+        - object_type_count
+      target_object_support:
+        - building
+        - person
+        - tree
+        - crate
+        - lamp_post
+        - well
+        - pond
+      target_answer_count_max: 8
+    task_illustrations__pixel_village__person_path_count:
+      query_id_support:
+        - people_on_path_count
+      path_person_count_min: 2
+      path_person_count_max: 6
+    task_illustrations__pixel_village__territory_object_count:
+      query_id_support:
+        - territory_object_count
+      territory_object_support:
+        - cemetery_grave_marker
+        - orchard_tree
+        - farm_plot_crop_row
+        - farm_plot_vegetable_patch
+      target_answer_count_max: 8
+    task_illustrations__pixel_village__building_near_path_count:
+      query_id_support:
+        - building_near_path_count
+      near_path_tile_distance: 1
+      target_answer_count_max: 8
     private_park_person_equipment_use:
       equipment_count_min: 4
       equipment_count_max: 7
@@ -179,11 +216,9 @@ generation:
       target_count_max: 6
       query_id_support:
         - playground_area_person_count
-        - picnic_area_person_count
         - garden_area_person_count
       zone_support:
         - playground
-        - picnic
         - garden
     private_terminal_boarding_area_person:
       person_count_min: 14
@@ -233,31 +268,15 @@ generation:
         - area_b
         - area_c
         - area_d
-    task_illustrations__transit_terminal__entity_location_count:
+    task_illustrations__transit_terminal__person_in_boarding_area_count:
       query_id_support:
         - person_in_boarding_area_count
+    task_illustrations__transit_terminal__luggage_in_boarding_area_count:
+      query_id_support:
         - luggage_in_boarding_area_count
+    task_illustrations__transit_terminal__person_in_queue_count:
+      query_id_support:
         - person_in_queue_count
-    task_illustrations__object_field__visible_part_count:
-      object_count_min: 6
-      object_count_max: 9
-      target_count_min: 1
-      target_count_max: 6
-      distractor_count_min: 2
-      max_target_object_repeats: 3
-      min_family_count: 2
-      part_kind_support:
-        - door
-        - eye
-        - handle
-        - tail
-        - wing
-      part_kind_weights:
-        door: 1.0
-        eye: 1.0
-        handle: 1.0
-        tail: 1.0
-        wing: 1.0
     task_illustrations__construction_site__worker_attribute_count:
       worker_count_min: 9
       worker_count_max: 15
@@ -371,6 +390,18 @@ rendering:
       outlined_cartoon: 1.0
       paper_cutout: 1.0
       soft_shadow: 1.0
+    art_style_support:
+      - flat_vector
+      - outlined_cartoon
+      - paper_cutout
+      - soft_shadow
+      - watercolor_wash
+    art_style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
+      watercolor_wash: 1.0
     background_weights:
       studio: 1.0
       meadow: 1.0
@@ -379,145 +410,306 @@ rendering:
       paper: 1.0
       shelf: 1.0
   task_overrides:
+    private_environment_feature_relation_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
     task_illustrations__environment__lit_window_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
       skyline_building_min: 4
       skyline_building_max: 7
+    task_illustrations__indoor_room__surface_object_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    task_illustrations__park_playground__playground_equipment_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    task_illustrations__pixel_village__object_type_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_farm_plot_mode: auto
+      pixel_village_windmill_mode: auto
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__person_path_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_farm_plot_mode: auto
+      pixel_village_windmill_mode: auto
+      background_person_path_clearance: 1
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__territory_object_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_farm_plot_mode: auto
+      pixel_village_windmill_mode: auto
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__building_near_path_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_farm_plot_mode: auto
+      pixel_village_windmill_mode: auto
+      annotation_padding_px: 0.0
+    private_park_person_activity:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    private_park_person_zone:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    private_park_person_equipment_use:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
-    task_illustrations__object_field__object_type_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: mixed_object_canvas
-      task_key: type_count_task
-      answer_hint_type_count: set "answer" to the count of {object_name} objects as an integer
-      evidence_hint_type_count: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {object_name} object
-      json_example_type_count: '{"evidence":[[148,226,244,330],[506,418,604,520],[902,178,1008,284]],"answer":3}'
-      json_example_answer_only_type_count: '{"answer":3}'
-    task_illustrations__environment__feature_relation_count:
+    private_environment_feature_relation_count:
       bundle_id: illustrations_counting_v0
       scene_key: environment_object_canvas
       task_key: feature_relation_object_count_task
       answer_hint_feature_side: set "answer" to the count of foreground objects {relation_word} the {feature_name} as an integer
-      evidence_hint_feature_side: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {relation_word} the {feature_name}
-      json_example_feature_side: '{"evidence":[[156,438,248,512],[582,286,674,360],[914,502,1006,586]],"answer":3}'
+      annotation_hint_feature_side: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {relation_word} the {feature_name}
+      json_example_feature_side: '{"annotation":[[156,438,248,512],[582,286,674,360],[914,502,1006,586]],"answer":3}'
       json_example_answer_only_feature_side: '{"answer":3}'
       answer_hint_on_feature: set "answer" to the count of foreground objects {feature_phrase} as an integer
-      evidence_hint_on_feature: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {feature_phrase}
-      json_example_on_feature: '{"evidence":[[118,508,232,584],[472,444,582,522],[842,536,954,620]],"answer":3}'
+      annotation_hint_on_feature: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {feature_phrase}
+      json_example_on_feature: '{"annotation":[[118,508,232,584],[472,444,582,522],[842,536,954,620]],"answer":3}'
       json_example_answer_only_on_feature: '{"answer":3}'
       answer_hint_crossing_feature: set "answer" to the count of {crossing_name} crossing the {crossed_feature_name} as an integer
-      evidence_hint_crossing_feature: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {crossing_name} crossing the {crossed_feature_name}
-      json_example_crossing_feature: '{"evidence":[[310,420,358,548],[696,434,744,562]],"answer":2}'
+      annotation_hint_crossing_feature: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {crossing_name} crossing the {crossed_feature_name}
+      json_example_crossing_feature: '{"annotation":[[310,420,358,548],[696,434,744,562]],"answer":2}'
       json_example_answer_only_crossing_feature: '{"answer":2}'
     task_illustrations__environment__lit_window_count:
       bundle_id: illustrations_counting_v0
       scene_key: environment_object_canvas
       task_key: building_window_count_task
       answer_hint_building_window: set "answer" to the count of lit windows shown on the buildings as an integer
-      evidence_hint_building_window: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted lit building window
-      json_example_building_window: '{"evidence":[[72,194,88,212],[112,194,128,212],[206,246,222,264],[336,178,352,196]],"answer":4}'
+      annotation_hint_building_window: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted lit building window
+      json_example_building_window: '{"annotation":[[72,194,88,212],[112,194,128,212],[206,246,222,264],[336,178,352,196]],"answer":4}'
       json_example_answer_only_building_window: '{"answer":4}'
-    task_illustrations__object_field__visible_part_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: mixed_object_canvas
-      task_key: visible_part_count_task
-      answer_hint: set "answer" to the count of visible {part_plural} as an integer
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every visible {part_kind} counted
-      json_example: '{"evidence":[[182,318,224,392],[415,286,459,361],[718,430,758,512]],"answer":3}'
-      json_example_answer_only: '{"answer":3}'
     task_illustrations__indoor_room__surface_object_count:
       bundle_id: illustrations_counting_v0
       scene_key: indoor_room_canvas
       task_key: object_type_on_surface_count_task
       answer_hint_object_type_on_surface: set "answer" to the count of {object_name} objects on the {surface_name} as an integer
-      evidence_hint_object_type_on_surface: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {object_name} object on the {surface_name}
-      json_example_object_type_on_surface: '{"evidence":[[466,344,518,410],[602,338,654,410]],"answer":2}'
+      annotation_hint_object_type_on_surface: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {object_name} object on the {surface_name}
+      json_example_object_type_on_surface: '{"annotation":[[466,344,518,410],[602,338,654,410]],"answer":2}'
       json_example_answer_only_object_type_on_surface: '{"answer":2}'
-    task_illustrations__library__section_book_count:
+    private_library_book_count:
       bundle_id: illustrations_counting_v0
       scene_key: library_canvas
       task_key: library_book_count_task
       answer_hint_books_in_section: set "answer" to the count of books in the {section_name} section as an integer
-      evidence_hint_books_in_section: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted book in the {section_name} section
-      json_example_books_in_section: '{"evidence":[[92,186,110,258],[116,192,132,258],[139,176,156,258],[162,204,214,220]],"answer":4}'
+      annotation_hint_books_in_section: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted book in the {section_name} section
+      json_example_books_in_section: '{"annotation":[[92,186,110,258],[116,192,132,258],[139,176,156,258],[162,204,214,220]],"answer":4}'
       json_example_answer_only_books_in_section: '{"answer":4}'
       answer_hint_book_color: set "answer" to the count of {color_label} books in the {section_name} section as an integer
-      evidence_hint_book_color: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {color_label} book in the {section_name} section
-      json_example_book_color: '{"evidence":[[244,184,262,256],[288,188,306,256],[336,208,386,224]],"answer":3}'
+      annotation_hint_book_color: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {color_label} book in the {section_name} section
+      json_example_book_color: '{"annotation":[[244,184,262,256],[288,188,306,256],[336,208,386,224]],"answer":3}'
       json_example_answer_only_book_color: '{"answer":3}'
       answer_hint_book_orientation: set "answer" to the count of {orientation_name} books in the {section_name} section as an integer
-      evidence_hint_book_orientation: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
-      json_example_book_orientation: '{"evidence":[[482,190,500,258],[526,178,544,258],[612,206,662,222]],"answer":3}'
+      annotation_hint_book_orientation: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
+      json_example_book_orientation: '{"annotation":[[482,190,500,258],[526,178,544,258],[612,206,662,222]],"answer":3}'
       json_example_answer_only_book_orientation: '{"answer":3}'
     private_park_person_activity:
       bundle_id: illustrations_counting_v0
       scene_key: park_playground_canvas
       task_key: person_activity_count_task
       answer_hint_person_activity: set "answer" to the count of people shown {activity_phrase} as an integer
-      evidence_hint_person_activity: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person shown {activity_phrase}
-      json_example_person_activity: '{"evidence":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
+      annotation_hint_person_activity: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person shown {activity_phrase}
+      json_example_person_activity: '{"annotation":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
       json_example_answer_only_person_activity: '{"answer":3}'
     task_illustrations__park_playground__playground_equipment_count:
       bundle_id: illustrations_counting_v0
       scene_key: park_playground_canvas
       task_key: playground_equipment_count_task
       answer_hint_playground_equipment: set "answer" to the count of {equipment_name} as an integer
-      evidence_hint_playground_equipment: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
-      json_example_playground_equipment: '{"evidence":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
+      annotation_hint_playground_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
+      json_example_playground_equipment: '{"annotation":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
       json_example_answer_only_playground_equipment: '{"answer":3}'
+    task_illustrations__pixel_village__object_type_count:
+      bundle_id: illustrations_counting_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_object_type_count_task
+      answer_hint_pixel_village_object_type: set "answer" to the count of visible {target_plural} as an integer
+      annotation_hint_pixel_village_object_type: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit}
+      json_example_pixel_village_object_type: '{"annotation":[[128,224,256,320],[384,192,512,288],[640,352,768,448]],"answer":3}'
+      json_example_answer_only_pixel_village_object_type: '{"answer":3}'
+    task_illustrations__pixel_village__person_path_count:
+      bundle_id: illustrations_counting_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_person_path_count_task
+      answer_hint_pixel_village_person_path: set "answer" to the count of people on the paths as an integer
+      annotation_hint_pixel_village_person_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person on a path
+      json_example_pixel_village_person_path: '{"annotation":[[304,336,336,368],[464,272,496,304],[592,400,624,432]],"answer":3}'
+      json_example_answer_only_pixel_village_person_path: '{"answer":3}'
+    task_illustrations__pixel_village__territory_object_count:
+      bundle_id: illustrations_counting_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_territory_object_count_task
+      answer_hint_pixel_village_territory_object: set "answer" to the count of {target_plural} in the {territory_name} as an integer
+      annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit} in the {territory_name}
+      json_example_pixel_village_territory_object: '{"annotation":[[128,224,160,256],[192,224,224,256],[256,224,288,256]],"answer":3}'
+      json_example_answer_only_pixel_village_territory_object: '{"answer":3}'
+    task_illustrations__pixel_village__building_near_path_count:
+      bundle_id: illustrations_counting_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_building_near_path_count_task
+      answer_hint_pixel_village_building_near_path: set "answer" to the count of buildings near a path as an integer
+      annotation_hint_pixel_village_building_near_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted building near a path
+      json_example_pixel_village_building_near_path: '{"annotation":[[128,160,256,256],[416,256,544,352],[640,320,768,416]],"answer":3}'
+      json_example_answer_only_pixel_village_building_near_path: '{"answer":3}'
     private_park_person_equipment_use:
       bundle_id: illustrations_counting_v0
       scene_key: park_playground_canvas
       task_key: person_using_equipment_count_task
       answer_hint_person_using_equipment: set "answer" to the count of people using the {equipment_name} as an integer
-      evidence_hint_person_using_equipment: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person using the {equipment_name}
-      json_example_person_using_equipment: '{"evidence":[[194,356,246,440],[492,382,542,462],[742,344,792,426]],"answer":3}'
+      annotation_hint_person_using_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person using the {equipment_name}
+      json_example_person_using_equipment: '{"annotation":[[194,356,246,440],[492,382,542,462],[742,344,792,426]],"answer":3}'
       json_example_answer_only_person_using_equipment: '{"answer":3}'
     private_park_person_zone:
       bundle_id: illustrations_counting_v0
       scene_key: park_playground_canvas
       task_key: person_in_park_zone_count_task
       answer_hint_person_in_park_zone: set "answer" to the count of people in the {zone_name} as an integer
-      evidence_hint_person_in_park_zone: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {zone_name}
-      json_example_person_in_park_zone: '{"evidence":[[192,398,248,496],[376,430,432,530],[528,390,586,490]],"answer":3}'
+      annotation_hint_person_in_park_zone: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {zone_name}
+      json_example_person_in_park_zone: '{"annotation":[[192,398,248,496],[376,430,432,530],[528,390,586,490]],"answer":3}'
       json_example_answer_only_person_in_park_zone: '{"answer":3}'
     private_terminal_boarding_area_person:
       bundle_id: illustrations_counting_v0
       scene_key: transit_terminal_canvas
       task_key: person_at_boarding_area_count_task
       answer_hint_person_at_boarding_area: set "answer" to the count of people in {area_name} as an integer
-      evidence_hint_person_at_boarding_area: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in {area_name}
-      json_example_person_at_boarding_area: '{"evidence":[[188,468,236,560],[344,492,394,586],[512,446,562,540]],"answer":3}'
+      annotation_hint_person_at_boarding_area: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in {area_name}
+      json_example_person_at_boarding_area: '{"annotation":[[188,468,236,560],[344,492,394,586],[512,446,562,540]],"answer":3}'
       json_example_answer_only_person_at_boarding_area: '{"answer":3}'
     private_terminal_boarding_area_luggage:
       bundle_id: illustrations_counting_v0
       scene_key: transit_terminal_canvas
       task_key: luggage_in_boarding_area_count_task
       answer_hint_luggage_in_boarding_area: set "answer" to the count of {luggage_name} in {area_name} as an integer
-      evidence_hint_luggage_in_boarding_area: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {luggage_name} in {area_name}
-      json_example_luggage_in_boarding_area: '{"evidence":[[192,584,238,642],[416,602,462,660],[684,568,732,628]],"answer":3}'
+      annotation_hint_luggage_in_boarding_area: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {luggage_name} in {area_name}
+      json_example_luggage_in_boarding_area: '{"annotation":[[192,584,238,642],[416,602,462,660],[684,568,732,628]],"answer":3}'
       json_example_answer_only_luggage_in_boarding_area: '{"answer":3}'
     private_terminal_queue_person:
       bundle_id: illustrations_counting_v0
       scene_key: transit_terminal_canvas
       task_key: queue_person_count_task
       answer_hint_queue_person: set "answer" to the count of people in the {service_point_name} as an integer
-      evidence_hint_queue_person: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {service_point_name}
-      json_example_queue_person: '{"evidence":[[184,704,228,776],[238,706,282,778],[292,700,336,774]],"answer":3}'
+      annotation_hint_queue_person: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {service_point_name}
+      json_example_queue_person: '{"annotation":[[184,704,228,776],[238,706,282,778],[292,700,336,774]],"answer":3}'
       json_example_answer_only_queue_person: '{"answer":3}'
     task_illustrations__construction_site__worker_attribute_count:
       bundle_id: illustrations_counting_v0
       scene_key: construction_site_canvas
       task_key: worker_safety_gear_count_task
       answer_hint_worker_safety_gear: set "answer" to the count of {match_phrase} as an integer
-      evidence_hint_worker_safety_gear: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted worker
-      json_example_worker_safety_gear: '{"evidence":[[182,498,238,612],[414,426,470,540],[786,566,842,680]],"answer":3}'
+      annotation_hint_worker_safety_gear: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted worker
+      json_example_worker_safety_gear: '{"annotation":[[182,498,238,612],[414,426,470,540],[786,566,842,680]],"answer":3}'
       json_example_answer_only_worker_safety_gear: '{"answer":3}'
     task_illustrations__construction_site__equipment_zone_count:
       bundle_id: illustrations_counting_v0
       scene_key: construction_site_canvas
       task_key: equipment_in_zone_count_task
       answer_hint_equipment_in_zone: set "answer" to the count of construction vehicles or equipment items in the {zone_name} as an integer
-      evidence_hint_equipment_in_zone: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted construction vehicle or equipment item in the {zone_name}
-      json_example_equipment_in_zone: '{"evidence":[[148,454,312,572],[654,420,826,548]],"answer":2}'
+      annotation_hint_equipment_in_zone: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted construction vehicle or equipment item in the {zone_name}
+      json_example_equipment_in_zone: '{"annotation":[[148,454,312,572],[654,420,826,548]],"answer":2}'
       json_example_answer_only_equipment_in_zone: '{"answer":2}'

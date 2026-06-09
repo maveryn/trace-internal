@@ -313,7 +313,7 @@ def sample_named_node_degree_graph(
         )
 
     if int(len(sorted_target_edges)) != int(target_degree):
-        raise ValueError("named-node degree sampler produced the wrong evidence-edge count")
+        raise ValueError("named-node degree sampler produced the wrong annotation-edge count")
 
     return GraphNamedNodeDegreeSample(
         graph=topology_sample.graph,

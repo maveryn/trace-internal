@@ -7,7 +7,7 @@ import json
 
 from trace.core.seed import hash64
 from trace.tasks.puzzles.cell_board.relation_min_distance import TileMinDistanceTask
-from tests.cell_board_evidence_helpers import tile_coords_from_points, tile_ids_from_points
+from tests.cell_board_annotation_helpers import tile_coords_from_points, tile_ids_from_points
 
 
 def _assert_normalized_complexity(out: object) -> None:
@@ -53,19 +53,19 @@ def test_cell_board_min_distance_outputs_expected_contract() -> None:
 
     assert str(out.query_id) == "min_distance"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_sequence"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_sequence"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(render["tiling_type"]) == "rectangular_tiling"
     assert int(render["rows"]) == 5
     assert int(render["cols"]) == 7
     assert int(render["tile_width_px"]) != int(render["tile_height_px"])
     assert out.image.size == (int(render["canvas_width_px"]), int(render["canvas_height_px"]))
 
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_sequence"] == out.evidence_gt.value
-    evidence_coords = tile_coords_from_points(trace, out.evidence_gt.value)
-    assert len(evidence_coords) == int(out.answer_gt.value) + 1
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_sequence"] == out.annotation_gt.value
+    annotation_coords = tile_coords_from_points(trace, out.annotation_gt.value)
+    assert len(annotation_coords) == int(out.answer_gt.value) + 1
     assert int(out.answer_gt.value) == 4
     assert execution["target_distance_range"] == [4, 4]
     assert int(execution["target_distance"]) == 4
@@ -76,10 +76,10 @@ def test_cell_board_min_distance_outputs_expected_contract() -> None:
     assert str(execution["color_a_label"]) in str(out.prompt)
     assert str(execution["color_b_label"]) in str(out.prompt)
 
-    assert evidence_coords[0] == execution["color_a_tip_coord"]
-    assert evidence_coords[-1] == execution["color_b_tip_coord"]
-    same_row = all(int(coord[0]) == int(evidence_coords[0][0]) for coord in evidence_coords)
-    same_col = all(int(coord[1]) == int(evidence_coords[0][1]) for coord in evidence_coords)
+    assert annotation_coords[0] == execution["color_a_tip_coord"]
+    assert annotation_coords[-1] == execution["color_b_tip_coord"]
+    same_row = all(int(coord[0]) == int(annotation_coords[0][0]) for coord in annotation_coords)
+    same_col = all(int(coord[1]) == int(annotation_coords[0][1]) for coord in annotation_coords)
     assert same_row or same_col
 
     color_a_coords = [tuple(coord) for coord in execution["color_a_coords"]]
@@ -127,7 +127,7 @@ def test_cell_board_min_distance_is_deterministic() -> None:
     out_b = task.generate(9113, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -138,10 +138,10 @@ def test_cell_board_min_distance_is_deterministic() -> None:
 def test_cell_board_min_distance_prompt_examples_match_variant_contract() -> None:
     task = TileMinDistanceTask()
     out = task.generate(9121, params={}, max_attempts=10)
-    example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only_example = _extract_prompt_json_example(out.prompt_variants["answer_only"])
 
-    assert example == {"evidence": [[168, 168], [216, 168], [264, 168], [312, 168]], "answer": 3}
+    assert example == {"annotation": [[168, 168], [216, 168], [264, 168], [312, 168]], "answer": 3}
     assert answer_only_example == {"answer": 3}
 
 

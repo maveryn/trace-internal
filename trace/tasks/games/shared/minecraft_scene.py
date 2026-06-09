@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 from ...shared.color_distance import resolve_contrasting_palette
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .minecraft_common import (
     MinecraftBlock,
@@ -18,6 +18,7 @@ from .minecraft_common import (
     SUPPORTED_MINECRAFT_STYLE_VARIANTS,
     ladder_entity_id,
     player_entity_id,
+    stack_entity_id,
 )
 
 
@@ -38,6 +39,8 @@ class MinecraftRenderParams:
     player_marker_size_px: int
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
+    max_stack_height: int = 1
+    player_marker_label: str = "P"
 
 
 @dataclass(frozen=True)
@@ -51,9 +54,9 @@ class MinecraftTheme:
     outline_rgb: Tuple[int, int, int]
     support_rgb: Tuple[int, int, int]
     stone_rgb: Tuple[int, int, int]
+    iron_rgb: Tuple[int, int, int]
     gold_rgb: Tuple[int, int, int]
     diamond_rgb: Tuple[int, int, int]
-    pumpkin_rgb: Tuple[int, int, int]
     ladder_rgb: Tuple[int, int, int]
     player_rgb: Tuple[int, int, int]
     arrow_rgb: Tuple[int, int, int]
@@ -81,9 +84,9 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(94, 82, 59),
             support_rgb=(167, 120, 72),
             stone_rgb=(137, 133, 119),
+            iron_rgb=(206, 176, 142),
             gold_rgb=(224, 181, 43),
             diamond_rgb=(78, 211, 219),
-            pumpkin_rgb=(220, 125, 35),
             ladder_rgb=(114, 71, 35),
             player_rgb=(220, 45, 45),
             arrow_rgb=(176, 43, 43),
@@ -97,9 +100,9 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(78, 91, 101),
             support_rgb=(145, 125, 92),
             stone_rgb=(139, 150, 156),
+            iron_rgb=(205, 183, 154),
             gold_rgb=(224, 185, 55),
             diamond_rgb=(85, 219, 226),
-            pumpkin_rgb=(230, 131, 38),
             ladder_rgb=(135, 87, 46),
             player_rgb=(210, 42, 56),
             arrow_rgb=(192, 49, 66),
@@ -113,9 +116,9 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(32, 35, 37),
             support_rgb=(111, 92, 72),
             stone_rgb=(109, 114, 117),
+            iron_rgb=(191, 166, 136),
             gold_rgb=(214, 173, 50),
             diamond_rgb=(70, 195, 203),
-            pumpkin_rgb=(204, 111, 31),
             ladder_rgb=(156, 101, 49),
             player_rgb=(229, 54, 63),
             arrow_rgb=(239, 87, 83),
@@ -129,9 +132,9 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(88, 51, 42),
             support_rgb=(156, 91, 65),
             stone_rgb=(124, 113, 105),
+            iron_rgb=(201, 169, 137),
             gold_rgb=(227, 181, 52),
             diamond_rgb=(69, 205, 212),
-            pumpkin_rgb=(228, 121, 36),
             ladder_rgb=(111, 66, 37),
             player_rgb=(223, 47, 47),
             arrow_rgb=(204, 50, 48),
@@ -144,9 +147,9 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
         outline_rgb=(52, 89, 51),
         support_rgb=(132, 97, 65),
         stone_rgb=(129, 133, 126),
+        iron_rgb=(203, 177, 146),
         gold_rgb=(224, 184, 45),
         diamond_rgb=(73, 210, 220),
-        pumpkin_rgb=(221, 124, 34),
         ladder_rgb=(118, 72, 36),
         player_rgb=(219, 42, 42),
         arrow_rgb=(190, 47, 45),
@@ -175,15 +178,26 @@ def _merge_bbox(*bboxes: BBox) -> BBox:
     return (round(min(xs0), 3), round(min(ys0), 3), round(max(xs1), 3), round(max(ys1), 3))
 
 
+def _center_of_points(points: Sequence[Point2]) -> Point2:
+    return (
+        round(sum(float(point[0]) for point in points) / float(len(points)), 3),
+        round(sum(float(point[1]) for point in points) / float(len(points)), 3),
+    )
+
+
 def _grid_origin(*, grid_width: int, grid_depth: int, params: MinecraftRenderParams) -> Tuple[float, float]:
     span_x = float((int(grid_width) + int(grid_depth)) * int(params.tile_width_px) / 2.0)
+    span_y = float((int(grid_width) + int(grid_depth)) * int(params.tile_height_px) / 2.0)
+    stack_height_px = float(max(1, int(params.max_stack_height)) * int(params.cube_height_px))
+    ore_mark_pad_px = max(6.0, float(int(params.cube_height_px)) * 0.45)
     origin_x = float((int(params.canvas_width) - span_x) / 2.0) + float(int(grid_depth) * int(params.tile_width_px) / 2.0)
-    origin_y = 76.0
+    origin_y = 76.0 + float(max(0, int(params.max_stack_height) - 1) * int(params.cube_height_px))
+    content_top = float(origin_y - stack_height_px - ore_mark_pad_px)
     base_bbox = (
         origin_x - float(int(grid_depth) * int(params.tile_width_px) / 2.0),
-        origin_y,
+        content_top,
         origin_x + float(int(grid_width) * int(params.tile_width_px) / 2.0),
-        origin_y + float((int(grid_width) + int(grid_depth)) * int(params.tile_height_px) / 2.0),
+        origin_y + span_y,
     )
     jittered, _dx, _dy, _resolved = apply_games_layout_jitter_to_bbox(
         bbox_px=base_bbox,
@@ -239,12 +253,12 @@ def _draw_tile(
 
 
 def _block_fill(theme: MinecraftTheme, kind: str) -> Tuple[int, int, int]:
+    if str(kind) == "iron_ore":
+        return tuple(theme.stone_rgb)
     if str(kind) == "gold_ore":
         return tuple(theme.stone_rgb)
     if str(kind) == "diamond_ore":
         return tuple(theme.stone_rgb)
-    if str(kind) == "pumpkin":
-        return tuple(theme.pumpkin_rgb)
     if str(kind) == "stone":
         return tuple(theme.stone_rgb)
     return tuple(theme.support_rgb)
@@ -270,7 +284,18 @@ def _draw_block(
     draw.polygon(left_face, fill=_shade(fill, 0.66), outline=tuple(theme.outline_rgb))
     draw.polygon(top, fill=_tint(fill, 0.18), outline=tuple(theme.outline_rgb))
 
-    if str(block.kind) == "gold_ore":
+    if str(block.kind) == "iron_ore":
+        cx = sum(point[0] for point in top) / 4.0
+        cy = sum(point[1] for point in top) / 4.0
+        for dx, dy in ((-9, -4), (4, -1), (9, -8), (-2, -10)):
+            draw.rounded_rectangle(
+                (cx + dx - 4, cy + dy - 3, cx + dx + 4, cy + dy + 3),
+                radius=2,
+                fill=tuple(theme.iron_rgb),
+                outline=tuple(theme.outline_rgb),
+                width=1,
+            )
+    elif str(block.kind) == "gold_ore":
         cx = sum(point[0] for point in top) / 4.0
         cy = sum(point[1] for point in top) / 4.0
         for dx, dy in ((-8, -2), (5, 2), (0, -8), (9, -6)):
@@ -284,13 +309,6 @@ def _draw_block(
                 fill=tuple(theme.diamond_rgb),
                 outline=tuple(theme.outline_rgb),
             )
-    elif str(block.kind) == "pumpkin":
-        cx = sum(point[0] for point in top) / 4.0
-        cy = sum(point[1] for point in top) / 4.0
-        draw.line((cx - 14, cy, cx + 14, cy), fill=_shade(theme.pumpkin_rgb, 0.72), width=2)
-        draw.line((cx, cy - 10, cx, cy + 8), fill=_shade(theme.pumpkin_rgb, 0.72), width=2)
-        draw.rectangle((cx - 3, cy - 15, cx + 3, cy - 9), fill=(66, 107, 43))
-
     return _merge_bbox(_bbox_from_points(top), _bbox_from_points(bottom))
 
 
@@ -346,30 +364,32 @@ def _draw_player(
 ) -> BBox:
     center = _project(x=float(x) + 0.5, y=float(y) + 0.5, z=0.0, origin=origin, params=params)
     size = float(params.player_marker_size_px)
+    label = str(params.player_marker_label or "P")
+    marker_width = size if len(label) <= 2 else min(size * 2.7, max(size, 9.0 * float(len(label)) + 12.0))
     bbox = (
-        float(center[0] - size / 2.0),
+        float(center[0] - marker_width / 2.0),
         float(center[1] - size / 2.0),
-        float(center[0] + size / 2.0),
+        float(center[0] + marker_width / 2.0),
         float(center[1] + size / 2.0),
     )
     draw.rounded_rectangle(bbox, radius=5, fill=tuple(theme.player_rgb), outline=tuple(theme.outline_rgb), width=2)
     font = fit_font_to_box(
         draw,
-        text="P",
-        max_width=size,
-        max_height=size,
+        text=label,
+        max_width=max(8.0, marker_width - 8.0),
+        max_height=max(8.0, size - 6.0),
         bold=True,
         min_size_px=10,
         max_size_px=18,
         font_family=str(params.font_family) or None,
     )
-    text_bbox = draw.textbbox((0, 0), "P", font=font)
+    text_bbox = draw.textbbox((0, 0), label, font=font)
     draw_text_traced(draw,
         (
             float(center[0]) - float(text_bbox[2] - text_bbox[0]) / 2.0 - float(text_bbox[0]),
             float(center[1]) - float(text_bbox[3] - text_bbox[1]) / 2.0 - float(text_bbox[1]),
         ),
-        "P",
+        label,
         font=font,
         fill=(255, 255, 255),
      role="readout", required=False,)
@@ -389,7 +409,7 @@ def _draw_direction_arrow(
     ex, ey = end_cell
     start = _project(x=float(sx) + 0.5, y=float(sy) + 0.5, z=0.04, origin=origin, params=params)
     end = _project(x=float(ex) + 0.5, y=float(ey) + 0.5, z=0.04, origin=origin, params=params)
-    mid = ((float(start[0]) * 0.52) + (float(end[0]) * 0.48), (float(start[1]) * 0.52) + (float(end[1]) * 0.48))
+    mid = ((float(start[0]) * 0.18) + (float(end[0]) * 0.82), (float(start[1]) * 0.18) + (float(end[1]) * 0.82))
     draw.line((start, mid), fill=tuple(theme.arrow_rgb), width=5)
     dx = float(mid[0] - start[0])
     dy = float(mid[1] - start[1])
@@ -443,14 +463,24 @@ def _draw_route_label(
     origin: Tuple[float, float],
     params: MinecraftRenderParams,
 ) -> None:
-    """Draw one route label on top of all route blocks."""
+    """Draw one route label just before the first route cell."""
 
     label = str(route.label).strip()
     if not label or not route.cells:
         return
+    start_x = float(route.cells[0][0]) + 0.5
+    start_y = float(route.cells[0][1]) + 0.5
+    if len(route.cells) >= 2:
+        next_x = float(route.cells[1][0]) + 0.5
+        next_y = float(route.cells[1][1]) + 0.5
+        offset_x = start_x - next_x
+        offset_y = start_y - next_y
+    else:
+        offset_x = -1.0
+        offset_y = 0.0
     lx, ly = _project(
-        x=float(route.cells[0][0]) + 0.15,
-        y=float(route.cells[0][1]) + 0.45,
+        x=start_x + (offset_x * 1.05),
+        y=start_y + (offset_y * 1.05),
         z=0.45,
         origin=origin,
         params=params,
@@ -568,9 +598,21 @@ def render_minecraft_block_world_scene(
         _draw_route_overlay(draw, route=route, theme=theme, origin=origin, params=params, draw_label=False)
 
     sorted_blocks = sorted(blocks, key=lambda block: (int(block.x) + int(block.y) + int(block.z), int(block.y), int(block.x), int(block.z)))
+    stack_bboxes: dict[Tuple[int, int], list[BBox]] = {}
+    stack_z_values: dict[Tuple[int, int], list[int]] = {}
+    stack_top_points: dict[Tuple[int, int], Tuple[int, Point2]] = {}
+    entity_points: Dict[str, Point2] = {}
     for block in sorted_blocks:
+        block_top = _cell_top_points(x=int(block.x), y=int(block.y), z=float(int(block.z) + 1), origin=origin, params=params)
+        block_point = _center_of_points(block_top)
         bbox = _draw_block(draw, block=block, theme=theme, origin=origin, params=params)
         entity_bboxes[str(block.block_id)] = bbox
+        entity_points[str(block.block_id)] = block_point
+        stack_key = (int(block.x), int(block.y))
+        stack_bboxes.setdefault(stack_key, []).append(bbox)
+        stack_z_values.setdefault(stack_key, []).append(int(block.z))
+        if stack_key not in stack_top_points or int(block.z) >= int(stack_top_points[stack_key][0]):
+            stack_top_points[stack_key] = (int(block.z), block_point)
         scene_entities.append(
             {
                 "entity_id": str(block.block_id),
@@ -579,7 +621,38 @@ def render_minecraft_block_world_scene(
                 "y": int(block.y),
                 "z": int(block.z),
                 "kind": str(block.kind),
+                "point_px": list(block_point),
                 "bbox_px": list(bbox),
+            }
+        )
+    for (stack_x, stack_y), bboxes in sorted(stack_bboxes.items()):
+        merged_bbox = _merge_bbox(*bboxes)
+        entity_id = stack_entity_id(int(stack_x), int(stack_y))
+        z_values = tuple(sorted(set(stack_z_values.get((int(stack_x), int(stack_y)), []))))
+        stack_top = stack_top_points.get((int(stack_x), int(stack_y)))
+        if stack_top is None:
+            stack_point = _center_of_points(
+                (
+                    (float(merged_bbox[0]), float(merged_bbox[1])),
+                    (float(merged_bbox[2]), float(merged_bbox[1])),
+                    (float(merged_bbox[2]), float(merged_bbox[3])),
+                    (float(merged_bbox[0]), float(merged_bbox[3])),
+                )
+            )
+        else:
+            stack_point = stack_top[1]
+        entity_bboxes[entity_id] = merged_bbox
+        entity_points[entity_id] = stack_point
+        scene_entities.append(
+            {
+                "entity_id": entity_id,
+                "entity_type": "minecraft_block_stack",
+                "x": int(stack_x),
+                "y": int(stack_y),
+                "height": int(len(z_values)),
+                "z_values": [int(value) for value in z_values],
+                "point_px": list(stack_point),
+                "bbox_px": list(merged_bbox),
             }
         )
 
@@ -634,9 +707,11 @@ def render_minecraft_block_world_scene(
         scene_entities=tuple(scene_entities),
         render_map={
             "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
+            "entity_points_px": {str(key): list(value) for key, value in entity_points.items()},
             "grid_width": int(grid_width),
             "grid_depth": int(grid_depth),
             "style_variant": str(style_variant),
+            "view_projection": "isometric_block_world",
             "route_overlays": [
                 {
                     "label": str(route.label),

@@ -338,13 +338,13 @@ def _bbox_centers(bboxes: Sequence[Sequence[float]]) -> list[list[float]]:
     ]
 
 
-def _convert_counting_label_evidence_to_bboxes(output: TaskOutput) -> TaskOutput:
-    """Convert consolidated counting label evidence to pixel object boxes."""
+def _convert_counting_label_annotation_to_bboxes(output: TaskOutput) -> TaskOutput:
+    """Convert consolidated counting label annotation to pixel object boxes."""
 
-    if str(output.evidence_gt.type) != "label_set":
+    if str(output.annotation_gt.type) != "label_set":
         return output
 
-    labels = [str(label) for label in output.evidence_gt.value]
+    labels = [str(label) for label in output.annotation_gt.value]
     trace_payload = dict(output.trace_payload)
     width, height = _canvas_dimensions(trace_payload)
     scene_ir = dict(trace_payload.get("scene_ir") or {})
@@ -359,20 +359,20 @@ def _convert_counting_label_evidence_to_bboxes(output: TaskOutput) -> TaskOutput
     bboxes = [bbox_by_label[str(label)] for label in labels if str(label) in bbox_by_label]
     if len(bboxes) != len(labels):
         missing = [str(label) for label in labels if str(label) not in bbox_by_label]
-        raise RuntimeError(f"counting bbox evidence missing labels: {missing}")
+        raise RuntimeError(f"counting bbox annotation missing labels: {missing}")
 
     witness_symbolic = {
         "type": "bbox_set",
         "count": len(bboxes),
     }
     trace_payload["witness_symbolic"] = witness_symbolic
-    trace_payload["projected_evidence"] = {
+    trace_payload["projected_annotation"] = {
         "type": "bbox_set",
         "bbox_set": [list(bbox) for bbox in bboxes],
         "pixel_bbox_set": [list(bbox) for bbox in bboxes],
         "pixel_point_set": _bbox_centers(bboxes),
     }
-    return replace(output, evidence_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in bboxes]), trace_payload=trace_payload)
+    return replace(output, annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in bboxes]), trace_payload=trace_payload)
 
 
 class GeometryCountingValueTask:
@@ -430,7 +430,7 @@ class GeometryCountingValueTask:
             source_query_id=str(output.query_id),
             extra_query_params=extra_query_params,
         )
-        return _convert_counting_label_evidence_to_bboxes(normalized_output)
+        return _convert_counting_label_annotation_to_bboxes(normalized_output)
 
 
 @register_task
@@ -439,6 +439,7 @@ class GeometryCountingAngleTypeCountTask(FixedGeometryQueryTaskMixin, GeometryCo
 
     task_id = "task_geometry__graph_paper__angle_type_count"
     fixed_query_id = ANGLE_TYPE_COUNT
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("angle",)
 
@@ -449,6 +450,7 @@ class GeometryCountingTriangleTypeCountTask(FixedGeometryQueryTaskMixin, Geometr
 
     task_id = "task_geometry__graph_paper__triangle_type_count"
     fixed_query_id = TRIANGLE_TYPE_COUNT
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle",)
 
@@ -459,6 +461,7 @@ class GeometryCountingQuadrilateralTypeCountTask(FixedGeometryQueryTaskMixin, Ge
 
     task_id = "task_geometry__graph_paper__quadrilateral_type_count"
     fixed_query_id = QUADRILATERAL_TYPE_COUNT
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("quadrilateral",)
 
@@ -469,6 +472,7 @@ class GeometryCountingShapeTypeCountTask(FixedGeometryQueryTaskMixin, GeometryCo
 
     task_id = "task_geometry__graph_paper__shape_type_count"
     fixed_query_id = SHAPE_TYPE_COUNT
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("mixed_shape",)
 
@@ -479,5 +483,6 @@ class GeometryCountingPolygonConvexityCountTask(FixedGeometryQueryTaskMixin, Geo
 
     task_id = "task_geometry__graph_paper__polygon_convexity_count"
     fixed_query_id = POLYGON_CONVEXITY_COUNT
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("polygon",)

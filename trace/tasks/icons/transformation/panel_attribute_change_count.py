@@ -14,7 +14,7 @@ from ..shared.paired_canvas_common import (
     PairedCanvasPayload,
     build_paired_prompt,
     choose_query_id,
-    evidence_from_indices,
+    annotation_from_indices,
     make_icon_spec,
     paired_complexity,
     paired_task_output,
@@ -268,7 +268,7 @@ class IconsTransformationPanelAttributeChangeCountTask:
             question_text=question_text,
             instance_seed=int(instance_seed),
         )
-        evidence = evidence_from_indices(panel_icons=payload.right_icons, indices=payload.matching_right_indices)
+        annotation = annotation_from_indices(panel_icons=payload.right_icons, indices=payload.matching_right_indices)
         complexity = paired_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
@@ -289,9 +289,9 @@ class IconsTransformationPanelAttributeChangeCountTask:
             prompt_artifacts=prompt_artifacts,
             prompt_defaults=prompt_defaults,
             render_params=render_params,
-            evidence_panel="right",
+            annotation_panel="right",
             answer_value=int(payload.target_count),
-            evidence_bboxes=evidence,
+            annotation_bboxes=annotation,
             complexity=complexity,
         )
 

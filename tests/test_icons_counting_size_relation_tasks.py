@@ -44,9 +44,9 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
     reference_entity = trace["render_map"]["anchors"]["reference_icon"]
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert out.annotation_gt.value == sorted(out.annotation_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_counting_size_relation"
     assert out.query_id == "size_smaller"
     assert execution["query_id"] == "size_smaller"
@@ -97,7 +97,7 @@ def test_icons_counting_size_relation_supports_zero_matches() -> None:
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
 
 
 def test_icons_counting_size_relation_prompt_example_matches_contract() -> None:
@@ -108,12 +108,12 @@ def test_icons_counting_size_relation_prompt_example_matches_contract() -> None:
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 2
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 2
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_counting_size_relation_balanced_sampling_defaults() -> None:

@@ -11,6 +11,7 @@ from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
+from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -18,7 +19,7 @@ from ...shared.config_defaults import (
 )
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.deterministic_sampling import resolve_selection_index
-from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
+from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -33,7 +34,7 @@ from ..shared.complexity import (
     icon_visual_scan_score,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_pair_grid_scene import IconPairSpec, panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
 from ..shared.icon_style import sample_icon_palette
@@ -125,7 +126,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-TASK_ID = "task_icons__pair_grid__pair_relation_count"
+TASK_ID = "task_icons__pair_grid__attribute_delta_pair_count"
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "transformation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -211,9 +212,11 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
     """Resolve one color/size attribute-rule query."""
 
     supported = tuple(str(rule) for rule in _ATTRIBUTE_RULES)
-    explicit = params.get("attribute_rule", params.get("query_id"))
-    if explicit is None and params.get("query_id") is not None and str(params.get("query_id")) != _PUBLIC_QUERY_ID:
-        explicit = params.get("query_id")
+    explicit = params.get("attribute_rule")
+    if explicit is None:
+        query_value = params.get("query_id", params.get("query_variant"))
+        if query_value is not None and str(query_value) != _PUBLIC_QUERY_ID:
+            explicit = query_value
     if explicit is not None:
         selected = str(explicit).strip()
         if selected not in set(supported):
@@ -222,7 +225,13 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
 
     raw_weights = params.get(
         "attribute_rule_weights",
-        params.get("query_id_weights", group_default(_GEN_DEFAULTS, "attribute_rule_weights", _DEFAULTS.attribute_rule_weights)),
+        params.get(
+            "query_id_weights",
+            params.get(
+                "query_variant_weights",
+                group_default(_GEN_DEFAULTS, "attribute_rule_weights", _DEFAULTS.attribute_rule_weights),
+            ),
+        ),
     )
     if not isinstance(raw_weights, Mapping):
         raise ValueError("attribute_rule_weights must be a mapping when provided")
@@ -239,7 +248,14 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
     )
     overridden = any(
         key in params and params.get(key) is not None
-        for key in ("attribute_rule", "query_id", "query_id", "attribute_rule_weights", "query_id_weights")
+        for key in (
+            "attribute_rule",
+            "query_id",
+            "query_variant",
+            "attribute_rule_weights",
+            "query_id_weights",
+            "query_variant_weights",
+        )
     )
     if bool(enabled) and (not overridden):
         positives = [rule for rule in supported if float(probabilities.get(rule, 0.0)) > 0.0]
@@ -429,7 +445,7 @@ def _sample_scene(
     rng.shuffle(pool)
     reference_icon_id = str(pool[0])
     scene_icon_ids = [str(icon_id) for icon_id in pool[1 : 1 + int(object_count)]]
-    labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
+    labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(object_count)])
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
     size_direction = str(rng.choice(("grow", "shrink")))
 
@@ -614,6 +630,7 @@ def _attribute_rule_complexity(
     )
 
 
+@register_task
 class IconsTransformationPairAttributeRuleCountTask:
     """Count scene cells that match the Reference pair's color/size edit rule."""
 
@@ -690,7 +707,7 @@ class IconsTransformationPairAttributeRuleCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -703,13 +720,13 @@ class IconsTransformationPairAttributeRuleCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -717,14 +734,14 @@ class IconsTransformationPairAttributeRuleCountTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        evidence_artifacts = matching_scene_cell_bbox_evidence(
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
             matching_labels=list(scene_payload.matching_labels),
         )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
 
         trace_payload = {
@@ -805,9 +822,9 @@ class IconsTransformationPairAttributeRuleCountTask:
             "witness_symbolic": {
                 "attribute_rule": str(scene_payload.attribute_rule),
                 "changed_attributes": list(_RULE_ATTRIBUTES[str(scene_payload.attribute_rule)]),
-                **dict(evidence_artifacts["witness_symbolic"]),
+                **dict(annotation_artifacts["witness_symbolic"]),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         complexity = _attribute_rule_complexity(
             task_id=self.task_id,
@@ -822,7 +839,7 @@ class IconsTransformationPairAttributeRuleCountTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -835,6 +852,7 @@ class IconsTransformationPairAttributeRuleCountTask:
             output,
             query_id=str(scene_payload.attribute_rule),
             scene_id="pair_grid",
+            task_id=str(self.task_id),
             query_probabilities=attribute_rule_probabilities,
         )
 

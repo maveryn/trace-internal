@@ -26,19 +26,33 @@
       "landing_rule_text",
       "block_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:white_piece_reaches_target_count": [
+      "rule_text",
+      "target_square_rule_text",
+      "target_landing_rule_text",
+      "block_rule_text",
+      "target_color_name"
+    ],
+    "query:black_piece_reaches_target_count": [
+      "rule_text",
+      "target_square_rule_text",
+      "target_landing_rule_text",
+      "block_rule_text",
+      "target_color_name"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -46,12 +60,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -65,18 +79,32 @@
   },
   "query_templates": {
     "marked_piece_move_count": [
-      "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many legal destination squares does the marked token have?",
-      "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the marked token's legal destination squares.",
-      "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of legal squares the marked token can move to?",
-      "{marked_piece_rule_text} Using the displayed movement rule, how many legal movement destinations are available to the marked token? {landing_rule_text} {block_rule_text}",
-      "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every legal destination square for that token."
+      "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many legal destination squares does the marked piece have?",
+      "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the marked piece's legal destination squares.",
+      "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of legal squares the marked piece can move to?",
+      "{marked_piece_rule_text} Using the displayed movement rule, how many legal movement destinations are available to the marked piece? {landing_rule_text} {block_rule_text}",
+      "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every legal destination square for that piece."
     ],
     "marked_piece_capture_count": [
-      "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many opponent tokens can the marked token capture?",
-      "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the opponent tokens capturable by the marked token.",
-      "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of opponent tokens the marked token can capture?",
-      "{marked_piece_rule_text} Using the displayed movement rule, how many opponent tokens are capturable by the marked token? {landing_rule_text} {block_rule_text}",
-      "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every opponent token that the marked token can capture."
+      "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many opponent pieces can the marked piece capture?",
+      "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the opponent pieces capturable by the marked piece.",
+      "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of opponent pieces the marked piece can capture?",
+      "{marked_piece_rule_text} Using the displayed movement rule, how many opponent pieces are capturable by the marked piece? {landing_rule_text} {block_rule_text}",
+      "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every opponent piece that the marked piece can capture."
+    ],
+    "white_piece_reaches_target_count": [
+      "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
+      "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
+      "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
+      "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
+      "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
+    ],
+    "black_piece_reaches_target_count": [
+      "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
+      "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
+      "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
+      "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
+      "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
     ]
   },
   "allow_empty_task_templates": true

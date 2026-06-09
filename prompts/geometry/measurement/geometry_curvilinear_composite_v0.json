@@ -32,19 +32,19 @@
     "query:sector_angle_from_area": [
       "sector_area"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -52,12 +52,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -92,25 +92,25 @@
       "Determine the total shaded area of the figure."
     ],
     "rectangle_semicircle_cap_perimeter": [
-      "What is the perimeter of the highlighted boundary? Add the shown straight and arc labels.",
-      "Compute the total length of the highlighted outside boundary by adding the visible straight and arc lengths.",
-      "Find the perimeter of the shaded figure by adding the straight and arc boundary labels.",
-      "Using the shown straight and arc boundary labels, what is the perimeter?",
-      "Determine the total highlighted boundary length by adding the shown straight and arc labels."
+      "What is the perimeter of the highlighted boundary? Treat the curved cap as a semicircle and use the visible dimensions.",
+      "Compute the total length of the highlighted outside boundary, including the semicircular cap.",
+      "Find the perimeter of the shaded figure, including the semicircle arc.",
+      "Using the shown dimensions and the semicircular cap, what is the perimeter of the highlighted boundary?",
+      "Determine the total highlighted boundary length from the visible dimensions and semicircle arc."
     ],
     "rectangle_semicircle_cutout_perimeter": [
-      "What is the perimeter of the highlighted boundary? Add the shown straight and arc labels.",
-      "Compute the total length of the highlighted outside and curved boundary by adding the visible straight and arc lengths.",
-      "Find the perimeter of the shaded figure by adding the straight and arc boundary labels.",
-      "Using the shown straight and arc boundary labels, what is the perimeter?",
-      "Determine the total highlighted boundary length by adding the shown straight and arc labels."
+      "What is the perimeter of the highlighted boundary? Treat the curved cutout as a semicircle and use the visible dimensions.",
+      "Compute the total length of the highlighted outside and semicircular cutout boundary from the shown dimensions.",
+      "Find the perimeter of the shaded figure, including the semicircle cutout boundary.",
+      "Using the shown dimensions and the semicircular cutout, what is the perimeter of the highlighted boundary?",
+      "Determine the total highlighted boundary length from the visible dimensions and semicircle arc."
     ],
     "rectangle_quarter_sector_cutout_perimeter": [
-      "What is the perimeter of the highlighted boundary? Add the shown straight and arc labels.",
-      "Compute the total length of the highlighted outside and curved boundary by adding the visible straight and arc lengths.",
-      "Find the perimeter of the shaded figure by adding the straight and arc boundary labels.",
-      "Using the shown straight and arc boundary labels, what is the perimeter?",
-      "Determine the total highlighted boundary length by adding the shown straight and arc labels."
+      "What is the perimeter of the highlighted boundary? Treat the curved cutout as a quarter circle and use the visible dimensions.",
+      "Compute the total length of the highlighted outside and quarter-circle cutout boundary from the shown dimensions.",
+      "Find the perimeter of the shaded figure, including the quarter-circle cutout boundary.",
+      "Using the shown dimensions and the quarter-circle cutout, what is the perimeter of the highlighted boundary?",
+      "Determine the total highlighted boundary length from the visible dimensions and quarter-circle arc."
     ],
     "missing_width_from_semicircle_cap_area": [
       "The total shaded area is {total_area}. What is the missing rectangle width marked with a question mark?",

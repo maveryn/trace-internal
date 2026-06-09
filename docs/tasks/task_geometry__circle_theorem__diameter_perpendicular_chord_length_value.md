@@ -4,26 +4,23 @@
 1. Domain: `geometry`
 2. Task group: `circle`
 3. Scene id: `circle_theorem`
-4. Public query id: `default`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `diameter_perpendicular_chord_length`
-6. Answer type: `integer`
-7. Evidence type: `keyed_point_map`
+6. Answer schema: `integer_value`
+7. Annotation schema: `keyed_point_map`
+
+## Program Contract
+- `solve_formula(visible_circle_theorem_measurements, unknown_role=length_measure, formula_schema=diameter_perpendicular_chord_length); scene=circle_theorem; scope=diameter_perpendicular_chord_length_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_circle_theorem_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Solve a missing segment length using a diameter-perpendicular-chord theorem.
-
-The public task uses the shared geometry `circle` implementation. The concrete query branch is recorded in `query_id` and trace diagnostics; it is not a public sampling unit.
-
-## Evidence
-Prompt-facing evidence is a `keyed_point_map`: a JSON object mapping the visible construction point labels that define the diameter, chord, and queried segment to their pixel points. Visible measurement labels remain annotations and render metadata, not public evidence. Verifier evidence is projected from the same generated scene metadata used to compute the answer. Verifiers must not infer answer or evidence from pixels.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Sampling axes, scene/query IDs, prompt bundle IDs, and render choices must be recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/circle.yaml`

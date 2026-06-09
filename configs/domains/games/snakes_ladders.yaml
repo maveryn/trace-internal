@@ -5,6 +5,8 @@ generation:
     query_id_weights:
       move_outcome_value: 1.0
       best_roll_value: 1.0
+      ladder_start_ahead_count: 1.0
+      snake_head_ahead_count: 1.0
     style_variant_weights:
       classic: 1.0
       paper: 1.0
@@ -103,6 +105,7 @@ generation:
       - 47
       - 48
       - 49
+    special_square_count_support: [0, 1, 2, 3, 4]
 rendering:
   shared:
     canvas_width: 1120
@@ -135,7 +138,12 @@ prompt:
     movement_rule_text: A move advances the token by the selected die value, then immediately follows a ladder upward or a snake downward if the landing square is the start of one. A ladder starts at its lower square and ends at the arrowhead on the higher square; a snake starts at its head and ends at its pointed tail on the lower square.
     overshoot_rule_text: If a die roll would move past the final square, the token stays on its current square for that roll.
     planning_rule_text: Each roll can independently be any die value from 1 to 6.
-    evidence_hint_move_outcome_value: set "evidence" to a JSON object mapping start_square and end_square to bounding boxes [x0, y0, x1, y1]
+    special_square_count_rule_text: Count by square number from just after the token's square through the final square. Do not move the token or follow snakes or ladders.
+    annotation_hint_move_outcome_value: set "annotation" to a JSON object mapping start_square and end_square to bounding boxes [x0, y0, x1, y1]
     answer_hint_move_outcome_value: set "answer" to the final square number after the shown die roll and any snake or ladder
-    evidence_hint_best_roll_value: set "evidence" to one bounding box [x0, y0, x1, y1] around the final square named in the answer
+    annotation_hint_best_roll_value: set "annotation" to one bounding box [x0, y0, x1, y1] around the final square named in the answer
     answer_hint_best_roll_value: set "answer" to the highest final square number reachable after independently choosing each stated roll, not to the die values
+    annotation_hint_ladder_start_ahead_count: set "annotation" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted ladder-start square
+    answer_hint_ladder_start_ahead_count: set "answer" to the number of counted ladder-start squares
+    annotation_hint_snake_head_ahead_count: set "annotation" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted snake-head square
+    answer_hint_snake_head_ahead_count: set "answer" to the number of counted snake-head squares

@@ -58,6 +58,34 @@
       "",
       ""
     ],
+    "pixel_village_object_type_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pixel_village_person_path_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pixel_village_territory_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pixel_village_building_near_path_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "person_using_equipment_count_task": [
       "",
       "",
@@ -124,6 +152,7 @@
     "scene:park_playground_canvas": [
       "person_count"
     ],
+    "scene:pixel_village_canvas": [],
     "scene:transit_terminal_canvas": [
       "person_count"
     ],
@@ -193,6 +222,17 @@
     "query:climbing_frame_count": [
       "equipment_name"
     ],
+    "query:object_type_count": [
+      "target_plural",
+      "target_unit"
+    ],
+    "query:people_on_path_count": [],
+    "query:territory_object_count": [
+      "territory_name",
+      "target_plural",
+      "target_unit"
+    ],
+    "query:building_near_path_count": [],
     "query:person_using_slide_count": [
       "equipment_name"
     ],
@@ -203,9 +243,6 @@
       "equipment_name"
     ],
     "query:playground_area_person_count": [
-      "zone_name"
-    ],
-    "query:picnic_area_person_count": [
       "zone_name"
     ],
     "query:garden_area_person_count": [
@@ -237,19 +274,19 @@
     "query:vehicle_in_roadwork_zone_count": [
       "zone_name"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -257,12 +294,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -300,6 +337,13 @@
       "The picture shows a synthetic park scene with {person_count} people.",
       "The canvas contains an illustrated playground park with {person_count} people.",
       "This park playground scene contains {person_count} people."
+    ],
+    "pixel_village_canvas": [
+      "The image shows a top-down pixel village.",
+      "The scene shows a top-down pixel village.",
+      "The picture shows a pixel village map.",
+      "The canvas contains a top-down pixel village scene.",
+      "This illustration shows a pixel village from above."
     ],
     "transit_terminal_canvas": [
       "The image shows an illustrated transit terminal with {person_count} people and labeled boarding areas.",
@@ -450,6 +494,34 @@
       "How many playground climbing frames can be seen?",
       "Find every climbing frame. What is the count?"
     ],
+    "object_type_count": [
+      "How many {target_plural} are visible?",
+      "Count the visible {target_plural}.",
+      "What is the number of visible {target_plural}?",
+      "How many {target_plural} can be seen?",
+      "Find every visible {target_unit}. What is the count?"
+    ],
+    "people_on_path_count": [
+      "How many people are on the paths?",
+      "Count the people on the paths.",
+      "What is the number of people on the paths?",
+      "How many people can be seen on the paths?",
+      "Find every person on a path. What is the count?"
+    ],
+    "territory_object_count": [
+      "How many {target_plural} are in the {territory_name}?",
+      "Count the {target_plural} in the {territory_name}.",
+      "What is the number of {target_plural} in the {territory_name}?",
+      "How many {target_plural} can be seen inside the {territory_name}?",
+      "Find every {target_unit} in the {territory_name}. What is the count?"
+    ],
+    "building_near_path_count": [
+      "How many buildings are near a path?",
+      "Count the buildings near a path.",
+      "What is the number of buildings near a path?",
+      "How many buildings can be seen near the paths?",
+      "Find every building near a path. What is the count?"
+    ],
     "person_using_slide_count": [
       "How many people are using the slides?",
       "Count the people using the slides.",
@@ -477,13 +549,6 @@
       "What is the number of people in the playground area?",
       "How many people are shown within the playground area?",
       "Find every person in the playground area. What is the count?"
-    ],
-    "picnic_area_person_count": [
-      "How many people are in the picnic area?",
-      "Count the people inside the picnic area.",
-      "What is the number of people in the picnic area?",
-      "How many people are shown within the picnic area?",
-      "Find every person in the picnic area. What is the count?"
     ],
     "garden_area_person_count": [
       "How many people are in the garden area?",

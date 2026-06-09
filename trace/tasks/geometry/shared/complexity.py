@@ -139,11 +139,11 @@ def geometry_gap_ambiguity_score(
     )
 
 
-def geometry_graph_point_output_burden(*, evidence_point_count: int) -> float:
-    """Normalize geometry output burden from graph-point evidence cardinality."""
+def geometry_graph_point_output_burden(*, annotation_point_count: int) -> float:
+    """Normalize geometry output burden from graph-point annotation cardinality."""
 
     return normalize_linear(
-        float(evidence_point_count),
+        float(annotation_point_count),
         min_value=2.0,
         max_value=4.0,
     )
@@ -174,7 +174,7 @@ def geometry_counting_density_balance(*, target_count: int, object_count: int) -
 
 
 def geometry_label_set_output_burden(*, target_count: int, object_count: int) -> float:
-    """Normalize output burden from label-set evidence size."""
+    """Normalize output burden from label-set annotation size."""
 
     max_targets = max(1, int(object_count) - 1)
     return normalize_linear(
@@ -185,26 +185,26 @@ def geometry_label_set_output_burden(*, target_count: int, object_count: int) ->
 
 
 def geometry_measurement_output_burden(
-    *, answer_format: str, evidence_point_count: int
+    *, answer_format: str, annotation_point_count: int
 ) -> float:
     """Normalize output burden for single-object measurement tasks."""
 
     return geometry_answer_format_output_burden(
         answer_format=str(answer_format),
-        evidence_count=int(evidence_point_count),
-        evidence_count_min=1,
-        evidence_count_max=5,
+        annotation_count=int(annotation_point_count),
+        annotation_count_min=1,
+        annotation_count_max=5,
     )
 
 
 def geometry_answer_format_output_burden(
     *,
     answer_format: str,
-    evidence_count: int,
-    evidence_count_min: int,
-    evidence_count_max: int,
+    annotation_count: int,
+    annotation_count_min: int,
+    annotation_count_max: int,
 ) -> float:
-    """Normalize output burden from answer-format precision plus evidence cardinality."""
+    """Normalize output burden from answer-format precision plus annotation cardinality."""
 
     normalized_answer_format = str(answer_format).strip().lower()
     answer_format_load = {
@@ -216,26 +216,26 @@ def geometry_answer_format_output_burden(
         raise ValueError(
             f"unsupported geometry measurement answer_format: {answer_format}"
         )
-    evidence_load = normalize_linear(
-        float(evidence_count),
-        min_value=float(evidence_count_min),
-        max_value=float(evidence_count_max),
+    annotation_load = normalize_linear(
+        float(annotation_count),
+        min_value=float(annotation_count_min),
+        max_value=float(annotation_count_max),
     )
     return clamp_unit_interval(
-        (0.65 * float(answer_format_load)) + (0.35 * float(evidence_load))
+        (0.65 * float(answer_format_load)) + (0.35 * float(annotation_load))
     )
 
 
 def geometry_analytical_output_burden(
-    *, answer_format: str, evidence_ref_count: int
+    *, answer_format: str, annotation_ref_count: int
 ) -> float:
-    """Normalize output burden for analytical geometry tasks with measurement-map evidence."""
+    """Normalize output burden for analytical geometry tasks with measurement-map annotation."""
 
     return geometry_answer_format_output_burden(
         answer_format=str(answer_format),
-        evidence_count=int(evidence_ref_count),
-        evidence_count_min=1,
-        evidence_count_max=4,
+        annotation_count=int(annotation_ref_count),
+        annotation_count_min=1,
+        annotation_count_max=4,
     )
 
 
@@ -345,7 +345,7 @@ def build_geometry_comparison_complexity(
     gap_normalized: float,
     min_normalized_gap: float,
     comparison_kind: str,
-    evidence_point_count: int,
+    annotation_point_count: int,
 ) -> TaskComplexity:
     """Build one normalized comparison-family complexity payload."""
 
@@ -366,7 +366,7 @@ def build_geometry_comparison_complexity(
                 min_normalized_gap=float(min_normalized_gap),
             ),
             "output_burden": geometry_graph_point_output_burden(
-                evidence_point_count=int(evidence_point_count),
+                annotation_point_count=int(annotation_point_count),
             ),
         },
     )
@@ -475,7 +475,7 @@ def build_geometry_transformation_complexity(
     query_id: str,
     scene_variant: str,
     ambiguity: float,
-    evidence_point_count: int,
+    annotation_point_count: int,
 ) -> TaskComplexity:
     """Build one normalized transformation-family complexity payload."""
 
@@ -490,7 +490,7 @@ def build_geometry_transformation_complexity(
             ),
             "ambiguity": clamp_unit_interval(float(ambiguity)),
             "output_burden": geometry_graph_point_output_burden(
-                evidence_point_count=int(evidence_point_count),
+                annotation_point_count=int(annotation_point_count),
             ),
         },
     )
@@ -598,8 +598,8 @@ def build_geometry_coordinate_relation_complexity(
     query_id: str,
     object_count: int,
     target_count: int | None,
-    evidence_type: str,
-    evidence_count: int,
+    annotation_type: str,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build one normalized coordinate-relation complexity payload."""
 
@@ -647,18 +647,18 @@ def build_geometry_coordinate_relation_complexity(
             + float(query_bonus)
         )
 
-    if str(evidence_type) in {"graph_point_set", "point_set"}:
+    if str(annotation_type) in {"graph_point_set", "point_set"}:
         output_burden = geometry_graph_point_output_burden(
-            evidence_point_count=int(evidence_count),
+            annotation_point_count=int(annotation_count),
         )
-    elif str(evidence_type) == "labels":
+    elif str(annotation_type) == "labels":
         output_burden = geometry_label_set_output_burden(
             target_count=int(target_count or 0),
             object_count=int(object_count),
         )
     else:
         raise ValueError(
-            f"unsupported geometry coordinate evidence_type: {evidence_type}"
+            f"unsupported geometry coordinate annotation_type: {annotation_type}"
         )
 
     return build_geometry_task_complexity(
@@ -731,7 +731,7 @@ def build_geometry_graphing_complexity(
     extremum_kind: str | None = None,
     object_count: int,
     target_count: int,
-    evidence_count: int,
+    annotation_count: int,
     has_query_line: bool,
 ) -> TaskComplexity:
     """Build one normalized complexity payload for geometry graphing count tasks."""
@@ -752,7 +752,7 @@ def build_geometry_graphing_complexity(
         + (0.15 if str(scene_variant).strip().lower() == "piecewise_linear" else 0.0)
     )
     output_burden = normalize_linear(
-        float(evidence_count),
+        float(annotation_count),
         min_value=0.0,
         max_value=6.0,
     )
@@ -788,6 +788,13 @@ def geometry_circle_theorem_reasoning_score(*, query_id: str) -> float:
         "inscribed_angle_from_arc": 0.76,
         "tangent_chord_angle_from_arc": 0.82,
         "tangent_chord_angle_from_inscribed": 0.80,
+        "external_two_secants_angle_from_arcs": 0.86,
+        "opposite_angle_supplement": 0.78,
+        "exterior_angle_from_opposite_interior": 0.82,
+        "chord_length_from_radius_and_central_angle": 0.74,
+        "chord_length_from_radius_and_inscribed_angle": 0.78,
+        "radius_from_external_distance_and_angle": 0.80,
+        "tangent_length_from_radius_and_external_distance": 0.76,
     }
     if normalized_variant not in score_by_variant:
         raise ValueError(
@@ -802,7 +809,8 @@ def build_geometry_circle_theorem_complexity(
     task_id: str,
     query_id: str,
     annotation_count: int,
-    answer_value: int,
+    answer_value: int | float,
+    answer_format: str = "integer",
 ) -> TaskComplexity:
     """Build one normalized complexity payload for circle-theorem value tasks."""
 
@@ -821,10 +829,10 @@ def build_geometry_circle_theorem_complexity(
         )
     )
     output_burden = geometry_answer_format_output_burden(
-        answer_format="integer",
-        evidence_count=int(annotation_count),
-        evidence_count_min=1,
-        evidence_count_max=3,
+        answer_format=str(answer_format),
+        annotation_count=int(annotation_count),
+        annotation_count_min=1,
+        annotation_count_max=4,
     )
     return build_geometry_task_complexity(
         weights=weights,
@@ -1034,7 +1042,7 @@ def build_geometry_analytical_complexity(
             ),
             "output_burden": geometry_analytical_output_burden(
                 answer_format=str(answer_format),
-                evidence_ref_count=int(annotation_count),
+                annotation_ref_count=int(annotation_count),
             ),
         },
     )

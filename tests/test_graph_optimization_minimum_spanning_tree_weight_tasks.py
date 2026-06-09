@@ -54,7 +54,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "point_pair_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_minimum_spanning_tree_weight"
     assert execution["question_format"] == "sum_unique_mst_weights"
     assert execution["graph_directionality"] == "undirected"
@@ -62,7 +62,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
     assert int(execution["extra_edge_count"]) == 2
     assert len(node_entities) == 7
     assert len(edge_entities) == int(execution["edge_count"])
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -80,19 +80,19 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
             int(pair[1]) if str(pair[1]).isdigit() else str(pair[1]),
         ),
     )
-    evidence_point_pairs = list(out.evidence_gt.value)
+    annotation_point_pairs = list(out.annotation_gt.value)
     assert mst_edges == [tuple(str(value) for value in edge) for edge in execution["minimum_spanning_tree_edges"]]
     assert trace["witness_symbolic"]["type"] == "edge_pair_set"
     assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in mst_edges]
-    assert len(evidence_point_pairs) == len(mst_edges)
+    assert len(annotation_point_pairs) == len(mst_edges)
     assert int(out.answer_gt.value) == int(sum(int(data["weight"]) for _, _, data in mst_graph.edges(data=True)))
     assert int(out.answer_gt.value) == int(execution["minimum_spanning_tree_total_weight"])
-    assert "edge_set" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["type"] == "point_pair_set"
-    assert trace["projected_evidence"]["point_pair_set"] == evidence_point_pairs
-    assert sum(1 for edge in edge_entities if bool(edge["is_in_minimum_spanning_tree"])) == len(evidence_point_pairs)
+    assert "edge_set" not in trace["projected_annotation"]
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == annotation_point_pairs
+    assert sum(1 for edge in edge_entities if bool(edge["is_in_minimum_spanning_tree"])) == len(annotation_point_pairs)
     width, height = trace["render_spec"]["canvas_size"]
-    for pair in evidence_point_pairs:
+    for pair in annotation_point_pairs:
         assert len(pair) == 2
         for point in pair:
             assert 0 <= float(point[0]) <= float(width)
@@ -115,10 +115,10 @@ def test_graph_optimization_minimum_spanning_tree_weight_prompt_examples_follow_
         params={"label_variant": "numbers", "node_count": 7, "extra_edge_count": 2},
         max_attempts=80,
     )
-    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
-    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
+    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_annotation"])
+    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_annotation"])
     expected_example = {
-        "evidence": [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]],
+        "annotation": [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]],
         "answer": 12,
     }
     assert letters_example == expected_example

@@ -5,26 +5,42 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks.geometry.measurement.composite_measurement import (
-    GeometryMeasurementAlgebraicAngleValueTask,
-    GeometryMeasurementAngleChainValueTask,
-    GeometryMeasurementAngleBisectorSegmentValueTask,
-    GeometryMeasurementCentroidMedianSegmentValueTask,
+    GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
+    GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
+    GeometryAngleBisectorBaseLengthTask,
+    GeometryAngleBisectorSplitLengthTask,
+    GeometryAngleRelationsParallelSupplementAngleTask,
+    GeometryAngleRelationsTriangleExteriorAngleTask,
+    GeometryCentroidMedianVertexSegmentLengthTask,
+    GeometryCentroidMedianWholeMedianLengthTask,
+    GeometryCompositeShapeTabbedRectilinearPerimeterTask,
     GeometryMeasurementCompositeAreaValueTask,
     GeometryMeasurementCompositePerimeterValueTask,
-    GeometryMeasurementParallelSectionLengthValueTask,
-    GeometryMeasurementPythagoreanLengthValueTask,
+    GeometryPythagoreanLengthChainedRectangleDiagonalTask,
+    GeometryPythagoreanLengthRectangleTriangleSharedHeightTask,
+    GeometryTriangleRelationsParallelSectionBaseLengthTask,
+    GeometryTriangleRelationsParallelSectionCrossLengthTask,
+    GeometryTriangleRelationsSimilarTrianglesSideLengthTask,
 )
 
 
 TASK_CLASSES = (
-    GeometryMeasurementAngleChainValueTask,
-    GeometryMeasurementAlgebraicAngleValueTask,
-    GeometryMeasurementParallelSectionLengthValueTask,
-    GeometryMeasurementPythagoreanLengthValueTask,
-    GeometryMeasurementAngleBisectorSegmentValueTask,
-    GeometryMeasurementCentroidMedianSegmentValueTask,
+    GeometryAngleRelationsParallelSupplementAngleTask,
+    GeometryAngleRelationsTriangleExteriorAngleTask,
+    GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
+    GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
+    GeometryTriangleRelationsParallelSectionBaseLengthTask,
+    GeometryTriangleRelationsParallelSectionCrossLengthTask,
+    GeometryTriangleRelationsSimilarTrianglesSideLengthTask,
+    GeometryPythagoreanLengthChainedRectangleDiagonalTask,
+    GeometryPythagoreanLengthRectangleTriangleSharedHeightTask,
+    GeometryAngleBisectorBaseLengthTask,
+    GeometryAngleBisectorSplitLengthTask,
+    GeometryCentroidMedianVertexSegmentLengthTask,
+    GeometryCentroidMedianWholeMedianLengthTask,
     GeometryMeasurementCompositeAreaValueTask,
     GeometryMeasurementCompositePerimeterValueTask,
+    GeometryCompositeShapeTabbedRectilinearPerimeterTask,
 )
 
 
@@ -47,15 +63,15 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id
     assert out.answer_gt.type == "integer"
     if task.scene_id == "angle_relations":
-        assert out.evidence_gt.type == "keyed_point_map"
-        assert 2 <= len(out.evidence_gt.value) <= 4
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert 2 <= len(out.annotation_gt.value) <= 4
     elif task.scene_id == "composite_shape":
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert 1 <= len(out.evidence_gt.value) <= 2
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert 1 <= len(out.annotation_gt.value) <= 2
     else:
-        assert out.evidence_gt.type == "bbox_set"
-        assert 2 <= len(out.evidence_gt.value) <= 6
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+        assert out.annotation_gt.type == "bbox_set"
+        assert 2 <= len(out.annotation_gt.value) <= 6
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
@@ -64,7 +80,7 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == task.scene_id
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == out.evidence_gt.type
+    assert trace["projected_annotation"]["type"] == out.annotation_gt.type
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -76,12 +92,12 @@ def test_composite_measurement_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 
 
 def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
-    task = GeometryMeasurementPythagoreanLengthValueTask()
+    task = GeometryPythagoreanLengthRectangleTriangleSharedHeightTask()
     out = task.generate(
         44021,
         params={"query_id": "rectangle_triangle_shared_height_length", "case_index": 0},
@@ -96,18 +112,25 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
 
 
 def test_parallel_section_scale_task_supports_every_query() -> None:
-    task = GeometryMeasurementParallelSectionLengthValueTask()
-    for query_id in ("similar_triangles_side_length", "parallel_section_base_length", "parallel_section_cross_length"):
+    tasks = (
+        (GeometryTriangleRelationsSimilarTrianglesSideLengthTask(), "similar_triangles_side_length"),
+        (GeometryTriangleRelationsParallelSectionBaseLengthTask(), "parallel_section_base_length"),
+        (GeometryTriangleRelationsParallelSectionCrossLengthTask(), "parallel_section_cross_length"),
+    )
+    for task, query_id in tasks:
         out = task.generate(44025, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
         assert out.scene_id == "triangle_relations"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "bbox_set"
 
 
-def test_algebraic_triangle_cases_keep_evidence_inside_canvas() -> None:
-    task = GeometryMeasurementAlgebraicAngleValueTask()
-    for query_id in ("triangle_single_extension_expression", "triangle_double_extension_expression"):
+def test_algebraic_triangle_cases_keep_annotation_inside_canvas() -> None:
+    tasks = (
+        (GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask(), "triangle_single_extension_expression"),
+        (GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask(), "triangle_double_extension_expression"),
+    )
+    for task, query_id in tasks:
         for case_index in range(6):
             out = task.generate(
                 44041 + case_index,
@@ -115,40 +138,51 @@ def test_algebraic_triangle_cases_keep_evidence_inside_canvas() -> None:
                 max_attempts=20,
             )
             width, height = out.image.size
-            assert out.evidence_gt.type == "keyed_point_map"
-            for x, y in out.evidence_gt.value.values():
+            assert out.annotation_gt.type == "keyed_point_map"
+            for x, y in out.annotation_gt.value.values():
                 assert 0.0 <= x <= float(width)
                 assert 0.0 <= y <= float(height)
 
 
-@pytest.mark.parametrize("task_cls", (GeometryMeasurementAngleChainValueTask, GeometryMeasurementAlgebraicAngleValueTask))
-def test_angle_relations_public_evidence_uses_angle_primitives_not_label_boxes(task_cls) -> None:
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryAngleRelationsParallelSupplementAngleTask,
+        GeometryAngleRelationsTriangleExteriorAngleTask,
+        GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
+        GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
+    ),
+)
+def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes(task_cls) -> None:
     task = task_cls()
     for query_id in sorted({case.query_id for case in task.cases}):
         out = task.generate(44061, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
-        assert out.evidence_gt.type == "keyed_point_map"
-        assert out.trace_payload["projected_evidence"]["type"] == "keyed_point_map"
-        assert set(out.evidence_gt.value) == set(out.trace_payload["execution_trace"]["evidence_roles"])
-        roles = out.trace_payload["execution_trace"]["evidence_roles"]
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+        assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
+        roles = out.trace_payload["execution_trace"]["annotation_roles"]
         assert all("label" not in str(role) for role in roles)
         assert all(str(role).isupper() and len(str(role)) == 3 for role in roles)
         assert "angle_label_bboxes" in out.trace_payload["render_map"]
         width, height = out.image.size
         scene_points = _scene_point_lookup(out.trace_payload)
-        for point in out.evidence_gt.value.values():
+        for point in out.annotation_gt.value.values():
             assert len(point) == 2
             assert 0.0 <= float(point[0]) <= float(width)
             assert 0.0 <= float(point[1]) <= float(height)
-        for key, point in out.evidence_gt.value.items():
+        for key, point in out.annotation_gt.value.items():
             if str(key).isupper() and len(str(key)) == 3:
                 expected_vertex = scene_points[str(key)[1]]
                 assert [float(point[0]), float(point[1])] == pytest.approx(expected_vertex, abs=1e-3)
 
 
 def test_algebraic_angle_uses_varied_expression_forms() -> None:
-    task = GeometryMeasurementAlgebraicAngleValueTask()
+    tasks = (
+        (GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask(), "triangle_single_extension_expression"),
+        (GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask(), "triangle_double_extension_expression"),
+    )
     expressions: set[str] = set()
-    for query_id in ("triangle_single_extension_expression", "triangle_double_extension_expression"):
+    for task, query_id in tasks:
         for case_index in range(6):
             out = task.generate(
                 44101 + case_index,
@@ -166,7 +200,7 @@ def test_algebraic_angle_uses_varied_expression_forms() -> None:
 
 
 def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
-    task = GeometryMeasurementAngleChainValueTask()
+    task = GeometryAngleRelationsParallelSupplementAngleTask()
     with pytest.raises(ValueError):
         task.generate(44031, params={"query_id": "not_a_query"}, max_attempts=20)
 
@@ -174,18 +208,19 @@ def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
 @pytest.mark.parametrize(
     "task_cls, expected_keys",
     (
-        (GeometryMeasurementCompositeAreaValueTask, {"target_region"}),
+        (GeometryMeasurementCompositeAreaValueTask, {"outer_region"}),
         (GeometryMeasurementCompositePerimeterValueTask, {"target_boundary"}),
+        (GeometryCompositeShapeTabbedRectilinearPerimeterTask, {"target_boundary"}),
     ),
 )
-def test_rectilinear_composite_public_evidence_uses_shape_primitives(task_cls, expected_keys) -> None:
+def test_rectilinear_composite_public_annotation_uses_shape_primitives(task_cls, expected_keys) -> None:
     task = task_cls()
     for query_id in sorted({case.query_id for case in task.cases}):
         out = task.generate(44121, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert expected_keys.issubset(set(out.evidence_gt.value))
-        assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert out.trace_payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert set(out.evidence_gt.value) == set(out.trace_payload["execution_trace"]["evidence_roles"])
-        assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["evidence_roles"])
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert expected_keys.issubset(set(out.annotation_gt.value))
+        assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
+        assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "measurement_label_bboxes" in out.trace_payload["render_map"]

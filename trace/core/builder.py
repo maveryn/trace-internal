@@ -20,7 +20,7 @@ from ..tasks.base import TaskOutput
 from . import error_codes
 from .canonical import canonical_json_bytes
 from .config import BuildConfig, BuildTaskConfig
-from .evidence_sanitization import sanitize_trace_payload_for_public_evidence
+from .annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
 from .json_io import write_json_file
@@ -51,7 +51,7 @@ class _BuildStageResult:
     accepted_by_task: Dict[str, int]
     rejected_by_task: Dict[str, int]
     rejected_reason_by_task: Dict[str, Dict[str, int]]
-    evidence_format_map: Dict[str, str]
+    annotation_format_map: Dict[str, str]
     domain_sampling_probabilities: Dict[str, float]
     task_group_sampling_probabilities: Dict[str, float]
     scene_sampling_probabilities: Dict[str, float]
@@ -98,7 +98,7 @@ _REQUIRED_TRACE_PAYLOAD_KEYS = (
     "render_map",
     "execution_trace",
     "witness_symbolic",
-    "projected_evidence",
+    "projected_annotation",
 )
 _PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
 _BUILD_PROGRESS_ENABLED = os.environ.get("TRACE_BUILD_PROGRESS", "1").strip().lower() not in _PROGRESS_DISABLED_VALUES
@@ -385,12 +385,12 @@ def _finalize_generated_output(
     )
     if not type_registry.validate_answer_type(generated.answer_gt.type):
         raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
-    if not type_registry.validate_evidence_type(generated.evidence_gt.type):
-        raise BuildError(f"unregistered evidence type: {generated.evidence_gt.type}")
+    if not type_registry.validate_annotation_type(generated.annotation_gt.type):
+        raise BuildError(f"unregistered annotation type: {generated.annotation_gt.type}")
     try:
         reward_contract = resolve_reward_contract(
             answer_type=generated.answer_gt.type,
-            evidence_type=generated.evidence_gt.type,
+            annotation_type=generated.annotation_gt.type,
         )
     except ValueError as exc:
         raise BuildError(str(exc)) from exc
@@ -419,7 +419,7 @@ def _finalize_generated_output(
         "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
         "images": [image_record.to_dict()],
         "answer_gt": generated.answer_gt.to_dict(),
-        "evidence_gt": generated.evidence_gt.to_dict(),
+        "annotation_gt": generated.annotation_gt.to_dict(),
         "reward_contract": reward_contract.to_dict(),
         "versions": {
             "seed_derivation_version": SEED_DERIVATION_VERSION,
@@ -429,9 +429,9 @@ def _finalize_generated_output(
     }
     instance_id = compute_instance_id(partial_record)
 
-    trace_payload = sanitize_trace_payload_for_public_evidence(
+    trace_payload = sanitize_trace_payload_for_public_annotation(
         generated.trace_payload,
-        evidence_gt=generated.evidence_gt,
+        annotation_gt=generated.annotation_gt,
     )
     _validate_trace_payload_keys(
         task_id=str(task.task_id),
@@ -455,10 +455,10 @@ def _finalize_generated_output(
         render_map=trace_payload["render_map"],
         execution_trace=trace_payload["execution_trace"],
         witness_symbolic=trace_payload["witness_symbolic"],
-        projected_evidence=trace_payload["projected_evidence"],
+        projected_annotation=trace_payload["projected_annotation"],
         taxonomy=trace_payload.get("taxonomy") if isinstance(trace_payload.get("taxonomy"), dict) else None,
         answer_gt=generated.answer_gt,
-        evidence_gt=generated.evidence_gt,
+        annotation_gt=generated.annotation_gt,
         reward_contract=reward_contract,
     )
     trace_ref = trace_writer.append(trace_instance.to_dict())
@@ -476,7 +476,7 @@ def _finalize_generated_output(
         prompt_variants=dict(getattr(generated, "prompt_variants", {}) or {}),
         images=[image_record],
         answer_gt=generated.answer_gt,
-        evidence_gt=generated.evidence_gt,
+        annotation_gt=generated.annotation_gt,
         reward_contract=reward_contract,
         task_complexity=generated.complexity,
         trace_ref=trace_ref,
@@ -495,7 +495,7 @@ def _finalize_generated_output(
         query_id=query_id,
         task_complexity=generated.complexity,
     ).to_dict()
-    return train.to_dict(), curriculum_record, str(generated.evidence_gt.type)
+    return train.to_dict(), curriculum_record, str(generated.annotation_gt.type)
 
 
 def _build_task_serial(
@@ -519,7 +519,7 @@ def _build_task_serial(
     max_candidates = max(1, task_target * 20)
     train_records: list[Dict[str, Any]] = []
     curriculum_records: list[Dict[str, Any]] = []
-    evidence_type: str | None = None
+    annotation_type: str | None = None
 
     while accepted < task_target and seed_index < max_candidates:
         attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=seed_index)
@@ -538,7 +538,7 @@ def _build_task_serial(
                 progress_callback(accepted, rejected, accepted + rejected)
             continue
 
-        train_record, curriculum_record, evidence_type = _finalize_generated_output(
+        train_record, curriculum_record, annotation_type = _finalize_generated_output(
             task=task,
             generated=generated,
             accepted_index=accepted,
@@ -561,7 +561,7 @@ def _build_task_serial(
         accepted,
         rejected,
         dict(sorted(rejection_reasons.items())),
-        evidence_type,
+        annotation_type,
     )
 
 
@@ -603,7 +603,7 @@ def _build_task_parallel(
     futures: Dict[Any, int] = {}
     train_records: list[Dict[str, Any]] = []
     curriculum_records: list[Dict[str, Any]] = []
-    evidence_type: str | None = None
+    annotation_type: str | None = None
 
     executor_kwargs: Dict[str, Any] = {"max_workers": workers}
     process_pool_context = _resolve_process_pool_context()
@@ -642,7 +642,7 @@ def _build_task_parallel(
                     reason = str(outcome.error_reason or "TaskGenerationError")
                     rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
                 else:
-                    train_record, curriculum_record, evidence_type = _finalize_generated_output(
+                    train_record, curriculum_record, annotation_type = _finalize_generated_output(
                         task=task,
                         generated=outcome.generated,
                         accepted_index=accepted,
@@ -671,7 +671,7 @@ def _build_task_parallel(
         accepted,
         rejected,
         dict(sorted(rejection_reasons.items())),
-        evidence_type,
+        annotation_type,
     )
 
 
@@ -697,7 +697,7 @@ def _build_staging(
     accepted_by_task: Dict[str, int] = {}
     rejected_by_task: Dict[str, int] = {}
     rejected_reason_by_task: Dict[str, Dict[str, int]] = {}
-    evidence_format_map: Dict[str, str] = {}
+    annotation_format_map: Dict[str, str] = {}
     progress_enabled = _BUILD_PROGRESS_ENABLED
     total_target = sum(target_counts_by_task.values())
     overall_bar = tqdm(
@@ -757,7 +757,7 @@ def _build_staging(
                         accepted,
                         rejected,
                         rejection_reasons,
-                        evidence_type,
+                        annotation_type,
                     ) = _build_task_parallel(
                         task_cfg=task_cfg,
                         task=task,
@@ -780,8 +780,8 @@ def _build_staging(
 
                 instances.extend(task_instances)
                 curriculum.extend(task_curriculum)
-                if evidence_type is not None:
-                    evidence_format_map[task.task_id] = evidence_type
+                if annotation_type is not None:
+                    annotation_format_map[task.task_id] = annotation_type
 
                 accepted_by_task[task_cfg.task_id] = accepted
                 rejected_by_task[task_cfg.task_id] = rejected
@@ -806,7 +806,7 @@ def _build_staging(
         accepted_by_task=dict(sorted(accepted_by_task.items())),
         rejected_by_task=dict(sorted(rejected_by_task.items())),
         rejected_reason_by_task=dict(sorted(rejected_reason_by_task.items())),
-        evidence_format_map=dict(sorted(evidence_format_map.items())),
+        annotation_format_map=dict(sorted(annotation_format_map.items())),
         domain_sampling_probabilities=domain_probs,
         task_group_sampling_probabilities=task_group_probs,
         scene_sampling_probabilities=scene_probs,
@@ -907,7 +907,7 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
             "rejected_counts_by_task": primary.rejected_by_task,
             "rejection_reason_breakdown_by_task": primary.rejected_reason_by_task,
             "final_rejection_rate": rejection_rate,
-            "resolved_evidence_format_map": primary.evidence_format_map,
+            "resolved_annotation_format_map": primary.annotation_format_map,
             "trace_shard_manifest": {
                 "shards": [
                     {

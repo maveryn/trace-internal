@@ -31,7 +31,7 @@ from .metro_route_scene import (
     MetroRouteNetworkSample,
     RenderedMetroRouteScene,
     feasible_metro_answer_counts,
-    projected_metro_station_point_evidence,
+    projected_metro_station_point_annotation,
     render_metro_scene,
     sample_metro_query_network,
 )
@@ -97,7 +97,7 @@ class MetroRouteGraphTaskBase:
     task_group = ""
     task_id = ""
     query_id = ""
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = ""
     scene_title = "Metro Route Graph"
     _fallback_defaults = MetroRouteTaskDefaults()
@@ -261,46 +261,46 @@ class MetroRouteGraphTaskBase:
         )
 
     def _build_prompt_json_examples(self) -> Tuple[str, str]:
-        evidence: Any = [[180, 220], [310, 180]]
+        annotation: Any = [[180, 220], [310, 180]]
         answer = 2
         if self.query_id in {"metro_shortest_path_length", "metro_transfer_count"}:
-            evidence = [[180, 220], [310, 180], [430, 260]]
+            annotation = [[180, 220], [310, 180], [430, 260]]
         return (
-            json.dumps({"evidence": evidence, "answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+            json.dumps({"annotation": annotation, "answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
             json.dumps({"answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         )
 
-    def _evidence_and_answer(
+    def _annotation_and_answer(
         self,
         metro_sample: MetroRouteNetworkSample,
         rendered_scene: RenderedMetroRouteScene,
     ) -> tuple[TypedValue, TypedValue, Dict[str, Any], Dict[str, Any]]:
         if self.query_id == "metro_shortest_path_length":
-            evidence_labels = tuple(str(label) for label in metro_sample.target_labels)
-            projection = projected_metro_station_point_evidence(rendered_scene, evidence_labels)
-            evidence = [list(point) for point in projection["pixel_point_sequence"]]
+            annotation_labels = tuple(str(label) for label in metro_sample.target_labels)
+            projection = projected_metro_station_point_annotation(rendered_scene, annotation_labels)
+            annotation = [list(point) for point in projection["pixel_point_sequence"]]
             return (
                 TypedValue(type="integer", value=int(metro_sample.target_shortest_path_length)),
-                TypedValue(type="point_sequence", value=list(evidence)),
-                {"type": "station_label_sequence", "labels": list(evidence_labels)},
+                TypedValue(type="point_sequence", value=list(annotation)),
+                {"type": "station_label_sequence", "labels": list(annotation_labels)},
                 {"type": "point_sequence", **dict(projection)},
             )
         if self.query_id == "metro_transfer_count":
-            evidence_labels = tuple(str(label) for label in metro_sample.target_labels)
-            projection = projected_metro_station_point_evidence(rendered_scene, evidence_labels)
-            evidence = [list(point) for point in projection["pixel_point_sequence"]]
+            annotation_labels = tuple(str(label) for label in metro_sample.target_labels)
+            projection = projected_metro_station_point_annotation(rendered_scene, annotation_labels)
+            annotation = [list(point) for point in projection["pixel_point_sequence"]]
             return (
                 TypedValue(type="integer", value=int(metro_sample.target_route_transfer_count)),
-                TypedValue(type="point_sequence", value=list(evidence)),
+                TypedValue(type="point_sequence", value=list(annotation)),
                 {
                     "type": "station_label_sequence",
-                    "labels": list(evidence_labels),
+                    "labels": list(annotation_labels),
                     "route_sequence": list(metro_sample.target_route_sequence),
                     "route_change_station_labels": list(metro_sample.target_path_transfer_labels),
                 },
                 {"type": "point_sequence", **dict(projection)},
             )
-        evidence_labels = tuple(
+        annotation_labels = tuple(
             str(label)
             for label in (
                 metro_sample.transfer_labels
@@ -308,8 +308,8 @@ class MetroRouteGraphTaskBase:
                 else metro_sample.target_labels
             )
         )
-        projection = projected_metro_station_point_evidence(rendered_scene, evidence_labels)
-        evidence = [list(point) for point in projection["pixel_point_set"]]
+        projection = projected_metro_station_point_annotation(rendered_scene, annotation_labels)
+        annotation = [list(point) for point in projection["pixel_point_set"]]
         if self.query_id == "metro_transfer_station_count":
             answer_value = int(metro_sample.target_transfer_count)
         elif self.query_id == "metro_single_route_station_count":
@@ -320,8 +320,8 @@ class MetroRouteGraphTaskBase:
             raise ValueError(f"unsupported metro query_id: {self.query_id}")
         return (
             TypedValue(type="integer", value=int(answer_value)),
-            TypedValue(type="point_set", value=list(evidence)),
-            {"type": "station_label_set", "labels": list(evidence_labels)},
+            TypedValue(type="point_set", value=list(annotation)),
+            {"type": "station_label_set", "labels": list(annotation_labels)},
             {"type": "point_set", **dict(projection)},
         )
 
@@ -362,7 +362,7 @@ class MetroRouteGraphTaskBase:
         background_meta: Mapping[str, Any],
         post_noise_meta: Mapping[str, Any],
         witness_symbolic: Mapping[str, Any],
-        projected_evidence: Mapping[str, Any],
+        projected_annotation: Mapping[str, Any],
     ) -> Dict[str, Any]:
         target_label_set = {
             str(label)
@@ -529,7 +529,7 @@ class MetroRouteGraphTaskBase:
                 "node_color_name": str(query.node_color_name),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
         }
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -578,7 +578,7 @@ class MetroRouteGraphTaskBase:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                self.prompt_evidence_key,
+                self.prompt_annotation_key,
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -593,7 +593,7 @@ class MetroRouteGraphTaskBase:
             "goal_label": format_graph_prompt_label(str(metro_sample.goal_label), label_variant=str(metro_sample.label_variant)),
             "query_distance": int(query.query_distance),
         }
-        evidence_hint = str(prompt_defaults_required[self.prompt_evidence_key]).format(**question_slots)
+        annotation_hint = str(prompt_defaults_required[self.prompt_annotation_key]).format(**question_slots)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -601,13 +601,13 @@ class MetroRouteGraphTaskBase:
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required.get("task_key") or self.prompt_task_key_fallback),
             query_key=str(self.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults_required["object_description"]),
                 **dict(question_slots),
                 "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults_required["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -615,7 +615,7 @@ class MetroRouteGraphTaskBase:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        answer_gt, evidence_gt, witness_symbolic, projected_evidence = self._evidence_and_answer(metro_sample, rendered_scene)
+        answer_gt, annotation_gt, witness_symbolic, projected_annotation = self._annotation_and_answer(metro_sample, rendered_scene)
         complexity = self._build_complexity(
             query=query,
             metro_sample=metro_sample,
@@ -632,12 +632,12 @@ class MetroRouteGraphTaskBase:
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
             witness_symbolic=witness_symbolic,
-            projected_evidence=projected_evidence,
+            projected_annotation=projected_annotation,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

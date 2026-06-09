@@ -6,7 +6,7 @@
 3. Task id: `task_pages__command_matrix__command_intent_target_label`
 4. Objective: identify the labeled command cell matching referenced intent/object cues, a shuffled intent guide, object row cue chips, and coded action header.
 5. Answer type: `option_letter`
-6. Evidence type: `keyed_bbox_map`
+6. Annotation type: `keyed_bbox_map`
 
 ## Variants
 1. `query_id=command_intent_target_label`: prompt gives an intent cue and visible object row label.
@@ -26,21 +26,21 @@
 9. `scene_variant`: `office_document|creative_workspace|developer_ide|cad_workspace|scientific_plotter|os_file_manager`
 10. `style_variant`: `standard|compact|contrast|cool|warm|sage`
 
-## Answer And Evidence
+## Answer And Annotation
 1. Answer is the candidate label of the command cell at the requested object/action intersection.
-2. Evidence for `command_intent_target_label` is a keyed bbox map with keys `action_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
-3. Evidence for `dual_guide_command_label` is a keyed bbox map with keys `action_cue_guide`, `object_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
-4. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
+2. Annotation for `command_intent_target_label` is a keyed bbox map with keys `action_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
+3. Annotation for `dual_guide_command_label` is a keyed bbox map with keys `action_cue_guide`, `object_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
+4. Candidate-label badge bboxes are trace metadata only; prompt-facing annotation uses full support/control bboxes.
 5. Prompt text uses short cue phrases, so the visible row/header must be found through the guide-card mappings.
 
 ## Prompt
 1. `prompt_bundle_id`: `pages_relation_v0`
 2. `scene_key`: `gui_command_intents`
 3. `task_key`: `command_intent_query`
-4. Both answer-only and answer-and-evidence modes provide task-specific JSON examples.
+4. Both answer-only and answer-and-annotation modes provide task-specific JSON examples.
 
 ## Determinism
 1. Generation is deterministic for `instance_seed` plus params.
 2. seeded sampling balances query ids, scene variants, style variants, target controls, and answer-label support.
 3. seeded sampling also balances `intent_category` inside each public query id.
-4. The answer and evidence come from the same symbolic control/support trace.
+4. The answer and annotation come from the same symbolic control/support trace.

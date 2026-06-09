@@ -28,7 +28,8 @@ DOMAIN_SETUP_DOCS = {
     "illustrations": "docs/domains/ILLUSTRATIONS_TASK_SETUP.md",
     "pages": "docs/domains/PAGES_TASK_SETUP.md",
     "physics": "docs/domains/PHYSICS_TASK_SETUP.md",
-    "puzzles": "docs/domains/PUZZLE_TASK_SETUP.md",
+    "misc": "docs/domains/MISC_TASK_SETUP.md",
+    "puzzles": "docs/domains/PUZZLES_TASK_SETUP.md",
     "three_d": "docs/domains/THREE_D_TASK_SETUP.md",
 }
 

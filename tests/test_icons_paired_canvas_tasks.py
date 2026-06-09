@@ -43,18 +43,18 @@ def test_icons_paired_canvas_exact_match_contract() -> None:
     assert out.query_id == "right_exact_match_count"
     assert execution["question_format"] == "count_right_icons_with_exact_left_match"
     assert int(out.answer_gt.value) == 2
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
     expected = [right[index]["bbox_xyxy"] for index in execution["matching_right_indices"]]
-    assert sorted(out.evidence_gt.value) == sorted(expected)
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(expected)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
 
 
 def test_icons_paired_canvas_added_removed_contracts() -> None:
-    for query_id, evidence_panel in (
+    for query_id, annotation_panel in (
         ("added_in_right_count", "right"),
         ("missing_from_right_count", "left"),
     ):
@@ -64,14 +64,14 @@ def test_icons_paired_canvas_added_removed_contracts() -> None:
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
-        panel_entities = _panel_entities(out, evidence_panel)
-        indices = execution["matching_right_indices"] if evidence_panel == "right" else execution["matching_left_indices"]
+        panel_entities = _panel_entities(out, annotation_panel)
+        indices = execution["matching_right_indices"] if annotation_panel == "right" else execution["matching_left_indices"]
         assert out.query_id == query_id
-        assert execution["evidence_panel"] == evidence_panel
+        assert execution["annotation_panel"] == annotation_panel
         assert int(out.answer_gt.value) == 2
-        assert len(out.evidence_gt.value) == 2
-        assert sorted(out.evidence_gt.value) == sorted([panel_entities[index]["bbox_xyxy"] for index in indices])
-        assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
+        assert len(out.annotation_gt.value) == 2
+        assert sorted(out.annotation_gt.value) == sorted([panel_entities[index]["bbox_xyxy"] for index in indices])
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
 
 
 def test_icons_paired_canvas_attribute_change_contracts() -> None:
@@ -91,8 +91,8 @@ def test_icons_paired_canvas_attribute_change_contracts() -> None:
         assert out.query_id == query_id
         assert execution["active_attribute"] == attribute
         assert int(out.answer_gt.value) == 2
-        assert len(out.evidence_gt.value) == 2
-        assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
+        assert len(out.annotation_gt.value) == 2
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
         for index, entity in enumerate(right):
             has_attribute = attribute in set(str(value) for value in entity.get("changed_attributes", []))
             assert has_attribute is (index in set(execution["matching_right_indices"]))
@@ -116,8 +116,8 @@ def test_icons_paired_canvas_movement_contracts() -> None:
         assert out.query_id == query_id
         assert execution["active_direction"] == direction
         assert int(out.answer_gt.value) == 2
-        assert len(out.evidence_gt.value) == 2
-        assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
+        assert len(out.annotation_gt.value) == 2
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
         for index, entity in enumerate(right):
             is_target = str(entity.get("movement_direction")) == direction
             assert is_target is (index in set(execution["matching_right_indices"]))
@@ -130,10 +130,10 @@ def test_icons_paired_canvas_prompt_examples_and_balanced_queries() -> None:
         max_attempts=200,
     )
     assert _extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": 2}
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert isinstance(answer_and_evidence["answer"], int)
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert isinstance(answer_and_annotation["answer"], int)
 
     expected_queries = {
         "task_icons__paired_canvas__panel_set_relation_count": {

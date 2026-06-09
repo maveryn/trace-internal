@@ -1,4 +1,4 @@
-"""Shared street-intersection scene assembly for three_d tasks."""
+"""Shared street-intersection scene specs, sampling helpers, and geometry utilities."""
 
 from __future__ import annotations
 
@@ -6,11 +6,8 @@ import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
-
 from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.config_defaults import group_default
-from ...shared.text_rendering import load_font
 from ..shared.task_support import float_value as _float_value
 from ..shared.task_support import int_value as _int_value
 from ..shared.object_resources import (
@@ -19,22 +16,17 @@ from ..shared.object_resources import (
     BUILDING_STYLES,
 )
 from ..shared.camera_projection import (
+    canvas_floor_polygon_xy as _canvas_floor_polygon_xy,
     project_screen as _project_screen,
-    project_xy as _project_xy,
-)
-from ..shared.object_scene_rendering import (
-    _bbox_union,
-    _draw_option_label,
 )
 from ..shared.object_scene import (
     _bbox_intersection_area,
     _object_reference_points,
     _object_screen_bbox,
 )
-from .intersection_rendering import (
+from ..shared.street_object_rendering_common import (
     PEDESTRIAN_OBJECT_TYPES,
     _street_object_name,
-    _street_object_fill_rgb,
     _base_street_object_dimensions,
     _fixed_building_style_for_street_object,
     _apply_street_building_style,
@@ -42,11 +34,6 @@ from .intersection_rendering import (
     _orientation_axis_for_xy,
     _missing_arm_for_layout,
     _arm_is_present,
-    _canvas_floor_polygon_available,
-    _draw_street_shell,
-    _draw_shadow,
-    _draw_candidate_object,
-    _draw_context_object,
     _stable_palette_index,
 )
 
@@ -100,28 +87,6 @@ class _StreetRenderParams:
     curb_rgb: Tuple[int, int, int]
     text_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
-
-
-@dataclass(frozen=True)
-class _RenderedStreetScene:
-    image: Image.Image
-    entities: List[Dict[str, Any]]
-    scene_bbox_px: List[float]
-    street_bbox_px: List[float]
-    object_bboxes_px: Dict[str, List[float]]
-    object_centers_px: Dict[str, List[float]]
-    candidate_bboxes_px: Dict[str, List[float]]
-    candidate_centers_px: Dict[str, List[float]]
-    context_object_bboxes_px: Dict[str, List[float]]
-    context_object_centers_px: Dict[str, List[float]]
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
-
-
-
-
-
-
 
 
 def _min_pairwise(values: Sequence[float]) -> float:
@@ -536,6 +501,15 @@ def _candidate_context_visibility_ok(
     return True
 
 
+def _canvas_floor_polygon_available(
+    *,
+    camera,
+    frame,
+    render_params: _StreetRenderParams,
+) -> bool:
+    return len(_canvas_floor_polygon_xy(camera=camera, frame=frame, render_params=render_params)) >= 3
+
+
 def _camera_from_dataset(dataset: Mapping[str, Any]):
     camera = type("CameraTuple", (), {})()
     raw = dataset["camera"]
@@ -560,222 +534,6 @@ def _frame_from_dataset(dataset: Mapping[str, Any]):
     frame.normalized_center_v = float(raw["normalized_center_v"])
     return frame
 
-
-
-def render_street_intersection_scene_3d(
-    background: Image.Image,
-    *,
-    dataset: Mapping[str, Any],
-    render_params: _StreetRenderParams,
-) -> _RenderedStreetScene:
-    image = background.convert("RGB")
-    draw = ImageDraw.Draw(image)
-    camera = _camera_from_dataset(dataset)
-    frame = _frame_from_dataset(dataset)
-    scene_variant = str(dataset["scene_variant"])
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    street_bbox, entities = _draw_street_shell(
-        draw,
-        camera=camera,
-        frame=frame,
-        render_params=render_params,
-        scene_variant=str(scene_variant),
-        intersection_center_xy=dataset["intersection_center_xy"],
-        intersection_layout=str(dataset["intersection_layout"]),
-    )
-    candidate_specs = [dict(spec) for spec in dataset["candidate_object_specs"]]
-    reference_specs = [
-        dict(spec)
-        for spec in dataset.get("reference_object_specs", [])
-        if isinstance(spec, Mapping)
-    ]
-    context_specs = [dict(spec) for spec in dataset["context_object_specs"]]
-    all_specs = [*candidate_specs, *reference_specs, *context_specs]
-
-    for spec in sorted(all_specs, key=lambda item: float(item["camera_distance"]), reverse=True):
-        _draw_shadow(draw, spec, camera=camera, frame=frame)
-    shape_bboxes: Dict[str, List[float]] = {}
-    for spec in sorted(all_specs, key=lambda item: float(item["camera_distance"]), reverse=True):
-        if bool(spec.get("is_answer_candidate", False)):
-            shape_bboxes[str(spec["object_id"])] = _draw_candidate_object(draw, spec, camera=camera, frame=frame)
-        elif str(spec.get("object_role", "")) == "street_reference":
-            shape_bboxes[str(spec["object_id"])] = _draw_candidate_object(draw, spec, camera=camera, frame=frame)
-        else:
-            shape_bboxes[str(spec["object_id"])] = _draw_context_object(draw, spec, camera=camera, frame=frame)
-
-    reference_marker_bboxes: Dict[str, List[float]] = {}
-    reference_direction_marker_bboxes: Dict[str, List[float]] = {}
-    for spec in reference_specs:
-        object_id = str(spec["object_id"])
-        if object_id not in shape_bboxes:
-            continue
-        x0, y0, x1, y1 = (float(value) for value in shape_bboxes[object_id])
-        pad = 8.0
-        marker_bbox = [
-            round(x0 - pad, 3),
-            round(y0 - pad, 3),
-            round(x1 + pad, 3),
-            round(y1 + pad, 3),
-        ]
-        for offset, color in ((2.0, (255, 255, 255)), (0.0, (216, 44, 44))):
-            draw.rectangle(
-                (
-                    marker_bbox[0] - offset,
-                    marker_bbox[1] - offset,
-                    marker_bbox[2] + offset,
-                    marker_bbox[3] + offset,
-                ),
-                outline=color,
-                width=4,
-            )
-        reference_marker_bboxes[object_id] = list(marker_bbox)
-        shape_bboxes[object_id] = _bbox_union(shape_bboxes[object_id], marker_bbox)
-        direction = spec.get("travel_direction_vector_xy")
-        if isinstance(direction, Sequence) and not isinstance(direction, (str, bytes)) and len(direction) >= 2:
-            dx, dy = float(direction[0]), float(direction[1])
-            norm = math.hypot(dx, dy)
-            if norm > 0.001:
-                dx /= norm
-                dy /= norm
-                x, y, _base_z = (float(value) for value in spec["base_xyz"])
-                _width, _depth, height = (float(value) for value in spec["dimensions_xyz"])
-                start = _project_xy((x, y, height + 0.18), camera, frame)
-                end = _project_xy((x + dx * 0.62, y + dy * 0.62, height + 0.18), camera, frame)
-                draw.line([start, end], fill=(255, 255, 255), width=8)
-                draw.line([start, end], fill=(216, 44, 44), width=5)
-                vx = float(end[0]) - float(start[0])
-                vy = float(end[1]) - float(start[1])
-                vnorm = math.hypot(vx, vy)
-                if vnorm > 0.001:
-                    ux, uy = vx / vnorm, vy / vnorm
-                    px, py = -uy, ux
-                    head_len = 18.0
-                    head_w = 12.0
-                    head_points = [
-                        (float(end[0]), float(end[1])),
-                        (
-                            float(end[0]) - ux * head_len + px * head_w * 0.5,
-                            float(end[1]) - uy * head_len + py * head_w * 0.5,
-                        ),
-                        (
-                            float(end[0]) - ux * head_len - px * head_w * 0.5,
-                            float(end[1]) - uy * head_len - py * head_w * 0.5,
-                        ),
-                    ]
-                    outline_points = [
-                        (head_points[0][0] + ux * 1.5, head_points[0][1] + uy * 1.5),
-                        (
-                            head_points[1][0] - ux * 2.0 + px * 1.8,
-                            head_points[1][1] - uy * 2.0 + py * 1.8,
-                        ),
-                        (
-                            head_points[2][0] - ux * 2.0 - px * 1.8,
-                            head_points[2][1] - uy * 2.0 - py * 1.8,
-                        ),
-                    ]
-                    draw.polygon(outline_points, fill=(255, 255, 255))
-                    draw.polygon(head_points, fill=(216, 44, 44))
-                    arrow_bbox = [
-                        round(min(start[0], end[0], *(point[0] for point in outline_points)) - 5.0, 3),
-                        round(min(start[1], end[1], *(point[1] for point in outline_points)) - 5.0, 3),
-                        round(max(start[0], end[0], *(point[0] for point in outline_points)) + 5.0, 3),
-                        round(max(start[1], end[1], *(point[1] for point in outline_points)) + 5.0, 3),
-                    ]
-                    reference_direction_marker_bboxes[object_id] = list(arrow_bbox)
-                    shape_bboxes[object_id] = _bbox_union(shape_bboxes[object_id], arrow_bbox)
-
-    label_bboxes: Dict[str, List[float]] = {}
-    for spec in sorted(candidate_specs, key=lambda item: str(item["point_label"])):
-        label = str(spec["point_label"])
-        x, y = float(spec["screen_xy"][0]), float(spec["screen_xy"][1])
-        label_bboxes[str(spec["object_id"])] = _draw_option_label(
-            draw,
-            label=str(label),
-            center=(x, y),
-            font=label_font,
-        )
-
-    object_bboxes: Dict[str, List[float]] = {}
-    object_centers: Dict[str, List[float]] = {}
-    candidate_bboxes: Dict[str, List[float]] = {}
-    candidate_centers: Dict[str, List[float]] = {}
-    context_bboxes: Dict[str, List[float]] = {}
-    context_centers: Dict[str, List[float]] = {}
-    for spec in all_specs:
-        object_id = str(spec["object_id"])
-        bbox = list(shape_bboxes[object_id])
-        if object_id in label_bboxes:
-            bbox = _bbox_union(bbox, label_bboxes[object_id])
-        center = [round(float(spec["screen_xy"][0]), 3), round(float(spec["screen_xy"][1]), 3)]
-        object_bboxes[object_id] = list(bbox)
-        object_centers[object_id] = list(center)
-        if bool(spec.get("is_answer_candidate", False)):
-            label = str(spec["point_label"])
-            candidate_bboxes[label] = list(bbox)
-            candidate_centers[label] = list(center)
-        else:
-            context_bboxes[object_id] = list(bbox)
-            context_centers[object_id] = list(center)
-        fill_rgb = _street_object_fill_rgb(spec)
-        entities.append(
-            {
-                "entity_id": object_id,
-                "entity_type": "three_d_street_candidate_object" if bool(spec.get("is_answer_candidate", False)) else "three_d_street_context_object",
-                "bbox_px": list(bbox),
-                "attrs": {
-                    "point_label": spec.get("point_label"),
-                    "object_label": spec.get("object_label"),
-                    "object_type": str(spec["object_type"]),
-                    "object_name": str(spec["object_name"]),
-                    "prompt_name": str(spec["prompt_name"]),
-                    "building_style": spec.get("building_style"),
-                    "building_style_name": spec.get("building_style_name"),
-                    "object_role": str(spec["object_role"]),
-                    "orientation_axis": str(spec.get("orientation_axis", "")),
-                    "is_answer_candidate": bool(spec.get("is_answer_candidate", False)),
-                    "fill_rgb": [int(channel) for channel in fill_rgb],
-                    "world_xyz": list(spec["world_xyz"]),
-                    "base_xyz": list(spec["base_xyz"]),
-                    "dimensions_xyz": list(spec["dimensions_xyz"]),
-                    "dimension_scale": float(spec.get("dimension_scale", 1.0)),
-                    "screen_xy": list(center),
-                    "camera_xyz": list(spec["camera_xyz"]),
-                    "camera_distance": float(spec["camera_distance"]),
-                    "ground_distance_to_intersection": float(spec["ground_distance_to_intersection"]),
-                    "intersection_center_xy": list(spec["intersection_center_xy"]),
-                    "road_arm": spec.get("road_arm"),
-                    "reference_marker": "red_bbox" if object_id in reference_marker_bboxes else None,
-                    "reference_marker_bbox_px": reference_marker_bboxes.get(object_id),
-                    "reference_direction_marker_bbox_px": reference_direction_marker_bboxes.get(object_id),
-                    "travel_direction_vector_xy": spec.get("travel_direction_vector_xy"),
-                    "scene_variant": str(scene_variant),
-                },
-            }
-        )
-    evidence_ids = [str(value) for value in dataset["target_object_ids"]]
-    evidence_bboxes = [list(object_bboxes[object_id]) for object_id in evidence_ids]
-    all_bboxes = [list(street_bbox), *[list(value) for value in object_bboxes.values()]]
-    scene_bbox = [
-        round(float(min(bbox[0] for bbox in all_bboxes)), 3),
-        round(float(min(bbox[1] for bbox in all_bboxes)), 3),
-        round(float(max(bbox[2] for bbox in all_bboxes)), 3),
-        round(float(max(bbox[3] for bbox in all_bboxes)), 3),
-    ]
-    return _RenderedStreetScene(
-        image=image,
-        entities=list(entities),
-        scene_bbox_px=list(scene_bbox),
-        street_bbox_px=list(street_bbox),
-        object_bboxes_px=dict(object_bboxes),
-        object_centers_px=dict(object_centers),
-        candidate_bboxes_px=dict(candidate_bboxes),
-        candidate_centers_px=dict(candidate_centers),
-        context_object_bboxes_px=dict(context_bboxes),
-        context_object_centers_px=dict(context_centers),
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_entity_ids=list(evidence_ids),
-    )
-
 __all__ = [
     "DEFAULT_INTERSECTION_CENTER_JITTER_X",
     "DEFAULT_INTERSECTION_CENTER_JITTER_Y",
@@ -788,7 +546,6 @@ __all__ = [
     "STREET_FULL_BLEED_FALLBACK_EXTENT_MULTIPLIER",
     "SUPPORTED_INTERSECTION_LAYOUTS",
     "SUPPORTED_SCENE_VARIANTS",
-    "_RenderedStreetScene",
     "_StreetRenderParams",
     "_arm_is_present",
     "_bbox_area",
@@ -797,7 +554,6 @@ __all__ = [
     "_candidate_screen_separation_ok",
     "_canvas_floor_polygon_available",
     "_dimensions_for_orientation",
-    "_draw_candidate_object",
     "_finalize_specs",
     "_frame_from_dataset",
     "_make_street_object_spec",
@@ -811,5 +567,4 @@ __all__ = [
     "_sample_intersection_center",
     "_slot_allowed_for_layout",
     "_translate_scene_xy",
-    "render_street_intersection_scene_3d",
 ]

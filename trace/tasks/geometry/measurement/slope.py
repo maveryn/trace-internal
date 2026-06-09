@@ -21,7 +21,7 @@ from ...shared.prompt_variants import (
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_annotation_artifacts
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
@@ -287,25 +287,25 @@ class GeometrySlopeMeasureTask:
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
         axis_label = "X"
-        evidence = graph_point_evidence_artifacts(
+        annotation = graph_point_annotation_artifacts(
             points_by_label={str(axis_label): sample.axis_crossing_pixel},
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
             witness_type="x_axis_crossing",
             ordered_labels=[str(axis_label)],
         )
-        evidence_value = evidence.get("evidence_value", [])
+        annotation_value = annotation.get("annotation_value", [])
         if (
-            not isinstance(evidence_value, list)
-            or len(evidence_value) != 1
-            or not isinstance(evidence_value[0], list)
-            or len(evidence_value[0]) != 2
-            or any(not isinstance(coord, (int, float)) for coord in evidence_value[0])
+            not isinstance(annotation_value, list)
+            or len(annotation_value) != 1
+            or not isinstance(annotation_value[0], list)
+            or len(annotation_value[0]) != 2
+            or any(not isinstance(coord, (int, float)) for coord in annotation_value[0])
         ):
-            raise RuntimeError("slope evidence must be one pixel point")
-        original_evidence_value = [int(sample.axis_crossing_graph[0]), int(sample.axis_crossing_graph[1])]
-        if int(original_evidence_value[1]) != 0:
-            raise RuntimeError("x-axis crossing evidence must have y=0 in graph units")
+            raise RuntimeError("slope annotation must be one pixel point")
+        original_annotation_value = [int(sample.axis_crossing_graph[0]), int(sample.axis_crossing_graph[1])]
+        if int(original_annotation_value[1]) != 0:
+            raise RuntimeError("x-axis crossing annotation must have y=0 in graph units")
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
@@ -316,7 +316,7 @@ class GeometrySlopeMeasureTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -330,7 +330,7 @@ class GeometrySlopeMeasureTask:
         object_description = str(prompt_defaults["object_description"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
-        evidence_hint = str(prompt_defaults["evidence_hint"])
+        annotation_hint = str(prompt_defaults["annotation_hint"])
         answer_hint = str(prompt_defaults["answer_hint"])
         json_example = str(prompt_defaults["json_example"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
@@ -340,13 +340,13 @@ class GeometrySlopeMeasureTask:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "question_text": str(question_text),
                 "json_output_contract": str(json_output_contract),
                 "json_output_contract_answer_only": str(json_output_contract_answer_only),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -443,7 +443,7 @@ class GeometrySlopeMeasureTask:
                 "slope_value": float(sample.slope_value),
                 "x_axis_crossing_graph": [int(sample.axis_crossing_graph[0]), int(sample.axis_crossing_graph[1])],
                 "lattice_point_graph": [int(sample.lattice_point_graph[0]), int(sample.lattice_point_graph[1])],
-                "required_evidence_labels": [str(axis_label)],
+                "required_annotation_labels": [str(axis_label)],
                 "question_format": "numeric_open",
                 "feasible_answer_values": [float(int(value) / 10.0) for value in feasible_slope_candidates],
                 "query_id_probabilities": {"line_slope": 1.0},
@@ -454,14 +454,14 @@ class GeometrySlopeMeasureTask:
                     "y_max": int(y_max),
                 },
             },
-            "witness_symbolic": dict(evidence["witness_symbolic"]),
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "witness_symbolic": dict(annotation["witness_symbolic"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
         complexity_components = _measurement_complexity_components(float(slope_value))
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="number", value=float(slope_value)),
-            evidence_gt=TypedValue(type=str(evidence["evidence_type"]), value=evidence_value),
+            annotation_gt=TypedValue(type=str(annotation["annotation_type"]), value=annotation_value),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -473,7 +473,7 @@ class GeometrySlopeMeasureTask:
                 ambiguity=float(complexity_components["ambiguity"]),
                 output_burden=geometry_measurement_output_burden(
                     answer_format="number",
-                    evidence_point_count=1,
+                    annotation_point_count=1,
                 ),
             ),
             task_versions=default_task_versions(),

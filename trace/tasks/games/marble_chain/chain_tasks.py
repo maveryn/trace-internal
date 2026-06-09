@@ -25,7 +25,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -159,7 +159,7 @@ class _Sample:
     marked_slot_index: int | None
     marked_outcome: _Outcome | None
     target_pop_count: int | None
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     metadata: Dict[str, Any]
 
 
@@ -364,7 +364,7 @@ def _neighbor_entity_ids(chain_colors: Sequence[str], slot_index: int) -> Tuple[
     return tuple(ids)
 
 
-def _evidence_ids_for_outcome(
+def _annotation_ids_for_outcome(
     *,
     slot_entity_id: str,
     chain_colors: Sequence[str],
@@ -375,8 +375,8 @@ def _evidence_ids_for_outcome(
     return (str(slot_entity_id),)
 
 
-def _popped_marble_evidence_ids(outcome: _Outcome) -> Tuple[str, ...]:
-    """Return public evidence ids for the existing marbles removed by one shot."""
+def _popped_marble_annotation_ids(outcome: _Outcome) -> Tuple[str, ...]:
+    """Return public annotation ids for the existing marbles removed by one shot."""
 
     return tuple(_marble_entity_id(int(index)) for index in outcome.popped_indices)
 
@@ -531,7 +531,7 @@ def _sample_direction_label(
             if sum(1 for spec in specs if int(spec.outcome.pop_count) == int(target_pop_count or 0)) != 1:
                 continue
         answer_spec = next(spec for spec in specs if bool(spec.is_answer))
-        evidence_ids = _evidence_ids_for_outcome(
+        annotation_ids = _annotation_ids_for_outcome(
             slot_entity_id=str(answer_spec.entity_id),
             chain_colors=chain_colors,
             outcome=answer_spec.outcome,
@@ -547,7 +547,7 @@ def _sample_direction_label(
             marked_slot_index=None,
             marked_outcome=None,
             target_pop_count=None if target_pop_count is None else int(target_pop_count),
-            evidence_entity_ids=tuple(evidence_ids),
+            annotation_entity_ids=tuple(annotation_ids),
             metadata={
                 "chain_length": int(chain_length),
                 "chain_length_probabilities": dict(chain_length_probs),
@@ -619,7 +619,7 @@ def _sample_effect_value(
         marked_slot = int(candidate_slots[int(rng.randrange(len(candidate_slots)))])
         outcome = outcomes[int(marked_slot)]
         answer = int(outcome.pop_count)
-        evidence_ids = _popped_marble_evidence_ids(outcome)
+        annotation_ids = _popped_marble_annotation_ids(outcome)
         return _Sample(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -631,7 +631,7 @@ def _sample_effect_value(
             marked_slot_index=int(marked_slot),
             marked_outcome=outcome,
             target_pop_count=None if target_pop_count is None else int(target_pop_count),
-            evidence_entity_ids=tuple(evidence_ids),
+            annotation_entity_ids=tuple(annotation_ids),
             metadata={
                 "chain_length": int(chain_length),
                 "chain_length_probabilities": dict(chain_length_probs),
@@ -1096,13 +1096,13 @@ def _render_scene(
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in SUPPORTED_DIRECTION_LABEL_QUERIES:
-        answer_and_evidence = {"evidence": [[465, 286]], "answer": "C"}
+        answer_and_annotation = {"annotation": [[465, 286]], "answer": "C"}
         answer_only = {"answer": "C"}
     else:
-        answer_and_evidence = {"evidence": [[448, 224], [502, 242], [551, 276], [590, 322]], "answer": 4}
+        answer_and_annotation = {"annotation": [[448, 224], [502, 242], [551, 276], [590, 322]], "answer": 4}
         answer_only = {"answer": 4}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1118,7 +1118,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
             "json_output_contract_answer_only",
             "object_description_marble_chain_board",
             f"answer_hint_{str(sample.query_id)}",
-            f"evidence_hint_{str(sample.query_id)}",
+            f"annotation_hint_{str(sample.query_id)}",
             "marble_chain_rule_text",
         ),
         context=f"prompt defaults for {str(sample.query_id)}",
@@ -1129,7 +1129,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults[f"answer_hint_{str(sample.query_id)}"]),
-        "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sample.query_id)}"]),
+        "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sample.query_id)}"]),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         "marble_chain_rule_text": str(prompt_defaults["marble_chain_rule_text"]),
@@ -1142,7 +1142,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(sample.query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1155,7 +1155,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
     }
 
 
-def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> Any:
+def _build_complexity(*, task_id: str, sample: _Sample, annotation_count: int) -> Any:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
     query_reasoning = {
         QUERY_MAX_POP_DIRECTION: 0.62,
@@ -1169,7 +1169,7 @@ def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> 
             "visual_scan": normalize_linear(float(len(sample.chain_colors)), min_value=12.0, max_value=18.0),
             "state_reasoning": float(query_reasoning),
             "ambiguity": normalize_linear(float(option_load), min_value=1.0, max_value=7.0),
-            "output_burden": normalize_linear(float(evidence_count), min_value=1.0, max_value=9.0),
+            "output_burden": normalize_linear(float(annotation_count), min_value=1.0, max_value=9.0),
         },
     )
 
@@ -1245,9 +1245,9 @@ class _MarbleChainTask:
             params=params,
             style_variant=str(style_variant),
         )
-        evidence_points = [
+        annotation_points = [
             list(rendered.render_map["entity_points_px"][str(entity_id)])
-            for entity_id in sample.evidence_entity_ids
+            for entity_id in sample.annotation_entity_ids
             if str(entity_id) in rendered.render_map["entity_points_px"]
         ]
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
@@ -1258,8 +1258,8 @@ class _MarbleChainTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_points))
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, annotation_count=len(annotation_points))
         option_trace = [
             {
                 "label": str(option.label),
@@ -1290,7 +1290,7 @@ class _MarbleChainTask:
                     "query_id": str(sample.query_id),
                     "style_variant": str(style_variant),
                     "chain_length": int(len(sample.chain_colors)),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1330,16 +1330,16 @@ class _MarbleChainTask:
                 "marked_outcome": marked_trace,
                 "target_pop_count": None if sample.target_pop_count is None else int(sample.target_pop_count),
                 "answer": sample.answer,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1348,7 +1348,7 @@ class _MarbleChainTask:
             prompt=str(prompt),
             prompt_variants=dict(prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1360,11 +1360,20 @@ class _MarbleChainTask:
 
 
 @register_task
-class GamesMarbleChainShotDirectionLabelTask(_MarbleChainTask):
-    """Choose a labeled shot direction by simulated pop effect."""
+class GamesMarbleChainMaxPopDirectionLabelTask(_MarbleChainTask):
+    """Choose the labeled shot direction that pops the most marbles."""
 
-    task_id = "task_games__marble_chain__shot_direction_label"
-    supported_queries = SUPPORTED_DIRECTION_LABEL_QUERIES
+    task_id = "task_games__marble_chain__max_pop_direction_label"
+    supported_queries = (QUERY_MAX_POP_DIRECTION,)
+    query_weights_key = "direction_label_query_id_weights"
+
+
+@register_task
+class GamesMarbleChainTargetPopDirectionLabelTask(_MarbleChainTask):
+    """Choose the labeled shot direction that produces the target pop count."""
+
+    task_id = "task_games__marble_chain__target_pop_direction_label"
+    supported_queries = (QUERY_TARGET_POP_DIRECTION,)
     query_weights_key = "direction_label_query_id_weights"
 
 
@@ -1378,6 +1387,7 @@ class GamesMarbleChainShotEffectValueTask(_MarbleChainTask):
 
 
 __all__ = [
-    "GamesMarbleChainShotDirectionLabelTask",
+    "GamesMarbleChainMaxPopDirectionLabelTask",
     "GamesMarbleChainShotEffectValueTask",
+    "GamesMarbleChainTargetPopDirectionLabelTask",
 ]

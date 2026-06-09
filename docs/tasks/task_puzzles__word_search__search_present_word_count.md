@@ -17,11 +17,11 @@
    - answer support: `1..5`
    - scene variant: `word_search_classic|word_search_notebook|word_search_card`
 
-## Answer And Evidence
+## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the number of word-bank words present in the grid.
-3. `evidence_gt.type = bbox_set`
-4. Evidence contains each present word-chip box followed by ordered grid-cell boxes for present words.
+3. `annotation_gt.type = bbox_set`
+4. Annotation contains each present word-chip box followed by ordered grid-cell boxes for present words.
 
 ## Trace Contract
 1. `execution_trace.word_bank` records all listed words.

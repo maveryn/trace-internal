@@ -4,24 +4,23 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `incircle_tangents`
-4. Public query id: `default`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `inradius_from_area_and_tangent_segments`
-6. Answer type: `number`
-7. Evidence type: `bbox_set`
+6. Answer schema: `decimal_value_1dp`
+7. Annotation schema: `bbox_set`
+
+## Program Contract
+- `solve_formula(visible_incircle_tangents_measurements, unknown_role=radius_length, formula_schema=inradius_from_area_and_tangent_segments); scene=incircle_tangents; scope=incircle_radius_from_area_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_tangent_polygon_incircle_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Compute the incircle radius of triangle `ABC` from the visible equal tangent-segment labels and area label using the semiperimeter relation. Answers are rounded to one decimal place.
-
-## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around each visible tangent-segment equality label and the area label needed to compute the radius. It excludes point labels, decorative tick marks, and the unknown radius cue. Verifier evidence is projected from the same generated scene metadata used to compute the answer.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Sampling axes, query ids, prompt bundle ids, and render choices must be recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/measurement.yaml`

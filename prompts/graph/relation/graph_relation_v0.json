@@ -65,6 +65,20 @@
       "",
       ""
     ],
+    "largest_chordless_cycle_size_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "hamiltonian_cycle_neighbor_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "metro_exact_distance_count_query": [
       "",
       "",
@@ -114,7 +128,42 @@
       "",
       ""
     ],
+    "automaton_nondeterministic_state_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "structure_match_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pedigree_chart_relationship_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pedigree_chart_relatedness_coefficient_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "phylogeny_tree_relation_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "phylogeny_tree_topology_outlier_query": [
       "",
       "",
       "",
@@ -136,6 +185,15 @@
       "object_description"
     ],
     "scene:binary_tree_relation": [
+      "object_description"
+    ],
+    "scene:phylogeny_tree_relation": [
+      "object_description"
+    ],
+    "scene:pedigree_chart_relation": [
+      "object_description"
+    ],
+    "scene:phylogeny_tree_options": [
       "object_description"
     ],
     "scene:search_tree_operation": [
@@ -192,6 +250,17 @@
       "query_distance"
     ],
     "query:unique_cycle_size": [],
+    "query:largest_chordless_cycle_size": [],
+    "query:next_in_hamiltonian_cycle_label": [
+      "orientation_start_label",
+      "orientation_next_label",
+      "query_label"
+    ],
+    "query:previous_in_hamiltonian_cycle_label": [
+      "orientation_start_label",
+      "orientation_next_label",
+      "query_label"
+    ],
     "query:edge_between_nodes_label": [
       "source_label",
       "target_label"
@@ -247,21 +316,38 @@
     ],
     "query:dfa_accepted_string_label": [],
     "query:nfa_accepted_string_label": [],
+    "query:nondeterministic_state_count": [],
     "query:same_structure_label": [],
     "query:contained_subgraph_label": [],
-    "answer_or_evidence:answer_only": [
+    "query:sister_leaf_label": [
+      "query_label"
+    ],
+    "query:mrca_leaf_count": [
+      "query_label_a",
+      "query_label_b"
+    ],
+    "query:topology_outlier_label": [],
+    "query:relationship_label_between_two_people": [
+      "person_label_a",
+      "person_label_b"
+    ],
+    "query:relatedness_coefficient_between_two_people": [
+      "person_label_a",
+      "person_label_b"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -269,12 +355,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -314,6 +400,27 @@
       "This diagram shows {object_description}."
     ],
     "search_tree_operation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ],
+    "phylogeny_tree_relation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ],
+    "pedigree_chart_relation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ],
+    "phylogeny_tree_options": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}.",
@@ -419,6 +526,27 @@
       "Count the nodes that are part of the only cycle in the graph.",
       "What is the size, in nodes, of the unique cycle?",
       "Find the single cycle in the graph. How many nodes does it include?"
+    ],
+    "largest_chordless_cycle_size": [
+      "A chordless cycle has no extra edge connecting two non-adjacent nodes in the cycle. What is the size, in nodes, of the largest chordless cycle?",
+      "Find the largest chordless cycle, meaning a cycle with no chords between non-adjacent cycle nodes. How many nodes does it contain?",
+      "Among cycles with no extra edge joining non-adjacent nodes on the cycle, what is the largest cycle size?",
+      "Count the nodes in one largest chordless cycle. A chordless cycle has no edge between non-neighboring nodes on that cycle.",
+      "What is the maximum number of nodes in a chordless cycle in this graph?"
+    ],
+    "next_in_hamiltonian_cycle_label": [
+      "The graph has exactly one Hamiltonian cycle. Starting at node {orientation_start_label} and then node {orientation_next_label}, follow that cycle. Which node comes immediately after node {query_label}?",
+      "Follow the unique Hamiltonian cycle, beginning with {orientation_start_label} then {orientation_next_label}. What node is immediately after {query_label}?",
+      "In the unique Hamiltonian cycle, use the traversal direction from {orientation_start_label} to {orientation_next_label}. Which node follows {query_label}?",
+      "Starting with {orientation_start_label}, then {orientation_next_label}, move around the graph's only Hamiltonian cycle. What is the next node after {query_label}?",
+      "Along the unique Hamiltonian cycle in the direction {orientation_start_label} to {orientation_next_label}, which node comes after {query_label}?"
+    ],
+    "previous_in_hamiltonian_cycle_label": [
+      "The graph has exactly one Hamiltonian cycle. Starting at node {orientation_start_label} and then node {orientation_next_label}, follow that cycle. Which node comes immediately before node {query_label}?",
+      "Follow the unique Hamiltonian cycle, beginning with {orientation_start_label} then {orientation_next_label}. What node is immediately before {query_label}?",
+      "In the unique Hamiltonian cycle, use the traversal direction from {orientation_start_label} to {orientation_next_label}. Which node precedes {query_label}?",
+      "Starting with {orientation_start_label}, then {orientation_next_label}, move around the graph's only Hamiltonian cycle. What is the previous node before {query_label}?",
+      "Along the unique Hamiltonian cycle in the direction {orientation_start_label} to {orientation_next_label}, which node comes before {query_label}?"
     ],
     "edge_between_nodes_label": [
       "What label is shown on the edge between node {source_label} and node {target_label}?",
@@ -546,6 +674,13 @@
       "Which option label corresponds to a string accepted by the nondeterministic automaton?",
       "Find the one candidate string with some path ending in an accepting state."
     ],
+    "nondeterministic_state_count": [
+      "How many states have nondeterministic outgoing transitions? Count a state if it has an outgoing eps transition or two or more outgoing transitions with the same input label.",
+      "Count the states that are nondeterministic: an outgoing eps transition counts, and repeated outgoing labels from the same state count.",
+      "How many states either have an eps outgoing transition or have multiple outgoing transitions with the same label?",
+      "Find every state where the outgoing transitions are nondeterministic. How many such states are there?",
+      "Using the transition labels, count states with an outgoing eps edge or more than one outgoing edge sharing one input label."
+    ],
     "same_structure_label": [
       "Which option has the same labeled graph structure as the Reference, ignoring layout?",
       "Choose the option whose labeled nodes and edges match the Reference graph exactly, regardless of placement.",
@@ -559,6 +694,41 @@
       "Which option shows a labeled subgraph of the Target Graph?",
       "Find the option where every shown node and edge is present in the Target Graph.",
       "Which labeled option is fully contained within the Target Graph?"
+    ],
+    "sister_leaf_label": [
+      "Which taxon label is the sister taxon of \"{query_label}\"?",
+      "Find the leaf that shares the most recent parent branch with \"{query_label}\". What is its label?",
+      "What is the label of the sister taxon paired with \"{query_label}\"?",
+      "In the cladogram, which terminal taxon shares an immediate parent with \"{query_label}\"?",
+      "Identify the sister leaf of \"{query_label}\"."
+    ],
+    "mrca_leaf_count": [
+      "How many taxa descend from the most recent common ancestor of \"{query_label_a}\" and \"{query_label_b}\"?",
+      "Find the smallest clade containing \"{query_label_a}\" and \"{query_label_b}\". How many terminal taxa are in it?",
+      "What is the number of taxa in the clade rooted at the most recent common ancestor of \"{query_label_a}\" and \"{query_label_b}\"?",
+      "Trace back from \"{query_label_a}\" and \"{query_label_b}\" to their most recent common ancestor. How many descendant taxa does that ancestor have?",
+      "Count the terminal taxa in the MRCA clade for \"{query_label_a}\" and \"{query_label_b}\"."
+    ],
+    "topology_outlier_label": [
+      "Five options have the same rooted topology, ignoring branch order and layout. Which option is the outlier?",
+      "Which option has a different rooted clade structure from the other five options?",
+      "Ignoring rotations and drawing layout, select the one cladogram whose topology differs.",
+      "Find the option whose set of nested clades is not the same as the other options.",
+      "Which labeled option is the topology outlier?"
+    ],
+    "relationship_label_between_two_people": [
+      "Which option gives the relationship of person {person_label_a} to person {person_label_b}?",
+      "In the pedigree, which option says how {person_label_a} is related to {person_label_b}?",
+      "Using the pedigree links, choose the option for {person_label_a}'s relationship to {person_label_b}.",
+      "Which option shows the family relationship {person_label_a} has to {person_label_b}?",
+      "Read the pedigree chart. Which option is {person_label_a} relative to {person_label_b}?"
+    ],
+    "relatedness_coefficient_between_two_people": [
+      "Which option gives the coefficient of relatedness between {person_label_a} and {person_label_b}?",
+      "Using the pedigree links, choose the option for the coefficient of relatedness between {person_label_a} and {person_label_b}.",
+      "Trace the family connections. Which option is the relatedness coefficient for {person_label_a} and {person_label_b}?",
+      "What option shows the correct coefficient of relatedness for {person_label_a} and {person_label_b}?",
+      "Read the pedigree chart. Which option is the coefficient of relatedness between {person_label_a} and {person_label_b}?"
     ]
   },
   "allow_empty_task_templates": true

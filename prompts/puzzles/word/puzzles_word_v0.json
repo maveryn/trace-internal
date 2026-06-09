@@ -8,10 +8,20 @@
       "",
       "",
       ""
+    ],
+    "code_grid_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:word_search": [
+      "object_description"
+    ],
+    "scene:code_grid": [
       "object_description"
     ],
     "query:word_location_label": [
@@ -23,19 +33,25 @@
     "query:present_word_count": [
       "word_bank_size"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:decode_coordinate_sequence": [
+      "coordinate_sequence"
+    ],
+    "query:decode_spaced_coordinate_sequence": [
+      "coordinate_sequence"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -43,12 +59,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -58,6 +74,13 @@
       "The figure shows {object_description}.",
       "The visual shows {object_description}.",
       "The word-search puzzle shows {object_description}."
+    ],
+    "code_grid": [
+      "The puzzle diagram shows {object_description}.",
+      "This code-grid puzzle shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The image shows {object_description}."
     ]
   },
   "query_templates": {
@@ -81,6 +104,20 @@
       "Among the {word_bank_size} listed words, how many are present in the word-search grid?",
       "Search for each word-bank entry in the grid. How many listed words appear?",
       "What is the count of listed words that are actually placed in the grid?"
+    ],
+    "decode_coordinate_sequence": [
+      "Decode the coordinate code {coordinate_sequence}. What uppercase word does it spell?",
+      "Use the row letters and column numbers to read {coordinate_sequence}. What word is decoded?",
+      "Read each coordinate in order from {coordinate_sequence} and report the uppercase word.",
+      "What word is spelled by the code string {coordinate_sequence}?",
+      "Follow the coordinate sequence {coordinate_sequence}. What uppercase word do the cells give?"
+    ],
+    "decode_spaced_coordinate_sequence": [
+      "Decode the coordinate sequence {coordinate_sequence}. What uppercase word does it spell?",
+      "Use the row letters and column numbers to read {coordinate_sequence}. What word is decoded?",
+      "Read each spaced coordinate in order from {coordinate_sequence} and report the uppercase word.",
+      "What word is spelled by the coordinate sequence {coordinate_sequence}?",
+      "Follow the coordinates {coordinate_sequence}. What uppercase word do the cells give?"
     ]
   },
   "allow_empty_task_templates": true

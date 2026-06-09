@@ -59,18 +59,18 @@ prompt:
     bundle_id: charts_candlestick_v0
     scene_key: candlestick
     task_key: candlestick_ohlc_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint_value: set "answer" to the requested integer value
     answer_hint_label: set "answer" to the exact period label as a string
     object_description_candlestick: a candlestick OHLC chart with labeled periods; each candle has printed O, H, L, and C values for open, high, low, and close
-    evidence_hint_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
-    evidence_hint_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle mark
-    evidence_hint_wick_range_extremum_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle wick
-    evidence_hint_body_range_extremum_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the answer candle body
-    evidence_hint_close_after_body_change_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
-    json_example_value: '{"evidence":[[240,220,284,340]],"answer":42}'
-    json_example_label: '{"evidence":[[520,180,564,330]],"answer":"K4"}'
+    annotation_hint_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
+    annotation_hint_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle mark
+    annotation_hint_wick_range_extremum_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle's high-low wick line
+    annotation_hint_body_range_extremum_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle's open-close body rectangle
+    annotation_hint_close_after_body_change_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
+    json_example_value: '{"annotation":[[240,220,284,340]],"answer":42}'
+    json_example_label: '{"annotation":[[542,276]],"answer":"K4"}'
     json_example_answer_only_value: '{"answer":42}'
     json_example_answer_only_label: '{"answer":"K4"}'
 

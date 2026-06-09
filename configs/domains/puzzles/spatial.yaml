@@ -106,53 +106,6 @@ generation:
         clean_net: 1.0
         paper_model: 1.0
         game_mat: 1.0
-    puzzles_spatial_sokoban_grid_internal:
-      board_rows_min: 6
-      board_rows_max: 9
-      board_cols_min: 6
-      board_cols_max: 9
-      internal_wall_count_min: 2
-      internal_wall_count_max: 8
-      option_count: 6
-      path_length_min: 4
-      path_length_max: 12
-      balanced_query_id_sampling: true
-      balanced_scene_variant_sampling: true
-      query_id_weights:
-        shortest_path_sequence_label: 1.0
-        valid_path_sequence_label: 1.0
-        blocked_path_sequence_label: 1.0
-        nearest_target_for_marked_box_label: 1.0
-        box_closest_to_marked_target_label: 1.0
-        box_target_manhattan_rank_label: 1.0
-      scene_variant_weights:
-        warehouse_classic: 1.0
-        paper_grid: 1.0
-        cool_room: 1.0
-    puzzles_spatial_sliding_block_internal:
-      board_rows_min: 6
-      board_rows_max: 8
-      board_cols_min: 6
-      board_cols_max: 8
-      blocker_count_min: 1
-      blocker_count_max: 6
-      non_target_block_count_min: 6
-      non_target_block_count_max: 10
-      move_result_answer_labels: [A, B, C, D, E, F]
-      move_result_move_count_min: 1
-      move_result_move_count_max: 2
-      move_result_slide_distance_max: 3
-      balanced_scene_variant_sampling: true
-      balanced_exit_side_sampling: true
-      scene_variant_weights:
-        wooden_tray: 1.0
-        cool_grid: 1.0
-        paper_board: 1.0
-      exit_side_weights:
-        right: 1.0
-        left: 1.0
-        top: 1.0
-        bottom: 1.0
     puzzles_spatial_transform_result_internal:
       option_count_min: 5
       option_count_max: 6
@@ -410,50 +363,6 @@ rendering:
       text_stroke_rgb: [255, 255, 255]
       coordinate_fill_rgb: [255, 246, 248]
       coordinate_grid_rgb: [176, 124, 138]
-    puzzles_spatial_sokoban_grid_internal:
-      canvas_width: 1220
-      canvas_height: 900
-      scene_margin_left_px: 52
-      scene_margin_top_px: 48
-      board_panel_width_px: 650
-      board_panel_height_px: 740
-      option_panel_width_px: 188
-      option_panel_height_px: 170
-      option_gap_px: 20
-      option_row_gap_px: 20
-      panel_corner_radius_px: 22
-      board_border_width_px: 4
-      grid_width_px: 2
-      coord_gutter_px: 34
-      main_cell_size_px: 58
-      unit_size_scale_min: 0.5
-      unit_size_scale_max: 1.0
-      mini_cell_size_px: 16
-      option_label_font_size_px: 28
-      cell_label_font_size_px: 18
-      sequence_font_size_px: 22
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
-    puzzles_spatial_sliding_block_internal:
-      canvas_width: 980
-      canvas_height: 900
-      board_size_px: 660
-      unit_size_scale_min: 0.5
-      unit_size_scale_max: 1.0
-      panel_padding_px: 44
-      panel_corner_radius_px: 28
-      block_corner_radius_px: 16
-      board_border_width_px: 5
-      grid_width_px: 2
-      block_gap_px: 7
-      target_outline_width_px: 6
-      label_font_size_px: 30
-      target_label_font_size_px: 34
-      arrow_width_px: 8
-      arrow_head_length_px: 28
-      arrow_head_width_px: 28
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
     puzzles_spatial_transform_result_internal:
       canvas_width: 1200
       canvas_height: 940
@@ -599,10 +508,10 @@ prompt:
       object_description_polyomino_strip: a polyomino puzzle with shown pieces, a target or board area, and labeled options
       object_description_polyomino_card: a card-style polyomino puzzle with shown pieces, a target or board area, and labeled options
       object_description_polyomino_outline: an outline-style polyomino puzzle with shown pieces, a target or board area, and labeled options
-      evidence_hint_marked_region_piece_label: set "evidence" to an array containing the correct piece option panel box and black missing-region box as [x0, y0, x1, y1] pixel boxes
-      evidence_hint_rectangle_complement_piece: set "evidence" to an array containing the correct piece option panel box and rectangular target missing-region box as [x0, y0, x1, y1] pixel boxes
-      json_example_marked_region_piece_label: '{"evidence":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
-      json_example_rectangle_complement_piece: '{"evidence":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
+      annotation_hint_marked_region_piece_label: set "annotation" to an array containing the correct piece option panel box and black missing-region box as [x0, y0, x1, y1] pixel boxes
+      annotation_hint_rectangle_complement_piece: set "annotation" to an array containing the correct piece option panel box and rectangular target missing-region box as [x0, y0, x1, y1] pixel boxes
+      json_example_marked_region_piece_label: '{"annotation":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
+      json_example_rectangle_complement_piece: '{"annotation":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
       json_example_answer_only_marked_region_piece_label: '{"answer":"C"}'
       json_example_answer_only_rectangle_complement_piece: '{"answer":"C"}'
     puzzles_spatial_tangram_assembly_internal:
@@ -612,10 +521,10 @@ prompt:
       object_description_contact_count: a tangram-style assembly with one or two marked pieces
       answer_hint_option_letter: set "answer" to the exact option letter of the matching option
       answer_hint_integer: set "answer" to the exact count as an integer
-      evidence_hint_missing_piece_label: set "evidence" to an array containing the correct option panel box followed by the black missing-region box, each as [x0, y0, x1, y1] pixel boxes
-      evidence_hint_contact_count: 'set "evidence" to boxes around the counted pieces: marked piece boxes first, then boxes for unmarked pieces that share an edge with a marked piece'
-      json_example_missing_piece_label: '{"evidence":[[505,612,655,790],[426,196,566,335]],"answer":"C"}'
-      json_example_contact_count: '{"evidence":[[426,196,566,335],[288,196,428,335],[565,196,704,335]],"answer":3}'
+      annotation_hint_missing_piece_label: set "annotation" to an array containing the correct option panel box followed by the black missing-region box, each as [x0, y0, x1, y1] pixel boxes
+      annotation_hint_contact_count: 'set "annotation" to an array of pixel bounding boxes [x0, y0, x1, y1] around the counted pieces: marked piece boxes first, then boxes for unmarked pieces that share an edge with a marked piece'
+      json_example_missing_piece_label: '{"annotation":[[505,612,655,790],[426,196,566,335]],"answer":"C"}'
+      json_example_contact_count: '{"annotation":[[426,196,566,335],[288,196,428,335],[565,196,704,335]],"answer":3}'
       json_example_answer_only_missing_piece_label: '{"answer":"C"}'
       json_example_answer_only_contact_count: '{"answer":3}'
     puzzles_spatial_rubiks_cube_internal:
@@ -625,8 +534,8 @@ prompt:
       object_description_face_color_count_label: a Rubik-style cube net with face labels, a (column,row) coordinate reference, a target color swatch, and labeled number options; a prime mark in a move sequence means counterclockwise
       object_description_move_result_label: a Rubik-style starting cube net with face labels, a (column,row) coordinate reference, and labeled candidate result nets; a prime mark in a move sequence means counterclockwise
       answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      evidence_hint_option_panel: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected option panel
-      json_example_option_label: '{"evidence":[[836,312,972,466]],"answer":"D"}'
+      annotation_hint_option_panel: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected option panel
+      json_example_option_label: '{"annotation":[[836,312,972,466]],"answer":"D"}'
       json_example_answer_only_option_label: '{"answer":"D"}'
     puzzles_spatial_cube_surface_net_internal:
       scene_key: spatial_cube_surface_net_puzzle
@@ -635,36 +544,13 @@ prompt:
       object_description_rolling_result_label: a labeled start cube, an arrow path showing cube rolls, and labeled face options
       object_description_surface_path_label: a labeled cube net with a marked start face, numbered folded-edge move instructions, and labeled answer options
       answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      evidence_hint_face_relation: set "evidence" to an object with keys "marked_face" and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
-      evidence_hint_rolling_result: set "evidence" to an object with keys "start_cube", "roll_path", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
-      evidence_hint_surface_path: set "evidence" to an object with keys "start_face", "move_instructions", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
-      json_example_face_relation: '{"evidence":{"marked_face":[320,220,406,306],"selected_option":[812,220,966,326]},"answer":"D"}'
-      json_example_rolling_result: '{"evidence":{"start_cube":[54,54,384,438],"roll_path":[420,54,1046,438],"selected_option":[428,610,650,716]},"answer":"B"}'
-      json_example_surface_path: '{"evidence":{"start_face":[210,216,296,302],"move_instructions":[558,54,1046,482],"selected_option":[428,610,650,716]},"answer":"B"}'
+      annotation_hint_face_relation: set "annotation" to an object with keys "marked_face" and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      annotation_hint_rolling_result: set "annotation" to an object with keys "start_cube", "roll_path", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      annotation_hint_surface_path: set "annotation" to an object with keys "start_face", "move_instructions", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      json_example_face_relation: '{"annotation":{"marked_face":[320,220,406,306],"selected_option":[812,220,966,326]},"answer":"D"}'
+      json_example_rolling_result: '{"annotation":{"start_cube":[54,54,384,438],"roll_path":[420,54,1046,438],"selected_option":[428,610,650,716]},"answer":"B"}'
+      json_example_surface_path: '{"annotation":{"start_face":[210,216,296,302],"move_instructions":[558,54,1046,482],"selected_option":[428,610,650,716]},"answer":"B"}'
       json_example_answer_only_option_label: '{"answer":"D"}'
-    puzzles_spatial_sokoban_grid_internal:
-      scene_key: spatial_sokoban_grid_puzzle
-      task_key: sokoban_grid_query
-      object_description_path_sequence_label: a Sokoban-style grid with start and goal cells, boxes treated as blockers, and labeled move-sequence options
-      object_description_box_target_relation_label: a Sokoban-style grid with walls, floor cells, boxes, targets, and option letters drawn directly on candidate boxes, targets, or same-letter box-target pairs
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      evidence_hint_option_panel: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected option panel
-      evidence_hint_relation_option_marker: set "evidence" to an array containing the bounding box for the selected option-lettered board cell; for a same-letter pair, include the box cell bbox followed by the target cell bbox
-      json_example_option_label: '{"evidence":[[720,250,908,420]],"answer":"C"}'
-      json_example_relation_option_label: '{"evidence":[[435,214,493,272]],"answer":"C"}'
-      json_example_answer_only_option_label: '{"answer":"C"}'
-    puzzles_spatial_sliding_block_internal:
-      scene_key: sliding_block
-      task_key: sliding_block_query
-      object_description: a sliding-block board with a red target block labeled T and other labeled rectangular blocks
-      answer_hint_integer: set "answer" to the exact count as an integer
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      evidence_hint_blocker_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around every block currently occupying the target block's straight path to the exit
-      evidence_hint_move_result_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] containing the original boxes of the moved blocks in first-seen move order, followed by the correct final-board option panel box
-      json_example_blocker_count: '{"evidence":[[520,284,604,496],[700,284,784,496]],"answer":2}'
-      json_example_move_result_label: '{"evidence":[[128,322,220,414],[256,414,348,506],[520,195,720,445]],"answer":"C"}'
-      json_example_answer_only_blocker_count: '{"answer":2}'
-      json_example_answer_only_move_result_label: '{"answer":"C"}'
     puzzles_spatial_transform_result_internal:
       scene_key: spatial_transform_result_puzzle
       task_key: transform_result_query
@@ -674,12 +560,12 @@ prompt:
       object_description_fold_strip: a paper-folding puzzle with a fold diagram above labeled result options
       object_description_fold_card: a card-style paper-folding puzzle with a fold diagram above labeled result options
       object_description_fold_outline: an outline-style paper-folding puzzle with a fold diagram above labeled result options
-      evidence_hint_overlay_result: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option image
-      evidence_hint_paper_fold_result: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct folded-result option image
-      evidence_hint_paper_fold_cut_result: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct unfolded-result option image
-      json_example_overlay_result: '{"evidence":[[521,384,679,542]],"answer":"B"}'
-      json_example_paper_fold_result: '{"evidence":[[206,388,324,613]],"answer":"A"}'
-      json_example_paper_fold_cut_result: '{"evidence":[[134,420,312,598]],"answer":"A"}'
+      annotation_hint_overlay_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option image
+      annotation_hint_paper_fold_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct folded-result option image
+      annotation_hint_paper_fold_cut_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct unfolded-result option image
+      json_example_overlay_result: '{"annotation":[[521,384,679,542]],"answer":"B"}'
+      json_example_paper_fold_result: '{"annotation":[[206,388,324,613]],"answer":"A"}'
+      json_example_paper_fold_cut_result: '{"annotation":[[134,420,312,598]],"answer":"A"}'
       json_example_answer_only_overlay_result: '{"answer":"B"}'
       json_example_answer_only_paper_fold_result: '{"answer":"A"}'
       json_example_answer_only_paper_fold_cut_result: '{"answer":"A"}'
@@ -700,19 +586,19 @@ prompt:
       object_description_visible_cube_count: a cube-stack projection puzzle with an isometric cube stack on the left and one empty orthographic query grid on the right
       object_description_projection_match_label: a cube-stack projection puzzle with an isometric cube stack and labeled orthographic projection options
       object_description_projection_consistency_label: a cube-stack consistency puzzle with orthographic projection panels and labeled answer options
-      evidence_hint_total_cube_count: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      evidence_hint_missing_to_complete_cuboid_count: set "evidence" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the complete block on the left and the partial block on the right
-      evidence_hint_removed_cube_count: set "evidence" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the before structure on the left and the after structure on the right
-      evidence_hint_painted_exterior_face_count: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      evidence_hint_exact_k_painted_faces_cube_count: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      evidence_hint_visible_cube_count: set "evidence" to a JSON array of bounding boxes [x0, y0, x1, y1] for all query-grid cells that should be filled
-      evidence_hint_projection_match_label: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected projection option panel
-      evidence_hint_projection_consistency_label: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected labeled option panel
-      json_example_total_cube_count: '{"evidence":[[310,170,890,700]],"answer":14}'
-      json_example_missing_to_complete_cuboid_count: '{"evidence":[[132,175,459,700],[750,207,1080,700]],"answer":5}'
-      json_example_removed_cube_count: '{"evidence":[[132,175,459,700],[750,207,1080,700]],"answer":4}'
-      json_example_painted_exterior_face_count: '{"evidence":[[310,170,890,700]],"answer":42}'
-      json_example_exact_k_painted_faces_cube_count: '{"evidence":[[310,170,890,700]],"answer":3}'
+      annotation_hint_total_cube_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
+      annotation_hint_missing_to_complete_cuboid_count: set "annotation" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the complete block on the left and the partial block on the right
+      annotation_hint_removed_cube_count: set "annotation" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the before structure on the left and the after structure on the right
+      annotation_hint_painted_exterior_face_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
+      annotation_hint_exact_k_painted_faces_cube_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
+      annotation_hint_visible_cube_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for all query-grid cells that should be filled
+      annotation_hint_projection_match_label: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected projection option panel
+      annotation_hint_projection_consistency_label: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected labeled option panel
+      json_example_total_cube_count: '{"annotation":[[310,170,890,700]],"answer":14}'
+      json_example_missing_to_complete_cuboid_count: '{"annotation":[[132,175,459,700],[750,207,1080,700]],"answer":5}'
+      json_example_removed_cube_count: '{"annotation":[[132,175,459,700],[750,207,1080,700]],"answer":4}'
+      json_example_painted_exterior_face_count: '{"annotation":[[310,170,890,700]],"answer":42}'
+      json_example_exact_k_painted_faces_cube_count: '{"annotation":[[310,170,890,700]],"answer":3}'
       json_example_answer_only_total_cube_count: '{"answer":14}'
       json_example_answer_only_missing_to_complete_cuboid_count: '{"answer":5}'
       json_example_answer_only_removed_cube_count: '{"answer":4}'
@@ -736,16 +622,6 @@ complexity:
         reasoning_load: 0.44
         scene_variant_load: 0.18
     puzzles_spatial_cube_surface_net_internal:
-      criteria_weights:
-        visual_scan: 0.40
-        reasoning_load: 0.42
-        scene_variant_load: 0.18
-    puzzles_spatial_sokoban_grid_internal:
-      criteria_weights:
-        visual_scan: 0.40
-        reasoning_load: 0.42
-        scene_variant_load: 0.18
-    puzzles_spatial_sliding_block_internal:
       criteria_weights:
         visual_scan: 0.40
         reasoning_load: 0.42

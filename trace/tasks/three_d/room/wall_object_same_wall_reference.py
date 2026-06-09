@@ -36,24 +36,27 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import ROOM_SAME_WALL_REFERENCE_WALL_OBJECT_TYPES
-from ..shared.object_scene import POINT_LABELS
-from .wall_mounted_object_count import (
+from ..shared.option_panel import build_text_option_choices
+from ..shared.camera_projection import build_projection_frame
+from ..shared.object_scene import (
+    POINT_LABELS,
+    object_reference_points,
+    resolve_object_scene_render_params,
+)
+from .wall_mounted_common import (
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     WALL_BACK_Y,
     WALL_X,
-    _build_projection_frame,
     _finalize_specs,
-    _object_reference_points,
-    _resolve_render_params,
     _room_object_bbox,
     _sample_room_camera,
     _wall_object_visible_bbox,
     _wall_reference_points,
-    render_room_scene_3d,
 )
+from .wall_mounted_rendering import render_room_scene_3d
 from .wall_object_camera_distance import (
     CANDIDATE_WALL_OBJECT_TYPES,
     CONTEXT_WALL_OBJECT_TYPES,
@@ -304,9 +307,9 @@ def _build_room_wall_same_wall_reference_dataset(
         for spec in [reference_spec, *candidate_wall_specs, *context_wall_specs]:
             all_reference_points.extend(_wall_reference_points(spec))
         for spec in floor_specs:
-            all_reference_points.extend(_object_reference_points(spec))
+            all_reference_points.extend(object_reference_points(spec))
 
-        frame = _build_projection_frame(
+        frame = build_projection_frame(
             camera=camera,
             render_params=render_params,
             point_worlds=all_reference_points,
@@ -501,7 +504,7 @@ def _build_room_wall_same_wall_reference_dataset(
             },
             "solver_trace": {
                 "predicate": (
-                    "lettered wall-mounted candidate whose wall equals the "
+                    "option-panel wall-mounted candidate whose wall equals the "
                     "uniquely named reference wall object wall"
                 ),
                 "reference_object": {
@@ -590,7 +593,7 @@ _NOISE_DEFAULTS = (
 
 @register_task
 class ThreeDRoomWallObjectSameWallReferenceLabelTask:
-    """Choose the lettered wall-mounted object on the same wall as a reference."""
+    """Choose the option-panel wall-mounted object on the same wall as a reference."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -689,7 +692,7 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
             key="reference_object_type",
             support=REFERENCE_WALL_OBJECT_TYPES,
         )
-        render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
+        render_params = resolve_object_scene_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_room_wall_same_wall_reference_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -708,8 +711,12 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
+        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
         rendered_scene = render_room_scene_3d(
-            background, dataset=dataset, render_params=render_params
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            option_choices=option_choices,
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -728,7 +735,7 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -742,7 +749,7 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "reference_name": reference_name,
@@ -751,7 +758,7 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
                     prompt_defaults["json_example_answer_only"]
@@ -763,11 +770,11 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in rendered_scene.evidence_bboxes
+            for bbox in rendered_scene.annotation_bboxes
         ]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = _build_complexity(
             candidate_count=int(dataset["candidate_count"]),
             wall_object_count=int(dataset["wall_object_count"]),
@@ -843,7 +850,9 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -864,6 +873,13 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
                     str(key): list(value)
                     for key, value in rendered_scene.object_centers_px.items()
                 },
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value)
+                    for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "wall_object_bboxes_px": {
                     str(key): list(value)
                     for key, value in rendered_scene.wall_object_bboxes_px.items()
@@ -908,6 +924,11 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
                 "candidate_object_specs": [
                     dict(spec) for spec in dataset["candidate_object_specs"]
                 ],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "wall_object_specs": [
                     dict(spec) for spec in dataset["wall_object_specs"]
                 ],
@@ -942,8 +963,8 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
                 "id": str(dataset["answer_object_id"]),
                 "answer": str(answer_label),
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -953,7 +974,7 @@ class ThreeDRoomWallObjectSameWallReferenceLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

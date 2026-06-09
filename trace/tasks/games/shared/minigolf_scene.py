@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.drawing import draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .minigolf_common import MinigolfObstacle, MinigolfShotOption
 from .scene_style import (

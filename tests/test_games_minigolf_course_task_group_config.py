@@ -37,5 +37,5 @@ def test_games_minigolf_course_defaults_present() -> None:
     assert int(rendering["obstacle_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_minigolf_v0"
     assert "straight line" in str(prompt["minigolf_cue_rule_text"]).lower()
-    assert "[x, y] pixel point" in str(prompt["evidence_hint_first_obstacle_label"])
-    assert "point-pair" in str(prompt["evidence_hint_shot_path_label"])
+    assert "[x, y] pixel point" in str(prompt["annotation_hint_first_obstacle_label"])
+    assert "point-pair" in str(prompt["annotation_hint_shot_path_label"])

@@ -166,7 +166,7 @@ class _Query:
     query_id: str
     answer: int | str
     answer_type: str
-    evidence_node_ids: Tuple[str, ...]
+    annotation_node_ids: Tuple[str, ...]
     trace: Dict[str, Any]
 
 
@@ -212,7 +212,7 @@ class _RenderedSunburst:
     image: Image.Image
     entities: Tuple[Dict[str, Any], ...]
     node_traces: Tuple[Dict[str, Any], ...]
-    evidence_bbox_by_node_id: Dict[str, BBox]
+    annotation_bbox_by_node_id: Dict[str, BBox]
     chart_bbox_px: BBox
     render_meta: Dict[str, Any]
 
@@ -346,7 +346,7 @@ def _sample_query_id(params: Mapping[str, Any], *, allowed_query_ids: Sequence[s
             raise ValueError(f"unsupported sunburst query_id for this public task: {query_id}")
         return query_id
     rng = spawn_rng(int(instance_seed), "charts.composition.sunburst.query_id")
-    raw_weights = params.get("query_id_weights", params.get("query_id_weights"))
+    raw_weights = params.get("query_id_weights", params.get("query_variant_weights"))
     if isinstance(raw_weights, Mapping):
         weights = [max(0.0, float(raw_weights.get(query_id, 0.0))) for query_id in allowed]
         if sum(weights) > 0.0:
@@ -567,13 +567,13 @@ def _select_threshold_query(
     parent_ids: Sequence[str],
     params: Mapping[str, Any],
     instance_seed: int,
-) -> Tuple[str, int, int, Tuple[str, ...]]:
+) -> Tuple[str, str, int, Tuple[str, ...]]:
     rng = spawn_rng(int(instance_seed), "charts.composition.sunburst.threshold_query")
     count_support = [int(value) for value in _int_sequence_default(params, "sunburst_condition_count_support", (1, 2, 3, 4, 5))]
     ordered_counts = _ordered_count_support(count_support, params=params, rng=rng)
     parent_order = list(str(parent_id) for parent_id in parent_ids)
     rng.shuffle(parent_order)
-    comparison_options = [("at least", True), ("below", False)]
+    comparison_options = [("above", True), ("below", False)]
     rng.shuffle(comparison_options)
     for parent_id in parent_order:
         leaf_ids = _descendant_leaf_ids(nodes_by_id, str(parent_id))
@@ -584,7 +584,7 @@ def _select_threshold_query(
             candidates_by_count: Dict[int, List[int]] = defaultdict(list)
             for threshold in range(min(values), max(values) + 1):
                 if bool(at_least):
-                    count = sum(1 for value in values if int(value) >= int(threshold))
+                    count = sum(1 for value in values if int(value) > int(threshold))
                 else:
                     count = sum(1 for value in values if int(value) < int(threshold))
                 if 1 <= int(count) <= len(values) - 1:
@@ -652,7 +652,7 @@ def _build_query(
             query_id=str(query_id),
             answer=int(parent.value),
             answer_type="integer",
-            evidence_node_ids=tuple(leaf_ids),
+            annotation_node_ids=tuple(leaf_ids),
             trace={
                 "parent_id": str(parent.node_id),
                 "parent_label": str(parent.label),
@@ -675,7 +675,7 @@ def _build_query(
             query_id=str(query_id),
             answer=str(target.label),
             answer_type="string",
-            evidence_node_ids=tuple(all_leaf_ids),
+            annotation_node_ids=tuple(all_leaf_ids),
             trace={
                 "extremum": "highest" if want_highest else "lowest",
                 "answer_parent_id": str(target.node_id),
@@ -694,8 +694,8 @@ def _build_query(
             instance_seed=int(instance_seed),
         )
         values = [int(nodes_by_id[str(leaf_id)].value) for leaf_id in leaf_ids]
-        if str(comparison_phrase) == "at least":
-            answer = sum(1 for value in values if int(value) >= int(threshold))
+        if str(comparison_phrase) == "above":
+            answer = sum(1 for value in values if int(value) > int(threshold))
         else:
             answer = sum(1 for value in values if int(value) < int(threshold))
         parent = nodes_by_id[str(parent_id)]
@@ -703,7 +703,7 @@ def _build_query(
             query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
-            evidence_node_ids=tuple(str(leaf_id) for leaf_id in leaf_ids),
+            annotation_node_ids=tuple(str(leaf_id) for leaf_id in leaf_ids),
             trace={
                 "parent_id": str(parent.node_id),
                 "parent_label": str(parent.label),
@@ -726,7 +726,7 @@ def _build_query(
             query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
-            evidence_node_ids=tuple(str(leaf_id) for leaf_id in leaf_ids),
+            annotation_node_ids=tuple(str(leaf_id) for leaf_id in leaf_ids),
             trace={
                 "parent_id": str(parent.node_id),
                 "parent_label": str(parent.label),
@@ -892,7 +892,7 @@ def _render_sunburst(
     spans = _node_angle_spans(dataset)
     node_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
-    evidence_bbox_by_node_id: Dict[str, BBox] = {}
+    annotation_bbox_by_node_id: Dict[str, BBox] = {}
 
     for level in ("leaf", "subgroup", "parent"):
         for node in [item for item in dataset.nodes if item.level == level]:
@@ -972,7 +972,7 @@ def _render_sunburst(
             stroke_width=stroke_width,
             line_gap_px=2,
         )
-        evidence_bbox_by_node_id[str(node.node_id)] = list(text_bbox)
+        annotation_bbox_by_node_id[str(node.node_id)] = list(text_bbox)
         wedge_bbox = _bbox(
             (
                 center[0] - outer_radius,
@@ -1021,7 +1021,7 @@ def _render_sunburst(
         image=image,
         entities=tuple(dict(entity) for entity in entities),
         node_traces=tuple(dict(trace) for trace in node_traces),
-        evidence_bbox_by_node_id=dict(evidence_bbox_by_node_id),
+        annotation_bbox_by_node_id=dict(annotation_bbox_by_node_id),
         chart_bbox_px=list(chart_bbox),
         render_meta=dict(render_meta),
     )
@@ -1041,7 +1041,7 @@ def _make_prompt(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1059,12 +1059,12 @@ def _answer_hint_key(query_id: str) -> str:
     return "answer_hint_label" if str(query_id) in set(PARENT_EXTREMUM_QUERY_IDS) else "answer_hint_integer"
 
 
-def _evidence_hint_key(query_id: str) -> str:
+def _annotation_hint_key(query_id: str) -> str:
     if str(query_id) in set(PARENT_TOTAL_QUERY_IDS):
-        return "evidence_hint_parent_total_from_leaves_value"
+        return "annotation_hint_parent_total_from_leaves_value"
     if str(query_id) in set(PARENT_EXTREMUM_QUERY_IDS):
-        return "evidence_hint_parent_total_extremum_label"
-    return "evidence_hint_conditional_leaf_count"
+        return "annotation_hint_parent_total_extremum_label"
+    return "annotation_hint_conditional_leaf_count"
 
 
 def _json_example_key(query_id: str, *, answer_only: bool = False) -> str:
@@ -1101,9 +1101,9 @@ class ChartsCompositionSunburstHierarchyTask:
                 "object_description_sunburst",
                 "answer_hint_integer",
                 "answer_hint_label",
-                "evidence_hint_parent_total_from_leaves_value",
-                "evidence_hint_parent_total_extremum_label",
-                "evidence_hint_conditional_leaf_count",
+                "annotation_hint_parent_total_from_leaves_value",
+                "annotation_hint_parent_total_extremum_label",
+                "annotation_hint_conditional_leaf_count",
                 "json_example_parent_total_from_leaves_value",
                 "json_example_parent_total_extremum_label",
                 "json_example_conditional_leaf_count",
@@ -1148,7 +1148,7 @@ class ChartsCompositionSunburstHierarchyTask:
             "upper_value": str(query_trace.get("upper_value", "")),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults[_evidence_hint_key(str(query_id))]),
+            "annotation_hint": str(prompt_defaults[_annotation_hint_key(str(query_id))]),
             "answer_hint": str(prompt_defaults[_answer_hint_key(str(query_id))]),
             "json_example": str(prompt_defaults[_json_example_key(str(query_id))]),
             "json_example_answer_only": str(prompt_defaults[_json_example_key(str(query_id), answer_only=True)]),
@@ -1160,13 +1160,13 @@ class ChartsCompositionSunburstHierarchyTask:
             instance_seed=int(instance_seed),
         )
         nodes_by_id = {str(node.node_id): node for node in dataset.nodes}
-        evidence_bboxes = [
-            list(rendered.evidence_bbox_by_node_id[str(node_id)])
-            for node_id in dataset.query.evidence_node_ids
-            if str(node_id) in rendered.evidence_bbox_by_node_id
+        annotation_bboxes = [
+            list(rendered.annotation_bbox_by_node_id[str(node_id)])
+            for node_id in dataset.query.annotation_node_ids
+            if str(node_id) in rendered.annotation_bbox_by_node_id
         ]
-        if not evidence_bboxes:
-            raise ValueError("sunburst query produced no projected evidence")
+        if not annotation_bboxes:
+            raise ValueError("sunburst query produced no projected annotation")
         hierarchy_rows = [
             {
                 "node_id": str(node.node_id),
@@ -1185,7 +1185,7 @@ class ChartsCompositionSunburstHierarchyTask:
             "subgroup_count": int(len(dataset.subgroup_ids)),
             "leaf_count": int(len(dataset.leaf_ids)),
             "parent_labels": [str(nodes_by_id[parent_id].label) for parent_id in dataset.parent_ids],
-            "evidence_node_ids": [str(node_id) for node_id in dataset.query.evidence_node_ids],
+            "annotation_node_ids": [str(node_id) for node_id in dataset.query.annotation_node_ids],
             "answer_value": dataset.query.answer,
             **dict(dataset.generation_ranges),
             **dict(query_trace),
@@ -1219,9 +1219,9 @@ class ChartsCompositionSunburstHierarchyTask:
                 "image_id": "img0",
                 "chart_bbox_px": list(rendered.chart_bbox_px),
                 "node_traces": [dict(trace) for trace in rendered.node_traces],
-                "evidence_bbox_by_node_id": {
+                "annotation_bbox_by_node_id": {
                     str(node_id): list(bbox)
-                    for node_id, bbox in rendered.evidence_bbox_by_node_id.items()
+                    for node_id, bbox in rendered.annotation_bbox_by_node_id.items()
                 },
             },
             "execution_trace": {
@@ -1229,20 +1229,20 @@ class ChartsCompositionSunburstHierarchyTask:
                 "answer_value": dataset.query.answer,
                 "question_format": "label_open" if dataset.query.answer_type == "string" else "numeric_open",
                 "hierarchy": list(hierarchy_rows),
-                "evidence_node_ids": [str(node_id) for node_id in dataset.query.evidence_node_ids],
+                "annotation_node_ids": [str(node_id) for node_id in dataset.query.annotation_node_ids],
                 **dict(query_params),
             },
             "witness_symbolic": {
                 "type": "sunburst_hierarchy_values",
                 "query_id": str(query_id),
                 "answer_value": dataset.query.answer,
-                "evidence_node_ids": [str(node_id) for node_id in dataset.query.evidence_node_ids],
+                "annotation_node_ids": [str(node_id) for node_id in dataset.query.annotation_node_ids],
                 "calculation": dict(query_trace),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "evidence_node_ids": [str(node_id) for node_id in dataset.query.evidence_node_ids],
+                "bbox_set": list(annotation_bboxes),
+                "annotation_node_ids": [str(node_id) for node_id in dataset.query.annotation_node_ids],
             },
         }
         answer_gt = (
@@ -1262,7 +1262,7 @@ class ChartsCompositionSunburstHierarchyTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_bboxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1304,17 +1304,27 @@ class ChartsCompositionSunburstParentTotalExtremumLabelTask(ChartsCompositionSun
 
 
 @register_task
-class ChartsCompositionSunburstConditionalLeafCountTask(ChartsCompositionSunburstHierarchyTask):
-    """Count outer leaves under a parent that satisfy a value condition."""
+class ChartsCompositionSunburstLeafThresholdCountUnderParentTask(ChartsCompositionSunburstHierarchyTask):
+    """Count outer leaves under a parent that satisfy a one-bound threshold."""
 
-    task_id = "task_charts__sunburst__conditional_leaf_count"
-    allowed_query_ids = CONDITIONAL_LEAF_QUERY_IDS
+    task_id = "task_charts__sunburst__leaf_threshold_count_under_parent"
+    allowed_query_ids = ("leaf_threshold_count_under_parent",)
+    default_dataset_enabled = True
+
+
+@register_task
+class ChartsCompositionSunburstLeafRangeCountUnderParentTask(ChartsCompositionSunburstHierarchyTask):
+    """Count outer leaves under a parent whose values fall inside a range."""
+
+    task_id = "task_charts__sunburst__leaf_range_count_under_parent"
+    allowed_query_ids = ("leaf_range_count_under_parent",)
     default_dataset_enabled = True
 
 
 __all__ = [
-    "ChartsCompositionSunburstConditionalLeafCountTask",
     "ChartsCompositionSunburstHierarchyTask",
+    "ChartsCompositionSunburstLeafRangeCountUnderParentTask",
+    "ChartsCompositionSunburstLeafThresholdCountUnderParentTask",
     "ChartsCompositionSunburstParentTotalExtremumLabelTask",
     "ChartsCompositionSunburstParentTotalValueTask",
 ]

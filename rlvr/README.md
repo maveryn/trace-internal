@@ -22,9 +22,9 @@ Current scope:
 TRACE-specific behavior now integrated on top of the Vero stack:
 
 - `data.dataset_mode=trace` automatically selects the TRACE dataset adapter
-- TRACE reward modes are `answer` and `answer_and_evidence`
+- TRACE reward modes are `answer` and `answer_and_annotation`
 - `TRACE_OUTPUT_MODE` is the common mode selector for prompt key, reward mode, and default system prompt
-- `TRACE_OUTPUT_MODE=evidence` is accepted as a shorthand alias for `answer_and_evidence`
+- `TRACE_OUTPUT_MODE=annotation` is accepted as a shorthand alias for `answer_and_annotation`
 - TRACE outputs should end with a TRACE JSON object; reasoning may appear before that final object
 - TRACE training metrics include grouped `zero_solve_*` and `perfect_solve_*`
 - numeric TRACE reward breakdowns are surfaced as `reward/*` metrics in training
@@ -78,7 +78,7 @@ Curriculum probe:
 - probe-only answer extraction is intentionally lenient:
   - first recover the final JSON object when present
   - otherwise fall back to valid JSON elsewhere in the response, including legacy `<answer>...</answer>` wrappers
-  - the probe then scores the recovered payload with the same answer/evidence contracts used by training
+  - the probe then scores the recovered payload with the same answer/annotation contracts used by training
   - this does not change training reward behavior
 
 Example:
@@ -132,16 +132,16 @@ That launcher defaults to:
 Minimal TRACE knobs on the new stack:
 
 - `data.dataset_mode=trace`
-- `data.prompt_key=prompt_answer` or `data.prompt_key=prompt_answer_and_evidence`
-- `data.trace_output_mode=answer` or `answer_and_evidence`
+- `data.prompt_key=prompt_answer` or `data.prompt_key=prompt_answer_and_annotation`
+- `data.trace_output_mode=answer` or `answer_and_annotation`
 - `data.system_prompt=auto` uses the mode-specific system prompt under `./examples/prompts/`
 - `custom_reward_function.path=./examples/reward_function/reward_trace.py`
 - `custom_reward_function.name=compute_score`
-- `custom_reward_function.reward_kwargs.trace_output_mode=answer` or `answer_and_evidence`
+- `custom_reward_function.reward_kwargs.trace_output_mode=answer` or `answer_and_annotation`
 - `custom_reward_function.reward_kwargs.trace_reward_mode=auto` follows `trace_output_mode` by default
 - `custom_reward_function.reward_kwargs.trace_answer_scoring=exact_json` by default; set `legacy_strict` to recover the older TRACE answer-matching semantics used by `strict_score_response(...)`
-- `custom_reward_function.reward_kwargs.trace_format_weight=0.05` by default; set `TRACE_FORMAT_WEIGHT` to override it for both answer and answer-and-evidence modes
-- RLVR export now strips the generic JSON-schema boilerplate line from `prompt_answer` and `prompt_answer_and_evidence`; the mode-specific system prompt carries the schema contract, while task-specific hints and examples stay in the user prompt
+- `custom_reward_function.reward_kwargs.trace_format_weight=0.05` by default; set `TRACE_FORMAT_WEIGHT` to override it for both answer and answer-and-annotation modes
+- RLVR export now strips the generic JSON-schema boilerplate line from `prompt_answer` and `prompt_answer_and_annotation`; the mode-specific system prompt carries the schema contract, while task-specific hints and examples stay in the user prompt
 - RLVR export includes `query_id` and `scene_variant` when trace sidecars are available; retained curriculum parquets also keep per-question staged probe counts and solve rates
 - TRACE format reward is binary: it is `1.0` only when the response ends with a JSON object whose keys match the expected mode-specific contract, otherwise `0.0`; it does not require `<think>` or `<answer>` tags.
 - `reward/zero_reward` and grouped `rlvr_stats/zero_solve_*` / `perfect_solve_*` track task reward correctness, so a wrong but well-formed JSON answer does not count as a solve.

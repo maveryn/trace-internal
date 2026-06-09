@@ -15,6 +15,7 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.bbox_projection import bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
@@ -34,7 +35,11 @@ from ..shared.labeled_chart_common import (
     sample_composition_with_sum,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
-from ..shared.label_assets import resolve_chart_category_labels
+from ..shared.label_assets import (
+    resolve_chart_category_labels,
+    resolve_chart_panel_labels,
+    validate_chart_label_namespaces,
+)
 from ..shared.visual_defaults import (
     chart_font_asset_metadata,
     load_chart_background_defaults,
@@ -103,8 +108,8 @@ class _Dataset:
     panels: Tuple[_PanelSpec, ...]
     segment_labels: Tuple[str, ...]
     answer_value: int
-    evidence_values: Tuple[int, ...]
-    evidence_keys: Tuple[Tuple[str, str], ...]
+    annotation_values: Tuple[int, ...]
+    annotation_keys: Tuple[Tuple[str, str], ...]
     trace_extras: Dict[str, Any]
 
 
@@ -114,8 +119,10 @@ class _RenderedSmallMultiples:
     entities: Tuple[Dict[str, Any], ...]
     panel_traces: Tuple[Dict[str, Any], ...]
     plot_bbox_px: Tuple[int, int, int, int]
-    evidence_bbox_by_key: Dict[Tuple[str, str], List[float]]
+    annotation_bbox_by_key: Dict[Tuple[str, str], List[float]]
     total_bbox_by_panel: Dict[str, List[float]]
+    legend_bbox_px: List[float]
+    legend_item_bboxes_px: Dict[str, List[float]]
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -227,12 +234,6 @@ def _format_quoted(values: Sequence[str]) -> str:
     return ", ".join(f'"{str(value)}"' for value in values)
 
 
-def _panel_labels(panel_count: int, *, instance_seed: int) -> Tuple[str, ...]:
-    start_years = [2016, 2017, 2018, 2019, 2020]
-    start = start_years[int(abs(instance_seed)) % len(start_years)]
-    return tuple(str(start + index) for index in range(int(panel_count)))
-
-
 def _choose_segments(segment_count: int, *, instance_seed: int) -> Tuple[str, ...]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.segment_labels")
     labels = resolve_chart_category_labels(
@@ -243,6 +244,59 @@ def _choose_segments(segment_count: int, *, instance_seed: int) -> Tuple[str, ..
         allow_spaces=False,
     ).labels
     return tuple(str(label) for label in labels)
+
+
+def _resolved_label_metadata(resolved: Any) -> Dict[str, Any]:
+    return {
+        "label_variant": str(resolved.label_variant),
+        "label_pool_kind": str(resolved.label_pool_kind),
+        "label_source_kind": str(resolved.label_source_kind),
+        "label_bucket": str(resolved.label_bucket),
+        "label_manifest": str(resolved.label_manifest),
+        "label_filter": dict(resolved.label_filter),
+        "label_bucket_probabilities": dict(resolved.label_bucket_probabilities),
+    }
+
+
+def _choose_panel_labels(
+    panel_count: int,
+    *,
+    segment_labels: Sequence[str],
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> Tuple[Tuple[str, ...], Dict[str, Any]]:
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.panel_labels")
+    resolved = resolve_chart_panel_labels(
+        rng,
+        count=int(panel_count),
+        min_chars=1,
+        max_chars=10,
+        allow_spaces=False,
+        variant_weights=params.get(
+            "panel_label_variant_weights",
+            group_default(
+                _GEN_DEFAULTS,
+                "panel_label_variant_weights",
+                {
+                    "temporal_sequence": 0.6,
+                    "named_compact": 1.0,
+                    "report_topics": 0.75,
+                    "technical_topics": 1.0,
+                    "condition_labels": 0.5,
+                },
+            ),
+        ),
+        reserved_labels=tuple(str(label) for label in segment_labels),
+    )
+    collision_check = validate_chart_label_namespaces(
+        panel_labels=resolved.labels,
+        other_label_groups={"segment_labels": tuple(str(label) for label in segment_labels)},
+        context="small-multiple composition panel labels",
+    )
+    return tuple(str(label) for label in resolved.labels), {
+        "panel_label_resolution": _resolved_label_metadata(resolved),
+        "panel_label_collision_check": dict(collision_check),
+    }
 
 
 def _sample_shares(
@@ -339,13 +393,13 @@ def _build_top_k_dataset(
     )
     selected = tuple(sorted(panels, key=lambda panel: int(panel.shares_by_segment[str(rank_segment)]), reverse=True)[: int(top_k)])
     selected_counts = tuple(int(_counts_for_panel(panel)[str(target_segment)]) for panel in selected)
-    evidence_keys = tuple((str(panel.label), str(target_segment)) for panel in selected)
+    annotation_keys = tuple((str(panel.label), str(target_segment)) for panel in selected)
     return _Dataset(
         panels=panels,
         segment_labels=tuple(segment_labels),
         answer_value=int(sum(selected_counts)),
-        evidence_values=selected_counts,
-        evidence_keys=evidence_keys,
+        annotation_values=selected_counts,
+        annotation_keys=annotation_keys,
         trace_extras={
             "rank_segment": str(rank_segment),
             "target_segment": str(target_segment),
@@ -387,13 +441,13 @@ def _build_conditioned_dataset(
     )
     selected = tuple(panel for panel in panels if int(panel.shares_by_segment[str(condition_segment)]) > int(threshold))
     selected_counts = tuple(int(_counts_for_panel(panel)[str(target_segment)]) for panel in selected)
-    evidence_keys = tuple((str(panel.label), str(target_segment)) for panel in selected)
+    annotation_keys = tuple((str(panel.label), str(target_segment)) for panel in selected)
     return _Dataset(
         panels=panels,
         segment_labels=tuple(segment_labels),
         answer_value=int(sum(selected_counts)),
-        evidence_values=selected_counts,
-        evidence_keys=evidence_keys,
+        annotation_values=selected_counts,
+        annotation_keys=annotation_keys,
         trace_extras={
             "condition_segment": str(condition_segment),
             "target_segment": str(target_segment),
@@ -456,13 +510,13 @@ def _build_average_difference_dataset(
     bottom_values = tuple(int(panel.shares_by_segment[str(target_segment)]) for panel in bottom_panels)
     top_avg = int(sum(top_values) // k)
     bottom_avg = int(sum(bottom_values) // k)
-    evidence_keys = tuple((str(panel.label), str(target_segment)) for panel in (*top_panels, *bottom_panels))
+    annotation_keys = tuple((str(panel.label), str(target_segment)) for panel in (*top_panels, *bottom_panels))
     return _Dataset(
         panels=panels,
         segment_labels=tuple(segment_labels),
         answer_value=int(top_avg - bottom_avg),
-        evidence_values=tuple(int(value) for value in (*top_values, *bottom_values)),
-        evidence_keys=evidence_keys,
+        annotation_values=tuple(int(value) for value in (*top_values, *bottom_values)),
+        annotation_keys=annotation_keys,
         trace_extras={
             "rank_segment": str(rank_segment),
             "target_segment": str(target_segment),
@@ -501,7 +555,7 @@ def _build_shift_dataset(
         abs(int(end_panel.shares_by_segment[str(segment)]) - int(start_panel.shares_by_segment[str(segment)]))
         for segment in segment_labels
     )
-    evidence_keys = tuple(
+    annotation_keys = tuple(
         (str(label), str(segment))
         for label in (str(start_panel.label), str(end_panel.label))
         for segment in segment_labels
@@ -510,8 +564,8 @@ def _build_shift_dataset(
         panels=panels,
         segment_labels=tuple(segment_labels),
         answer_value=int(sum(changes)),
-        evidence_values=tuple(int(value) for value in changes),
-        evidence_keys=evidence_keys,
+        annotation_values=tuple(int(value) for value in changes),
+        annotation_keys=annotation_keys,
         trace_extras={
             "start_panel": str(start_panel.label),
             "end_panel": str(end_panel.label),
@@ -545,8 +599,13 @@ def _build_dataset(
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.segment_count",
     )
-    panel_labels = _panel_labels(int(panel_count), instance_seed=int(instance_seed))
     segment_labels = _choose_segments(int(segment_count), instance_seed=int(instance_seed))
+    panel_labels, panel_label_meta = _choose_panel_labels(
+        int(panel_count),
+        segment_labels=segment_labels,
+        params=params,
+        instance_seed=int(instance_seed),
+    )
     total_values = _sample_total_values(params)
     builders = {
         "top_k_by_segment_then_sum_other_segment_count": _build_top_k_dataset,
@@ -572,13 +631,14 @@ def _build_dataset(
         panels=tuple(dataset.panels),
         segment_labels=tuple(dataset.segment_labels),
         answer_value=int(dataset.answer_value),
-        evidence_values=tuple(int(value) for value in dataset.evidence_values),
-        evidence_keys=tuple((str(panel), str(segment)) for panel, segment in dataset.evidence_keys),
+        annotation_values=tuple(int(value) for value in dataset.annotation_values),
+        annotation_keys=tuple((str(panel), str(segment)) for panel, segment in dataset.annotation_keys),
         trace_extras={
             "panel_count": int(panel_count),
             "panel_count_range": [int(panel_min), int(panel_max)],
             "segment_count": int(segment_count),
             "segment_count_range": [int(segment_min), int(segment_max)],
+            **dict(panel_label_meta),
             **dict(dataset.trace_extras),
         },
     )
@@ -633,17 +693,17 @@ def _bbox_center_point(bbox: Sequence[float]) -> List[float]:
     ]
 
 
-def _evidence_map_key(role: str, panel: str, segment: str | None = None) -> str:
+def _annotation_map_key(role: str, panel: str, segment: str | None = None) -> str:
     if segment is None:
         return f"{str(role)}|{str(panel)}"
     return f"{str(role)}|{str(panel)}|{str(segment)}"
 
 
-def _format_evidence_key_list(keys: Sequence[str]) -> str:
+def _format_annotation_key_list(keys: Sequence[str]) -> str:
     return ", ".join(f'"{str(key)}"' for key in keys)
 
 
-def _build_keyed_evidence_points(
+def _build_keyed_annotation_points(
     *,
     query_id: str,
     dataset: _Dataset,
@@ -653,16 +713,16 @@ def _build_keyed_evidence_points(
     points: Dict[str, List[float]] = {}
 
     def add_segment(role: str, panel: str, segment: str) -> None:
-        bbox = rendered_scene.evidence_bbox_by_key.get((str(panel), str(segment)))
+        bbox = rendered_scene.annotation_bbox_by_key.get((str(panel), str(segment)))
         if bbox is None:
             return
-        points[_evidence_map_key(str(role), str(panel), str(segment))] = _bbox_center_point(bbox)
+        points[_annotation_map_key(str(role), str(panel), str(segment))] = _bbox_center_point(bbox)
 
     def add_total(panel: str) -> None:
         bbox = rendered_scene.total_bbox_by_panel.get(str(panel))
         if bbox is None:
             return
-        points[_evidence_map_key("total", str(panel))] = _bbox_center_point(bbox)
+        points[_annotation_map_key("total", str(panel))] = _bbox_center_point(bbox)
 
     if str(query_id) == "top_k_by_segment_then_sum_other_segment_count":
         rank_segment = str(extras["rank_segment"])
@@ -799,7 +859,7 @@ def _render_small_multiples(
     cell_height = (plot_bbox[3] - plot_bbox[1] - ((rows - 1) * gap_y)) / float(rows)
     entities: List[Dict[str, Any]] = []
     panel_traces: List[Dict[str, Any]] = []
-    evidence_bbox_by_key: Dict[Tuple[str, str], List[float]] = {}
+    annotation_bbox_by_key: Dict[Tuple[str, str], List[float]] = {}
     total_bbox_by_panel: Dict[str, List[float]] = {}
     segment_color_by_label = {
         str(label): _SEGMENT_COLORS[index % len(_SEGMENT_COLORS)]
@@ -854,7 +914,7 @@ def _render_small_multiples(
                 stroke_width=2,
                 stroke_fill=(30, 34, 42),
             )
-            evidence_bbox_by_key[(str(panel.label), str(segment))] = list(text_bbox)
+            annotation_bbox_by_key[(str(panel.label), str(segment))] = list(text_bbox)
             count_value = int(int(share) * int(panel.total) // 100)
             slice_trace = {
                 "panel_label": str(panel.label),
@@ -889,19 +949,31 @@ def _render_small_multiples(
     legend_items = list(dataset.segment_labels)
     item_width = max(118.0, (width - margin_left - margin_right) / float(max(1, len(legend_items))))
     legend_x0 = (width - (item_width * len(legend_items))) / 2.0
+    legend_boxes: List[Sequence[float]] = []
+    legend_item_bboxes: Dict[str, List[float]] = {}
     for index, segment in enumerate(legend_items):
         x = float(legend_x0 + (index * item_width))
         color = segment_color_by_label[str(segment)]
-        draw.rectangle((x, legend_y - 11, x + 26, legend_y + 15), fill=color, outline=(80, 84, 92), width=1)
-        draw_text_traced(draw,(x + 34, legend_y - 12), f"Segment {segment}", font=legend_font, fill=text_color, role="readout", required=False)
+        swatch_bbox = (float(x), float(legend_y - 11), float(x + 26), float(legend_y + 15))
+        legend_text = f"Segment {segment}"
+        text_xy = (float(x + 34), float(legend_y - 12))
+        text_bbox = draw.textbbox(text_xy, legend_text, font=legend_font)
+        row_bbox = bbox_union((swatch_bbox, text_bbox), padding=4.0)
+        legend_boxes.append(row_bbox)
+        legend_item_bboxes[str(segment)] = list(row_bbox)
+        draw.rectangle(swatch_bbox, fill=color, outline=(80, 84, 92), width=1)
+        draw_text_traced(draw, text_xy, legend_text, font=legend_font, fill=text_color, role="readout", required=False)
+    legend_bbox = bbox_union(legend_boxes, padding=6.0) if legend_boxes else []
 
     return _RenderedSmallMultiples(
         image=image,
         entities=tuple(entities),
         panel_traces=tuple(panel_traces),
         plot_bbox_px=tuple(int(value) for value in plot_bbox),
-        evidence_bbox_by_key=dict(evidence_bbox_by_key),
+        annotation_bbox_by_key=dict(annotation_bbox_by_key),
         total_bbox_by_panel=dict(total_bbox_by_panel),
+        legend_bbox_px=list(legend_bbox),
+        legend_item_bboxes_px=dict(legend_item_bboxes),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
@@ -976,12 +1048,12 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_points_by_key = _build_keyed_evidence_points(
+        annotation_points_by_key = _build_keyed_annotation_points(
             query_id=str(query_id),
             dataset=dataset,
             rendered_scene=rendered_scene,
         )
-        evidence_key_list = _format_evidence_key_list(list(evidence_points_by_key.keys()))
+        annotation_key_list = _format_annotation_key_list(list(annotation_points_by_key.keys()))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -994,10 +1066,10 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "answer_hint",
                 "object_description_small_multiple_pie",
                 "object_description_small_multiple_donut",
-                "evidence_hint_top_k_by_segment_then_sum_other_segment_count",
-                "evidence_hint_conditioned_panel_sum_from_percent",
-                "evidence_hint_average_top_k_minus_average_bottom_k",
-                "evidence_hint_composition_shift_l1_distance",
+                "annotation_hint_top_k_by_segment_then_sum_other_segment_count",
+                "annotation_hint_conditioned_panel_sum_from_percent",
+                "annotation_hint_average_top_k_minus_average_bottom_k",
+                "annotation_hint_composition_shift_l1_distance",
                 "json_example_top_k_by_segment_then_sum_other_segment_count",
                 "json_example_conditioned_panel_sum_from_percent",
                 "json_example_average_top_k_minus_average_bottom_k",
@@ -1011,8 +1083,8 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"]).format(
-            evidence_key_list=str(evidence_key_list)
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"]).format(
+            annotation_key_list=str(annotation_key_list)
         )
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
@@ -1023,7 +1095,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "top_k": str(extras.get("top_k", "")),
@@ -1037,7 +1109,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "segment_list": _format_quoted(dataset.segment_labels),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1055,9 +1127,9 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             }
             for panel in dataset.panels
         ]
-        point_set = [list(point) for point in evidence_points_by_key.values()]
+        point_set = [list(point) for point in annotation_points_by_key.values()]
         answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
-        evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points_by_key))
+        annotation_gt = TypedValue(type="keyed_point_map", value=dict(annotation_points_by_key))
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
                 "scene_kind": f"chart_{str(scene_variant)}_composition_small_multiples",
@@ -1113,10 +1185,19 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             "render_map": {
                 "image_id": "img0",
                 "plot_bbox_px": list(rendered_scene.plot_bbox_px),
+                "legend_bbox_px": list(rendered_scene.legend_bbox_px),
+                "legend_item_bboxes_px": {
+                    str(segment): list(bbox)
+                    for segment, bbox in rendered_scene.legend_item_bboxes_px.items()
+                },
+                "context_protected_bboxes_px": {
+                    "plot": list(rendered_scene.plot_bbox_px),
+                    **({"legend": list(rendered_scene.legend_bbox_px)} if rendered_scene.legend_bbox_px else {}),
+                },
                 "panel_traces": [dict(panel) for panel in rendered_scene.panel_traces],
-                "evidence_bbox_by_key": {
+                "annotation_bbox_by_key": {
                     f"{panel}:{segment}": list(bbox)
-                    for (panel, segment), bbox in rendered_scene.evidence_bbox_by_key.items()
+                    for (panel, segment), bbox in rendered_scene.annotation_bbox_by_key.items()
                 },
                 "total_bbox_by_panel": {
                     str(panel): list(bbox)
@@ -1127,9 +1208,9 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(dataset.answer_value),
-                "evidence_values": [int(value) for value in dataset.evidence_values],
-                "evidence_keys": [[str(panel), str(segment)] for panel, segment in dataset.evidence_keys],
-                "evidence_point_keys": list(evidence_points_by_key.keys()),
+                "annotation_values": [int(value) for value in dataset.annotation_values],
+                "annotation_keys": [[str(panel), str(segment)] for panel, segment in dataset.annotation_keys],
+                "annotation_point_keys": list(annotation_points_by_key.keys()),
                 "segment_labels": [str(label) for label in dataset.segment_labels],
                 "panels": panels_trace,
                 "question_format": "numeric_open",
@@ -1141,14 +1222,14 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "type": "small_multiple_aggregate",
                 "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
-                "evidence_values": [int(value) for value in dataset.evidence_values],
-                "evidence_point_keys": list(evidence_points_by_key.keys()),
+                "annotation_values": [int(value) for value in dataset.annotation_values],
+                "annotation_point_keys": list(annotation_points_by_key.keys()),
                 "calculation": dict(extras),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_point_map",
-                "keyed_point_map": dict(evidence_points_by_key),
-                "pixel_keyed_point_map": dict(evidence_points_by_key),
+                "keyed_point_map": dict(annotation_points_by_key),
+                "pixel_keyed_point_map": dict(annotation_points_by_key),
                 "point_set": list(point_set),
                 "pixel_point_set": list(point_set),
             },
@@ -1164,7 +1245,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1177,31 +1258,55 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
 
 
 @register_task
-class ChartsCompositionSmallMultiplesAggregateValuePublicTask(
+class ChartsCompositionSmallMultiplesConditionedPanelSumFromPercentTask(
     MergedChartQueryVariantTaskMixin,
     ChartsCompositionSmallMultiplesAggregateValueTask,
 ):
-    """Compute one sampled aggregate value from small-multiple composition panels."""
+    """Compute a conditioned panel sum from percent composition values."""
 
-    task_id = "task_charts__small_multiple__aggregate_value"
-    allowed_query_ids = AGGREGATE_QUERY_IDS
+    task_id = "task_charts__small_multiple__conditioned_panel_sum_from_percent"
+    allowed_query_ids = ("conditioned_panel_sum_from_percent",)
 
 
 @register_task
-class ChartsCompositionSmallMultiplesDifferenceValuePublicTask(
+class ChartsCompositionSmallMultiplesTopKBySegmentThenSumOtherSegmentCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsCompositionSmallMultiplesAggregateValueTask,
 ):
-    """Compute one sampled difference value from small-multiple composition panels."""
+    """Select panels by one segment ranking and sum another segment count."""
 
-    task_id = "task_charts__small_multiple__difference_value"
-    allowed_query_ids = DIFFERENCE_QUERY_IDS
+    task_id = "task_charts__small_multiple__top_k_by_segment_then_sum_other_segment_count"
+    allowed_query_ids = ("top_k_by_segment_then_sum_other_segment_count",)
+
+
+@register_task
+class ChartsCompositionSmallMultiplesAverageTopKMinusAverageBottomKTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsCompositionSmallMultiplesAggregateValueTask,
+):
+    """Compute the difference between top-k and bottom-k segment averages."""
+
+    task_id = "task_charts__small_multiple__average_top_k_minus_average_bottom_k"
+    allowed_query_ids = ("average_top_k_minus_average_bottom_k",)
+
+
+@register_task
+class ChartsCompositionSmallMultiplesCompositionShiftL1DistanceTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsCompositionSmallMultiplesAggregateValueTask,
+):
+    """Compute the L1 composition shift between two panels."""
+
+    task_id = "task_charts__small_multiple__composition_shift_l1_distance"
+    allowed_query_ids = ("composition_shift_l1_distance",)
 
 
 __all__ = [
     "AGGREGATE_QUERY_IDS",
+    "ChartsCompositionSmallMultiplesAverageTopKMinusAverageBottomKTask",
     "ChartsCompositionSmallMultiplesAggregateValueTask",
-    "ChartsCompositionSmallMultiplesAggregateValuePublicTask",
-    "ChartsCompositionSmallMultiplesDifferenceValuePublicTask",
+    "ChartsCompositionSmallMultiplesCompositionShiftL1DistanceTask",
+    "ChartsCompositionSmallMultiplesConditionedPanelSumFromPercentTask",
+    "ChartsCompositionSmallMultiplesTopKBySegmentThenSumOtherSegmentCountTask",
     "DIFFERENCE_QUERY_IDS",
 ]

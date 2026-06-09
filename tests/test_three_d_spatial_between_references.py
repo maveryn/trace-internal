@@ -7,9 +7,10 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.spatial.between_references import TASK_ID
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
-def test_between_references_answer_and_evidence() -> None:
+def test_between_references_answer_and_annotation() -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -43,10 +44,18 @@ def test_between_references_answer_and_evidence() -> None:
     assert reference_ids == {str(spec["object_id"]) for spec in context_specs}
     assert not reference_ids.intersection({str(spec["object_id"]) for spec in point_specs})
     assert all(spec["nameable_for_prompt"] for spec in context_specs)
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
-        output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]]
-    ]
+    answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == (
+        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    )
+    assert_option_panel_matches_candidates(
+        output,
+        point_specs,
+        answer_label=expected_labels[0],
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
 
     metrics = dict(trace["candidate_between_metrics_by_label"][expected_labels[0]])
     assert 0.30 <= float(metrics["t"]) <= 0.70
@@ -55,7 +64,6 @@ def test_between_references_answer_and_evidence() -> None:
     )
     assert trace["solver_trace"]["between_reference_labels"] == expected_labels
     assert trace["solver_trace"]["unique_between_answer"] is True
-    assert output.image.size == (1180, 900)
 
 
 def test_between_references_task_registered_in_three_d_taxonomy() -> None:

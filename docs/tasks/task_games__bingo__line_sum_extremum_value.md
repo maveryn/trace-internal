@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `bingo`
-3. Source task group: `bingo`
-4. Query id: `line_sum_extremum_value`
-5. Objective: Sum printed numbers in each completed bingo row or column on the sampled axis, then report the unique maximum or minimum sum.
+2. Task group: `bingo`
+3. Scene id: `bingo`
+4. Public task id: `task_games__bingo__line_sum_extremum_value`
+5. Supported `query_id` values: `line_sum_extremum_value`
+6. Answer schema: `integer_value`
+7. Annotation schema: `bbox_set`
+8. Program schema: `value(arg_extreme(lines, metric=sum(values(line)), direction=direction)); scene=bingo; scope=line_sum_extremum_value`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over the five cells in the completed line whose sum is the unique extremum.
-3. `line_sum_extremum_value` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games bingo-card renderer for its scene id.
-2. Prompt bundle: `games_bingo_v0`
-3. Generation samples 2-5 completed lines on the queried axis and rejects scenes where the selected extremum sum is tied.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Axis, extremum direction, visual style, and completed-line-count support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

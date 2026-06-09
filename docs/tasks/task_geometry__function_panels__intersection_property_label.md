@@ -4,26 +4,23 @@
 1. Domain: `geometry`
 2. Task group: `analytical`
 3. Scene id: `function_panels`
-4. Public query id: `default`
-5. Query id: `line_circle_tangent_label`, `line_circle_two_intersections_label`, or `circle_circle_two_intersections_label`
-6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+5. Query id: `circle_circle_two_intersections_label`, `line_circle_tangent_label`, `line_circle_two_intersections_label`
+6. Answer schema: `option_letter`
+7. Annotation schema: `bbox_set`
+
+## Program Contract
+- `label(select_panel(candidate_function_panels, primitive_pair_type, intersection_condition)); scene=function_panels; scope=intersection_property_label`
 
 ## Prompt Bundle
-- Bundle id: `geometry_analytical_intersection_property_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Choose the panel matching the requested intersection property.
-
-The public task wraps line-circle and circle-circle intersection-property queries over the same panel-grid scene. The selected query is retained only in `query_id` and trace diagnostics; it is not a public sampling unit.
-
-## Evidence
-Verifier evidence is projected from the same generated scene metadata used to compute the answer. Verifiers must not infer answer or evidence from pixels.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Sampling axes, scene/query IDs, prompt bundle IDs, and render choices must be recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/analytical.yaml`

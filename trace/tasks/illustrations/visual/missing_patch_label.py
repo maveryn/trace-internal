@@ -212,6 +212,10 @@ def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
     return (int(value[0]), int(value[1]), int(value[2]))
 
 
+def _style_trace(style: Mapping[str, Any]) -> Dict[str, Any]:
+    return {str(key): list(value) if isinstance(value, tuple) else value for key, value in style.items()}
+
+
 def _sample_frame_style(rng) -> Dict[str, Any]:
     style_id = str(rng.choice(tuple(FRAME_STYLES)))
     return {"style_id": style_id, **dict(FRAME_STYLES[style_id])}
@@ -385,7 +389,7 @@ class IllustrationsVisualMissingPatchLabelTask:
         )
         labels = OPTION_LABELS[:option_count]
         answer_label = labels[int(sample.correct_index)]
-        evidence_boxes = {
+        annotation_boxes = {
             "missing_region": list(hole_bbox),
             "selected_option": list(option_bboxes[str(answer_label)]),
         }
@@ -399,7 +403,7 @@ class IllustrationsVisualMissingPatchLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_missing_patch_label",
-                "evidence_hint_missing_patch_label",
+                "annotation_hint_missing_patch_label",
                 "json_example_missing_patch_label",
                 "json_example_answer_only_missing_patch_label",
             ],
@@ -410,7 +414,7 @@ class IllustrationsVisualMissingPatchLabelTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_missing_patch_label"]).format(option_labels=", ".join(labels)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_missing_patch_label"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_missing_patch_label"]),
             "json_example": str(prompt_defaults["json_example_missing_patch_label"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_missing_patch_label"]),
         }
@@ -423,8 +427,8 @@ class IllustrationsVisualMissingPatchLabelTask:
             query_key=str(sample.patch_mode),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -467,7 +471,7 @@ class IllustrationsVisualMissingPatchLabelTask:
                     "source_scene_id": str(source.source_scene_id),
                     "correct_transform": str(correct_transform),
                     "panel_grid": list(_option_grid_shape(int(option_count))),
-                    "frame_style": dict(frame_style),
+                    "frame_style": _style_trace(frame_style),
                     "label_font": dict(label_font),
                 },
             },
@@ -475,7 +479,7 @@ class IllustrationsVisualMissingPatchLabelTask:
                 "hole_bbox_px": list(hole_bbox),
                 "option_bboxes_px": dict(option_bboxes),
                 "correct_option_label": str(answer_label),
-                "evidence_bboxes_px": dict(evidence_boxes),
+                "annotation_bboxes_px": dict(annotation_boxes),
             },
             "execution_trace": {
                 "query_id": str(sample.patch_mode),
@@ -489,13 +493,13 @@ class IllustrationsVisualMissingPatchLabelTask:
                 "answer": str(answer_label),
                 "correct_option_label": str(answer_label),
             },
-            "projected_evidence": {"keyed_bbox_map": dict(evidence_boxes)},
+            "projected_annotation": {"keyed_bbox_map": dict(annotation_boxes)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
-            evidence_gt=TypedValue(type="keyed_bbox_map", value=dict(evidence_boxes)),
+            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_boxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

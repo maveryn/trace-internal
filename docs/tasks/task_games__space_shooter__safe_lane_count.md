@@ -2,22 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `space_shooter`
-3. Source task group: `space_shooter`
-4. Query id: `safe_lane_count`
-5. Objective: Count bottom lane pads with no enemy shot in that lane and no asteroid on the pad.
+2. Task group: `space_shooter`
+3. Scene id: `space_shooter`
+4. Public task id: `task_games__space_shooter__safe_lane_count`
+5. Supported `query_id` values: `safe_lane_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(lanes, lane_threat_count(lane)=0)); scene=space_shooter; scope=safe_lane_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over the safe bottom lane pads.
-3. `safe_lane_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games Space-shooter playfield renderer.
-2. Prompt bundle: `games_space_shooter_v0`
-3. The evidence is the visible bottom lane pads counted as safe. Lane guides in the shared renderer connect the pads to falling shots and blockers.
-4. The sampler keeps unrelated enemy ships in a sparse upper backdrop for this task; only falling enemy shots and asteroids on bottom pads determine pad safety.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Lane count, target answer, safe lane set, and visual style remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

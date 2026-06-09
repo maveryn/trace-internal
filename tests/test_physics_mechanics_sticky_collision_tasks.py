@@ -35,9 +35,9 @@ def test_physics_mechanics_sticky_collision_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "keyed_point_map"
 
-    assert set(out.evidence_gt.value) == {"A", "B", "A+B"}
+    assert set(out.annotation_gt.value) == {"A", "B", "A+B"}
 
     assert out.query_id == "direction_choice"
     assert trace["query_spec"]["query_id"] == "direction_choice"
@@ -49,18 +49,18 @@ def test_physics_mechanics_sticky_collision_direction_choice_contract() -> None:
 
     assert scenario["correct_option_letter"] == "D"
 
-    assert execution["evidence_entity_ids"] == [
+    assert execution["annotation_entity_ids"] == [
         "horizontal_puck",
         "vertical_puck",
         "stuck_pucks",
     ]
-    assert execution["evidence_key_by_entity_id"] == {
+    assert execution["annotation_key_by_entity_id"] == {
         "horizontal_puck": "A",
         "vertical_puck": "B",
         "stuck_pucks": "A+B",
     }
-    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_keyed_point_map"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
 
     assert "resultant_arrow_bbox_px" not in trace["render_map"]
 
@@ -101,18 +101,18 @@ def test_physics_mechanics_sticky_collision_component_contracts() -> None:
 
     assert horizontal.query_id == "velocity_component"
 
-    assert horizontal.evidence_gt.type == "keyed_point_map"
+    assert horizontal.annotation_gt.type == "keyed_point_map"
 
-    assert set(horizontal.evidence_gt.value) == {"A", "B", "A+B"}
+    assert set(horizontal.annotation_gt.value) == {"A", "B", "A+B"}
 
     assert horizontal.trace_payload["execution_trace"]["component_axis"] == "x"
 
-    assert horizontal.trace_payload["execution_trace"]["evidence_entity_ids"] == [
+    assert horizontal.trace_payload["execution_trace"]["annotation_entity_ids"] == [
         "horizontal_puck",
         "vertical_puck",
         "stuck_pucks",
     ]
-    assert horizontal.trace_payload["projected_evidence"]["keyed_point_map"] == horizontal.evidence_gt.value
+    assert horizontal.trace_payload["projected_annotation"]["keyed_point_map"] == horizontal.annotation_gt.value
 
     assert int(horizontal.trace_payload["execution_trace"]["final_vx"]) == -4
 
@@ -125,18 +125,18 @@ def test_physics_mechanics_sticky_collision_component_contracts() -> None:
 
     assert vertical.query_id == "velocity_component"
 
-    assert vertical.evidence_gt.type == "keyed_point_map"
+    assert vertical.annotation_gt.type == "keyed_point_map"
 
-    assert set(vertical.evidence_gt.value) == {"A", "B", "A+B"}
+    assert set(vertical.annotation_gt.value) == {"A", "B", "A+B"}
 
     assert vertical.trace_payload["execution_trace"]["component_axis"] == "y"
 
-    assert vertical.trace_payload["execution_trace"]["evidence_entity_ids"] == [
+    assert vertical.trace_payload["execution_trace"]["annotation_entity_ids"] == [
         "horizontal_puck",
         "vertical_puck",
         "stuck_pucks",
     ]
-    assert vertical.trace_payload["projected_evidence"]["keyed_point_map"] == vertical.evidence_gt.value
+    assert vertical.trace_payload["projected_annotation"]["keyed_point_map"] == vertical.annotation_gt.value
 
     assert int(vertical.trace_payload["execution_trace"]["final_vx"]) == -4
 
@@ -158,7 +158,7 @@ def test_physics_mechanics_sticky_collision_is_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 

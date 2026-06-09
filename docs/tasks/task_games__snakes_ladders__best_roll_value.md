@@ -4,14 +4,13 @@
 1. Domain: `games`
 2. Task group: `snakes_ladders`
 3. Scene id: `snakes_ladders`
-4. Query id: `best_roll_value`
-5. Objective: return the highest numbered final square reachable after exactly 1 or 2 rolls, where each roll result can be independently chosen from 1 to 6.
-6. Answer type: `integer`
-7. Evidence type: `bbox_set` over the final board square named by the answer.
+4. Public task id: `task_games__snakes_ladders__best_roll_value`
+5. Supported `query_id` values: `best_roll_value`
+6. Answer schema: `integer_value`
+7. Annotation schema: `bbox_set`
+8. Program schema: `argmax_value(roll_plans, transition_rule=jumps, objective=final_square_after_roll_plan(start_square, jumps, horizon_roll_count)); scene=snakes_ladders; scope=best_roll_value`
 
 ## Generation Notes
-1. The horizon is sampled as `1` or `2` rolls and shown in the side panel.
-2. The answer is sampled from `14..49`, bounded by the sampled board side; the token start square is chosen so the sampled final square is the highest reachable board position for the horizon.
-3. The scene uses the same 5 x 5, 6 x 6, or 7 x 7 Snakes and Ladders renderer as the other tasks.
-4. `best_roll_value` is retained as `query_id`.
-5. The board uses shared games-domain panel backgrounds, sampled fonts, layout jitter, and five scene-local board palettes.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

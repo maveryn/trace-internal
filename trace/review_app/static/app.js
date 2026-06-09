@@ -387,8 +387,330 @@ function setupTaskFeedbackToggle() {
   });
 }
 
+function setupSelectableTextLinks() {
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!event.target.closest("[data-selectable-text]")) {
+        return;
+      }
+      const selection = window.getSelection ? window.getSelection() : null;
+      if (selection && selection.toString().trim()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true,
+  );
+
+  document.addEventListener("dragstart", (event) => {
+    if (event.target.closest("[data-selectable-text]")) {
+      event.preventDefault();
+    }
+  });
+}
+
+function setupResourceTabs() {
+  const nav = document.querySelector("[data-resource-tabs]");
+  if (!nav) {
+    return;
+  }
+
+  const tabs = Array.from(nav.querySelectorAll("[data-resource-tab]"));
+  const sections = tabs
+    .map((tab) => document.getElementById(tab.getAttribute("data-resource-tab") || ""))
+    .filter(Boolean);
+  if (!tabs.length || !sections.length) {
+    return;
+  }
+
+  function setActive(sectionId) {
+    tabs.forEach((tab) => {
+      const active = tab.getAttribute("data-resource-tab") === sectionId;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-current", active ? "location" : "false");
+    });
+  }
+
+  function currentSectionId() {
+    const anchorY = Math.min(window.innerHeight * 0.32, 240);
+    let current = sections[0];
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top <= anchorY) {
+        current = section;
+      } else {
+        break;
+      }
+    }
+    return current.id;
+  }
+
+  let frame = 0;
+  function scheduleUpdate() {
+    if (frame) {
+      return;
+    }
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      setActive(currentSectionId());
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      setActive(tab.getAttribute("data-resource-tab") || "");
+    });
+  });
+  window.addEventListener("scroll", scheduleUpdate, { passive: true });
+  window.addEventListener("resize", scheduleUpdate);
+  window.addEventListener("hashchange", scheduleUpdate);
+  scheduleUpdate();
+}
+
+function setupIllustrationObjectReviewForms() {
+  const forms = Array.from(document.querySelectorAll("[data-illustration-review-form]"));
+  if (!forms.length) {
+    return;
+  }
+
+  const decisionClasses = ["approve", "remove", "improve", "unreviewed"];
+
+  function setSelectedDecision(form, decision) {
+    form.querySelectorAll(".illustration-object-decision-row label").forEach((label) => {
+      const input = label.querySelector('input[name="decision"]');
+      const selected = input && input.value === decision;
+      label.classList.toggle("selected", Boolean(selected));
+    });
+  }
+
+  function updateCount(decision, delta) {
+    const counter = document.querySelector(`[data-illustration-review-count="${decision}"]`);
+    if (!counter) {
+      return;
+    }
+    const current = Number.parseInt(counter.textContent || "0", 10);
+    counter.textContent = String(Math.max(0, (Number.isFinite(current) ? current : 0) + delta));
+  }
+
+  function updateCardDecision(card, decision, statusLabel) {
+    const previous = card.getAttribute("data-decision") || "unreviewed";
+    if (previous !== decision) {
+      updateCount(previous, -1);
+      updateCount(decision, 1);
+    }
+    card.setAttribute("data-decision", decision);
+    decisionClasses.forEach((name) => {
+      card.classList.toggle(`decision-${name}`, name === decision);
+    });
+
+    const status = card.querySelector("[data-illustration-object-status]");
+    if (status) {
+      decisionClasses.forEach((name) => status.classList.remove(name));
+      status.classList.add(decision);
+      status.textContent = statusLabel || decision;
+    }
+    const grid = card.closest(".illustration-object-grid");
+    const activeFilter = grid ? grid.getAttribute("data-selected-decision-filter") || "" : "";
+    if (activeFilter && activeFilter !== decision) {
+      updateCount("shown", -1);
+      card.remove();
+    }
+  }
+
+  forms.forEach((form) => {
+    form.querySelectorAll('input[name="decision"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        setSelectedDecision(form, input.value);
+      });
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button ? button.textContent : "";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Saving...";
+      }
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "fetch",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`save failed: ${response.status}`);
+        }
+        const payload = await response.json();
+        const card = form.closest("[data-illustration-object-card]");
+        if (card) {
+          updateCardDecision(card, payload.decision || "unreviewed", payload.status_label || "Unreviewed");
+        }
+        if (payload.review) {
+          const saved = form.querySelector("[data-illustration-review-saved]");
+          if (saved && payload.review.updated_at) {
+            saved.hidden = false;
+            saved.textContent = `Last saved ${payload.review.updated_at}`;
+          }
+          const updatedBy = form.querySelector('input[name="updated_by"]');
+          if (updatedBy && payload.review.updated_by !== undefined) {
+            updatedBy.value = payload.review.updated_by || "";
+          }
+        }
+        if (button) {
+          button.textContent = "Saved";
+          window.setTimeout(() => {
+            button.textContent = originalText || "Save";
+          }, 900);
+        }
+      } catch (error) {
+        console.error(error);
+        if (button) {
+          button.textContent = "Save failed";
+          window.setTimeout(() => {
+            button.textContent = originalText || "Save";
+          }, 1400);
+        }
+      } finally {
+        if (button) {
+          window.setTimeout(() => {
+            button.disabled = false;
+          }, 120);
+        }
+      }
+    });
+  });
+}
+
+function setupThreeDObjectReviewForms() {
+  const forms = Array.from(document.querySelectorAll("[data-three-d-review-form]"));
+  if (!forms.length) {
+    return;
+  }
+
+  const decisionClasses = ["approve", "remove", "improve", "unreviewed"];
+
+  function setSelectedDecision(form, decision) {
+    form.querySelectorAll(".three-d-object-decision-row label").forEach((label) => {
+      const input = label.querySelector('input[name="decision"]');
+      const selected = input && input.value === decision;
+      label.classList.toggle("selected", Boolean(selected));
+    });
+  }
+
+  function updateCount(decision, delta) {
+    const counter = document.querySelector(`[data-three-d-review-count="${decision}"]`);
+    if (!counter) {
+      return;
+    }
+    const current = Number.parseInt(counter.textContent || "0", 10);
+    counter.textContent = String(Math.max(0, (Number.isFinite(current) ? current : 0) + delta));
+  }
+
+  function updateCardDecision(card, decision, statusLabel) {
+    const previous = card.getAttribute("data-decision") || "unreviewed";
+    if (previous !== decision) {
+      updateCount(previous, -1);
+      updateCount(decision, 1);
+    }
+    card.setAttribute("data-decision", decision);
+    decisionClasses.forEach((name) => {
+      card.classList.toggle(`decision-${name}`, name === decision);
+    });
+
+    const status = card.querySelector("[data-three-d-object-status]");
+    if (status) {
+      decisionClasses.forEach((name) => status.classList.remove(name));
+      status.classList.add(decision);
+      status.textContent = statusLabel || decision;
+    }
+    const grid = card.closest(".three-d-object-grid");
+    const activeFilter = grid ? grid.getAttribute("data-selected-decision-filter") || "" : "";
+    if (activeFilter && activeFilter !== decision) {
+      updateCount("shown", -1);
+      card.remove();
+    }
+  }
+
+  forms.forEach((form) => {
+    form.querySelectorAll('input[name="decision"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        setSelectedDecision(form, input.value);
+      });
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button ? button.textContent : "";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Saving...";
+      }
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "fetch",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`save failed: ${response.status}`);
+        }
+        const payload = await response.json();
+        const card = form.closest("[data-three-d-object-card]");
+        if (card) {
+          updateCardDecision(card, payload.decision || "unreviewed", payload.status_label || "Unreviewed");
+        }
+        if (payload.review) {
+          const saved = form.querySelector("[data-three-d-review-saved]");
+          if (saved && payload.review.updated_at) {
+            saved.hidden = false;
+            saved.textContent = `Last saved ${payload.review.updated_at}`;
+          }
+          const updatedBy = form.querySelector('input[name="updated_by"]');
+          if (updatedBy && payload.review.updated_by !== undefined) {
+            updatedBy.value = payload.review.updated_by || "";
+          }
+        }
+        if (button) {
+          button.textContent = "Saved";
+          window.setTimeout(() => {
+            button.textContent = originalText || "Save";
+          }, 900);
+        }
+      } catch (error) {
+        console.error(error);
+        if (button) {
+          button.textContent = "Save failed";
+          window.setTimeout(() => {
+            button.textContent = originalText || "Save";
+          }, 1400);
+        }
+      } finally {
+        if (button) {
+          window.setTimeout(() => {
+            button.disabled = false;
+          }, 120);
+        }
+      }
+    });
+  });
+}
+
 setupThemeSwitch();
 setupSearchSuggestions();
 setupPreviewSwitch();
 setupOpenFeedbackFilter();
 setupTaskFeedbackToggle();
+setupSelectableTextLinks();
+setupResourceTabs();
+setupIllustrationObjectReviewForms();
+setupThreeDObjectReviewForms();

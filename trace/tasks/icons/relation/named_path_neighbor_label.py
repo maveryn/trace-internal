@@ -24,7 +24,7 @@ from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import resolve_variant
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
-from ..shared.evidence import keyed_bbox_map_evidence
+from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -984,7 +984,7 @@ class IconsRelationNamedPathNeighborLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 f"question_text_{scene_payload.query_id}",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -1000,13 +1000,13 @@ class IconsRelationNamedPathNeighborLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -1020,7 +1020,7 @@ class IconsRelationNamedPathNeighborLabelTask:
         answer_icon = icons_by_position[int(scene_payload.answer_position_index)]
         if str(answer_icon.label) != str(scene_payload.answer_label):
             raise RuntimeError("rendered answer icon label does not match answer label")
-        evidence_artifacts = keyed_bbox_map_evidence(
+        annotation_artifacts = keyed_bbox_map_annotation(
             {
                 "queried_icon": query_icon.bbox_xyxy,
                 "selected_neighbor": answer_icon.bbox_xyxy,
@@ -1028,9 +1028,9 @@ class IconsRelationNamedPathNeighborLabelTask:
         )
         serialized_icons = [_serialize_path_icon(icon) for icon in scene_payload.icons]
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=dict(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=dict(annotation_artifacts["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -1151,13 +1151,13 @@ class IconsRelationNamedPathNeighborLabelTask:
                 "answer_instance_id": str(answer_icon.instance_id),
                 "answer_position_index": int(scene_payload.answer_position_index),
                 "answer_label": str(scene_payload.answer_label),
-                "evidence_roles": {
+                "annotation_roles": {
                     "queried_icon": str(query_icon.instance_id),
                     "selected_neighbor": str(answer_icon.instance_id),
                 },
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
                 "items": [
                     {"role": "query_occurrence", "instance_id": str(query_icon.instance_id), "bbox_xyxy": list(query_icon.bbox_xyxy)},
                     {"role": "answer_option", "instance_id": str(answer_icon.instance_id), "bbox_xyxy": list(answer_icon.bbox_xyxy)},
@@ -1167,7 +1167,7 @@ class IconsRelationNamedPathNeighborLabelTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -19,14 +19,14 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
    - output mode.
 2. Keep exactly 5 strong variants per required template list.
 3. Use static prompt slots from bundle/config data, not task-module constants.
-4. Make every JSON example contract-valid for the active task and evidence type.
+4. Make every JSON example contract-valid for the active task and annotation type.
 5. Record prompt metadata in trace payload.
 
 ## Prompt checks
 - No hardcoded user-facing prompt text in task modules.
-- `answer_only` and `answer_and_evidence` must both have explicit JSON response instructions.
+- `answer_only` and `answer_and_annotation` must both have explicit JSON response instructions.
 - If a task mentions a color, pass it as `name [#RRGGBB]` through the shared formatter.
-- If query branches change evidence structure or semantics, examples must be query-aware too.
+- If query branches change annotation structure or semantics, examples must be query-aware too.
 - Keep task-layer wording semantic; do not duplicate formatting instructions already carried by scene or mode templates.
 
 ## Handoff

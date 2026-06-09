@@ -1,5 +1,10 @@
 # TRACE Task-Unit Policy
 
+`docs/core/TRACE_TAXONOMY_DESIGN.md` is the canonical policy for taxonomy
+design and program-contract refinement. This file summarizes the task-unit
+decision rules; when in doubt, use the concrete-program checklist in the core
+taxonomy design doc.
+
 This document defines what should count as one TRACE task.
 
 Use it when:
@@ -16,110 +21,89 @@ Use it when:
 4. So the key design question is not just “is this a good question?” but “is this the right **task unit**?”
 
 ## 2) Core definition
-1. A TRACE task should represent **one stable visual-grounding family**.
+1. A TRACE task should represent **one stable visual-grounding contract**.
 2. A task is not just a theme bucket like “cards”, “tables”, or “physics”.
-3. A task should correspond to one reasonably uniform perceptual contract:
-   - what the model must look at,
-   - what kind of visual search it performs,
-   - what kind of witness/evidence supports the answer,
-   - and what kind of scene grammar it sees repeatedly.
-4. Public taxonomy identifies this as `domain -> scene_id -> task_id`.
-5. Source `task_group` remains an implementation/config grouping during the transition, but it is not the public taxonomy unit.
-6. Use `query_id` for task-internal branch identity and replay selectors.
+3. Public taxonomy identifies tasks as `domain -> scene_id -> task_id`, where
+   active public ids use `task_<domain>__<scene_id>__<task_slug>`.
+4. `domain + scene_id` is the renderer/image axis. It defines the scene
+   contract: visual grammar, visible object vocabulary, nonsemantic style
+   support, and any stable query-facing view contract.
+5. `task_slug` is the reasoning/output axis. It is derived from one task
+   contract over that scene.
+6. Source `task_group` remains an implementation/config grouping during the
+   transition, but it is not the public taxonomy unit.
+7. Use `query_id` only for task-internal branch grouping and replay selectors.
 
 ## 2.1) Hard Task Boundary
 
-A public task is one stable combination of the following four contract axes:
+A public task is valid when it has one stable scene contract and one stable
+task contract.
 
-1. **Scene grammar** — the repeated visual setup and rendering grammar.
-2. **Primary witness kind** — the semantic object type that evidence points to,
-   such as a node set, edge set, ordered path, table cells, chart marks, map
-   regions, option panel, or page element boxes.
-3. **Visual search pattern** — the perceptual job needed to locate the support,
-   such as finding qualifying objects, tracing one path, selecting one option,
-   ranking visible marks, or aggregating a named group of cells/regions.
-4. **Algorithmic/objective family** — the domain-level problem family applied
-   after the visual support is located.
+The task contract has exactly three required fields:
 
-Merge tasks only when all four axes match and the difference can be expressed
-as a task-local `query_id` operator or parameter. If any axis differs, the
-default decision is **keep separate**, not "needs review".
+1. **Answer schema** — the prompt-facing answer type and shape, such as
+   integer count, integer value, one-decimal numeric value, string label,
+   option letter, or reduced fraction.
+2. **Annotation schema** — the prompt-facing annotation type and semantic witness
+   structure, such as unordered object bboxes, ordered path points, or keyed
+   role-bound witnesses.
+3. **Program schema** — the shallowest concrete reasoning-program skeleton
+   that preserves the intermediate objects required to answer, such as
+   selected object set, scoped object set, ranked list, path, reachable set,
+   aggregate, legal move set, counterfactual scene state, or formula-derived
+   unknown. It must name the actual candidate set, operand roles, derived
+   computation, final operator, output binding, and annotation role template.
+   Generic placeholders such as `select_by_rank(items, metric, rank)` are
+   draft-only and cannot justify an accepted merge/split decision.
 
-Objective family is intentionally **coarser than an individual subroutine**.
-Use the smallest named domain concept that still describes the whole task
-without becoming a theme bucket. A task may contain several `query_id`s with
-different rationale templates when they are branches of one coherent objective
-family over the same scene and witness contract.
-
-Examples of coherent objective families:
-
-1. Music-staff `pitch/interval` reading may include note naming, interval
-   naming, same-pitch checks, and transposition checks.
-2. Music-staff `key/scale` reasoning may include key-signature identification,
-   scale-degree function, and scale validation.
-3. Music-staff `chord/harmony` reasoning may include chord quality, inversion,
-   and roman-numeral labeling.
-4. Arithmetic-constraint missing-value puzzles may include several visible
-   rule templates when the scene remains a compact rule-bearing arithmetic
-   diagram with one missing value.
-
-Examples of different objective families:
-
-1. Music key/scale reasoning vs visible bar counting.
-2. Chord-label reasoning vs dominant-chord counting.
-3. Path length between hierarchy nodes vs subtree descendant counting.
-4. Shortest path vs longest path in a graph.
-5. BST search/insert path operation vs heap-property violation scan.
+Merge tasks only when the scene contract remains stable and all three task
+contract fields match. If any task-contract field differs, or if one task would
+mix materially different query-facing views, the default decision is **keep
+separate**, not "needs review".
 
 Examples:
 
-1. Highest vs lowest over the same visible chart marks is usually one objective
-   family with mirrored query parameters.
-2. Above vs below a threshold over the same object set is usually one predicate
-   family with mirrored query parameters.
-3. Shortest path vs longest path are different algorithmic/objective families,
-   even if both use an ordered path as evidence.
-4. Node-color count vs edge-color count are different primary witness kinds.
-5. Articulation-point count vs bridge-edge count are different witness kinds and
-   different graph-objective families.
-6. Max-flow value vs minimum-cut edge count are different objective contracts,
-   even though they share a flow-network scene.
+1. Highest vs lowest over the same visible chart marks can stay one task when
+   both are parameters of the same ranked-selection program schema.
+2. Above vs below a threshold over the same object set can stay one task when
+   both are one-bound predicate parameters.
+3. Threshold count and interval count should split because one uses a
+   one-bound predicate and the other uses a two-bound predicate.
+4. Shortest path vs longest path should split when they require different
+   path-optimization programs, even if both use ordered path annotation.
+5. Node-color count vs edge-color count should split when the annotation witness
+   object changes from nodes to edges.
+6. Max-flow value vs minimum-cut edge count should split because the program
+   schema and annotation/answer contract differ, even though they share a
+   flow-network scene.
 
 Use a "blocked/needs inspection" outcome only when the available docs, code, or
-sampled outputs are inconsistent or insufficient to determine the four axes.
-Do not use a review bucket merely because two tasks are conceptually related or
-share a scene.
+sampled outputs are inconsistent or insufficient to determine the scene
+contract or task contract. Do not use a review bucket merely because two tasks
+are conceptually related or share a scene.
 
 ## 2.2) Query ID Definition
 
 Use **query id** as the human-facing term and `query_id` as the canonical
 metadata field.
 
-A query id is the smallest task-internal semantic branch that needs a
-distinct reasoning/rationale template family. This includes changes to the
-requested operation, answer transform, witness role, ordering rule, filtering
-predicate, traversal rule, comparison target, or evidence explanation.
+A query id is an implementation/review key for task-internal branches and
+replay. It is not part of public task identity. In the target design, query ids
+should be derivable from parameter axes inside a stable task contract.
 
 Rules:
 
-1. Every active `query_id` must have a corresponding rationale template family
-   for each supported output mode and detail level once rationale targets are
-   enabled for that task.
-2. If a branch needs a different rationale template family, give it a distinct
-   `query_id`.
-3. If two branches differ only by slot values inside the same rationale
-   structure, they may remain one `query_id`. Examples include mirrored words
-   like highest/lowest or before/after only when the same template can express
-   both with a parameter.
-4. Visual/rendering/style variants are not query ids unless they change the
-   reasoning/rationale template family.
-5. Difficulty knobs, counts, labels, colors, and sampled values are not query
-   variants unless they change the reasoning/rationale template family.
-6. Different algorithms or objective families are not query ids just
-   because the scene, answer type, or evidence type is shared. For example,
-   shortest path and longest path should be separate public tasks unless the
-   domain intentionally defines a broader objective family that preserves one
-   solver/rationale structure.
+1. Query ids may name mirrored directions, predicate directions, rank
+   parameters, target attributes, or other bounded branches inside one stable
+   program schema.
+2. Query ids must not hide different answer schemas, annotation schemas, program
+   schemas, or query-facing view contracts.
+3. Visual/rendering/style choices are not query ids unless they change the
+   task contract.
+4. Difficulty knobs, counts, labels, colors, and sampled values are not query
+   ids unless they are needed as replay keys for a documented task branch.
+5. Different program schemas are not query ids just because the scene, answer
+   type, or annotation type is shared.
 
 ## 3) What should stay stable within one task
 The following should usually remain broadly stable inside a single task:
@@ -142,11 +126,13 @@ The following should usually remain broadly stable inside a single task:
    - labeled candidates,
    - graph nodes/edges,
    - etc.
-2. If one variant reasons over subsets of objects and another reasons over ordered sequences of those objects, that is often a sign of a new task.
+2. If one branch reasons over subsets of objects and another reasons over
+   ordered sequences of those objects, that is often a sign of a new task.
 
 ### C. Witness semantics
-1. Public evidence should usually refer to the same semantic kind of witness across variants.
-2. Evidence type alone does **not** decide the boundary, but stable witness semantics are a strong sign of a coherent task.
+1. Public annotation should usually refer to the same semantic kind of witness
+   across branches.
+2. Annotation type alone does **not** decide the boundary, but stable witness semantics are a strong sign of a coherent task.
 3. Examples of stable witness semantics:
    - qualifying object boxes,
    - winning option panel,
@@ -155,7 +141,8 @@ The following should usually remain broadly stable inside a single task:
    - matching labels.
 
 ### D. Visual search pattern
-1. The model should be doing roughly the same kind of perceptual job across variants.
+1. The model should be doing roughly the same kind of perceptual job across
+   task-internal branches.
 2. Examples:
    - find qualifying items,
    - compare a few named values,
@@ -165,29 +152,31 @@ The following should usually remain broadly stable inside a single task:
 
 ## 4) What may vary inside one task
 These differences do **not** automatically require a new task:
-1. scene chrome / style variants,
+1. scene chrome / style choices,
 2. object identities, colors, counts, and placements,
 3. local arithmetic or logical reasoning over the same support set,
 4. multiple query ids over the same witness semantics,
 5. being text-heavy, as long as the text must still be visually located/read from the image,
 6. reasoning difficulty.
 
-In other words: a task does **not** need equal difficulty across variants, but it should keep one stable grounding contract.
+In other words: a task does **not** need equal difficulty across branches, but
+it should keep one stable grounding contract.
 
-## 5) New variant vs new task
+## 5) New query branch vs new task
 
 ### Add a new `query_id` / query id when:
 1. the same scene scaffold still works,
 2. the same unit of attention still matters,
 3. the same witness semantics still apply,
 4. the model is doing roughly the same visual search,
-5. the same algorithmic/objective family still applies,
+5. the same answer schema, annotation schema, and program schema still apply,
 6. the new query is a parameter, mirror direction, threshold, ordering choice,
-   or local answer transform inside that family.
+   or local answer transform inside that program schema.
 
 Examples:
 1. adding more unordered card-qualification queries inside one hand-based card task,
-2. adding more threshold/interval conditions inside one single-column table-counting task,
+2. adding above/below threshold directions inside one single-column
+   threshold-count task,
 3. adding more clock readout offsets inside one single-clock task.
 4. adding highest/lowest or kth-highest/kth-lowest mirrors over the same
    located chart marks.
@@ -196,8 +185,8 @@ Examples:
 1. the scene grammar changes materially,
 2. the witness semantics change materially,
 3. the visual search pattern changes materially,
-4. the algorithmic/objective family changes materially,
-5. the new family has a different notion of what the “relevant object” is,
+4. the program schema changes materially,
+5. the new program has a different notion of what the “relevant object” is,
 6. the same broad theme now hides multiple different perceptual contracts.
 
 Common signals:
@@ -209,20 +198,20 @@ Common signals:
    - legal moves vs result of one marked move
 4. **one interaction grammar vs another**
    - row rule checking vs 2D grid rule checking
-5. **different algorithmic objective**
+5. **different program schema**
    - shortest path vs longest path
    - path traversal vs topological ordering
    - MST vs max flow
    - articulation points vs bridge edges
 
-## 6) Different evidence is a signal, not a rule
-1. Different evidence formats or evidence scopes often reveal that a task is over-broad.
-2. But evidence differences alone do **not** force a split.
+## 6) Different annotation is a signal, not a rule
+1. Different annotation formats or annotation scopes often reveal that a task is over-broad.
+2. But annotation differences alone do **not** force a split.
 3. The real question is whether the underlying perceptual contract changed.
 
 Good mental model:
-1. if evidence differs **because the grounding job changed**, split pressure is real;
-2. if evidence differs only slightly while the visual job remains the same, the task can stay unified.
+1. if annotation differs **because the grounding job changed**, split pressure is real;
+2. if annotation differs only slightly while the visual job remains the same, the task can stay unified.
 
 ## 7) Split now vs split later
 Not every split candidate should be split immediately.
@@ -246,16 +235,15 @@ This matters especially in domains like `games`, where different games may natur
 Merge only when two task ids are effectively the same sampling unit.
 
 Required merge conditions:
-1. same scene grammar,
-2. same primary witness kind,
-3. same visual search pattern,
-4. same algorithmic/objective family,
-5. same answer/evidence role at the contract level,
-6. only query-parameter, mirror-operator, threshold, ordering, or local
+1. same scene contract, including stable query-facing view contract,
+2. same answer schema,
+3. same annotation schema,
+4. same program schema,
+5. only query-parameter, mirror-operator, threshold, ordering, or local
    answer-transform differences separate them.
 
 Do **not** merge just because two tasks come from the same theme, scene, domain,
-answer type, or evidence type. If two tasks are related but fail any required
+answer type, or annotation type. If two tasks are related but fail any required
 merge condition, mark them **keep separate** unless sampled outputs or docs are
 inconsistent enough to block classification.
 
@@ -281,8 +269,8 @@ inconsistent enough to block classification.
 When deciding whether something is one task or multiple tasks, ask:
 1. Is the model looking at the same kind of thing each time?
 2. Is it performing the same kind of visual search?
-3. Would the public evidence still mean the same kind of witness?
-4. Is the same algorithmic/objective family being used?
+3. Would the public annotation still mean the same kind of witness?
+4. Is the same program schema being used?
 5. Does repeated sampling from this task feel like one grounded family rather than several bundled together?
 6. If split, would both children still be viable standalone tasks?
 

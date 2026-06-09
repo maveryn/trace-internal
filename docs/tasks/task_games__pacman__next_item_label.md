@@ -4,12 +4,13 @@
 1. Domain: `games`
 2. Task group: `pacman`
 3. Scene id: `pacman`
-4. Query id: `next_item_label`
-5. Objective: identify the first labeled bonus item reached when following the highlighted route from Pac-Man.
-6. Answer type: `string`.
-7. Evidence type: `point_set` with one point at the selected bonus item center.
+4. Public task id: `task_games__pacman__next_item_label`
+5. Supported `query_id` values: `next_item_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `point_set`
+8. Program schema: `label(first_item_on_route(route, items)); scene=pacman; scope=next_item_label`
 
 ## Generation Notes
-1. Labeled bonus items use labels `A..F`, with `5..6` items shown.
-2. The target bonus item is placed before all other labeled bonus items along the highlighted route.
-3. Other labeled bonus items may appear later on the route or off the route as distractors.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

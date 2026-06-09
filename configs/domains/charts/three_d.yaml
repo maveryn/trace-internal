@@ -12,6 +12,12 @@ generation:
     time_count_max: 7
     panel_count_min: 4
     panel_count_max: 6
+    panel_label_variant_weights:
+      named_compact: 1.0
+      technical_topics: 1.0
+      condition_labels: 0.75
+      temporal_sequence: 0.25
+      report_topics: 0.5
     query_id_weights:
       reference_nearest_label: 1.0
       surface_extremum_label: 1.0
@@ -36,10 +42,14 @@ rendering:
     plot_margin_top_px: 98
     plot_margin_bottom_px: 132
     panel_gap_px: 30
-    point_radius_px: 9
-    line_width_px: 5
-    axis_line_width_px: 3
-    grid_line_width_px: 2
+    point_radius_px_min: 6
+    point_radius_px_max: 9
+    line_width_px_min: 3
+    line_width_px_max: 5
+    axis_line_width_px_min: 2
+    axis_line_width_px_max: 3
+    grid_line_width_px_min: 1
+    grid_line_width_px_max: 2
     tick_font_size_px: 18
     label_font_size_px: 24
     title_font_size_px: 30
@@ -107,13 +117,13 @@ prompt:
     bundle_id: charts_three_d_v0
     scene_key: surface_3d
     task_key: three_d_chart_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint_label: set "answer" to the requested chart label as a string
     answer_hint_count: set "answer" to the requested count as an integer
-    evidence_hint: 'set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around only the supporting witness marks: the answer panel for panel questions, the answer point marker for nearest-point questions, the answer surface-cell marker for surface extrema, or the first and last point markers for series-trend questions'
-    json_example_label: '{"evidence":[[330,210,356,236]],"answer":"K"}'
-    json_example_count: '{"evidence":[[220,360,238,378],[310,296,328,314]],"answer":2}'
-    json_example_answer_only_label: '{"answer":"K"}'
+    annotation_hint: 'set "annotation" to an array of [x0,y0,x1,y1] bounding boxes around only the supporting witness marks: the answer panel for panel questions, the answer point marker for nearest-point questions, the answer surface-cell marker for surface extrema, or the first and last point markers for series-trend questions'
+    json_example_label: '{"annotation":[[330,210,356,236]],"answer":"Haidon"}'
+    json_example_count: '{"annotation":[[220,360,238,378],[310,296,328,314]],"answer":2}'
+    json_example_answer_only_label: '{"answer":"Haidon"}'
     json_example_answer_only_count: '{"answer":2}'
     object_description: one or more synthetic 3D chart panels

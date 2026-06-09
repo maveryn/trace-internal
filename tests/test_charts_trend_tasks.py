@@ -6,7 +6,12 @@ import json
 
 import pytest
 
-from trace.tasks.charts.trend.value import ChartsTrendValueTask
+from trace.tasks.charts.trend.value import (
+    ChartsTrendObservedThresholdCrossingLabelTask,
+    ChartsTrendProjectedThresholdCrossingLabelTask,
+    ChartsTrendValueTask,
+)
+from trace.tasks.registry import create_task, list_default_task_ids
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -100,22 +105,22 @@ def test_chart_trend_variants_match_contract() -> None:
 
         labels = [str(label) for label in execution["labels"]]
         values = [int(value) for value in execution["values"]]
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
+        annotation_points = [list(point) for point in out.annotation_gt.value]
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "point_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        assert evidence_labels == sorted(evidence_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert "label_set" not in trace["projected_evidence"]
-        assert len(evidence_points) == len(evidence_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
-        for x_coord, y_coord in evidence_points:
+        assert annotation_labels == sorted(annotation_labels)
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert "label_set" not in trace["projected_annotation"]
+        assert len(annotation_points) == len(annotation_labels)
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert str(trace["query_spec"]["query_id"]) == str(query_id)
@@ -136,7 +141,7 @@ def test_chart_trend_variants_match_contract() -> None:
             assert str(query_id) == "longest_monotone_streak"
             assert str(execution["streak_direction"]) == "decreasing"
             expected = _longest_run_labels(labels, values, increasing=False)
-        assert evidence_labels == expected
+        assert annotation_labels == expected
         assert int(out.answer_gt.value) == int(len(expected))
         assert int(out.answer_gt.value) == int(execution["answer_value"])
 
@@ -198,9 +203,9 @@ def test_chart_trend_supports_all_ordered_scene_variants() -> None:
 def test_chart_trend_prompt_examples_match_selected_variant() -> None:
     task = ChartsTrendValueTask()
     expected = {
-        "turning_point_count": {"evidence": [[220, 180], [520, 210]], "answer": 2},
+        "turning_point_count": {"annotation": [[220, 180], [520, 210]], "answer": 2},
         "longest_monotone_streak": {
-            "evidence": [[180, 420], [300, 350], [420, 260], [540, 170]],
+            "annotation": [[180, 420], [300, 350], [420, 260], [540, 170]],
             "answer": 4,
         },
     }
@@ -210,9 +215,9 @@ def test_chart_trend_prompt_examples_match_selected_variant() -> None:
     }
     for index, query_id in enumerate(expected, start=16050):
         out = task.generate(index, params={"query_id": query_id, **params_by_variant[query_id]}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -223,7 +228,7 @@ def test_chart_trend_task_is_deterministic() -> None:
     out_b = task.generate(16061, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -261,7 +266,7 @@ def test_chart_trend_supports_zero_turning_point_answers() -> None:
             max_attempts=10,
         )
         assert int(out.answer_gt.value) == 0
-        assert list(out.evidence_gt.value) == []
+        assert list(out.annotation_gt.value) == []
 
 
 def test_chart_trend_supports_explicit_mark_count_10() -> None:
@@ -318,15 +323,15 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
         threshold = int(execution["threshold"])
         comparison = str(execution["comparison"])
         answer_index = int(execution["answer_index"])
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
-        ordered_evidence_labels = [str(label) for label in execution["ordered_evidence_labels"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
+        ordered_annotation_labels = [str(label) for label in execution["ordered_annotation_labels"]]
+        annotation_points = [list(point) for point in out.annotation_gt.value]
 
         assert str(out.query_id) == "threshold_crossing"
         assert str(execution["crossing_mode"]) == str(crossing_mode)
         assert str(execution["crossing_direction"]) == str(crossing_direction)
-        assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "point_set"
+        assert out.answer_gt.type == "string"
+        assert out.annotation_gt.type == "point_set"
         assert str(out.answer_gt.value) == str(labels[int(answer_index)])
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(trace["render_spec"]["scene_variant"]) == str(scene_variant)
@@ -336,15 +341,15 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
         }
         assert str(threshold) in str(out.prompt)
         assert "red dashed" not in str(out.prompt).lower()
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-        assert "point_sequence" not in trace["projected_evidence"]
-        assert "pixel_point_sequence" not in trace["projected_evidence"]
-        assert "label_set" not in trace["projected_evidence"]
-        assert "ordered_label_set" not in trace["projected_evidence"]
-        assert len(evidence_points) == len(ordered_evidence_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_points)
-        for x_coord, y_coord in evidence_points:
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+        assert "point_sequence" not in trace["projected_annotation"]
+        assert "pixel_point_sequence" not in trace["projected_annotation"]
+        assert "label_set" not in trace["projected_annotation"]
+        assert "ordered_label_set" not in trace["projected_annotation"]
+        assert len(annotation_points) == len(ordered_annotation_labels)
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_points)
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
@@ -387,7 +392,7 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
             assert all(str(entity["entity_type"]) == "future_label_slot" for entity in projected_entities.values())
             assert all(bool(entity["attrs"]["visible"]) is False for entity in projected_entities.values())
             assert all("value" not in entity["attrs"] for entity in projected_entities.values())
-            expected_evidence = set(labels[int(first_projected_index) - 2: int(answer_index) + 1])
+            expected_annotation = set(labels[int(first_projected_index) - 2: int(answer_index) + 1])
         else:
             expected_index = _first_crossing_index(
                 values,
@@ -396,9 +401,63 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
             )
             assert int(answer_index) == int(expected_index)
             assert not execution["projected_labels"]
-            expected_evidence = set(labels[: int(answer_index) + 1])
-        assert set(evidence_labels) == expected_evidence
-        assert set(ordered_evidence_labels) == expected_evidence
+            expected_annotation = set(labels[: int(answer_index) + 1])
+        assert set(annotation_labels) == expected_annotation
+        assert set(ordered_annotation_labels) == expected_annotation
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "task_id", "expected_mode", "rejected_mode"),
+    (
+        (
+            ChartsTrendObservedThresholdCrossingLabelTask,
+            "task_charts__single_series__observed_threshold_crossing_label",
+            "observed",
+            "linear_projection",
+        ),
+        (
+            ChartsTrendProjectedThresholdCrossingLabelTask,
+            "task_charts__single_series__projected_threshold_crossing_label",
+            "linear_projection",
+            "observed",
+        ),
+    ),
+)
+def test_chart_trend_threshold_crossing_public_tasks_fix_crossing_mode(
+    task_cls: type,
+    task_id: str,
+    expected_mode: str,
+    rejected_mode: str,
+) -> None:
+    task = task_cls()
+    assert task_id in list_default_task_ids()
+
+    out = task.generate(
+        16110,
+        params={"crossing_direction": "above", "scene_variant": "line"},
+        max_attempts=10,
+    )
+    trace = out.trace_payload
+
+    assert str(out.query_id) == "threshold_crossing"
+    assert str(trace["execution_trace"]["crossing_mode"]) == str(expected_mode)
+    assert str(trace["query_spec"]["params"]["crossing_mode"]) == str(expected_mode)
+    assert trace["query_spec"]["params"]["crossing_mode_probabilities"] == {
+        "linear_projection": 1.0 if str(expected_mode) == "linear_projection" else 0.0,
+        "observed": 1.0 if str(expected_mode) == "observed" else 0.0,
+    }
+
+    with pytest.raises(ValueError):
+        task.generate(
+            16111,
+            params={"crossing_mode": str(rejected_mode)},
+            max_attempts=10,
+        )
+
+
+def test_chart_trend_threshold_crossing_mixed_public_task_is_retired() -> None:
+    with pytest.raises(KeyError):
+        create_task("task_charts__single_series__threshold_crossing_label")
 
 
 def test_chart_trend_threshold_crossing_supports_scene_variants_and_rejects_incompatible_ones() -> None:
@@ -432,10 +491,10 @@ def test_chart_trend_threshold_crossing_supports_scene_variants_and_rejects_inco
 def test_chart_trend_threshold_crossing_prompt_examples_match_selected_variant() -> None:
     task = ChartsTrendValueTask()
     cases = (
-        ("observed", "above", {"evidence": [[160, 420], [260, 360], [360, 240]], "answer": "C"}),
-        ("observed", "below", {"evidence": [[180, 180], [280, 260], [380, 390]], "answer": "F"}),
-        ("linear_projection", "above", {"evidence": [[300, 320], [420, 260], [540, 180]], "answer": "M"}),
-        ("linear_projection", "below", {"evidence": [[300, 180], [420, 260], [540, 340]], "answer": "Q"}),
+        ("observed", "above", {"annotation": [[160, 420], [260, 360], [360, 240]], "answer": "C4A7"}),
+        ("observed", "below", {"annotation": [[180, 180], [280, 260], [380, 390]], "answer": "F8Q2"}),
+        ("linear_projection", "above", {"annotation": [[300, 320], [420, 260], [540, 180]], "answer": "M6P4"}),
+        ("linear_projection", "below", {"annotation": [[300, 180], [420, 260], [540, 340]], "answer": "Q9R2"}),
     )
     for index, (crossing_mode, crossing_direction, expected) in enumerate(cases, start=16150):
         out = task.generate(
@@ -447,9 +506,9 @@ def test_chart_trend_threshold_crossing_prompt_examples_match_selected_variant()
             },
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected
+        assert answer_and_annotation == expected
         assert answer_only == {"answer": expected["answer"]}
 
 
@@ -474,8 +533,8 @@ def test_chart_trend_threshold_crossing_projection_supports_two_observed_marks()
     assert int(execution["projection_count"]) == 6
     assert len(execution["observed_labels"]) == 2
     assert len(execution["projected_labels"]) == 6
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == len(execution["ordered_evidence_labels"])
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(execution["ordered_annotation_labels"])
 
 
 def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_id_sampling() -> None:
@@ -518,7 +577,7 @@ def test_chart_trend_threshold_crossing_task_is_deterministic() -> None:
     out_b = task.generate(16170, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -597,12 +656,12 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         delta = int(execution["delta"])
         gap = int(execution["interval_gap"])
         internal_query_id = str(execution["internal_query_id"])
-        evidence_labels = [str(label) for label in execution["ordered_evidence_labels"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value.values()]
+        annotation_labels = [str(label) for label in execution["ordered_annotation_labels"]]
+        annotation_points = [list(point) for point in out.annotation_gt.value.values()]
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "keyed_point_map"
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -612,24 +671,24 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         assert values[int(end_index)] == int(end_value)
         assert int(delta) == int(end_value) - int(start_value)
         assert int(gap) == int(end_index) - int(start_index)
-        assert evidence_labels == labels[int(start_index): int(end_index) + 1]
-        assert trace["projected_evidence"]["type"] == "keyed_point_map"
-        assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["pixel_keyed_point_map"] == out.evidence_gt.value
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert "point_sequence" not in trace["projected_evidence"]
-        assert "pixel_point_sequence" not in trace["projected_evidence"]
-        assert "label_set" not in trace["projected_evidence"]
-        assert set(out.evidence_gt.value) == {"start_mark", "end_mark"}
-        assert len(evidence_points) == 2
-        assert len(trace["projected_evidence"]["pixel_point_set"]) == len(evidence_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
-        for x_coord, y_coord in evidence_points:
+        assert annotation_labels == labels[int(start_index): int(end_index) + 1]
+        assert trace["projected_annotation"]["type"] == "keyed_point_map"
+        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert "point_sequence" not in trace["projected_annotation"]
+        assert "pixel_point_sequence" not in trace["projected_annotation"]
+        assert "label_set" not in trace["projected_annotation"]
+        assert set(out.annotation_gt.value) == {"start_mark", "end_mark"}
+        assert len(annotation_points) == 2
+        assert len(trace["projected_annotation"]["pixel_point_set"]) == len(annotation_labels)
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
-        assert out.evidence_gt.value["start_mark"] == trace["projected_evidence"]["pixel_point_map"][str(execution["start_label"])]
-        assert out.evidence_gt.value["end_mark"] == trace["projected_evidence"]["pixel_point_map"][str(execution["end_label"])]
+        assert out.annotation_gt.value["start_mark"] == trace["projected_annotation"]["pixel_point_map"][str(execution["start_label"])]
+        assert out.annotation_gt.value["end_mark"] == trace["projected_annotation"]["pixel_point_map"][str(execution["end_label"])]
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
         assert str(execution["start_label"]) in str(out.prompt)
         assert str(execution["end_label"]) in str(out.prompt)
@@ -673,17 +732,17 @@ def test_chart_trend_interval_change_supports_scene_variants_and_rejects_incompa
 def test_chart_trend_interval_change_prompt_examples_match_selected_variant() -> None:
     task = ChartsTrendValueTask()
     expected = {
-        "endpoint_change_value": {"evidence": {"start_mark": [160, 420], "end_mark": [460, 220]}, "answer": 20},
-        "interval_rate_value": {"evidence": {"start_mark": [200, 420], "end_mark": [500, 240]}, "answer": 6},
+        "endpoint_change_value": {"annotation": {"start_mark": [160, 420], "end_mark": [460, 220]}, "answer": 20},
+        "interval_rate_value": {"annotation": {"start_mark": [200, 420], "end_mark": [500, 240]}, "answer": 6},
     }
     for index, query_id in enumerate(expected, start=16250):
         params = {"query_id": query_id}
         if str(query_id) == "endpoint_change_value":
             params["endpoint_change_kind"] = "absolute"
         out = task.generate(index, params=params, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -694,7 +753,7 @@ def test_chart_trend_interval_change_task_is_deterministic() -> None:
     out_b = task.generate(16260, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

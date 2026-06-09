@@ -24,19 +24,19 @@
     "query:callout_endpoint_change_value": [
       "endpoint_label"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -44,12 +44,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -63,18 +63,18 @@
   },
   "query_templates": {
     "event_window_extremum_label": [
-      "Within the highlighted window only, which label has the {extremum_direction} value?",
-      "Use only the marks inside the highlighted window. Which label is {extremum_direction} by value?",
-      "Looking only at the highlighted window, identify the label with the {extremum_direction} chart value.",
-      "Ignore marks outside the highlighted window. Which shown label has the {extremum_direction} value inside it?",
-      "For the highlighted window, what label corresponds to the {extremum_direction} value?"
+      "In the highlighted region, which label has the {extremum_direction} value?",
+      "From the marks in the highlighted area, which label is {extremum_direction} by value?",
+      "Looking at the highlighted region, identify the label with the {extremum_direction} chart value.",
+      "Among the marks in the highlighted area, which shown label has the {extremum_direction} value?",
+      "For the highlighted region, what label corresponds to the {extremum_direction} value?"
     ],
     "event_window_threshold_count": [
-      "Within the highlighted window only, how many marks have value {threshold_comparison_phrase} {threshold}?",
-      "Use only the highlighted window. Count the marks whose value is {threshold_comparison_phrase} {threshold}.",
-      "Looking inside the highlighted window, how many labels have chart values {threshold_comparison_phrase} {threshold}?",
-      "Ignore marks outside the highlighted window. How many window marks are {threshold_comparison_phrase} {threshold}?",
-      "For the highlighted window, count the marks with value {threshold_comparison_phrase} {threshold}."
+      "In the highlighted region, how many marks have value {threshold_comparison_phrase} {threshold}?",
+      "From the highlighted area, count the marks whose value is {threshold_comparison_phrase} {threshold}.",
+      "Looking at the highlighted region, how many labels have chart values {threshold_comparison_phrase} {threshold}?",
+      "Among the marks in the highlighted area, how many are {threshold_comparison_phrase} {threshold}?",
+      "For the highlighted region, count the marks with value {threshold_comparison_phrase} {threshold}."
     ],
     "callout_endpoint_change_value": [
       "The callout points to one mark. What is the absolute change between that mark and \"{endpoint_label}\"?",

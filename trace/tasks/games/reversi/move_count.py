@@ -31,6 +31,7 @@ from ..shared.reversi_common import (
     Coord,
     coord_to_cell_id,
     corner_coords,
+    frontier_disc_coords,
     legal_moves_with_flips,
     player_name,
     simulate_random_state,
@@ -53,6 +54,10 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "corner_move_count",
     "flip_count_for_marked_move",
 )
+FRONTIER_QUERY_IDS: Tuple[str, ...] = (
+    "black_frontier_disc_count",
+    "white_frontier_disc_count",
+)
 
 
 @dataclass(frozen=True)
@@ -62,6 +67,7 @@ class _TaskDefaults:
     legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     corner_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     flip_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
+    frontier_disc_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
     canvas_width: int = 900
     canvas_height: int = 900
     panel_margin_px: int = 48
@@ -100,8 +106,8 @@ class _SampledReversiScene:
     board: Board
     current_player: int
     legal_moves: Dict[Coord, Tuple[Coord, ...]]
-    evidence_coords: Tuple[Coord, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_coords: Tuple[Coord, ...]
+    annotation_entity_ids: Tuple[str, ...]
     marked_move: Coord | None
     marked_move_flips: Tuple[Coord, ...]
     construction_mode: str
@@ -125,8 +131,8 @@ def _resolve_query_id(
     """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -169,7 +175,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -294,6 +300,8 @@ def _target_support_key(query_id: str) -> str:
         "legal_move_count": "legal_move_count_support",
         "corner_move_count": "corner_move_count_support",
         "flip_count_for_marked_move": "flip_count_support",
+        "black_frontier_disc_count": "frontier_disc_count_support",
+        "white_frontier_disc_count": "frontier_disc_count_support",
     }[str(query_id)]
 
 
@@ -468,6 +476,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ReversiR
         ),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
+        instance_seed=int(instance_seed),
     )
 
 
@@ -525,13 +534,13 @@ def _construct_legal_move_board(*, rng, board_size: int, current_player: int, ta
         legal_moves = legal_moves_with_flips(frozen_board, int(current_player))
         if int(len(legal_moves)) != int(target_answer):
             continue
-        evidence_coords = tuple(sorted((int(row), int(col)) for row, col in legal_moves.keys()))
+        annotation_coords = tuple(sorted((int(row), int(col)) for row, col in legal_moves.keys()))
         return _SampledReversiScene(
             board=frozen_board,
             current_player=int(current_player),
             legal_moves=legal_moves,
-            evidence_coords=evidence_coords,
-            evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
+            annotation_coords=annotation_coords,
+            annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
             marked_move=None,
             marked_move_flips=tuple(),
             construction_mode="simulated_legal_count",
@@ -565,15 +574,15 @@ def _construct_corner_move_board(*, rng, board_size: int, current_player: int, t
             _set_cell(board, tuple(corner), current_player if int(corner[0] + corner[1]) % 2 == 0 else opponent)
     frozen_board = _freeze_board(board)
     legal_moves = legal_moves_with_flips(frozen_board, int(current_player))
-    evidence_coords = tuple(sorted(move for move in legal_moves if tuple(move) in set(corners)))
-    if int(len(evidence_coords)) != int(target_answer):
+    annotation_coords = tuple(sorted(move for move in legal_moves if tuple(move) in set(corners)))
+    if int(len(annotation_coords)) != int(target_answer):
         raise ValueError("constructed corner-move board did not match the target answer")
     return _SampledReversiScene(
         board=frozen_board,
         current_player=int(current_player),
         legal_moves=legal_moves,
-        evidence_coords=evidence_coords,
-        evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
+        annotation_coords=annotation_coords,
+        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
         marked_move=None,
         marked_move_flips=tuple(),
         construction_mode="corner_patterns",
@@ -624,18 +633,88 @@ def _construct_flip_count_board(*, rng, board_size: int, current_player: int, ta
         board=frozen_board,
         current_player=int(current_player),
         legal_moves=legal_moves,
-        evidence_coords=marked_flips,
-        evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in marked_flips),
+        annotation_coords=marked_flips,
+        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in marked_flips),
         marked_move=tuple(int(value) for value in marked_move),
         marked_move_flips=marked_flips,
         construction_mode="marked_flip",
     )
 
 
+def _frontier_query_player(query_id: str) -> int:
+    """Return the queried disc color for one frontier query id."""
+
+    if str(query_id) == "black_frontier_disc_count":
+        return int(BLACK)
+    if str(query_id) == "white_frontier_disc_count":
+        return int(WHITE)
+    raise ValueError(f"unsupported frontier query id: {query_id}")
+
+
+def _frontier_ply_windows(*, board_size: int, target_answer: int) -> Tuple[Tuple[int, int], ...]:
+    """Return target-aware simulation windows for reachable frontier boards."""
+
+    size = int(board_size)
+    target = int(target_answer)
+    max_plies = max(size + 4, (size * size) - 4)
+    if target == 0:
+        return ((max(size + 8, int(0.75 * max_plies)), max_plies),)
+    if target <= 2:
+        return (
+            (4, max(size + 4, int(0.30 * max_plies))),
+            (max(size + 6, int(0.70 * max_plies)), max_plies),
+        )
+    if target <= 5:
+        return (
+            (4, max(size + 8, int(0.42 * max_plies))),
+            (max(6, int(0.32 * max_plies)), max(size + 12, int(0.58 * max_plies))),
+        )
+    return (
+        (max(4, int(0.22 * max_plies)), max(size + 14, int(0.62 * max_plies))),
+        (max(6, int(0.35 * max_plies)), max(size + 18, int(0.78 * max_plies))),
+    )
+
+
+def _construct_frontier_disc_board(*, rng, board_size: int, query_id: str, target_answer: int) -> _SampledReversiScene:
+    """Search for a reachable board with an exact frontier-disc count."""
+
+    query_player = _frontier_query_player(str(query_id))
+    windows = _frontier_ply_windows(board_size=int(board_size), target_answer=int(target_answer))
+    for attempt_index in range(420):
+        min_plies, max_plies = windows[int(attempt_index) % len(windows)]
+        frozen_board = simulate_random_state(
+            rng=rng,
+            board_size=int(board_size),
+            min_plies=int(min_plies),
+            max_plies=int(max_plies),
+        )
+        annotation_coords = frontier_disc_coords(frozen_board, int(query_player))
+        if int(len(annotation_coords)) != int(target_answer):
+            continue
+        return _SampledReversiScene(
+            board=frozen_board,
+            current_player=int(query_player),
+            legal_moves=legal_moves_with_flips(frozen_board, int(query_player)),
+            annotation_coords=tuple(annotation_coords),
+            annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
+            marked_move=None,
+            marked_move_flips=tuple(),
+            construction_mode="simulated_frontier_disc_count",
+        )
+    raise ValueError("failed to find a reachable board with the requested frontier-disc count")
+
+
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _SampledReversiScene:
     """Construct one Reversi scene consistent with the requested axes."""
 
     current_player = _resolve_current_player(rng, params=params)
+    if str(axes.query_id) in FRONTIER_QUERY_IDS:
+        return _construct_frontier_disc_board(
+            rng=rng,
+            board_size=int(axes.board_size),
+            query_id=str(axes.query_id),
+            target_answer=int(axes.target_answer),
+        )
     if str(axes.query_id) == "legal_move_count":
         return _construct_legal_move_board(
             rng=rng,
@@ -661,14 +740,14 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
 def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for the active Reversi query id."""
 
-    answer_value = 3 if str(query_id) == "flip_count_for_marked_move" else 2
-    evidence_value = (
+    answer_value = 3 if str(query_id) in {"flip_count_for_marked_move", *FRONTIER_QUERY_IDS} else 2
+    annotation_value = (
         [[144, 216], [216, 216], [288, 216]]
-        if str(query_id) == "flip_count_for_marked_move"
+        if str(query_id) in {"flip_count_for_marked_move", *FRONTIER_QUERY_IDS}
         else [[112, 184, 176, 248], [184, 184, 248, 248]]
     )
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -727,17 +806,17 @@ class GamesReversiMoveCountTask:
             marked_move=sampled_scene.marked_move,
             panel_style=panel_style,
         )
-        if str(axes.query_id) == "flip_count_for_marked_move":
-            evidence_type = "point_set"
-            evidence_value = [
+        if str(axes.query_id) == "flip_count_for_marked_move" or str(axes.query_id) in FRONTIER_QUERY_IDS:
+            annotation_type = "point_set"
+            annotation_value = [
                 list(rendered_scene.render_map["disc_points_px"][str(entity_id)])
-                for entity_id in sampled_scene.evidence_entity_ids
+                for entity_id in sampled_scene.annotation_entity_ids
             ]
         else:
-            evidence_type = "bbox_set"
-            evidence_value = [
+            annotation_type = "bbox_set"
+            annotation_value = [
                 list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
-                for entity_id in sampled_scene.evidence_entity_ids
+                for entity_id in sampled_scene.annotation_entity_ids
             ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -760,12 +839,17 @@ class GamesReversiMoveCountTask:
                 "corner_rule_text",
                 "marked_move_rule_text",
                 "flip_rule_text",
+                "frontier_rule_text",
                 "answer_hint_legal_move_count",
                 "answer_hint_corner_move_count",
                 "answer_hint_flip_count_for_marked_move",
-                "evidence_hint_legal_move_count",
-                "evidence_hint_corner_move_count",
-                "evidence_hint_flip_count_for_marked_move",
+                "answer_hint_black_frontier_disc_count",
+                "answer_hint_white_frontier_disc_count",
+                "annotation_hint_legal_move_count",
+                "annotation_hint_corner_move_count",
+                "annotation_hint_flip_count_for_marked_move",
+                "annotation_hint_black_frontier_disc_count",
+                "annotation_hint_white_frontier_disc_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -778,13 +862,13 @@ class GamesReversiMoveCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "current_player_name": str(current_player_name),
@@ -792,13 +876,14 @@ class GamesReversiMoveCountTask:
                 "corner_rule_text": str(prompt_defaults["corner_rule_text"]),
                 "marked_move_rule_text": str(prompt_defaults["marked_move_rule_text"]),
                 "flip_rule_text": str(prompt_defaults["flip_rule_text"]),
+                "frontier_rule_text": str(prompt_defaults["frontier_rule_text"]),
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type=str(evidence_type), value=[list(item) for item in evidence_value])
+        annotation_gt = TypedValue(type=str(annotation_type), value=[list(item) for item in annotation_value])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -811,7 +896,7 @@ class GamesReversiMoveCountTask:
             board_size=int(axes.board_size),
             legal_move_count=int(len(sampled_scene.legal_moves)),
             target_answer=int(axes.target_answer),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
 
         legal_move_specs = [
@@ -834,7 +919,7 @@ class GamesReversiMoveCountTask:
                     "board_size": int(axes.board_size),
                     "current_player": str(current_player_name),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                     "marked_move_cell_id": None
                     if sampled_scene.marked_move is None
                     else str(coord_to_cell_id(sampled_scene.marked_move)),
@@ -881,6 +966,9 @@ class GamesReversiMoveCountTask:
                 "board_rows": board_rows,
                 "construction_mode": str(sampled_scene.construction_mode),
                 "legal_move_count": int(len(sampled_scene.legal_moves)),
+                "frontier_disc_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.annotation_coords]
+                if str(axes.query_id) in FRONTIER_QUERY_IDS
+                else [],
                 "legal_move_specs": legal_move_specs,
                 "marked_move": None
                 if sampled_scene.marked_move is None
@@ -891,15 +979,15 @@ class GamesReversiMoveCountTask:
                 "marked_move_flip_coords": [
                     [int(coord[0]), int(coord[1])] for coord in sampled_scene.marked_move_flips
                 ],
-                "evidence_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.evidence_coords],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_coords": [[int(coord[0]), int(coord[1])] for coord in sampled_scene.annotation_coords],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                str(evidence_type): [list(item) for item in evidence_value],
+            "projected_annotation": {
+                str(annotation_type): [list(item) for item in annotation_value],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -908,7 +996,7 @@ class GamesReversiMoveCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -941,7 +1029,16 @@ class GamesReversiFlipCountForMarkedMoveTask(FixedQueryVariantTaskMixin, GamesRe
     supported_query_ids = ("flip_count_for_marked_move",)
 
 
+@register_task
+class GamesReversiFrontierDiscCountTask(GamesReversiMoveCountTask):
+    """Count queried-color discs touching at least one empty square."""
+
+    task_id = "task_games__reversi__frontier_disc_count"
+    supported_query_ids = FRONTIER_QUERY_IDS
+
+
 __all__ = [
+    "GamesReversiFrontierDiscCountTask",
     "GamesReversiFlipCountForMarkedMoveTask",
     "GamesReversiLegalDestinationCountTask",
 ]

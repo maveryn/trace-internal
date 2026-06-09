@@ -61,10 +61,10 @@ def test_physics_circuits_equivalent_tasks_emit_expected_contract(
     assert out.query_id == expected_query_id
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "keyed_bbox_map"
-    assert out.evidence_gt.value
-    assert all(str(key).startswith(expected_prefix) for key in out.evidence_gt.value)
-    assert all(len(value) == 4 for value in out.evidence_gt.value.values())
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.value
+    assert all(str(key).startswith(expected_prefix) for key in out.annotation_gt.value)
+    assert all(len(value) == 4 for value in out.annotation_gt.value.values())
 
     assert trace["query_spec"]["query_id"] == expected_query_id
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
@@ -77,14 +77,14 @@ def test_physics_circuits_equivalent_tasks_emit_expected_contract(
     assert trace["render_spec"]["component_kind"] == expected_kind
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_equivalent_circuit_diagram_offset"
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
-    assert trace["render_map"]["component_bboxes_px"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["render_map"]["component_bboxes_px"] == out.annotation_gt.value
     assert trace["witness_symbolic"]["type"] == "object_map"
     assert trace["witness_symbolic"]["key_to_entity_id"] == trace["render_map"]["component_entity_ids"]
-    assert len(execution["component_specs"]) == len(out.evidence_gt.value)
-    assert [spec["label"] for spec in execution["component_specs"]] == list(out.evidence_gt.value.keys())
+    assert len(execution["component_specs"]) == len(out.annotation_gt.value)
+    assert [spec["label"] for spec in execution["component_specs"]] == list(out.annotation_gt.value.keys())
 
     assert str(params["scene_variant"]) == "series_parallel"
     assert len(execution["parallel_blocks"]) in {1, 2}
@@ -109,7 +109,7 @@ def test_physics_circuits_equivalent_tasks_are_deterministic() -> None:
     out_b = task.generate(26021, params=params, max_attempts=40)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -165,7 +165,7 @@ def test_physics_circuits_equivalent_prompt_bundle_supports_variants() -> None:
 
     assert len(bundle["query_templates"]["total_resistance"]) == 5
     assert len(bundle["query_templates"]["total_capacitance"]) == 5
-    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5
+    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5
 
 
 def test_physics_circuits_equivalent_tasks_build_smoke(tmp_path: Path) -> None:

@@ -2,6 +2,13 @@
 
 from .palette import PANEL_SCENE_PALETTES, PanelScenePalette
 from .metadata import color_separation_metadata
+from .request import (
+    VISUAL_STYLE_FAMILIES,
+    VisualStyleRequest,
+    build_visual_style_request,
+    resolve_style_bool,
+    visual_style_request_metadata,
+)
 from .panel import (
     DEFAULT_PANEL_SCENE_STYLE,
     PANEL_SCENE_TREATMENTS,
@@ -38,11 +45,14 @@ __all__ = [
     "TECHNICAL_DIAGRAM_PALETTES",
     "TECHNICAL_DIAGRAM_TREATMENTS",
     "TECHNICAL_DIAGRAM_TREATMENT_IDS",
+    "VISUAL_STYLE_FAMILIES",
     "PanelScenePalette",
     "PanelSceneStyle",
     "TechnicalDiagramPalette",
     "TechnicalDiagramStyle",
     "TechnicalDiagramTreatment",
+    "VisualStyleRequest",
+    "build_visual_style_request",
     "color_separation_metadata",
     "draw_panel_grid_cell",
     "draw_panel_option_card",
@@ -51,6 +61,8 @@ __all__ = [
     "make_technical_diagram_background",
     "panel_scene_style_metadata",
     "resolve_panel_scene_style",
+    "resolve_style_bool",
     "resolve_technical_diagram_style",
     "technical_diagram_style_metadata",
+    "visual_style_request_metadata",
 ]

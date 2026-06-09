@@ -20,7 +20,7 @@ from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
+    projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
@@ -382,7 +382,7 @@ def _build_prompt(
         "json_output_contract_answer_only",
         f"object_description_{scene_variant}",
         f"answer_hint_{query_id}",
-        f"evidence_hint_{query_id}",
+        f"annotation_hint_{query_id}",
         f"json_example_{query_id}",
         f"json_example_answer_only_{query_id}",
     )
@@ -396,7 +396,7 @@ def _build_prompt(
         "line_label": str(line_label),
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
-        "evidence_hint": str(prompt_values[f"evidence_hint_{query_id}"]),
+        "annotation_hint": str(prompt_values[f"annotation_hint_{query_id}"]),
         "answer_hint": str(prompt_values[f"answer_hint_{query_id}"]),
         "json_example": str(prompt_values[f"json_example_{query_id}"]),
         "json_example_answer_only": str(prompt_values[f"json_example_answer_only_{query_id}"]),
@@ -408,7 +408,7 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -585,17 +585,17 @@ class _PuzzlesLogicNonogramBaseTask:
             line_label=str(line_label),
         )
 
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.item_bbox_map,
             [str(item_id) for item_id in dataset["supporting_item_ids"]],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_value"])
         answer_gt = TypedValue(type=str(dataset["answer_type"]), value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         rows = int(len(dataset["grid"]))
         cols = int(len(dataset["grid"][0]))
@@ -658,7 +658,7 @@ class _PuzzlesLogicNonogramBaseTask:
                     str(key): list(value) for key, value in rendered_scene.option_panel_bbox_map.items()
                 },
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
             }, render_params.unit_size_jitter or {}),
             "execution_trace": {
                 "query_id": str(query_id),
@@ -685,10 +685,10 @@ class _PuzzlesLogicNonogramBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
         if query_id == "line_completion_label":
@@ -730,7 +730,7 @@ class _PuzzlesLogicNonogramBaseTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

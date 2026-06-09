@@ -57,8 +57,8 @@ def test_icons_sequence_named_shape_run_length_longest_contract_matches_scene() 
     assert out.query_id == "longest_shape_run_length"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 5
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 5
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 5
     assert trace["scene_ir"]["scene_kind"] == "icons_named_strip_run_length"
     assert execution["question_format"] == "named_shape_run_length"
     assert int(execution["strip_length"]) == 15
@@ -79,10 +79,10 @@ def test_icons_sequence_named_shape_run_length_longest_contract_matches_scene() 
         [entity["bbox_xyxy"] for entity in icon_entities if bool(entity["is_selected_run_member"])],
         key=lambda box: (int(box[1]), int(box[0]), int(box[3]), int(box[2])),
     )
-    assert out.evidence_gt.value == selected_boxes
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == selected_boxes
-    assert trace["projected_evidence"]["pixel_bbox_set"] == selected_boxes
+    assert out.annotation_gt.value == selected_boxes
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == selected_boxes
+    assert trace["projected_annotation"]["pixel_bbox_set"] == selected_boxes
     style = trace["render_spec"]["style"]
     assert style["text_legibility"]["failure_count"] == 0
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
@@ -109,7 +109,7 @@ def test_icons_sequence_named_shape_run_length_shortest_contract_matches_scene()
     assert out.answer_gt.value == 2
     assert min(lengths) == 2
     assert lengths.count(2) == 1
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
     assert all(shape_ids[int(index)] == "bell" for index in execution["selected_run_indices"])
 
 
@@ -122,12 +122,12 @@ def test_icons_sequence_named_shape_run_length_prompt_example_matches_contract()
     )
     assert '"guitar"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 3
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 3
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_icons_sequence_named_shape_run_length_sampling_smoke() -> None:
@@ -154,7 +154,7 @@ def test_icons_sequence_named_shape_run_length_sampling_smoke() -> None:
             assert answer == min(lengths)
             assert 1 <= answer <= 5
         assert lengths.count(answer) == 1
-        assert len(out.evidence_gt.value) == answer
+        assert len(out.annotation_gt.value) == answer
         assert 12 <= int(execution["strip_length"]) <= 16
         query_counts[query_id] += 1
         answer_counts[answer] += 1

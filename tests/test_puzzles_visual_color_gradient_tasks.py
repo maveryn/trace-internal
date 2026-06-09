@@ -34,8 +34,8 @@ def test_color_gradient_violation_contract() -> None:
     assert out.query_id == QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "K"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
 
     trace = out.trace_payload["execution_trace"]
     assert trace["violation_cell_id"] == "cell_K"
@@ -45,7 +45,7 @@ def test_color_gradient_violation_contract() -> None:
     assert trace["cells"][trace["violation_index"]]["expected_rgb"] != trace["cells"][trace["violation_index"]]["observed_rgb"]
 
     bbox = out.trace_payload["render_map"]["item_bboxes_px"]["cell_K"]
-    assert out.evidence_gt.value == [[float(value) for value in bbox]]
+    assert out.annotation_gt.value == [[float(value) for value in bbox]]
     assert out.trace_payload["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
     assert out.trace_payload["render_spec"]["label_style"]["font"]["font_family"]
     assert out.trace_payload["render_spec"]["post_image_noise_policy"]["reason"] == "color_semantics_preserve_rgb_separability"
@@ -65,7 +65,7 @@ def test_color_gradient_violation_is_deterministic() -> None:
 
     assert left.prompt == right.prompt
     assert left.answer_gt == right.answer_gt
-    assert left.evidence_gt == right.evidence_gt
+    assert left.annotation_gt == right.annotation_gt
     assert left.trace_payload["execution_trace"] == right.trace_payload["execution_trace"]
     assert left.image.tobytes() == right.image.tobytes()
 
@@ -96,8 +96,8 @@ def test_color_gradient_completion_contract() -> None:
     assert out.query_id == COMPLETION_QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "keyed_bbox_map"
-    assert set(out.evidence_gt.value.keys()) == {"blank_swatch", "selected_option"}
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert set(out.annotation_gt.value.keys()) == {"blank_swatch", "selected_option"}
 
     trace = out.trace_payload["execution_trace"]
     assert trace["missing_index"] == 3
@@ -107,14 +107,14 @@ def test_color_gradient_completion_contract() -> None:
     assert len([option for option in trace["options"] if option["is_correct"]]) == 1
 
     item_bboxes = out.trace_payload["render_map"]["item_bboxes_px"]
-    assert out.evidence_gt.value == {
+    assert out.annotation_gt.value == {
         "blank_swatch": [float(value) for value in item_bboxes["sequence_cell_3"]],
         "selected_option": [float(value) for value in item_bboxes["option_D"]],
     }
-    projected = out.trace_payload["projected_evidence"]
+    projected = out.trace_payload["projected_annotation"]
     assert projected["type"] == "keyed_bbox_map"
-    assert projected["keyed_bbox_map"] == out.evidence_gt.value
-    assert projected["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert projected["keyed_bbox_map"] == out.annotation_gt.value
+    assert projected["pixel_keyed_bbox_map"] == out.annotation_gt.value
     assert out.trace_payload["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
     assert out.trace_payload["render_spec"]["label_style"]["font"]["font_family"]
 
@@ -134,6 +134,6 @@ def test_color_gradient_completion_is_deterministic() -> None:
 
     assert left.prompt == right.prompt
     assert left.answer_gt == right.answer_gt
-    assert left.evidence_gt == right.evidence_gt
+    assert left.annotation_gt == right.annotation_gt
     assert left.trace_payload["execution_trace"] == right.trace_payload["execution_trace"]
     assert left.image.tobytes() == right.image.tobytes()

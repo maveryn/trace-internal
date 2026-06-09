@@ -93,44 +93,44 @@ training runs. If the top two alpha settings are too close to distinguish, only
 those candidates should be continued to 400 steps with an explicit
 `TOTAL_TRAINING_STEPS=400` override.
 
-## Stage 2: Evidence-Reward Ablation
+## Stage 2: Annotation-Reward Ablation
 
-Using the selected alpha dataset, train Qwen3-VL-4B with answer+evidence prompts
-for 250 steps under two evidence reward formulations.
+Using the selected alpha dataset, train Qwen3-VL-4B with answer+annotation prompts
+for 250 steps under two annotation reward formulations.
 
-### Gated Evidence Reward
+### Gated Annotation Reward
 
 ```text
-reward = answer_reward * (0.5 + 0.5 * evidence_reward)
+reward = answer_reward * (0.5 + 0.5 * annotation_reward)
 ```
 
 Properties:
 
-- wrong answer receives zero reward, regardless of evidence;
-- correct answer with poor evidence receives `0.5`;
-- correct answer with perfect evidence receives `1.0`.
+- wrong answer receives zero reward, regardless of annotation;
+- correct answer with poor annotation receives `0.5`;
+- correct answer with perfect annotation receives `1.0`.
 
-This formulation is conservative and avoids rewarding evidence localization for
+This formulation is conservative and avoids rewarding annotation localization for
 incorrect answers.
 
-### Additive Evidence Reward
+### Additive Annotation Reward
 
 ```text
-reward = 0.5 * answer_reward + 0.5 * evidence_reward
+reward = 0.5 * answer_reward + 0.5 * annotation_reward
 ```
 
 Properties:
 
-- answer and evidence receive equal nominal weight;
-- wrong answer with useful evidence can receive partial credit;
-- correct answer with poor evidence receives `0.5`;
-- perfect answer and evidence receives `1.0`.
+- answer and annotation receive equal nominal weight;
+- wrong answer with useful annotation can receive partial credit;
+- correct answer with poor annotation receives `0.5`;
+- perfect answer and annotation receives `1.0`.
 
-This formulation may improve evidence-format learning, but can reward evidence
+This formulation may improve annotation-format learning, but can reward annotation
 behavior even when the answer is wrong.
 
-We will not run a hyperparameter sweep over answer/evidence weights. Both
-evidence variants use fixed `0.5 / 0.5` weighting.
+We will not run a hyperparameter sweep over answer/annotation weights. Both
+annotation variants use fixed `0.5 / 0.5` weighting.
 
 ## Stage 3: Final Training
 
@@ -184,8 +184,8 @@ The training stack now supports:
    - Qwen3-VL: `1536`;
    - Qwen2.5-VL: `2048`;
 3. TRACE training response length `2048`;
-4. answer-only and answer+evidence prompt modes through `TRACE_OUTPUT_MODE`;
-5. configurable TRACE evidence reward formula:
+4. answer-only and answer+annotation prompt modes through `TRACE_OUTPUT_MODE`;
+5. configurable TRACE annotation reward formula:
    - `gated`;
    - `additive`;
 6. first-class `query_id` in future RLVR parquets, rather than requiring
@@ -207,9 +207,9 @@ scripts/run_trace_rlvr_experiment.sh alpha_ablation 0
 scripts/run_trace_rlvr_experiment.sh alpha_ablation 0.5
 scripts/run_trace_rlvr_experiment.sh alpha_ablation 1
 
-# Evidence ablation on the selected alpha dataset, 250 steps each.
-TRACE_ALPHA=0_5 scripts/run_trace_rlvr_experiment.sh evidence_ablation gated
-TRACE_ALPHA=0_5 scripts/run_trace_rlvr_experiment.sh evidence_ablation additive
+# Annotation ablation on the selected alpha dataset, 250 steps each.
+TRACE_ALPHA=0_5 scripts/run_trace_rlvr_experiment.sh annotation_ablation gated
+TRACE_ALPHA=0_5 scripts/run_trace_rlvr_experiment.sh annotation_ablation additive
 
 # Final runs, 800 steps each.
 TRACE_ALPHA=0_5 scripts/run_trace_rlvr_experiment.sh final qwen3vl4b
@@ -232,7 +232,7 @@ The Qwen3-VL-4B ablation stage includes:
 | Ablation | Runs |
 |---|---:|
 | Alpha dataset ablation | 3 |
-| Evidence reward ablation | 2 |
+| Annotation reward ablation | 2 |
 
 The final model stage includes:
 

@@ -10,6 +10,9 @@ from .task_review_calibration import CURRENT_CALIBRATION_BASELINE
 from .task_review_sampling import resolve_review_query_id
 
 
+MIN_REVIEW_QUERY_ID_BRANCH_SAMPLES = 10
+
+
 def as_float(value: Any) -> float | None:
     """Parse one scalar as float when possible."""
 
@@ -166,6 +169,25 @@ def extract_replay_generation_params(output: Any) -> Dict[str, Any]:
     return replay
 
 
+def extract_answer_support(output: Any) -> list[str] | None:
+    """Extract optional explicit answer support from query params."""
+
+    trace_payload = getattr(output, "trace_payload", {})
+    if not isinstance(trace_payload, Mapping):
+        return None
+    query_spec = trace_payload.get("query_spec", {})
+    if not isinstance(query_spec, Mapping):
+        return None
+    query_params = query_spec.get("params", {})
+    if not isinstance(query_params, Mapping):
+        return None
+    raw = query_params.get("answer_support")
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        return None
+    support = [str(value) for value in raw]
+    return support or None
+
+
 def random_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     """Collect task-review fields from one generated output."""
 
@@ -180,6 +202,7 @@ def random_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
         ),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
+        "answer_support": extract_answer_support(output),
         "sampling_axes": extract_sampling_axes(output),
         "generation_params": extract_replay_generation_params(output),
     }
@@ -199,6 +222,7 @@ def answer_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
         ),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
+        "answer_support": extract_answer_support(output),
         "generation_params": extract_replay_generation_params(output),
     }
 
@@ -211,6 +235,47 @@ def has_multiple_query_ids(query_id_counts: Mapping[str, int], expected_probabil
         return True
     observed_non_empty = [str(key) for key, value in query_id_counts.items() if str(key).strip() and int(value) > 0]
     return len(observed_non_empty) > 1
+
+
+def build_query_id_review_warnings(
+    *,
+    query_id_counts: Mapping[str, int],
+    expected_probabilities: Mapping[str, float],
+    sample_count: int,
+) -> List[Dict[str, Any]]:
+    """Return non-gating warnings for weak 100-sample query-branch coverage."""
+
+    if int(sample_count) <= 0:
+        return []
+    if not has_multiple_query_ids(query_id_counts, expected_probabilities):
+        return []
+    labels = sorted(
+        {
+            str(key)
+            for key in [*list(query_id_counts.keys()), *list(expected_probabilities.keys())]
+            if str(key).strip() not in {"", "default"}
+        }
+    )
+    thin = [
+        {"query_id": str(label), "sample_count": int(query_id_counts.get(str(label), 0))}
+        for label in labels
+        if int(query_id_counts.get(str(label), 0)) < int(MIN_REVIEW_QUERY_ID_BRANCH_SAMPLES)
+    ]
+    if not thin:
+        return []
+    return [
+        {
+            "kind": "thin_query_id_branch_review_coverage",
+            "message": (
+                "One or more query_id branches has fewer than "
+                f"{int(MIN_REVIEW_QUERY_ID_BRANCH_SAMPLES)} samples in the displayed random review set."
+            ),
+            "threshold": int(MIN_REVIEW_QUERY_ID_BRANCH_SAMPLES),
+            "sample_count": int(sample_count),
+            "branches": thin,
+            "gating": False,
+        }
+    ]
 
 
 def build_sampling_axis_reports(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Dict[str, Any]]:
@@ -266,19 +331,17 @@ def build_sampling_axis_reports(rows: Sequence[Mapping[str, Any]]) -> Dict[str, 
 def build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     """Build random-sample review report for one task."""
 
-    answer_rows = [
-        {
-            "answer_type": str(row.get("answer_type", "")),
-            "answer_value": row.get("answer_value"),
-        }
-        for row in rows
-    ]
-    answer_report = evaluate_answer_distribution(answer_rows)
+    answer_report = evaluate_rows(rows)
     sampling_axes = build_sampling_axis_reports(rows)
     query_id_axis = sampling_axes.get("query_id", {})
     query_id_counts = query_id_axis.get("observed_counts", {}) if isinstance(query_id_axis, Mapping) else {}
     query_id_expected = query_id_axis.get("expected_probabilities", {}) if isinstance(query_id_axis, Mapping) else {}
     has_query_ids = has_multiple_query_ids(query_id_counts, query_id_expected)
+    warnings = build_query_id_review_warnings(
+        query_id_counts=query_id_counts if isinstance(query_id_counts, Mapping) else {},
+        expected_probabilities=query_id_expected if isinstance(query_id_expected, Mapping) else {},
+        sample_count=int(len(rows)),
+    )
 
     return {
         "task_id": str(task_id),
@@ -286,6 +349,7 @@ def build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any]
         "sample_count": int(len(rows)),
         "answer_distribution": answer_report,
         "sampling_axes": sampling_axes,
+        "warnings": list(warnings),
         "query_id_distribution": {
             "has_query_ids": bool(has_query_ids),
             "status": "reported" if bool(has_query_ids) else "skipped_no_query_ids",
@@ -293,8 +357,26 @@ def build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any]
             "expected_probabilities": dict(query_id_expected),
             "expected_source": str(query_id_axis.get("expected_source", "")) if isinstance(query_id_axis, Mapping) else "",
             "expected_conflict": bool(query_id_axis.get("expected_conflict", False)) if isinstance(query_id_axis, Mapping) else False,
+            "warnings": list(warnings),
         },
     }
+
+
+def _support_size_from_rows(rows: Sequence[Mapping[str, Any]]) -> int | None:
+    supports: list[tuple[str, ...]] = []
+    for row in rows:
+        raw = row.get("answer_support")
+        if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+            continue
+        support = tuple(str(value) for value in raw)
+        if support:
+            supports.append(tuple(dict.fromkeys(support)))
+    if not supports:
+        return None
+    first = supports[0]
+    if any(tuple(value) != first for value in supports):
+        return None
+    return int(len(first))
 
 
 def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
@@ -307,6 +389,11 @@ def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         }
         for row in rows
     ]
+    support_size = _support_size_from_rows(rows)
+    min_unique_answers = 5 if support_size is None else min(5, int(support_size))
+    max_answer_frequency = 1.0 / 3.0
+    if support_size is not None and int(support_size) > 1:
+        max_answer_frequency = max(float(max_answer_frequency), (1.0 / float(support_size)) + 0.05)
     if not answer_rows:
         return {
             "sample_count": 0,
@@ -320,7 +407,11 @@ def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
             },
             "pass": False,
         }
-    return evaluate_answer_distribution(answer_rows)
+    return evaluate_answer_distribution(
+        answer_rows,
+        min_unique_answers=int(min_unique_answers),
+        max_answer_frequency=float(max_answer_frequency),
+    )
 
 
 def build_distribution_review_report(
@@ -356,6 +447,7 @@ def build_distribution_review_report(
             "pass": bool(single_report.get("pass", False)),
             "query_id_distribution": dict(query_id_distribution),
             "sampling_axes": dict(random_report.get("sampling_axes", {})),
+            "warnings": list(random_report.get("warnings", []) or []),
         }
 
     query_id_rows = query_id_rows or {}
@@ -398,6 +490,7 @@ def build_distribution_review_report(
         "pass": bool(task_pass),
         "query_id_distribution": dict(query_id_distribution),
         "sampling_axes": dict(random_report.get("sampling_axes", {})),
+        "warnings": list(random_report.get("warnings", []) or []),
         "collection": {
             "target_count_per_query_id": int(query_id_collection_meta.get("target_count_per_query_id", 0)),
             "total_generated": int(query_id_collection_meta.get("total_generated", 0)),
@@ -415,6 +508,7 @@ __all__ = [
     "build_distribution_review_report",
     "build_random_review_report",
     "build_sampling_axis_reports",
+    "build_query_id_review_warnings",
     "evaluate_rows",
     "extract_replay_generation_params",
     "extract_sampling_axes",

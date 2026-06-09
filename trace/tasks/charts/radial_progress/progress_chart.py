@@ -105,7 +105,7 @@ class _Query:
     query_id: str
     answer: int | str
     answer_type: str
-    evidence_item_ids: Tuple[str, ...]
+    annotation_item_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -452,7 +452,7 @@ def _construct_dataset(
             )
         ) % len(answer_support)
         answer_count = int(answer_support[int(answer_index)])
-        values, evidence_item_ids, query_params = _construct_condition_values(
+        values, annotation_item_ids, query_params = _construct_condition_values(
             query_id=str(query_id),
             item_count=int(item_count),
             answer_count=int(answer_count),
@@ -463,13 +463,13 @@ def _construct_dataset(
         answer_type = "integer"
         query_params.update({"answer_count_probabilities": _support_probability_map(answer_support)})
     elif str(query_id) in REMAINING_EXTREMUM_QUERY_IDS:
-        values, evidence_item_ids, query_params = _construct_extremum_values(
+        values, annotation_item_ids, query_params = _construct_extremum_values(
             query_id=str(query_id),
             item_count=int(item_count),
             params=params,
             instance_seed=int(instance_seed),
         )
-        target_index = int(str(evidence_item_ids[0]).removeprefix("i"))
+        target_index = int(str(annotation_item_ids[0]).removeprefix("i"))
         answer = str(labels[int(target_index)])
         answer_type = "string"
         query_params.update(
@@ -502,7 +502,7 @@ def _construct_dataset(
         query_id=str(query_id),
         answer=answer,
         answer_type=str(answer_type),
-        evidence_item_ids=tuple(str(value) for value in evidence_item_ids),
+        annotation_item_ids=tuple(str(value) for value in annotation_item_ids),
         params=dict(query_params),
     )
     return _Dataset(
@@ -976,8 +976,8 @@ class ChartsRadialProgressChartTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "answer_hint_label",
-                "evidence_hint",
-                "evidence_hint_label",
+                "annotation_hint",
+                "annotation_hint_label",
                 "object_description_full_progress_rings",
                 "object_description_semicircle_gauges",
                 "object_description_segmented_radial_bars",
@@ -1001,13 +1001,13 @@ class ChartsRadialProgressChartTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key_remaining_extremum"] if is_label_answer else prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{dataset.scene_variant}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint_label"] if is_label_answer else prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_label"] if is_label_answer else prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_label"] if is_label_answer else prompt_defaults["annotation_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 **_query_slots(str(query_id), qparams),
@@ -1016,18 +1016,18 @@ class ChartsRadialProgressChartTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_item_ids = [str(value) for value in dataset.query.evidence_item_ids]
-        evidence_bboxes = [list(rendered.item_bboxes_px[str(item_id)]) for item_id in evidence_item_ids]
+        annotation_item_ids = [str(value) for value in dataset.query.annotation_item_ids]
+        annotation_bboxes = [list(rendered.item_bboxes_px[str(item_id)]) for item_id in annotation_item_ids]
         answer_value: int | str = str(dataset.query.answer) if is_label_answer else int(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         item_by_id = {item.item_id: item for item in dataset.items}
         label_to_value = {str(item.label): int(item.value) for item in dataset.items}
-        evidence_labels = [str(item_by_id[item_id].label) for item_id in evidence_item_ids]
+        annotation_labels = [str(item_by_id[item_id].label) for item_id in annotation_item_ids]
         visual_scan = clamp_unit_interval(normalize_int_with_bounds(len(dataset.items), [6, 10]))
-        evidence_scan = normalize_int_with_bounds(len(evidence_item_ids), [1, 5])
-        reasoning_load = clamp_unit_interval(float(_QUERY_LOADS[str(query_id)]) + (0.08 * evidence_scan))
+        annotation_scan = normalize_int_with_bounds(len(annotation_item_ids), [1, 5])
+        reasoning_load = clamp_unit_interval(float(_QUERY_LOADS[str(query_id)]) + (0.08 * annotation_scan))
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1056,7 +1056,7 @@ class ChartsRadialProgressChartTask:
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": answer_value,
-                    "evidence_item_ids": list(evidence_item_ids),
+                    "annotation_item_ids": list(annotation_item_ids),
                 },
             },
             "query_spec": {
@@ -1093,21 +1093,21 @@ class ChartsRadialProgressChartTask:
                 "label_to_value": dict(label_to_value),
                 "answer_value": answer_value,
                 "answer_type": str(dataset.query.answer_type),
-                "evidence_item_ids": list(evidence_item_ids),
-                "evidence_labels": list(evidence_labels),
+                "annotation_item_ids": list(annotation_item_ids),
+                "annotation_labels": list(annotation_labels),
                 **dict(qparams),
             },
             "witness_symbolic": {
                 "type": str(witness_type),
                 "answer_value": answer_value,
-                "evidence_item_ids": list(evidence_item_ids),
+                "annotation_item_ids": list(annotation_item_ids),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "bbox_map": {str(item_id): list(rendered.item_bboxes_px[str(item_id)]) for item_id in evidence_item_ids},
-                "item_ids": list(evidence_item_ids),
-                "item_labels": list(evidence_labels),
+                "bbox_set": list(annotation_bboxes),
+                "bbox_map": {str(item_id): list(rendered.item_bboxes_px[str(item_id)]) for item_id in annotation_item_ids},
+                "item_ids": list(annotation_item_ids),
+                "item_labels": list(annotation_labels),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1116,7 +1116,7 @@ class ChartsRadialProgressChartTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1128,12 +1128,30 @@ class ChartsRadialProgressChartTask:
 
 
 @register_task
-class ChartsRadialProgressConditionCountTask(MergedChartQueryVariantTaskMixin, ChartsRadialProgressChartTask):
-    """Count radial progress widgets satisfying a threshold or range condition."""
+class ChartsRadialProgressThresholdCountTask(MergedChartQueryVariantTaskMixin, ChartsRadialProgressChartTask):
+    """Count radial progress widgets satisfying a progress threshold."""
 
-    task_id = "task_charts__radial_progress__condition_count"
+    task_id = "task_charts__radial_progress__progress_threshold_count"
     default_dataset_enabled = True
-    allowed_query_ids = CONDITION_COUNT_QUERY_IDS
+    allowed_query_ids = ("at_least_threshold_count", "below_threshold_count")
+
+
+@register_task
+class ChartsRadialProgressIntervalCountTask(MergedChartQueryVariantTaskMixin, ChartsRadialProgressChartTask):
+    """Count radial progress widgets inside a progress interval."""
+
+    task_id = "task_charts__radial_progress__progress_interval_count"
+    default_dataset_enabled = True
+    allowed_query_ids = ("within_range_count",)
+
+
+@register_task
+class ChartsRadialProgressRemainingThresholdCountTask(MergedChartQueryVariantTaskMixin, ChartsRadialProgressChartTask):
+    """Count radial progress widgets satisfying a remaining-progress threshold."""
+
+    task_id = "task_charts__radial_progress__remaining_threshold_count"
+    default_dataset_enabled = True
+    allowed_query_ids = ("remaining_at_least_threshold_count",)
 
 
 @register_task
@@ -1147,8 +1165,10 @@ class ChartsRadialProgressExtremumRemainingLabelTask(MergedChartQueryVariantTask
 
 __all__ = [
     "ChartsRadialProgressChartTask",
-    "ChartsRadialProgressConditionCountTask",
     "ChartsRadialProgressExtremumRemainingLabelTask",
+    "ChartsRadialProgressIntervalCountTask",
+    "ChartsRadialProgressRemainingThresholdCountTask",
+    "ChartsRadialProgressThresholdCountTask",
     "CONDITION_COUNT_QUERY_IDS",
     "REMAINING_EXTREMUM_QUERY_IDS",
     "SUPPORTED_QUERY_IDS",

@@ -12,6 +12,6 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `spatial_transform_matrix`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence target: the winning option panel bbox
+4. Annotation type: `bbox_set`
+5. Annotation target: the winning option panel bbox
 6. Scene variants: `raven_strip|raven_card|raven_outline`

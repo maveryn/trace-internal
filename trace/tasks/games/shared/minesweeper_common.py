@@ -9,6 +9,8 @@ from typing import Dict, Iterable, Sequence, Tuple
 SUPPORTED_MINESWEEPER_QUERY_IDS: Tuple[str, ...] = (
     "forced_mine_count",
     "forced_safe_count",
+    "remaining_mine_count",
+    "reveal_outcome_label",
     "satisfied_clue_count",
 )
 SUPPORTED_MINESWEEPER_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -34,10 +36,15 @@ class MinesweeperSample:
     satisfied_clue_coords: Tuple[Coord, ...]
     unsatisfied_clue_coords: Tuple[Coord, ...]
     forcing_clue_coords: Tuple[Coord, ...]
-    evidence_coords: Tuple[Coord, ...]
+    annotation_coords: Tuple[Coord, ...]
     target_answer: int | None
     distractor_hidden_count: int
     construction_mode: str
+    target_cell_coord: Coord | None = None
+    supporting_clue_coords: Tuple[Coord, ...] = ()
+    supporting_flag_coords: Tuple[Coord, ...] = ()
+    reveal_outcome: str = ""
+    answer_options: Tuple[Tuple[str, str], ...] = ()
 
 
 def coord_to_cell_id(coord: Coord) -> str:

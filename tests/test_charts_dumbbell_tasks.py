@@ -67,8 +67,8 @@ def test_chart_dumbbell_variants_match_contract(query_id: str) -> None:
     assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(execution["question_format"]) == "dumbbell_pairwise_comparison_query"
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 10 <= int(execution["row_count"]) <= 16
     assert len(execution["rows"]) == int(execution["row_count"])
@@ -84,17 +84,17 @@ def test_chart_dumbbell_variants_match_contract(query_id: str) -> None:
         assert out.answer_gt.type == "string"
         assert str(out.answer_gt.value) in set(execution["row_labels"])
 
-    evidence_row_ids = [str(row_id) for row_id in execution["evidence_row_ids"]]
-    expected_bboxes = [trace["render_map"]["row_pair_bboxes_px"][row_id] for row_id in evidence_row_ids]
-    assert out.evidence_gt.value == expected_bboxes
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["row_ids"] == evidence_row_ids
+    annotation_row_ids = [str(row_id) for row_id in execution["annotation_row_ids"]]
+    expected_bboxes = [trace["render_map"]["row_pair_bboxes_px"][row_id] for row_id in annotation_row_ids]
+    assert out.annotation_gt.value == expected_bboxes
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["row_ids"] == annotation_row_ids
     if query_id in {"side_winner_count", "absolute_gap_threshold_count"}:
-        assert len(evidence_row_ids) == int(out.answer_gt.value)
+        assert len(annotation_row_ids) == int(out.answer_gt.value)
     else:
-        assert len(evidence_row_ids) == 1
+        assert len(annotation_row_ids) == 1
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -114,14 +114,14 @@ def test_chart_dumbbell_prompt_examples_match_contract() -> None:
     task = ChartsDumbbellPairwiseComparisonQueryTask()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=92100):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert "evidence" in answer_and_evidence
+        assert "annotation" in answer_and_annotation
         if query_id in {"side_winner_count", "absolute_gap_threshold_count"}:
-            assert isinstance(answer_and_evidence["answer"], int)
+            assert isinstance(answer_and_annotation["answer"], int)
             assert isinstance(answer_only["answer"], int)
         else:
-            assert isinstance(answer_and_evidence["answer"], str)
+            assert isinstance(answer_and_annotation["answer"], str)
             assert isinstance(answer_only["answer"], str)
 
 
@@ -168,7 +168,7 @@ def test_chart_dumbbell_is_deterministic() -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.complexity.to_dict() == out_b.complexity.to_dict()
 

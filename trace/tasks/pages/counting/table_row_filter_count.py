@@ -155,7 +155,7 @@ class _ResolvedQuery:
     target_section_index: int
     size_threshold_mb: int
     answer_value: int
-    evidence_row_ids: Tuple[str, ...]
+    annotation_row_ids: Tuple[str, ...]
     row_count_support: Tuple[int, ...]
     answer_count_support: Tuple[int, ...]
     section_count_support: Tuple[int, ...]
@@ -763,29 +763,29 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     for section_index, size in enumerate(sizes):
         for order_in_section in range(int(size)):
             flat_keys.append((int(section_index), int(order_in_section)))
-    evidence_keys = set(
+    annotation_keys = set(
         flat_keys[int(index)]
         for index in _select_indices(
             instance_seed=int(instance_seed),
-            namespace=f"evidence.{query_id}",
+            namespace=f"annotation.{query_id}",
             count=int(answer_value),
             size=len(flat_keys),
         )
     )
     if str(query_id) == "value_threshold_in_group_count":
         target_keys = [key for key in flat_keys if int(key[0]) == int(target_section_index)]
-        evidence_keys = set(
+        annotation_keys = set(
             target_keys[int(index)]
             for index in _select_indices(
                 instance_seed=int(instance_seed),
-                namespace=f"evidence.{query_id}.{target_section_index}",
+                namespace=f"annotation.{query_id}.{target_section_index}",
                 count=int(answer_value),
                 size=len(target_keys),
             )
         )
 
     rows: List[_RowSpec] = []
-    evidence_row_ids: List[str] = []
+    annotation_row_ids: List[str] = []
     non_target_statuses = [str(value) for value in status_label_pool if str(value) != str(target_status)]
     non_target_types = [str(value) for value in type_label_pool if str(value) != str(target_type)]
     non_target_actions = [str(value) for value in action_label_pool if str(value) != str(target_action_label)]
@@ -795,7 +795,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         for order_in_section in range(int(sizes[int(section_index)])):
             key = (int(section_index), int(order_in_section))
             row_id = f"row_{global_index:02d}"
-            is_match = key in evidence_keys
+            is_match = key in annotation_keys
             row_label = chr(ord("A") + int(global_index))
             item_name = f"{_ITEM_STEMS[int(global_index) % len(_ITEM_STEMS)]}-{100 + ((int(instance_seed) + int(global_index) * 17) % 900)}"
             type_label = str(type_label_pool[(int(global_index) + int(section_index)) % len(type_label_pool)])
@@ -874,7 +874,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         target_section_index=int(target_section_index),
         size_threshold_mb=int(size_threshold_mb),
         answer_value=int(answer_value),
-        evidence_row_ids=(),
+        annotation_row_ids=(),
         row_count_support=tuple(int(value) for value in row_count_support),
         answer_count_support=tuple(int(value) for value in answer_count_support),
         section_count_support=tuple(int(value) for value in section_count_support),
@@ -884,11 +884,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
     for row in rows:
         if _row_matches(row, placeholder):
-            evidence_row_ids.append(str(row.row_id))
-    if len(evidence_row_ids) != int(answer_value):
+            annotation_row_ids.append(str(row.row_id))
+    if len(annotation_row_ids) != int(answer_value):
         raise RuntimeError(
-            f"GUI table row-filter evidence cardinality does not match answer for {query_id}: "
-            f"{len(evidence_row_ids)} != {answer_value}"
+            f"GUI table row-filter annotation cardinality does not match answer for {query_id}: "
+            f"{len(annotation_row_ids)} != {answer_value}"
         )
 
     return _ResolvedQuery(
@@ -904,7 +904,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         target_section_index=int(target_section_index),
         size_threshold_mb=int(size_threshold_mb),
         answer_value=int(answer_value),
-        evidence_row_ids=tuple(str(value) for value in evidence_row_ids),
+        annotation_row_ids=tuple(str(value) for value in annotation_row_ids),
         row_count_support=tuple(int(value) for value in row_count_support),
         answer_count_support=tuple(int(value) for value in answer_count_support),
         section_count_support=tuple(int(value) for value in section_count_support),
@@ -1165,10 +1165,10 @@ def _render_table_scene(
 
 
 def _prompt_json_examples() -> Tuple[str, str]:
-    answer_and_evidence = {"evidence": [[72, 236, 1208, 264], [72, 292, 1208, 320], [72, 404, 1208, 432]], "answer": 3}
+    answer_and_annotation = {"annotation": [[72, 236, 1208, 264], [72, 292, 1208, 320], [72, 404, 1208, 432]], "answer": 3}
     answer_only = {"answer": 3}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1186,7 +1186,7 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     else:
         state_filtering = 0.72
         grouping = 0.82
-    output_burden = min(1.0, float(len(query.evidence_row_ids)) / 8.0)
+    output_burden = min(1.0, float(len(query.annotation_row_ids)) / 8.0)
     components = {
         "visual_scan": _clamp_unit(scan),
         "state_filtering": _clamp_unit(state_filtering + (0.05 * output_burden)),
@@ -1231,12 +1231,12 @@ class GuiCountingTableRowFilterCountTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered.row_bboxes_by_id[str(row_id)])
-            for row_id in query.evidence_row_ids
+            for row_id in query.annotation_row_ids
         ]
         answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults_source = dict(_PROMPT_DEFAULTS)
         prompt_defaults_override = params.get("_prompt_defaults_override")
@@ -1251,7 +1251,7 @@ class GuiCountingTableRowFilterCountTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -1264,7 +1264,7 @@ class GuiCountingTableRowFilterCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "status_label": str(query.target_status),
@@ -1274,7 +1274,7 @@ class GuiCountingTableRowFilterCountTask:
                 "size_threshold_mb": str(query.size_threshold_mb),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1287,7 +1287,7 @@ class GuiCountingTableRowFilterCountTask:
         matched_records = [
             dict(record)
             for record in row_records
-            if str(record["row_id"]) in set(str(value) for value in query.evidence_row_ids)
+            if str(record["row_id"]) in set(str(value) for value in query.annotation_row_ids)
         ]
         section_records: List[Dict[str, Any]] = []
         for section_index, section_name in enumerate(query.section_names):
@@ -1340,7 +1340,7 @@ class GuiCountingTableRowFilterCountTask:
                     "target_section_index": int(query.target_section_index),
                     "size_threshold_mb": int(query.size_threshold_mb),
                     "answer_value": int(query.answer_value),
-                    "evidence_row_ids": [str(value) for value in query.evidence_row_ids],
+                    "annotation_row_ids": [str(value) for value in query.annotation_row_ids],
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1396,7 +1396,7 @@ class GuiCountingTableRowFilterCountTask:
                 "section_bboxes_by_name": dict(rendered.section_bboxes_by_name),
                 "row_bboxes_by_id": dict(rendered.row_bboxes_by_id),
                 "cell_bboxes_by_row_id": dict(rendered.cell_bboxes_by_row_id),
-                "evidence_row_ids": [str(value) for value in query.evidence_row_ids],
+                "annotation_row_ids": [str(value) for value in query.annotation_row_ids],
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1411,7 +1411,7 @@ class GuiCountingTableRowFilterCountTask:
                 "size_threshold_mb": int(query.size_threshold_mb),
                 "section_records": list(section_records),
                 "rows": list(row_records),
-                "matching_row_ids": [str(value) for value in query.evidence_row_ids],
+                "matching_row_ids": [str(value) for value in query.annotation_row_ids],
                 "matching_rows": list(matched_records),
                 "total_row_count": int(len(query.rows)),
                 "section_count": int(len(query.section_names)),
@@ -1422,18 +1422,18 @@ class GuiCountingTableRowFilterCountTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "evidence_row_ids": [str(value) for value in query.evidence_row_ids],
-                "value": list(evidence_bboxes),
+                "annotation_row_ids": [str(value) for value in query.annotation_row_ids],
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

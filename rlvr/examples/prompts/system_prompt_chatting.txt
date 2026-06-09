@@ -15,7 +15,7 @@ Your response must include two parts:
 * Use reasoning strategies such as:
   * **Planning** – outline possible approaches before committing.
   * **Exploration** – consider multiple image regions or interpretations, even unlikely ones.
-  * **Evaluation** – compare alternatives and verify against visual evidence.
+  * **Evaluation** – compare alternatives and verify against visual annotation.
   * **Reflection** – revisit earlier ideas if they may still be viable.
 * Thoroughly examine and cross-check relevant image regions before narrowing down.
 * If the image is ambiguous, make a reasonable inference based on visual and contextual cues.

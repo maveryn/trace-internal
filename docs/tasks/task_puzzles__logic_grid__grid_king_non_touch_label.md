@@ -12,7 +12,7 @@
 2. `query_id`: `king_non_touch`
 3. Board size: `3x3..5x5`
 4. Answer type: `option_letter`
-5. Evidence type: `keyed_bbox_map`
-6. Evidence target: role-keyed `source_grid` and `selected_option` bboxes
+5. Annotation type: `keyed_bbox_map`
+6. Annotation target: role-keyed `source_grid` and `selected_option` bboxes
 7. Scene variants: `logic_strip|logic_card|logic_outline`
 8. Render metadata records the sampled shared panel style and global label font under `render_spec.text_style.font`.

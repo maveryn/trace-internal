@@ -35,8 +35,10 @@ from ..shared.diagram_style import (
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _probability_map
 from ..shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox, round1
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
+from ..shared.option_count import resolve_geometry_option_count
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -79,6 +81,7 @@ class _ResolvedProblem:
     target_index: int | None
     option_labels: Tuple[str, ...]
     answer_probabilities: Dict[str, float]
+    option_count_probabilities: Dict[str, float]
 
 
 @dataclass
@@ -115,19 +118,12 @@ class _RenderedCylinderScene:
     image: Image.Image
     answer: int | str
     answer_type: str
-    evidence_type: str
-    evidence_value: Any
-    evidence_roles: Tuple[str, ...]
+    annotation_type: str
+    annotation_value: Any
+    annotation_roles: Tuple[str, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
-
-
-def _probability_map(values: Sequence[int | str], selected: int | str | None = None) -> Dict[str, float]:
-    if selected is None:
-        probability = 1.0 / float(max(1, len(values)))
-        return {str(value): float(probability) for value in values}
-    return {str(value): (1.0 if str(value) == str(selected) else 0.0) for value in values}
 
 
 def _resolve_path_case(
@@ -189,11 +185,19 @@ def _resolve_problem(
             target_index=None,
             option_labels=(),
             answer_probabilities=probabilities,
+            option_count_probabilities={},
         )
     if query_id == "wrapped_mark_position_label":
-        option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", 6)))
-        if option_count < 5:
-            raise ValueError("wrapped mark task requires at least five candidate positions")
+        option_count, option_count_probabilities = resolve_geometry_option_count(
+            params=params,
+            gen_defaults=gen_defaults,
+            field_name="option_count",
+            supported_counts=(4, 6),
+            task_id=task_id,
+            instance_seed=int(instance_seed),
+        )
+        if option_count < 4:
+            raise ValueError("wrapped mark task requires at least four candidate positions")
         if option_count > len(LABEL_POOL_SAFE_UPPER):
             raise ValueError("option_count exceeds safe label pool")
         explicit = params.get("target_index")
@@ -222,6 +226,7 @@ def _resolve_problem(
             target_index=int(target_index),
             option_labels=tuple(labels),
             answer_probabilities=_probability_map(tuple(range(option_count))),
+            option_count_probabilities=dict(option_count_probabilities),
         )
     raise ValueError(f"unsupported cylinder-wrap query_id: {query_id}")
 
@@ -317,7 +322,7 @@ def _draw_text(
     *,
     font: Any | None = None,
     fill: Color | None = None,
-    stroke_width: int = 2,
+    stroke_width: int = 1,
 ) -> BBox:
     active_font = font or ctx.small_font
     active_fill = fill or ctx.label_color
@@ -581,13 +586,13 @@ def _render_surface_path_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         image=ctx.image,
         answer=int(problem.path_length),
         answer_type="number",
-        evidence_type="keyed_bbox_map",
-        evidence_value={
+        annotation_type="keyed_bbox_map",
+        annotation_value={
             "marked_surface_path": bbox_to_list(path_bbox),
             "circumference_dimension": bbox_to_list(circumference_dimension_bbox),
             "height_dimension": bbox_to_list(height_dimension_bbox),
         },
-        evidence_roles=("marked_surface_path", "circumference_dimension", "height_dimension"),
+        annotation_roles=("marked_surface_path", "circumference_dimension", "height_dimension"),
         scene_entities=scene_entities,
         render_map={
             "coord_space": "pixel",
@@ -680,7 +685,7 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         point = _candidate_point(circle_center, radius, idx, int(problem.option_count))
         option_bbox = _draw_marker(ctx, point, radius=12.0, color=ctx.secondary_accent_color)
         label_point = _candidate_point(circle_center, radius + 35.0, idx, int(problem.option_count))
-        label_bbox = _draw_text(ctx, str(label), label_point, font=ctx.small_font, stroke_width=2)
+        label_bbox = _draw_text(ctx, str(label), label_point, font=ctx.small_font, stroke_width=1)
         combined_bbox = (
             min(option_bbox[0], label_bbox[0]),
             min(option_bbox[1], label_bbox[1]),
@@ -727,12 +732,12 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         image=ctx.image,
         answer=str(problem.answer),
         answer_type="option_letter",
-        evidence_type="keyed_point_map",
-        evidence_value={
+        annotation_type="keyed_point_map",
+        annotation_value={
             "source_strip_mark": [round(mark_x, 3), round(mark_y, 3)],
             "matching_rim_candidate": [round(selected_center[0], 3), round(selected_center[1], 3)],
         },
-        evidence_roles=("source_strip_mark", "matching_rim_candidate"),
+        annotation_roles=("source_strip_mark", "matching_rim_candidate"),
         scene_entities=scene_entities,
         render_map={
             "coord_space": "pixel",
@@ -761,20 +766,20 @@ def _bbox_centers(bboxes: Sequence[Sequence[float]]) -> list[list[float]]:
     ]
 
 
-def _projected_evidence(evidence_type: str, evidence_value: Mapping[str, Any]) -> Dict[str, Any]:
-    if str(evidence_type) == "keyed_bbox_map":
+def _projected_annotation(annotation_type: str, annotation_value: Mapping[str, Any]) -> Dict[str, Any]:
+    if str(annotation_type) == "keyed_bbox_map":
         return {
             "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(evidence_value),
-            "pixel_keyed_bbox_map": dict(evidence_value),
+            "keyed_bbox_map": dict(annotation_value),
+            "pixel_keyed_bbox_map": dict(annotation_value),
         }
-    if str(evidence_type) == "keyed_point_map":
+    if str(annotation_type) == "keyed_point_map":
         return {
             "type": "keyed_point_map",
-            "keyed_point_map": dict(evidence_value),
-            "pixel_keyed_point_map": dict(evidence_value),
+            "keyed_point_map": dict(annotation_value),
+            "pixel_keyed_point_map": dict(annotation_value),
         }
-    raise ValueError(f"unsupported cylinder-wrap evidence type: {evidence_type}")
+    raise ValueError(f"unsupported cylinder-wrap annotation type: {annotation_type}")
 
 
 class _CylinderWrapBaseTask:
@@ -783,6 +788,7 @@ class _CylinderWrapBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     query_id = ""
     scene_variant = ""
@@ -798,7 +804,7 @@ class _CylinderWrapBaseTask:
             visual_scan = 0.62
             precision = clamp_unit_interval(0.42 + (0.18 * max(height, circumference) / 40.0))
             ambiguity = 0.52
-        output_burden = clamp_unit_interval(0.40 + (0.05 * len(rendered.evidence_roles)))
+        output_burden = clamp_unit_interval(0.40 + (0.05 * len(rendered.annotation_roles)))
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -860,7 +866,7 @@ class _CylinderWrapBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -874,12 +880,12 @@ class _CylinderWrapBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=None,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -896,8 +902,8 @@ class _CylinderWrapBaseTask:
         else:
             answer_value = str(rendered.answer)
             answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_value = dict(rendered.evidence_value)
-        evidence_gt = TypedValue(type=str(rendered.evidence_type), value=dict(evidence_value))
+        annotation_value = dict(rendered.annotation_value)
+        annotation_gt = TypedValue(type=str(rendered.annotation_type), value=dict(annotation_value))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(self.scene_variant),
@@ -907,6 +913,7 @@ class _CylinderWrapBaseTask:
         }
         if str(problem.query_id) == "wrapped_mark_position_label":
             query_params["target_index_probabilities"] = dict(problem.answer_probabilities)
+            query_params["option_count_probabilities"] = dict(problem.option_count_probabilities)
         else:
             query_params["target_support_probabilities"] = dict(problem.answer_probabilities)
         trace_payload: Dict[str, Any] = {
@@ -918,7 +925,7 @@ class _CylinderWrapBaseTask:
                     "scene_variant": str(self.scene_variant),
                     "query_id": str(problem.query_id),
                     "answer_value": answer_value,
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -943,7 +950,7 @@ class _CylinderWrapBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_type": str(rendered.answer_type),
                 "answer_value": answer_value,
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2,
                 **dict(rendered.witness),
             },
@@ -952,17 +959,17 @@ class _CylinderWrapBaseTask:
                 "scene_id": SCENE_ID,
                 "scene_variant": str(self.scene_variant),
                 "query_id": str(problem.query_id),
-                "source_witness_type": str(rendered.evidence_type),
-                "original_evidence_value": list(rendered.evidence_roles),
+                "source_witness_type": str(rendered.annotation_type),
+                "original_annotation_value": list(rendered.annotation_roles),
                 "answer_value": answer_value,
                 **dict(rendered.witness),
             },
-            "projected_evidence": _projected_evidence(str(rendered.evidence_type), evidence_value),
+            "projected_annotation": _projected_annotation(str(rendered.annotation_type), annotation_value),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -28,7 +28,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.text_rendering import load_font
-from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -1372,7 +1372,7 @@ def _build_prompt(prompt_defaults: Mapping[str, Any], *, scene_variant: str, ins
         "json_output_contract",
         "json_output_contract_answer_only",
         "answer_hint",
-        "evidence_hint",
+        "annotation_hint",
         "json_example",
         "json_example_answer_only",
     )
@@ -1382,7 +1382,7 @@ def _build_prompt(prompt_defaults: Mapping[str, Any], *, scene_variant: str, ins
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_values["answer_hint"]),
-        "evidence_hint": str(prompt_values["evidence_hint"]),
+        "annotation_hint": str(prompt_values["annotation_hint"]),
         "json_example": str(prompt_values["json_example"]),
         "json_example_answer_only": str(prompt_values["json_example_answer_only"]),
     }
@@ -1393,7 +1393,7 @@ def _build_prompt(prompt_defaults: Mapping[str, Any], *, scene_variant: str, ins
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=QUERY_ID,
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1474,13 +1474,13 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
         rendered_scene = _render_scene(background=background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(rendered_scene.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(prompt_defaults, scene_variant=str(dataset.scene_variant), instance_seed=int(instance_seed))
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.item_bbox_map,
             [str(dataset.correct_option_panel_id), str(dataset.missing_region_id)],
         )
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "query_id": QUERY_ID,
             "query_id_probabilities": {QUERY_ID: 1.0},
@@ -1564,7 +1564,7 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
                 "scene_bbox_px": [round(float(value), 3) for value in rendered_scene.scene_bbox_px],
                 "tile_bboxes_px": {str(key): [round(float(v), 3) for v in value] for key, value in rendered_scene.tile_bbox_map.items()},
                 "item_bboxes_px": {str(key): [round(float(v), 3) for v in value] for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 **dict(query_params),
@@ -1585,12 +1585,12 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "value": list(annotation_bboxes),
             },
         }
         visual_scan = clamp_unit_interval(
@@ -1610,7 +1610,7 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

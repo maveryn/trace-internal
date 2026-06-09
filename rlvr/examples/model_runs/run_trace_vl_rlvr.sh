@@ -49,10 +49,10 @@ case "$TRACE_OUTPUT_MODE" in
     DEFAULT_TRACE_REWARD_MODE="answer"
     DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer.txt"
     ;;
-  answer_and_evidence|evidence)
-    DEFAULT_PROMPT_KEY="prompt_answer_and_evidence"
-    DEFAULT_TRACE_REWARD_MODE="answer_and_evidence"
-    DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer_and_evidence.txt"
+  answer_and_annotation|annotation)
+    DEFAULT_PROMPT_KEY="prompt_answer_and_annotation"
+    DEFAULT_TRACE_REWARD_MODE="answer_and_annotation"
+    DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation.txt"
     ;;
   *)
     echo "Unsupported TRACE_OUTPUT_MODE: $TRACE_OUTPUT_MODE" >&2
@@ -92,9 +92,9 @@ export TRACE_OUTPUT_MODE
 export PROMPT_KEY
 export TRACE_REWARD_MODE
 export TRACE_SYSTEM_PROMPT
-export TRACE_EVIDENCE_REWARD_FORMULA="${TRACE_EVIDENCE_REWARD_FORMULA:-gated}"
+export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
 export TRACE_ANSWER_WEIGHT="${TRACE_ANSWER_WEIGHT:-0.5}"
-export TRACE_EVIDENCE_WEIGHT="${TRACE_EVIDENCE_WEIGHT:-0.5}"
+export TRACE_ANNOTATION_WEIGHT="${TRACE_ANNOTATION_WEIGHT:-0.5}"
 export VLLM_GPU_MEMORY_UTILIZATION="${VLLM_GPU_MEMORY_UTILIZATION:-0.9}"
 export VLLM_MAX_NUM_BATCHED_TOKENS="${VLLM_MAX_NUM_BATCHED_TOKENS:-32768}"
 export VLLM_MAX_NUM_SEQS="${VLLM_MAX_NUM_SEQS:-1024}"

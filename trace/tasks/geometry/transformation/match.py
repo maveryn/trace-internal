@@ -21,11 +21,12 @@ from ...shared.drawing import draw_arrow, draw_dashed_line
 from ..comparison.shared import resolve_comparison_winner_label
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_transformation_complexity
-from ..shared.fixed_query_task import MultiFixedGeometryQueryTaskMixin
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.multi_polygon_scene import PolygonSceneObject, draw_polygon_objects
 from ..shared.noise_defaults import load_geometry_noise_defaults
+from ..shared.option_count import resolve_geometry_option_count
 from ..shared.point_labels import draw_labeled_points
 from ..shared.polygon_scene_helpers import (
     draw_reference_polygon,
@@ -89,7 +90,7 @@ class _TaskDefaults:
     label_font_size_max: int = 28
     label_stroke_width: int = 1
     label_stroke_width_min: int = 1
-    label_stroke_width_max: int = 2
+    label_stroke_width_max: int = 1
     object_label_offset_px: int = 14
     reference_label_gap_px: int = 20
     cue_label_gap_px: int = 18
@@ -166,6 +167,7 @@ class _ResolvedQuery:
     query_id_probabilities: Dict[str, float]
     winner_label_probabilities: Dict[str, float]
     candidate_label_pool: Tuple[str, ...]
+    candidate_count_probabilities: Dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -186,10 +188,10 @@ class _RenderedTransformationScene:
     cue_trace: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
-    evidence: Dict[str, Any]
+    annotation: Dict[str, Any]
     answer_value: str
     object_label_centers: Dict[str, List[float]]
-    required_evidence_labels: List[str]
+    required_annotation_labels: List[str]
     rotation_mode: str | None
     rotation_prompt_label: str | None
     translation_vector: Tuple[int, int] | None
@@ -262,8 +264,8 @@ def _translation_vector_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, i
     return tuple(support)
 
 
-def _candidate_slot_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, int], ...]:
-    """Resolve the six candidate slot centers used by the transformation scene."""
+def _candidate_slot_support(params: Mapping[str, Any], *, candidate_count: int) -> Tuple[Tuple[int, int], ...]:
+    """Resolve the visible candidate slot centers used by the transformation scene."""
 
     raw_support = params.get("candidate_slots", group_default(_GEN_DEFAULTS, "candidate_slots", _DEFAULTS.candidate_slots))
     slots: List[Tuple[int, int]] = []
@@ -273,9 +275,16 @@ def _candidate_slot_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, int],
         slot = (int(value[0]), int(value[1]))
         if slot not in slots:
             slots.append(slot)
-    if len(slots) != 6:
-        raise ValueError("geometry transformation currently requires exactly six candidate slots")
-    return tuple(slots)
+    if len(slots) < int(candidate_count):
+        raise ValueError("geometry transformation candidate_slots cannot provide the visible candidate count")
+    return tuple(slots[: int(candidate_count)])
+
+
+def _visible_candidate_labels(label_pool: Sequence[str], *, winner_label: str, candidate_count: int) -> Tuple[str, ...]:
+    labels = tuple(str(label) for label in label_pool[: int(candidate_count)])
+    if str(winner_label) in set(labels):
+        return labels
+    return tuple([str(winner_label), *[label for label in labels if str(label) != str(winner_label)]])[: int(candidate_count)]
 
 
 def _polygon_graph_bbox(vertices: Sequence[Point]) -> Tuple[float, float, float, float]:
@@ -532,8 +541,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             group_default(_GEN_DEFAULTS, "candidate_label_pool", _DEFAULTS.candidate_label_pool),
         )
     )
-    if len(label_pool) != 6 or len(set(label_pool)) != 6:
-        raise ValueError("geometry transformation requires exactly six unique candidate labels")
+    if len(label_pool) not in {4, 6} or len(set(label_pool)) != len(label_pool):
+        raise ValueError("geometry transformation requires four or six unique candidate labels")
+    supported_counts = tuple(count for count in (4, 6) if int(count) <= len(label_pool))
+    candidate_count, candidate_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        field_name="candidate_count",
+        supported_counts=supported_counts,
+        task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+    )
     winner_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.winner_label")
     winner_label, winner_probs = resolve_comparison_winner_label(
         winner_rng,
@@ -545,6 +563,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             f"{TASK_ID}.winner_label.{str(scene_variant)}.{str(query_id)}"
         ),
     )
+    visible_labels = _visible_candidate_labels(label_pool, winner_label=str(winner_label), candidate_count=int(candidate_count))
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
         query_id=str(query_id),
@@ -552,7 +571,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         scene_variant_probabilities=dict(scene_probs),
         query_id_probabilities=dict(query_probs),
         winner_label_probabilities=dict(winner_probs),
-        candidate_label_pool=tuple(label_pool),
+        candidate_label_pool=tuple(visible_labels),
+        candidate_count_probabilities=dict(candidate_count_probabilities),
     )
 
 
@@ -581,7 +601,7 @@ def _sample_transformation_scene(
     """Sample and render one full transformation-match scene."""
 
     template = sample_asymmetric_polygon_template(str(query.scene_variant), rng, profile="compact")
-    slots = _candidate_slot_support(params)
+    slots = _candidate_slot_support(params, candidate_count=len(query.candidate_label_pool))
     translation_vectors = _translation_vector_support(params)
 
     winner_slot_index: int | None = None
@@ -657,7 +677,7 @@ def _sample_transformation_scene(
         rotation_modes = list(_ROTATION_MODES)
         rng.shuffle(rotation_modes)
         for mode in rotation_modes:
-            allowed = list(mode.allowed_slot_indices)
+            allowed = [index for index in mode.allowed_slot_indices if int(index) < len(slots)]
             rng.shuffle(allowed)
             for slot_index in allowed:
                 slot_center = slots[int(slot_index)]
@@ -835,13 +855,13 @@ def _sample_transformation_scene(
     scene_entities.append(dict(cue_trace))
 
     winner_vertices_px = candidate_vertices_px_by_label[str(query.winner_label)]
-    evidence = graph_point_set_evidence_artifacts(
+    annotation = graph_point_set_annotation_artifacts(
         points_by_label=ordered_vertex_label_map(winner_vertices_px),
         graph_origin=context.graph_origin,
         graph_spacing=int(context.graph_spacing),
         witness_type="winning_transformed_polygon_vertices",
     )
-    required_labels = list(evidence.get("required_labels", []))
+    required_labels = list(annotation.get("required_labels", []))
 
     render_map = {
         "image_id": "img0",
@@ -876,10 +896,10 @@ def _sample_transformation_scene(
         cue_trace=dict(cue_trace),
         scene_entities=scene_entities,
         render_map=render_map,
-        evidence=evidence,
+        annotation=annotation,
         answer_value=str(query.winner_label),
         object_label_centers=dict(object_label_centers),
-        required_evidence_labels=required_labels,
+        required_annotation_labels=required_labels,
         rotation_mode=(str(rotation_mode.mode_id) if rotation_mode is not None else None),
         rotation_prompt_label=(str(rotation_mode.prompt_label) if rotation_mode is not None else None),
         translation_vector=translation_vector,
@@ -1044,9 +1064,9 @@ class GeometryTransformationMatchTask:
         ):
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
-        evidence_value = rendered_scene.evidence.get("evidence_value", [])
-        if not isinstance(evidence_value, list) or not evidence_value:
-            raise RuntimeError("geometry transformation evidence must include winning polygon pixel points")
+        annotation_value = rendered_scene.annotation.get("annotation_value", [])
+        if not isinstance(annotation_value, list) or not annotation_value:
+            raise RuntimeError("geometry transformation annotation must include winning polygon pixel points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -1065,23 +1085,23 @@ class GeometryTransformationMatchTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint_template",
+                "annotation_hint_template",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
-        evidence_hint = str(prompt_defaults["evidence_hint_template"]).format(
-            vertex_count=len(rendered_scene.required_evidence_labels),
+        annotation_hint = str(prompt_defaults["annotation_hint_template"]).format(
+            vertex_count=len(rendered_scene.required_annotation_labels),
         )
         prompt_slots = {
             "object_description": str(prompt_defaults["object_description"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(evidence_hint),
+            "annotation_hint": str(annotation_hint),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -1095,16 +1115,16 @@ class GeometryTransformationMatchTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(rendered_scene.answer_value))
-        evidence_gt = TypedValue(
-            type=str(rendered_scene.evidence["evidence_type"]),
-            value=[list(point) for point in evidence_value],
+        annotation_gt = TypedValue(
+            type=str(rendered_scene.annotation["annotation_type"]),
+            value=[list(point) for point in annotation_value],
         )
 
         query_params: Dict[str, Any] = {
@@ -1114,6 +1134,7 @@ class GeometryTransformationMatchTask:
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "winner_label_probabilities": dict(query.winner_label_probabilities),
             "candidate_label_pool": list(query.candidate_label_pool),
+            "candidate_count_probabilities": dict(query.candidate_count_probabilities),
         }
         if rendered_scene.translation_vector is not None:
             query_params["translation_vector"] = [int(rendered_scene.translation_vector[0]), int(rendered_scene.translation_vector[1])]
@@ -1154,6 +1175,8 @@ class GeometryTransformationMatchTask:
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
                 **dict(context.graph_layout_metadata),
                 "scene_variant": str(query.scene_variant),
+                "candidate_count": int(len(query.candidate_label_pool)),
+                "candidate_count_probabilities": dict(query.candidate_count_probabilities),
             },
             "render_map": {
                 **dict(rendered_scene.render_map),
@@ -1167,8 +1190,9 @@ class GeometryTransformationMatchTask:
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label": str(rendered_scene.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
+                "candidate_count_probabilities": dict(query.candidate_count_probabilities),
                 "cue_kind": str(rendered_scene.cue_kind),
-                "required_evidence_labels": list(rendered_scene.required_evidence_labels),
+                "required_annotation_labels": list(rendered_scene.required_annotation_labels),
                 "question_format": "label_choice_no_text_options",
                 "rotation_mode": (str(rendered_scene.rotation_mode) if rendered_scene.rotation_mode is not None else None),
                 "rotation_instruction": (str(rendered_scene.rotation_prompt_label) if rendered_scene.rotation_prompt_label is not None else None),
@@ -1179,10 +1203,10 @@ class GeometryTransformationMatchTask:
                 ),
             },
             "witness_symbolic": {
-                **dict(rendered_scene.evidence["witness_symbolic"]),
+                **dict(rendered_scene.annotation["witness_symbolic"]),
                 "winner_label": str(rendered_scene.winner_label),
             },
-            "projected_evidence": dict(rendered_scene.evidence["projected_evidence"]),
+            "projected_annotation": dict(rendered_scene.annotation["projected_annotation"]),
         }
 
         scene_bonus = 0.08 if str(query.scene_variant) == "quadrilateral" else 0.0
@@ -1201,13 +1225,13 @@ class GeometryTransformationMatchTask:
             query_id=str(query.query_id),
             scene_variant=str(query.scene_variant),
             ambiguity=float(ambiguity),
-            evidence_point_count=len(rendered_scene.required_evidence_labels),
+            annotation_point_count=len(rendered_scene.required_annotation_labels),
         )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1219,10 +1243,33 @@ class GeometryTransformationMatchTask:
 
 
 @register_task
-class GeometryTransformationCandidateMatchTask(MultiFixedGeometryQueryTaskMixin, GeometryTransformationMatchTask):
-    """Choose the candidate polygon matching the requested transformation."""
+class GeometryShapeGalleryReflectionMatchTask(FixedGeometryQueryTaskMixin, GeometryTransformationMatchTask):
+    """Choose the candidate polygon matching the requested reflection."""
 
-    task_id = "task_geometry__shape_gallery__transformation_match_label"
-    fixed_query_ids = ("translation_match", "reflection_match", "rotation_match")
+    task_id = "task_geometry__shape_gallery__reflection_match"
+    fixed_query_id = "reflection_match"
+    scene_id = "shape_gallery"
+    public_scene_id = "shape_gallery"
+    allowed_scene_variants = SUPPORTED_SCENE_VARIANTS
+
+
+@register_task
+class GeometryShapeGalleryRotationMatchTask(FixedGeometryQueryTaskMixin, GeometryTransformationMatchTask):
+    """Choose the candidate polygon matching the requested rotation."""
+
+    task_id = "task_geometry__shape_gallery__rotation_match"
+    fixed_query_id = "rotation_match"
+    scene_id = "shape_gallery"
+    public_scene_id = "shape_gallery"
+    allowed_scene_variants = SUPPORTED_SCENE_VARIANTS
+
+
+@register_task
+class GeometryShapeGalleryTranslationMatchTask(FixedGeometryQueryTaskMixin, GeometryTransformationMatchTask):
+    """Choose the candidate polygon matching the requested translation."""
+
+    task_id = "task_geometry__shape_gallery__translation_match"
+    fixed_query_id = "translation_match"
+    scene_id = "shape_gallery"
     public_scene_id = "shape_gallery"
     allowed_scene_variants = SUPPORTED_SCENE_VARIANTS

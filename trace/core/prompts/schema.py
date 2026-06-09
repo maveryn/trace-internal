@@ -18,7 +18,7 @@ class PromptBundle:
     scene_templates: Dict[str, Tuple[str, ...]]
     task_templates: Dict[str, Tuple[str, ...]]
     query_templates: Dict[str, Tuple[str, ...]]
-    answer_or_evidence_templates: Dict[str, Tuple[str, ...]]
+    answer_or_annotation_templates: Dict[str, Tuple[str, ...]]
     required_slots_by_key: Dict[str, Tuple[str, ...]]
     source_path: str
 
@@ -93,14 +93,14 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
         if query_raw is not None
         else {}
     )
-    answer_or_evidence_raw = raw.get("answer_or_evidence_templates")
-    answer_or_evidence_templates = (
+    answer_or_annotation_raw = raw.get("answer_or_annotation_templates")
+    answer_or_annotation_templates = (
         _parse_template_map(
-            answer_or_evidence_raw,
-            field_name="answer_or_evidence_templates",
+            answer_or_annotation_raw,
+            field_name="answer_or_annotation_templates",
             allow_empty_templates=True,
         )
-        if answer_or_evidence_raw is not None
+        if answer_or_annotation_raw is not None
         else {}
     )
     required_slots_by_key = _parse_required_slots(raw.get("required_slots_by_key"))
@@ -112,7 +112,7 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
         scene_templates=scene_templates,
         task_templates=task_templates,
         query_templates=query_templates,
-        answer_or_evidence_templates=answer_or_evidence_templates,
+        answer_or_annotation_templates=answer_or_annotation_templates,
         required_slots_by_key=required_slots_by_key,
         source_path=str(source_path),
     )

@@ -21,7 +21,7 @@ Operational policy for build lifecycle and pre-finalize validation.
    - `render_map`
    - `execution_trace`
    - `witness_symbolic`
-   - `projected_evidence`
+   - `projected_annotation`
 
 ## 3) Required pre-finalize checks
 1. Train-instance schema validity.
@@ -48,11 +48,11 @@ For new or distribution-changing task logic:
    - random sample review: 100 samples per task (`random_review_100.json`)
    - per-query-id distribution review: 100 samples per query id when variants exist (`distribution_review.json`)
      - per-query-id collection uses the same task sampler as dataset generation, with only explicit public variant/query overrides when needed for coverage
-   - browser inspection sidecars: images, JSON data, prompt/answer/evidence payloads, and manifests under `review/task-reviews/<domain>/<scene_id>/<task_id>/`
+   - browser inspection sidecars: images, JSON data, prompt/answer/annotation payloads, and manifests under `review/task-reviews/<domain>/<scene_id>/<task_id>/`
      - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration reviews should use the default 100 total task samples
    - review artifacts live under `review/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows
    - current calibration artifacts must carry `calibration_baseline: "v0"` in manifests or stats files; artifacts without that metadata are stale for current acceptance
-   - after regenerating review artifacts, reload the browser review app index with **Reload Index** or `POST /api/reload` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific feedback there; Excel exports are optional static snapshots, not the required review surface
+   - after regenerating review artifacts, reload the browser review app index with **Reload Index** or `POST /api/reload` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific issues there; Excel exports are optional static snapshots, not the required review surface. The app UI and browser route say "issue" and `/issues`; internal APIs/storage still use `feedback`.
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 5`
    - `max_answer_frequency < 1/3`

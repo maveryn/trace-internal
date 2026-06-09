@@ -28,22 +28,20 @@ from .object_library import choose_object_colors
 
 
 SOURCE_TASK_IDS: Tuple[str, ...] = (
-    "task_illustrations__object_field__object_type_count",
-    "task_illustrations__environment__feature_relation_count",
+    "task_illustrations__environment__on_feature_object_count",
     "task_illustrations__indoor_room__surface_object_count",
-    "task_illustrations__library__section_book_count",
-    "task_illustrations__park_playground__person_count",
-    "task_illustrations__transit_terminal__entity_location_count",
+    "task_illustrations__library__books_in_section_count",
+    "task_illustrations__park_playground__activity_person_count",
+    "task_illustrations__transit_terminal__person_in_boarding_area_count",
     "task_illustrations__construction_site__worker_attribute_count",
 )
 
 SOURCE_SCENE_BY_TASK: Dict[str, str] = {
-    "task_illustrations__object_field__object_type_count": "object_field",
-    "task_illustrations__environment__feature_relation_count": "environment",
+    "task_illustrations__environment__on_feature_object_count": "environment",
     "task_illustrations__indoor_room__surface_object_count": "indoor_room",
-    "task_illustrations__library__section_book_count": "library",
-    "task_illustrations__park_playground__person_count": "park_playground",
-    "task_illustrations__transit_terminal__entity_location_count": "transit_terminal",
+    "task_illustrations__library__books_in_section_count": "library",
+    "task_illustrations__park_playground__activity_person_count": "park_playground",
+    "task_illustrations__transit_terminal__person_in_boarding_area_count": "transit_terminal",
     "task_illustrations__construction_site__worker_attribute_count": "construction_site",
 }
 

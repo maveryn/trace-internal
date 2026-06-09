@@ -75,9 +75,9 @@ def resolve_review_query_id(output: Any) -> str:
     return str(query_id)
 
 
-def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None]) -> Dict[str, Any]:
+def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None, int]) -> Dict[str, Any]:
     """Generate one task sample for one deterministic seed job tuple."""
-    task_id, instance_seed, max_attempts, params = job
+    task_id, instance_seed, max_attempts, params, sample_cursor = job
     task = _thread_local_task(str(task_id))
     try:
         task_params = dict(params) if isinstance(params, Mapping) else {}
@@ -88,6 +88,7 @@ def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None])
         ]
         if forbidden:
             raise ValueError(f"manual sampler controls are not allowed in task-review params: {forbidden}")
+        task_params["_sample_cursor"] = int(sample_cursor)
         out = task.generate(
             int(instance_seed),
             params=task_params,
@@ -95,12 +96,14 @@ def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None])
         )
         return {
             "instance_seed": int(instance_seed),
+            "sample_cursor": int(sample_cursor),
             "output": out,
             "error_type": "",
         }
     except Exception as exc:
         return {
             "instance_seed": int(instance_seed),
+            "sample_cursor": int(sample_cursor),
             "output": None,
             "error_type": str(type(exc).__name__),
         }
@@ -123,6 +126,7 @@ def _generate_batch_outputs(
             int(hash64(int(seed), str(task_id), int(index))),
             int(max_attempts),
             dict(params) if isinstance(params, Mapping) else None,
+            int(index),
         )
         for index in range(int(start_index), int(start_index) + int(batch_size))
     ]
@@ -153,7 +157,7 @@ def _generate_explicit_query_id_batch(
     if not pending_query_ids or int(batch_size) <= 0:
         return []
 
-    jobs: List[tuple[str, int, int, Mapping[str, Any] | None]] = []
+    jobs: List[tuple[str, int, int, Mapping[str, Any] | None, int]] = []
     query_id_index = 0
     while len(jobs) < int(batch_size):
         pending_query_ids = [
@@ -174,6 +178,7 @@ def _generate_explicit_query_id_batch(
                 {
                     "query_id": str(query_id_value),
                 },
+                int(request_index),
             )
         )
         query_id_index += 1
@@ -292,7 +297,11 @@ def collect_query_id_samples(
                 if not transitioned_to_explicit:
                     query_rows = samples_by_query_id.setdefault(str(query_id), [])
                     if len(query_rows) < int(target_count):
-                        query_rows.append(dict(collector(output, instance_seed)))
+                        sample_record = dict(collector(output, instance_seed))
+                        generation_params = dict(sample_record.get("generation_params", {}) or {})
+                        generation_params["_sample_cursor"] = int(row.get("sample_cursor", 0))
+                        sample_record["generation_params"] = generation_params
+                        query_rows.append(sample_record)
 
                 if expected_query_ids and all(
                     len(samples_by_query_id.get(str(query_id_value), [])) >= int(target_count)
@@ -378,7 +387,11 @@ def generate_random_samples(
                 output = row.get("output")
                 if output is None:
                     continue
-                accepted.append(dict(collector(output, int(row["instance_seed"]))))
+                sample_record = dict(collector(output, int(row["instance_seed"])))
+                generation_params = dict(sample_record.get("generation_params", {}) or {})
+                generation_params["_sample_cursor"] = int(row.get("sample_cursor", 0))
+                sample_record["generation_params"] = generation_params
+                accepted.append(sample_record)
                 if int(len(accepted)) >= int(target):
                     break
     finally:

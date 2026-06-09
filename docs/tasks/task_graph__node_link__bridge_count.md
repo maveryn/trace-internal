@@ -11,7 +11,7 @@
 2. `query_id`: `bridge_count`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
-4. `evidence_gt.type`: `point_pair_set`
+4. `annotation_gt.type`: `point_pair_set`
 5. Scene contract:
    - one single-panel labeled undirected node-link graph per image,
    - simple unweighted graph only,
@@ -25,7 +25,7 @@
 7. Count policy:
    - `target_count` is sampled from `0..5`,
    - node count is chosen from the feasible support that can realize the requested bridge count,
-   - the sampler verifies the final bridge-edge set from the realized adjacency map before emitting answer/evidence.
+   - the sampler verifies the final bridge-edge set from the realized adjacency map before emitting answer/annotation.
 8. Topology variation:
    - `topology_profile` values are `balanced`, `low_degree`, and `hub_heavy`,
    - topology profile affects how the bridge skeleton and any bridgeless blocks are assembled,
@@ -50,17 +50,17 @@
    - scene: `object_description`
    - task: `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-5. Modes: `answer_only`, `answer_and_evidence`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":2}`
-7. Answer+evidence JSON shape: `{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-8. Prompt-facing evidence uses pixel-space endpoint-node-center point pairs because each witness is a graph edge rather than one node.
+7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
+8. Prompt-facing annotation uses pixel-space endpoint-node-center point pairs because each witness is a graph edge rather than one node.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_pair_set` of endpoint-node-center pixel points for all bridge edges.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the `point_pair_set` of endpoint-node-center pixel points for all bridge edges.
 2. Each bridge witness is represented as a two-point endpoint pair; the pair is unordered semantically for reward matching, and the implementation keeps the corresponding label pair in `witness_symbolic`.
 3. The list of bridge-edge pairs is unordered semantically as well; the implementation only canonicalizes the symbolic outer order internally for deterministic serialization.
-4. `answer_gt.value == len(evidence_gt.value)` by construction.
+4. `answer_gt.value == len(annotation_gt.value)` by construction.
 5. `scene_ir.entities` stores:
    - one node entity per rendered node with visible label, degree, adjacency, center, and bbox,
    - one edge entity per rendered edge with endpoint labels, pixel segment, and bridge flag.
@@ -69,7 +69,7 @@
    - the undirected adjacency map,
    - the full edge-label list,
    - the matching bridge-edge label pairs.
-7. `projected_evidence` includes:
+7. `projected_annotation` includes:
    - `point_pair_set`
    - `point_pair_map`
 8. `execution_trace` records:
@@ -89,7 +89,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized adjacency map and bridge computation.
+2. Answers and annotation come from the same finalized adjacency map and bridge computation.
 3. Unique-answer policy: the sampler targets one explicit bridge count and rejects any graph whose realized bridge-edge set does not match it exactly.
 4. Reject/resample conditions:
    - no feasible node-count support for the requested bridge count,

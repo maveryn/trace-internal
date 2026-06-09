@@ -20,16 +20,16 @@ from tests.helpers import read_jsonl
 def _assert_count_contract(out, expected_query_id: str) -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    evidence_ids = [str(entity_id) for entity_id in execution["evidence_entity_ids"]]
+    annotation_ids = [str(entity_id) for entity_id in execution["annotation_entity_ids"]]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == expected_query_id
     assert out.scene_id == "rule_override_board"
     assert trace["query_spec"]["query_id"] == expected_query_id
     assert execution["query_id"] == expected_query_id
-    assert int(out.answer_gt.value) == len(evidence_ids) == len(out.evidence_gt.value)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert int(out.answer_gt.value) == len(annotation_ids) == len(out.annotation_gt.value)
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert "rule_text" in trace["scene_ir"]["relations"]
     assert "rule_text" in execution
     assert "rule_card_text" not in trace["scene_ir"]["relations"]
@@ -50,8 +50,8 @@ def test_games_rule_override_line_count_branches() -> None:
         )
         _assert_count_contract(out, query_id)
         boards = out.trace_payload["execution_trace"]["boards"]
-        evidence_ids = set(out.trace_payload["execution_trace"]["evidence_entity_ids"])
-        counted = [board for board in boards if str(board["board_id"]) in evidence_ids]
+        annotation_ids = set(out.trace_payload["execution_trace"]["annotation_entity_ids"])
+        counted = [board for board in boards if str(board["board_id"]) in annotation_ids]
         expected_result = "win" if query_id == LINE_WIN_QUERY_ID else "loss"
         assert all(str(board["result_for_target_player"]) == expected_result for board in counted)
 
@@ -66,8 +66,8 @@ def test_games_rule_override_piece_count_branches() -> None:
         )
         _assert_count_contract(out, query_id)
         boards = out.trace_payload["execution_trace"]["boards"]
-        evidence_ids = set(out.trace_payload["execution_trace"]["evidence_entity_ids"])
-        counted = [board for board in boards if str(board["board_id"]) in evidence_ids]
+        annotation_ids = set(out.trace_payload["execution_trace"]["annotation_entity_ids"])
+        counted = [board for board in boards if str(board["board_id"]) in annotation_ids]
         expected_result = "win" if query_id == PIECE_WIN_QUERY_ID else "loss"
         assert all(str(board["result_for_target_player"]) == expected_result for board in counted)
 
@@ -85,9 +85,9 @@ def test_games_rule_override_answer_range_can_be_empty_or_full() -> None:
     )
 
     assert int(empty.answer_gt.value) == 0
-    assert empty.evidence_gt.value == []
+    assert empty.annotation_gt.value == []
     assert int(full.answer_gt.value) == 6
-    assert len(full.evidence_gt.value) == 6
+    assert len(full.annotation_gt.value) == 6
 
 
 def test_games_rule_override_board_build_smoke(tmp_path: Path) -> None:

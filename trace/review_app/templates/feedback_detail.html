@@ -2,10 +2,14 @@
 {% block content %}
 <nav class="breadcrumbs">
   <a href="{{ app_path('/') }}">domains</a>
-  <a href="{{ app_path('/feedback') }}">feedback</a>
+  <a href="{{ app_path('/issues') }}">issues</a>
   <a href="{{ app_path('/domains/' ~ feedback_record.domain) }}">{{ feedback_record.domain }}</a>
   <a href="{{ app_path('/domains/' ~ feedback_record.domain ~ '/scenes/' ~ feedback_record.scene_id) }}">{{ feedback_record.scene_id }}</a>
-  <a href="{{ app_path(feedback_task_path) }}">{{ feedback_record.task_id }}</a>
+  {% if feedback_record.task_id %}
+    <a href="{{ app_path(feedback_task_path) }}">{{ feedback_record.task_id }}</a>
+  {% else %}
+    <a href="{{ app_path(feedback_task_path) }}">scene review</a>
+  {% endif %}
   <span>{{ feedback_record.id }}</span>
 </nav>
 
@@ -13,10 +17,10 @@
   <article class="feedback-thread-card reviewer-feedback">
     <header>
       <div>
-        <h2>Reviewer Feedback</h2>
+        <h2>Issue Thread</h2>
         <p class="muted">{{ feedback_record.severity }} / {{ feedback_record.category }} / {{ feedback_record.status }}</p>
       </div>
-      <form action="{{ app_path('/feedback/' ~ feedback_record.id) }}" method="post">
+      <form action="{{ app_path('/issues/' ~ feedback_record.id) }}" method="post">
         {% if feedback_record.status == 'open' %}
           <input type="hidden" name="status" value="resolved">
           <input type="hidden" name="next" value="{{ request.url.path }}">
@@ -28,17 +32,28 @@
         {% endif %}
       </form>
     </header>
-    <p class="feedback-thread-comment">{{ feedback_record.comment }}</p>
+    <div class="feedback-event-list">
+      {% for event in feedback_thread_events %}
+        <article class="feedback-event-item {{ event.kind }}">
+          <div class="feedback-event-meta">{{ event.label }}{% if event.author %} · {{ event.author }}{% endif %} · {{ event.created_at }}</div>
+          <p>{{ event.text }}</p>
+        </article>
+      {% endfor %}
+    </div>
     <dl class="feedback-thread-meta">
       <dt>created</dt><dd>{{ feedback_record.created_at }}</dd>
       <dt>updated</dt><dd>{{ feedback_record.updated_at }}</dd>
       <dt>author</dt><dd>{{ feedback_record.author or 'not set' }}</dd>
-      <dt>scope</dt><dd>{% if feedback_record.sample_uid %}sample{% else %}task{% endif %}</dd>
+      <dt>scope</dt><dd>{% if feedback_record.sample_uid %}sample{% elif feedback_record.task_id %}task{% else %}scene{% endif %}</dd>
+      {% if feedback_record.query_id %}
+        <dt>query</dt><dd>{{ feedback_record.query_id }}</dd>
+      {% endif %}
     </dl>
     <div class="queue-feedback-links">
-      <a href="{{ app_path(feedback_task_path) }}">Open task</a>
+      <a href="{{ app_path(feedback_source_path) }}">Open source</a>
+      <a href="{{ app_path(feedback_task_path) }}">{% if feedback_record.task_id %}Open task{% else %}Open scene review{% endif %}</a>
       {% if feedback_sample %}
-        <a href="{{ app_path('/samples/' ~ feedback_sample.uid) }}">Open sample</a>
+        <a href="{{ app_path('/samples/' ~ feedback_sample.uid) }}">Open sample detail</a>
       {% elif feedback_record.sample_uid %}
         <span class="muted">Sample is not in the current index.</span>
       {% endif %}
@@ -47,41 +62,21 @@
 
   <article class="feedback-thread-card reviewer-feedback">
     <h2>Reviewer Follow-Ups</h2>
-    <form class="feedback-form small reviewer-comment-form" action="{{ app_path('/feedback/' ~ feedback_record.id ~ '/comments') }}" method="post">
+    <form class="feedback-form small reviewer-comment-form" action="{{ app_path('/issues/' ~ feedback_record.id ~ '/comments') }}" method="post">
       <input type="hidden" name="next" value="{{ request.url.path }}">
-      <textarea name="comment" rows="3" placeholder="Add a reviewer follow-up for this feedback thread" required></textarea>
+      <textarea name="comment" rows="3" placeholder="Add a reviewer follow-up for this issue thread" required></textarea>
       <button type="submit">Add Comment</button>
     </form>
-    <div class="reviewer-comment-list feedback-thread-comments">
-      {% for comment in feedback_comments %}
-        <article class="reviewer-comment-item">
-          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
-          <p>{{ comment.comment }}</p>
-        </article>
-      {% else %}
-        <p class="muted">No reviewer follow-up comments yet.</p>
-      {% endfor %}
-    </div>
   </article>
 
   <aside class="feedback-thread-card">
     <h2>Repair Notes</h2>
-    <form class="agent-note-form feedback-thread-note-form" action="{{ app_path('/feedback/' ~ feedback_record.id ~ '/notes') }}" method="post">
+    <form class="agent-note-form feedback-thread-note-form" action="{{ app_path('/issues/' ~ feedback_record.id ~ '/notes') }}" method="post">
       <input type="hidden" name="next" value="{{ request.url.path }}">
       <input name="author" placeholder="agent">
       <textarea name="note" rows="3" placeholder="Brief repair note after changing code or artifacts" required></textarea>
       <button type="submit">Add note</button>
     </form>
-    <div class="agent-note-list feedback-thread-notes">
-      {% for note in feedback_notes %}
-        <article class="agent-note-item">
-          <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
-          <p>{{ note.note }}</p>
-        </article>
-      {% else %}
-        <p class="muted">No agent repair notes yet.</p>
-      {% endfor %}
-    </div>
   </aside>
 </section>
 
@@ -94,8 +89,8 @@
         <img src="{{ app_path('/media/' ~ feedback_sample.media_id) }}?v={{ feedback_sample.image_mtime_ns }}" alt="original review sample">
       </figure>
       <figure class="sample-image-card">
-        <figcaption>Evidence</figcaption>
-        <img src="{{ app_path('/overlay/' ~ feedback_sample.uid ~ '.png') }}?v={{ feedback_sample.image_mtime_ns }}" alt="evidence overlay review sample">
+        <figcaption>Annotation</figcaption>
+        <img src="{{ app_path('/overlay/' ~ feedback_sample.uid ~ '.png') }}?v={{ feedback_sample.image_mtime_ns }}" alt="annotation overlay review sample">
       </figure>
     </div>
   </section>

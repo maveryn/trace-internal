@@ -4,14 +4,13 @@
 1. Domain: `games`
 2. Task group: `hex`
 3. Scene id: `hex`
-4. Query id: `winning_move_cell_label`
-5. Objective: choose the labeled empty Hex cell that lets the queried player win immediately.
-6. Answer type: `string`, one candidate label such as `A`.
-7. Evidence type: `point_set` containing one point at the center of the chosen winning cell.
+4. Public task id: `task_games__hex__winning_move_cell_label`
+5. Supported `query_id` values: `winning_move_cell_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `point_set`
+8. Program schema: `label(filter(empty_cells, move_result=connects_player_sides)); scene=hex; scope=winning_move_cell_label`
 
 ## Generation Notes
-1. Red connects the left and right red sides.
-2. Blue connects the top and bottom blue sides.
-3. The board is generated with exactly one immediate winning empty cell for the queried player.
-4. Candidate labels are shuffled over empty cells, and the answer label is unique by construction.
-5. Rendering varies board style, shared panel treatment, label font, unit scale, and board placement jitter before projecting evidence.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

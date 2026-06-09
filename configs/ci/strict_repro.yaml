@@ -7,7 +7,7 @@ strict_repro: true
 max_attempts_per_instance: 100
 sampling_seed: 0
 tasks:
-  - task_id: task_puzzles__cell_board__path_distance
+  - task_id: task_puzzles__cell_board__shortest_path_length_value
     count: 5
     params:
       query_id: shortest_path

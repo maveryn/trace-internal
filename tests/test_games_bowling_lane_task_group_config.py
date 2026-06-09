@@ -39,5 +39,5 @@ def test_games_bowling_lane_defaults_present() -> None:
     assert str(prompt["bundle_id"]) == "games_bowling_v0"
     assert "dashed arrow" in str(prompt["bowling_motion_rule_text"]).lower()
     assert "extend each numbered dashed path" in str(prompt["spare_path_rule_text"]).lower()
-    assert "bounding box" in str(prompt["evidence_hint_first_pin_hit_label"])
-    assert "point-pair" in str(prompt["evidence_hint_spare_path_label"])
+    assert "bounding box" in str(prompt["annotation_hint_first_pin_hit_label"])
+    assert "point-pair" in str(prompt["annotation_hint_spare_path_label"])

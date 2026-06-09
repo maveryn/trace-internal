@@ -8,25 +8,75 @@
       "",
       "",
       ""
+    ],
+    "bulb_brightness_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "switch_circuit_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "state_change_brightness_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "bridge_missing_resistance_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "analog_meter_readout_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ],
     "scene:equivalent_circuit_diagram": [
       "object_description"
+    ],
+    "scene:bulb_circuit_diagram": [
+      "object_description"
+    ],
+    "scene:switch_circuit_diagram": [
+      "object_description"
+    ],
+    "scene:circuit_state_change_diagram": [
+      "object_description"
+    ],
+    "scene:bridge_circuit_diagram": [
+      "object_description"
+    ],
+    "scene:analog_meter_diagram": [
+      "object_description"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -34,12 +84,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -47,6 +97,41 @@
       "The image shows {object_description}.",
       "The circuit diagram shows {object_description}.",
       "This circuit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "bulb_circuit_diagram": [
+      "The image shows {object_description}.",
+      "The circuit diagram shows {object_description}.",
+      "This circuit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "switch_circuit_diagram": [
+      "The image shows {object_description}.",
+      "The circuit diagram shows {object_description}.",
+      "This circuit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "circuit_state_change_diagram": [
+      "The image shows {object_description}.",
+      "The circuit diagram shows {object_description}.",
+      "This circuit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "bridge_circuit_diagram": [
+      "The image shows {object_description}.",
+      "The circuit diagram shows {object_description}.",
+      "This circuit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "analog_meter_diagram": [
+      "The image shows {object_description}.",
+      "The meter diagram shows {object_description}.",
+      "This instrument diagram shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
     ]
@@ -65,6 +150,76 @@
       "Determine the network's total capacitance between A and B.",
       "What integer equivalent capacitance does this capacitor circuit have between A and B?",
       "Read the capacitor circuit between terminals A and B. What is its total equivalent capacitance?"
+    ],
+    "brightest_bulb_label": [
+      "Which labeled bulb is brightest?",
+      "Using the shown resistance labels, which bulb has the greatest brightness?",
+      "Which bulb dissipates the most power in this circuit?",
+      "Which labeled bulb would glow brightest in the ideal circuit?",
+      "Select the label of the brightest bulb."
+    ],
+    "dimmest_bulb_label": [
+      "Which labeled bulb is dimmest?",
+      "Using the shown resistance labels, which bulb has the least brightness?",
+      "Which bulb dissipates the least power in this circuit?",
+      "Which labeled bulb would glow dimmest in the ideal circuit?",
+      "Select the label of the dimmest bulb."
+    ],
+    "lit_bulb_count": [
+      "Given the switch states, how many bulbs will be on?",
+      "Using the open and closed switches, count the bulbs that will be on.",
+      "How many labeled bulbs have a complete path through the closed switches?",
+      "Determine the number of bulbs that will be on in this switch circuit.",
+      "From the visible switch positions, how many bulbs are on?"
+    ],
+    "brightens_after_switch_change": [
+      "After the red-boxed switch action occurs, which labeled bulb becomes brighter?",
+      "Which bulb becomes brighter after the shown switch action?",
+      "Compare the circuit before and after the red-boxed switch action. Which labeled bulb brightens?",
+      "Using the bulb resistances and topology, which bulb becomes brighter after the switch action?",
+      "Select the label of the bulb that brightens after the shown switch action."
+    ],
+    "dims_after_switch_change": [
+      "After the red-boxed switch action occurs, which labeled bulb becomes dimmer?",
+      "Which bulb becomes dimmer after the shown switch action?",
+      "Compare the circuit before and after the red-boxed switch action. Which labeled bulb dims?",
+      "Using the bulb resistances and topology, which bulb becomes dimmer after the switch action?",
+      "Select the label of the bulb that dims after the shown switch action."
+    ],
+    "turns_on_after_switch_change": [
+      "After the red-boxed switch action occurs, which labeled bulb turns on?",
+      "Which bulb turns on after the shown switch action?",
+      "Compare the circuit before and after the red-boxed switch action. Which labeled bulb turns on?",
+      "Using the bulb resistances and topology, which bulb is off before the switch action and on afterward?",
+      "Select the label of the bulb that turns on after the shown switch action."
+    ],
+    "turns_off_after_switch_change": [
+      "After the red-boxed switch action occurs, which labeled bulb turns off?",
+      "Which bulb turns off after the shown switch action?",
+      "Compare the circuit before and after the red-boxed switch action. Which labeled bulb turns off?",
+      "Using the bulb resistances and topology, which bulb is on before the switch action and off afterward?",
+      "Select the label of the bulb that turns off after the shown switch action."
+    ],
+    "missing_bridge_resistance": [
+      "What is the missing resistance in the balanced bridge circuit?",
+      "Using the zero meter reading and the shown resistor labels, what value should replace the question mark?",
+      "Find the unknown resistor value that balances this bridge circuit.",
+      "What integer resistance makes the bridge meter read zero?",
+      "Determine the missing resistance in ohms."
+    ],
+    "ammeter_readout": [
+      "What integer current reading does the ammeter show?",
+      "Read the needle against the scale. What is the ammeter reading in the displayed unit?",
+      "Using the visible unit label and tick marks, what integer reading is shown by the ammeter?",
+      "What current value is indicated by the analog meter?",
+      "Determine the ammeter's integer readout from the needle position."
+    ],
+    "voltmeter_readout": [
+      "What integer voltage reading does the voltmeter show?",
+      "Read the needle against the scale. What is the voltmeter reading in the displayed unit?",
+      "Using the visible unit label and tick marks, what integer reading is shown by the voltmeter?",
+      "What voltage value is indicated by the analog meter?",
+      "Determine the voltmeter's integer readout from the needle position."
     ]
   },
   "allow_empty_task_templates": true

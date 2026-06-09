@@ -231,16 +231,16 @@ class _SceneSpec:
     target_answer: int | str
     work_scenario: _WorkScenario | None
     process_candidates: Tuple[_ProcessCandidate, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered PV diagram plus prompt-facing evidence metadata."""
+    """Rendered PV diagram plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
+    annotation_bboxes: List[List[float]]
+    annotation_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -752,7 +752,7 @@ def _sample_scene_spec(
             target_answer=int(scenario.work_value),
             work_scenario=scenario,
             process_candidates=(),
-            evidence_entity_ids=("work_witness_region",),
+            annotation_entity_ids=("work_witness_region",),
         )
 
     if axes.target_sign is None or axes.correct_option_letter is None:
@@ -771,7 +771,7 @@ def _sample_scene_spec(
         target_answer=str(axes.correct_option_letter),
         work_scenario=None,
         process_candidates=tuple(candidates),
-        evidence_entity_ids=(f"option_{str(axes.correct_option_letter)}",),
+        annotation_entity_ids=(f"option_{str(axes.correct_option_letter)}_process",),
     )
 
 
@@ -1452,6 +1452,23 @@ def _draw_sign_choice_scene(
                 },
             }
         )
+        entities.append(
+            {
+                "entity_id": f"option_{str(candidate.letter)}_process",
+                "entity_type": "candidate_pv_process_arrow",
+                "bbox_px": list(process_bbox),
+                "meta": {
+                    "option_letter": str(candidate.letter),
+                    "sign": str(candidate.sign),
+                    "is_correct": str(candidate.letter) == str(scene_spec.correct_option_letter),
+                    "pressure_start_kpa": int(candidate.pressure_start),
+                    "pressure_end_kpa": int(candidate.pressure_end),
+                    "volume_start_l": int(candidate.volume_start),
+                    "volume_end_l": int(candidate.volume_end),
+                    "delta_volume_l": int(candidate.volume_end - candidate.volume_start),
+                },
+            }
+        )
 
     target_text = f"target: {str(scene_spec.target_sign)} work"
     target_bbox = _draw_text_tag(
@@ -1595,17 +1612,17 @@ def _render_scene(
         for entity in scene_entities
         if entity.get("bbox_px") is not None
     }
-    evidence_bboxes = [
+    annotation_bboxes = [
         list(entity_bbox_map[entity_id])
-        for entity_id in scene_spec.evidence_entity_ids
+        for entity_id in scene_spec.annotation_entity_ids
         if str(entity_id) in entity_bbox_map
     ]
-    render_map["evidence_entity_ids"] = list(scene_spec.evidence_entity_ids)
-    render_map["evidence_bboxes_px"] = [list(bbox) for bbox in evidence_bboxes]
+    render_map["annotation_entity_ids"] = list(scene_spec.annotation_entity_ids)
+    render_map["annotation_bboxes_px"] = [list(bbox) for bbox in annotation_bboxes]
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_entity_ids=list(scene_spec.evidence_entity_ids),
+        annotation_bboxes=[list(bbox) for bbox in annotation_bboxes],
+        annotation_entity_ids=list(scene_spec.annotation_entity_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -1655,7 +1672,7 @@ def _resolve_pv_layout_placement(
     instance_seed: int,
     scene_spec: _SceneSpec,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve whole-PV-diagram placement before rendering and evidence projection."""
+    """Resolve whole-PV-diagram placement before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -1736,11 +1753,11 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "process_sign_choice":
         return build_prompt_json_examples(
-            evidence_value=[[104, 88, 430, 284]],
+            annotation_value=[[104, 88, 430, 284]],
             answer_type="option_letter",
         )
     return build_prompt_json_examples(
-        evidence_value=[[248, 188, 710, 526]],
+        annotation_value=[[248, 188, 710, 526]],
         answer_type="integer",
     )
 
@@ -1866,8 +1883,8 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "object_description_bold_grid",
                     "answer_hint_work_value",
                     "answer_hint_process_sign_choice",
-                    "evidence_hint_work_value",
-                    "evidence_hint_process_sign_choice",
+                    "annotation_hint_work_value",
+                    "annotation_hint_process_sign_choice",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1879,7 +1896,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1887,7 +1904,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                     "target_sign": _target_sign_description(axes.target_sign),
                 },
                 instance_seed=int(instance_seed),
@@ -1902,7 +1919,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
             else:
                 answer_value = str(scene_spec.correct_option_letter)
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.annotation_bboxes])
             complexity = build_physics_pv_diagram_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
@@ -1912,7 +1929,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 target_sign=axes.target_sign,
                 work_magnitude=abs(int(answer_value)) if str(answer_type) == "integer" else 0,
                 option_count=len(OPTION_LETTERS) if str(axes.query_id) == "process_sign_choice" else 0,
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                annotation_count=len(rendered_scene.annotation_bboxes),
             )
             scenario_payload: Dict[str, Any] = {}
             if scene_spec.work_scenario is not None:
@@ -1956,7 +1973,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                         "answer_type": str(answer_type),
                         "scenario": dict(scenario_payload),
                         "process_candidates": list(candidate_payload),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -2022,16 +2039,16 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "scenario": dict(scenario_payload),
                     "process_candidates": list(candidate_payload),
                     "correct_option_letter": scene_spec.correct_option_letter,
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "object_set",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "bbox_set",
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
-                    "pixel_bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "bbox_set": [list(bbox) for bbox in rendered_scene.annotation_bboxes],
+                    "pixel_bbox_set": [list(bbox) for bbox in rendered_scene.annotation_bboxes],
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
@@ -2040,7 +2057,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

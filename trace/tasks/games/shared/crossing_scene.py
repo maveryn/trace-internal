@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .crossing_common import (
     CrossingRouteOption,
     CrossingVehicle,

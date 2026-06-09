@@ -51,6 +51,8 @@ class _TaskDefaults:
     """Stable fallback defaults for visible Space-shooter scenes."""
 
     clear_shot_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    clear_shot_score_enemy_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    clear_shot_score_value_support: Tuple[int, ...] = (1, 2, 3, 5, 10)
     projectile_intercept_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     safe_lane_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     lane_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
@@ -85,6 +87,7 @@ class _ResolvedAxes:
     enemy_count: int
     target_answer: int | None
     target_answer_support: Tuple[int, ...] | None
+    clear_shot_score_value_support: Tuple[int, ...]
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -107,6 +110,7 @@ def _target_support_key(query_id: str) -> str | None:
 
     return {
         "clear_shot_count": "clear_shot_count_support",
+        "clear_shot_score_value": "clear_shot_score_enemy_count_support",
         "projectile_intercept_count": "projectile_intercept_count_support",
         "safe_lane_count": "safe_lane_count_support",
     }.get(str(query_id))
@@ -215,10 +219,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             key=str(support_key),
             fallback=getattr(_DEFAULTS, support_key),
         )
-        if str(query_id) in {"clear_shot_count", "safe_lane_count"} and int(target_answer) > int(lane_count):
+        if str(query_id) in {"clear_shot_count", "clear_shot_score_value", "safe_lane_count"} and int(target_answer) > int(lane_count):
             if "lane_count" in params and params.get("lane_count") is not None:
                 raise ValueError("target_answer cannot exceed lane_count for lane-count Space-shooter queries")
             lane_count = int(target_answer)
+    clear_shot_score_value_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="clear_shot_score_value_support",
+        fallback=_DEFAULTS.clear_shot_score_value_support,
+    )
     return _ResolvedAxes(
         query_id=str(query_id),
         scene_variant=str(scene_variant),
@@ -227,6 +237,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         enemy_count=int(enemy_count),
         target_answer=None if target_answer is None else int(target_answer),
         target_answer_support=target_answer_support,
+        clear_shot_score_value_support=clear_shot_score_value_support,
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -285,7 +296,7 @@ def _entity_dy(rng) -> float:
     return float(rng.uniform(-8.0, 8.0))
 
 
-def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng) -> SpaceEnemy:
+def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng, score_value: int | None = None) -> SpaceEnemy:
     """Create one labeled enemy."""
 
     return SpaceEnemy(
@@ -295,6 +306,7 @@ def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng) -> SpaceEnemy:
         y_slot=int(y_slot),
         dx_frac=_entity_dx(rng),
         dy_px=_entity_dy(rng),
+        score_value=None if score_value is None else int(score_value),
     )
 
 
@@ -346,10 +358,11 @@ def _claim_position(
 
 
 def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
-    """Construct a scene where the target answer is the number of clear front enemies."""
+    """Construct a clear-front-enemy count or score scene."""
 
     lane_count = int(axes.lane_count)
     target = min(int(axes.target_answer or 1), lane_count)
+    score_query = str(axes.query_id) == "clear_shot_score_value"
     lanes = list(range(lane_count))
     rng.shuffle(lanes)
     clear_lanes = set(lanes[:target])
@@ -363,7 +376,13 @@ def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
     for lane in range(lane_count):
         if lane in clear_lanes:
             _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(3, 4, 5))
-            enemy = _make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng)
+            enemy = _make_enemy(
+                enemy_index=len(enemies),
+                lane=lane,
+                y_slot=slot,
+                rng=rng,
+                score_value=int(rng.choice(axes.clear_shot_score_value_support)) if score_query else None,
+            )
             enemies.append(enemy)
             clear_enemy_ids.append(str(enemy.enemy_id))
         else:
@@ -376,7 +395,15 @@ def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
             blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=blocker_slot, rng=rng))
             upper_slots = tuple(slot for slot in (1, 2, 3) if int(slot) < int(blocker_slot))
             _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=upper_slots)
-            enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
+            enemies.append(
+                _make_enemy(
+                    enemy_index=len(enemies),
+                    lane=lane,
+                    y_slot=slot,
+                    rng=rng,
+                    score_value=int(rng.choice(axes.clear_shot_score_value_support)) if score_query else None,
+                )
+            )
     for _ in range(max(1, lane_count // 3)):
         lane = int(rng.randrange(lane_count))
         if lane not in clear_lanes and rng.random() < 0.70:
@@ -397,12 +424,18 @@ def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
             continue
         projectiles.append(_make_projectile(projectile_index=index, lane=lane, y_slot=slot, rng=rng))
     highest_enemy = enemies[0]
+    clear_id_set = set(clear_enemy_ids)
+    answer = (
+        sum(int(enemy.score_value or 0) for enemy in enemies if str(enemy.enemy_id) in clear_id_set)
+        if score_query
+        else int(len(clear_enemy_ids))
+    )
 
     sample = SpaceShooterSample(
         lane_count=lane_count,
         query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
-        answer=int(len(clear_enemy_ids)),
+        answer=int(answer),
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
@@ -412,9 +445,9 @@ def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
         highest_threat_enemy_id=str(highest_enemy.enemy_id),
         highest_threat_label=str(highest_enemy.label),
         safe_lane_indices=tuple(),
-        evidence_entity_ids=tuple(clear_enemy_ids),
+        annotation_entity_ids=tuple(clear_enemy_ids),
         target_answer=int(target),
-        construction_mode="front_enemy_clear_shot_lanes",
+        construction_mode="front_enemy_clear_shot_score_sum" if score_query else "front_enemy_clear_shot_lanes",
     )
     validate_space_shooter_sample(sample)
     return sample
@@ -487,7 +520,7 @@ def _sample_projectile_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
         highest_threat_enemy_id=str(enemies[0].enemy_id),
         highest_threat_label=str(enemies[0].label),
         safe_lane_indices=tuple(),
-        evidence_entity_ids=intercept_ids,
+        annotation_entity_ids=intercept_ids,
         target_answer=int(target),
         construction_mode="player_lane_projectile_intercepts",
     )
@@ -559,7 +592,7 @@ def _sample_highest_threat_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSam
         highest_threat_enemy_id=str(target_enemy.enemy_id),
         highest_threat_label=str(target_enemy.label),
         safe_lane_indices=tuple(),
-        evidence_entity_ids=(str(target_enemy.enemy_id),),
+        annotation_entity_ids=(str(target_enemy.enemy_id),),
         target_answer=None,
         construction_mode="unique_lowest_enemy_threat",
     )
@@ -596,7 +629,7 @@ def _sample_safe_lane_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
             slot_candidates=(0, 1, 2),
         )
         enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
-    evidence_ids = tuple(lane_entity_id(lane) for lane in safe_lanes)
+    annotation_ids = tuple(lane_entity_id(lane) for lane in safe_lanes)
     sample = SpaceShooterSample(
         lane_count=lane_count,
         query_id=str(axes.query_id),
@@ -611,7 +644,7 @@ def _sample_safe_lane_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
         highest_threat_enemy_id=str(enemies[0].enemy_id),
         highest_threat_label=str(enemies[0].label),
         safe_lane_indices=safe_lanes,
-        evidence_entity_ids=evidence_ids,
+        annotation_entity_ids=annotation_ids,
         target_answer=int(target),
         construction_mode="safe_bottom_lane_count",
     )
@@ -624,6 +657,8 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
 
     query = str(axes.query_id)
     if query == "clear_shot_count":
+        return _sample_clear_shot_scene(rng=rng, axes=axes)
+    if query == "clear_shot_score_value":
         return _sample_clear_shot_scene(rng=rng, axes=axes)
     if query == "projectile_intercept_count":
         return _sample_projectile_scene(rng=rng, axes=axes)
@@ -639,15 +674,18 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "highest_threat_label":
         answer_value: int | str = "C"
-        evidence_value = [[420, 260, 482, 308]]
+        annotation_value = [[420, 260, 482, 308]]
     elif str(query_id) == "safe_lane_count":
         answer_value = 3
-        evidence_value = [[115, 695, 205, 733], [360, 695, 450, 733], [610, 695, 700, 733]]
+        annotation_value = [[115, 695, 205, 733], [360, 695, 450, 733], [610, 695, 700, 733]]
+    elif str(query_id) == "clear_shot_score_value":
+        answer_value = 8
+        annotation_value = [[210, 180, 272, 228], [480, 260, 542, 308]]
     else:
         answer_value = 2
-        evidence_value = [[210, 180, 272, 228], [480, 260, 542, 308]]
+        annotation_value = [[210, 180, 272, 228], [480, 260, 542, 308]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -714,9 +752,9 @@ class GamesSpaceShooterPlayfieldTask:
             highlight_player_lane=str(axes.query_id) == "projectile_intercept_count",
             panel_style=panel_style,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -735,14 +773,16 @@ class GamesSpaceShooterPlayfieldTask:
                 "json_output_contract_answer_only",
                 "object_description_defense_wave",
                 "space_shooter_lane_rule_text",
+                "answer_hint_clear_shot_score_value",
+                "annotation_hint_clear_shot_score_value",
                 "answer_hint_clear_shot_count",
-                "evidence_hint_clear_shot_count",
+                "annotation_hint_clear_shot_count",
                 "answer_hint_projectile_intercept_count",
-                "evidence_hint_projectile_intercept_count",
+                "annotation_hint_projectile_intercept_count",
                 "answer_hint_highest_threat_label",
-                "evidence_hint_highest_threat_label",
+                "annotation_hint_highest_threat_label",
                 "answer_hint_safe_lane_count",
-                "evidence_hint_safe_lane_count",
+                "annotation_hint_safe_lane_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -754,14 +794,14 @@ class GamesSpaceShooterPlayfieldTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "space_shooter_lane_rule_text": str(prompt_defaults["space_shooter_lane_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -773,7 +813,7 @@ class GamesSpaceShooterPlayfieldTask:
             type="string" if str(axes.query_id) == "highest_threat_label" else "integer",
             value=sampled_scene.answer,
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -788,13 +828,15 @@ class GamesSpaceShooterPlayfieldTask:
             projectile_count=len(sampled_scene.projectiles),
             blocker_count=len(sampled_scene.blockers),
             target_answer=int(sampled_scene.target_answer or 1),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
 
         enemy_trace = [
             {
                 "enemy_id": str(enemy.enemy_id),
                 "label": str(enemy.label),
+                "score_value": None if enemy.score_value is None else int(enemy.score_value),
+                "display_text": str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label),
                 "lane": int(enemy.lane),
                 "y_slot": int(enemy.y_slot),
             }
@@ -828,7 +870,7 @@ class GamesSpaceShooterPlayfieldTask:
                     "lane_count": int(sampled_scene.lane_count),
                     "player_lane": int(sampled_scene.player_lane),
                     "target_answer": sampled_scene.target_answer,
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -855,6 +897,7 @@ class GamesSpaceShooterPlayfieldTask:
                     if axes.target_answer_support is None
                     else [int(value) for value in axes.target_answer_support],
                     "target_answer_probabilities": axes.target_answer_probabilities,
+                    "clear_shot_score_value_support": [int(value) for value in axes.clear_shot_score_value_support],
                 },
             },
             "render_spec": {
@@ -882,15 +925,15 @@ class GamesSpaceShooterPlayfieldTask:
                 "highest_threat_enemy_id": str(sampled_scene.highest_threat_enemy_id),
                 "highest_threat_label": str(sampled_scene.highest_threat_label),
                 "safe_lane_indices": [int(value) for value in sampled_scene.safe_lane_indices],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -899,7 +942,7 @@ class GamesSpaceShooterPlayfieldTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -916,6 +959,14 @@ class GamesSpaceShooterClearShotCountTask(FixedQueryVariantTaskMixin, GamesSpace
 
     task_id = "task_games__space_shooter__clear_shot_count"
     fixed_query_id = "clear_shot_count"
+
+
+@register_task
+class GamesSpaceShooterClearShotScoreValueTask(FixedQueryVariantTaskMixin, GamesSpaceShooterPlayfieldTask):
+    """Sum printed scores for enemy ships with clear vertical shot lanes."""
+
+    task_id = "task_games__space_shooter__clear_shot_score_value"
+    fixed_query_id = "clear_shot_score_value"
 
 
 @register_task
@@ -944,6 +995,7 @@ class GamesSpaceShooterSafeLaneCountTask(FixedQueryVariantTaskMixin, GamesSpaceS
 
 __all__ = [
     "GamesSpaceShooterClearShotCountTask",
+    "GamesSpaceShooterClearShotScoreValueTask",
     "GamesSpaceShooterHighestThreatLabelTask",
     "GamesSpaceShooterPlayfieldTask",
     "GamesSpaceShooterProjectileInterceptCountTask",

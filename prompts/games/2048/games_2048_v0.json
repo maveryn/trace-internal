@@ -24,23 +24,23 @@
     "query:max_tile_value": [
       "move_rule_text"
     ],
-    "query:best_move_label": [
+    "query:move_result_board_label": [
       "move_rule_text",
-      "goal_rule_text"
+      "result_board_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -48,12 +48,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -87,12 +87,12 @@
       "{move_rule_text} Apply the shown move and report the highest tile value that remains.",
       "{move_rule_text} Which tile value is the maximum after the one-arrow move?"
     ],
-    "best_move_label": [
-      "{move_rule_text} {goal_rule_text} Which labeled move leaves the highest tile value in the outlined cell after one move?",
-      "{move_rule_text} {goal_rule_text} Compare the four labeled arrows. Report the label whose move gives the outlined cell the largest value.",
-      "{move_rule_text} {goal_rule_text} Which option letter is best for maximizing the tile value in the outlined cell?",
-      "{move_rule_text} {goal_rule_text} Try each labeled move once. Which label leaves the largest number in the outlined cell?",
-      "{move_rule_text} {goal_rule_text} Report the move label that makes the outlined cell as large as possible."
+    "move_result_board_label": [
+      "{move_rule_text} {result_board_rule_text} Which labeled candidate board shows the result after the shown move?",
+      "{move_rule_text} {result_board_rule_text} Apply the arrow move once. Which option board matches the resulting board state?",
+      "{move_rule_text} {result_board_rule_text} Choose the label of the candidate board that matches the board after this one move.",
+      "{move_rule_text} {result_board_rule_text} After the displayed move, which labeled board is correct?",
+      "{move_rule_text} {result_board_rule_text} Report the option letter for the post-move board."
     ]
   },
   "allow_empty_task_templates": true

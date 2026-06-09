@@ -20,7 +20,7 @@ from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ...shared.text_legibility import draw_centered_traced_text
+from ..shared.text import draw_centered_game_text_traced as draw_centered_traced_text
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
@@ -147,7 +147,7 @@ class _SceneSample:
     answer: int
     rule_text: str
     boards: Tuple[_BoardPanel, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -505,7 +505,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, prompt_defaults: Mapping[str, Any
     rng.shuffle(counted_flags)
     is_win_query = _query_is_win(str(axes.query_id))
     boards: list[_BoardPanel] = []
-    evidence_ids: list[str] = []
+    annotation_ids: list[str] = []
     for index, counted in enumerate(counted_flags):
         board_id = f"board_{int(index) + 1:02d}"
         label = f"Board {int(index) + 1}"
@@ -533,7 +533,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, prompt_defaults: Mapping[str, Any
             opponent_stat = sum(1 for value in flat if str(value) == _opponent(str(axes.target_player)))
             result = "win" if int(target_stat) < int(opponent_stat) else "loss"
         if bool(counted):
-            evidence_ids.append(board_id)
+            annotation_ids.append(board_id)
         boards.append(
             _BoardPanel(
                 board_id=str(board_id),
@@ -556,7 +556,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, prompt_defaults: Mapping[str, Any
         answer=int(target_answer),
         rule_text=str(prompt_defaults[rule_text_key]),
         boards=tuple(boards),
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
     )
     actual_answer = sum(1 for board in sample.boards if bool(board.counted))
     if int(actual_answer) != int(target_answer):
@@ -843,10 +843,10 @@ def _render_scene(
 
 
 def _build_json_examples() -> Tuple[str, str]:
-    evidence = [[80, 170, 258, 378], [286, 170, 464, 378], [492, 170, 670, 378]]
+    annotation = [[80, 170, 258, 378], [286, 170, 464, 378], [492, 170, 670, 378]]
     answer = 3
     return (
-        json.dumps({"evidence": evidence, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -931,9 +931,9 @@ class GamesRuleOverrideBoardTask:
             panel_style=panel_style,
             background=background,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -943,7 +943,7 @@ class GamesRuleOverrideBoardTask:
         )
 
         answer_hint_key = f"answer_hint_{str(sampled_scene.query_id)}"
-        evidence_hint_key = f"evidence_hint_{str(sampled_scene.query_id)}"
+        annotation_hint_key = f"annotation_hint_{str(sampled_scene.query_id)}"
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
@@ -954,7 +954,7 @@ class GamesRuleOverrideBoardTask:
                 "json_output_contract_answer_only",
                 "object_description_rule_override_board",
                 answer_hint_key,
-                evidence_hint_key,
+                annotation_hint_key,
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -966,7 +966,7 @@ class GamesRuleOverrideBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(sampled_scene.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_rule_override_board"]),
                 "target_player": str(sampled_scene.target_player),
@@ -974,7 +974,7 @@ class GamesRuleOverrideBoardTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[answer_hint_key]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -995,7 +995,7 @@ class GamesRuleOverrideBoardTask:
             for board in sampled_scene.boards
         ]
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "games_rule_override_board",
@@ -1006,7 +1006,7 @@ class GamesRuleOverrideBoardTask:
                     "board_style": str(sampled_scene.board_style),
                     "target_player": str(sampled_scene.target_player),
                     "rule_text": str(sampled_scene.rule_text),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1050,14 +1050,14 @@ class GamesRuleOverrideBoardTask:
                 "rule_text": str(sampled_scene.rule_text),
                 "answer": int(sampled_scene.answer),
                 "boards": board_trace,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "panel_scene_style": dict(panel_style_meta),
@@ -1067,7 +1067,7 @@ class GamesRuleOverrideBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

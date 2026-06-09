@@ -12,7 +12,7 @@
 3. Public `scene_id`: `voxel_cube`
 4. Supported internal query parameter: `consistency_query=inconsistent_projection_label|candidate_stack_from_views_label`
 5. `answer_gt.type`: `string`
-6. `evidence_gt.type`: `bbox_set`
+6. `annotation_gt.type`: `bbox_set`
 7. Scene contract:
    - inconsistent-projection queries show one isometric cube stack and five labeled projection panels, each with a view title,
    - stack-from-views queries show three projection panels and labeled candidate cube stacks,
@@ -25,8 +25,8 @@
 4. Internal prompt variant keys: `inconsistent_projection_label|candidate_stack_from_views_label`
 5. Prompt-facing answers are option letters.
 
-## 4) Evidence + Trace Contract
-1. Evidence contains one bbox for the selected labeled option panel.
+## 4) Annotation + Trace Contract
+1. Annotation contains one bbox for the selected labeled option panel.
 2. `execution_trace.consistency_query` records the internal query branch.
 3. Stack footprint/heights, projection cells, option panels, and the correct option label are recorded.
-4. Prompt-facing evidence is projected from the selected option panel, not inferred from pixels.
+4. Prompt-facing annotation is projected from the selected option panel, not inferred from pixels.

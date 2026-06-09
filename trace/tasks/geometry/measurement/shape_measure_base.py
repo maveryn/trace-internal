@@ -39,7 +39,7 @@ from ..shared.conic_geometry import (
 )
 from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_evidence_artifacts, graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_annotation_artifacts, graph_point_set_annotation_artifacts
 from ..shared.polygon_geometry import (
     PolygonInstance,
     draw_polygon_outline,
@@ -446,7 +446,7 @@ class GeometryShapeMeasureBase:
         polygon_instance: PolygonInstance | None = None
         ellipse_instance: EllipseInstance | None = None
         circle_instance: CircleInstance | None = None
-        evidence: Dict[str, Any] | None = None
+        annotation: Dict[str, Any] | None = None
         entity: Dict[str, Any] | None = None
         anchor: Dict[str, Any] | None = None
         range_rejections = 0
@@ -487,12 +487,12 @@ class GeometryShapeMeasureBase:
                     )
                     polygon_instance = candidate_polygon
                     answer_scalar = int(candidate_answer)
-                    evidence_points = {
+                    annotation_points = {
                         str(label): point
                         for label, point in zip(candidate_polygon.labels, candidate_polygon.vertices)
                     }
-                    evidence = graph_point_set_evidence_artifacts(
-                        points_by_label=evidence_points,
+                    annotation = graph_point_set_annotation_artifacts(
+                        points_by_label=annotation_points,
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                         witness_type="polygon_vertex_set",
@@ -530,7 +530,7 @@ class GeometryShapeMeasureBase:
                     center = (float(candidate_ellipse.center[0]), float(candidate_ellipse.center[1]))
                     ellipse_instance = candidate_ellipse
                     answer_scalar = int(candidate_answer)
-                    evidence = graph_point_evidence_artifacts(
+                    annotation = graph_point_annotation_artifacts(
                         points_by_label={"center": center},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
@@ -578,7 +578,7 @@ class GeometryShapeMeasureBase:
                     center = (float(candidate_circle.center[0]), float(candidate_circle.center[1]))
                     circle_instance = candidate_circle
                     answer_scalar = int(candidate_answer)
-                    evidence = graph_point_evidence_artifacts(
+                    annotation = graph_point_annotation_artifacts(
                         points_by_label={"center": center},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
@@ -598,7 +598,7 @@ class GeometryShapeMeasureBase:
                 last_error = exc
                 continue
 
-        if answer_scalar is None or evidence is None or entity is None or anchor is None:
+        if answer_scalar is None or annotation is None or entity is None or anchor is None:
             if range_rejections > 0 and last_error is None:
                 raise RuntimeError(
                     f"failed to generate {self.task_id} instance in requested answer range "
@@ -633,7 +633,7 @@ class GeometryShapeMeasureBase:
 
         prompt_family = _prompt_family_for_variant(str(variant_kind))
         answer_family = "pi" if str(variant_kind) in self._pi_variants() else "integer"
-        required_labels = [str(label) for label in evidence.get("required_labels", []) if str(label).strip()]
+        required_labels = [str(label) for label in annotation.get("required_labels", []) if str(label).strip()]
 
         object_description = _required_prompt_text(
             prompt_defaults,
@@ -645,15 +645,15 @@ class GeometryShapeMeasureBase:
             preferred_keys=(f"question_text_{prompt_family}", "question_text"),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_hint_base = _required_prompt_text(
+        annotation_hint_base = _required_prompt_text(
             prompt_defaults,
-            preferred_keys=(f"evidence_hint_{prompt_family}", "evidence_hint_point_map", "evidence_hint"),
+            preferred_keys=(f"annotation_hint_{prompt_family}", "annotation_hint_point_map", "annotation_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
         if self._include_required_labels_in_prompt(variant_kind=str(variant_kind)):
-            evidence_hint = append_required_labels_clause(str(evidence_hint_base), required_labels)
+            annotation_hint = append_required_labels_clause(str(annotation_hint_base), required_labels)
         else:
-            evidence_hint = str(evidence_hint_base)
+            annotation_hint = str(annotation_hint_base)
         answer_hint = _required_prompt_text(
             prompt_defaults,
             preferred_keys=(f"answer_hint_{answer_family}", "answer_hint"),
@@ -678,7 +678,7 @@ class GeometryShapeMeasureBase:
         )
         if json_example is None or json_example_answer_only is None:
             generated_json_example, generated_json_example_answer_only = build_prompt_json_examples(
-                evidence_value=evidence.get("evidence_value", {}),
+                annotation_value=annotation.get("annotation_value", {}),
                 answer_type=("pi_expression" if str(answer_family) == "pi" else "integer"),
             )
             if json_example is None:
@@ -692,13 +692,13 @@ class GeometryShapeMeasureBase:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "question_text": str(question_text),
                 "json_output_contract": str(json_output_contract),
                 "json_output_contract_answer_only": str(json_output_contract_answer_only),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -720,7 +720,7 @@ class GeometryShapeMeasureBase:
             "answer_format": str(answer_format),
             "query_id_probabilities": dict(variant_probabilities),
             "required_graph_cells": int(required_graph_cells),
-            "required_evidence_labels": [str(label) for label in evidence.get("required_labels", [])],
+            "required_annotation_labels": [str(label) for label in annotation.get("required_labels", [])],
         }
         polygon_sides = None
         if polygon_instance is not None:
@@ -806,16 +806,16 @@ class GeometryShapeMeasureBase:
             },
             "render_map": {"image_id": "img0", "anchors": {"target_1": dict(anchor)}},
             "execution_trace": dict(execution_trace),
-            "witness_symbolic": dict(evidence["witness_symbolic"]),
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "witness_symbolic": dict(annotation["witness_symbolic"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
 
-        evidence_value = evidence["evidence_value"]
-        evidence_point_count = 1
-        if str(evidence["evidence_type"]) in {"graph_point_set", "point_set"}:
-            evidence_point_count = len(evidence_value) if isinstance(evidence_value, list) else 1
-        elif str(evidence["evidence_type"]) == "graph_point":
-            evidence_point_count = 1
+        annotation_value = annotation["annotation_value"]
+        annotation_point_count = 1
+        if str(annotation["annotation_type"]) in {"graph_point_set", "point_set"}:
+            annotation_point_count = len(annotation_value) if isinstance(annotation_value, list) else 1
+        elif str(annotation["annotation_type"]) == "graph_point":
+            annotation_point_count = 1
 
         complexity_components = self._measurement_complexity_components(
             variant_kind=str(variant_kind),
@@ -830,13 +830,13 @@ class GeometryShapeMeasureBase:
             ambiguity=float(complexity_components["ambiguity"]),
             output_burden=geometry_measurement_output_burden(
                 answer_format=str(answer_format),
-                evidence_point_count=int(evidence_point_count),
+                annotation_point_count=int(annotation_point_count),
             ),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=TypedValue(type=str(evidence["evidence_type"]), value=evidence["evidence_value"]),
+            annotation_gt=TypedValue(type=str(annotation["annotation_type"]), value=annotation["annotation_value"]),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

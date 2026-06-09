@@ -18,7 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.diagram.common import projected_diagram_bbox_sequence_evidence
+from ..shared.diagram.common import projected_diagram_bbox_sequence_annotation
 from ..shared.diagram.complexity import (
     build_diagrams_complexity,
     clamp_unit_interval,
@@ -36,10 +36,11 @@ from ..shared.diagram.map_common import (
 )
 from ..shared.diagram.map_scene import render_map_scene
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 
 
-TASK_ID = "task_pages__map__navigation_label"
+TASK_ID = "pages_map_navigation_source"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DOCUMENT_MAP_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DOCUMENT_MAP_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_VARIANT = {
@@ -72,16 +73,15 @@ def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
             "Gallery",
         ),
     }
-    evidence_bbox, answer_value = examples[str(query_id)]
-    answer_and_evidence = {"evidence": evidence_bbox, "answer": str(answer_value)}
+    annotation_bbox, answer_value = examples[str(query_id)]
+    answer_and_annotation = {"annotation": annotation_bbox, "answer": str(answer_value)}
     answer_only = {"answer": str(answer_value)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
 
-@register_task
 class PagesMapNavigationLabelTask:
     """Return an exact visible landmark or zone label from one static printed map."""
 
@@ -147,8 +147,8 @@ class PagesMapNavigationLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint_destination_after_directions",
-                "evidence_hint_landmark_after_route_step",
+                "annotation_hint_destination_after_directions",
+                "annotation_hint_landmark_after_route_step",
                 "object_description_campus_map",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -161,13 +161,13 @@ class PagesMapNavigationLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_campus_map"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -176,27 +176,27 @@ class PagesMapNavigationLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bbox_ids = [str(bbox_id) for bbox_id in dataset["evidence_bbox_ids"]]
-        evidence_bbox_map = {
+        annotation_bbox_ids = [str(bbox_id) for bbox_id in dataset["annotation_bbox_ids"]]
+        annotation_bbox_map = {
             **dict(rendered_scene.landmark_bbox_map),
             **dict(rendered_scene.zone_label_bbox_map),
         }
-        evidence_projection = projected_diagram_bbox_sequence_evidence(evidence_bbox_map, evidence_bbox_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_diagram_bbox_sequence_annotation(annotation_bbox_map, annotation_bbox_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_sequence"]
+            for bbox in annotation_projection["bbox_sequence"]
         ]
         answer_value = str(dataset["answer_label"])
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_sequence", value=list(annotation_bboxes))
 
         landmark_scan = normalize_int_with_bounds(int(dataset["landmark_count"]), [8, 14])
         route_scan = normalize_int_with_bounds(len(dataset["route_landmark_ids"]), [1, 6])
-        evidence_scan = normalize_int_with_bounds(len(evidence_bbox_ids), [1, 6])
+        annotation_scan = normalize_int_with_bounds(len(annotation_bbox_ids), [1, 6])
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + (0.10 * float(route_scan))
-            + (0.10 * float(evidence_scan))
+            + (0.10 * float(annotation_scan))
         )
         complexity = build_diagrams_complexity(
             weights=_COMPLEXITY_WEIGHTS,
@@ -232,7 +232,7 @@ class PagesMapNavigationLabelTask:
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "landmark_count": int(dataset["landmark_count"]),
                     "route_landmark_count": int(len(dataset["route_landmark_ids"])),
-                    "evidence_bbox_count": int(len(evidence_bbox_ids)),
+                    "annotation_bbox_count": int(len(annotation_bbox_ids)),
                 },
             },
             "render_spec": {
@@ -274,17 +274,17 @@ class PagesMapNavigationLabelTask:
                 "path_specs": [dict(spec) for spec in dataset["path_specs"]],
                 "route_landmark_ids": [str(item) for item in dataset["route_landmark_ids"]],
                 "highlighted_route_landmark_ids": [str(item) for item in dataset["highlighted_route_landmark_ids"]],
-                "evidence_bbox_ids": list(evidence_bbox_ids),
-                "evidence_landmark_bbox_ids": [str(item) for item in dataset["evidence_landmark_bbox_ids"]],
-                "evidence_zone_label_bbox_ids": [str(item) for item in dataset["evidence_zone_label_bbox_ids"]],
-                "supporting_bbox_ids": list(evidence_bbox_ids),
-                "evidence_semantics": str(dataset["evidence_semantics"]),
+                "annotation_bbox_ids": list(annotation_bbox_ids),
+                "annotation_landmark_bbox_ids": [str(item) for item in dataset["annotation_landmark_bbox_ids"]],
+                "annotation_zone_label_bbox_ids": [str(item) for item in dataset["annotation_zone_label_bbox_ids"]],
+                "supporting_bbox_ids": list(annotation_bbox_ids),
+                "annotation_semantics": str(dataset["annotation_semantics"]),
             },
             "witness_symbolic": {
                 "type": "ordered_id_path",
                 "ids": [str(item) for item in dataset["route_landmark_ids"]],
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -293,7 +293,7 @@ class PagesMapNavigationLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -309,4 +309,32 @@ class PagesMapNavigationLabelTask:
         )
 
 
-__all__ = ["PagesMapNavigationLabelTask"]
+@register_task
+class PagesMapDestinationAfterDirectionsLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the destination reached after following visible map directions."""
+
+    task_id = "task_pages__map__destination_after_directions_label"
+    domain = "pages"
+    task_group = "map"
+    public_scene_id = "map"
+    fixed_query_id = "destination_after_directions"
+    source_task_cls = PagesMapNavigationLabelTask
+
+
+@register_task
+class PagesMapLandmarkAfterRouteStepLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the landmark reached after a named route step."""
+
+    task_id = "task_pages__map__landmark_after_route_step_label"
+    domain = "pages"
+    task_group = "map"
+    public_scene_id = "map"
+    fixed_query_id = "landmark_after_route_step"
+    source_task_cls = PagesMapNavigationLabelTask
+
+
+__all__ = [
+    "PagesMapDestinationAfterDirectionsLabelTask",
+    "PagesMapLandmarkAfterRouteStepLabelTask",
+    "PagesMapNavigationLabelTask",
+]

@@ -99,7 +99,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--prompt-variant",
-        choices=("active", "answer", "answer_only", "evidence", "answer_and_evidence"),
+        choices=("active", "answer", "answer_only", "annotation", "answer_and_annotation"),
         default="answer",
         help="Which TRACE prompt variant to export into the RLVR prompt column",
     )

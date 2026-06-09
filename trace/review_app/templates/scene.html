@@ -6,6 +6,21 @@
   <span>{{ scene.scene_id }}</span>
 </nav>
 
+<section class="summary-grid">
+  <div class="metric"><span>{{ scene.task_count }}</span><label>tasks</label></div>
+  <div class="metric"><span>{{ scene.sample_count }}</span><label>samples</label></div>
+  <a class="metric metric-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">
+    <span>{{ scene_open_feedback|length }}</span>
+    <label>open scene issues</label>
+  </a>
+</section>
+
+<section class="notice">
+  <strong>Scene-level review.</strong>
+  <span class="muted">Inspect two samples per query across every task in this scene and file scene-level issues.</span>
+  <a class="button-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">Open Scene Review</a>
+</section>
+
 <section class="table-panel">
   <table>
     <thead>
@@ -14,7 +29,7 @@
         <th>Task</th>
         <th>Audit Status</th>
         <th>Queries</th>
-        <th>Feedback</th>
+        <th>Issues</th>
       </tr>
     </thead>
     <tbody>
@@ -41,16 +56,19 @@
           </td>
           <td class="audit-cell">
             <div class="task-state-row">
-              <span class="{% if task_status.complete %}status ok{% else %}status warn{% endif %}">
-                {% if task_status.complete %}completed{% else %}pending{% endif %}
+              <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">
+                review {% if task_status.review_pass %}done{% else %}pending{% endif %}
               </span>
-              <span class="muted">manual {{ task_status.manual_count|default(0) }}/{{ task_status.manual_total|default(4) }}</span>
-              <span class="muted">solve {% if task_status.solve_pass %}pass{% else %}pending{% endif %}</span>
+              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(4) }}</span>
+              <span class="{% if task_status.solve_rate_pass %}status ok{% else %}status warn{% endif %}">
+                solve rate {% if task_status.solve_rate_pass %}done{% else %}pending{% endif %}
+              </span>
+              <span class="muted">artifact {% if task_status.solve_artifact_pass %}accepted{% else %}pending{% endif %}</span>
             </div>
             <form class="audit-toggle-form" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/audit') }}" method="post">
               <label><input type="checkbox" name="prompt_pass" value="1" {% if audit.prompt_pass %}checked{% endif %}> Prompt</label>
               <label><input type="checkbox" name="image_pass" value="1" {% if audit.image_pass %}checked{% endif %}> Image</label>
-              <label><input type="checkbox" name="evidence_pass" value="1" {% if audit.evidence_pass %}checked{% endif %}> Evidence</label>
+              <label><input type="checkbox" name="annotation_pass" value="1" {% if audit.annotation_pass %}checked{% endif %}> Annotation</label>
               <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
               <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
               <button type="submit">Save</button>

@@ -11,7 +11,7 @@ def test_games_pool_table_defaults_present() -> None:
     cfg = get_task_group_defaults("games", "pool")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__pool__pottable_ball_count",
+        task_id="task_games__pool__group_ball_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -21,20 +21,17 @@ def test_games_pool_table_defaults_present() -> None:
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"standard_table"}
     assert set(generation["query_id_weights"].keys()) == {
-        "pottable_ball_count",
-        "legal_group_pottable_count",
+        "current_group_ball_count",
         "blocking_ball_count",
     }
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_POOL_STYLE_VARIANTS)
     assert list(generation["object_ball_count_support"]) == [7, 8, 9, 10]
-    assert list(generation["pottable_ball_count_support"]) == [2, 3, 4, 5, 6]
-    assert list(generation["legal_group_pottable_count_support"]) == [1, 2, 3, 4]
+    assert list(generation["current_group_ball_count_support"]) == [2, 3, 4, 5, 6]
     assert list(generation["blocking_ball_count_support"]) == [0, 1, 2, 3, 4]
-    assert float(generation["max_direct_shot_angle_degrees"]) == 45.0
     assert int(rendering["canvas_width"]) == 1120
     assert int(rendering["canvas_height"]) == 760
     assert int(rendering["ball_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_pool_v0"
-    assert "no-bank" in str(prompt["direct_shot_rule_text"]).lower()
-    assert "8-ball" in str(prompt["legal_group_rule_text"])
-    assert "pixel point" in str(prompt["evidence_hint_blocking_ball_count"])
+    assert "two straight segments" in str(prompt["marked_shot_rule_text"])
+    assert "current player" in str(prompt["answer_hint_current_group_ball_count"])
+    assert "pixel point" in str(prompt["annotation_hint_blocking_ball_count"])

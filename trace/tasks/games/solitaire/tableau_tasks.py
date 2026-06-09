@@ -1,4 +1,4 @@
-"""Games solitaire-tableau tasks with grounded card and pile evidence."""
+"""Games solitaire-tableau tasks with grounded card and pile annotation."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis
@@ -45,6 +45,7 @@ SUPPORTED_PANEL_STYLE_VARIANTS: Tuple[str, ...] = (
 QUERY_MOVE_LEGALITY = "move_legality_label"
 QUERY_FOUNDATION_READY = "foundation_ready_count"
 QUERY_TABLEAU_SEQUENCE = "tableau_sequence_count"
+QUERY_SAME_SUIT_RUN = "same_suit_descending_run_length"
 MOVE_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 CARD_BADGE_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 SUITS: Tuple[str, ...] = ("hearts", "diamonds", "spades", "clubs")
@@ -101,6 +102,7 @@ class _TaskDefaults:
     move_option_count_support: Tuple[int, ...] = (4, 5)
     foundation_ready_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     tableau_sequence_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    same_suit_run_length_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     tableau_column_count_support: Tuple[int, ...] = (7, 8)
 
 
@@ -166,7 +168,7 @@ class _Sample:
     foundations: Tuple[_Foundation, ...]
     answer: int | str
     answer_type: str
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     move_options: Tuple[_MoveOption, ...]
     metadata: Dict[str, Any]
 
@@ -230,6 +232,15 @@ def _is_legal_tableau_move(source: _Card, target: _Card) -> bool:
     return (
         int(target.rank_value) == int(source.rank_value) + 1
         and _card_color(str(target.suit_name)) != _card_color(str(source.suit_name))
+    )
+
+
+def _is_same_suit_descending_next(upper: _Card, lower: _Card) -> bool:
+    """Return whether `lower` continues a same-suit descending run from `upper`."""
+
+    return (
+        str(lower.suit_name) == str(upper.suit_name)
+        and int(lower.rank_value) == int(upper.rank_value) - 1
     )
 
 
@@ -761,7 +772,7 @@ def _sample_move_legality(
         ]
         if len(legal_options) != 1 or str(legal_options[0].label) != str(answer_label):
             continue
-        evidence = (str(source_card.card_id), str(answer_target_id))
+        annotation = (str(source_card.card_id), str(answer_target_id))
         return _Sample(
             query_id=QUERY_MOVE_LEGALITY,
             scene_variant=str(scene_variant),
@@ -769,7 +780,7 @@ def _sample_move_legality(
             foundations=tuple(foundations),
             answer=str(answer_label),
             answer_type="string",
-            evidence_entity_ids=tuple(evidence),
+            annotation_entity_ids=tuple(annotation),
             move_options=tuple(options),
             metadata={
                 "legal_move_kind": str(mode),
@@ -872,7 +883,7 @@ def _sample_foundation_ready(
             foundations=tuple(foundations),
             answer=int(target_answer),
             answer_type="integer",
-            evidence_entity_ids=tuple([*ready_ids, *[str(f.foundation_id) for f in foundations]]),
+            annotation_entity_ids=tuple([*ready_ids, *[str(f.foundation_id) for f in foundations]]),
             move_options=(),
             metadata={
                 "target_answer": int(target_answer),
@@ -975,7 +986,7 @@ def _sample_tableau_sequence(
             )
         except ValueError:
             continue
-        evidence_ids = tuple(dict.fromkeys([card_id for pair in valid_pairs for card_id in pair]))
+        annotation_ids = tuple(dict.fromkeys([card_id for pair in valid_pairs for card_id in pair]))
         return _Sample(
             query_id=QUERY_TABLEAU_SEQUENCE,
             scene_variant=str(scene_variant),
@@ -983,7 +994,7 @@ def _sample_tableau_sequence(
             foundations=_sample_foundations(rng),
             answer=int(target_answer),
             answer_type="integer",
-            evidence_entity_ids=tuple(evidence_ids),
+            annotation_entity_ids=tuple(annotation_ids),
             move_options=(),
             metadata={
                 "target_answer": int(target_answer),
@@ -993,6 +1004,156 @@ def _sample_tableau_sequence(
             },
         )
     raise ValueError("failed to sample solitaire tableau-sequence scene")
+
+
+def _sample_same_suit_run_length(
+    rng,
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    scene_variant: str,
+) -> _Sample:
+    target_answer, target_probabilities = _sample_integer_axis(
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="same_suit_run_length_target_answer_support",
+        explicit_key="target_answer",
+        fallback_support=_DEFAULTS.same_suit_run_length_target_answer_support,
+        namespace="same_suit_run_length_target_answer",
+        balanced_flag_key="balanced_target_answer_sampling",
+    )
+    column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
+    for _attempt in range(500):
+        target_length = int(target_answer)
+        if target_length < 1:
+            continue
+        pool = _deck()
+        target_col_index = int(rng.randrange(column_count))
+        target_suit = str(SUITS[int(rng.randrange(len(SUITS)))])
+        min_start_rank = min(13, max(target_length + 1, target_length))
+        if min_start_rank > 13:
+            continue
+        start_rank = int(rng.randrange(min_start_rank, 14))
+        prefix_count = int(rng.randrange(0, 3))
+        run_raw = [(int(start_rank - offset), str(target_suit)) for offset in range(target_length)]
+        if any(raw not in pool for raw in run_raw):
+            continue
+        for raw in run_raw:
+            _remove_card(pool, raw)
+
+        breaker_candidates = [
+            raw
+            for raw in pool
+            if not (int(raw[0]) == int(start_rank - target_length) and str(raw[1]) == str(target_suit))
+        ]
+        if not breaker_candidates:
+            continue
+        breaker_raw = breaker_candidates[int(rng.randrange(len(breaker_candidates)))]
+        _remove_card(pool, breaker_raw)
+
+        prefix_raw: List[Tuple[int, str]] = []
+        for prefix_index in range(prefix_count):
+            candidates = list(pool)
+            if prefix_index == int(prefix_count) - 1:
+                candidates = [
+                    raw
+                    for raw in candidates
+                    if not (int(raw[0]) == int(start_rank + 1) and str(raw[1]) == str(target_suit))
+                ]
+            if not candidates:
+                break
+            raw = candidates[int(rng.randrange(len(candidates)))]
+            _remove_card(pool, raw)
+            prefix_raw.append(raw)
+        if len(prefix_raw) != int(prefix_count):
+            continue
+
+        columns: List[Tuple[_Card, ...]] = []
+        marked_card_id = ""
+        run_card_ids: List[str] = []
+        run_card_labels: List[str] = []
+        for col_index in range(column_count):
+            if int(col_index) == int(target_col_index):
+                raw_cards = [*prefix_raw, *run_raw, breaker_raw]
+            else:
+                length = int(rng.randrange(3, 6))
+                if len(pool) < length:
+                    raise ValueError("not enough cards for solitaire same-suit run distractor columns")
+                raw_cards = []
+                for _ in range(length):
+                    raw = pool.pop(int(rng.randrange(len(pool))))
+                    raw_cards.append(raw)
+            cards: List[_Card] = []
+            for row_index, raw in enumerate(raw_cards):
+                card_id = f"col_{col_index + 1:02d}_card_{row_index + 1:02d}"
+                badge = str(CARD_BADGE_LABELS[col_index]) if int(row_index) == len(raw_cards) - 1 else None
+                card = _Card(card_id=str(card_id), rank_value=int(raw[0]), suit_name=str(raw[1]), badge_text=badge)
+                cards.append(card)
+                if int(col_index) == int(target_col_index):
+                    run_start = int(prefix_count)
+                    run_end = int(prefix_count) + int(target_length)
+                    if int(row_index) == run_start:
+                        marked_card_id = str(card_id)
+                    if run_start <= int(row_index) < run_end:
+                        run_card_ids.append(str(card_id))
+                        run_card_labels.append(str(card.label))
+            columns.append(tuple(cards))
+
+        if not marked_card_id or len(run_card_ids) != int(target_length):
+            continue
+        card_map = _card_by_id(columns)
+        measured_ids = [str(marked_card_id)]
+        current_id = str(marked_card_id)
+        while True:
+            current = card_map[str(current_id)]
+            current_spec = next(
+                spec
+                for spec in (
+                    {
+                        "card_id": str(card.card_id),
+                        "column_index": int(col_index),
+                        "row_index": int(row_index),
+                    }
+                    for col_index, column in enumerate(columns)
+                    for row_index, card in enumerate(column)
+                )
+                if str(spec["card_id"]) == str(current_id)
+            )
+            next_row_index = int(current_spec["row_index"]) + 1
+            column = columns[int(current_spec["column_index"])]
+            if next_row_index >= len(column):
+                break
+            next_card = column[next_row_index]
+            if not _is_same_suit_descending_next(current, next_card):
+                break
+            measured_ids.append(str(next_card.card_id))
+            current_id = str(next_card.card_id)
+        if tuple(measured_ids) != tuple(run_card_ids):
+            continue
+        return _Sample(
+            query_id=QUERY_SAME_SUIT_RUN,
+            scene_variant=str(scene_variant),
+            columns=tuple(columns),
+            foundations=_sample_foundations(rng),
+            answer=int(target_length),
+            answer_type="integer",
+            annotation_entity_ids=tuple(run_card_ids),
+            move_options=(),
+            metadata={
+                "target_answer": int(target_length),
+                "target_answer_probabilities": dict(target_probabilities),
+                "marked_card_id": str(marked_card_id),
+                "marked_card_column_index": int(target_col_index),
+                "marked_card_row_index": int(prefix_count),
+                "same_suit_run_card_ids": list(run_card_ids),
+                "same_suit_run_card_labels": list(run_card_labels),
+                "same_suit_run_length": int(target_length),
+                "same_suit_run_suit": str(target_suit),
+            },
+        )
+    raise ValueError("failed to sample solitaire same-suit run-length scene")
 
 
 def _render_scene(
@@ -1136,6 +1297,7 @@ def _render_scene(
     total_columns_width = (column_count * card_width) + ((column_count - 1) * column_gap)
     start_x = int((canvas_width - total_columns_width) / 2 + round(dx))
     card_bboxes: Dict[str, List[float]] = {}
+    marked_card_id = str(sample.metadata.get("marked_card_id", ""))
     for col_index, column in enumerate(sample.columns):
         x0 = start_x + int(col_index) * (card_width + column_gap)
         header_bbox = (float(x0), float(tableau_y - 28), float(x0 + card_width), float(tableau_y - 4))
@@ -1168,6 +1330,14 @@ def _render_scene(
                 red_suit_rgb=tuple(int(value) for value in solitaire_style.red_suit_rgb),
                 black_suit_rgb=tuple(int(value) for value in solitaire_style.black_suit_rgb),
             )
+            if str(card.card_id) == marked_card_id:
+                marker_bottom = min(float(y0 + card_height), float(y0 + column_step_y + 6))
+                draw.rounded_rectangle(
+                    (float(x0 - 4), float(y0 - 4), float(x0 + card_width + 4), float(marker_bottom)),
+                    radius=max(4, int(radius // 2)),
+                    outline=(218, 39, 49),
+                    width=4,
+                )
             card_bboxes[str(card.card_id)] = [float(value) for value in bbox]
             entities.append(
                 {
@@ -1181,6 +1351,7 @@ def _render_scene(
                     "column_index": int(col_index),
                     "row_index": int(row_index),
                     "is_exposed": bool(row_index == len(column) - 1),
+                    "is_marked": bool(str(card.card_id) == marked_card_id),
                     "bbox_px": [float(value) for value in bbox],
                 }
             )
@@ -1229,6 +1400,8 @@ def _render_scene(
         "foundation_bboxes_px": dict(foundation_bboxes),
         "option_bboxes_px": dict(option_bboxes),
         "entity_bboxes_px": {**card_bboxes, **foundation_bboxes, **option_bboxes},
+        "marked_card_id": marked_card_id or None,
+        "marked_card_bbox_px": None if not marked_card_id else card_bboxes.get(marked_card_id),
         "column_count": int(column_count),
         "scene_variant": str(sample.scene_variant),
         "style": dict(style_meta),
@@ -1256,16 +1429,16 @@ def _render_scene(
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) == QUERY_MOVE_LEGALITY:
-        answer_and_evidence = {
-            "evidence": {"source_card": [250, 220, 324, 324], "target": [342, 220, 416, 324]},
+        answer_and_annotation = {
+            "annotation": {"source_card": [250, 220, 324, 324], "target": [342, 220, 416, 324]},
             "answer": "C",
         }
         answer_only = {"answer": "C"}
     else:
-        answer_and_evidence = {"evidence": [[250, 220, 324, 324], [342, 220, 416, 324]], "answer": 3}
+        answer_and_annotation = {"annotation": [[250, 220, 324, 324], [342, 220, 416, 324]], "answer": 3}
         answer_only = {"answer": 3}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1281,9 +1454,10 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
             "json_output_contract_answer_only",
             "object_description_solitaire_tableau",
             f"answer_hint_{str(sample.query_id)}",
-            f"evidence_hint_{str(sample.query_id)}",
+            f"annotation_hint_{str(sample.query_id)}",
             "tableau_rule_text",
             "foundation_rule_text",
+            "same_suit_run_rule_text",
         ),
         context=f"prompt defaults for {str(sample.query_id)}",
     )
@@ -1293,11 +1467,12 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults[f"answer_hint_{str(sample.query_id)}"]),
-        "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sample.query_id)}"]),
+        "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sample.query_id)}"]),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         "tableau_rule_text": str(prompt_defaults["tableau_rule_text"]),
         "foundation_rule_text": str(prompt_defaults["foundation_rule_text"]),
+        "same_suit_run_rule_text": str(prompt_defaults["same_suit_run_rule_text"]),
     }
     prompt_selection = render_task_prompt_variants(
         domain="games",
@@ -1306,7 +1481,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(sample.query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1319,13 +1494,14 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
     }
 
 
-def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> Any:
+def _build_complexity(*, task_id: str, sample: _Sample, annotation_count: int) -> Any:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
     card_count = sum(len(column) for column in sample.columns)
     query_base = {
         QUERY_MOVE_LEGALITY: 0.62,
         QUERY_FOUNDATION_READY: 0.46,
         QUERY_TABLEAU_SEQUENCE: 0.72,
+        QUERY_SAME_SUIT_RUN: 0.68,
     }[str(sample.query_id)]
     return build_games_complexity(
         weights=weights,
@@ -1333,7 +1509,7 @@ def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> 
             "visual_scan": normalize_linear(float(card_count), min_value=15.0, max_value=38.0),
             "rule_reasoning": float(query_base),
             "choice_or_count_load": normalize_linear(float(sample.answer if isinstance(sample.answer, int) else len(sample.move_options)), min_value=0.0, max_value=8.0),
-            "output_burden": normalize_linear(float(evidence_count), min_value=0.0, max_value=14.0),
+            "output_burden": normalize_linear(float(annotation_count), min_value=0.0, max_value=14.0),
         },
     )
 
@@ -1383,15 +1559,15 @@ class _SolitaireTableauTask:
             params=params,
         )
         if str(sample.query_id) == QUERY_MOVE_LEGALITY:
-            evidence_value: Any = {
+            annotation_value: Any = {
                 "source_card": list(rendered.render_map["entity_bboxes_px"][str(sample.metadata["legal_source_id"])]),
                 "target": list(rendered.render_map["entity_bboxes_px"][str(sample.metadata["legal_target_id"])]),
             }
-            evidence_type = "keyed_bbox_map"
-            projected_evidence = {
+            annotation_type = "keyed_bbox_map"
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_value),
-                "pixel_keyed_bbox_map": dict(evidence_value),
+                "keyed_bbox_map": dict(annotation_value),
+                "pixel_keyed_bbox_map": dict(annotation_value),
             }
             witness_symbolic = {
                 "type": "object_map",
@@ -1400,25 +1576,25 @@ class _SolitaireTableauTask:
                     "target": str(sample.metadata["legal_target_id"]),
                 },
             }
-            evidence_count = len(evidence_value)
+            annotation_count = len(annotation_value)
         else:
-            evidence_bboxes = [
+            annotation_bboxes = [
                 list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
-                for entity_id in sample.evidence_entity_ids
+                for entity_id in sample.annotation_entity_ids
                 if str(entity_id) in rendered.render_map["entity_bboxes_px"]
             ]
-            evidence_value = [list(bbox) for bbox in evidence_bboxes]
-            evidence_type = "bbox_set"
-            projected_evidence = {
+            annotation_value = [list(bbox) for bbox in annotation_bboxes]
+            annotation_type = "bbox_set"
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_value],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+                "bbox_set": [list(bbox) for bbox in annotation_value],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
             }
             witness_symbolic = {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             }
-            evidence_count = len(evidence_value)
+            annotation_count = len(annotation_value)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1427,8 +1603,8 @@ class _SolitaireTableauTask:
         )
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=int(evidence_count))
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, annotation_count=int(annotation_count))
         card_specs = [
             {
                 "card_id": str(card.card_id),
@@ -1462,7 +1638,7 @@ class _SolitaireTableauTask:
                     "query_id": str(sample.query_id),
                     "style_variant": str(style_variant),
                     "answer": sample.answer,
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1501,11 +1677,11 @@ class _SolitaireTableauTask:
                 "answer": sample.answer,
                 "card_specs": card_specs,
                 "foundation_specs": foundation_specs,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
                 **dict(sample.metadata),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": dict(rendered.background_meta),
             "post_image_noise": post_noise_meta,
         }
@@ -1513,7 +1689,7 @@ class _SolitaireTableauTask:
             prompt=str(prompt),
             prompt_variants=dict(prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1575,8 +1751,26 @@ class GamesSolitaireTableauSequenceCountTask(_SolitaireTableauTask):
         )
 
 
+@register_task
+class GamesSolitaireSameSuitRunLengthValueTask(_SolitaireTableauTask):
+    """Measure the same-suit descending run that starts at one marked tableau card."""
+
+    task_id = "task_games__solitaire__same_suit_run_length_value"
+    query_id = QUERY_SAME_SUIT_RUN
+
+    def _sample(self, rng, *, task_id: str, instance_seed: int, params: Mapping[str, Any], scene_variant: str) -> _Sample:
+        return _sample_same_suit_run_length(
+            rng,
+            task_id=str(task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            scene_variant=str(scene_variant),
+        )
+
+
 __all__ = [
     "GamesSolitaireFoundationReadyCountTask",
     "GamesSolitaireMoveLegalityLabelTask",
+    "GamesSolitaireSameSuitRunLengthValueTask",
     "GamesSolitaireTableauSequenceCountTask",
 ]

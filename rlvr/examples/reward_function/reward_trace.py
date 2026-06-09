@@ -52,9 +52,9 @@ def _score_single_reward_input(
     trace_reward_mode: str = "auto",
     trace_output_mode: str | None = None,
     trace_answer_scoring: str = "exact_json",
-    trace_evidence_reward_formula: str = "gated",
+    trace_annotation_reward_formula: str = "gated",
     trace_answer_weight: float = 0.5,
-    trace_evidence_weight: float = 0.5,
+    trace_annotation_weight: float = 0.5,
     bbox_iou_threshold: float | None = None,
     point_half_life_px: float | None = None,
 ) -> dict[str, float]:
@@ -65,7 +65,7 @@ def _score_single_reward_input(
         trace_score = score_trace_response(
             response=response,
             answer_gt=reward_input["answer_gt"],
-            evidence_gt=reward_input["evidence_gt"],
+            annotation_gt=reward_input["annotation_gt"],
             reward_contract=reward_input["reward_contract"],
             bbox_iou_threshold=bbox_iou_threshold,
             point_half_life_px=point_half_life_px,
@@ -75,9 +75,9 @@ def _score_single_reward_input(
             extra_info=reward_input.get("extra_info"),
             trace_reward_mode=normalized_mode,
             trace_answer_scoring=normalized_answer_scoring,
-            trace_evidence_reward_formula=trace_evidence_reward_formula,
+            trace_annotation_reward_formula=trace_annotation_reward_formula,
             answer_weight=float(trace_answer_weight),
-            evidence_weight=float(trace_evidence_weight),
+            annotation_weight=float(trace_annotation_weight),
             format_weight=trace_format_weight,
         )
         return {"score": float(trace_score["overall"]), **trace_score}
@@ -106,7 +106,7 @@ def _build_single_reward_input(
     extra_info = extra_info or {}
     for key in (
         "answer_gt",
-        "evidence_gt",
+        "annotation_gt",
         "reward_contract",
         "metadata",
         "trace_ref",
@@ -162,9 +162,9 @@ def compute_score(*args, **kwargs):
         trace_reward_mode = kwargs.pop("trace_reward_mode", "auto")
         trace_output_mode = kwargs.pop("trace_output_mode", None)
         trace_answer_scoring = kwargs.pop("trace_answer_scoring", "exact_json")
-        trace_evidence_reward_formula = kwargs.pop("trace_evidence_reward_formula", "gated")
+        trace_annotation_reward_formula = kwargs.pop("trace_annotation_reward_formula", "gated")
         trace_answer_weight = float(kwargs.pop("trace_answer_weight", 0.5))
-        trace_evidence_weight = float(kwargs.pop("trace_evidence_weight", 0.5))
+        trace_annotation_weight = float(kwargs.pop("trace_annotation_weight", 0.5))
         bbox_iou_threshold = kwargs.pop("bbox_iou_threshold", None)
         bbox_iou_threshold = None if bbox_iou_threshold is None else float(bbox_iou_threshold)
         point_half_life_px = kwargs.pop("point_half_life_px", None)
@@ -175,9 +175,9 @@ def compute_score(*args, **kwargs):
             trace_reward_mode=trace_reward_mode,
             trace_output_mode=trace_output_mode,
             trace_answer_scoring=trace_answer_scoring,
-            trace_evidence_reward_formula=trace_evidence_reward_formula,
+            trace_annotation_reward_formula=trace_annotation_reward_formula,
             trace_answer_weight=trace_answer_weight,
-            trace_evidence_weight=trace_evidence_weight,
+            trace_annotation_weight=trace_annotation_weight,
             bbox_iou_threshold=bbox_iou_threshold,
             point_half_life_px=point_half_life_px,
         )

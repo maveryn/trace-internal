@@ -1,4 +1,4 @@
-"""Shared circle/ellipse sampling and evidence helpers for geometry tasks."""
+"""Shared circle/ellipse sampling and annotation helpers for geometry tasks."""
 
 from __future__ import annotations
 

@@ -55,19 +55,19 @@ The active public domains are:
 6. `illustrations`
 7. `pages`
 8. `physics`
-9. `puzzles`
+9. `puzzles` or `misc`
 10. `three_d`
 
 ## Scene Rule
 A scene is a visually distinct rendering grammar. Tasks under one scene can
-share a parameterized renderer and visual evidence contract.
+share a parameterized renderer and visual annotation contract.
 
 Two tasks can share solver/helper code and even the same `scene_id` without being
 the same public task. For enumeration, apply the hard task boundary in
-`docs/core/TASK_UNIT_POLICY.md`: scene grammar, primary witness kind, visual
-search pattern, and algorithmic/objective family. Same scene, answer type, or
-evidence type is not sufficient to merge tasks if the witness kind, visual
-search, or algorithmic objective differs.
+`docs/core/TASK_UNIT_POLICY.md`: a stable scene contract plus a stable task
+contract (`answer_schema`, `annotation_schema`, and `program_schema`). Same
+scene, answer type, or annotation type is not sufficient to merge tasks if the
+program schema or semantic annotation structure differs.
 
 ## Sampling Rule
 Equal task-level sampling remains the default. `query_id` values are diagnostics

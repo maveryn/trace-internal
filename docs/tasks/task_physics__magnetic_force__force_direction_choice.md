@@ -3,27 +3,52 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `magnetic_force`
-- Task group: `magnetism`
-- Query id: `force_direction_choice`
-- Answer type: `option_letter`
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `magnetism`
+- Implementation source: `trace/tasks/physics/magnetism/force_field.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__magnetic_force__force_direction_choice` -> `task_physics__magnetic_force__force_direction_choice`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows a charged particle moving through a uniform magnetic field drawn with into-page or out-of-page symbols. The particle has a visible velocity vector, and the side panel contains eight labeled candidate force arrows. The calibrated public mix uses the gridded field-panel scene, larger particle signs and candidate arrows, and six active correct-answer letters while retaining all eight candidates as visible options.
+## Task Contract
+Selects the Lorentz-force direction from visible magnetic-field orientation, charge sign, and velocity direction.
 
-The solver must use the charge sign, velocity direction, and magnetic-field orientation to choose the candidate arrow matching `F=q v x B`.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Evidence
-Prompt-facing evidence is a `keyed_bbox_map` over the input witnesses needed to derive the force direction:
+## Query Branches
 
-- `field_orientation`: bounding box around the magnetic-field orientation label
-- `charge`: bounding box around the charged particle marker/sign
-- `velocity`: bounding box around the visible velocity vector
+| Query id | Program schema |
+| --- | --- |
+| `force_direction_choice` | `option_letter(direction(charge_sign * cross_product(velocity_vector, magnetic_field_orientation))); scene=magnetic_force; scope=force_direction_choice` |
 
-## Prompt And Trace
-Prompt bundle: `physics_magnetism_v0`; scene key: `magnetic_force_field`; task key: `magnetic_force_field_query`; query key: `force_direction_choice`.
+## Program Metadata
+- Program signatures: `physics.lorentz_force_direction_choice`
+- Base program contract: `option_letter(direction(charge_sign * cross_product(velocity_vector, magnetic_field_orientation))); scene=magnetic_force; scope=force_direction_choice`
+- Parameter axes: `charge_sign`, `magnetic_field_orientation`
+- Arguments:
+  - `charge_sign`: semantic_role; allowed `negative_charge`, `positive_charge`; source `program_schema_concrete`
+  - `magnetic_field_orientation`: semantic_role; allowed `into_page`, `out_of_page`; source `program_schema_concrete`
+  - `velocity_vector`: semantic_role; allowed `visible_velocity_arrow`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `force_direction_choice`
 
-Outputs `query_id="force_direction_choice"`. The trace records the field orientation, charge sign, velocity direction, resolved force direction, option-arrow directions, selected option letter, and evidence entity ids. Candidate arrows are answer options and are not prompt-facing evidence.
+## Answer Contract
+- Answer schema: `option_letter`
+- Generator `answer_gt.type`: `option_letter`
+- The answer value is the selected visible option letter.
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized magnetic-force scenario.
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/magnetic_force/task_physics__magnetic_force__force_direction_choice/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

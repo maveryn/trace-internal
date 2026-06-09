@@ -59,8 +59,8 @@ def test_graph_relation_automaton_final_state_contract_matches_trace() -> None:
     assert out.scene_id == "automaton"
     assert out.query_id == "final_state_label"
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "point_sequence"
-    assert len(out.evidence_gt.value) == 5
+    assert out.annotation_gt.type == "point_sequence"
+    assert len(out.annotation_gt.value) == 5
     assert trace["scene_ir"]["scene_kind"] == "automaton_state_transition_simulation"
     assert execution["query_id"] == "final_state_label"
     assert execution["state_count"] == 5
@@ -72,15 +72,15 @@ def test_graph_relation_automaton_final_state_contract_matches_trace() -> None:
 
     full_path = _follow_path(trace)
     assert execution["full_state_path_labels"] == full_path
-    assert execution["evidence_state_path_labels"] == full_path
+    assert execution["annotation_state_path_labels"] == full_path
     assert out.answer_gt.value == full_path[-1] == execution["answer_state_label"]
     assert trace["witness_symbolic"]["state_path_labels"] == full_path
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
     assert len(execution["used_transition_label_bboxes"]) == 4
     assert sum(1 for state in state_entities if bool(state["is_start_state"])) == 1
     assert sum(1 for state in state_entities if bool(state["is_answer_state"])) >= 1
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_relation_automaton_step_state_contract_matches_trace() -> None:
@@ -104,9 +104,9 @@ def test_graph_relation_automaton_step_state_contract_matches_trace() -> None:
     assert out.query_id == "transition_step_state_label"
     assert execution["input_length"] == 5
     assert execution["transition_step_count"] == 3
-    assert len(out.evidence_gt.value) == 4
+    assert len(out.annotation_gt.value) == 4
     assert execution["full_state_path_labels"] == full_path
-    assert execution["evidence_state_path_labels"] == full_path[:4]
+    assert execution["annotation_state_path_labels"] == full_path[:4]
     assert out.answer_gt.value == full_path[3] == execution["answer_state_label"]
     assert len(execution["used_transition_edges"]) == 3
     assert len(execution["used_transition_label_bboxes"]) == 3
@@ -121,12 +121,12 @@ def test_graph_relation_automaton_prompt_examples_match_contract() -> None:
     )
 
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "C"}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[150, 250], [310, 190], [480, 230]]
-    assert answer_and_evidence["answer"] == "C"
-    assert "[x,y]" in out.prompt_variants["answer_and_evidence"]
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[150, 250], [310, 190], [480, 230]]
+    assert answer_and_annotation["answer"] == "C"
+    assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_relation_automaton_balanced_sampling_covers_queries_and_answers() -> None:
@@ -147,7 +147,7 @@ def test_graph_relation_automaton_balanced_sampling_covers_queries_and_answers()
         answers[str(out.answer_gt.value)] += 1
         layout_variants[str(execution["layout_variant_requested"])] += 1
         assert str(out.answer_gt.value) == str(execution["answer_state_label"])
-        assert len(out.evidence_gt.value) == int(execution["transition_step_count"]) + 1
+        assert len(out.annotation_gt.value) == int(execution["transition_step_count"]) + 1
 
     assert set(query_ids) == {"final_state_label", "transition_step_state_label"}
     assert all(30 <= count <= 60 for count in query_ids.values())

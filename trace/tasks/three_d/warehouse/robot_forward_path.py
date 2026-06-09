@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
-from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import (
@@ -21,11 +18,9 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -33,153 +28,42 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import load_font
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from ..shared.task_support import float_value as _float_value
-from ..shared.task_support import int_value as _int_value
-from ..shared.color_variation import resolve_three_d_object_fill_rgb
-from ..shared.object_resources import (
-    WAREHOUSE_CONTEXT_OBJECT_TYPES,
-    WAREHOUSE_OBJECT_BASE_DIMENSIONS,
-    WAREHOUSE_OBJECT_COLORS,
-    WAREHOUSE_OBJECT_NAMES,
-    WAREHOUSE_OBJECT_TYPES,
-    WAREHOUSE_RADIAL_OBJECT_TYPES,
-    WAREHOUSE_ROBOT_ACCENT_COLORS,
-    WAREHOUSE_ROBOT_BASE_COLORS,
-    WAREHOUSE_ROBOT_DESIGNS,
-    WAREHOUSE_ROBOT_HEADINGS,
-    WAREHOUSE_SHELF_FRAME_COLORS,
-    WAREHOUSE_SHELF_LOAD_COLORS,
-    WAREHOUSE_SHELF_RACK_STYLES,
-)
 from ..shared.object_scene import (
     POINT_LABELS,
     _CameraSpec,
     _ProjectionFrame,
     _bbox_intersection_area,
-    _bbox_union,
     _build_projection_frame,
     _canvas_floor_polygon_xy,
-    _draw_box_object,
-    _draw_box_parts_object,
-    _draw_cone_object,
-    _draw_cylinder_object,
-    _draw_line,
-    _draw_option_label,
-    _draw_pyramid_object,
-    _draw_wedge_object,
-    _grid_values_for_range,
     _object_reference_points,
     _object_screen_bbox,
-    _polygon_axis_line_segment,
-    _project_screen,
-    _project_xy,
     _sample_camera,
-    _shade,
-    _sub_box_spec,
-    _tint,
 )
+from ..shared.option_panel import build_text_option_choices
+from .warehouse_scene_common import (
+    MAX_CANDIDATE_BBOX_INTERSECTION_PX,
+    MIN_CANDIDATE_CENTER_SEPARATION_PX,
+    MIN_CANDIDATE_VISIBLE_PX,
+    PATH_CORRIDOR_HALF_WIDTH,
+    SCENE_ID,
+    SUPPORTED_ROBOT_HEADINGS,
+    SUPPORTED_SCENE_VARIANTS,
+    WAREHOUSE_CAMERA_YAW_BANDS_DEGREES,
+    _WarehouseRenderParams,
+    _bbox_area,
+    _finalize_specs,
+    _resolve_render_params,
+    _sample_reference_and_objects,
+)
+from .warehouse_rendering import render_warehouse_robot_scene_3d
 
 
 TASK_ID = "task_three_d__warehouse__robot_forward_path_label"
-SCENE_ID = "warehouse"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("first_object_ahead",)
-SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("storage_aisle", "loading_zone", "packing_floor")
-SUPPORTED_ROBOT_HEADINGS: Tuple[str, ...] = WAREHOUSE_ROBOT_HEADINGS
-SUPPORTED_ROBOT_DESIGNS: Tuple[str, ...] = WAREHOUSE_ROBOT_DESIGNS
-SUPPORTED_SHELF_RACK_STYLES: Tuple[str, ...] = WAREHOUSE_SHELF_RACK_STYLES
-WAREHOUSE_CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
-    (-54.0, -28.0),
-    (28.0, 54.0),
-    (-146.0, -116.0),
-    (116.0, 146.0),
-)
-CONTEXT_OBJECT_TYPES: Tuple[str, ...] = WAREHOUSE_CONTEXT_OBJECT_TYPES
-OBJECT_NAMES: Dict[str, str] = dict(WAREHOUSE_OBJECT_NAMES)
-OBJECT_COLORS: Dict[str, Tuple[int, int, int]] = dict(WAREHOUSE_OBJECT_COLORS)
-ROBOT_BASE_COLORS: Tuple[Tuple[int, int, int], ...] = WAREHOUSE_ROBOT_BASE_COLORS
-ROBOT_ACCENT_COLORS: Tuple[Tuple[int, int, int], ...] = WAREHOUSE_ROBOT_ACCENT_COLORS
-SHELF_FRAME_COLORS: Tuple[Tuple[int, int, int], ...] = WAREHOUSE_SHELF_FRAME_COLORS
-SHELF_LOAD_COLORS: Tuple[Tuple[int, int, int], ...] = WAREHOUSE_SHELF_LOAD_COLORS
-PATH_CORRIDOR_HALF_WIDTH = 0.42
-MIN_FORWARD_DISTANCE = 0.72
 MIN_FIRST_OBJECT_MARGIN = 0.52
-MIN_CANDIDATE_VISIBLE_PX = 24.0
-MIN_CANDIDATE_CENTER_SEPARATION_PX = 30.0
-MAX_CANDIDATE_BBOX_INTERSECTION_PX = 9000.0
-
-
-@dataclass(frozen=True)
-class _WarehouseRenderParams:
-    canvas_width: int
-    canvas_height: int
-    scene_margin_left_px: int
-    scene_margin_right_px: int
-    scene_margin_top_px: int
-    scene_margin_bottom_px: int
-    room_extent: float
-    grid_step: float
-    marker_radius_px: int
-    label_font_size_px: int
-    line_width_px: int
-    floor_rgb: Tuple[int, int, int]
-    grid_rgb: Tuple[int, int, int]
-    aisle_rgb: Tuple[int, int, int]
-    shelf_zone_rgb: Tuple[int, int, int]
-    path_rgb: Tuple[int, int, int]
-    text_rgb: Tuple[int, int, int]
-    text_stroke_rgb: Tuple[int, int, int]
-
-
-@dataclass(frozen=True)
-class _RenderedWarehouseScene:
-    image: Image.Image
-    entities: List[Dict[str, Any]]
-    scene_bbox_px: List[float]
-    warehouse_bbox_px: List[float]
-    object_bboxes_px: Dict[str, List[float]]
-    object_centers_px: Dict[str, List[float]]
-    candidate_bboxes_px: Dict[str, List[float]]
-    candidate_centers_px: Dict[str, List[float]]
-    context_object_bboxes_px: Dict[str, List[float]]
-    context_object_centers_px: Dict[str, List[float]]
-    reference_object_bboxes_px: Dict[str, List[float]]
-    reference_object_centers_px: Dict[str, List[float]]
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
-
-
-
-
-
-
-def _resolve_render_params(params: Mapping[str, Any], *, render_defaults: Mapping[str, Any]) -> _WarehouseRenderParams:
-    merged = dict(render_defaults)
-    merged.update(dict(params))
-    return _WarehouseRenderParams(
-        canvas_width=_int_value(merged, "canvas_width", 1180),
-        canvas_height=_int_value(merged, "canvas_height", 920),
-        scene_margin_left_px=_int_value(merged, "scene_margin_left_px", 48),
-        scene_margin_right_px=_int_value(merged, "scene_margin_right_px", 48),
-        scene_margin_top_px=_int_value(merged, "scene_margin_top_px", 42),
-        scene_margin_bottom_px=_int_value(merged, "scene_margin_bottom_px", 52),
-        room_extent=_float_value(merged, "room_extent", 4.6),
-        grid_step=_float_value(merged, "grid_step", 0.72),
-        marker_radius_px=_int_value(merged, "marker_radius_px", 20),
-        label_font_size_px=_int_value(merged, "label_font_size_px", 25),
-        line_width_px=_int_value(merged, "line_width_px", 2),
-        floor_rgb=_rgb(merged.get("floor_rgb", (221, 226, 220)), (221, 226, 220)),
-        grid_rgb=_rgb(merged.get("grid_rgb", (174, 184, 179)), (174, 184, 179)),
-        aisle_rgb=_rgb(merged.get("aisle_rgb", (207, 215, 211)), (207, 215, 211)),
-        shelf_zone_rgb=_rgb(merged.get("shelf_zone_rgb", (190, 196, 194)), (190, 196, 194)),
-        path_rgb=_rgb(merged.get("path_rgb", (236, 195, 72)), (236, 195, 72)),
-        text_rgb=_rgb(merged.get("text_rgb", (24, 28, 36)), (24, 28, 36)),
-        text_stroke_rgb=_rgb(merged.get("text_stroke_rgb", (255, 255, 255)), (255, 255, 255)),
-    )
 
 
 
@@ -205,111 +89,6 @@ def _resolve_camera_yaw_band(params: Mapping[str, Any], *, instance_seed: int) -
         {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))},
         int(selected),
     )
-
-
-def _heading_vector(robot_heading: str) -> Tuple[float, float]:
-    if str(robot_heading) == "east":
-        return (1.0, 0.0)
-    if str(robot_heading) == "west":
-        return (-1.0, 0.0)
-    if str(robot_heading) == "north":
-        return (0.0, 1.0)
-    if str(robot_heading) == "south":
-        return (0.0, -1.0)
-    raise ValueError(f"unsupported robot_heading: {robot_heading}")
-
-
-def _heading_axis(robot_heading: str) -> str:
-    return "x" if str(robot_heading) in {"east", "west"} else "y"
-
-
-def _local_to_world(
-    *,
-    forward_s: float,
-    lateral_l: float,
-    origin_xy: Sequence[float],
-    forward_xy: Sequence[float],
-) -> Tuple[float, float]:
-    fx, fy = float(forward_xy[0]), float(forward_xy[1])
-    lx, ly = -fy, fx
-    return (
-        round(float(origin_xy[0]) + fx * float(forward_s) + lx * float(lateral_l), 4),
-        round(float(origin_xy[1]) + fy * float(forward_s) + ly * float(lateral_l), 4),
-    )
-
-
-def _world_to_robot_path(
-    xy: Sequence[float],
-    *,
-    robot_xy: Sequence[float],
-    forward_xy: Sequence[float],
-) -> Tuple[float, float]:
-    fx, fy = float(forward_xy[0]), float(forward_xy[1])
-    lx, ly = -fy, fx
-    rx = float(xy[0]) - float(robot_xy[0])
-    ry = float(xy[1]) - float(robot_xy[1])
-    return (round(rx * fx + ry * fy, 4), round(rx * lx + ry * ly, 4))
-
-
-def _dimensions_for_object(object_type: str, *, orientation_axis: str, scale: float) -> Tuple[float, float, float]:
-    length, width, height = WAREHOUSE_OBJECT_BASE_DIMENSIONS.get(str(object_type), (0.64, 0.52, 0.52))
-    if str(object_type) in WAREHOUSE_RADIAL_OBJECT_TYPES:
-        return (round(width * scale, 4), round(width * scale, 4), round(height * scale, 4))
-    if str(orientation_axis) == "y":
-        return (round(width * scale, 4), round(length * scale, 4), round(height * scale, 4))
-    return (round(length * scale, 4), round(width * scale, 4), round(height * scale, 4))
-
-
-def _make_object_spec(
-    *,
-    object_id: str,
-    object_type: str,
-    object_role: str,
-    xy: Tuple[float, float],
-    orientation_axis: str,
-    dimensions_xyz: Tuple[float, float, float],
-    dimension_scale: float,
-    label: str | None,
-) -> Dict[str, Any]:
-    width, depth, height = (float(value) for value in dimensions_xyz)
-    footprint_radius = 0.5 * math.sqrt(width * width + depth * depth)
-    spec: Dict[str, Any] = {
-        "object_id": str(object_id),
-        "object_type": str(object_type),
-        "object_name": str(OBJECT_NAMES.get(str(object_type), str(object_type).replace("_", " "))),
-        "prompt_name": str(OBJECT_NAMES.get(str(object_type), str(object_type).replace("_", " "))),
-        "object_role": str(object_role),
-        "orientation_axis": str(orientation_axis),
-        "is_answer_candidate": bool(label),
-        "dimension_scale": round(float(dimension_scale), 4),
-        "world_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), round(float(height * 0.5), 4)],
-        "base_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), 0.0],
-        "dimensions_xyz": [round(width, 4), round(depth, 4), round(height, 4)],
-        "footprint_radius": round(float(footprint_radius), 4),
-    }
-    if label is not None:
-        spec.update({"point_id": f"warehouse_object_{label}", "point_label": str(label), "object_label": str(label)})
-    return spec
-
-
-def _finalize_specs(specs: Sequence[Mapping[str, Any]], *, camera: _CameraSpec, frame: _ProjectionFrame) -> List[Dict[str, Any]]:
-    finalized_specs: List[Dict[str, Any]] = []
-    for spec in specs:
-        screen = _project_screen(spec["world_xyz"], camera, frame)
-        finalized = dict(spec)
-        finalized.update(
-            {
-                "screen_xy": [round(float(screen[0]), 3), round(float(screen[1]), 3)],
-                "camera_xyz": [round(float(screen[5]), 4), round(float(screen[6]), 4), round(float(screen[4]), 4)],
-                "camera_distance": round(float(screen[7]), 4),
-            }
-        )
-        finalized_specs.append(finalized)
-    return list(finalized_specs)
-
-
-def _bbox_area(bbox: Sequence[float]) -> float:
-    return max(0.0, float(bbox[2]) - float(bbox[0])) * max(0.0, float(bbox[3]) - float(bbox[1]))
 
 
 def _visibility_ok(
@@ -377,1238 +156,6 @@ def _visibility_ok(
             if overlap > 2400.0 and overlap / candidate_area > 0.24:
                 return False
     return True
-
-
-def _scene_palette(scene_variant: str, render_params: _WarehouseRenderParams) -> Tuple[Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int]]:
-    if str(scene_variant) == "loading_zone":
-        return (218, 222, 217), (162, 172, 168), (198, 207, 203), (183, 190, 188)
-    if str(scene_variant) == "packing_floor":
-        return (226, 224, 214), (178, 174, 158), (211, 208, 194), (190, 186, 170)
-    return render_params.floor_rgb, render_params.grid_rgb, render_params.aisle_rgb, render_params.shelf_zone_rgb
-
-
-def _alpha_polygon(
-    image: Image.Image,
-    points: Sequence[Sequence[float]],
-    *,
-    fill: Tuple[int, int, int, int],
-    outline: Tuple[int, int, int, int] | None = None,
-    width: int = 1,
-) -> Image.Image:
-    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    overlay_draw = ImageDraw.Draw(overlay)
-    overlay_draw.polygon([(float(x), float(y)) for x, y in points], fill=fill)
-    if outline is not None and points:
-        overlay_draw.line([(float(x), float(y)) for x, y in points] + [(float(points[0][0]), float(points[0][1]))], fill=outline, width=max(1, int(width)))
-    return Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
-
-
-def _projected_bbox(points: Sequence[Sequence[float]]) -> List[float]:
-    return [
-        round(float(min(float(point[0]) for point in points)), 3),
-        round(float(min(float(point[1]) for point in points)), 3),
-        round(float(max(float(point[0]) for point in points)), 3),
-        round(float(max(float(point[1]) for point in points)), 3),
-    ]
-
-
-def _draw_warehouse_floor(
-    image: Image.Image,
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    render_params: _WarehouseRenderParams,
-    scene_variant: str,
-    dataset: Mapping[str, Any],
-) -> Tuple[Image.Image, List[float], List[Dict[str, Any]]]:
-    draw = ImageDraw.Draw(image)
-    floor_rgb, grid_rgb, aisle_rgb, shelf_zone_rgb = _scene_palette(str(scene_variant), render_params)
-    draw.rectangle((0, 0, int(render_params.canvas_width), int(render_params.canvas_height)), fill=floor_rgb)
-    floor_polygon_xy = _canvas_floor_polygon_xy(camera=camera, frame=frame, render_params=render_params)
-    grid_world_bbox = None
-    if floor_polygon_xy:
-        min_x = min(float(point[0]) for point in floor_polygon_xy)
-        max_x = max(float(point[0]) for point in floor_polygon_xy)
-        min_y = min(float(point[1]) for point in floor_polygon_xy)
-        max_y = max(float(point[1]) for point in floor_polygon_xy)
-        grid_world_bbox = [round(min_x, 4), round(min_y, 4), round(max_x, 4), round(max_y, 4)]
-        for value in _grid_values_for_range(min_y, max_y, float(render_params.grid_step)):
-            segment = _polygon_axis_line_segment(floor_polygon_xy, axis="y", value=float(value))
-            if segment is None:
-                continue
-            _draw_line(draw, _project_xy((segment[0][0], segment[0][1], 0.0), camera, frame), _project_xy((segment[1][0], segment[1][1], 0.0), camera, frame), fill=grid_rgb, width=render_params.line_width_px)
-        for value in _grid_values_for_range(min_x, max_x, float(render_params.grid_step)):
-            segment = _polygon_axis_line_segment(floor_polygon_xy, axis="x", value=float(value))
-            if segment is None:
-                continue
-            _draw_line(draw, _project_xy((segment[0][0], segment[0][1], 0.0), camera, frame), _project_xy((segment[1][0], segment[1][1], 0.0), camera, frame), fill=grid_rgb, width=render_params.line_width_px)
-    for polygon_world, color in (
-        (dataset["shelf_zone_polygons_world"][0], shelf_zone_rgb),
-        (dataset["shelf_zone_polygons_world"][1], shelf_zone_rgb),
-        (dataset["main_aisle_polygon_world"], aisle_rgb),
-    ):
-        polygon_screen = [_project_xy(point, camera, frame) for point in polygon_world]
-        draw.polygon(polygon_screen, fill=color)
-    path_polygon_screen = [_project_xy(point, camera, frame) for point in dataset["robot_path_corridor_polygon_world"]]
-    image = _alpha_polygon(
-        image,
-        path_polygon_screen,
-        fill=(*render_params.path_rgb, 50),
-        outline=(*render_params.path_rgb, 120),
-        width=max(1, int(render_params.line_width_px)),
-    )
-    stage_bbox = [0.0, 0.0, float(render_params.canvas_width), float(render_params.canvas_height)]
-    entities = [
-        {
-            "entity_id": "warehouse_floor",
-            "entity_type": "three_d_warehouse_floor",
-            "bbox_px": list(stage_bbox),
-            "attrs": {
-                "scene_variant": str(scene_variant),
-                "full_bleed_floor": True,
-                "grid_mode": "screen_ray_floor_plane",
-                "grid_world_bbox": list(grid_world_bbox) if grid_world_bbox is not None else None,
-                "floor_rgb": list(floor_rgb),
-            },
-        },
-        {
-            "entity_id": "robot_forward_path_corridor",
-            "entity_type": "three_d_warehouse_robot_path_corridor",
-            "bbox_px": _projected_bbox(path_polygon_screen),
-            "attrs": {
-                "robot_heading": str(dataset["robot_heading"]),
-                "corridor_half_width": float(dataset["path_corridor_half_width"]),
-                "path_polygon_world": [list(point) for point in dataset["robot_path_corridor_polygon_world"]],
-            },
-        },
-    ]
-    return image, stage_bbox, entities
-
-
-def _screen_points_bbox(points: Sequence[Sequence[float]], *, pad_px: float = 0.0) -> List[float]:
-    return [
-        round(float(min(point[0] for point in points) - float(pad_px)), 3),
-        round(float(min(point[1] for point in points) - float(pad_px)), 3),
-        round(float(max(point[0] for point in points) + float(pad_px)), 3),
-        round(float(max(point[1] for point in points) + float(pad_px)), 3),
-    ]
-
-
-def _screen_line_bbox(p1: Sequence[float], p2: Sequence[float], *, pad_px: float) -> List[float]:
-    return [
-        round(float(min(float(p1[0]), float(p2[0])) - float(pad_px)), 3),
-        round(float(min(float(p1[1]), float(p2[1])) - float(pad_px)), 3),
-        round(float(max(float(p1[0]), float(p2[0])) + float(pad_px)), 3),
-        round(float(max(float(p1[1]), float(p2[1])) + float(pad_px)), 3),
-    ]
-
-
-def _upright_screen_basis(spec: Mapping[str, Any], camera: _CameraSpec, frame: _ProjectionFrame) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float], float]:
-    x, y, _base_z = (float(value) for value in spec["base_xyz"])
-    height = float(spec["dimensions_xyz"][2])
-    base = _project_xy((x, y, 0.0), camera, frame)
-    top = _project_xy((x, y, height), camera, frame)
-    up = (float(top[0]) - float(base[0]), float(top[1]) - float(base[1]))
-    height_px = max(1.0, math.hypot(up[0], up[1]))
-    up_unit = (up[0] / height_px, up[1] / height_px)
-    side_unit = (-up_unit[1], up_unit[0])
-    return (float(base[0]), float(base[1])), up_unit, side_unit, height_px
-
-
-def _draw_warehouse_traffic_cone_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    base, up_unit, side_unit, height_px = _upright_screen_basis(spec, camera, frame)
-    cone_h = max(42.0, min(78.0, height_px * 1.08))
-
-    def p(lateral: float, upward: float) -> Tuple[float, float]:
-        return (
-            base[0] + side_unit[0] * float(lateral) + up_unit[0] * float(upward),
-            base[1] + side_unit[1] * float(lateral) + up_unit[1] * float(upward),
-        )
-
-    outline = (103, 58, 34)
-    base_w = cone_h * 0.62
-    foot = [p(-base_w * 0.58, cone_h * 0.03), p(base_w * 0.58, cone_h * 0.03), p(base_w * 0.48, -cone_h * 0.06), p(-base_w * 0.48, -cone_h * 0.06)]
-    cone = [p(-base_w * 0.36, cone_h * 0.12), p(0.0, cone_h * 0.94), p(base_w * 0.36, cone_h * 0.12)]
-    draw.polygon(foot, fill=_shade(fill, 0.66), outline=outline)
-    draw.polygon(cone, fill=fill, outline=outline)
-    bboxes = [_screen_points_bbox(foot), _screen_points_bbox(cone)]
-    for lower, upper, scale in ((0.31, 0.40, 0.52), (0.57, 0.65, 0.28)):
-        band = [p(-base_w * scale, cone_h * lower), p(base_w * scale, cone_h * lower), p(base_w * scale * 0.78, cone_h * upper), p(-base_w * scale * 0.78, cone_h * upper)]
-        draw.polygon(band, fill=(246, 238, 211), outline=(150, 86, 43))
-        bboxes.append(_screen_points_bbox(band))
-    return _bbox_union(*bboxes)
-
-
-def _draw_warehouse_fire_extinguisher_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    base, up_unit, side_unit, height_px = _upright_screen_basis(spec, camera, frame)
-    extinguisher_h = max(46.0, min(82.0, height_px * 1.06))
-    body_w = max(7, min(13, int(round(extinguisher_h * 0.17))))
-
-    def p(lateral: float, upward: float) -> Tuple[float, float]:
-        return (
-            base[0] + side_unit[0] * float(lateral) + up_unit[0] * float(upward),
-            base[1] + side_unit[1] * float(lateral) + up_unit[1] * float(upward),
-        )
-
-    outline = (82, 28, 28)
-    bboxes: List[List[float]] = []
-    body_bottom = p(0.0, extinguisher_h * 0.10)
-    body_top = p(0.0, extinguisher_h * 0.72)
-    _draw_line(draw, body_bottom, body_top, fill=outline, width=body_w + 4)
-    _draw_line(draw, body_bottom, body_top, fill=fill, width=body_w)
-    bboxes.append(_screen_line_bbox(body_bottom, body_top, pad_px=float(body_w + 3)))
-    label_center = p(0.0, extinguisher_h * 0.43)
-    label_bbox = [
-        label_center[0] - body_w * 0.55,
-        label_center[1] - extinguisher_h * 0.055,
-        label_center[0] + body_w * 0.55,
-        label_center[1] + extinguisher_h * 0.055,
-    ]
-    draw.rectangle(tuple(label_bbox), fill=(246, 233, 184), outline=(99, 46, 35), width=1)
-    bboxes.append(label_bbox)
-    neck_bottom = p(0.0, extinguisher_h * 0.70)
-    neck_top = p(0.0, extinguisher_h * 0.84)
-    _draw_line(draw, neck_bottom, neck_top, fill=(51, 51, 54), width=max(3, body_w // 2))
-    bboxes.append(_screen_line_bbox(neck_bottom, neck_top, pad_px=4.0))
-    handle_left = p(-body_w * 0.85, extinguisher_h * 0.86)
-    handle_right = p(body_w * 0.85, extinguisher_h * 0.86)
-    _draw_line(draw, handle_left, handle_right, fill=(32, 34, 37), width=4)
-    bboxes.append(_screen_line_bbox(handle_left, handle_right, pad_px=4.0))
-    hose_mid = p(body_w * 1.25, extinguisher_h * 0.70)
-    nozzle = p(body_w * 1.75, extinguisher_h * 0.61)
-    _draw_line(draw, neck_top, hose_mid, fill=(28, 29, 32), width=3)
-    _draw_line(draw, hose_mid, nozzle, fill=(28, 29, 32), width=3)
-    bboxes.extend([_screen_line_bbox(neck_top, hose_mid, pad_px=3.0), _screen_line_bbox(hose_mid, nozzle, pad_px=3.0)])
-    return _bbox_union(*bboxes)
-
-
-def _draw_warehouse_bollard_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    base, up_unit, side_unit, height_px = _upright_screen_basis(spec, camera, frame)
-    bollard_h = max(48.0, min(88.0, height_px * 1.05))
-    post_w = max(8, min(15, int(round(bollard_h * 0.16))))
-
-    def p(lateral: float, upward: float) -> Tuple[float, float]:
-        return (
-            base[0] + side_unit[0] * float(lateral) + up_unit[0] * float(upward),
-            base[1] + side_unit[1] * float(lateral) + up_unit[1] * float(upward),
-        )
-
-    bottom = p(0.0, bollard_h * 0.06)
-    top = p(0.0, bollard_h * 0.88)
-    _draw_line(draw, bottom, top, fill=(53, 48, 34), width=post_w + 4)
-    _draw_line(draw, bottom, top, fill=fill, width=post_w)
-    bboxes = [_screen_line_bbox(bottom, top, pad_px=float(post_w + 3))]
-    for frac in (0.28, 0.50, 0.72):
-        left = p(-post_w * 0.50, bollard_h * frac)
-        right = p(post_w * 0.50, bollard_h * (frac + 0.055))
-        _draw_line(draw, left, right, fill=(34, 36, 38), width=4)
-        bboxes.append(_screen_line_bbox(left, right, pad_px=4.0))
-    foot = p(0.0, bollard_h * 0.05)
-    foot_bbox = [foot[0] - post_w * 1.1, foot[1] - 3.0, foot[0] + post_w * 1.1, foot[1] + 3.0]
-    draw.ellipse(tuple(foot_bbox), fill=(61, 62, 58), outline=(34, 34, 33), width=1)
-    bboxes.append(foot_bbox)
-    return _bbox_union(*bboxes)
-
-
-def _draw_warehouse_floor_sign_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    base, up_unit, side_unit, height_px = _upright_screen_basis(spec, camera, frame)
-    sign_h = max(40.0, min(68.0, height_px * 1.10))
-    sign_w = sign_h * 0.58
-
-    def p(lateral: float, upward: float) -> Tuple[float, float]:
-        return (
-            base[0] + side_unit[0] * float(lateral) + up_unit[0] * float(upward),
-            base[1] + side_unit[1] * float(lateral) + up_unit[1] * float(upward),
-        )
-
-    panel = [p(-sign_w * 0.50, sign_h * 0.05), p(0.0, sign_h * 0.92), p(sign_w * 0.50, sign_h * 0.05), p(sign_w * 0.35, -sign_h * 0.03), p(-sign_w * 0.35, -sign_h * 0.03)]
-    draw.polygon(panel, fill=fill, outline=(84, 68, 30))
-    bboxes = [_screen_points_bbox(panel)]
-    warning = [p(-sign_w * 0.18, sign_h * 0.32), p(0.0, sign_h * 0.58), p(sign_w * 0.18, sign_h * 0.32)]
-    draw.polygon(warning, fill=(32, 33, 35))
-    bboxes.append(_screen_points_bbox(warning))
-    dot = p(0.0, sign_h * 0.27)
-    draw.ellipse((dot[0] - 1.8, dot[1] - 1.8, dot[0] + 1.8, dot[1] + 1.8), fill=(32, 33, 35))
-    _draw_line(draw, p(0.0, sign_h * 0.36), p(0.0, sign_h * 0.47), fill=fill, width=2)
-    return _bbox_union(*bboxes)
-
-
-def _draw_warehouse_ladder_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    base, up_unit, side_unit, height_px = _upright_screen_basis(spec, camera, frame)
-    ladder_h = max(56.0, min(100.0, height_px * 1.08))
-    ladder_w = ladder_h * 0.42
-
-    def p(lateral: float, upward: float) -> Tuple[float, float]:
-        return (
-            base[0] + side_unit[0] * float(lateral) + up_unit[0] * float(upward),
-            base[1] + side_unit[1] * float(lateral) + up_unit[1] * float(upward),
-        )
-
-    rail_left_bottom = p(-ladder_w * 0.42, 0.0)
-    rail_left_top = p(-ladder_w * 0.32, ladder_h * 0.96)
-    rail_right_bottom = p(ladder_w * 0.42, 0.0)
-    rail_right_top = p(ladder_w * 0.32, ladder_h * 0.96)
-    bboxes: List[List[float]] = []
-    for start, end in ((rail_left_bottom, rail_left_top), (rail_right_bottom, rail_right_top)):
-        _draw_line(draw, start, end, fill=(53, 62, 70), width=5)
-        _draw_line(draw, start, end, fill=fill, width=3)
-        bboxes.append(_screen_line_bbox(start, end, pad_px=5.0))
-    for frac in (0.16, 0.32, 0.48, 0.64, 0.80):
-        left = p(-ladder_w * (0.42 - frac * 0.10), ladder_h * frac)
-        right = p(ladder_w * (0.42 - frac * 0.10), ladder_h * frac)
-        _draw_line(draw, left, right, fill=(224, 228, 224), width=4)
-        _draw_line(draw, left, right, fill=fill, width=2)
-        bboxes.append(_screen_line_bbox(left, right, pad_px=4.0))
-    return _bbox_union(*bboxes)
-
-
-def _draw_warehouse_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    object_type = str(spec["object_type"])
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    if object_type == "warehouse_robot":
-        accent = _rgb(spec.get("robot_accent_rgb"), ROBOT_ACCENT_COLORS[0])
-        robot_design = str(spec.get("robot_design", "low_cart"))
-        if robot_design == "sensor_tower":
-            parts = [
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.04), dimensions_xyz=(width, depth, height * 0.34)),
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.34), dimensions_xyz=(width * 0.36, depth * 0.40, height * 0.46)),
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.78), dimensions_xyz=(width * 0.56, depth * 0.50, height * 0.20)),
-            ]
-            accent_indices = {2}
-        elif robot_design == "stacker_bot":
-            parts = [
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.04), dimensions_xyz=(width, depth, height * 0.32)),
-                _sub_box_spec(spec, offset_xyz=(-width * 0.28, -depth * 0.28, height * 0.24), dimensions_xyz=(width * 0.10, depth * 0.10, height * 0.72)),
-                _sub_box_spec(spec, offset_xyz=(width * 0.28, -depth * 0.28, height * 0.24), dimensions_xyz=(width * 0.10, depth * 0.10, height * 0.72)),
-                _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.28, height * 0.78), dimensions_xyz=(width * 0.72, depth * 0.08, height * 0.12)),
-                _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.22, height * 0.30), dimensions_xyz=(width * 0.56, depth * 0.12, height * 0.10)),
-            ]
-            accent_indices = {3, 4}
-        else:
-            parts = [
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.04), dimensions_xyz=(width, depth, height * 0.50)),
-                _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.48), dimensions_xyz=(width * 0.58, depth * 0.54, height * 0.30)),
-                _sub_box_spec(spec, offset_xyz=(width * 0.24, 0.0, height * 0.74), dimensions_xyz=(width * 0.16, depth * 0.18, height * 0.20)),
-            ]
-            accent_indices = {2}
-        heading = str(spec.get("robot_heading", "east" if str(spec.get("orientation_axis")) == "x" else "north"))
-        heading_xy = _heading_vector(heading) if heading in set(SUPPORTED_ROBOT_HEADINGS) else (1.0, 0.0)
-        fx, fy = float(heading_xy[0]), float(heading_xy[1])
-        arm_base_z = height * 0.50
-        if abs(fx) > 0.0:
-            arm_dims = (width * 0.46, depth * 0.13, height * 0.12)
-            arm_offset = (fx * width * 0.43, 0.0, arm_base_z)
-            finger_dims = (width * 0.24, depth * 0.065, height * 0.10)
-            finger_forward = fx * width * 0.74
-            finger_offsets = [
-                (finger_forward, -depth * 0.16, arm_base_z - height * 0.01),
-                (finger_forward, depth * 0.16, arm_base_z - height * 0.01),
-            ]
-        else:
-            arm_dims = (width * 0.13, depth * 0.46, height * 0.12)
-            arm_offset = (0.0, fy * depth * 0.43, arm_base_z)
-            finger_dims = (width * 0.065, depth * 0.24, height * 0.10)
-            finger_forward = fy * depth * 0.74
-            finger_offsets = [
-                (-width * 0.16, finger_forward, arm_base_z - height * 0.01),
-                (width * 0.16, finger_forward, arm_base_z - height * 0.01),
-            ]
-        parts.append(_sub_box_spec(spec, offset_xyz=arm_offset, dimensions_xyz=arm_dims))
-        arm_index = len(parts) - 1
-        for finger_offset in finger_offsets:
-            parts.append(_sub_box_spec(spec, offset_xyz=finger_offset, dimensions_xyz=finger_dims))
-        accent_indices = set(accent_indices) | {arm_index, arm_index + 1, arm_index + 2}
-        bboxes: List[List[float]] = []
-        for index, part in enumerate(sorted(enumerate(parts), key=lambda item: float(_project_screen(item[1]["world_xyz"], camera, frame)[7]), reverse=True)):
-            part_index, part_spec = part
-            part_fill = accent if part_index in accent_indices else (_tint(fill, 0.05) if index % 2 == 0 else _shade(fill, 0.92))
-            bboxes.append(_draw_box_object(draw, part_spec, camera=camera, frame=frame, fill=part_fill))
-        x, y, _base_z = (float(value) for value in spec["base_xyz"])
-        robot_bbox = _bbox_union(*bboxes)
-        x0, y0, x1, y1 = (float(value) for value in robot_bbox)
-        panel = [x0 + (x1 - x0) * 0.32, y0 + (y1 - y0) * 0.24, x1 - (x1 - x0) * 0.32, y0 + (y1 - y0) * 0.42]
-        draw.rectangle(tuple(panel), fill=accent, outline=(31, 36, 44), width=1)
-        bboxes.append(panel)
-        if abs(fx) > 0.0:
-            near_y = y + (1.0 if float(camera.camera_position[1]) >= y else -1.0) * depth * 0.45
-            wheel_points = [
-                (x - width * 0.32, near_y, height * 0.09),
-                (x + width * 0.32, near_y, height * 0.09),
-            ]
-        else:
-            near_x = x + (1.0 if float(camera.camera_position[0]) >= x else -1.0) * width * 0.45
-            wheel_points = [
-                (near_x, y - depth * 0.32, height * 0.09),
-                (near_x, y + depth * 0.32, height * 0.09),
-            ]
-        wheel_radius = max(2.5, min(4.8, 3.3 * (7.0 / max(2.4, float(spec["camera_distance"]))) ** 0.30))
-        for point in wheel_points:
-            px, py = _project_xy(point, camera, frame)
-            wheel_bbox = [px - wheel_radius, py - wheel_radius * 0.68, px + wheel_radius, py + wheel_radius * 0.68]
-            draw.ellipse(tuple(wheel_bbox), fill=(24, 26, 30), outline=(7, 8, 10), width=1)
-            bboxes.append([round(float(value), 3) for value in wheel_bbox])
-        sensor = _project_xy((x + fx * width * 0.42, y + fy * depth * 0.42, height * 0.48), camera, frame)
-        sensor_radius = max(2.5, min(4.6, wheel_radius * 0.92))
-        sensor_bbox = [sensor[0] - sensor_radius, sensor[1] - sensor_radius, sensor[0] + sensor_radius, sensor[1] + sensor_radius]
-        draw.ellipse(tuple(sensor_bbox), fill=(231, 221, 126), outline=(31, 35, 42), width=1)
-        bboxes.append(sensor_bbox)
-        return _bbox_union(*bboxes)
-    if object_type == "shelf_rack":
-        return _draw_shelf_rack_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type in {"crate_stack", "box_stack"}:
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(-width * 0.18, -depth * 0.16, 0.0), dimensions_xyz=(width * 0.50, depth * 0.50, height * 0.52)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.18, depth * 0.14, 0.0), dimensions_xyz=(width * 0.50, depth * 0.50, height * 0.48)),
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.48), dimensions_xyz=(width * 0.54, depth * 0.52, height * 0.50)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        if object_type == "crate_stack":
-            _draw_line(draw, (x0 + 4.0, y0 + 5.0), (x1 - 4.0, y1 - 5.0), fill=(98, 62, 35), width=2)
-            _draw_line(draw, (x1 - 4.0, y0 + 5.0), (x0 + 4.0, y1 - 5.0), fill=(98, 62, 35), width=2)
-        else:
-            stripe_x = x0 + (x1 - x0) * 0.50
-            stripe_y = y0 + (y1 - y0) * 0.42
-            _draw_line(draw, (stripe_x, y0 + 3.0), (stripe_x, y1 - 3.0), fill=(222, 203, 148), width=2)
-            _draw_line(draw, (x0 + 4.0, stripe_y), (x1 - 4.0, stripe_y), fill=(222, 203, 148), width=2)
-        return list(bbox)
-    if object_type == "pallet_load":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width, depth, height * 0.18)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.18, 0.0, height * 0.15), dimensions_xyz=(width * 0.52, depth * 0.80, height * 0.46)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.22, -depth * 0.08, height * 0.15), dimensions_xyz=(width * 0.42, depth * 0.58, height * 0.50)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        for frac in (0.28, 0.50, 0.72):
-            x_line = x0 + (x1 - x0) * frac
-            _draw_line(draw, (x_line, y1 - (y1 - y0) * 0.22), (x_line, y1 - 2.0), fill=(93, 66, 42), width=2)
-        strap_y = y0 + (y1 - y0) * 0.42
-        _draw_line(draw, (x0 + 4.0, strap_y), (x1 - 4.0, strap_y), fill=(56, 58, 62), width=3)
-        return list(bbox)
-    if object_type == "tool_cart":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.05), dimensions_xyz=(width, depth, height * 0.72)),
-            _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.45, height * 0.46), dimensions_xyz=(width * 0.88, 0.08, height * 0.12)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        for frac in (0.38, 0.58):
-            y_line = y0 + (y1 - y0) * frac
-            _draw_line(draw, (x0 + 5.0, y_line), (x1 - 5.0, y_line), fill=(34, 70, 66), width=2)
-            bboxes.append(_screen_line_bbox((x0 + 5.0, y_line), (x1 - 5.0, y_line), pad_px=2.0))
-        for frac in (0.22, 0.78):
-            wheel_x = x0 + (x1 - x0) * frac
-            wheel_y = y1 - (y1 - y0) * 0.06
-            wheel_bbox = [wheel_x - 4.0, wheel_y - 3.0, wheel_x + 4.0, wheel_y + 3.0]
-            draw.ellipse(tuple(wheel_bbox), fill=(26, 29, 32), outline=(8, 9, 11), width=1)
-            bboxes.append(wheel_bbox)
-        handle_y = y0 + (y1 - y0) * 0.22
-        _draw_line(draw, (x1 - 3.0, handle_y), (x1 + 9.0, handle_y - 4.0), fill=(36, 43, 45), width=3)
-        bboxes.append(_screen_line_bbox((x1 - 3.0, handle_y), (x1 + 9.0, handle_y - 4.0), pad_px=3.0))
-        return _bbox_union(*bboxes)
-    if object_type == "workbench":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.58), dimensions_xyz=(width, depth, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.38, -depth * 0.34, 0.0), dimensions_xyz=(0.09, 0.09, height * 0.74)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.38, -depth * 0.34, 0.0), dimensions_xyz=(0.09, 0.09, height * 0.74)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.38, depth * 0.34, 0.0), dimensions_xyz=(0.09, 0.09, height * 0.74)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.38, depth * 0.34, 0.0), dimensions_xyz=(0.09, 0.09, height * 0.74)),
-        ]
-        return _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-    if object_type == "rolling_bin":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.08), dimensions_xyz=(width, depth, height * 0.80)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.30, -depth * 0.28, 0.0), dimensions_xyz=(0.12, 0.12, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.30, -depth * 0.28, 0.0), dimensions_xyz=(0.12, 0.12, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.30, depth * 0.28, 0.0), dimensions_xyz=(0.12, 0.12, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.30, depth * 0.28, 0.0), dimensions_xyz=(0.12, 0.12, height * 0.16)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        lid_y = y0 + (y1 - y0) * 0.18
-        _draw_line(draw, (x0 + 5.0, lid_y), (x1 - 5.0, lid_y), fill=(32, 56, 65), width=3)
-        bboxes.append(_screen_line_bbox((x0 + 5.0, lid_y), (x1 - 5.0, lid_y), pad_px=3.0))
-        handle_bbox = [x0 + (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.34, x1 - (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.44]
-        draw.rectangle(tuple(handle_bbox), fill=(205, 226, 230), outline=(31, 55, 60), width=1)
-        bboxes.append(handle_bbox)
-        return _bbox_union(*bboxes)
-    if object_type == "pallet_jack":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.02), dimensions_xyz=(width * 0.72, depth * 0.34, height * 0.32)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.28, -depth * 0.24, 0.02), dimensions_xyz=(width * 0.46, depth * 0.12, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.28, depth * 0.24, 0.02), dimensions_xyz=(width * 0.46, depth * 0.12, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.38, 0.0, height * 0.20), dimensions_xyz=(0.09, 0.10, height * 0.82)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x, y, _z = (float(value) for value in spec["base_xyz"])
-        handle_bottom = _project_xy((x - width * 0.38, y, height * 0.42), camera, frame)
-        handle_top = _project_xy((x - width * 0.50, y, height * 0.96), camera, frame)
-        _draw_line(draw, handle_bottom, handle_top, fill=(72, 38, 38), width=5)
-        _draw_line(draw, handle_bottom, handle_top, fill=fill, width=3)
-        wheel_bboxes: List[List[float]] = [_screen_line_bbox(handle_bottom, handle_top, pad_px=5.0)]
-        for point in ((x + width * 0.50, y - depth * 0.24, height * 0.05), (x + width * 0.50, y + depth * 0.24, height * 0.05), (x - width * 0.28, y, height * 0.05)):
-            px, py = _project_xy(point, camera, frame)
-            wheel_bbox = [px - 3.0, py - 2.3, px + 3.0, py + 2.3]
-            draw.ellipse(tuple(wheel_bbox), fill=(24, 26, 28), outline=(8, 9, 10), width=1)
-            wheel_bboxes.append(wheel_bbox)
-        fork_left_start = _project_xy((x + width * 0.18, y - depth * 0.25, height * 0.12), camera, frame)
-        fork_left_end = _project_xy((x + width * 0.56, y - depth * 0.25, height * 0.12), camera, frame)
-        fork_right_start = _project_xy((x + width * 0.18, y + depth * 0.25, height * 0.12), camera, frame)
-        fork_right_end = _project_xy((x + width * 0.56, y + depth * 0.25, height * 0.12), camera, frame)
-        for start, end in ((fork_left_start, fork_left_end), (fork_right_start, fork_right_end)):
-            _draw_line(draw, start, end, fill=(92, 38, 35), width=4)
-            _draw_line(draw, start, end, fill=fill, width=2)
-            wheel_bboxes.append(_screen_line_bbox(start, end, pad_px=4.0))
-        return _bbox_union(bbox, *wheel_bboxes)
-    if object_type == "forklift":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(-width * 0.10, 0.0, 0.0), dimensions_xyz=(width * 0.62, depth, height * 0.58)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.34, 0.0, 0.0), dimensions_xyz=(0.10, depth * 0.92, height)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.52, -depth * 0.24, 0.02), dimensions_xyz=(width * 0.44, depth * 0.12, height * 0.10)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.52, depth * 0.24, 0.02), dimensions_xyz=(width * 0.44, depth * 0.12, height * 0.10)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.16, 0.0, height * 0.64), dimensions_xyz=(width * 0.40, depth * 0.68, height * 0.12)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x, y, _z = (float(value) for value in spec["base_xyz"])
-        bboxes = [list(bbox)]
-        for point in ((x - width * 0.34, y - depth * 0.44, height * 0.08), (x + width * 0.24, y - depth * 0.44, height * 0.08)):
-            px, py = _project_xy(point, camera, frame)
-            wheel_bbox = [px - 6.0, py - 4.0, px + 6.0, py + 4.0]
-            draw.ellipse(tuple(wheel_bbox), fill=(24, 25, 28), outline=(8, 9, 10), width=1)
-            bboxes.append(wheel_bbox)
-        return _bbox_union(*bboxes)
-    if object_type == "safety_barrier":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.34), dimensions_xyz=(width, depth, height * 0.18)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.38, 0.0, 0.0), dimensions_xyz=(0.10, depth, height)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.38, 0.0, 0.0), dimensions_xyz=(0.10, depth, height)),
-        ]
-        return _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-    if object_type == "wrapped_bundle":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width, depth, height)),
-            _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.18, height * 0.34), dimensions_xyz=(width * 1.04, 0.06, height * 0.14)),
-            _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.18, height * 0.34), dimensions_xyz=(width * 1.04, 0.06, height * 0.14)),
-        ]
-        return _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-    if object_type == "hand_truck":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.02), dimensions_xyz=(width * 0.72, depth * 0.20, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.26, 0.0, height * 0.20), dimensions_xyz=(0.08, depth * 0.88, height * 0.88)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.26, 0.0, height * 0.20), dimensions_xyz=(0.08, depth * 0.88, height * 0.88)),
-            _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.34, height * 0.82), dimensions_xyz=(width * 0.70, 0.08, height * 0.10)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x, y, _z = (float(value) for value in spec["base_xyz"])
-        wheel_bboxes: List[List[float]] = []
-        for point in ((x - width * 0.26, y - depth * 0.24, height * 0.05), (x + width * 0.26, y - depth * 0.24, height * 0.05)):
-            px, py = _project_xy(point, camera, frame)
-            wheel_bbox = [px - 5.0, py - 4.0, px + 5.0, py + 4.0]
-            draw.ellipse(tuple(wheel_bbox), fill=(23, 25, 29), outline=(8, 8, 10), width=1)
-            wheel_bboxes.append(wheel_bbox)
-        return _bbox_union(bbox, *wheel_bboxes)
-    if object_type == "stacked_pipes":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.25, 0.0), dimensions_xyz=(width, depth * 0.24, height * 0.30)),
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.24), dimensions_xyz=(width * 0.96, depth * 0.24, height * 0.30)),
-            _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.25, 0.0), dimensions_xyz=(width, depth * 0.24, height * 0.30)),
-        ]
-        bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        for frac in (0.25, 0.50, 0.75):
-            cx = x0 + (x1 - x0) * 0.18
-            cy = y0 + (y1 - y0) * frac
-            pipe_end = [cx - 4.0, cy - 4.0, cx + 4.0, cy + 4.0]
-            draw.ellipse(tuple(pipe_end), fill=(212, 222, 225), outline=(70, 81, 90), width=1)
-            bboxes.append(pipe_end)
-        return _bbox_union(*bboxes)
-    if object_type == "ladder":
-        return _draw_warehouse_ladder_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type == "barrel":
-        bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=(154, 99, 48))
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        width_px = max(1.0, x1 - x0)
-        height_px = max(1.0, y1 - y0)
-        hoop_rgb = (58, 66, 74)
-        wood_line = (92, 55, 31)
-        for frac in (0.20, 0.50, 0.80):
-            y = y0 + height_px * frac
-            band = [x0 + width_px * 0.10, y - height_px * 0.035, x1 - width_px * 0.10, y + height_px * 0.035]
-            draw.rectangle(tuple(band), fill=hoop_rgb, outline=(31, 36, 43), width=1)
-        for frac in (0.32, 0.50, 0.68):
-            x_line = x0 + width_px * frac
-            _draw_line(draw, (x_line, y0 + height_px * 0.14), (x_line, y1 - height_px * 0.12), fill=wood_line, width=1)
-        tap = [
-            x0 + width_px * 0.58,
-            y0 + height_px * 0.42,
-            x0 + width_px * 0.75,
-            y0 + height_px * 0.52,
-        ]
-        draw.rectangle(tuple(tap), fill=(202, 157, 76), outline=(44, 35, 26), width=1)
-        return _bbox_union(bbox, tap)
-    if object_type == "tire_stack":
-        bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        for frac in (0.30, 0.52, 0.74):
-            y = y0 + (y1 - y0) * frac
-            _draw_line(draw, (x0 + 4.0, y), (x1 - 4.0, y), fill=(17, 19, 22), width=3)
-            bboxes.append(_screen_line_bbox((x0 + 4.0, y), (x1 - 4.0, y), pad_px=3.0))
-        inner = [x0 + (x1 - x0) * 0.32, y0 + (y1 - y0) * 0.18, x1 - (x1 - x0) * 0.32, y0 + (y1 - y0) * 0.35]
-        draw.ellipse(tuple(inner), fill=(33, 36, 41), outline=(12, 13, 15), width=1)
-        bboxes.append(inner)
-        return _bbox_union(*bboxes)
-    if object_type == "trash_can":
-        bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        lid_y = y0 + (y1 - y0) * 0.18
-        _draw_line(draw, (x0 + 4.0, lid_y), (x1 - 4.0, lid_y), fill=(32, 39, 38), width=3)
-        bboxes.append(_screen_line_bbox((x0 + 4.0, lid_y), (x1 - 4.0, lid_y), pad_px=3.0))
-        for frac in (0.35, 0.50, 0.65):
-            x_line = x0 + (x1 - x0) * frac
-            _draw_line(draw, (x_line, y0 + (y1 - y0) * 0.28), (x_line, y1 - 3.0), fill=(48, 58, 56), width=2)
-            bboxes.append(_screen_line_bbox((x_line, y0 + (y1 - y0) * 0.28), (x_line, y1 - 3.0), pad_px=2.0))
-        return _bbox_union(*bboxes)
-    if object_type == "warning_bollard":
-        return _draw_warehouse_bollard_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type == "fire_extinguisher":
-        return _draw_warehouse_fire_extinguisher_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type == "traffic_cone":
-        return _draw_warehouse_traffic_cone_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type == "floor_sign":
-        return _draw_warehouse_floor_sign_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    if object_type == "charging_dock":
-        bbox = _draw_wedge_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        light = [x0 + (x1 - x0) * 0.18, y0 + (y1 - y0) * 0.34, x0 + (x1 - x0) * 0.28, y0 + (y1 - y0) * 0.45]
-        draw.ellipse(tuple(light), fill=(78, 204, 120), outline=(24, 78, 50), width=1)
-        plug_y = y0 + (y1 - y0) * 0.60
-        _draw_line(draw, (x0 + (x1 - x0) * 0.35, plug_y), (x1 - (x1 - x0) * 0.18, plug_y), fill=(224, 229, 224), width=3)
-        return _bbox_union(bbox, light, _screen_line_bbox((x0 + (x1 - x0) * 0.35, plug_y), (x1 - (x1 - x0) * 0.18, plug_y), pad_px=3.0))
-    if object_type == "conveyor":
-        bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        belt = [x0 + (x1 - x0) * 0.08, y0 + (y1 - y0) * 0.28, x1 - (x1 - x0) * 0.08, y0 + (y1 - y0) * 0.52]
-        draw.rectangle(tuple(belt), fill=(46, 53, 61), outline=(22, 25, 29), width=1)
-        bboxes.append(belt)
-        for frac in (0.20, 0.36, 0.52, 0.68, 0.84):
-            x_line = x0 + (x1 - x0) * frac
-            _draw_line(draw, (x_line, belt[1]), (x_line, belt[3]), fill=(146, 155, 162), width=2)
-            bboxes.append(_screen_line_bbox((x_line, belt[1]), (x_line, belt[3]), pad_px=2.0))
-        return _bbox_union(*bboxes)
-    if object_type == "pallet":
-        bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        bboxes = [list(bbox)]
-        for frac in (0.24, 0.50, 0.76):
-            x_line = x0 + (x1 - x0) * frac
-            _draw_line(draw, (x_line, y0 + 3.0), (x_line, y1 - 2.0), fill=(87, 61, 40), width=2)
-            bboxes.append(_screen_line_bbox((x_line, y0 + 3.0), (x_line, y1 - 2.0), pad_px=2.0))
-        return _bbox_union(*bboxes)
-    if object_type == "storage_bin":
-        bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        x0, y0, x1, y1 = (float(value) for value in bbox)
-        lid_y = y0 + (y1 - y0) * 0.22
-        label = [x0 + (x1 - x0) * 0.28, y0 + (y1 - y0) * 0.42, x1 - (x1 - x0) * 0.28, y0 + (y1 - y0) * 0.56]
-        _draw_line(draw, (x0 + 4.0, lid_y), (x1 - 4.0, lid_y), fill=(31, 73, 47), width=3)
-        draw.rectangle(tuple(label), fill=(224, 236, 214), outline=(38, 86, 49), width=1)
-        return _bbox_union(bbox, _screen_line_bbox((x0 + 4.0, lid_y), (x1 - 4.0, lid_y), pad_px=3.0), label)
-    return _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
-
-
-def _fill_for_object(spec: Mapping[str, Any], *, scene_variant: str) -> Tuple[int, int, int]:
-    if str(spec.get("object_type")) == "warehouse_robot" and isinstance(spec.get("robot_base_rgb"), Sequence):
-        return _rgb(spec.get("robot_base_rgb"), OBJECT_COLORS["warehouse_robot"])
-    if str(spec.get("object_type")) == "shelf_rack" and isinstance(spec.get("shelf_frame_rgb"), Sequence):
-        return _rgb(spec.get("shelf_frame_rgb"), OBJECT_COLORS["shelf_rack"])
-    base_rgb = OBJECT_COLORS.get(str(spec["object_type"]), (126, 136, 146))
-    variation_strength = 0.24 if bool(spec.get("is_answer_candidate", False)) else 0.18
-    return resolve_three_d_object_fill_rgb(
-        spec,
-        base_rgb=base_rgb,
-        salt=f"{scene_variant}.warehouse.{spec['object_type']}",
-        variation_strength=variation_strength,
-    )
-
-
-def _draw_ground_shadow(draw: ImageDraw.ImageDraw, spec: Mapping[str, Any], *, camera: _CameraSpec, frame: _ProjectionFrame) -> None:
-    base = _project_screen(spec["base_xyz"], camera, frame)
-    width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
-    radius = max(10.0, 19.0 * (7.0 / max(2.4, float(spec["camera_distance"]))) ** 0.26)
-    radius *= max(0.70, min(1.52, (width + depth) * 0.50))
-    draw.ellipse((base[0] - radius, base[1] - radius * 0.32, base[0] + radius, base[1] + radius * 0.32), fill=(120, 128, 132), outline=None)
-
-
-def _draw_shelf_rack_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    shelf_style = str(spec.get("shelf_style", "open_frame"))
-    level_fracs = [float(value) for value in spec.get("shelf_level_fracs", (0.10, 0.48, 0.86))]
-    if not level_fracs:
-        level_fracs = [0.10, 0.48, 0.86]
-    beam_height = float(spec.get("shelf_beam_height", 0.09))
-    post_width = float(spec.get("shelf_post_width", 0.08))
-    beam_depth_scale = 0.90 if shelf_style == "open_frame" else 1.0
-    if shelf_style == "heavy_low":
-        beam_depth_scale = 1.08
-    parts: List[Dict[str, Any]] = []
-    for level_frac in level_fracs:
-        level_z = max(0.02, min(height - beam_height, height * float(level_frac)))
-        parts.append(
-            _sub_box_spec(
-                spec,
-                offset_xyz=(0.0, 0.0, level_z),
-                dimensions_xyz=(width, depth * beam_depth_scale, beam_height),
-            )
-        )
-    post_height = height * (0.96 if shelf_style != "heavy_low" else 0.82)
-    x_offsets = [-width * 0.43, width * 0.43]
-    if shelf_style in {"loaded_bins", "heavy_low"}:
-        x_offsets = [-width * 0.43, 0.0, width * 0.43]
-    y_offsets = [-depth * 0.38, depth * 0.38]
-    for offset_x in x_offsets:
-        for offset_y in y_offsets:
-            parts.append(
-                _sub_box_spec(
-                    spec,
-                    offset_xyz=(offset_x, offset_y, 0.0),
-                    dimensions_xyz=(post_width, post_width, post_height),
-                )
-            )
-    if shelf_style in {"mixed_crates", "heavy_low"}:
-        parts.append(
-            _sub_box_spec(
-                spec,
-                offset_xyz=(0.0, -depth * 0.43, height * 0.18),
-                dimensions_xyz=(width * 0.92, post_width * 0.62, height * 0.48),
-            )
-        )
-    bboxes: List[List[float]] = [_draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)]
-    for load_index, raw_load in enumerate(spec.get("shelf_load_slots", ())):
-        if not isinstance(raw_load, Mapping):
-            continue
-        color_index = int(raw_load.get("color_index", load_index)) % len(SHELF_LOAD_COLORS)
-        load_fill = SHELF_LOAD_COLORS[color_index]
-        load_part = _sub_box_spec(
-            spec,
-            offset_xyz=(
-                width * float(raw_load.get("x_frac", 0.0)),
-                depth * float(raw_load.get("y_frac", 0.0)),
-                height * float(raw_load.get("z_frac", 0.12)),
-            ),
-            dimensions_xyz=(
-                width * float(raw_load.get("w_frac", 0.18)),
-                depth * float(raw_load.get("d_frac", 0.46)),
-                height * float(raw_load.get("h_frac", 0.16)),
-            ),
-        )
-        bboxes.append(_draw_box_object(draw, load_part, camera=camera, frame=frame, fill=load_fill))
-    return _bbox_union(*bboxes)
-
-
-def _draw_reference_marker(
-    draw: ImageDraw.ImageDraw,
-    *,
-    robot_spec: Mapping[str, Any],
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    dataset: Mapping[str, Any],
-) -> Tuple[List[float], List[float]]:
-    bbox = _object_screen_bbox(robot_spec, camera, frame, pad_px=9.0)
-    draw.rectangle(tuple(float(value) for value in bbox), outline=(220, 34, 34), width=4)
-    start_world = tuple(float(value) for value in dataset["robot_arrow_start_world"])
-    end_world = tuple(float(value) for value in dataset["robot_arrow_end_world"])
-    start = _project_xy(start_world, camera, frame)
-    end = _project_xy(end_world, camera, frame)
-    _draw_line(draw, start, end, fill=(220, 34, 34), width=5)
-    vx, vy = float(end[0] - start[0]), float(end[1] - start[1])
-    length = max(1.0, math.hypot(vx, vy))
-    ux, uy = vx / length, vy / length
-    px, py = -uy, ux
-    arrow = [
-        (end[0], end[1]),
-        (end[0] - ux * 24 + px * 10, end[1] - uy * 24 + py * 10),
-        (end[0] - ux * 24 - px * 10, end[1] - uy * 24 - py * 10),
-    ]
-    draw.polygon(arrow, fill=(220, 34, 34), outline=(112, 20, 20))
-    marker_bbox = _bbox_union(bbox, [start[0], start[1], start[0], start[1]], _projected_bbox(arrow))
-    return list(bbox), list(marker_bbox)
-
-
-def render_warehouse_robot_scene_3d(
-    background: Image.Image,
-    *,
-    dataset: Mapping[str, Any],
-    render_params: _WarehouseRenderParams,
-) -> _RenderedWarehouseScene:
-    image = background.convert("RGB")
-    camera = _camera_from_dataset(dataset)
-    frame = _frame_from_dataset(dataset)
-    scene_variant = str(dataset["scene_variant"])
-    image, warehouse_bbox, entities = _draw_warehouse_floor(
-        image,
-        camera=camera,
-        frame=frame,
-        render_params=render_params,
-        scene_variant=scene_variant,
-        dataset=dataset,
-    )
-    draw = ImageDraw.Draw(image)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    candidate_specs = [dict(spec) for spec in dataset["candidate_object_specs"]]
-    context_specs = [dict(spec) for spec in dataset["context_object_specs"]]
-    reference_specs = [dict(spec) for spec in dataset["reference_object_specs"]]
-    all_specs = [*candidate_specs, *context_specs, *reference_specs]
-    shelf_specs = [spec for spec in all_specs if str(spec.get("object_type")) == "shelf_rack"]
-    non_shelf_specs = [spec for spec in all_specs if str(spec.get("object_type")) != "shelf_rack"]
-    ordered_specs = [
-        *sorted(shelf_specs, key=lambda item: float(item["camera_distance"]), reverse=True),
-        *sorted(non_shelf_specs, key=lambda item: float(item["camera_distance"]), reverse=True),
-    ]
-    for spec in ordered_specs:
-        _draw_ground_shadow(draw, spec, camera=camera, frame=frame)
-    point_bboxes: Dict[str, List[float]] = {}
-    point_centers: Dict[str, List[float]] = {}
-    object_bboxes: Dict[str, List[float]] = {}
-    object_centers: Dict[str, List[float]] = {}
-    context_bboxes: Dict[str, List[float]] = {}
-    context_centers: Dict[str, List[float]] = {}
-    reference_bboxes: Dict[str, List[float]] = {}
-    reference_centers: Dict[str, List[float]] = {}
-
-    for spec in ordered_specs:
-        fill = _fill_for_object(spec, scene_variant=scene_variant)
-        bbox = _draw_warehouse_object(draw, spec, camera=camera, frame=frame, fill=fill)
-        label = str(spec.get("point_label", ""))
-        center = [round(float(spec["screen_xy"][0]), 3), round(float(spec["screen_xy"][1]), 3)]
-        if bool(spec.get("is_answer_candidate", False)):
-            label_bbox = _draw_option_label(draw, label=label, center=(float(center[0]), float(center[1])), font=label_font)
-            bbox = _bbox_union(bbox, label_bbox)
-            point_bboxes[str(label)] = list(bbox)
-            point_centers[str(label)] = list(center)
-        elif str(spec.get("object_role")) == "warehouse_reference_robot":
-            reference_bboxes[str(spec["object_id"])] = list(bbox)
-            reference_centers[str(spec["object_id"])] = list(center)
-        else:
-            context_bboxes[str(spec["object_id"])] = list(bbox)
-            context_centers[str(spec["object_id"])] = list(center)
-        object_bboxes[str(spec["object_id"])] = list(bbox)
-        object_centers[str(spec["object_id"])] = list(center)
-        entities.append(
-            {
-                "entity_id": str(spec["object_id"]),
-                "entity_type": "three_d_warehouse_candidate_object" if bool(spec.get("is_answer_candidate", False)) else ("three_d_warehouse_reference_robot" if str(spec.get("object_role")) == "warehouse_reference_robot" else "three_d_warehouse_context_object"),
-                "bbox_px": list(bbox),
-                "attrs": {
-                    "point_label": str(label) if label else None,
-                    "object_label": str(label) if label else None,
-                    "object_type": str(spec["object_type"]),
-                    "object_name": str(spec.get("object_name", spec["object_type"])),
-                    "object_role": str(spec["object_role"]),
-                    "shelf_style": str(spec.get("shelf_style")) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "shelf_levels": int(spec.get("shelf_levels", 0)) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "shelf_load_count": len(spec.get("shelf_load_slots", ())) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "shelf_frame_rgb": list(spec.get("shelf_frame_rgb", ())) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "shelf_height_scale": float(spec.get("shelf_height_scale", 1.0)) if str(spec.get("object_type")) == "shelf_rack" else None,
-                    "robot_design": str(spec.get("robot_design")) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "robot_base_rgb": list(spec.get("robot_base_rgb", ())) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "robot_accent_rgb": list(spec.get("robot_accent_rgb", ())) if str(spec.get("object_type")) == "warehouse_robot" else None,
-                    "is_answer_candidate": bool(spec.get("is_answer_candidate", False)),
-                    "is_in_forward_path_corridor": bool(spec.get("is_in_forward_path_corridor", False)),
-                    "is_first_reached_object": bool(spec.get("is_first_reached_object", False)),
-                    "forward_distance_from_robot": float(spec.get("forward_distance_from_robot", 0.0)),
-                    "lateral_offset_from_robot": float(spec.get("lateral_offset_from_robot", 0.0)),
-                    "fill_rgb": [int(channel) for channel in fill],
-                    "world_xyz": list(spec["world_xyz"]),
-                    "base_xyz": list(spec["base_xyz"]),
-                    "dimensions_xyz": list(spec["dimensions_xyz"]),
-                    "screen_xy": list(center),
-                    "camera_distance": float(spec["camera_distance"]),
-                },
-            }
-        )
-
-    robot_spec = reference_specs[0]
-    robot_bbox, robot_marker_bbox = _draw_reference_marker(draw, robot_spec=robot_spec, camera=camera, frame=frame, dataset=dataset)
-    entities.append(
-        {
-            "entity_id": "robot_reference_marker",
-            "entity_type": "three_d_warehouse_robot_reference_marker",
-            "bbox_px": list(robot_marker_bbox),
-            "attrs": {
-                "reference_object_id": str(robot_spec["object_id"]),
-                "reference_marker": "red_bbox",
-                "reference_marker_bbox_px": list(robot_bbox),
-                "reference_direction_marker_bbox_px": list(robot_marker_bbox),
-                "robot_heading": str(dataset["robot_heading"]),
-                "travel_direction_vector_xy": list(dataset["travel_direction_vector_xy"]),
-            },
-        }
-    )
-    for label, center in sorted(point_centers.items()):
-        _draw_option_label(draw, label=str(label), center=(float(center[0]), float(center[1])), font=label_font)
-
-    answer_label = str(dataset["answer_label"])
-    evidence_bbox = list(point_bboxes[answer_label])
-    scene_bboxes = [list(warehouse_bbox), list(robot_marker_bbox)] + [list(bbox) for bbox in object_bboxes.values()]
-    scene_bbox = [
-        round(float(min(bbox[0] for bbox in scene_bboxes)), 3),
-        round(float(min(bbox[1] for bbox in scene_bboxes)), 3),
-        round(float(max(bbox[2] for bbox in scene_bboxes)), 3),
-        round(float(max(bbox[3] for bbox in scene_bboxes)), 3),
-    ]
-    return _RenderedWarehouseScene(
-        image=image,
-        entities=list(entities),
-        scene_bbox_px=list(scene_bbox),
-        warehouse_bbox_px=list(warehouse_bbox),
-        object_bboxes_px=dict(object_bboxes),
-        object_centers_px=dict(object_centers),
-        candidate_bboxes_px=dict(point_bboxes),
-        candidate_centers_px=dict(point_centers),
-        context_object_bboxes_px=dict(context_bboxes),
-        context_object_centers_px=dict(context_centers),
-        reference_object_bboxes_px=dict(reference_bboxes),
-        reference_object_centers_px=dict(reference_centers),
-        evidence_bboxes=[list(evidence_bbox)],
-        evidence_entity_ids=[str(dataset["answer_object_id"])],
-    )
-
-
-def _camera_from_dataset(dataset: Mapping[str, Any]) -> _CameraSpec:
-    raw = dataset["camera"]
-    return _CameraSpec(
-        camera_position=tuple(float(value) for value in raw["camera_position"]),
-        target=tuple(float(value) for value in raw["target"]),
-        right=tuple(float(value) for value in raw["right"]),
-        up=tuple(float(value) for value in raw["up"]),
-        forward=tuple(float(value) for value in raw["forward"]),
-        yaw_degrees=float(raw["yaw_degrees"]),
-        pitch_degrees=float(raw["pitch_degrees"]),
-        distance=float(raw["distance"]),
-    )
-
-
-def _frame_from_dataset(dataset: Mapping[str, Any]) -> _ProjectionFrame:
-    raw = dataset["projection_frame"]
-    return _ProjectionFrame(
-        scale=float(raw["scale"]),
-        center_x=float(raw["center_x"]),
-        center_y=float(raw["center_y"]),
-        normalized_center_u=float(raw["normalized_center_u"]),
-        normalized_center_v=float(raw["normalized_center_v"]),
-    )
-
-
-def _make_path_polygon(
-    *,
-    robot_xy: Sequence[float],
-    forward_xy: Sequence[float],
-    start_s: float,
-    end_s: float,
-    half_width: float,
-) -> List[Tuple[float, float, float]]:
-    fx, fy = float(forward_xy[0]), float(forward_xy[1])
-    lx, ly = -fy, fx
-    rx, ry = float(robot_xy[0]), float(robot_xy[1])
-    return [
-        (rx + fx * start_s + lx * half_width, ry + fy * start_s + ly * half_width, 0.022),
-        (rx + fx * end_s + lx * half_width, ry + fy * end_s + ly * half_width, 0.022),
-        (rx + fx * end_s - lx * half_width, ry + fy * end_s - ly * half_width, 0.022),
-        (rx + fx * start_s - lx * half_width, ry + fy * start_s - ly * half_width, 0.022),
-    ]
-
-
-def _sample_reference_and_objects(
-    *,
-    rng,
-    candidate_count: int,
-    context_object_count: int,
-    robot_heading: str,
-    render_params: _WarehouseRenderParams,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any]]:
-    forward_xy = _heading_vector(str(robot_heading))
-    orientation_axis = _heading_axis(str(robot_heading))
-    origin_xy = (float(rng.uniform(-0.18, 0.18)), float(rng.uniform(-0.18, 0.18)))
-    robot_s = -1.72
-    robot_xy = _local_to_world(forward_s=robot_s, lateral_l=0.0, origin_xy=origin_xy, forward_xy=forward_xy)
-    robot_design = str(rng.choice(SUPPORTED_ROBOT_DESIGNS))
-    robot_dims = _dimensions_for_object("warehouse_robot", orientation_axis=str(orientation_axis), scale=float(rng.uniform(0.96, 1.08)))
-    robot_width, robot_depth, robot_height = robot_dims
-    if robot_design == "sensor_tower":
-        robot_dims = (round(robot_width * 0.96, 4), round(robot_depth * 0.96, 4), round(robot_height * 1.26, 4))
-    elif robot_design == "stacker_bot":
-        robot_dims = (round(robot_width * 0.94, 4), round(robot_depth * 0.98, 4), round(robot_height * 1.42, 4))
-    robot_spec = _make_object_spec(
-        object_id="warehouse_robot_reference",
-        object_type="warehouse_robot",
-        object_role="warehouse_reference_robot",
-        xy=robot_xy,
-        orientation_axis=str(orientation_axis),
-        dimensions_xyz=robot_dims,
-        dimension_scale=1.0,
-        label=None,
-    )
-    robot_base_rgb = ROBOT_BASE_COLORS[int(rng.randrange(len(ROBOT_BASE_COLORS)))]
-    robot_accent_rgb = ROBOT_ACCENT_COLORS[int(rng.randrange(len(ROBOT_ACCENT_COLORS)))]
-    robot_spec.update(
-        {
-            "robot_design": str(robot_design),
-            "robot_heading": str(robot_heading),
-            "robot_base_rgb": [int(channel) for channel in robot_base_rgb],
-            "robot_accent_rgb": [int(channel) for channel in robot_accent_rgb],
-        }
-    )
-
-    required_slots = [
-        ("first_path", robot_s + float(rng.uniform(1.42, 1.72)), float(rng.uniform(-0.08, 0.08))),
-        ("later_path", robot_s + float(rng.uniform(2.78, 3.22)), float(rng.uniform(-0.10, 0.10))),
-    ]
-    distractor_slots = [
-        ("side_close", robot_s + float(rng.uniform(1.02, 1.42)), float(rng.choice((-1.0, 1.0))) * float(rng.uniform(1.14, 1.42))),
-        ("behind_near", robot_s - float(rng.uniform(1.10, 1.52)), float(rng.choice((-1.0, 1.0))) * float(rng.uniform(1.42, 1.92))),
-        ("adjacent_aisle", robot_s + float(rng.uniform(1.54, 2.22)), float(rng.choice((-1.0, 1.0))) * float(rng.uniform(1.70, 2.08))),
-        ("side_far", robot_s + float(rng.uniform(2.42, 3.06)), float(rng.choice((-1.0, 1.0))) * float(rng.uniform(1.12, 1.54))),
-    ]
-    rng.shuffle(distractor_slots)
-    candidate_local_slots = [*required_slots, *distractor_slots[: max(0, int(candidate_count) - len(required_slots))]]
-    rng.shuffle(candidate_local_slots)
-    object_types = list(WAREHOUSE_OBJECT_TYPES)
-    path_object_types = [
-        "crate_stack",
-        "pallet_load",
-        "barrel",
-        "box_stack",
-        "tire_stack",
-        "safety_barrier",
-        "storage_bin",
-        "rolling_bin",
-        "wrapped_bundle",
-    ]
-    rng.shuffle(object_types)
-    rng.shuffle(path_object_types)
-    candidate_specs: List[Dict[str, Any]] = []
-    for index, (slot_role, forward_s, lateral_l) in enumerate(candidate_local_slots[: int(candidate_count)]):
-        object_type = str(path_object_types.pop() if slot_role in {"first_path", "later_path"} and path_object_types else object_types[index % len(object_types)])
-        xy = _local_to_world(forward_s=float(forward_s), lateral_l=float(lateral_l), origin_xy=origin_xy, forward_xy=forward_xy)
-        scale = float(rng.uniform(0.90, 1.12))
-        dimensions = _dimensions_for_object(str(object_type), orientation_axis=str(orientation_axis), scale=float(scale))
-        spec = _make_object_spec(
-            object_id=f"candidate_slot_{slot_role}_{index}",
-            object_type=str(object_type),
-            object_role="warehouse_candidate",
-            xy=xy,
-            orientation_axis=str(orientation_axis),
-            dimensions_xyz=dimensions,
-            dimension_scale=float(scale),
-            label="?",
-        )
-        forward_from_robot, lateral_from_robot = _world_to_robot_path(xy, robot_xy=robot_xy, forward_xy=forward_xy)
-        in_corridor = float(forward_from_robot) >= MIN_FORWARD_DISTANCE and abs(float(lateral_from_robot)) <= PATH_CORRIDOR_HALF_WIDTH
-        spec.update(
-            {
-                "slot_role": str(slot_role),
-                "forward_distance_from_robot": round(float(forward_from_robot), 4),
-                "lateral_offset_from_robot": round(float(lateral_from_robot), 4),
-                "is_in_forward_path_corridor": bool(in_corridor),
-            }
-        )
-        candidate_specs.append(spec)
-
-    shelf_specs: List[Dict[str, Any]] = []
-    shelf_slots = [
-        (1.72, -2.82),
-        (3.66, -2.70),
-        (1.82, 2.82),
-        (3.78, 2.70),
-    ]
-    for index, (forward_s, lateral_l) in enumerate(shelf_slots):
-        xy = _local_to_world(
-            forward_s=float(forward_s + rng.uniform(-0.12, 0.12)),
-            lateral_l=float(lateral_l + rng.uniform(-0.16, 0.16)),
-            origin_xy=origin_xy,
-            forward_xy=forward_xy,
-        )
-        shelf_style = str(rng.choice(SUPPORTED_SHELF_RACK_STYLES))
-        if shelf_style == "loaded_bins":
-            level_fracs = [0.10, 0.34, 0.58, 0.84]
-            load_count = int(rng.randint(4, 8))
-            height_scale = float(rng.uniform(0.84, 1.08))
-        elif shelf_style == "mixed_crates":
-            level_fracs = [0.12, 0.48, 0.82]
-            load_count = int(rng.randint(2, 5))
-            height_scale = float(rng.uniform(0.74, 0.98))
-        elif shelf_style == "tall_sparse":
-            level_fracs = [0.08, 0.30, 0.56, 0.82]
-            load_count = int(rng.randint(1, 3))
-            height_scale = float(rng.uniform(1.04, 1.24))
-        elif shelf_style == "heavy_low":
-            level_fracs = [0.14, 0.62]
-            load_count = int(rng.randint(1, 4))
-            height_scale = float(rng.uniform(0.56, 0.76))
-        else:
-            level_fracs = [0.12, 0.54, 0.86] if rng.random() < 0.55 else [0.16, 0.76]
-            load_count = int(rng.randint(0, 2))
-            height_scale = float(rng.uniform(0.68, 1.04))
-        scale = float(rng.uniform(1.00, 1.18))
-        base_width, base_depth, base_height = _dimensions_for_object("shelf_rack", orientation_axis=str(orientation_axis), scale=float(scale))
-        dimensions = (base_width, base_depth, round(float(base_height * height_scale), 4))
-        load_slots: List[Dict[str, Any]] = []
-        loadable_levels = level_fracs[:-1] if len(level_fracs) > 1 else level_fracs
-        for load_index in range(load_count):
-            level_frac = float(rng.choice(loadable_levels))
-            load_slots.append(
-                {
-                    "x_frac": round(float(rng.uniform(-0.30, 0.30)), 4),
-                    "y_frac": round(float(rng.uniform(-0.18, 0.18)), 4),
-                    "z_frac": round(min(0.86, level_frac + float(rng.uniform(0.035, 0.060))), 4),
-                    "w_frac": round(float(rng.uniform(0.12, 0.24)), 4),
-                    "d_frac": round(float(rng.uniform(0.38, 0.66)), 4),
-                    "h_frac": round(float(rng.uniform(0.10, 0.18)), 4),
-                    "color_index": int((index * 3 + load_index + rng.randrange(len(SHELF_LOAD_COLORS))) % len(SHELF_LOAD_COLORS)),
-                }
-            )
-        shelf_spec = _make_object_spec(
-            object_id=f"context_shelf_rack_{index}",
-            object_type="shelf_rack",
-            object_role="warehouse_context",
-            xy=xy,
-            orientation_axis=str(orientation_axis),
-            dimensions_xyz=dimensions,
-            dimension_scale=float(scale),
-            label=None,
-        )
-        shelf_spec.update(
-            {
-                "shelf_style": str(shelf_style),
-                "shelf_height_scale": round(float(height_scale), 4),
-                "shelf_level_fracs": [round(float(value), 4) for value in level_fracs],
-                "shelf_levels": int(len(level_fracs)),
-                "shelf_beam_height": round(float(rng.uniform(0.075, 0.125)), 4),
-                "shelf_post_width": round(float(rng.uniform(0.070, 0.115)), 4),
-                "shelf_frame_rgb": [int(channel) for channel in SHELF_FRAME_COLORS[int(rng.randrange(len(SHELF_FRAME_COLORS)))]],
-                "shelf_load_slots": list(load_slots),
-            }
-        )
-        shelf_specs.append(shelf_spec)
-    context_specs: List[Dict[str, Any]] = list(shelf_specs)
-    optional_context_slots = [
-        ("charging_dock", robot_s - 0.90, -1.70),
-        ("conveyor", 2.96, 1.28),
-        ("pallet", -2.58, 1.72),
-        ("crate_stack", -2.72, -1.62),
-        ("barrel", 3.34, -1.18),
-        ("storage_bin", 3.24, 1.46),
-        ("safety_barrier", -2.84, 0.96),
-        ("tool_cart", 0.18, 2.46),
-        ("traffic_cone", 0.32, -2.46),
-        ("pallet_load", 3.68, 1.88),
-        ("workbench", -0.32, -2.60),
-        ("rolling_bin", 1.64, 2.54),
-        ("trash_can", -2.30, -2.28),
-        ("warning_bollard", -0.08, 1.48),
-        ("wrapped_bundle", 2.30, -2.54),
-        ("fire_extinguisher", -1.84, 2.42),
-        ("hand_truck", 1.04, -2.62),
-        ("stacked_pipes", 3.54, -2.08),
-    ]
-    rng.shuffle(optional_context_slots)
-    target_optional = max(0, int(context_object_count) - len(context_specs))
-    for index, (object_type, forward_s, lateral_l) in enumerate(optional_context_slots[:target_optional]):
-        xy = _local_to_world(
-            forward_s=float(forward_s + rng.uniform(-0.12, 0.12)),
-            lateral_l=float(lateral_l + rng.uniform(-0.10, 0.10)),
-            origin_xy=origin_xy,
-            forward_xy=forward_xy,
-        )
-        scale = float(rng.uniform(0.90, 1.12))
-        dimensions = _dimensions_for_object(str(object_type), orientation_axis=str(orientation_axis), scale=float(scale))
-        context_specs.append(
-            _make_object_spec(
-                object_id=f"context_{index}_{object_type}",
-                object_type=str(object_type),
-                object_role="warehouse_context",
-                xy=xy,
-                orientation_axis=str(orientation_axis),
-                dimensions_xyz=dimensions,
-                dimension_scale=float(scale),
-                label=None,
-            )
-        )
-    path_corridor_polygon = _make_path_polygon(robot_xy=robot_xy, forward_xy=forward_xy, start_s=0.20, end_s=3.50, half_width=PATH_CORRIDOR_HALF_WIDTH)
-    main_aisle_polygon = _make_path_polygon(robot_xy=robot_xy, forward_xy=forward_xy, start_s=-1.06, end_s=4.30, half_width=1.28)
-    left_shelf_zone = _make_path_polygon(robot_xy=robot_xy, forward_xy=forward_xy, start_s=1.04, end_s=4.72, half_width=0.42)
-    right_shelf_zone = _make_path_polygon(robot_xy=robot_xy, forward_xy=forward_xy, start_s=1.04, end_s=4.72, half_width=0.42)
-    fx, fy = forward_xy
-    lx, ly = -fy, fx
-    shifted_left = [(x + lx * 2.76, y + ly * 2.76, z) for x, y, z in left_shelf_zone]
-    shifted_right = [(x - lx * 2.76, y - ly * 2.76, z) for x, y, z in right_shelf_zone]
-    scene_geometry = {
-        "origin_xy": [round(float(value), 4) for value in origin_xy],
-        "robot_xy": [round(float(value), 4) for value in robot_xy],
-        "forward_xy": [round(float(value), 4) for value in forward_xy],
-        "path_corridor_polygon": [[round(float(value), 4) for value in point] for point in path_corridor_polygon],
-        "main_aisle_polygon": [[round(float(value), 4) for value in point] for point in main_aisle_polygon],
-        "shelf_zone_polygons": [
-            [[round(float(value), 4) for value in point] for point in shifted_left],
-            [[round(float(value), 4) for value in point] for point in shifted_right],
-        ],
-    }
-    return [robot_spec], candidate_specs, context_specs, scene_geometry
 
 
 def _attach_path_answers(
@@ -2031,7 +578,13 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_warehouse_robot_scene_3d(background, dataset=dataset, render_params=render_params)
+        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
+        rendered_scene = render_warehouse_robot_scene_3d(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            option_choices=option_choices,
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -2048,7 +601,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -2061,13 +614,13 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -2076,8 +629,8 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.evidence_bboxes]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = _build_complexity(
             candidate_count=int(dataset["candidate_count"]),
             context_object_count=int(dataset["context_object_count"]),
@@ -2125,7 +678,9 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -2146,6 +701,12 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
                 "candidate_bboxes_px": {str(key): list(value) for key, value in rendered_scene.candidate_bboxes_px.items()},
                 "candidate_centers_px": {str(key): list(value) for key, value in rendered_scene.candidate_centers_px.items()},
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
                 "reference_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.reference_object_bboxes_px.items()},
@@ -2166,6 +727,11 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "reference_object": dict(dataset["reference_object"]),
                 "reference_object_specs": [dict(spec) for spec in dataset["reference_object_specs"]],
                 "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
                 "object_specs": [dict(spec) for spec in dataset["object_specs"]],
                 "robot_heading": str(dataset["robot_heading"]),
@@ -2191,7 +757,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {"type": "object", "id": str(dataset["answer_object_id"]), "answer": str(answer_label)},
-            "projected_evidence": {"bbox_set": [list(bbox) for bbox in evidence_bboxes]},
+            "projected_annotation": {"bbox_set": [list(bbox) for bbox in annotation_bboxes]},
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }
@@ -2199,7 +765,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

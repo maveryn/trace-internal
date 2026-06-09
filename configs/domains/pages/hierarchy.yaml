@@ -255,11 +255,11 @@ prompt:
       answer_hint: set "answer" to the integer count
       object_description_rooted_tree: a rooted tree with labeled nodes and visible
         parent-child connector lines
-      evidence_hint_subtree_descendant_count: set "evidence" to an array of bounding
+      annotation_hint_subtree_descendant_count: set "annotation" to an array of bounding
         boxes [x0, y0, x1, y1] for every counted descendant node, in any order
-      evidence_hint_subtree_leaf_count: set "evidence" to an array of bounding boxes
+      annotation_hint_subtree_leaf_count: set "annotation" to an array of bounding boxes
         [x0, y0, x1, y1] for every counted leaf node in the queried subtree, in any
         order
-      evidence_hint_path_length_between_two_nodes: set "evidence" to an ordered
+      annotation_hint_path_length_between_two_nodes: set "annotation" to an ordered
         array of bounding boxes [x0, y0, x1, y1] for the nodes on the path from
         the first queried node to the second queried node

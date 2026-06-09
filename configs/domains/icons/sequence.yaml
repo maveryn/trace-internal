@@ -129,21 +129,21 @@ prompt:
     task_key: missing_count_query
   task_overrides:
     task_icons__sequence_strip__missing_count_value:
-      object_description: a horizontal sequence of boxes with one question-mark box
+      object_description: a horizontal row of boxes with one question-mark box
       question_text: How many icons should be in the missing box to continue the sequence?
-      evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the missing box
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the missing box
       answer_hint: set "answer" to the missing count as an integer
-      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example: '{"annotation":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
     task_icons__named_strip__shape_run_length:
       scene_key: named_strip_run_length
       task_key: run_length_query
-      object_description: a single horizontal row of boxed named icons
+      object_description: a horizontal row of boxed icons
       question_text_longest_shape_run_length: What is the longest consecutive run of "{target_shape_name}" icons in the row?
       question_text_shortest_shape_run_length: What is the shortest consecutive run of "{target_shape_name}" icons in the row?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for the "{target_shape_name}" icons in the run that determines the answer
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for the "{target_shape_name}" icons in the run that determines the answer
       answer_hint: set "answer" to the run length as an integer
-      json_example: '{"evidence":[[220,132,270,182],[292,132,342,182],[364,132,414,182]],"answer":3}'
+      json_example: '{"annotation":[[220,132,270,182],[292,132,342,182],[364,132,414,182]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
 
 complexity:

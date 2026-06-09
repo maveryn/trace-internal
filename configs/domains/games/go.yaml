@@ -7,6 +7,8 @@ generation:
       marked_group_liberty_count: 1.0
       marked_group_adjacent_enemy_count: 1.0
       marked_group_shared_liberty_count: 1.0
+      black_stone_group_count: 1.0
+      white_stone_group_count: 1.0
     player_color_weights:
       black: 1.0
       white: 1.0
@@ -42,6 +44,15 @@ generation:
     - 3
     - 4
     - 5
+    stone_group_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
     board_size_support:
     - 6
     - 7
@@ -83,6 +94,10 @@ prompt:
       and many open intersections
     object_description_crowded_board: a Go board with a highlighted connected stone
       group and many surrounding black and white stones
+    object_description_stone_group_open_board: a Go board with black and white stones
+      and many open intersections
+    object_description_stone_group_crowded_board: a Go board with many black and white
+      stones
     group_rule_text: Same-color stones connected edge to edge form one group.
     liberty_rule_text: A liberty is an empty orthogonal neighbor of the group; diagonals
       do not count.
@@ -90,20 +105,24 @@ prompt:
       edge to edge; diagonals do not count.
     shared_liberty_rule_text: A shared liberty also touches at least one opponent
       stone edge to edge.
-    marked_group_rule_text: The blue outlined {player_color} stones are the marked
-      group.
-    evidence_hint_marked_group_liberty_count: set "evidence" to a JSON array of
+    marked_group_rule_text: The red outlined {player_color} stones are the marked group.
+    annotation_hint_marked_group_liberty_count: set "annotation" to a JSON array of
       pixel-space points [x, y] at every liberty of the marked {player_color}
       group
     answer_hint_marked_group_liberty_count: set "answer" to the number of liberties
       of the marked {player_color} group
-    evidence_hint_marked_group_adjacent_enemy_count: set "evidence" to a JSON array
+    annotation_hint_marked_group_adjacent_enemy_count: set "annotation" to a JSON array
       of pixel-space points [x, y] at every opponent stone directly adjacent to
       the marked {player_color} group
     answer_hint_marked_group_adjacent_enemy_count: set "answer" to the number of opponent
       stones directly adjacent to the marked {player_color} group
-    evidence_hint_marked_group_shared_liberty_count: set "evidence" to a JSON
+    annotation_hint_marked_group_shared_liberty_count: set "annotation" to a JSON
       array of pixel-space points [x, y] at every shared liberty of the marked
       {player_color} group
     answer_hint_marked_group_shared_liberty_count: set "answer" to the number of shared
       liberties of the marked {player_color} group
+    annotation_hint_stone_group_count: set "annotation" to a JSON array of pixel-space
+      points [x, y], one at the center of one representative stone from each counted
+      {player_color} group
+    answer_hint_stone_group_count: set "answer" to the number of connected {player_color}
+      stone groups

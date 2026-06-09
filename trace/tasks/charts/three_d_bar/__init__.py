@@ -1,13 +1,25 @@
 """3D bar-grid chart tasks."""
 
 from .grid_query import (
-    ChartsThreeDBarAxisAggregateValueTask,
-    ChartsThreeDBarConditionCountTask,
+    ChartsThreeDBarCategoryExtremumGapValueTask,
+    ChartsThreeDBarCategoryThresholdCountTask,
+    ChartsThreeDBarCategoryTotalGapValueTask,
+    ChartsThreeDBarCategoryTotalValueTask,
     ChartsThreeDBarGridQueryTask,
+    ChartsThreeDBarPairwiseComparisonCountTask,
+    ChartsThreeDBarSeriesCategoryScopeTotalValueTask,
+    ChartsThreeDBarSeriesThresholdCountTask,
+    ChartsThreeDBarSeriesTotalGapValueTask,
 )
 
 __all__ = [
-    "ChartsThreeDBarAxisAggregateValueTask",
-    "ChartsThreeDBarConditionCountTask",
+    "ChartsThreeDBarCategoryExtremumGapValueTask",
+    "ChartsThreeDBarCategoryThresholdCountTask",
+    "ChartsThreeDBarCategoryTotalGapValueTask",
+    "ChartsThreeDBarCategoryTotalValueTask",
     "ChartsThreeDBarGridQueryTask",
+    "ChartsThreeDBarPairwiseComparisonCountTask",
+    "ChartsThreeDBarSeriesCategoryScopeTotalValueTask",
+    "ChartsThreeDBarSeriesThresholdCountTask",
+    "ChartsThreeDBarSeriesTotalGapValueTask",
 ]

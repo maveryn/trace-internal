@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-05-29
+Date: 2026-06-07
 
 ## Active Inventory
 The generated source of truth for active public domains, scenes, and tasks is
@@ -17,10 +17,10 @@ Current generated summary:
 
 | Metric | Value |
 | --- | ---: |
-| Default tasks | 499 |
-| Registered tasks | 499 |
-| Public domains | 10 |
-| Public scenes | 205 |
+| Default tasks | 968 |
+| Registered tasks | 968 |
+| Public domains | 11 |
+| Public scenes | 291 |
 | Missing taxonomy mappings | 0 |
 | Invalid default task id shapes | 0 |
 
@@ -28,16 +28,17 @@ Current generated domain counts:
 
 | Domain | Scenes | Tasks |
 | --- | ---: | ---: |
-| charts | 34 | 99 |
-| games | 37 | 80 |
-| geometry | 26 | 80 |
-| graph | 8 | 40 |
-| icons | 16 | 30 |
-| illustrations | 13 | 20 |
-| pages | 21 | 30 |
-| physics | 11 | 20 |
-| puzzles | 35 | 80 |
-| three_d | 4 | 20 |
+| charts | 44 | 188 |
+| games | 50 | 161 |
+| geometry | 46 | 192 |
+| graph | 10 | 61 |
+| icons | 18 | 40 |
+| illustrations | 11 | 26 |
+| misc | 14 | 42 |
+| pages | 28 | 92 |
+| physics | 36 | 53 |
+| puzzles | 28 | 80 |
+| three_d | 6 | 33 |
 
 ## Active Contracts
 1. Public taxonomy is `domain -> scene_id -> task_id`.

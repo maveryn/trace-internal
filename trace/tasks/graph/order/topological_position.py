@@ -29,8 +29,6 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-    SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_ORDER_QUERY_IDS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_topological_position,
@@ -39,14 +37,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
+from ..shared.node_link_axes import resolve_node_link_visual_axes
 from ..shared.fixed_query_task import rewrite_graph_query_output
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
@@ -129,11 +124,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the pixel-space evidence format."""
+    """Return prompt examples that match the pixel-space annotation format."""
 
-    example_evidence = [[140, 220], [260, 180], [380, 240], [500, 300], [620, 260]]
+    example_annotation = [[140, 220], [260, 180], [380, 240], [500, 300], [620, 260]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -226,84 +221,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="topology_profile",
     )
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -441,13 +376,13 @@ class GraphOrderTopologicalPositionTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key="topological_position",
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "query_label": str(prompt_query_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]).format(query_label=str(prompt_query_label)),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -456,22 +391,22 @@ class GraphOrderTopologicalPositionTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(str(label) for label in graph_sample.target_labels)
+        annotation_labels = tuple(str(label) for label in graph_sample.target_labels)
         answer_gt = TypedValue(type="integer", value=int(graph_sample.target_position))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_path = [list(point) for point in evidence_projection["pixel_point_sequence"]]
-        evidence_gt = TypedValue(type="point_sequence", value=list(evidence_path))
-        if int(evidence_labels.index(str(graph_sample.query_label)) + 1) != int(graph_sample.target_position):
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_path = [list(point) for point in annotation_projection["pixel_point_sequence"]]
+        annotation_gt = TypedValue(type="point_sequence", value=list(annotation_path))
+        if int(annotation_labels.index(str(graph_sample.query_label)) + 1) != int(graph_sample.target_position):
             raise ValueError("topological-position sampler failed to align query label with the target position")
 
         verified_order = unique_topological_order_by_adjacency(
             graph_sample.successors_by_label,
-            node_order=tuple(str(label) for label in evidence_labels),
+            node_order=tuple(str(label) for label in annotation_labels),
         )
-        if verified_order is None or tuple(str(label) for label in verified_order) != evidence_labels:
+        if verified_order is None or tuple(str(label) for label in verified_order) != annotation_labels:
             raise ValueError("graph topological-order sampler failed to preserve the intended unique ordering")
 
-        evidence_label_set = {str(label) for label in evidence_labels}
+        annotation_label_set = {str(label) for label in annotation_labels}
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -486,8 +421,8 @@ class GraphOrderTopologicalPositionTask:
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
                 "is_query_node": bool(str(node.label) == str(graph_sample.query_label)),
-                "topological_position": int(evidence_labels.index(str(node.label)) + 1),
-                "is_in_topological_order": bool(str(node.label) in evidence_label_set),
+                "topological_position": int(annotation_labels.index(str(node.label)) + 1),
+                "is_in_topological_order": bool(str(node.label) in annotation_label_set),
             }
             for node in rendered_scene.nodes
         ]
@@ -519,7 +454,7 @@ class GraphOrderTopologicalPositionTask:
                     "relation_rule": "unique_topological_order_position",
                     "graph_directionality": "directed",
                     "query_label": str(graph_sample.query_label),
-                    "topological_order_labels": list(evidence_labels),
+                    "topological_order_labels": list(annotation_labels),
                     "target_position": int(graph_sample.target_position),
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
@@ -606,7 +541,7 @@ class GraphOrderTopologicalPositionTask:
                 "edge_count": int(graph_sample.edge_count),
                 "target_position": int(graph_sample.target_position),
                 "query_label": str(graph_sample.query_label),
-                "topological_order_labels": list(evidence_labels),
+                "topological_order_labels": list(annotation_labels),
                 "extra_edge_count": int(graph_sample.extra_edge_count),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
@@ -623,13 +558,13 @@ class GraphOrderTopologicalPositionTask:
             },
             "witness_symbolic": {
                 "type": "node_sequence",
-                "nodes": list(evidence_labels),
+                "nodes": list(annotation_labels),
                 "query_label": str(graph_sample.query_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_sequence",
-                "point_sequence": list(evidence_path),
-                **dict(evidence_projection),
+                "point_sequence": list(annotation_path),
+                **dict(annotation_projection),
             },
         }
 
@@ -637,7 +572,7 @@ class GraphOrderTopologicalPositionTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

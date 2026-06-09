@@ -1,5 +1,0 @@
-task: task_puzzles__voxel_cube__cube_count
-
-params:
-  scene_variant: stack_card
-  cube_color_name: blue

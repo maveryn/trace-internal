@@ -133,6 +133,39 @@ def feasible_node_counts_for_unique_cycle_size(
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
+def feasible_node_counts_for_largest_chordless_cycle_size(
+    *,
+    target_cycle_size: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one largest-chordless-cycle query."""
+
+    target_size = int(target_cycle_size)
+    if int(target_size) < 3:
+        return ()
+    secondary_cycle_extra_nodes = 1 if int(target_size) == 3 else 2
+    minimum = max(int(node_count_min), int(target_size) + int(secondary_cycle_extra_nodes))
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
+def feasible_node_counts_for_hamiltonian_cycle_neighbor(
+    *,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize a small Hamiltonian-cycle neighbor query."""
+
+    minimum = max(int(node_count_min), 4)
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
 def feasible_node_counts_for_shortest_path_length(
     *,
     target_shortest_path_length: int,
@@ -272,6 +305,8 @@ __all__ = [
     "feasible_node_counts_for_bridge_count",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_component_size_after_edge_edit",
+    "feasible_node_counts_for_hamiltonian_cycle_neighbor",
+    "feasible_node_counts_for_largest_chordless_cycle_size",
     "feasible_node_counts_for_longest_path_length",
     "feasible_node_counts_for_reachable_count",
     "feasible_node_counts_for_reachable_count_after_edge_edit",

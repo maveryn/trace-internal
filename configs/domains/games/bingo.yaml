@@ -5,6 +5,9 @@ generation:
     query_id_weights:
       completed_axis_line_count: 1.0
       line_sum_extremum_value: 1.0
+      near_complete_row_count: 1.0
+      near_complete_column_count: 1.0
+      called_marked_number_count: 1.0
     line_axis_weights:
       row: 1.0
       column: 1.0
@@ -36,46 +39,44 @@ generation:
     balanced_mark_shape_sampling: true
     balanced_cell_fill_pattern_sampling: true
     balanced_target_answer_sampling: true
+    balanced_called_number_count_sampling: true
     balanced_target_answer_within_line_axis: false
     axis_distractor_mark_prob: 0.2
     line_sum_distractor_mark_prob: 0.2
     completed_axis_line_count_support:
+    - 0
     - 1
     - 2
     - 3
     - 4
-    - 5
     completed_axis_line_count_balanced_cycle:
+    - 0
     - 1
     - 2
     - 3
-    - 5
-    - 1
-    - 2
-    - 3
-    - 5
-    - 1
-    - 2
-    - 3
-    - 5
-    - 1
-    - 2
-    - 3
-    - 5
-    - 1
-    - 2
-    - 3
-    - 5
-    - 1
-    - 2
-    - 3
-    - 5
     - 4
     line_sum_completed_line_count_support:
     - 2
     - 3
     - 4
+    near_complete_line_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    called_marked_number_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
     - 5
+    called_number_count_support:
+    - 5
+    - 6
+    - 7
+    - 8
 rendering:
   shared:
     canvas_width: 1180
@@ -100,6 +101,10 @@ rendering:
     cell_corner_radius_px: 14
     cell_gap_px: 10
     mark_inset_px: 12
+    called_panel_width_px: 220
+    called_panel_gap_px: 32
+    called_panel_title_font_size_px: 26
+    called_panel_number_font_size_px: 25
     mark_shape: ellipse
     cell_fill_pattern: solid
 complexity:
@@ -120,13 +125,32 @@ prompt:
     line_sum_extremum_rule_text: A completed {line_axis} is a {line_axis} with all
       five cells marked. Sum the printed numbers in each completed {line_axis}, then
       use the {extremum} sum.
-    evidence_hint_completed_axis_line_count: set "evidence" to an array of bounding
+    near_complete_line_rule_text: A near-complete {line_axis} is a {line_axis} with
+      exactly one unmarked cell.
+    called_marked_number_rule_text: The called list shows numbers that appear on the
+      card.
+    annotation_hint_completed_axis_line_count: set "annotation" to an array of bounding
       boxes [x0, y0, x1, y1] for every marked cell that belongs to one of the completed
       {line_axis}s
-    evidence_hint_line_sum_extremum_value: set "evidence" to an array of bounding
+    annotation_hint_line_sum_extremum_value: set "annotation" to an array of bounding
       boxes [x0, y0, x1, y1] for the five cells in the completed {line_axis} with
       the unique {extremum} sum
+    annotation_hint_near_complete_row_count: set "annotation" to an array of bounding
+      boxes [x0, y0, x1, y1] for the single unmarked gap cell in each near-complete
+      row
+    annotation_hint_near_complete_column_count: set "annotation" to an array of bounding
+      boxes [x0, y0, x1, y1] for the single unmarked gap cell in each near-complete
+      column
+    annotation_hint_called_marked_number_count: set "annotation" to an array of bounding
+      boxes [x0, y0, x1, y1] for each card cell whose number is in the CALLED list
+      and is marked
     answer_hint_completed_axis_line_count: set "answer" to the number of completed
       {line_axis}s
     answer_hint_line_sum_extremum_value: set "answer" to the unique {extremum} sum
       among completed {line_axis}s
+    answer_hint_near_complete_row_count: set "answer" to the number of near-complete
+      rows
+    answer_hint_near_complete_column_count: set "answer" to the number of near-complete
+      columns
+    answer_hint_called_marked_number_count: set "answer" to the number of called
+      numbers that are marked on the card

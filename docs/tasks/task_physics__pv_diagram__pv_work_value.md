@@ -3,28 +3,52 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `pv_diagram`
-- Task group: `thermodynamics`
-- Query id: `work_value`
-- Answer type: `integer`
-- Evidence type: unordered `bbox_set`
+- Implementation task group: `thermodynamics`
+- Implementation source: `trace/tasks/physics/thermodynamics/pv_diagram.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__pv_diagram__pv_work_value` -> `task_physics__pv_diagram__pv_work_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows a pressure-volume diagram with pressure in `kPa`, volume in `L`, and a highlighted PV process or rectangular cycle. The prompt asks for signed work done by the gas in joules, using `1 kPa*L = 1 J`.
+## Task Contract
+Computes signed integer work from a highlighted PV process using pressure times volume change.
 
-The calibrated public sampling uses the `single_process` work mode. For a single horizontal process, work is `P * (V_final - V_initial)`; expansion is positive and compression is negative. The renderer still supports explicit rectangular-cycle construction for regression coverage, but rectangular cycles are not part of the current default numeric-work calibration mix.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Evidence
-Prompt-facing evidence is one bounding box around the highlighted PV process or cycle used to compute the work.
+## Query Branches
 
-Evidence is projected after the final whole-diagram layout offset, so the bbox uses rendered pixel coordinates.
+| Query id | Program schema |
+| --- | --- |
+| `work_value` | `pressure * (final_volume - initial_volume); scene=pv_diagram; scope=pv_work_value; query_branch=work_value` |
 
-## Prompt And Trace
-Prompt bundle: `physics_thermodynamics_v0`; scene key: `thermodynamics_pv_diagram`; task key: `pv_diagram_query`; query key: `work_value`.
+## Program Metadata
+- Program signatures: `physics.pv_work_value`
+- Base program contract: `pressure * (final_volume - initial_volume); scene=pv_diagram; scope=pv_work_value`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `final_volume`: semantic_role; allowed `visible_final_volume`; source `program_schema_concrete`
+  - `initial_volume`: semantic_role; allowed `visible_initial_volume`; source `program_schema_concrete`
+  - `pressure`: semantic_role; allowed `visible_process_pressure`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `work_value`
 
-Outputs `query_id="work_value"`. The current calibrated task uses the single horizontal process mode: the answer is `pressure * (final volume - initial volume)` with expansion positive and compression negative. The trace records the resolved work mode, pressure/volume values, signed work value, axis metadata, rendered witness bbox, evidence entity ids, technical diagram style, font family, whole-diagram layout placement, and post-render noise metadata.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
 
-## Rendering
-The renderer uses shared `technical_diagram_style` for the outer sheet, palette, frame, grid/panel colors, and post-render noise. It samples one readout font family per diagram and applies whole-diagram layout placement before computing evidence.
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set | unordered`
+- Annotation is an unordered set of final-image pixel boxes over the minimal queried visual witnesses.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized PV scenario.
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/pv_diagram/task_physics__pv_diagram__pv_work_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

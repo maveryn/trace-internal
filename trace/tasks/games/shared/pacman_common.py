@@ -12,6 +12,7 @@ SUPPORTED_PACMAN_QUERY_IDS: Tuple[str, ...] = (
     "path_pellet_count",
     "next_item_label",
     "pellet_count_before_ghost",
+    "route_score_value",
 )
 SUPPORTED_PACMAN_SCENE_VARIANTS: Tuple[str, ...] = (
     "compact_maze",
@@ -51,6 +52,7 @@ class PacmanItem:
     coord: Coord
     kind: str
     is_answer: bool = False
+    score_value: int | None = None
 
 
 @dataclass(frozen=True)
@@ -81,7 +83,7 @@ class PacmanSample:
     ghosts: Tuple[PacmanGhost, ...]
     answer: int | str
     target_answer: int | str
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 
@@ -210,57 +212,100 @@ def validate_pacman_sample(sample: PacmanSample) -> None:
     if tuple(sample.pacman_coord) in set(ghost_coords):
         raise ValueError("Pac-Man ghost must not overlap Pac-Man")
 
-    evidence_ids = tuple(str(entity_id) for entity_id in sample.evidence_entity_ids)
+    annotation_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
     if query == "next_item_label":
         if not isinstance(sample.answer, str):
             raise ValueError("next_item_label must have a string answer")
         matching = [item for item in sample.items if str(item.label) == str(sample.answer)]
         if len(matching) != 1:
             raise ValueError("next_item_label answer must name exactly one visible item")
-        if evidence_ids != (item_entity_id(str(sample.answer)),):
-            raise ValueError("next_item_label evidence must be the selected item")
+        if annotation_ids != (item_entity_id(str(sample.answer)),):
+            raise ValueError("next_item_label annotation must be the selected item")
     elif query == "pellet_count_before_ghost":
         if not isinstance(sample.answer, int):
             raise ValueError("pellet_count_before_ghost must have an integer answer")
-        pellet_ids = tuple(entity_id for entity_id in evidence_ids if entity_id.startswith("pellet_r"))
-        ghost_ids_in_evidence = tuple(entity_id for entity_id in evidence_ids if entity_id.startswith("ghost_"))
-        if len(ghost_ids_in_evidence) != 1:
-            raise ValueError("pellet_count_before_ghost evidence must include exactly one route ghost")
+        pellet_ids = tuple(entity_id for entity_id in annotation_ids if entity_id.startswith("pellet_r"))
+        ghost_ids_in_annotation = tuple(entity_id for entity_id in annotation_ids if entity_id.startswith("ghost_"))
+        if len(ghost_ids_in_annotation) != 1:
+            raise ValueError("pellet_count_before_ghost annotation must include exactly one route ghost")
         if len(pellet_ids) != int(sample.answer):
-            raise ValueError("pellet_count_before_ghost pellet evidence count must match the answer")
-        stop_ghost_id = ghost_ids_in_evidence[0]
+            raise ValueError("pellet_count_before_ghost pellet annotation count must match the answer")
+        stop_ghost_id = ghost_ids_in_annotation[0]
         stop_ghosts = [ghost for ghost in sample.ghosts if str(ghost.ghost_id) == stop_ghost_id and bool(ghost.is_stop_ghost)]
         if len(stop_ghosts) != 1:
-            raise ValueError("pellet_count_before_ghost evidence ghost must be the stop ghost")
+            raise ValueError("pellet_count_before_ghost annotation ghost must be the stop ghost")
         route_order = {tuple(coord): index for index, coord in enumerate(sample.route_coords)}
         stop_coord = tuple(stop_ghosts[0].coord)
         if stop_coord not in route_order or route_order[stop_coord] == 0:
             raise ValueError("pellet_count_before_ghost stop ghost must lie after Pac-Man on the route")
-        evidence_coords = {coord_from_entity_id(entity_id) for entity_id in pellet_ids}
-        if not evidence_coords.issubset(pellet_set):
-            raise ValueError("pellet_count_before_ghost pellet evidence must be visible pellets")
-        if any(tuple(coord) not in route_order for coord in evidence_coords):
-            raise ValueError("pellet_count_before_ghost pellet evidence must be on the highlighted route")
+        annotation_coords = {coord_from_entity_id(entity_id) for entity_id in pellet_ids}
+        if not annotation_coords.issubset(pellet_set):
+            raise ValueError("pellet_count_before_ghost pellet annotation must be visible pellets")
+        if any(tuple(coord) not in route_order for coord in annotation_coords):
+            raise ValueError("pellet_count_before_ghost pellet annotation must be on the highlighted route")
         stop_index = int(route_order[stop_coord])
-        if any(int(route_order[coord]) >= stop_index for coord in evidence_coords):
-            raise ValueError("pellet_count_before_ghost pellet evidence must come before the stop ghost")
+        if any(int(route_order[coord]) >= stop_index for coord in annotation_coords):
+            raise ValueError("pellet_count_before_ghost pellet annotation must come before the stop ghost")
         expected_coords = {
             tuple(coord)
             for coord in pellet_set
             if tuple(coord) in route_order and int(route_order[tuple(coord)]) < stop_index
         }
-        if evidence_coords != expected_coords:
-            raise ValueError("pellet_count_before_ghost evidence must cover all counted route pellets before the stop ghost")
+        if annotation_coords != expected_coords:
+            raise ValueError("pellet_count_before_ghost annotation must cover all counted route pellets before the stop ghost")
+    elif query == "route_score_value":
+        if not isinstance(sample.answer, int):
+            raise ValueError("route_score_value must have an integer answer")
+        route_order = {tuple(coord): index for index, coord in enumerate(sample.route_coords)}
+        item_by_id = {item_entity_id(str(item.label)): item for item in sample.items}
+        score_total = 0
+        saw_pellet = False
+        saw_item = False
+        for entity_id in annotation_ids:
+            if entity_id.startswith("pellet_r"):
+                coord = coord_from_entity_id(entity_id)
+                if coord not in pellet_set:
+                    raise ValueError("route_score_value pellet annotation must be visible pellets")
+                if coord not in route_order:
+                    raise ValueError("route_score_value pellet annotation must be on the highlighted route")
+                score_total += 1
+                saw_pellet = True
+                continue
+            item = item_by_id.get(entity_id)
+            if item is None:
+                raise ValueError("route_score_value annotation must point to pellet or bonus item entities")
+            if tuple(item.coord) not in route_order:
+                raise ValueError("route_score_value item annotation must be on the highlighted route")
+            if item.score_value is None or int(item.score_value) <= 0:
+                raise ValueError("route_score_value item annotation must have a positive score value")
+            score_total += int(item.score_value)
+            saw_item = True
+        if not saw_pellet or not saw_item:
+            raise ValueError("route_score_value annotation must include at least one pellet and one bonus item")
+        if score_total != int(sample.answer):
+            raise ValueError("route_score_value annotation score total must match the answer")
+        expected_ids = {
+            pellet_entity_id(coord)
+            for coord in pellet_set
+            if tuple(coord) in route_order
+        }
+        expected_ids.update(
+            item_entity_id(str(item.label))
+            for item in sample.items
+            if tuple(item.coord) in route_order
+        )
+        if set(annotation_ids) != expected_ids:
+            raise ValueError("route_score_value annotation must cover all route collectibles")
     else:
         if not isinstance(sample.answer, int):
             raise ValueError(f"{query} must have an integer answer")
-        if len(evidence_ids) != int(sample.answer):
-            raise ValueError(f"{query} evidence count must match the answer")
-        if any(not entity_id.startswith("pellet_r") for entity_id in evidence_ids):
-            raise ValueError(f"{query} evidence must point to pellet entities")
-        evidence_coords = {coord_from_entity_id(entity_id) for entity_id in evidence_ids}
-        if not evidence_coords.issubset(pellet_set):
-            raise ValueError(f"{query} evidence must be visible pellets")
+        if len(annotation_ids) != int(sample.answer):
+            raise ValueError(f"{query} annotation count must match the answer")
+        if any(not entity_id.startswith("pellet_r") for entity_id in annotation_ids):
+            raise ValueError(f"{query} annotation must point to pellet entities")
+        annotation_coords = {coord_from_entity_id(entity_id) for entity_id in annotation_ids}
+        if not annotation_coords.issubset(pellet_set):
+            raise ValueError(f"{query} annotation must be visible pellets")
 
 
 def visible_pellet_trace(pellets: Sequence[Coord]) -> Tuple[Mapping[str, object], ...]:
@@ -289,6 +334,27 @@ def visible_ghost_trace(ghosts: Sequence[PacmanGhost]) -> Tuple[Mapping[str, obj
     )
 
 
+def visible_item_trace(items: Sequence[PacmanItem]) -> Tuple[Mapping[str, object], ...]:
+    """Return trace rows for visible bonus items."""
+
+    rows = []
+    for item in items:
+        row = {
+            "label": str(item.label),
+            "kind": str(item.kind),
+            "coord": [int(item.coord[0]), int(item.coord[1])],
+            "entity_id": item_entity_id(str(item.label)),
+            "is_answer": bool(item.is_answer),
+        }
+        if item.score_value is not None:
+            row["score_value"] = int(item.score_value)
+            row["display_text"] = str(int(item.score_value))
+        else:
+            row["display_text"] = str(item.label)
+        rows.append(row)
+    return tuple(rows)
+
+
 __all__ = [
     "PACMAN_GHOST_COLOR_KEYS",
     "PACMAN_ITEM_KINDS",
@@ -311,5 +377,6 @@ __all__ = [
     "sorted_coords",
     "validate_pacman_sample",
     "visible_ghost_trace",
+    "visible_item_trace",
     "visible_pellet_trace",
 ]

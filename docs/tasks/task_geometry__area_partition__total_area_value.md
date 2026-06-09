@@ -4,33 +4,23 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `area_partition`
-4. Query id: `total_area_from_shaded_partition`
-5. Answer type: `number`
-6. Evidence type: `keyed_bbox_map`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+5. Query id: `total_area_from_shaded_partition`
+6. Answer schema: `decimal_value_1dp`
+7. Annotation schema: `keyed_bbox_map`
+
+## Program Contract
+- `solve_formula(visible_area_partition_measurements, unknown_role=area_measure, formula_schema=shaded_unit_fraction_area_to_total_area, partition_rule=visible_fraction_partition_rule); scene=area_partition; scope=total_area_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_area_partition_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Infer the total area of an outer triangle or parallelogram from a labeled
-shaded partition region. Parallelogram variants use equal-area relationships
-from both diagonals meeting at the center, sometimes with a marked midpoint
-segment that halves one diagonal-quarter region. Triangle variants use a
-median, a midsegment joining two side midpoints, or three medians meeting at a
-centroid. Answers are numeric integers.
-
-## Evidence
-Prompt-facing evidence is a `keyed_bbox_map` with `outer_shape` and
-`shaded_region` keys. Each value is one pixel bounding box around the
-corresponding visual region. The partition marks, target cue, and numeric
-shaded-area label remain visible annotations and render metadata rather than
-standalone public evidence. Verifier evidence is projected from the same
-generated scene metadata used to compute the answer.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt bundle
-version.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/measurement.yaml`

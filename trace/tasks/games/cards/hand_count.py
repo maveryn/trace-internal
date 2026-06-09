@@ -62,9 +62,9 @@ class _TaskDefaults:
     """Stable fallback defaults for visible card-hand scenes."""
 
     same_suit_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    same_suit_order_by_suit: bool = True
+    same_suit_order_by_suit: bool = False
     higher_rank_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    higher_rank_order_by_rank: bool = True
+    higher_rank_order_by_rank: bool = False
     higher_rank_center_label_mode: str = "rank_suit"
     exact_triple_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     exact_triple_count_order_by_rank: bool = True
@@ -112,12 +112,13 @@ class _SampledHand:
     """Constructed visible hand plus query-specific witness metadata."""
 
     cards: Tuple[CardInstance, ...]
-    evidence_card_ids: Tuple[str, ...]
+    annotation_card_ids: Tuple[str, ...]
     reference_card_id: str | None
     reference_rank_value: int | None
     reference_rank_label: str | None
     reference_suit_name: str | None
     rank_sequence: Tuple[int, ...]
+    keyed_annotation_card_ids: Tuple[Tuple[str, Tuple[str, ...]], ...] = ()
 
 
 _DEFAULTS = _TaskDefaults()
@@ -138,8 +139,8 @@ def _resolve_query_id(
     """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -188,7 +189,7 @@ def _target_support_key(query_id: str) -> str:
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -397,6 +398,15 @@ def _make_deck() -> List[Tuple[int, str]]:
     return [(int(rank_value), str(suit_name)) for suit_name in SUIT_NAMES for rank_value in RANK_VALUES]
 
 
+def _top_row_left_card_index(*, card_count: int, max_cards_per_row: int) -> int:
+    """Return the zero-based index of the leftmost card in the renderer's top row."""
+
+    max_per_row = int(max_cards_per_row)
+    if max_per_row <= 0:
+        raise ValueError("max_cards_per_row must be positive")
+    return 0
+
+
 def _label_card(
     *,
     card_id: str,
@@ -421,6 +431,7 @@ def _sample_same_suit_hand(
     card_count: int,
     target_answer: int,
     order_by_suit: bool,
+    reference_anchor_index: int,
 ) -> _SampledHand:
     """Sample one hand with exactly `target_answer` cards matching the reference suit."""
 
@@ -431,14 +442,17 @@ def _sample_same_suit_hand(
     matching_cards = list(rng.sample(same_suit_pool, int(target_answer)))
     other_pool = [(int(rank), str(suit)) for rank, suit in _make_deck() if str(suit) != str(reference_suit)]
     filler_cards = list(rng.sample(other_pool, int(card_count) - 1 - int(target_answer)))
-    ordered = matching_cards + filler_cards + [reference_card]
+    non_reference_cards = matching_cards + filler_cards
     if bool(order_by_suit):
         suit_order = {str(suit_name): int(index) for index, suit_name in enumerate(SUIT_NAMES)}
-        ordered.sort(key=lambda item: (int(suit_order[str(item[1])]), int(item[0])))
+        non_reference_cards.sort(key=lambda item: (int(suit_order[str(item[1])]), int(item[0])))
     else:
-        rng.shuffle(ordered)
+        rng.shuffle(non_reference_cards)
+    anchor_index = max(0, min(int(card_count) - 1, int(reference_anchor_index)))
+    ordered = list(non_reference_cards)
+    ordered.insert(int(anchor_index), reference_card)
     cards: List[CardInstance] = []
-    evidence_card_ids: List[str] = []
+    annotation_card_ids: List[str] = []
     reference_card_id: str | None = None
     for index, (rank_value, suit_name) in enumerate(ordered, start=1):
         is_reference = bool((int(rank_value), str(suit_name)) == reference_card and reference_card_id is None)
@@ -454,12 +468,12 @@ def _sample_same_suit_hand(
         if bool(is_reference):
             reference_card_id = str(card_id)
         elif str(suit_name) == str(reference_suit):
-            evidence_card_ids.append(str(card_id))
+            annotation_card_ids.append(str(card_id))
     if reference_card_id is None:
         raise ValueError("same-suit hand must contain one reference card")
     return _SampledHand(
         cards=tuple(cards),
-        evidence_card_ids=tuple(evidence_card_ids),
+        annotation_card_ids=tuple(annotation_card_ids),
         reference_card_id=str(reference_card_id),
         reference_rank_value=int(reference_rank),
         reference_rank_label=str(RANK_LABEL_BY_VALUE[int(reference_rank)]),
@@ -474,6 +488,7 @@ def _sample_higher_rank_hand(
     card_count: int,
     target_answer: int,
     order_by_rank: bool,
+    reference_anchor_index: int,
 ) -> _SampledHand:
     """Sample one hand with exactly `target_answer` cards ranked above the reference card."""
 
@@ -501,14 +516,17 @@ def _sample_higher_rank_hand(
     ]
     higher_cards = list(rng.sample(higher_pool, int(target_answer)))
     lower_equal_cards = list(rng.sample(lower_equal_pool, int(required_not_higher)))
-    ordered = higher_cards + lower_equal_cards + [reference_card]
+    non_reference_cards = higher_cards + lower_equal_cards
     if bool(order_by_rank):
         suit_order = {str(suit_name): int(index) for index, suit_name in enumerate(SUIT_NAMES)}
-        ordered.sort(key=lambda item: (int(item[0]), int(suit_order[str(item[1])])))
+        non_reference_cards.sort(key=lambda item: (int(item[0]), int(suit_order[str(item[1])])))
     else:
-        rng.shuffle(ordered)
+        rng.shuffle(non_reference_cards)
+    anchor_index = max(0, min(int(card_count) - 1, int(reference_anchor_index)))
+    ordered = list(non_reference_cards)
+    ordered.insert(int(anchor_index), reference_card)
     cards: List[CardInstance] = []
-    evidence_card_ids: List[str] = []
+    annotation_card_ids: List[str] = []
     reference_card_id: str | None = None
     for index, (rank_value, suit_name) in enumerate(ordered, start=1):
         is_reference = bool((int(rank_value), str(suit_name)) == reference_card and reference_card_id is None)
@@ -524,12 +542,12 @@ def _sample_higher_rank_hand(
         if bool(is_reference):
             reference_card_id = str(card_id)
         elif int(rank_value) > int(reference_rank):
-            evidence_card_ids.append(str(card_id))
+            annotation_card_ids.append(str(card_id))
     if reference_card_id is None:
         raise ValueError("higher-rank hand must contain one reference card")
     return _SampledHand(
         cards=tuple(cards),
-        evidence_card_ids=tuple(evidence_card_ids),
+        annotation_card_ids=tuple(annotation_card_ids),
         reference_card_id=str(reference_card_id),
         reference_rank_value=int(reference_rank),
         reference_rank_label=str(RANK_LABEL_BY_VALUE[int(reference_rank)]),
@@ -579,7 +597,8 @@ def _sample_exact_triple_count_hand(
         rng.shuffle(raw_cards)
 
     cards: List[CardInstance] = []
-    evidence_card_ids: List[str] = []
+    annotation_card_ids: List[str] = []
+    keyed_annotation_ids: Dict[str, List[str]] = {}
     for index, (rank_value, suit_name, in_triple) in enumerate(raw_cards, start=1):
         card_id = f"card_{index:02d}"
         cards.append(
@@ -591,15 +610,25 @@ def _sample_exact_triple_count_hand(
             )
         )
         if bool(in_triple):
-            evidence_card_ids.append(str(card_id))
+            annotation_card_ids.append(str(card_id))
+            rank_label = str(RANK_LABEL_BY_VALUE[int(rank_value)])
+            keyed_annotation_ids.setdefault(str(rank_label), []).append(str(card_id))
+    rank_order = {str(RANK_LABEL_BY_VALUE[int(rank_value)]): int(rank_value) for rank_value in RANK_VALUES}
     return _SampledHand(
         cards=tuple(cards),
-        evidence_card_ids=tuple(evidence_card_ids),
+        annotation_card_ids=tuple(annotation_card_ids),
         reference_card_id=None,
         reference_rank_value=None,
         reference_rank_label=None,
         reference_suit_name=None,
         rank_sequence=tuple(int(card.rank_value) for card in cards),
+        keyed_annotation_card_ids=tuple(
+            (str(rank_label), tuple(str(card_id) for card_id in card_ids))
+            for rank_label, card_ids in sorted(
+                keyed_annotation_ids.items(),
+                key=lambda item: int(rank_order[str(item[0])]),
+            )
+        ),
     )
 
 
@@ -744,7 +773,7 @@ def _sample_longest_run_hand(rng, *, card_count: int, target_answer: int) -> _Sa
     ):
         raise ValueError("run sampler failed to preserve a unique target-length run")
     cards: List[CardInstance] = []
-    evidence_card_ids: List[str] = []
+    annotation_card_ids: List[str] = []
     for index, (rank_value, suit_name) in enumerate(ordered, start=1):
         card_id = f"card_{index:02d}"
         cards.append(
@@ -756,10 +785,10 @@ def _sample_longest_run_hand(rng, *, card_count: int, target_answer: int) -> _Sa
             )
         )
         if int(run_start_index) < int(index) <= int(run_start_index + run_length):
-            evidence_card_ids.append(str(card_id))
+            annotation_card_ids.append(str(card_id))
     return _SampledHand(
         cards=tuple(cards),
-        evidence_card_ids=tuple(evidence_card_ids),
+        annotation_card_ids=tuple(annotation_card_ids),
         reference_card_id=None,
         reference_rank_value=None,
         reference_rank_label=None,
@@ -799,6 +828,7 @@ def _sample_hand(
     same_suit_order_by_suit: bool,
     higher_rank_order_by_rank: bool,
     exact_triple_order_by_rank: bool,
+    max_cards_per_row: int,
 ) -> _SampledHand:
     """Sample one visible hand for the resolved query family."""
 
@@ -808,6 +838,10 @@ def _sample_hand(
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
             order_by_suit=bool(same_suit_order_by_suit),
+            reference_anchor_index=_top_row_left_card_index(
+                card_count=int(axes.card_count),
+                max_cards_per_row=int(max_cards_per_row),
+            ),
         )
     if str(axes.query_id) == "higher_than_reference_count":
         return _sample_higher_rank_hand(
@@ -815,6 +849,10 @@ def _sample_hand(
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
             order_by_rank=bool(higher_rank_order_by_rank),
+            reference_anchor_index=_top_row_left_card_index(
+                card_count=int(axes.card_count),
+                max_cards_per_row=int(max_cards_per_row),
+            ),
         )
     if str(axes.query_id) == "exact_triple_count":
         return _sample_exact_triple_count_hand(
@@ -830,8 +868,8 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active query semantics."""
 
     if str(query_id) == "same_suit_as_reference_count":
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [164, 188, 262, 330],
                 [276, 188, 374, 330],
                 [388, 188, 486, 330],
@@ -840,8 +878,8 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 3}
     elif str(query_id) == "higher_than_reference_count":
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [276, 188, 374, 330],
                 [388, 188, 486, 330],
             ],
@@ -849,21 +887,25 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 2}
     elif str(query_id) == "exact_triple_count":
-        answer_and_evidence = {
-            "evidence": [
-                [164, 188, 262, 330],
-                [276, 188, 374, 330],
-                [388, 188, 486, 330],
-                [612, 188, 710, 330],
-                [724, 188, 822, 330],
-                [836, 188, 934, 330],
-            ],
+        answer_and_annotation = {
+            "annotation": {
+                "7": [
+                    [164, 188, 262, 330],
+                    [276, 188, 374, 330],
+                    [388, 188, 486, 330],
+                ],
+                "Q": [
+                    [612, 188, 710, 330],
+                    [724, 188, 822, 330],
+                    [836, 188, 934, 330],
+                ],
+            },
             "answer": 2,
         }
         answer_only = {"answer": 2}
     else:
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [276, 188, 374, 330],
                 [388, 188, 486, 330],
                 [500, 188, 598, 330],
@@ -873,7 +915,7 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 4}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1050,6 +1092,7 @@ class GamesCardsHandCountTask:
                     same_suit_order_by_suit=bool(same_suit_order_by_suit),
                     higher_rank_order_by_rank=bool(higher_rank_order_by_rank),
                     exact_triple_order_by_rank=bool(exact_triple_order_by_rank),
+                    max_cards_per_row=int(render_params.max_cards_per_row),
                 )
             except ValueError:
                 continue
@@ -1077,10 +1120,17 @@ class GamesCardsHandCountTask:
         if sampled_hand is None or rendered_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["card_bboxes_px"][str(card_id)])
-            for card_id in sampled_hand.evidence_card_ids
+            for card_id in sampled_hand.annotation_card_ids
         ]
+        annotation_bbox_set_map = {
+            str(rank_label): [
+                list(rendered_scene.render_map["card_bboxes_px"][str(card_id)])
+                for card_id in card_ids
+            ]
+            for rank_label, card_ids in sampled_hand.keyed_annotation_card_ids
+        }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1103,10 +1153,10 @@ class GamesCardsHandCountTask:
                 "answer_hint_higher_than_reference_count",
                 "answer_hint_exact_triple_count",
                 "answer_hint_longest_run_length",
-                "evidence_hint_same_suit_as_reference_count",
-                "evidence_hint_higher_than_reference_count",
-                "evidence_hint_exact_triple_count",
-                "evidence_hint_longest_run_length",
+                "annotation_hint_same_suit_as_reference_count",
+                "annotation_hint_higher_than_reference_count",
+                "annotation_hint_exact_triple_count",
+                "annotation_hint_longest_run_length",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -1118,13 +1168,13 @@ class GamesCardsHandCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "rank_order_text": str(prompt_defaults["rank_order_text"]),
@@ -1135,7 +1185,17 @@ class GamesCardsHandCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        if str(axes.query_id) == "exact_triple_count":
+            annotation_gt = TypedValue(type="keyed_bbox_set_map", value=dict(annotation_bbox_set_map))
+            projected_annotation = {
+                "keyed_bbox_set_map": dict(annotation_bbox_set_map),
+                "pixel_keyed_bbox_set_map": dict(annotation_bbox_set_map),
+            }
+        else:
+            annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+            projected_annotation = {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+            }
         complexity = build_games_cards_hand_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1143,7 +1203,7 @@ class GamesCardsHandCountTask:
             query_id=str(axes.query_id),
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
-            evidence_count=len(sampled_hand.evidence_card_ids),
+            annotation_count=len(sampled_hand.annotation_card_ids),
         )
 
         trace_payload = {
@@ -1159,7 +1219,11 @@ class GamesCardsHandCountTask:
                     "max_cards_per_row": int(rendered_scene.render_map["max_cards_per_row"]),
                     "center_label_mode": str(rendered_scene.render_map["center_label_mode"]),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": list(sampled_hand.evidence_card_ids),
+                    "annotation_entity_ids": list(sampled_hand.annotation_card_ids),
+                    "annotation_rank_card_ids": {
+                        str(rank_label): [str(card_id) for card_id in card_ids]
+                        for rank_label, card_ids in sampled_hand.keyed_annotation_card_ids
+                    },
                     "reference_card_id": None if sampled_hand.reference_card_id is None else str(sampled_hand.reference_card_id),
                     "card_ordering": (
                         "suit_grouped"
@@ -1259,15 +1323,17 @@ class GamesCardsHandCountTask:
                     }
                     for spec in rendered_scene.card_specs
                 ],
-                "evidence_entity_ids": [str(card_id) for card_id in sampled_hand.evidence_card_ids],
+                "annotation_entity_ids": [str(card_id) for card_id in sampled_hand.annotation_card_ids],
+                "annotation_rank_card_ids": {
+                    str(rank_label): [str(card_id) for card_id in card_ids]
+                    for rank_label, card_ids in sampled_hand.keyed_annotation_card_ids
+                },
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(card_id) for card_id in sampled_hand.evidence_card_ids],
+                "ids": [str(card_id) for card_id in sampled_hand.annotation_card_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -1275,7 +1341,7 @@ class GamesCardsHandCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1287,14 +1353,19 @@ class GamesCardsHandCountTask:
 
 
 @register_task
-class GamesCardsReferenceConditionCountTask(QuerySubsetTaskMixin, GamesCardsHandCountTask):
-    """Count non-reference cards satisfying a sampled reference-card condition."""
+class GamesCardsSameSuitAsReferenceCountTask(QuerySubsetTaskMixin, GamesCardsHandCountTask):
+    """Count non-reference cards with the same suit as the reference card."""
 
-    task_id = "task_games__cards__reference_condition_count"
-    supported_query_ids = (
-        "same_suit_as_reference_count",
-        "higher_than_reference_count",
-    )
+    task_id = "task_games__cards__same_suit_as_reference_count"
+    supported_query_ids = ("same_suit_as_reference_count",)
+
+
+@register_task
+class GamesCardsHigherThanReferenceCountTask(QuerySubsetTaskMixin, GamesCardsHandCountTask):
+    """Count non-reference cards with a higher rank than the reference card."""
+
+    task_id = "task_games__cards__higher_than_reference_count"
+    supported_query_ids = ("higher_than_reference_count",)
 
 
 @register_task
@@ -1315,6 +1386,52 @@ class GamesCardsLongestRunLengthTask(FixedQueryVariantTaskMixin, GamesCardsHandC
 
 HAND_LABELS: Tuple[str, ...] = ("Hand A", "Hand B", "Hand C", "Hand D", "Hand E", "Hand F")
 PLAYER_LABELS: Tuple[str, ...] = ("Player A", "Player B", "Player C", "Player D", "Player E", "Player F")
+CANDIDATE_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+SUPPORTED_MISSING_CARD_QUERY_IDS: Tuple[str, ...] = (
+    "missing_flush_card_label",
+    "missing_straight_card_label",
+    "missing_full_house_card_label",
+    "missing_three_of_kind_card_label",
+)
+POKER_CATEGORY_LABEL_BY_KEY: Dict[str, str] = {
+    "high_card": "high card",
+    "one_pair": "one pair",
+    "two_pair": "two pair",
+    "three_of_a_kind": "three of a kind",
+    "straight": "straight",
+    "flush": "flush",
+    "full_house": "full house",
+    "four_of_a_kind": "four of a kind",
+    "straight_flush": "straight flush",
+}
+POKER_CATEGORY_SCORE_BY_KEY: Dict[str, int] = {
+    key: score
+    for score, key in enumerate(
+        (
+            "high_card",
+            "one_pair",
+            "two_pair",
+            "three_of_a_kind",
+            "straight",
+            "flush",
+            "full_house",
+            "four_of_a_kind",
+            "straight_flush",
+        )
+    )
+}
+SUPPORTED_POKER_WINNING_CATEGORIES: Tuple[str, ...] = (
+    "one_pair",
+    "two_pair",
+    "three_of_a_kind",
+    "straight",
+    "flush",
+    "full_house",
+    "four_of_a_kind",
+    "straight_flush",
+)
+SUPPORTED_TRICK_PLAY_TRUMP_MODES: Tuple[str, ...] = ("no_trump", "with_trump")
+SUPPORTED_POKER_DRAW_TARGET_CATEGORIES: Tuple[str, ...] = SUPPORTED_POKER_WINNING_CATEGORIES
 
 
 def _option_letter(label: str) -> str:
@@ -1331,13 +1448,14 @@ class _RuleSample:
     scene_variant: str
     cards: Tuple[CardInstance, ...]
     answer: str
-    evidence_card_ids: Tuple[str, ...]
+    annotation_card_ids: Tuple[str, ...]
     option_count: int
     cards_per_row: int
     center_label_mode: str
     render_overrides: Dict[str, int]
     prompt_slots: Dict[str, str]
     metadata: Dict[str, Any]
+    row_card_counts: Tuple[int, ...] = ()
 
 
 def _make_labelled_card(
@@ -1485,7 +1603,7 @@ def _sample_blackjack_best_hand(
         winner_label = str(labels[int(winner_index)])
         winner_option = _option_letter(winner_label)
         cards: List[CardInstance] = []
-        evidence_ids: List[str] = []
+        annotation_ids: List[str] = []
         for hand_index, hand in enumerate(hands):
             label = str(labels[int(hand_index)])
             for card_index, (rank_value, suit_name) in enumerate(hand, start=1):
@@ -1499,13 +1617,13 @@ def _sample_blackjack_best_hand(
                     )
                 )
                 if int(hand_index) == int(winner_index):
-                    evidence_ids.append(str(card_id))
+                    annotation_ids.append(str(card_id))
         return _RuleSample(
             query_key="blackjack_best_hand_label",
             scene_variant="blackjack_multi_hand",
             cards=tuple(cards),
             answer=str(winner_option),
-            evidence_card_ids=tuple(evidence_ids),
+            annotation_card_ids=tuple(annotation_ids),
             option_count=int(hand_count),
             cards_per_row=int(cards_per_hand),
             center_label_mode="rank_suit",
@@ -1590,13 +1708,98 @@ def _poker_score(cards: Sequence[Tuple[int, str]]) -> Tuple[int, Tuple[int, ...]
     return (0, tuple(sorted((int(rank) for rank in ranks), reverse=True)), "high card")
 
 
+def _straight_rank_sequences() -> Tuple[Tuple[int, ...], ...]:
+    """Return five-rank straight sequences using Ace high and wheel forms."""
+
+    return ((14, 2, 3, 4, 5),) + tuple(tuple(range(start, start + 5)) for start in range(2, 11))
+
+
+def _cards_available(cards: Sequence[Tuple[int, str]], used_cards: set[Tuple[int, str]]) -> bool:
+    """Return true when all cards are unused."""
+
+    return all((int(rank), str(suit)) not in used_cards for rank, suit in cards)
+
+
+def _sample_poker_hand_for_category(
+    rng,
+    *,
+    category_key: str,
+    used_cards: set[Tuple[int, str]],
+) -> Tuple[Tuple[int, str], ...]:
+    """Sample one unused five-card hand for an exact poker category."""
+
+    category = str(category_key)
+    if category not in POKER_CATEGORY_SCORE_BY_KEY:
+        raise ValueError(f"unsupported poker category: {category}")
+
+    for _attempt in range(1000):
+        hand: List[Tuple[int, str]]
+        if category == "high_card":
+            available = [card for card in _make_deck() if card not in used_cards]
+            if len(available) < 5:
+                raise ValueError("not enough cards remain for high-card hand")
+            hand = list(rng.sample(available, 5))
+        elif category == "one_pair":
+            pair_rank = int(rng.choice(RANK_VALUES))
+            pair_suits = list(rng.sample(list(SUIT_NAMES), 2))
+            kicker_ranks = list(rng.sample([rank for rank in RANK_VALUES if int(rank) != int(pair_rank)], 3))
+            hand = [(int(pair_rank), str(suit)) for suit in pair_suits]
+            hand.extend((int(rank), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])) for rank in kicker_ranks)
+        elif category == "two_pair":
+            pair_ranks = list(rng.sample(list(RANK_VALUES), 2))
+            kicker_rank = int(rng.choice([rank for rank in RANK_VALUES if int(rank) not in set(pair_ranks)]))
+            hand = []
+            for pair_rank in pair_ranks:
+                hand.extend((int(pair_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 2))
+            hand.append((int(kicker_rank), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])))
+        elif category == "three_of_a_kind":
+            triple_rank = int(rng.choice(RANK_VALUES))
+            kicker_ranks = list(rng.sample([rank for rank in RANK_VALUES if int(rank) != int(triple_rank)], 2))
+            hand = [(int(triple_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 3)]
+            hand.extend((int(rank), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])) for rank in kicker_ranks)
+        elif category == "straight":
+            ranks = list(_straight_rank_sequences()[int(rng.randrange(len(_straight_rank_sequences())))])
+            suits = [str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))]) for _rank in ranks]
+            if len(set(suits)) == 1:
+                continue
+            hand = [(int(rank), str(suit)) for rank, suit in zip(ranks, suits)]
+        elif category == "flush":
+            suit = str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])
+            ranks = list(rng.sample(list(RANK_VALUES), 5))
+            hand = [(int(rank), str(suit)) for rank in ranks]
+        elif category == "full_house":
+            triple_rank, pair_rank = [int(rank) for rank in rng.sample(list(RANK_VALUES), 2)]
+            hand = [(int(triple_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 3)]
+            hand.extend((int(pair_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 2))
+        elif category == "four_of_a_kind":
+            quad_rank = int(rng.choice(RANK_VALUES))
+            kicker_rank = int(rng.choice([rank for rank in RANK_VALUES if int(rank) != int(quad_rank)]))
+            hand = [(int(quad_rank), str(suit)) for suit in SUIT_NAMES]
+            hand.append((int(kicker_rank), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])))
+        else:
+            suit = str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])
+            ranks = list(_straight_rank_sequences()[int(rng.randrange(len(_straight_rank_sequences())))])
+            hand = [(int(rank), str(suit)) for rank in ranks]
+
+        if len(set(hand)) != 5 or not _cards_available(hand, used_cards):
+            continue
+        score = _poker_score(hand)
+        if int(score[0]) != int(POKER_CATEGORY_SCORE_BY_KEY[category]):
+            continue
+        for card in hand:
+            used_cards.add((int(card[0]), str(card[1])))
+        rng.shuffle(hand)
+        return tuple((int(rank), str(suit)) for rank, suit in hand)
+    raise ValueError(f"failed to sample unused poker hand for category: {category}")
+
+
 def _sample_poker_best_hand(
     rng,
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _RuleSample:
-    """Sample labelled five-card poker hands with one unique winner."""
+    """Sample labelled five-card poker hands with a controlled unique winner category."""
 
     hand_count, hand_count_support, hand_count_probabilities = _option_count(
         instance_seed=int(instance_seed),
@@ -1605,23 +1808,58 @@ def _sample_poker_best_hand(
         fallback_support=(4, 5, 6),
         namespace="games.cards.poker.hand_count",
     )
+    winning_category_key, winning_category_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="poker_winning_category",
+        explicit_key="poker_winning_category",
+        weights_key="poker_winning_category_weights",
+        balance_flag_key="balanced_poker_winning_category_sampling",
+        supported=SUPPORTED_POKER_WINNING_CATEGORIES,
+    )
     labels = HAND_LABELS[: int(hand_count)]
-    deck = _make_deck()
-    for _attempt in range(400):
-        raw_cards = list(rng.sample(deck, int(hand_count) * 5))
-        hands = [raw_cards[index * 5 : (index + 1) * 5] for index in range(int(hand_count))]
+    target_score_category = int(POKER_CATEGORY_SCORE_BY_KEY[str(winning_category_key)])
+    lower_category_keys = [
+        str(key)
+        for key, score in POKER_CATEGORY_SCORE_BY_KEY.items()
+        if int(score) < int(target_score_category)
+    ]
+    if not lower_category_keys:
+        raise ValueError("poker winning category must have at least one lower distractor category")
+    for _attempt in range(500):
+        winner_index = int(rng.randrange(int(hand_count)))
+        used_cards: set[Tuple[int, str]] = set()
+        hands_by_index: Dict[int, Tuple[Tuple[int, str], ...]] = {}
+        hand_categories_by_index: Dict[int, str] = {}
+        try:
+            for hand_index in range(int(hand_count)):
+                if int(hand_index) == int(winner_index):
+                    category_key = str(winning_category_key)
+                else:
+                    category_key = str(lower_category_keys[int(rng.randrange(len(lower_category_keys)))])
+                hand = _sample_poker_hand_for_category(
+                    rng,
+                    category_key=str(category_key),
+                    used_cards=used_cards,
+                )
+                hands_by_index[int(hand_index)] = tuple(hand)
+                hand_categories_by_index[int(hand_index)] = str(category_key)
+        except ValueError:
+            continue
+        hands = [list(hands_by_index[index]) for index in range(int(hand_count))]
         scores = [_poker_score(hand) for hand in hands]
         comparable = [(int(category), tuple(int(value) for value in tiebreakers)) for category, tiebreakers, _name in scores]
         best_score = max(comparable)
         if comparable.count(best_score) != 1:
             continue
-        winner_index = int(comparable.index(best_score))
-        if int(scores[int(winner_index)][0]) == 0:
+        if int(comparable.index(best_score)) != int(winner_index):
+            continue
+        if int(scores[int(winner_index)][0]) != int(target_score_category):
             continue
         winner_label = str(labels[int(winner_index)])
         winner_option = _option_letter(winner_label)
         cards: List[CardInstance] = []
-        evidence_ids: List[str] = []
+        annotation_ids: List[str] = []
         for hand_index, hand in enumerate(hands):
             label = str(labels[int(hand_index)])
             for card_index, (rank_value, suit_name) in enumerate(hand, start=1):
@@ -1635,13 +1873,13 @@ def _sample_poker_best_hand(
                     )
                 )
                 if int(hand_index) == int(winner_index):
-                    evidence_ids.append(str(card_id))
+                    annotation_ids.append(str(card_id))
         return _RuleSample(
             query_key="poker_best_hand_label",
             scene_variant="poker_multi_hand",
             cards=tuple(cards),
             answer=str(winner_option),
-            evidence_card_ids=tuple(evidence_ids),
+            annotation_card_ids=tuple(annotation_ids),
             option_count=int(hand_count),
             cards_per_row=5,
             center_label_mode="rank_suit",
@@ -1661,17 +1899,455 @@ def _sample_poker_best_hand(
             metadata={
                 "hand_labels": list(labels),
                 "hand_categories": {str(labels[index]): str(score[2]) for index, score in enumerate(scores)},
+                "target_winning_category": str(POKER_CATEGORY_LABEL_BY_KEY[str(winning_category_key)]),
+                "target_winning_category_key": str(winning_category_key),
                 "hand_scores": {
                     str(labels[index]): [int(score[0]), [int(value) for value in score[1]]]
                     for index, score in enumerate(scores)
                 },
                 "winning_label": str(winner_label),
                 "winning_option": str(winner_option),
+                "winning_category": str(scores[int(winner_index)][2]),
+                "winning_category_key": str(winning_category_key),
+                "poker_winning_category_probabilities": dict(winning_category_probabilities),
                 "hand_count_support": [int(value) for value in hand_count_support],
                 "hand_count_probabilities": dict(hand_count_probabilities),
             },
         )
     raise ValueError("failed to sample unique poker best hand")
+
+
+def _poker_score_key(score: Tuple[int, Tuple[int, ...], str]) -> Tuple[int, Tuple[int, ...]]:
+    """Return the comparable part of one poker score tuple."""
+
+    return (int(score[0]), tuple(int(value) for value in score[1]))
+
+
+def _sample_poker_draw_card(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> _RuleSample:
+    """Sample a four-card poker hand plus candidates with one strongest draw."""
+
+    candidate_count, candidate_count_support, candidate_count_probabilities = _option_count(
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="poker_draw_candidate_count_support",
+        fallback_support=(5, 6),
+        namespace="games.cards.poker_draw.candidate_count",
+    )
+    target_category_key, target_category_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="poker_draw_target_category",
+        explicit_key="poker_draw_target_category",
+        weights_key="poker_draw_target_category_weights",
+        balance_flag_key="balanced_poker_draw_target_category_sampling",
+        supported=SUPPORTED_POKER_DRAW_TARGET_CATEGORIES,
+    )
+    target_index = _target_candidate_index(
+        rng=rng,
+        params=params,
+        candidate_count=int(candidate_count),
+    )
+    labels = CANDIDATE_LABELS[: int(candidate_count)]
+    deck = _make_deck()
+    for _attempt in range(800):
+        used_for_target: set[Tuple[int, str]] = set()
+        try:
+            target_hand = list(
+                _sample_poker_hand_for_category(
+                    rng,
+                    category_key=str(target_category_key),
+                    used_cards=used_for_target,
+                )
+            )
+        except ValueError:
+            continue
+        correct_offset = int(rng.randrange(len(target_hand)))
+        correct_card = target_hand[int(correct_offset)]
+        partial_hand = [card for index, card in enumerate(target_hand) if int(index) != int(correct_offset)]
+        partial_used = {(int(rank), str(suit)) for rank, suit in partial_hand}
+        correct_score = _poker_score([*partial_hand, correct_card])
+        correct_key = _poker_score_key(correct_score)
+        lower_candidates: List[Tuple[int, str]] = []
+        for card in deck:
+            normalized = (int(card[0]), str(card[1]))
+            if normalized in partial_used or normalized == (int(correct_card[0]), str(correct_card[1])):
+                continue
+            candidate_score = _poker_score([*partial_hand, normalized])
+            if _poker_score_key(candidate_score) < correct_key:
+                lower_candidates.append(normalized)
+        if len(lower_candidates) < int(candidate_count) - 1:
+            continue
+        distractors = list(rng.sample(lower_candidates, int(candidate_count) - 1))
+        candidate_cards = list(distractors)
+        candidate_cards.insert(int(target_index), (int(correct_card[0]), str(correct_card[1])))
+        completed_scores = [_poker_score([*partial_hand, card]) for card in candidate_cards]
+        comparable = [_poker_score_key(score) for score in completed_scores]
+        best_score = max(comparable)
+        if comparable.count(best_score) != 1 or int(comparable.index(best_score)) != int(target_index):
+            continue
+
+        cards: List[CardInstance] = []
+        partial_card_ids: List[str] = []
+        for index, (rank_value, suit_name) in enumerate(partial_hand, start=1):
+            card_id = f"partial_{index:02d}"
+            partial_card_ids.append(str(card_id))
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    group_label="Hand",
+                )
+            )
+
+        candidate_ids_by_label: Dict[str, str] = {}
+        candidate_specs_by_label: Dict[str, Dict[str, Any]] = {}
+        for label, card, score in zip(labels, candidate_cards, completed_scores):
+            rank_value, suit_name = card
+            card_id = f"candidate_{str(label)}"
+            candidate_ids_by_label[str(label)] = str(card_id)
+            candidate_specs_by_label[str(label)] = {
+                "card_id": str(card_id),
+                "rank_value": int(rank_value),
+                "rank_label": str(RANK_LABEL_BY_VALUE[int(rank_value)]),
+                "suit_name": str(suit_name),
+                "completed_score": [int(score[0]), [int(value) for value in score[1]]],
+                "completed_category": str(score[2]),
+                "is_best_completion": bool(str(label) == str(labels[int(target_index)])),
+            }
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    badge_text=str(label),
+                    group_label="Candidates",
+                )
+            )
+
+        answer_label = str(labels[int(target_index)])
+        answer_card_id = str(candidate_ids_by_label[str(answer_label)])
+        return _RuleSample(
+            query_key="poker_draw_card_label",
+            scene_variant="poker_draw_completion",
+            cards=tuple(cards),
+            answer=str(answer_label),
+            annotation_card_ids=(str(answer_card_id),),
+            option_count=int(candidate_count),
+            cards_per_row=int(candidate_count),
+            center_label_mode="rank_suit",
+            render_overrides={
+                "canvas_height": 560,
+                "card_width_px": 86,
+                "card_height_px": 120,
+                "card_gap_px": 18,
+                "row_gap_px": 54,
+                "rank_font_size_px": 18,
+                "center_symbol_font_size_px": 40,
+                "reference_banner_height_px": 24,
+                "reference_font_size_px": 16,
+                "max_cards_per_row": int(candidate_count),
+            },
+            prompt_slots={
+                "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high.",
+            },
+            metadata={
+                "partial_card_ids": [str(card_id) for card_id in partial_card_ids],
+                "candidate_labels": [str(label) for label in labels],
+                "candidate_card_ids_by_label": dict(candidate_ids_by_label),
+                "candidate_specs_by_label": dict(candidate_specs_by_label),
+                "correct_candidate_label": str(answer_label),
+                "correct_candidate_card_id": str(answer_card_id),
+                "target_candidate_index": int(target_index),
+                "target_winning_category": str(POKER_CATEGORY_LABEL_BY_KEY[str(target_category_key)]),
+                "target_winning_category_key": str(target_category_key),
+                "winning_category": str(completed_scores[int(target_index)][2]),
+                "winning_option": str(answer_label),
+                "candidate_count_support": [int(value) for value in candidate_count_support],
+                "candidate_count_probabilities": dict(candidate_count_probabilities),
+                "poker_draw_target_category_probabilities": dict(target_category_probabilities),
+            },
+            row_card_counts=(4, int(candidate_count)),
+        )
+    raise ValueError("failed to sample unique poker draw card")
+
+
+def _ace_high_straight_sequences() -> Tuple[Tuple[int, ...], ...]:
+    """Return only Ace-high-compatible five-rank straight sequences."""
+
+    return tuple(tuple(range(start, start + 5)) for start in range(2, 11))
+
+
+def _missing_card_query(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve a balanced missing-card completion query."""
+
+    return _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="missing_card_query_id",
+        explicit_key="query_id",
+        weights_key="missing_card_query_id_weights",
+        balance_flag_key="balanced_missing_card_query_id_sampling",
+        supported=SUPPORTED_MISSING_CARD_QUERY_IDS,
+    )
+
+
+def _target_candidate_index(
+    *,
+    rng,
+    params: Mapping[str, Any],
+    candidate_count: int,
+    cycle_divisor: int = 1,
+) -> int:
+    """Resolve the answer option index for a candidate-card task."""
+
+    raw_index = params.get("target_candidate_index")
+    if raw_index is not None:
+        index = int(raw_index)
+        if index < 0 or index >= int(candidate_count):
+            raise ValueError(f"target_candidate_index out of range: {index}")
+        return int(index)
+    if params.get("_sample_cursor") is not None:
+        return int(abs(int(params["_sample_cursor"])) // max(1, int(cycle_divisor))) % int(candidate_count)
+    return int(rng.randrange(int(candidate_count)))
+
+
+def _completion_matches_query(
+    *,
+    query_key: str,
+    partial_hand: Sequence[Tuple[int, str]],
+    candidate_card: Tuple[int, str],
+) -> bool:
+    """Return whether adding the candidate card completes the requested pattern."""
+
+    completed = list(partial_hand) + [(int(candidate_card[0]), str(candidate_card[1]))]
+    query = str(query_key)
+    if query == "missing_flush_card_label":
+        return len({str(suit_name) for _rank, suit_name in completed}) == 1
+    if query == "missing_straight_card_label":
+        ranks = [int(rank_value) for rank_value, _suit_name in completed]
+        return _straight_high_rank(ranks) is not None and set(ranks) in (
+            set(sequence) for sequence in _ace_high_straight_sequences()
+        )
+    if query == "missing_full_house_card_label":
+        return str(_poker_score(completed)[2]) == "full house"
+    if query == "missing_three_of_kind_card_label":
+        return str(_poker_score(completed)[2]) == "three of a kind"
+    raise ValueError(f"unsupported missing-card query: {query_key}")
+
+
+def _missing_card_query_label(query_key: str) -> str:
+    """Return the human-readable pattern name for one missing-card query."""
+
+    return {
+        "missing_flush_card_label": "flush",
+        "missing_straight_card_label": "straight",
+        "missing_full_house_card_label": "full house",
+        "missing_three_of_kind_card_label": "three of a kind",
+    }[str(query_key)]
+
+
+def _sample_missing_card_base(
+    rng,
+    *,
+    query_key: str,
+) -> Tuple[Tuple[Tuple[int, str], ...], Tuple[int, str]]:
+    """Sample a partial four-card hand and the unique intended completion card."""
+
+    query = str(query_key)
+    if query == "missing_flush_card_label":
+        suit_name = str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])
+        ranks = list(rng.sample(list(RANK_VALUES), 5))
+        partial = tuple((int(rank), str(suit_name)) for rank in ranks[:4])
+        correct = (int(ranks[4]), str(suit_name))
+        return partial, correct
+
+    if query == "missing_straight_card_label":
+        sequence = list(_ace_high_straight_sequences()[int(rng.randrange(len(_ace_high_straight_sequences())))])
+        missing_offset = int(rng.randrange(1, 4))
+        missing_rank = int(sequence[int(missing_offset)])
+        partial_ranks = [int(rank) for index, rank in enumerate(sequence) if int(index) != int(missing_offset)]
+        partial = tuple(
+            (int(rank), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))]))
+            for rank in partial_ranks
+        )
+        used_suits_for_missing_rank = {
+            str(suit_name)
+            for rank_value, suit_name in partial
+            if int(rank_value) == int(missing_rank)
+        }
+        suit_options = [str(suit) for suit in SUIT_NAMES if str(suit) not in used_suits_for_missing_rank]
+        correct = (int(missing_rank), str(suit_options[int(rng.randrange(len(suit_options)))]))
+        return partial, correct
+
+    if query == "missing_full_house_card_label":
+        triple_rank, pair_rank = [int(rank) for rank in rng.sample(list(RANK_VALUES), 2)]
+        triple_cards = tuple((int(triple_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 3))
+        pair_suits = list(rng.sample(list(SUIT_NAMES), 2))
+        partial = tuple(triple_cards) + ((int(pair_rank), str(pair_suits[0])),)
+        correct = (int(pair_rank), str(pair_suits[1]))
+        return partial, correct
+
+    if query == "missing_three_of_kind_card_label":
+        triple_rank = int(rng.choice(RANK_VALUES))
+        kicker_ranks = list(rng.sample([int(rank) for rank in RANK_VALUES if int(rank) != int(triple_rank)], 2))
+        pair_suits = list(rng.sample(list(SUIT_NAMES), 3))
+        partial = (
+            (int(triple_rank), str(pair_suits[0])),
+            (int(triple_rank), str(pair_suits[1])),
+            (int(kicker_ranks[0]), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])),
+            (int(kicker_ranks[1]), str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])),
+        )
+        correct = (int(triple_rank), str(pair_suits[2]))
+        return partial, correct
+
+    raise ValueError(f"unsupported missing-card query: {query_key}")
+
+
+def _sample_missing_card_to_complete_hand(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> _RuleSample:
+    """Sample a partial hand plus labelled candidate cards with one completion."""
+
+    query_key, query_probabilities = _missing_card_query(instance_seed=int(instance_seed), params=params)
+    candidate_count, candidate_count_support, candidate_count_probabilities = _option_count(
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="missing_card_candidate_count_support",
+        fallback_support=(5, 6),
+        namespace="games.cards.missing_card.candidate_count",
+    )
+    target_index = _target_candidate_index(
+        rng=rng,
+        params=params,
+        candidate_count=int(candidate_count),
+        cycle_divisor=len(SUPPORTED_MISSING_CARD_QUERY_IDS),
+    )
+    labels = CANDIDATE_LABELS[: int(candidate_count)]
+    deck = _make_deck()
+    for _attempt in range(400):
+        partial_hand, correct_card = _sample_missing_card_base(rng, query_key=str(query_key))
+        used_cards = {(int(rank), str(suit)) for rank, suit in partial_hand}
+        if (int(correct_card[0]), str(correct_card[1])) in used_cards:
+            continue
+        invalid_candidates = [
+            (int(rank), str(suit))
+            for rank, suit in deck
+            if (int(rank), str(suit)) not in used_cards
+            and (int(rank), str(suit)) != (int(correct_card[0]), str(correct_card[1]))
+            and not _completion_matches_query(
+                query_key=str(query_key),
+                partial_hand=partial_hand,
+                candidate_card=(int(rank), str(suit)),
+            )
+        ]
+        if len(invalid_candidates) < int(candidate_count) - 1:
+            continue
+        distractors = list(rng.sample(invalid_candidates, int(candidate_count) - 1))
+        candidate_cards = list(distractors)
+        candidate_cards.insert(int(target_index), (int(correct_card[0]), str(correct_card[1])))
+        completion_matches = [
+            bool(
+                _completion_matches_query(
+                    query_key=str(query_key),
+                    partial_hand=partial_hand,
+                    candidate_card=(int(rank), str(suit)),
+                )
+            )
+            for rank, suit in candidate_cards
+        ]
+        if completion_matches.count(True) != 1 or not bool(completion_matches[int(target_index)]):
+            continue
+
+        cards: List[CardInstance] = []
+        partial_card_ids: List[str] = []
+        for index, (rank_value, suit_name) in enumerate(partial_hand, start=1):
+            card_id = f"partial_{index:02d}"
+            partial_card_ids.append(str(card_id))
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    group_label="Hand",
+                )
+            )
+
+        candidate_ids_by_label: Dict[str, str] = {}
+        candidate_specs_by_label: Dict[str, Dict[str, Any]] = {}
+        for index, (label, card) in enumerate(zip(labels, candidate_cards), start=1):
+            rank_value, suit_name = card
+            card_id = f"candidate_{str(label)}"
+            candidate_ids_by_label[str(label)] = str(card_id)
+            candidate_specs_by_label[str(label)] = {
+                "card_id": str(card_id),
+                "rank_value": int(rank_value),
+                "rank_label": str(RANK_LABEL_BY_VALUE[int(rank_value)]),
+                "suit_name": str(suit_name),
+                "completes_pattern": bool(completion_matches[int(index) - 1]),
+            }
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    badge_text=str(label),
+                    group_label="Candidates",
+                )
+            )
+
+        answer_label = str(labels[int(target_index)])
+        answer_card_id = str(candidate_ids_by_label[str(answer_label)])
+        return _RuleSample(
+            query_key=str(query_key),
+            scene_variant="missing_card_completion",
+            cards=tuple(cards),
+            answer=str(answer_label),
+            annotation_card_ids=(str(answer_card_id),),
+            option_count=int(candidate_count),
+            cards_per_row=int(candidate_count),
+            center_label_mode="rank_suit",
+            render_overrides={
+                "canvas_height": 560,
+                "card_width_px": 86,
+                "card_height_px": 120,
+                "card_gap_px": 18,
+                "row_gap_px": 54,
+                "rank_font_size_px": 18,
+                "center_symbol_font_size_px": 40,
+                "reference_banner_height_px": 24,
+                "reference_font_size_px": 16,
+                "max_cards_per_row": int(candidate_count),
+            },
+            prompt_slots={},
+            metadata={
+                "pattern_name": str(_missing_card_query_label(str(query_key))),
+                "partial_card_ids": [str(card_id) for card_id in partial_card_ids],
+                "candidate_labels": [str(label) for label in labels],
+                "candidate_card_ids_by_label": dict(candidate_ids_by_label),
+                "candidate_specs_by_label": dict(candidate_specs_by_label),
+                "correct_candidate_label": str(answer_label),
+                "correct_candidate_card_id": str(answer_card_id),
+                "target_candidate_index": int(target_index),
+                "candidate_count_support": [int(value) for value in candidate_count_support],
+                "candidate_count_probabilities": dict(candidate_count_probabilities),
+                "missing_card_query_id_probabilities": dict(query_probabilities),
+            },
+            row_card_counts=(4, int(candidate_count)),
+        )
+    raise ValueError("failed to sample unique missing-card completion")
 
 
 def _trick_rank_score(card: Tuple[int, str], *, led_suit: str, trump_suit: str | None) -> Tuple[int, int]:
@@ -1764,7 +2440,7 @@ def _sample_trick_taking_winner(
             scene_variant="trick_row",
             cards=tuple(cards),
             answer=str(winner_option),
-            evidence_card_ids=(f"player_{winner_index + 1:02d}_card_01",),
+            annotation_card_ids=(f"player_{winner_index + 1:02d}_card_01",),
             option_count=int(player_count),
             cards_per_row=int(player_count),
             center_label_mode="rank_suit",
@@ -1799,15 +2475,212 @@ def _sample_trick_taking_winner(
     raise ValueError("failed to sample unique trick winner")
 
 
+def _sample_trick_winning_play(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> _RuleSample:
+    """Sample played trick cards plus candidate next cards with one winning play."""
+
+    candidate_count, candidate_count_support, candidate_count_probabilities = _option_count(
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="trick_play_candidate_count_support",
+        fallback_support=(5, 6),
+        namespace="games.cards.trick_play.candidate_count",
+    )
+    played_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="trick_play_played_count_support",
+        fallback=(3, 4),
+    )
+    played_count_params = dict(params)
+    played_count_params["played_count_support"] = [int(value) for value in played_count_support]
+    played_count, played_count_probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=played_count_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="played_count_support",
+        explicit_key="played_count",
+        fallback_support=played_count_support,
+        namespace="games.cards.trick_play.played_count",
+        balanced_flag_key="balanced_trick_played_count_sampling",
+        namespace_support_permutation=True,
+    )
+    trump_mode, trump_mode_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="trick_play_trump_mode",
+        explicit_key="trick_play_trump_mode",
+        weights_key="trick_play_trump_mode_weights",
+        balance_flag_key="balanced_trick_play_trump_mode_sampling",
+        supported=SUPPORTED_TRICK_PLAY_TRUMP_MODES,
+    )
+    target_index = _target_candidate_index(
+        rng=rng,
+        params=params,
+        candidate_count=int(candidate_count),
+    )
+    labels = CANDIDATE_LABELS[: int(candidate_count)]
+    deck = _make_deck()
+    for _attempt in range(800):
+        raw_cards = list(rng.sample(deck, int(played_count)))
+        led_suit = str(raw_cards[0][1])
+        if str(trump_mode) == "with_trump":
+            trump_candidates = [str(suit_name) for suit_name in SUIT_NAMES if str(suit_name) != str(led_suit)]
+            trump_suit = str(trump_candidates[int(rng.randrange(len(trump_candidates)))])
+        else:
+            trump_suit = None
+        played_scores = [_trick_rank_score(card, led_suit=str(led_suit), trump_suit=trump_suit) for card in raw_cards]
+        current_best = max(played_scores)
+        if played_scores.count(current_best) != 1:
+            continue
+        current_winner_index = int(played_scores.index(current_best))
+        used_cards = {(int(rank), str(suit)) for rank, suit in raw_cards}
+        winning_pool: List[Tuple[int, str]] = []
+        losing_pool: List[Tuple[int, str]] = []
+        for card in deck:
+            normalized = (int(card[0]), str(card[1]))
+            if normalized in used_cards:
+                continue
+            score = _trick_rank_score(normalized, led_suit=str(led_suit), trump_suit=trump_suit)
+            if tuple(score) > tuple(current_best):
+                winning_pool.append(normalized)
+            else:
+                losing_pool.append(normalized)
+        if not winning_pool or len(losing_pool) < int(candidate_count) - 1:
+            continue
+        correct_card = winning_pool[int(rng.randrange(len(winning_pool)))]
+        distractors = list(rng.sample(losing_pool, int(candidate_count) - 1))
+        candidate_cards = list(distractors)
+        candidate_cards.insert(int(target_index), (int(correct_card[0]), str(correct_card[1])))
+        candidate_scores = [
+            _trick_rank_score(card, led_suit=str(led_suit), trump_suit=trump_suit)
+            for card in candidate_cards
+        ]
+        winning_labels = [
+            str(label)
+            for label, score in zip(labels, candidate_scores)
+            if tuple(score) > tuple(current_best)
+        ]
+        if winning_labels != [str(labels[int(target_index)])]:
+            continue
+
+        cards: List[CardInstance] = []
+        played_card_ids: List[str] = []
+        for index, (rank_value, suit_name) in enumerate(raw_cards, start=1):
+            card_id = f"played_{index:02d}"
+            played_card_ids.append(str(card_id))
+            badge_text = "LED" if int(index) == 1 else None
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    badge_text=badge_text,
+                    group_label="Played",
+                )
+            )
+
+        candidate_ids_by_label: Dict[str, str] = {}
+        candidate_specs_by_label: Dict[str, Dict[str, Any]] = {}
+        for label, card, score in zip(labels, candidate_cards, candidate_scores):
+            rank_value, suit_name = card
+            card_id = f"candidate_{str(label)}"
+            candidate_ids_by_label[str(label)] = str(card_id)
+            candidate_specs_by_label[str(label)] = {
+                "card_id": str(card_id),
+                "rank_value": int(rank_value),
+                "rank_label": str(RANK_LABEL_BY_VALUE[int(rank_value)]),
+                "suit_name": str(suit_name),
+                "trick_score": [int(score[0]), int(score[1])],
+                "wins_if_played": bool(str(label) == str(labels[int(target_index)])),
+            }
+            cards.append(
+                _make_labelled_card(
+                    card_id=str(card_id),
+                    rank_value=int(rank_value),
+                    suit_name=str(suit_name),
+                    badge_text=str(label),
+                    group_label="Candidates",
+                )
+            )
+
+        answer_label = str(labels[int(target_index)])
+        answer_card_id = str(candidate_ids_by_label[str(answer_label)])
+        trump_text = "There is no trump suit." if trump_suit is None else f"Trump suit: {trump_suit}."
+        return _RuleSample(
+            query_key="trick_winning_play_label",
+            scene_variant="trick_candidate_play",
+            cards=tuple(cards),
+            answer=str(answer_label),
+            annotation_card_ids=(str(answer_card_id),),
+            option_count=int(candidate_count),
+            cards_per_row=int(candidate_count),
+            center_label_mode="rank_suit",
+            render_overrides={
+                "canvas_height": 560,
+                "card_width_px": 86,
+                "card_height_px": 120,
+                "card_gap_px": 18,
+                "row_gap_px": 54,
+                "rank_font_size_px": 18,
+                "center_symbol_font_size_px": 40,
+                "reference_banner_height_px": 24,
+                "reference_font_size_px": 16,
+                "max_cards_per_row": int(candidate_count),
+            },
+            prompt_slots={
+                "trick_rule_text": "The top row shows cards already played. The card marked LED led the trick. If any trump card is played or chosen, the highest trump wins; otherwise the highest card in the led suit wins.",
+                "trump_text": str(trump_text),
+            },
+            metadata={
+                "played_card_ids": [str(card_id) for card_id in played_card_ids],
+                "candidate_labels": [str(label) for label in labels],
+                "candidate_card_ids_by_label": dict(candidate_ids_by_label),
+                "candidate_specs_by_label": dict(candidate_specs_by_label),
+                "correct_candidate_label": str(answer_label),
+                "correct_candidate_card_id": str(answer_card_id),
+                "target_candidate_index": int(target_index),
+                "led_suit": str(led_suit),
+                "trump_suit": None if trump_suit is None else str(trump_suit),
+                "trump_mode": str(trump_mode),
+                "current_winning_card_id": str(played_card_ids[int(current_winner_index)]),
+                "current_best_score": [int(current_best[0]), int(current_best[1])],
+                "played_scores": {
+                    str(played_card_ids[index]): [int(score[0]), int(score[1])]
+                    for index, score in enumerate(played_scores)
+                },
+                "winning_option": str(answer_label),
+                "candidate_count_support": [int(value) for value in candidate_count_support],
+                "candidate_count_probabilities": dict(candidate_count_probabilities),
+                "played_count": int(played_count),
+                "played_count_support": [int(value) for value in played_count_support],
+                "played_count_probabilities": dict(played_count_probabilities),
+                "trick_play_trump_mode_probabilities": dict(trump_mode_probabilities),
+            },
+            row_card_counts=(int(played_count), int(candidate_count)),
+        )
+    raise ValueError("failed to sample unique trick-winning play")
+
+
 def _build_rule_prompt_json_examples(*, query_key: str) -> Tuple[str, str]:
     """Return prompt JSON examples for labelled card-game decisions."""
 
     if str(query_key) == "trick_taking_winner_label":
-        answer_and_evidence = {"evidence": [[520, 110, 632, 260]], "answer": "C"}
+        answer_and_annotation = {"annotation": [[520, 110, 632, 260]], "answer": "C"}
         answer_only = {"answer": "C"}
+    elif str(query_key) in SUPPORTED_MISSING_CARD_QUERY_IDS or str(query_key) in {
+        "poker_draw_card_label",
+        "trick_winning_play_label",
+    }:
+        answer_and_annotation = {"annotation": [[640, 330, 726, 450]], "answer": "D"}
+        answer_only = {"answer": "D"}
     else:
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [420, 120, 498, 228],
                 [510, 120, 588, 228],
                 [600, 120, 678, 228],
@@ -1818,7 +2691,7 @@ def _build_rule_prompt_json_examples(*, query_key: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": "B"}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1856,6 +2729,7 @@ class _GamesCardsRuleTask:
             render_params = _render_params(params, instance_seed=int(instance_seed))
             render_params = replace(
                 render_params,
+                canvas_width=int(sample.render_overrides.get("canvas_width", render_params.canvas_width)),
                 canvas_height=int(sample.render_overrides.get("canvas_height", render_params.canvas_height)),
                 card_width_px=int(sample.render_overrides.get("card_width_px", render_params.card_width_px)),
                 card_height_px=int(sample.render_overrides.get("card_height_px", render_params.card_height_px)),
@@ -1886,14 +2760,15 @@ class _GamesCardsRuleTask:
                 style_variant=str(style_variant),
                 params=render_params,
                 show_continuation_cue=False,
+                row_card_counts=sample.row_card_counts if sample.row_card_counts else None,
             )
             break
         if sample is None or rendered_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["card_bboxes_px"][str(card_id)])
-            for card_id in sample.evidence_card_ids
+            for card_id in sample.annotation_card_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -1911,7 +2786,7 @@ class _GamesCardsRuleTask:
                 "json_output_contract_answer_only",
                 f"object_description_{str(sample.scene_variant)}",
                 f"answer_hint_{str(sample.query_key)}",
-                f"evidence_hint_{str(sample.query_key)}",
+                f"annotation_hint_{str(sample.query_key)}",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -1921,7 +2796,7 @@ class _GamesCardsRuleTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults[f"answer_hint_{str(sample.query_key)}"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sample.query_key)}"]),
+            "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sample.query_key)}"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "rank_order_text": str(group_default(_PROMPT_DEFAULTS, "rank_order_text", "")),
@@ -1934,13 +2809,13 @@ class _GamesCardsRuleTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(sample.query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_gt = TypedValue(type="string", value=str(sample.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         complexity = build_games_cards_hand_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1948,7 +2823,7 @@ class _GamesCardsRuleTask:
             query_id=str(sample.query_key),
             card_count=len(sample.cards),
             target_answer=int(sample.option_count),
-            evidence_count=len(sample.evidence_card_ids),
+            annotation_count=len(sample.annotation_card_ids),
         )
         card_specs = [
             {
@@ -1975,7 +2850,7 @@ class _GamesCardsRuleTask:
                     "card_count": len(sample.cards),
                     "option_count": int(sample.option_count),
                     "answer_label": str(sample.answer),
-                    "evidence_entity_ids": list(sample.evidence_card_ids),
+                    "annotation_entity_ids": list(sample.annotation_card_ids),
                 },
             },
             "query_spec": {
@@ -2017,15 +2892,15 @@ class _GamesCardsRuleTask:
                 "card_count": len(sample.cards),
                 "option_count": int(sample.option_count),
                 "card_specs": card_specs,
-                "evidence_entity_ids": [str(card_id) for card_id in sample.evidence_card_ids],
+                "annotation_entity_ids": [str(card_id) for card_id in sample.annotation_card_ids],
                 **dict(sample.metadata),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(card_id) for card_id in sample.evidence_card_ids],
+                "ids": [str(card_id) for card_id in sample.annotation_card_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -2034,7 +2909,7 @@ class _GamesCardsRuleTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -2068,6 +2943,17 @@ class GamesCardsPokerBestHandLabelTask(_GamesCardsRuleTask):
 
 
 @register_task
+class GamesCardsPokerDrawCardLabelTask(_GamesCardsRuleTask):
+    """Choose the candidate draw card that makes the strongest poker hand."""
+
+    task_id = "task_games__cards__poker_draw_card_label"
+    query_key = "poker_draw_card_label"
+
+    def _sample(self, rng, *, instance_seed: int, params: Mapping[str, Any]) -> _RuleSample:
+        return _sample_poker_draw_card(rng, instance_seed=int(instance_seed), params=params)
+
+
+@register_task
 class GamesCardsTrickTakingWinnerLabelTask(_GamesCardsRuleTask):
     """Choose the winning played card in a trick-taking round."""
 
@@ -2078,11 +2964,41 @@ class GamesCardsTrickTakingWinnerLabelTask(_GamesCardsRuleTask):
         return _sample_trick_taking_winner(rng, instance_seed=int(instance_seed), params=params)
 
 
+@register_task
+class GamesCardsTrickWinningPlayLabelTask(_GamesCardsRuleTask):
+    """Choose the candidate card that would win the current trick."""
+
+    task_id = "task_games__cards__trick_winning_play_label"
+    query_key = "trick_winning_play_label"
+
+    def _sample(self, rng, *, instance_seed: int, params: Mapping[str, Any]) -> _RuleSample:
+        return _sample_trick_winning_play(rng, instance_seed=int(instance_seed), params=params)
+
+
+@register_task
+class GamesCardsMissingCardToCompleteHandLabelTask(_GamesCardsRuleTask):
+    """Choose the candidate card that completes a requested hand pattern."""
+
+    task_id = "task_games__cards__missing_card_to_complete_hand_label"
+    query_key = "missing_card_to_complete_hand_label"
+
+    def _sample(self, rng, *, instance_seed: int, params: Mapping[str, Any]) -> _RuleSample:
+        return _sample_missing_card_to_complete_hand(
+            rng,
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+
+
 __all__ = [
     "GamesCardsBlackjackBestHandLabelTask",
     "GamesCardsExactTripleCountTask",
+    "GamesCardsHigherThanReferenceCountTask",
     "GamesCardsLongestRunLengthTask",
+    "GamesCardsMissingCardToCompleteHandLabelTask",
     "GamesCardsPokerBestHandLabelTask",
-    "GamesCardsReferenceConditionCountTask",
+    "GamesCardsPokerDrawCardLabelTask",
+    "GamesCardsSameSuitAsReferenceCountTask",
     "GamesCardsTrickTakingWinnerLabelTask",
+    "GamesCardsTrickWinningPlayLabelTask",
 ]

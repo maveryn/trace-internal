@@ -1,5 +1,0 @@
-task: task_puzzles__voxel_cube__cube_visible_projection_count
-
-params:
-  view_direction: front
-  target_count: 4

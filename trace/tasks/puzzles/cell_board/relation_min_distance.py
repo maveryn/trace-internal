@@ -44,7 +44,7 @@ from .shared.named_color_board import (
     build_rectangular_named_color_board_scene,
 )
 from .shared.tile_colors import sample_named_tile_palette
-from .shared.tile_evidence import coordinate_path_evidence_artifacts, sort_coords_row_major
+from .shared.tile_annotation import coordinate_path_annotation_artifacts, sort_coords_row_major
 from .shared.tile_scene import build_tile_cell_entities
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
@@ -424,7 +424,7 @@ class TileMinDistanceTask:
             board_colors=board_colors,
         )
 
-        evidence_artifacts = coordinate_path_evidence_artifacts(
+        annotation_artifacts = coordinate_path_annotation_artifacts(
             coords=shortest_path_coords,
             bbox_map=scene.bbox_map,
         )
@@ -448,13 +448,13 @@ class TileMinDistanceTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
-            evidence_value=[[168, 168], [216, 168], [264, 168], [312, 168]],
+            annotation_value=[[168, 168], [216, 168], [264, 168], [312, 168]],
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -463,7 +463,7 @@ class TileMinDistanceTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
@@ -472,7 +472,7 @@ class TileMinDistanceTask:
                 "color_b": str(color_b_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -530,7 +530,7 @@ class TileMinDistanceTask:
                         "expect_unique": True,
                     },
                     {
-                        "out": "evidence",
+                        "out": "annotation",
                         "op": "project_coords",
                         "in": "closest_pair_path",
                         "source_coord_space": "tile_grid",
@@ -593,8 +593,8 @@ class TileMinDistanceTask:
                 "shortest_path_ids": list(shortest_path_ids),
                 "answer_value": int(answer_value),
             },
-            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
 
         min_board_cell_count = int(rows_min) * int(cols_min)
@@ -633,9 +633,9 @@ class TileMinDistanceTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

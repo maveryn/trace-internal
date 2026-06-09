@@ -43,7 +43,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:games/minesweeper/safe_cell_count",
             "proposal:games/minesweeper/mine_candidate_count",
         ],
-        "evidence": "cell grid, revealed numbers, flags, hidden cells, adjacency neighborhoods",
+        "annotation": "cell grid, revealed numbers, flags, hidden cells, adjacency neighborhoods",
         "why": (
             "Vero game_QA includes explicit Minesweeper-style board states and "
             "rules. TRACE games has many board games, but not numerical "
@@ -64,7 +64,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:puzzles/strip_reconstruction/missing_region_option_label",
             "proposal:puzzles/strip_reconstruction/relative_depth_order_label",
         ],
-        "evidence": "strip ids, option ids, region ids, adjacency/continuity refs, depth order",
+        "annotation": "strip ids, option ids, region ids, adjacency/continuity refs, depth order",
         "why": (
             "Vero spatial/action data has repeated shuffled-strip, missing-region, "
             "and marked-region depth-order patterns. TRACE has jigsaw and missing "
@@ -88,7 +88,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:pages/science_process/branch_extremum_label",
             "proposal:pages/science_process/component_state_label",
         ],
-        "evidence": "node bboxes, arrow polylines, branch ids, label bboxes",
+        "annotation": "node bboxes, arrow polylines, branch ids, label bboxes",
         "why": (
             "Vero has large AI2D/TQA/MMK12/diagram coverage; TRACE pages has "
             "cycle and hierarchy diagrams, but lacks general science/process "
@@ -115,7 +115,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:icons/icon_field/landmark_filtered_attribute_count",
             "proposal:icons/icon_field/ordered_relation_label",
         ],
-        "evidence": "object bboxes, attributes, landmark refs, relation chain",
+        "annotation": "object bboxes, attributes, landmark refs, relation chain",
         "why": (
             "Vero's grounding/counting family is broad. Direct natural images "
             "should not be imported, but the repeated multi-hop object search "
@@ -135,7 +135,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:games/arcade_grid/collision_count",
             "proposal:games/arcade_grid/reachable_enemy_count",
         ],
-        "evidence": "grid cells, actor/projectile location, obstacle cells, target/enemy ids",
+        "annotation": "grid cells, actor/projectile location, obstacle cells, target/enemy ids",
         "why": (
             "Vero game_QA includes synthetic arcade-like grid games such as Space "
             "Invaders and Zuma-style targeting. These are visually and "
@@ -156,7 +156,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:puzzles/jigsaw_3d/neighbor_piece_label",
             "proposal:puzzles/jigsaw_3d/assembly_position_label",
         ],
-        "evidence": "piece ids, face ids, 2D/3D placement transforms",
+        "annotation": "piece ids, face ids, 2D/3D placement transforms",
         "why": (
             "Vero includes large 2D and 3D visual-jigsaw subsets. TRACE has a "
             "2D jigsaw scene, but no explicit 3D assembly scene."
@@ -175,7 +175,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:puzzles/maze/instruction_endpoint_label",
             "proposal:puzzles/maze/obstacle_detour_count",
         ],
-        "evidence": "grid cells, start/goal, obstacles, valid path cells, instruction trace",
+        "annotation": "grid cells, start/goal, obstacles, valid path cells, instruction trace",
         "why": (
             "Vero game_QA includes maze mini-games. TRACE already has maze exit "
             "reachability/count tasks, but Vero coverage suggests richer path "
@@ -195,7 +195,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:puzzles/voxel_projection/candidate_match_label",
             "proposal:puzzles/voxel_projection/visible_face_count",
         ],
-        "evidence": "voxel coords, projections, candidate additions, visible face refs",
+        "annotation": "voxel coords, projections, candidate additions, visible face refs",
         "why": (
             "Vero game_QA includes 3D reconstruction puzzles with voxel/projection "
             "rules. TRACE has cube and 3D point scenes, but no projection-based "
@@ -215,7 +215,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:puzzles/raven_matrix/missing_cell_attribute_count",
             "proposal:puzzles/raven_matrix/option_elimination_count",
         ],
-        "evidence": "matrix cell ids, option ids, visual attributes, row/column rule refs",
+        "annotation": "matrix cell ids, option ids, visual attributes, row/column rule refs",
         "why": (
             "Vero has a substantial Raven subset. TRACE already has Raven tasks, "
             "but this should be explicitly listed as a puzzle expansion/coverage "
@@ -236,7 +236,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:pages/aerial_map/route_endpoint_label",
             "proposal:pages/aerial_map/zone_filtered_landmark_count",
         ],
-        "evidence": "map cells/regions, landmarks, routes, relation anchors",
+        "annotation": "map cells/regions, landmarks, routes, relation anchors",
         "why": (
             "OS/atlas and aerial grounding data suggest map-like spatial "
             "reasoning. This should be a synthetic map/grid scene rather than "
@@ -259,7 +259,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:pages/web_action/instruction_target_label",
             "proposal:pages/web_action/navigation_result_label",
         ],
-        "evidence": "control bboxes, roles, labels, states, action target id",
+        "annotation": "control bboxes, roles, labels, states, action target id",
         "why": (
             "Vero has substantial UI/action data. TRACE pages already has GUI "
             "scenes, so the main gap is richer target/action and state-filtered "
@@ -284,7 +284,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:geometry/composite_measurement/angle_chain_value",
             "proposal:geometry/composite_measurement/similarity_ratio_value",
         ],
-        "evidence": "points, segments, regions, angle arcs, constraint refs",
+        "annotation": "points, segments, regions, angle arcs, constraint refs",
         "why": (
             "The STEM geometry/math configs are large. TRACE has many geometry "
             "scenes, but Vero-style multi-constraint composite measurement diagrams support "
@@ -307,7 +307,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:charts/curve_panels/panel_delta_value",
             "proposal:charts/curve_panels/legend_conditioned_count",
         ],
-        "evidence": "panel ids, plotted marks, legends, selected value refs",
+        "annotation": "panel ids, plotted marks, legends, selected value refs",
         "why": (
             "ArxivQA/ReachQA examples emphasize figure panels and legends. "
             "TRACE has scientific multipanel charts, but can add more "
@@ -325,11 +325,12 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "chart_ocr-evochart",
         ],
         "tasks": [
-            "task_pages__infographic__metric_arithmetic_value",
-            "task_pages__infographic__section_rank_label",
-            "task_pages__infographic__fact_lookup_label",
+            "task_pages__infographic__sum_named_metrics_value",
+            "task_pages__infographic__section_extrema_arithmetic_value",
+            "task_pages__infographic__section_ranked_total_label",
+            "task_pages__infographic__value_for_named_item",
         ],
-        "evidence": "card/section bboxes, icon arrays, metric ids",
+        "annotation": "card/section bboxes, icon arrays, metric ids",
         "why": (
             "Vero has frequent infographic VQA, but simple value lookup is too "
             "easy. The useful TRACE expansion is synthetic infographic "
@@ -351,7 +352,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "proposal:physics/system_flow/conservation_value",
             "proposal:physics/system_flow/rule_output_label",
         ],
-        "evidence": "explicit rules, arrows, quantities, component bboxes",
+        "annotation": "explicit rules, arrows, quantities, component bboxes",
         "why": (
             "Only include if all required science rules are printed in-scene. "
             "Otherwise these examples become external-knowledge tasks and "
@@ -529,7 +530,7 @@ def review_action(disposition: str) -> str:
     if disposition == "new_scene_existing_domain":
         return "Review representative images, then create scene renderer + task shortlist."
     if disposition == "conditional_new_scene":
-        return "Only include if rules/evidence can be made explicit in-scene."
+        return "Only include if rules/annotation can be made explicit in-scene."
     if disposition == "exclude":
         return "Exclude from TRACE task backlog."
     return "Manual inspection before deciding."
@@ -886,7 +887,7 @@ def write_candidate_backlog(output_dir: Path, inventory_by_config: dict[str, dic
     lines = [
         "# Candidate Scene and Task Backlog from Vero",
         "",
-        "Ranking uses Vero config support, novelty, evidence fit, synthetic feasibility, and expected implementation cost.",
+        "Ranking uses Vero config support, novelty, annotation fit, synthetic feasibility, and expected implementation cost.",
         "Support row counts are config-level upper bounds, not exact template counts.",
         "",
     ]
@@ -900,7 +901,7 @@ def write_candidate_backlog(output_dir: Path, inventory_by_config: dict[str, dic
                 f"- Supporting Vero configs: {', '.join(f'`{c}`' for c in candidate['support_configs'])}",
                 f"- Config-level support rows: `{support_rows:,}`",
                 f"- Proposed tasks: {', '.join(f'`{task}`' for task in candidate['tasks'])}",
-                f"- Evidence contract: {candidate['evidence']}",
+                f"- Annotation contract: {candidate['annotation']}",
                 f"- Rationale: {candidate['why']}",
                 "",
             ]

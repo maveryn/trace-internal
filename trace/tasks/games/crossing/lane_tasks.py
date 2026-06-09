@@ -29,7 +29,6 @@ from ..shared.crossing_common import (
     CrossingRouteOption,
     CrossingSample,
     CrossingVehicle,
-    route_cell_entity_id,
     route_collision_vehicle_ids,
     route_entity_id,
     route_first_collision_tick,
@@ -38,7 +37,7 @@ from ..shared.crossing_common import (
     vehicle_entity_id,
 )
 from ..shared.crossing_scene import CrossingRenderParams, render_crossing_scene
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
@@ -55,9 +54,9 @@ class _TaskDefaults:
 
     lane_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     row_count_support: Tuple[int, ...] = (5, 6, 7)
-    collision_time_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    collision_time_max_extra_per_row: int = 1
     moving_object_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    left_moving_object_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    right_moving_object_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     moving_object_max_extra_per_row: int = 1
     canvas_width: int = 1000
     canvas_height: int = 780
@@ -107,8 +106,9 @@ def _target_support_key(query_id: str) -> str | None:
     """Return the answer-support key for count/value crossing queries."""
 
     return {
-        "collision_time_value": "collision_time_support",
         "moving_object_count": "moving_object_count_support",
+        "left_moving_object_count": "left_moving_object_count_support",
+        "right_moving_object_count": "right_moving_object_count_support",
     }.get(str(query_id))
 
 
@@ -215,10 +215,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             key=str(support_key),
             fallback=getattr(_DEFAULTS, str(support_key)),
         )
-        if str(query_id) in {"collision_time_value", "moving_object_count"}:
+        if str(query_id) == "moving_object_count":
             lane_count = max(int(lane_count), min(8, int(target_answer) + 2))
-        if str(query_id) == "collision_time_value" and int(target_answer) > int(row_count):
-            row_count = int(target_answer)
         if str(query_id) == "moving_object_count" and int(target_answer) > int(row_count):
             row_count = int(target_answer)
 
@@ -424,75 +422,6 @@ def _add_clutter(
             occupied.add((int(row), int(col)))
 
 
-def _sample_collision_time(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
-    """Construct a marked route with a prescribed first collision tick."""
-
-    lane_count = int(axes.lane_count)
-    row_count = max(int(axes.row_count), int(axes.target_answer or 1))
-    target_tick = int(axes.target_answer or 1)
-    target_row = int(target_tick - 1)
-    reachable = _collision_reachable_cols(lane_count=lane_count, tick=target_tick)
-    route_path = _random_route_path(
-        rng,
-        lane_count=lane_count,
-        row_count=row_count,
-        required_cols_by_row={target_row: reachable},
-    )
-    if route_path is None:
-        return None
-    hit = _collision_start_for_col(rng, lane_count=lane_count, col=int(route_path[target_row]), tick=target_tick)
-    if hit is None:
-        return None
-    direction, start_col = hit
-    row_directions = _row_directions(rng, row_count)
-    row_directions[target_row] = int(direction)
-    vehicles: list[CrossingVehicle] = []
-    hit_vehicle = _add_vehicle(vehicles, row=target_row, start_col=start_col, direction=direction, color_index=int(rng.randrange(5)))
-    avoid = {row: {int(route_path[row])} for row in range(target_row + 1)}
-    _add_clutter(
-        rng,
-        vehicles=vehicles,
-        lane_count=lane_count,
-        row_count=row_count,
-        row_directions=row_directions,
-        avoid_cols_by_row=avoid,
-        max_extra_per_row=int(
-            group_default(
-                _GEN_DEFAULTS,
-                "collision_time_max_extra_per_row",
-                _DEFAULTS.collision_time_max_extra_per_row,
-            )
-        ),
-    )
-    route = CrossingRouteOption(route_id=route_entity_id("M"), label="M", path_cols=tuple(route_path), color_index=0)
-    first_tick = route_first_collision_tick(route, tuple(vehicles), lane_count=lane_count)
-    if int(first_tick or -1) != int(target_tick):
-        return None
-    sample = CrossingSample(
-        lane_count=lane_count,
-        row_count=row_count,
-        query_id=str(axes.query_id),
-        scene_variant=str(axes.scene_variant),
-        style_variant=str(axes.style_variant),
-        answer=int(target_tick),
-        row_directions=tuple(int(value) for value in row_directions),
-        vehicles=tuple(vehicles),
-        start_labels=tuple(_LABELS[:lane_count]),
-        route_options=(route,),
-        marked_route_label="M",
-        target_start_label=None,
-        target_route_label=None,
-        first_collision_tick=int(target_tick),
-        intersecting_vehicle_ids=(str(hit_vehicle.vehicle_id),),
-        evidence_entity_ids=(str(hit_vehicle.vehicle_id), route_cell_entity_id("M", target_row)),
-        target_answer=int(target_tick),
-        target_label_index=None,
-        construction_mode="marked_route_first_collision",
-    )
-    validate_crossing_sample(sample)
-    return sample
-
-
 def _sample_moving_object_count(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
     """Construct a marked route with an exact number of intersecting vehicles."""
 
@@ -557,10 +486,87 @@ def _sample_moving_object_count(rng: Any, *, axes: _ResolvedAxes) -> CrossingSam
         target_route_label=None,
         first_collision_tick=route_first_collision_tick(route, tuple(vehicles), lane_count=lane_count),
         intersecting_vehicle_ids=tuple(hit_ids),
-        evidence_entity_ids=tuple(hit_ids),
+        annotation_entity_ids=tuple(hit_ids),
         target_answer=int(target_count),
         target_label_index=None,
         construction_mode="marked_route_intersection_count",
+    )
+    validate_crossing_sample(sample)
+    return sample
+
+
+def _sample_moving_object_direction_count(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
+    """Construct a traffic board with an exact count of left- or right-moving vehicles."""
+
+    query = str(axes.query_id)
+    target_direction = -1 if query == "left_moving_object_count" else 1
+    lane_count = int(axes.lane_count)
+    row_count = int(axes.row_count)
+    target_count = int(axes.target_answer or 1)
+    row_directions = _row_directions(rng, row_count)
+    target_slots = [
+        (int(row), int(col))
+        for row, direction in enumerate(row_directions)
+        if int(direction) == int(target_direction)
+        for col in range(lane_count)
+    ]
+    if len(target_slots) < int(target_count):
+        return None
+    rng.shuffle(target_slots)
+    vehicles: list[CrossingVehicle] = []
+    occupied: set[tuple[int, int]] = set()
+    annotation_ids: list[str] = []
+    for row, col in target_slots[:target_count]:
+        vehicle = _add_vehicle(
+            vehicles,
+            row=int(row),
+            start_col=int(col),
+            direction=int(target_direction),
+            color_index=int(rng.randrange(5)),
+        )
+        occupied.add((int(row), int(col)))
+        annotation_ids.append(str(vehicle.vehicle_id))
+
+    opposite_direction = -target_direction
+    distractor_slots = [
+        (int(row), int(col))
+        for row, direction in enumerate(row_directions)
+        if int(direction) == int(opposite_direction)
+        for col in range(lane_count)
+        if (int(row), int(col)) not in occupied
+    ]
+    rng.shuffle(distractor_slots)
+    max_distractors = min(len(distractor_slots), max(1, min(6, int(target_count) + 2)))
+    distractor_count = int(rng.randint(1, int(max_distractors))) if max_distractors > 0 else 0
+    for row, col in distractor_slots[:distractor_count]:
+        _add_vehicle(
+            vehicles,
+            row=int(row),
+            start_col=int(col),
+            direction=int(opposite_direction),
+            color_index=int(rng.randrange(5)),
+        )
+
+    sample = CrossingSample(
+        lane_count=lane_count,
+        row_count=row_count,
+        query_id=query,
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        answer=int(target_count),
+        row_directions=tuple(int(value) for value in row_directions),
+        vehicles=tuple(vehicles),
+        start_labels=tuple(_LABELS[:lane_count]),
+        route_options=(),
+        marked_route_label=None,
+        target_start_label=None,
+        target_route_label=None,
+        first_collision_tick=None,
+        intersecting_vehicle_ids=(),
+        annotation_entity_ids=tuple(annotation_ids),
+        target_answer=int(target_count),
+        target_label_index=None,
+        construction_mode=f"{query}_exact_direction_count",
     )
     validate_crossing_sample(sample)
     return sample
@@ -571,8 +577,9 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample:
 
     query = str(axes.query_id)
     builders = {
-        "collision_time_value": _sample_collision_time,
         "moving_object_count": _sample_moving_object_count,
+        "left_moving_object_count": _sample_moving_object_direction_count,
+        "right_moving_object_count": _sample_moving_object_direction_count,
     }
     builder = builders.get(query)
     if builder is None:
@@ -588,17 +595,10 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for crossing JSON output."""
 
     query = str(query_id)
-    if query == "collision_time_value":
-        answer_value = 4
-        evidence_value = {
-            "colliding_object": [421, 316, 497, 364],
-            "route_cell": [408, 300, 516, 380],
-        }
-    else:
-        answer_value = 3
-        evidence_value = [[186, 282, 262, 330], [516, 404, 592, 452], [628, 528, 704, 576]]
+    answer_value = 3
+    annotation_value = [[186, 282, 262, 330], [516, 404, 592, 452], [628, 528, 704, 576]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -647,15 +647,7 @@ class GamesCrossingLaneTask:
             panel_style=panel_style,
         )
         entity_bboxes = rendered_scene.render_map["entity_bboxes_px"]
-        evidence_bboxes = [list(entity_bboxes[str(entity_id)]) for entity_id in sampled_scene.evidence_entity_ids]
-        evidence_keyed_bboxes: Dict[str, list[float]] = {}
-        if str(axes.query_id) == "collision_time_value":
-            colliding_object_id = str(sampled_scene.evidence_entity_ids[0])
-            route_cell_id = str(sampled_scene.evidence_entity_ids[1])
-            evidence_keyed_bboxes = {
-                "colliding_object": list(entity_bboxes[colliding_object_id]),
-                "route_cell": list(entity_bboxes[route_cell_id]),
-            }
+        annotation_bboxes = [list(entity_bboxes[str(entity_id)]) for entity_id in sampled_scene.annotation_entity_ids]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -672,11 +664,14 @@ class GamesCrossingLaneTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_traffic_crossing",
+                "object_description_traffic_crossing_no_route",
                 "crossing_motion_rule_text",
-                "answer_hint_collision_time_value",
-                "evidence_hint_collision_time_value",
                 "answer_hint_moving_object_count",
-                "evidence_hint_moving_object_count",
+                "answer_hint_left_moving_object_count",
+                "answer_hint_right_moving_object_count",
+                "annotation_hint_moving_object_count",
+                "annotation_hint_left_moving_object_count",
+                "annotation_hint_right_moving_object_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -688,14 +683,20 @@ class GamesCrossingLaneTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
-                "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
+                "object_description": str(
+                    prompt_defaults[
+                        "object_description_traffic_crossing"
+                        if str(axes.query_id) == "moving_object_count"
+                        else "object_description_traffic_crossing_no_route"
+                    ]
+                ),
                 "crossing_motion_rule_text": str(prompt_defaults["crossing_motion_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -707,10 +708,7 @@ class GamesCrossingLaneTask:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        if evidence_keyed_bboxes:
-            evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
-        else:
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         complexity = build_games_crossing_lane_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -721,7 +719,7 @@ class GamesCrossingLaneTask:
             vehicle_count=len(sampled_scene.vehicles),
             route_option_count=len(sampled_scene.route_options) if sampled_scene.route_options else len(sampled_scene.start_labels),
             target_answer=0 if sampled_scene.target_answer is None else int(sampled_scene.target_answer),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         vehicle_trace = [
             {
@@ -757,7 +755,7 @@ class GamesCrossingLaneTask:
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
                     "row_directions": [int(value) for value in sampled_scene.row_directions],
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -810,37 +808,18 @@ class GamesCrossingLaneTask:
                 "target_route_label": sampled_scene.target_route_label,
                 "first_collision_tick": sampled_scene.first_collision_tick,
                 "intersecting_vehicle_ids": [str(value) for value in sampled_scene.intersecting_vehicle_ids],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
-                **(
-                    {
-                        "roles": {
-                            "colliding_object": str(sampled_scene.evidence_entity_ids[0]),
-                            "route_cell": str(sampled_scene.evidence_entity_ids[1]),
-                        }
-                    }
-                    if evidence_keyed_bboxes
-                    else {}
-                ),
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": (
-                {
-                    "type": "keyed_bbox_map",
-                    "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                    "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                    "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                }
-                if evidence_keyed_bboxes
-                else {
-                    "type": "bbox_set",
-                    "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                    "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                }
-            ),
+            "projected_annotation": {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
+            },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -848,7 +827,7 @@ class GamesCrossingLaneTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -860,14 +839,6 @@ class GamesCrossingLaneTask:
 
 
 @register_task
-class GamesCrossingCollisionTimeValueTask(FixedQueryVariantTaskMixin, GamesCrossingLaneTask):
-    """Return the first collision tick for the marked route."""
-
-    task_id = "task_games__crossing__collision_time_value"
-    fixed_query_id = "collision_time_value"
-
-
-@register_task
 class GamesCrossingMovingObjectCountTask(FixedQueryVariantTaskMixin, GamesCrossingLaneTask):
     """Count moving objects that intersect the marked route."""
 
@@ -875,8 +846,19 @@ class GamesCrossingMovingObjectCountTask(FixedQueryVariantTaskMixin, GamesCrossi
     fixed_query_id = "moving_object_count"
 
 
+@register_task
+class GamesCrossingMovingObjectDirectionCountTask(QuerySubsetTaskMixin, GamesCrossingLaneTask):
+    """Count moving objects by their visible arrow direction."""
+
+    task_id = "task_games__crossing__moving_object_direction_count"
+    supported_query_ids = (
+        "left_moving_object_count",
+        "right_moving_object_count",
+    )
+
+
 __all__ = [
-    "GamesCrossingCollisionTimeValueTask",
     "GamesCrossingLaneTask",
+    "GamesCrossingMovingObjectDirectionCountTask",
     "GamesCrossingMovingObjectCountTask",
 ]

@@ -39,16 +39,23 @@ from ..shared.complexity import (
     resolve_pages_complexity_weights,
 )
 from ..shared.diagram.common import (
-    projected_diagram_bbox_evidence,
+    projected_diagram_bbox_annotation,
     resolve_jittered_diagram_panel_geometry,
     round_diagram_bbox,
 )
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
+from ..shared.page_semantic_assets import (
+    page_semantic_asset_ids,
+    page_semantic_asset_label,
+    page_semantic_asset_manifest_metadata,
+    render_page_semantic_asset_rgba,
+)
 from ..shared.public_query_task import rewrite_pages_query_output
 
 
 SCENE_ID = "concept_map"
-NODE_FILTER_COUNT_TASK_ID = "task_pages__concept_map__node_filter_count"
+BRANCH_CHILD_COUNT_TASK_ID = "task_pages__concept_map__branch_child_count"
+MARKED_CHILD_COUNT_TASK_ID = "task_pages__concept_map__marked_child_count"
 ORDERED_CHILD_LABEL_TASK_ID = "task_pages__concept_map__ordered_child_label"
 
 _LAYOUT_VARIANTS: Tuple[str, ...] = ("radial_mind_map", "left_right_map", "clustered_map")
@@ -64,7 +71,8 @@ _CONTEXT_VARIANTS: Tuple[str, ...] = (
     "science_topics",
 )
 _QUERY_IDS: Dict[str, Tuple[str, ...]] = {
-    NODE_FILTER_COUNT_TASK_ID: ("branch_child_count", "marked_child_count"),
+    BRANCH_CHILD_COUNT_TASK_ID: ("branch_child_count",),
+    MARKED_CHILD_COUNT_TASK_ID: ("marked_child_count",),
     ORDERED_CHILD_LABEL_TASK_ID: ("nth_child_label",),
 }
 _TASK_KEYS: Dict[str, str] = {
@@ -73,11 +81,13 @@ _TASK_KEYS: Dict[str, str] = {
     "marked_child_count": "marked_child_count_query",
 }
 
-_MARKERS: Tuple[Dict[str, Any], ...] = (
-    {"marker_id": "blue_dot", "label": "blue dot", "shape": "circle", "fill": (58, 119, 219), "outline": (25, 67, 140)},
-    {"marker_id": "orange_dot", "label": "orange dot", "shape": "circle", "fill": (230, 133, 48), "outline": (156, 79, 24)},
-    {"marker_id": "green_dot", "label": "green dot", "shape": "circle", "fill": (69, 155, 89), "outline": (32, 105, 52)},
-    {"marker_id": "black square", "label": "black square", "shape": "square", "fill": (54, 58, 66), "outline": (22, 24, 30)},
+_MARKERS: Tuple[Dict[str, Any], ...] = tuple(
+    {
+        "marker_id": str(marker_id),
+        "label": page_semantic_asset_label(str(marker_id)),
+        "semantic_id": str(marker_id),
+    }
+    for marker_id in page_semantic_asset_ids(semantic_role="marker", allowed_use="filter")
 )
 
 _PALETTES: Dict[str, Dict[str, Any]] = {
@@ -774,7 +784,7 @@ def _build_query(
             "branch_id": str(branch["branch_id"]),
             "branch_label": str(branch["label"]),
             "answer": int(len(branch["children"])),
-            "evidence_node_ids": [str(child["node_id"]) for child in branch["children"]],
+            "annotation_node_ids": [str(child["node_id"]) for child in branch["children"]],
         }
     if str(task_id) == ORDERED_CHILD_LABEL_TASK_ID:
         desired_rank = 2 + (abs(int(answer_index)) % 4)
@@ -798,8 +808,8 @@ def _build_query(
             "rank_ordinal": _ordinal_label(int(rank)),
             "reading_order": "from top to bottom, breaking ties from left to right",
             "answer": str(target["label"]),
-            "evidence_node_ids": [str(branch["branch_id"]), str(target["node_id"])],
-            "evidence_role_node_ids": {
+            "annotation_node_ids": [str(branch["branch_id"]), str(target["node_id"])],
+            "annotation_role_node_ids": {
                 "parent_branch": str(branch["branch_id"]),
                 "answer_child": str(target["node_id"]),
             },
@@ -829,13 +839,15 @@ def _build_query(
         "branch_id": str(branch["branch_id"]),
         "branch_label": str(branch["label"]),
         "marker_id": str(marker["marker_id"]),
-        "marker_label": str(marker["label"]),
+        "marker_label": str(marker["label"]).removesuffix(" marker"),
+        "marker_display_label": str(marker["label"]),
         "answer": int(len(matched)),
-        "evidence_node_ids": [str(child["node_id"]) for child in matched],
+        "annotation_node_ids": [str(child["node_id"]) for child in matched],
     }
 
 
 def _draw_node(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
     *,
     node: Mapping[str, Any],
@@ -866,10 +878,12 @@ def _draw_node(
         my0 = float(bbox[1] + 0.5 * (bbox[3] - bbox[1]) - 5.5)
         mx1 = float(mx0 + 11.0)
         my1 = float(my0 + 11.0)
-        if str(marker["shape"]) == "square":
-            draw.rectangle([mx0, my0, mx1, my1], fill=tuple(marker["fill"]), outline=tuple(marker["outline"]), width=1)
-        else:
-            draw.ellipse([mx0, my0, mx1, my1], fill=tuple(marker["fill"]), outline=tuple(marker["outline"]), width=1)
+        marker_img = render_page_semantic_asset_rgba(
+            str(marker["marker_id"]),
+            size_px=(max(1, int(round(mx1 - mx0))), max(1, int(round(my1 - my0)))),
+            tint_rgb=tuple(int(value) for value in text_fill),
+        )
+        image.paste(marker_img, (int(round(mx0)), int(round(my0))), marker_img)
     inset = 25.0 if marker is not None else 10.0
     shape_width_factor = 0.90 if shape == "circle" else 0.84 if shape == "ellipse" else 1.0
     font = fit_font_to_box(
@@ -934,6 +948,7 @@ def _render_scene(
     branch_fills = list(palette["branch_fills"])
     central = scene["branches"][0]["central"]
     central_bbox = _draw_node(
+        image,
         draw,
         node=central,
         fill=palette["central_fill"],
@@ -974,6 +989,7 @@ def _render_scene(
             connector_bboxes[connector_id] = _line_bbox(child_start, child_end, connector_width + 2)
 
         node_bboxes[str(branch["branch_id"])] = _draw_node(
+            image,
             draw,
             node=branch,
             fill=branch_color,
@@ -987,6 +1003,7 @@ def _render_scene(
         for child in branch["children"]:
             child_fill = tuple(min(255, int(channel) + 28) for channel in branch_color)
             node_bboxes[str(child["node_id"])] = _draw_node(
+                image,
                 draw,
                 node=child,
                 fill=child_fill,
@@ -999,6 +1016,7 @@ def _render_scene(
                 marker=marker_by_id[str(child["marker_id"])],
             )
     node_bboxes["central"] = _draw_node(
+        image,
         draw,
         node=central,
         fill=palette["central_fill"],
@@ -1019,8 +1037,8 @@ def _build_prompt_json_examples(*, answer_type: str) -> tuple[str, str]:
     if str(answer_type) == "string":
         answer = "New York"
         answer_only = {"answer": answer}
-        with_evidence = {
-            "evidence": {
+        with_annotation = {
+            "annotation": {
                 "parent_branch": [90, 120, 220, 156],
                 "answer_child": [250, 190, 390, 226],
             },
@@ -1028,9 +1046,9 @@ def _build_prompt_json_examples(*, answer_type: str) -> tuple[str, str]:
         }
     else:
         answer_only = {"answer": 3}
-        with_evidence = {"evidence": [[90, 120, 220, 156], [250, 190, 390, 226]], "answer": 3}
+        with_annotation = {"annotation": [[90, 120, 220, 156], [250, 190, 390, 226]], "answer": 3}
     return (
-        json.dumps(with_evidence, separators=(",", ":")),
+        json.dumps(with_annotation, separators=(",", ":")),
         json.dumps(answer_only, separators=(",", ":")),
     )
 
@@ -1132,25 +1150,25 @@ def _build_output(
             "json_output_contract_answer_only",
             "integer_answer_hint",
             "label_answer_hint",
-            "evidence_hint_count",
-            "evidence_hint_label",
+            "annotation_hint_count",
+            "annotation_hint_label",
         ),
         context=f"prompt defaults for {task_id}",
     )
     answer_type = "string" if str(task_id) == ORDERED_CHILD_LABEL_TASK_ID else "integer"
     answer_hint = str(prompt_defaults["label_answer_hint"] if answer_type == "string" else prompt_defaults["integer_answer_hint"])
-    evidence_hint = str(prompt_defaults["evidence_hint_label"] if answer_type == "string" else prompt_defaults["evidence_hint_count"])
+    annotation_hint = str(prompt_defaults["annotation_hint_label"] if answer_type == "string" else prompt_defaults["annotation_hint_count"])
     json_example, json_example_answer_only = _build_prompt_json_examples(answer_type=answer_type)
     slots = {
         "object_description": str(prompt_defaults["object_description"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(answer_hint),
-        "evidence_hint": str(evidence_hint),
+        "annotation_hint": str(annotation_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
-    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "evidence_node_ids"}})
+    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "annotation_node_ids"}})
     prompt_selection = render_task_prompt_variants(
         domain=str(domain),
         task_group=str(task_group),
@@ -1158,52 +1176,52 @@ def _build_output(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(query["task_key"]),
         query_key=str(query["query_id"]),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
     bbox_source_map: Dict[str, Sequence[float]] = {}
-    evidence_ids: list[str] = []
-    for node_id in [str(item) for item in query.get("evidence_node_ids", [])]:
-        evidence_id = f"node:{node_id}"
-        evidence_ids.append(evidence_id)
-        bbox_source_map[evidence_id] = render_map["node_bboxes_px"][node_id]
+    annotation_ids: list[str] = []
+    for node_id in [str(item) for item in query.get("annotation_node_ids", [])]:
+        annotation_id = f"node:{node_id}"
+        annotation_ids.append(annotation_id)
+        bbox_source_map[annotation_id] = render_map["node_bboxes_px"][node_id]
     answer_gt = (
         TypedValue(type="string", value=str(query["answer"]))
         if str(answer_type) == "string"
         else TypedValue(type="integer", value=int(query["answer"]))
     )
     if str(answer_type) == "string":
-        evidence_role_node_ids = {
+        annotation_role_node_ids = {
             str(role): str(node_id)
-            for role, node_id in dict(query.get("evidence_role_node_ids", {})).items()
+            for role, node_id in dict(query.get("annotation_role_node_ids", {})).items()
         }
-        evidence_role_ids = {
+        annotation_role_ids = {
             str(role): f"node:{node_id}"
-            for role, node_id in evidence_role_node_ids.items()
+            for role, node_id in annotation_role_node_ids.items()
         }
-        evidence_bbox_map = {
-            str(role): [round(float(value), 3) for value in bbox_source_map[str(evidence_id)]]
-            for role, evidence_id in evidence_role_ids.items()
+        annotation_bbox_map = {
+            str(role): [round(float(value), 3) for value in bbox_source_map[str(annotation_id)]]
+            for role, annotation_id in annotation_role_ids.items()
         }
-        evidence_projection = {
+        annotation_projection = {
             "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(evidence_bbox_map),
-            "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+            "keyed_bbox_map": dict(annotation_bbox_map),
+            "pixel_keyed_bbox_map": dict(annotation_bbox_map),
         }
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
     else:
-        evidence_role_node_ids = {}
-        evidence_role_ids = {}
-        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_role_node_ids = {}
+        annotation_role_ids = {}
+        annotation_projection = projected_diagram_bbox_annotation(bbox_source_map, annotation_ids)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
     branch_scan = normalize_int_with_bounds(int(scene["branch_count"]), [4, 8])
     child_scan = normalize_int_with_bounds(int(scene["child_count"]), [16, 56])
-    evidence_load = normalize_int_with_bounds(len(evidence_ids), [1, 10])
+    annotation_load = normalize_int_with_bounds(len(annotation_ids), [1, 10])
     base_reasoning = {
         "branch_child_count": 0.34,
         "nth_child_label": 0.42,
@@ -1213,8 +1231,8 @@ def _build_output(
         weights=complexity_weights,
         components={
             "concept_size": clamp_unit_interval((0.35 * branch_scan) + (0.65 * child_scan)),
-            "visual_search": clamp_unit_interval(float(evidence_load)),
-            "reasoning_load": clamp_unit_interval(float(base_reasoning) + 0.08 * evidence_load),
+            "visual_search": clamp_unit_interval(float(annotation_load)),
+            "reasoning_load": clamp_unit_interval(float(base_reasoning) + 0.08 * annotation_load),
         },
     )
 
@@ -1308,6 +1326,10 @@ def _build_output(
             "layout_jitter": dict(scene["layout_jitter"]),
             "background_style": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
+            "page_semantic_assets": page_semantic_asset_manifest_metadata(
+                semantic_role="marker",
+                allowed_use="filter",
+            ),
         },
         "render_map": dict(render_map),
         "execution_trace": {
@@ -1323,20 +1345,24 @@ def _build_output(
             "branch_count": int(scene["branch_count"]),
             "child_count": int(scene["child_count"]),
             "branches": deepcopy(branch_specs),
+            "page_semantic_assets": page_semantic_asset_manifest_metadata(
+                semantic_role="marker",
+                allowed_use="filter",
+            ),
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
-            "evidence_ids": list(evidence_ids),
-            "evidence_role_ids": dict(evidence_role_ids),
-            "evidence_role_node_ids": dict(evidence_role_node_ids),
-            "supporting_bbox_ids": list(evidence_ids),
+            "annotation_ids": list(annotation_ids),
+            "annotation_role_ids": dict(annotation_role_ids),
+            "annotation_role_node_ids": dict(annotation_role_node_ids),
+            "supporting_bbox_ids": list(annotation_ids),
         },
         "witness_symbolic": {
             "type": "keyed_bbox_map" if str(answer_type) == "string" else "bbox_id_set",
-            "ids": list(evidence_ids),
-            "evidence_role_ids": dict(evidence_role_ids),
-            "value": dict(evidence_gt.value) if str(answer_type) == "string" else list(evidence_ids),
+            "ids": list(annotation_ids),
+            "annotation_role_ids": dict(annotation_role_ids),
+            "value": dict(annotation_gt.value) if str(answer_type) == "string" else list(annotation_ids),
         },
-        "projected_evidence": dict(evidence_projection),
+        "projected_annotation": dict(annotation_projection),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
     }
@@ -1344,7 +1370,7 @@ def _build_output(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
         answer_gt=answer_gt,
-        evidence_gt=evidence_gt,
+        annotation_gt=annotation_gt,
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -1361,10 +1387,29 @@ def _build_output(
 
 
 @register_task
-class PagesConceptMapNodeFilterCountTask:
-    """Count concept-map child items satisfying a branch or marker predicate."""
+class PagesConceptMapBranchChildCountTask:
+    """Count child items under a named concept-map branch."""
 
-    task_id = NODE_FILTER_COUNT_TASK_ID
+    task_id = BRANCH_CHILD_COUNT_TASK_ID
+    domain = "pages"
+    task_group = "concept_map"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _build_output(
+            task_id=self.task_id,
+            domain=self.domain,
+            task_group=self.task_group,
+            instance_seed=int(instance_seed),
+            params=dict(params),
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class PagesConceptMapMarkedChildCountTask:
+    """Count child items marked with the queried concept-map marker."""
+
+    task_id = MARKED_CHILD_COUNT_TASK_ID
     domain = "pages"
     task_group = "concept_map"
 
@@ -1398,8 +1443,10 @@ class PagesConceptMapOrderedChildLabelTask:
         )
 
 __all__ = [
-    "NODE_FILTER_COUNT_TASK_ID",
+    "BRANCH_CHILD_COUNT_TASK_ID",
+    "MARKED_CHILD_COUNT_TASK_ID",
     "ORDERED_CHILD_LABEL_TASK_ID",
-    "PagesConceptMapNodeFilterCountTask",
+    "PagesConceptMapBranchChildCountTask",
+    "PagesConceptMapMarkedChildCountTask",
     "PagesConceptMapOrderedChildLabelTask",
 ]

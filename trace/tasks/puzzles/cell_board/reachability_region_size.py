@@ -52,7 +52,7 @@ from .shared.rectangular_board import (
     sample_rectangular_tile_spec,
 )
 from .shared.tile_colors import available_named_tile_colors
-from .shared.tile_evidence import coordinate_set_evidence_artifacts
+from .shared.tile_annotation import coordinate_set_annotation_artifacts
 from .shared.tile_scene import build_tile_cell_entities
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
@@ -328,7 +328,7 @@ class TileRegionSizeTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        evidence_artifacts = coordinate_set_evidence_artifacts(
+        annotation_artifacts = coordinate_set_annotation_artifacts(
             coords=reachable_coords,
             bbox_map=bbox_map,
         )
@@ -349,7 +349,7 @@ class TileRegionSizeTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -357,7 +357,7 @@ class TileRegionSizeTask:
         start_color_label = format_named_color_with_hex(str(start_color_name), start_color_rgb)
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
-            evidence_value=[[120, 120], [168, 120], [168, 168], [168, 216]],
+            annotation_value=[[120, 120], [168, 120], [168, 168], [168, 216]],
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -366,7 +366,7 @@ class TileRegionSizeTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(rows),
                 "cols": int(cols),
@@ -374,7 +374,7 @@ class TileRegionSizeTask:
                 "start_color": str(start_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -390,7 +390,7 @@ class TileRegionSizeTask:
             if bool(blocked[row][col])
         ]
         start_id = cell_id(start)
-        reachable_ids = list(evidence_artifacts["private_witness"]["ids"])
+        reachable_ids = list(annotation_artifacts["private_witness"]["ids"])
         reachable_coord_set = {(int(row), int(col)) for row, col in reachable_coords}
         scene_entities = build_tile_cell_entities(
             rows=int(rows),
@@ -434,7 +434,7 @@ class TileRegionSizeTask:
                         "start": str(start_id),
                     },
                     {
-                        "out": "evidence",
+                        "out": "annotation",
                         "op": "project_coords",
                         "in": "reachable",
                         "source_coord_space": "tile_grid",
@@ -480,8 +480,8 @@ class TileRegionSizeTask:
                 "obstacle_fraction": float(realized_obstacle_fraction),
                 "reachable_fraction": float(reachable_fraction),
             },
-            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
 
         board_cell_count = int(rows) * int(cols)
@@ -536,9 +536,9 @@ class TileRegionSizeTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=image,
             image_id="img0",

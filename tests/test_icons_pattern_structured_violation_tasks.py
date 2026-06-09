@@ -104,12 +104,12 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     assert execution["query_id"] == "row_rotation_violation"
     assert trace["query_spec"]["template_id"] == "icons_pattern_v0"
     assert int(out.answer_gt.value) == 4
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == 1
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert len(trace["projected_annotation"]["pixel_point_set"]) == 1
     drawn_text_roles = {
         str(record.get("role"))
         for record in trace["render_spec"]["drawn_text"]["text_legibility"]["records"]
@@ -145,9 +145,9 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     assert execution["scene_variant"] == "numbered_grid"
     assert execution["query_id"] == "grid_size_violation"
     assert int(out.answer_gt.value) == 5
-    assert out.evidence_gt.type == "bbox_set"
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -186,9 +186,9 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
     assert execution["scene_variant"] == "numbered_grid"
     assert execution["query_id"] == "grid_color_violation"
     assert int(out.answer_gt.value) == 5
-    assert out.evidence_gt.type == "bbox_set"
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -208,12 +208,12 @@ def test_icons_pattern_structured_violation_prompt_example_matches_contract() ->
     task = IconsPatternGridSizeViolationTask()
     out = task.generate(24113, params={"answer_index": 5}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 5}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 1
-    assert answer_and_evidence["answer"] == 5
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 1
+    assert answer_and_annotation["answer"] == 5
 
 
 @pytest.mark.parametrize(

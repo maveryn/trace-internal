@@ -20,7 +20,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.variant_sampling import resolve_variant
 from ..shared.complexity import build_icon_task_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_grid_scene import resolve_horizontal_row_slots
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -714,12 +714,12 @@ class IconsSequenceNamedShapeRunLengthTask:
         if sample is None or scene is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        evidence_bboxes = sort_bboxes_reading_order(
+        annotation_bboxes = sort_bboxes_reading_order(
             icon.bbox_xyxy for icon in scene.icons if bool(icon.is_selected_run_member)
         )
-        if len(evidence_bboxes) != int(sample.answer):
-            raise RuntimeError("rendered named-strip evidence length does not match answer")
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        if len(annotation_bboxes) != int(sample.answer):
+            raise RuntimeError("rendered named-strip annotation length does not match answer")
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
         selected_instance_ids = tuple(
             str(icon.instance_id)
             for icon in scene.icons
@@ -738,7 +738,7 @@ class IconsSequenceNamedShapeRunLengthTask:
                 "object_description",
                 "question_text_longest_shape_run_length",
                 "question_text_shortest_shape_run_length",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -752,13 +752,13 @@ class IconsSequenceNamedShapeRunLengthTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[question_key]).format(target_shape_name=str(sample.target_shape_name)),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(target_shape_name=str(sample.target_shape_name)),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(target_shape_name=str(sample.target_shape_name)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -862,12 +862,12 @@ class IconsSequenceNamedShapeRunLengthTask:
                 "selected_run_indices": [int(index) for index in sample.selected_run_indices],
                 "selected_run_instance_ids": list(selected_instance_ids),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.answer)),
-            evidence_gt=TypedValue(type=str(evidence_payload["evidence_type"]), value=list(evidence_payload["evidence_value"])),
+            annotation_gt=TypedValue(type=str(annotation_payload["annotation_type"]), value=list(annotation_payload["annotation_value"])),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

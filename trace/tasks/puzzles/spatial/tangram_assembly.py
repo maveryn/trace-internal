@@ -17,7 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import (
     build_puzzle_complexity,
     clamp_unit_interval,
@@ -120,6 +120,7 @@ class _TangramAssemblyBaseTask:
             seam_color_rgb=tuple(int(value) for value in scene_style.grid_rgb),
             text_color_rgb=tuple(int(value) for value in scene_style.text_rgb),
             text_stroke_rgb=tuple(int(value) for value in scene_style.text_stroke_rgb),
+            instance_seed=int(instance_seed),
         )
         background, background_meta = make_puzzle_scene_background(
             canvas_width=int(render_params.canvas_width),
@@ -151,8 +152,8 @@ class _TangramAssemblyBaseTask:
                 "json_output_contract_answer_only",
                 "answer_hint_option_letter",
                 "answer_hint_integer",
-                "evidence_hint_missing_piece_label",
-                "evidence_hint_contact_count",
+                "annotation_hint_missing_piece_label",
+                "annotation_hint_contact_count",
                 "json_example_missing_piece_label",
                 "json_example_contact_count",
                 "json_example_answer_only_missing_piece_label",
@@ -167,12 +168,12 @@ class _TangramAssemblyBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{query_id}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{query_id}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{query_id}"]),
                 "answer_hint": str(
                     prompt_defaults[
                         "answer_hint_integer"
@@ -204,23 +205,23 @@ class _TangramAssemblyBaseTask:
 
         if str(query_id) == "missing_piece_label":
             correct_option_panel_id = str(dataset["correct_option_panel_id"])
-            option_projection = projected_puzzle_bbox_evidence(
+            option_projection = projected_puzzle_bbox_annotation(
                 rendered_scene.option_panel_bbox_map,
                 [str(correct_option_panel_id)],
             )
             option_bbox = list(option_projection["bbox_set"][0])
-            evidence_bboxes = [option_bbox, target_piece_bbox]
+            annotation_bboxes = [option_bbox, target_piece_bbox]
             answer_value: str | int = str(dataset["answer_option_label"])
         else:
-            evidence_bboxes = [*target_piece_bboxes, *contact_bboxes]
+            annotation_bboxes = [*target_piece_bboxes, *contact_bboxes]
             answer_value = int(dataset["contact_count"])
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type=str(_ANSWER_TYPES[str(query_id)]), value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         option_count = int(dataset["option_count"]) if str(query_id) != "contact_count" else 0
         visual_scan = clamp_unit_interval(
@@ -303,7 +304,7 @@ class _TangramAssemblyBaseTask:
                 "option_panel_bboxes_px": {
                     str(key): list(value) for key, value in rendered_scene.option_panel_bbox_map.items()
                 },
-                "evidence_source": "piece_bboxes_px_and_option_panel_bboxes_px",
+                "annotation_source": "piece_bboxes_px_and_option_panel_bboxes_px",
             },
             "execution_trace": {
                 "scene_id": TANGRAM_SCENE_ID,
@@ -332,20 +333,20 @@ class _TangramAssemblyBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

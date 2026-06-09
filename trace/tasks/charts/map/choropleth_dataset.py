@@ -215,7 +215,7 @@ def _construct_dataset(
             instance_seed=int(instance_seed),
         )
         selected_ids = set(rng.sample(list(region_ids), int(target_count)))
-    evidence_region_ids = _reading_order_region_ids(list(selected_ids), regions_by_id)
+    annotation_region_ids = _reading_order_region_ids(list(selected_ids), regions_by_id)
 
     query_params: Dict[str, Any]
     threshold_direction = ""
@@ -256,7 +256,7 @@ def _construct_dataset(
             threshold_phrase = f"less than {threshold_value}"
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -292,7 +292,7 @@ def _construct_dataset(
         upper = int(legend_bins[int(high_bin)]["upper"])
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -316,7 +316,7 @@ def _construct_dataset(
         nonmatching_bin_indices = [index for index in range(bin_count) if int(index) != int(category_index)]
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -342,24 +342,24 @@ def _construct_dataset(
             )
         set_names = ("Focus set", "Review set", "Priority set", "Audit set", "Target set")
         set_name = str(_choose_random(set_names, rng=rng))
-        evidence_region_labels = [
+        annotation_region_labels = [
             str(regions_by_id[str(region_id)].get("region_label") or "")
-            for region_id in evidence_region_ids
+            for region_id in annotation_region_ids
         ]
-        target_bin_indices = sorted({int(regions_by_id[str(region_id)]["bin_index"]) for region_id in evidence_region_ids})
+        target_bin_indices = sorted({int(regions_by_id[str(region_id)]["bin_index"]) for region_id in annotation_region_ids})
         nonmatching_bin_indices = [index for index in range(bin_count) if index not in set(target_bin_indices)]
         query_params = {
             "region_set_name": str(set_name),
-            "region_set_region_ids": [str(region_id) for region_id in evidence_region_ids],
-            "region_set_labels": [str(label) for label in evidence_region_labels],
-            "region_set_label_list": ", ".join(f'"{str(label)}"' for label in evidence_region_labels),
+            "region_set_region_ids": [str(region_id) for region_id in annotation_region_ids],
+            "region_set_labels": [str(label) for label in annotation_region_labels],
+            "region_set_label_list": ", ".join(f'"{str(label)}"' for label in annotation_region_labels),
             "target_region_values": {
                 str(region_id): int(regions_by_id[str(region_id)]["region_value"])
-                for region_id in evidence_region_ids
+                for region_id in annotation_region_ids
             },
             "target_bin_indices": [int(value) for value in target_bin_indices],
         }
-        answer_value = int(sum(int(regions_by_id[str(region_id)]["region_value"]) for region_id in evidence_region_ids))
+        answer_value = int(sum(int(regions_by_id[str(region_id)]["region_value"]) for region_id in annotation_region_ids))
     elif str(query_id) == "group_filtered_region_value":
         threshold_direction, threshold_direction_probabilities = _resolve_threshold_direction(
             params,
@@ -389,7 +389,7 @@ def _construct_dataset(
             threshold_phrase = f"less than {threshold_value}"
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -419,10 +419,10 @@ def _construct_dataset(
             ],
             "target_region_values": {
                 str(region_id): int(regions_by_id[str(region_id)]["region_value"])
-                for region_id in evidence_region_ids
+                for region_id in annotation_region_ids
             },
         }
-        answer_value = int(sum(int(regions_by_id[str(region_id)]["region_value"]) for region_id in evidence_region_ids))
+        answer_value = int(sum(int(regions_by_id[str(region_id)]["region_value"]) for region_id in annotation_region_ids))
     elif str(query_id) == "adjacent_same_category_count":
         reference_region_id = str(map_asset_meta.get("reference_region_id") or "")
         if not reference_region_id:
@@ -437,7 +437,7 @@ def _construct_dataset(
         nonmatching_bin_indices = [index for index in range(bin_count) if int(index) != int(category_index)]
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=[*evidence_region_ids, str(reference_region_id)],
+            selected_ids=[*annotation_region_ids, str(reference_region_id)],
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -464,7 +464,7 @@ def _construct_dataset(
         nonmatching_bin_indices = [index for index in range(bin_count) if int(index) != int(category_index)]
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -509,7 +509,7 @@ def _construct_dataset(
             threshold_phrase = f"less than {threshold_value}"
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -550,7 +550,7 @@ def _construct_dataset(
         nonmatching_bin_indices = [index for index in range(bin_count) if int(index) != int(category_index)]
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -559,7 +559,7 @@ def _construct_dataset(
         outside_continent_ids = [
             str(region_id)
             for region_id in region_ids
-            if str(region_id) not in set(evidence_region_ids)
+            if str(region_id) not in set(annotation_region_ids)
             and str(regions_by_id[str(region_id)].get("continent") or "") != str(map_asset_meta.get("target_continent") or "")
         ]
         for region_id in rng.sample(outside_continent_ids, min(len(outside_continent_ids), max(1, int(target_count)))):
@@ -605,7 +605,7 @@ def _construct_dataset(
             threshold_phrase = f"less than {threshold_value}"
         _assign_matching_bins(
             regions_by_id=regions_by_id,
-            selected_ids=evidence_region_ids,
+            selected_ids=annotation_region_ids,
             matching_bins=target_bin_indices,
             nonmatching_bins=nonmatching_bin_indices,
             legend_bins=legend_bins,
@@ -614,7 +614,7 @@ def _construct_dataset(
         outside_continent_ids = [
             str(region_id)
             for region_id in region_ids
-            if str(region_id) not in set(evidence_region_ids)
+            if str(region_id) not in set(annotation_region_ids)
             and str(regions_by_id[str(region_id)].get("continent") or "") != str(map_asset_meta.get("target_continent") or "")
         ]
         for region_id in rng.sample(outside_continent_ids, min(len(outside_continent_ids), max(1, int(target_count)))):
@@ -670,7 +670,7 @@ def _construct_dataset(
         "legend_bins": [dict(item) for item in legend_bins],
         "regions": final_regions,
         "regions_by_id": dict(regions_by_id),
-        "evidence_region_ids": list(evidence_region_ids),
+        "annotation_region_ids": list(annotation_region_ids),
         "answer_value": int(answer_value),
         "answer_type": "integer",
         "target_count": int(target_count),

@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -28,8 +28,6 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_longest_path_length,
@@ -38,13 +36,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
@@ -126,11 +122,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match the pixel-space evidence format."""
+    """Return prompt examples that match the pixel-space annotation format."""
 
-    example_evidence = [[180, 220], [310, 180], [430, 260]]
+    example_annotation = [[180, 220], [310, 180], [430, 260]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -144,8 +140,16 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = f"{TASK_ID}:node_count:{int(target_longest_path_length)}:{str(topology_profile)}"
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(target_longest_path_length),
+            str(topology_profile),
+        ),
+    )
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -250,84 +254,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         )
         node_count = int(feasible_node_support[int(node_index % len(feasible_node_support))])
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         node_count=int(node_count),
@@ -505,7 +449,7 @@ class GraphPathLongestPathLengthTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_directed",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -520,12 +464,12 @@ class GraphPathLongestPathLengthTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=QUERY_ID,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_directed"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -534,20 +478,20 @@ class GraphPathLongestPathLengthTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(str(label) for label in graph_sample.target_labels)
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels) - 1))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_path = [list(point) for point in evidence_projection["pixel_point_sequence"]]
-        evidence_gt = TypedValue(type="point_sequence", value=list(evidence_path))
+        annotation_labels = tuple(str(label) for label in graph_sample.target_labels)
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels) - 1))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_path = [list(point) for point in annotation_projection["pixel_point_sequence"]]
+        annotation_gt = TypedValue(type="point_sequence", value=list(annotation_path))
         path_edge_labels = tuple(
             canonicalize_graph_edge_label(str(left), str(right), directed=True)
-            for left, right in zip(evidence_labels[:-1], evidence_labels[1:])
+            for left, right in zip(annotation_labels[:-1], annotation_labels[1:])
         )
-        path_label_set = {str(label) for label in evidence_labels}
+        path_label_set = {str(label) for label in annotation_labels}
         path_edge_set = {tuple(edge) for edge in path_edge_labels}
         successors_by_label = {str(key): tuple(str(value) for value in values) for key, values in graph_sample.successors_by_label.items()}
         reconstructed_path = _unique_longest_path_by_successors(successors_by_label)
-        if reconstructed_path is None or tuple(str(label) for label in reconstructed_path) != evidence_labels:
+        if reconstructed_path is None or tuple(str(label) for label in reconstructed_path) != annotation_labels:
             raise ValueError("graph longest-path sampler failed to preserve the requested unique longest path")
 
         node_entities = [
@@ -602,9 +546,9 @@ class GraphPathLongestPathLengthTask:
                     "graph_directionality": "directed",
                     "source_label": str(graph_sample.source_label),
                     "goal_label": str(graph_sample.goal_label),
-                    "longest_path_labels": list(evidence_labels),
+                    "longest_path_labels": list(annotation_labels),
                     "longest_path_edge_labels": [list(edge) for edge in path_edge_labels],
-                    "longest_path_length": int(len(evidence_labels) - 1),
+                    "longest_path_length": int(len(annotation_labels) - 1),
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -696,7 +640,7 @@ class GraphPathLongestPathLengthTask:
                 "target_longest_path_length": int(graph_sample.target_longest_path_length),
                 "source_label": str(graph_sample.source_label),
                 "goal_label": str(graph_sample.goal_label),
-                "longest_path_labels": list(evidence_labels),
+                "longest_path_labels": list(annotation_labels),
                 "longest_path_edge_labels": [list(edge) for edge in path_edge_labels],
                 "attachment_count": int(graph_sample.attachment_count),
                 "extra_edge_count": int(graph_sample.extra_edge_count),
@@ -719,21 +663,21 @@ class GraphPathLongestPathLengthTask:
             },
             "witness_symbolic": {
                 "type": "node_path",
-                "nodes": list(evidence_labels),
+                "nodes": list(annotation_labels),
                 "source_label": str(graph_sample.source_label),
                 "goal_label": str(graph_sample.goal_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_sequence",
-                "point_sequence": list(evidence_path),
-                **dict(evidence_projection),
+                "point_sequence": list(annotation_path),
+                **dict(annotation_projection),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

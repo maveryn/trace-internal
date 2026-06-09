@@ -255,13 +255,13 @@ def _paired_forms_components(execution: Mapping[str, Any]) -> Dict[str, float]:
         "shortfall_minus_overage_value": 1.00,
     }[str(execution["query_id"])]
     item_count = int(execution["item_count"])
-    evidence_count = len(execution["evidence_bbox_ids"])
+    annotation_count = len(execution["annotation_bbox_ids"])
     mismatch_count = len(execution["mismatch_item_ids"])
     return {
         "visual_scan": normalize(item_count, *list(execution["item_count_range"])),
         "reasoning_load": clamp01(
             (0.60 * variant_load)
-            + (0.25 * normalize(evidence_count, 4, 60))
+            + (0.25 * normalize(annotation_count, 4, 60))
             + (0.15 * normalize(mismatch_count, 4, item_count))
         ),
         "scene_variant_load": {"purchase_receipt_pair": 0.34}[str(execution["scene_variant"])],
@@ -270,7 +270,7 @@ def _paired_forms_components(execution: Mapping[str, Any]) -> Dict[str, float]:
 
 TRACE_FORMULA_COMPONENTS: dict[str, Callable[[Mapping[str, Any]], Dict[str, float]]] = {
     "task_puzzles__logic_grid__grid_uniqueness_completion_label": _puzzle_logic_components,
-    "task_puzzles__analog_clock__offset_readout": _clock_components,
+    "task_misc__analog_clock__offset_readout": _clock_components,
     "task_pages__paired_forms__reconciliation_value": _paired_forms_components,
 }
 

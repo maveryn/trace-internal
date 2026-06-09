@@ -28,7 +28,7 @@
    - `wavy_loop`
    - `beaded_string`
 6. `answer_gt.type`: `option_letter`
-7. `evidence_gt.type`: `bbox_set`
+7. `annotation_gt.type`: `bbox_set`
 8. Generation guarantees:
    - option count is fixed at `6`,
    - exactly one option is valid,
@@ -46,18 +46,18 @@
    - scene: `object_description`
    - query-id: `token_render_style_instruction`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-6. Prompt-facing answer is the unique valid option letter. Prompt-facing evidence is the matching option-image bounding box.
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+6. Prompt-facing answer is the unique valid option letter. Prompt-facing annotation is the matching option-image bounding box.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is a `bbox_set` containing exactly one option-image bbox.
-2. `projected_evidence` includes `bbox_set`.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is a `bbox_set` containing exactly one option-image bbox.
+2. `projected_annotation` includes `bbox_set`.
 3. `render_map.option_choice_bboxes_px` stores option-image bboxes keyed by `option_choice_id`.
 4. `execution_trace` records `query_id=cyclic_order_equivalent_label`, internal replay query fields, token/render axes, option specs, answer option id/label, valid option id, and solver trace.
-5. Prompt-facing evidence is projected from the recorded valid option id, not inferred from pixels.
+5. Prompt-facing annotation is projected from the recorded valid option id, not inferred from pixels.
 
 ## 5) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same generated reference/option set.
+2. Answers and annotation come from the same generated reference/option set.
 3. No semantic auto-relaxation.
 4. Review overlays rely on recorded option-image projections.

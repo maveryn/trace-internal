@@ -1,34 +1,55 @@
 # `task_physics__wave_interference__path_difference_value`
 
+## Summary
 - Domain: `physics`
 - Scene id: `wave_interference`
-- Task group: `waves`
-- Query id: `path_difference_value`
-- Answer type: `integer`
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `waves`
+- Implementation source: `trace/tasks/physics/waves/interference_tank.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__wave_interference__path_difference_value` -> `task_physics__wave_interference__path_difference_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Summary
+## Task Contract
+Computes the absolute path difference from two sources to a marked point in lambda/2 steps.
 
-Shows the same two-source ripple-tank scene with a highlighted point `P` and labeled dashed guide paths from `S1` and `S2` to `P`. The task asks for the absolute path difference counted in `lambda/2` steps.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Prompt Contract
+## Query Branches
 
-Prompt bundle: `physics_waves_v0`; scene key: `wave_interference_tank`; task key: `wave_interference_tank_query`; query key: `path_difference_value`.
+| Query id | Program schema |
+| --- | --- |
+| `path_difference_value` | `abs(distance(source_s1, point_p) - distance(source_s2, point_p)) / lambda_half_step; scene=wave_interference; scope=path_difference_value` |
 
-Outputs `query_id="path_difference_value"`. The trace records source phase relation, point `P` coordinates, exact source-to-point distances in `lambda/2` steps, path-difference answer, evidence entity ids, technical diagram style, font family, whole-tank layout placement, and post-render noise metadata.
+## Program Metadata
+- Program signatures: `physics.wave_path_difference_value`
+- Base program contract: `abs(distance(source_s1, point_p) - distance(source_s2, point_p)) / lambda_half_step; scene=wave_interference; scope=path_difference_value`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `lambda_half_step`: semantic_role; allowed `visible_lambda_over_two_unit`; source `program_schema_concrete`
+  - `point_p`: semantic_role; allowed `visible_point_P`; source `program_schema_concrete`
+  - `source_s1`: semantic_role; allowed `visible_source_S1`; source `program_schema_concrete`
+  - `source_s2`: semantic_role; allowed `visible_source_S2`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `path_difference_value`
 
-## Evidence Contract
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
 
-Evidence is a `keyed_bbox_map` with keys `S1P` and `S2P`. Each value is a bbox around the corresponding labeled dashed source-to-`P` guide path.
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
-Evidence is projected after the final whole-tank layout offset.
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
 
-## Rendering
-
-The renderer uses shared `technical_diagram_style` for the outer sheet, tank/grid palette, frame, and post-render noise. It samples one readout font family per tank and applies whole-tank layout placement before computing keyed evidence.
-
-## Sampling Notes
-
-- `scene_variant`: `clean_tank|grid_tank|lab_sheet`
-- `phase_relation`: `in_phase|opposite_phase`
-- `path_difference_step_support`: integer answers `1..5`
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/wave_interference/task_physics__wave_interference__path_difference_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

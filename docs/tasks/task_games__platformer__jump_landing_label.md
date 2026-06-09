@@ -1,13 +1,16 @@
 # `task_games__platformer__jump_landing_label`
 
+## Contract
 1. Domain: `games`
 2. Task group: `platformer`
 3. Scene id: `platformer`
-4. Query id: `jump_landing_label`
-5. Prompt bundle: `games_platformer_v0`
+4. Public task id: `task_games__platformer__jump_landing_label`
+5. Supported `query_id` values: `jump_landing_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `bbox_set`
+8. Program schema: `label(landing_platform(marked_jump)); scene=platformer; scope=jump_landing_label`
 
-The image shows a side-scroller platformer level with a player character, platforms, hazards, coins, and a short dashed jump arc. The task asks for the label of the platform where the jump lands after extending the same smooth arc.
-
-The answer is a string platform label. Evidence is `bbox_set`: one pixel bounding box around the landing platform.
-
-Generation is deterministic for a fixed seed and records the hidden full arc, platform geometry, selected landing platform, prompt keys, render style, and projected evidence in the trace payload.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

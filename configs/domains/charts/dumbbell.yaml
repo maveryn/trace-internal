@@ -95,14 +95,14 @@ prompt:
     bundle_id: charts_dumbbell_v0
     scene_key: dumbbell_pairwise_chart
     task_key: dumbbell_pairwise_comparison_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_dumbbell_pairwise: a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots
     answer_hint_label: set "answer" to the exact visible row label as a string
     answer_hint_count: set "answer" to the count as an integer
-    evidence_hint_label: set "evidence" to an array containing one [x0,y0,x1,y1] pixel box around the supporting connector and its two colored dots
-    evidence_hint_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition
-    json_example_label: '{"evidence":[[276,214,1032,248]],"answer":"Harbor"}'
-    json_example_count: '{"evidence":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],"answer":3}'
+    annotation_hint_label: set "annotation" to an array containing one [x0,y0,x1,y1] pixel box around the supporting connector and its two colored dots
+    annotation_hint_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition
+    json_example_label: '{"annotation":[[276,214,1032,248]],"answer":"Harbor"}'
+    json_example_count: '{"annotation":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],"answer":3}'
     json_example_answer_only_label: '{"answer":"Harbor"}'
     json_example_answer_only_count: '{"answer":3}'

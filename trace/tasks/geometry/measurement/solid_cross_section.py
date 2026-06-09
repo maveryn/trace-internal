@@ -46,6 +46,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -147,8 +148,8 @@ class _ResolvedProblem:
 class _RenderedCrossSectionScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -217,13 +218,6 @@ def _draw_dashed_line(
             width=width,
         )
         distance += dash + gap
-
-
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if abs(float(value) - float(selected)) <= 1e-9 else 0.0)
-        for value in values
-    }
 
 
 def _case_pool_for_query(query_id: str) -> Tuple[Tuple[float, ...], ...]:
@@ -325,6 +319,8 @@ def _resolve_problem(
         support_probabilities=_selected_probability_map(
             tuple(sorted(set(float(value) for value in support_values))),
             _round1(answer),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: abs(float(value) - float(selected)) <= 1e-9,
         ),
     )
 
@@ -508,17 +504,17 @@ def _render_cross_section_scene(
     ctx: _RenderContext, problem: _ResolvedProblem
 ) -> _RenderedCrossSectionScene:
     if problem.query_id == "cone_parallel_slice_area":
-        solid_bbox, slice_bbox, label_bboxes, evidence_roles = _draw_cone_slice(
+        solid_bbox, slice_bbox, label_bboxes, annotation_roles = _draw_cone_slice(
             ctx, problem
         )
     elif problem.query_id == "square_pyramid_parallel_slice_area":
-        solid_bbox, slice_bbox, label_bboxes, evidence_roles = _draw_pyramid_slice(
+        solid_bbox, slice_bbox, label_bboxes, annotation_roles = _draw_pyramid_slice(
             ctx, problem
         )
     else:
         raise ValueError(f"unsupported solid-cross-section query_id: {problem.query_id}")
 
-    evidence_lookup = {
+    annotation_lookup = {
         "target_area_label": label_bboxes.get("target"),
         "slice_region": slice_bbox,
         "base_radius_label": label_bboxes.get("base_radius"),
@@ -526,10 +522,10 @@ def _render_cross_section_scene(
         "height_label": label_bboxes.get("height"),
         "slice_distance_label": label_bboxes.get("slice_distance"),
     }
-    evidence_bboxes = tuple(
+    annotation_bboxes = tuple(
         bbox
-        for role in evidence_roles
-        for bbox in (evidence_lookup.get(role),)
+        for role in annotation_roles
+        for bbox in (annotation_lookup.get(role),)
         if bbox is not None
     )
     scene_entities = (
@@ -560,8 +556,8 @@ def _render_cross_section_scene(
     return _RenderedCrossSectionScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -585,6 +581,7 @@ class _SolidCrossSectionBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "solid_cross_section"
@@ -684,7 +681,7 @@ class _SolidCrossSectionBaseTask:
     def _build_complexity(self, rendered: _RenderedCrossSectionScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.48
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=5)
             * 0.16
         )
         precision_by_kind = {
@@ -698,7 +695,7 @@ class _SolidCrossSectionBaseTask:
         solid_kind = str(rendered.witness.get("solid_kind", "cone"))
         output_burden = clamp_unit_interval(
             0.46
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -761,7 +758,7 @@ class _SolidCrossSectionBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -775,14 +772,14 @@ class _SolidCrossSectionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -793,16 +790,16 @@ class _SolidCrossSectionBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.solid_kind),
@@ -820,7 +817,7 @@ class _SolidCrossSectionBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.solid_kind),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -849,7 +846,7 @@ class _SolidCrossSectionBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "one_decimal",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2,
                 **dict(rendered.witness),
             },
@@ -859,21 +856,21 @@ class _SolidCrossSectionBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -886,15 +883,25 @@ class _SolidCrossSectionBaseTask:
 
 
 @register_task
-class GeometrySolidCrossSectionAreaValueTask(_SolidCrossSectionBaseTask):
-    """Compute the area of a marked solid cross-section."""
+class GeometryConeParallelSliceAreaTask(_SolidCrossSectionBaseTask):
+    """Compute the area of a cone slice parallel to the base."""
 
-    task_id = "task_geometry__solid_cross_section__solid_cross_section_area_value"
-    supported_queries = _CROSS_SECTION_QUERIES
+    task_id = "task_geometry__solid_cross_section__cone_parallel_slice_area"
+    supported_queries = ("cone_parallel_slice_area",)
+    reasoning_kind = "cross_section_area"
+
+
+@register_task
+class GeometrySquarePyramidParallelSliceAreaTask(_SolidCrossSectionBaseTask):
+    """Compute the area of a square-pyramid slice parallel to the base."""
+
+    task_id = "task_geometry__solid_cross_section__square_pyramid_parallel_slice_area"
+    supported_queries = ("square_pyramid_parallel_slice_area",)
     reasoning_kind = "cross_section_area"
 
 
 __all__ = [
-    "GeometrySolidCrossSectionAreaValueTask",
+    "GeometryConeParallelSliceAreaTask",
     "SCENE_ID",
+    "GeometrySquarePyramidParallelSliceAreaTask",
 ]

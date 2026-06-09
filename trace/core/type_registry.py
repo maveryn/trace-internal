@@ -1,4 +1,4 @@
-"""Versioned type registry for answer/evidence envelopes."""
+"""Versioned type registry for answer/annotation envelopes."""
 
 from __future__ import annotations
 
@@ -14,13 +14,13 @@ class TypeRegistry:
 
     version: str
     answer_types: Set[str]
-    evidence_types: Set[str]
+    annotation_types: Set[str]
 
     def validate_answer_type(self, type_id: str) -> bool:
         return type_id in self.answer_types
 
-    def validate_evidence_type(self, type_id: str) -> bool:
-        return type_id in self.evidence_types
+    def validate_annotation_type(self, type_id: str) -> bool:
+        return type_id in self.annotation_types
 
 
 DEFAULT_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "configs" / "type_registry_v0.json"
@@ -33,5 +33,5 @@ def load_type_registry(path: str | Path | None = None) -> TypeRegistry:
     return TypeRegistry(
         version=str(raw["type_registry_version"]),
         answer_types=set(str(v) for v in raw.get("answer_types", [])),
-        evidence_types=set(str(v) for v in raw.get("evidence_types", [])),
+        annotation_types=set(str(v) for v in raw.get("annotation_types", [])),
     )

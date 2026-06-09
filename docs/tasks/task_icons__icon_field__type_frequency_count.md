@@ -16,11 +16,11 @@ Query ids:
 - `most_frequent_type_count`: count icons belonging to the unique most frequent type.
 
 Answer schema: integer.
-Evidence schema: `bbox_set` over every counted icon instance.
+Annotation schema: `bbox_set` over every counted icon instance.
 Answer support:
 - `singleton_type_count`: `0..4`
 - `most_frequent_type_count`: `2..6`
 
 ## Notes
 The two frequency predicates share the same single-panel icon-field view and
-evidence contract. The query id records which predicate was sampled.
+annotation contract. The query id records which predicate was sampled.

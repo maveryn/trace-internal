@@ -31,14 +31,17 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_graph_complexity_weights,
 )
+from ..shared.fixed_query_task import FixedGraphQueryTaskMixin
 from ..shared.style import build_graph_named_color_theme, apply_graph_panel_style
 from ..shared.task_support import resolve_graph_named_variant
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 from ....core.visual.background import make_background_canvas
 
 
-TASK_ID = "task_graph__graph_options__structure_match_label"
+TASK_ID = "graph_options_structure_match_label_source"
 SCENE_ID = "graph_options"
+GRAPH_OPTIONS_CONTAINED_SUBGRAPH_LABEL_TASK_ID = "task_graph__graph_options__contained_subgraph_label"
+GRAPH_OPTIONS_SAME_STRUCTURE_LABEL_TASK_ID = "task_graph__graph_options__same_structure_label"
 
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "same_structure_label",
@@ -136,11 +139,11 @@ def _node_fill_with_readable_label(fill_rgb: Sequence[int]) -> Tuple[int, int, i
     return tuple(max(0, min(255, int(round(float(channel) * 0.28)))) for channel in base)
 
 
-def _project_bbox_evidence(bbox_map: Mapping[str, Sequence[float]], entity_ids: Sequence[str]) -> Dict[str, Any]:
+def _project_bbox_annotation(bbox_map: Mapping[str, Sequence[float]], entity_ids: Sequence[str]) -> Dict[str, Any]:
     bbox_set = []
     for entity_id in entity_ids:
         if str(entity_id) not in bbox_map:
-            raise ValueError(f"missing bbox for evidence entity {entity_id}")
+            raise ValueError(f"missing bbox for annotation entity {entity_id}")
         bbox_set.append([round(float(value), 3) for value in bbox_map[str(entity_id)]])
     return {"bbox_set": bbox_set, "pixel_bbox_set": [list(bbox) for bbox in bbox_set]}
 
@@ -1211,7 +1214,6 @@ def _build_complexity(dataset: Mapping[str, Any], *, query_id: str, scene_varian
     )
 
 
-@register_task
 class GraphRelationStructureMatchLabelTask:
     """Choose a matching labeled graph option."""
 
@@ -1343,7 +1345,7 @@ class GraphRelationStructureMatchLabelTask:
                 "object_description_same_structure_directed",
                 "object_description_contained_subgraph_undirected",
                 "object_description_contained_subgraph_directed",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -1369,7 +1371,7 @@ class GraphRelationStructureMatchLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults.get(
@@ -1379,7 +1381,7 @@ class GraphRelationStructureMatchLabelTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -1389,11 +1391,11 @@ class GraphRelationStructureMatchLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_panel_id = str(dataset["correct_option_panel_id"])
-        evidence_projection = _project_bbox_evidence(rendered_scene.bbox_map, [correct_option_panel_id])
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = _project_bbox_annotation(rendered_scene.bbox_map, [correct_option_panel_id])
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         trace_payload = {
             "scene_ir": {
@@ -1498,20 +1500,20 @@ class GraphRelationStructureMatchLabelTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
                 "correct_option_panel_id": str(correct_option_panel_id),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
             },
         }
         complexity = _build_complexity(dataset, query_id=str(query_id), scene_variant=str(scene_variant))
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1523,4 +1525,29 @@ class GraphRelationStructureMatchLabelTask:
         )
 
 
-__all__ = ["GraphRelationStructureMatchLabelTask"]
+@register_task
+class GraphRelationGraphOptionsContainedSubgraphLabelTask(FixedGraphQueryTaskMixin):
+    """Select the option graph that contains the reference graph as a subgraph."""
+
+    task_id = GRAPH_OPTIONS_CONTAINED_SUBGRAPH_LABEL_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = "contained_subgraph_label"
+    source_task_cls = GraphRelationStructureMatchLabelTask
+
+
+@register_task
+class GraphRelationGraphOptionsSameStructureLabelTask(FixedGraphQueryTaskMixin):
+    """Select the option graph with the same structure as the reference graph."""
+
+    task_id = GRAPH_OPTIONS_SAME_STRUCTURE_LABEL_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = "same_structure_label"
+    source_task_cls = GraphRelationStructureMatchLabelTask
+
+
+__all__ = [
+    "GraphRelationGraphOptionsContainedSubgraphLabelTask",
+    "GraphRelationGraphOptionsSameStructureLabelTask",
+]

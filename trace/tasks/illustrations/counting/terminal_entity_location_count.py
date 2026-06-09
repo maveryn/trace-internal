@@ -20,8 +20,10 @@ from ._terminal_boarding_area_person_branch import (
 from ._terminal_queue_person_branch import TerminalQueuePersonBranch, QUERY_IDS as QUEUE_QUERY_IDS
 
 
-TASK_ID = "task_illustrations__transit_terminal__entity_location_count"
 SCENE_ID = "transit_terminal"
+PERSON_BOARDING_AREA_TASK_ID = "task_illustrations__transit_terminal__person_in_boarding_area_count"
+LUGGAGE_BOARDING_AREA_TASK_ID = "task_illustrations__transit_terminal__luggage_in_boarding_area_count"
+PERSON_QUEUE_TASK_ID = "task_illustrations__transit_terminal__person_in_queue_count"
 QUERY_IDS: Tuple[str, ...] = (*BOARDING_AREA_QUERY_IDS, *LUGGAGE_QUERY_IDS, *QUEUE_QUERY_IDS)
 
 _BRANCH_BY_QUERY: Dict[str, Type[Task]] = {
@@ -31,39 +33,105 @@ _BRANCH_BY_QUERY: Dict[str, Type[Task]] = {
 }
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
+def _public_generation_defaults(public_task_id: str) -> Mapping[str, Any]:
+    gen_defaults, _render_defaults, _prompt_defaults = split_generation_rendering_prompt_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        task_id=str(public_task_id),
+    )
+    return gen_defaults
 
+
+def _generate_public_terminal_count(
+    *,
+    public_task_id: str,
+    branch_cls: Type[Task],
+    query_ids: Tuple[str, ...],
+    instance_seed: int,
+    params: Dict[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    query_id, query_probabilities = select_query_id(
+        task_id=str(public_task_id),
+        params=params,
+        defaults=_public_generation_defaults(str(public_task_id)),
+        instance_seed=int(instance_seed),
+        fallback=query_ids,
+    )
+    branch_params = dict(params)
+    branch_params["query_id"] = str(query_id)
+    branch_params["query_id_support"] = [str(value) for value in query_ids]
+    output = branch_cls().generate(int(instance_seed), params=branch_params, max_attempts=int(max_attempts))
+    return rewrite_branch_output(
+        output,
+        public_task_id=str(public_task_id),
+        branch_id=str(branch_cls.branch_id),
+        query_probabilities=query_probabilities,
+    )
 
 @register_task
-class IllustrationsCountingTerminalEntityLocationCountTask:
-    """Count people, luggage, or queue members in a transit terminal."""
+class IllustrationsCountingTransitPersonInBoardingAreaCountTask:
+    """Count people in one labeled boarding area of a transit terminal."""
 
-    task_id = TASK_ID
+    task_id = PERSON_BOARDING_AREA_TASK_ID
     domain = "illustrations"
     task_group = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities = select_query_id(
-            task_id=TASK_ID,
-            params=params,
-            defaults=_GEN_DEFAULTS,
+        return _generate_public_terminal_count(
+            public_task_id=self.task_id,
+            branch_cls=TerminalBoardingAreaPersonBranch,
+            query_ids=BOARDING_AREA_QUERY_IDS,
             instance_seed=int(instance_seed),
-            fallback=QUERY_IDS,
-        )
-        branch_cls = _BRANCH_BY_QUERY[str(query_id)]
-        branch_params = dict(params)
-        branch_params["query_id"] = str(query_id)
-        output = branch_cls().generate(int(instance_seed), params=branch_params, max_attempts=int(max_attempts))
-        return rewrite_branch_output(
-            output,
-            public_task_id=TASK_ID,
-            branch_id=str(branch_cls.branch_id),
-            query_probabilities=query_probabilities,
+            params=params,
+            max_attempts=int(max_attempts),
         )
 
 
-__all__ = ["IllustrationsCountingTerminalEntityLocationCountTask", "TASK_ID", "SCENE_ID", "QUERY_IDS"]
+@register_task
+class IllustrationsCountingTransitLuggageInBoardingAreaCountTask:
+    """Count luggage of one type in one labeled boarding area."""
+
+    task_id = LUGGAGE_BOARDING_AREA_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_terminal_count(
+            public_task_id=self.task_id,
+            branch_cls=TerminalBoardingAreaLuggageBranch,
+            query_ids=LUGGAGE_QUERY_IDS,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class IllustrationsCountingTransitPersonInQueueCountTask:
+    """Count people in one queue at a transit terminal service point."""
+
+    task_id = PERSON_QUEUE_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_terminal_count(
+            public_task_id=self.task_id,
+            branch_cls=TerminalQueuePersonBranch,
+            query_ids=QUEUE_QUERY_IDS,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+__all__ = [
+    "IllustrationsCountingTransitPersonInBoardingAreaCountTask",
+    "IllustrationsCountingTransitLuggageInBoardingAreaCountTask",
+    "IllustrationsCountingTransitPersonInQueueCountTask",
+    "SCENE_ID",
+    "QUERY_IDS",
+]

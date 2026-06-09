@@ -81,7 +81,7 @@ def build_games_cards_hand_complexity(
     query_id: str,
     card_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible playing-card hand-count scenes."""
 
@@ -102,10 +102,10 @@ def build_games_cards_hand_complexity(
         + (0.05 * normalize_linear(float(target_answer), min_value=0.0, max_value=6.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.50 * normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0))
+        (0.50 * normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0))
         + (0.12 if str(query_id) == "longest_run_length" and int(row_count) > 1 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -125,7 +125,7 @@ def build_games_dominoes_chain_complexity(
     query_id: str,
     candidate_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for chain-plus-tableau domino counting scenes."""
 
@@ -143,17 +143,17 @@ def build_games_dominoes_chain_complexity(
             else 0.50
             if str(query_id) == "matching_end_count"
             else 0.62
-            if str(query_id) == "two_step_extension_label"
+            if str(query_id) in {"second_play_candidate_count", "extendable_first_play_count"}
             else 0.56
         )
         + (0.08 * normalize_linear(float(target_answer), min_value=0.0, max_value=5.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0))
         + (0.10 if str(query_id) == "higher_sum_than_reference_count" else 0.0)
-        + (0.12 if str(query_id) == "two_step_extension_label" else 0.0)
+        + (0.12 if str(query_id) in {"second_play_candidate_count", "extendable_first_play_count"} else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -173,7 +173,7 @@ def build_games_darts_score_complexity(
     query_id: str,
     dart_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible dartboard score/count scenes."""
 
@@ -190,7 +190,7 @@ def build_games_darts_score_complexity(
         (0.72 if str(query_id) == "total_score" else 0.28 if str(query_id) == "threshold_score_count" else 0.10)
         + (0.08 * normalize_linear(float(target_answer), min_value=0.0, max_value=140.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=9.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=9.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -211,7 +211,7 @@ def build_games_reversi_move_complexity(
     board_size: int,
     legal_move_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Reversi move-count scenes."""
 
@@ -232,11 +232,11 @@ def build_games_reversi_move_complexity(
         + (0.10 * normalize_linear(float(target_answer), min_value=0.0, max_value=8.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0))
         + (0.12 if str(query_id) == "corner_move_count" and int(target_answer) == 0 else 0.0)
         + (0.08 if str(query_id) == "flip_count_for_marked_move" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -255,7 +255,7 @@ def build_games_bingo_completed_line_complexity(
     query_id: str,
     marked_cell_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for bingo completed-line counting scenes."""
 
@@ -269,16 +269,19 @@ def build_games_bingo_completed_line_complexity(
         "completed_row_count": 0.34,
         "completed_column_count": 0.38,
         "line_sum_extremum_value": 0.72,
+        "near_complete_row_count": 0.40,
+        "near_complete_column_count": 0.42,
+        "called_marked_number_count": 0.54,
     }.get(str(query_id))
     state_reasoning = clamp_unit_interval(
         (float(axis_reasoning) if axis_reasoning is not None else 0.54)
         + (0.12 * normalize_linear(float(target_answer), min_value=0.0, max_value=8.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=25.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=25.0))
         + (0.05 if str(query_id) == "line_sum_extremum_value" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=25.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=25.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -298,7 +301,7 @@ def build_games_connect_four_move_complexity(
     query_id: str,
     occupied_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Connect Four move-count scenes."""
 
@@ -307,15 +310,20 @@ def build_games_connect_four_move_complexity(
         (0.50 * normalize_linear(float(occupied_count), min_value=8.0, max_value=32.0))
         + (0.10 if str(scene_variant) == "crowded_board" else 0.0)
     )
+    query_reasoning_base = {
+        "winning_move_count": 0.44,
+        "winning_move_column_label": 0.52,
+        "safe_move_count": 0.56,
+    }.get(str(query_id), 0.56)
     board_reasoning = clamp_unit_interval(
-        (0.44 if str(query_id) == "winning_move_count" else 0.56)
+        float(query_reasoning_base)
         + (0.10 * normalize_linear(float(target_answer), min_value=0.0, max_value=6.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=12.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=12.0))
         + (0.10 if str(query_id) == "safe_move_count" and int(target_answer) == 0 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=12.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=12.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -337,7 +345,7 @@ def build_games_dots_and_boxes_capture_complexity(
     drawn_edge_count: int,
     target_answer: int,
     path_turn_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for dots-and-boxes board-state count scenes."""
 
@@ -364,7 +372,7 @@ def build_games_dots_and_boxes_capture_complexity(
         + (0.08 if str(query_id) == "capture_move_count" else 0.0)
         + (0.06 if int(target_answer) >= 4 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=6.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=6.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -384,7 +392,7 @@ def build_games_checkers_move_complexity(
     query_id: str,
     occupied_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Checkers move-count scenes."""
 
@@ -397,17 +405,23 @@ def build_games_checkers_move_complexity(
         "legal_move_count": 0.44,
         "capture_move_count": 0.56,
         "max_capture_chain_length": 0.72,
+        "piece_with_legal_move_count": 0.50,
+        "piece_with_capture_move_count": 0.58,
+        "red_piece_count": 0.16,
+        "black_piece_count": 0.16,
+        "red_edge_piece_count": 0.24,
+        "black_edge_piece_count": 0.24,
     }.get(str(query_id), 0.56)
     board_reasoning = clamp_unit_interval(
         float(board_reasoning_base)
         + (0.10 * normalize_linear(float(target_answer), min_value=0.0, max_value=5.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=6.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=6.0))
         + (0.10 if str(query_id) == "capture_move_count" and int(target_answer) == 0 else 0.0)
         + (0.08 if str(query_id) == "max_capture_chain_length" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=6.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=6.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -427,7 +441,7 @@ def build_games_nine_mens_morris_pieces_in_mill_complexity(
     total_piece_count: int,
     target_answer: int,
     overlapping_piece_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for nine-men's-morris mill-piece counting scenes."""
 
@@ -442,7 +456,7 @@ def build_games_nine_mens_morris_pieces_in_mill_complexity(
         (0.12 * normalize_linear(float(overlapping_piece_count), min_value=0.0, max_value=4.0))
         + (0.08 if str(query_id) == "all_pieces_in_mill_count" and int(target_answer) == 0 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=18.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=18.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -463,7 +477,7 @@ def build_games_go_group_property_complexity(
     occupied_count: int,
     marked_group_size: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Go group-property counting scenes."""
 
@@ -472,7 +486,10 @@ def build_games_go_group_property_complexity(
         (0.42 * normalize_linear(float(occupied_count), min_value=8.0, max_value=28.0))
         + (0.10 if str(scene_variant) == "crowded_board" else 0.0)
     )
-    if str(query_id) == "marked_group_adjacent_enemy_count":
+    if str(query_id) in {"black_stone_group_count", "white_stone_group_count"}:
+        variant_base = 0.48
+        answer_min, answer_max = 1.0, 8.0
+    elif str(query_id) == "marked_group_adjacent_enemy_count":
         variant_base = 0.46
         answer_min, answer_max = 3.0, 8.0
     elif str(query_id) == "marked_group_shared_liberty_count":
@@ -487,11 +504,11 @@ def build_games_go_group_property_complexity(
         + (0.18 * normalize_linear(float(target_answer), min_value=float(answer_min), max_value=float(answer_max)))
     )
     ambiguity = clamp_unit_interval(
-        (0.16 * normalize_linear(float(evidence_count), min_value=1.0, max_value=9.0))
+        (0.16 * normalize_linear(float(annotation_count), min_value=1.0, max_value=9.0))
         + (0.08 if str(scene_variant) == "crowded_board" else 0.0)
         + (0.06 if int(marked_group_size) >= 3 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=9.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=9.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -511,7 +528,7 @@ def build_games_sudoku_grid_complexity(
     query_id: str,
     visible_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Sudoku-grid tasks."""
 
@@ -531,11 +548,11 @@ def build_games_sudoku_grid_complexity(
         + (0.12 * normalize_linear(float(target_answer), min_value=1.0, max_value=9.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.12 * normalize_linear(float(evidence_count), min_value=1.0, max_value=20.0))
+        (0.12 * normalize_linear(float(annotation_count), min_value=1.0, max_value=20.0))
         + (0.08 if str(query_id) in {"marked_cell_value", "marked_cell_candidate_count"} else 0.0)
         + (0.06 if str(query_id) == "repeated_digit_count" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=20.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=20.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -556,7 +573,7 @@ def build_games_minesweeper_grid_complexity(
     board_size: int,
     hidden_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Minesweeper-grid tasks."""
 
@@ -570,6 +587,8 @@ def build_games_minesweeper_grid_complexity(
     query_base = {
         "forced_mine_count": 0.38,
         "forced_safe_count": 0.34,
+        "remaining_mine_count": 0.32,
+        "reveal_outcome_label": 0.40,
         "satisfied_clue_count": 0.36,
     }.get(str(query_id), 0.34)
     state_reasoning = clamp_unit_interval(
@@ -578,11 +597,12 @@ def build_games_minesweeper_grid_complexity(
         + (0.08 * normalize_linear(float(hidden_count), min_value=4.0, max_value=14.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.16 * normalize_linear(float(evidence_count), min_value=2.0, max_value=14.0))
+        (0.16 * normalize_linear(float(annotation_count), min_value=2.0, max_value=14.0))
+        + (0.05 if str(query_id) == "reveal_outcome_label" else 0.0)
         + (0.06 if str(query_id) == "satisfied_clue_count" else 0.0)
         + (0.06 if str(scene_variant) == "mixed_grid" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=2.0, max_value=14.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=2.0, max_value=14.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -604,7 +624,7 @@ def build_games_battleship_grid_complexity(
     hit_count: int,
     miss_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Battleship tracking-grid tasks."""
 
@@ -621,11 +641,11 @@ def build_games_battleship_grid_complexity(
         + (0.08 * normalize_linear(float(hit_count), min_value=8.0, max_value=24.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=2.0, max_value=16.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=2.0, max_value=16.0))
         + (0.04 if str(scene_variant) == "standard_fleet" else 0.0)
         + (0.04 if str(query_id) in {"sunk_ship_count", "partial_ship_count"} else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=2.0, max_value=16.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=2.0, max_value=16.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -646,7 +666,7 @@ def build_games_hex_board_complexity(
     board_size: int,
     occupied_count: int,
     target_answer: Any,
-    evidence_count: int,
+    annotation_count: int,
     candidate_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Hex-board connection tasks."""
@@ -672,10 +692,10 @@ def build_games_hex_board_complexity(
         + (0.08 * normalize_linear(float(target_numeric), min_value=1.0, max_value=5.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=4.0, max_value=12.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=4.0, max_value=12.0))
         + (0.08 if str(query_id) == "winning_move_cell_label" and int(candidate_count) >= 7 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=4.0, max_value=12.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=4.0, max_value=12.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -698,7 +718,7 @@ def build_games_bubble_shooter_complexity(
     col_count: int,
     target_answer: Any,
     option_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Bubble-shooter board tasks."""
 
@@ -722,10 +742,10 @@ def build_games_bubble_shooter_complexity(
         + (0.08 * normalize_linear(float(row_count), min_value=7.0, max_value=9.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=1.0, max_value=9.0))
+        (0.18 * normalize_linear(float(annotation_count), min_value=1.0, max_value=9.0))
         + (0.08 if str(query_id) == "pop_color_label" and int(option_count) >= 6 else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=9.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=9.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -746,9 +766,9 @@ def build_games_backgammon_board_complexity(
     occupied_point_count: int,
     black_source_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
-    """Build normalized complexity for visible Backgammon destination-count tasks."""
+    """Build normalized complexity for visible Backgammon board tasks."""
 
     weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
     visual_scan = clamp_unit_interval(
@@ -759,6 +779,10 @@ def build_games_backgammon_board_complexity(
         "legal_move_count": 0.42,
         "hit_move_count": 0.50,
         "blocked_destination_count": 0.48,
+        "black_single_checker_point_count": 0.24,
+        "white_single_checker_point_count": 0.24,
+        "black_two_or_more_checker_point_count": 0.28,
+        "white_two_or_more_checker_point_count": 0.28,
     }.get(str(query_id), 0.46)
     move_reasoning = clamp_unit_interval(
         float(query_base)
@@ -766,10 +790,10 @@ def build_games_backgammon_board_complexity(
         + (0.08 * normalize_linear(float(black_source_count), min_value=2.0, max_value=8.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.16 * normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0))
+        (0.16 * normalize_linear(float(annotation_count), min_value=1.0, max_value=8.0))
         + (0.07 if str(query_id) == "blocked_destination_count" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -789,7 +813,7 @@ def build_games_chess_board_complexity(
     query_id: str,
     occupied_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Chess-board tasks."""
 
@@ -802,8 +826,16 @@ def build_games_chess_board_complexity(
         "marked_piece_move_count": 0.30,
         "marked_piece_capture_count": 0.34,
         "player_capture_piece_count": 0.44,
-        "check_attacker_count": 0.42,
+        "king_square_attacker_count": 0.42,
+        "white_piece_attacks_target_square_count": 0.46,
+        "black_piece_attacks_target_square_count": 0.46,
+        "rook_line_blocker_count": 0.36,
+        "bishop_diagonal_blocker_count": 0.38,
+        "queen_line_blocker_count": 0.40,
         "king_escape_square_count": 0.50,
+        "piece_kind_count": 0.18,
+        "colored_piece_kind_count": 0.22,
+        "checkmate_move_label": 0.62,
     }.get(str(query_id), 0.36)
     state_reasoning = clamp_unit_interval(
         float(query_base)
@@ -811,11 +843,24 @@ def build_games_chess_board_complexity(
         + (0.06 * normalize_linear(float(occupied_count), min_value=6.0, max_value=18.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0))
-        + (0.08 if str(query_id) in {"player_capture_piece_count", "check_attacker_count"} else 0.0)
+        (0.18 * normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0))
+        + (
+            0.08
+            if str(query_id)
+            in {
+                "player_capture_piece_count",
+                "king_square_attacker_count",
+                "white_piece_attacks_target_square_count",
+                "black_piece_attacks_target_square_count",
+                "rook_line_blocker_count",
+                "bishop_diagonal_blocker_count",
+                "queen_line_blocker_count",
+            }
+            else 0.0
+        )
         + (0.10 if str(query_id) == "king_escape_square_count" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -835,9 +880,9 @@ def build_games_pool_table_complexity(
     query_id: str,
     object_ball_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
-    """Build normalized complexity for Pool-table direct-shot tasks."""
+    """Build normalized complexity for Pool-table group-count and shot-lane tasks."""
 
     weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
     visual_scan = clamp_unit_interval(
@@ -845,8 +890,7 @@ def build_games_pool_table_complexity(
         + (0.12 if str(scene_variant) == "standard_table" else 0.0)
     )
     query_base = {
-        "pottable_ball_count": 0.44,
-        "legal_group_pottable_count": 0.50,
+        "current_group_ball_count": 0.18,
         "blocking_ball_count": 0.34,
     }.get(str(query_id), 0.42)
     geometry_reasoning = clamp_unit_interval(
@@ -855,10 +899,9 @@ def build_games_pool_table_complexity(
         + (0.08 * normalize_linear(float(object_ball_count), min_value=8.0, max_value=15.0))
     )
     ambiguity = clamp_unit_interval(
-        (0.16 * normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0))
-        + (0.08 if str(query_id) in {"pottable_ball_count", "legal_group_pottable_count"} else 0.0)
+        (0.16 * normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -878,7 +921,7 @@ def build_games_brick_breaker_complexity(
     query_id: str,
     brick_count: int,
     lane_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Brick-breaker motion tasks."""
 
@@ -901,7 +944,7 @@ def build_games_brick_breaker_complexity(
         (0.10 if str(scene_variant) == "brick_wall" else 0.0)
         + (0.10 if str(query_id) == "next_hit_label" else 0.04)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=4.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=4.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -921,7 +964,7 @@ def build_games_bowling_lane_complexity(
     query_id: str,
     standing_pin_count: int,
     path_option_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Bowling lane motion tasks."""
 
@@ -938,7 +981,7 @@ def build_games_bowling_lane_complexity(
         (0.06 if str(scene_variant) == "lane_rack" else 0.0)
         + (0.08 if str(query_id) == "spare_path_label" else 0.04)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=4.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=4.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -963,7 +1006,7 @@ def build_games_pacman_maze_complexity(
     item_count: int,
     ghost_count: int,
     target_answer: int | str,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Pac-Man maze route tasks."""
 
@@ -990,7 +1033,7 @@ def build_games_pacman_maze_complexity(
         + (0.10 * normalize_linear(float(route_length), min_value=6.0, max_value=16.0))
         + (0.06 * normalize_linear(float(numeric_target), min_value=1.0, max_value=10.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=10.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=10.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1015,7 +1058,7 @@ def build_games_crossing_lane_complexity(
     vehicle_count: int,
     route_option_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible lane-crossing motion tasks."""
 
@@ -1026,7 +1069,6 @@ def build_games_crossing_lane_complexity(
         + (0.44 * normalize_linear(float(vehicle_count), min_value=4.0, max_value=20.0))
     )
     motion_base = {
-        "collision_time_value": 0.62,
         "moving_object_count": 0.58,
     }.get(str(query_id), 0.52)
     motion_reasoning = clamp_unit_interval(
@@ -1037,12 +1079,12 @@ def build_games_crossing_lane_complexity(
     route_reasoning = clamp_unit_interval(
         (
             0.48
-            if str(query_id) in {"collision_time_value", "moving_object_count"}
+            if str(query_id) == "moving_object_count"
             else 0.76
         )
         + (0.12 * normalize_linear(float(route_option_count), min_value=4.0, max_value=8.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1065,7 +1107,7 @@ def build_games_space_shooter_complexity(
     projectile_count: int,
     blocker_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Space-shooter playfield tasks."""
 
@@ -1099,7 +1141,7 @@ def build_games_space_shooter_complexity(
         )
         + (0.08 * normalize_linear(float(projectile_count + blocker_count), min_value=2.0, max_value=16.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1119,7 +1161,7 @@ def build_games_minigolf_course_complexity(
     query_id: str,
     obstacle_count: int,
     path_option_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Mini-golf course tasks."""
 
@@ -1148,7 +1190,7 @@ def build_games_minigolf_course_complexity(
         )
         + (0.12 * normalize_linear(float(path_option_count), min_value=4.0, max_value=6.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=6.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=6.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1170,7 +1212,7 @@ def build_games_platformer_level_complexity(
     hazard_count: int,
     collectible_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Platformer level tasks."""
 
@@ -1200,7 +1242,7 @@ def build_games_platformer_level_complexity(
         )
         + (0.08 * normalize_linear(float(platform_count + hazard_count), min_value=5.0, max_value=15.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=7.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=7.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1221,7 +1263,7 @@ def build_games_2048_board_complexity(
     filled_count: int,
     merge_count: int,
     target_answer: int | str,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible 2048 board-simulation tasks."""
 
@@ -1234,7 +1276,7 @@ def build_games_2048_board_complexity(
         "merge_count": 0.38,
         "score_value": 0.48,
         "max_tile_value": 0.42,
-        "best_move_label": 0.70,
+        "move_result_board_label": 0.78,
     }.get(str(query_id), 0.46)
     numeric_target = float(len(str(target_answer))) if isinstance(target_answer, str) else float(target_answer)
     rule_simulation = clamp_unit_interval(
@@ -1243,9 +1285,11 @@ def build_games_2048_board_complexity(
         + (0.04 * normalize_linear(float(numeric_target), min_value=0.0, max_value=256.0))
     )
     comparison_load = clamp_unit_interval(
-        0.78 if str(query_id) == "best_move_label" else 0.18 + (0.05 * normalize_linear(float(filled_count), min_value=6.0, max_value=16.0))
+        0.84
+        if str(query_id) == "move_result_board_label"
+        else 0.18 + (0.05 * normalize_linear(float(filled_count), min_value=6.0, max_value=16.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1266,7 +1310,7 @@ def build_games_snakes_ladders_board_complexity(
     jump_count: int,
     horizon_roll_count: int,
     target_answer: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Snakes and Ladders board tasks."""
 
@@ -1288,7 +1332,7 @@ def build_games_snakes_ladders_board_complexity(
         (0.78 if str(query_id) == "best_roll_value" else 0.18)
         + (0.04 * normalize_linear(float(jump_count), min_value=3.0, max_value=8.0))
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=8.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=0.0, max_value=8.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -1309,7 +1353,7 @@ def build_games_snake_grid_complexity(
     board_size: int,
     body_length: int,
     planned_move_count: int,
-    evidence_count: int,
+    annotation_count: int,
     target_answer: int | str,
 ) -> TaskComplexity:
     """Build normalized complexity for visible Snake-grid tasks."""
@@ -1323,7 +1367,9 @@ def build_games_snake_grid_complexity(
     query_base = {
         "single_move_outcome_label": 0.32,
         "safe_direction_count": 0.42,
+        "shortest_food_path_length": 0.56,
         "planned_moves_outcome_label": 0.62,
+        "path_result_option_label": 0.62,
         "first_event_step_value": 0.68,
     }.get(str(query_id), 0.48)
     rule_simulation = clamp_unit_interval(
@@ -1334,13 +1380,15 @@ def build_games_snake_grid_complexity(
         (
             0.22
             if str(query_id) in {"single_move_outcome_label", "safe_direction_count"}
+            else 0.50
+            if str(query_id) == "shortest_food_path_length"
             else 0.58
         )
         + (0.10 * normalize_linear(float(planned_move_count), min_value=0.0, max_value=6.0))
     )
     answer_scale = float(target_answer) if isinstance(target_answer, int) else float(len(str(target_answer)))
     output_burden = clamp_unit_interval(
-        (0.74 * normalize_linear(float(evidence_count), min_value=1.0, max_value=6.0))
+        (0.74 * normalize_linear(float(annotation_count), min_value=1.0, max_value=6.0))
         + (0.10 * normalize_linear(float(answer_scale), min_value=0.0, max_value=6.0))
     )
     return build_games_complexity(
@@ -1363,7 +1411,7 @@ def build_games_rhythm_lanes_complexity(
     row_count: int,
     beat_window: int,
     note_count: int,
-    evidence_count: int,
+    annotation_count: int,
 ) -> TaskComplexity:
     """Build normalized complexity for visible rhythm-lanes timing tasks."""
 
@@ -1384,10 +1432,10 @@ def build_games_rhythm_lanes_complexity(
     )
     ambiguity = clamp_unit_interval(
         (0.30 * normalize_linear(float(note_count), min_value=12.0, max_value=44.0))
-        + (0.35 * normalize_linear(float(evidence_count), min_value=1.0, max_value=7.0))
+        + (0.35 * normalize_linear(float(annotation_count), min_value=1.0, max_value=7.0))
         + (0.10 if str(query_id) == "lane_color_hit_count" else 0.0)
     )
-    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=7.0)
+    output_burden = normalize_linear(float(annotation_count), min_value=1.0, max_value=7.0)
     return build_games_complexity(
         weights=weights,
         components={

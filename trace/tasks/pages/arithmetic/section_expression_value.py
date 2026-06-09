@@ -23,7 +23,7 @@ from ..shared.arithmetic_common import (
     resolve_document_arithmetic_scene_variant,
     resolve_document_arithmetic_query_id,
 )
-from ..shared.common import projected_document_keyed_bbox_evidence
+from ..shared.common import projected_document_keyed_bbox_annotation
 from ..shared.complexity import (
     build_pages_complexity,
     clamp_unit_interval,
@@ -33,11 +33,12 @@ from ..shared.complexity import (
 from ..shared.document_common import DocumentDefaults, resolve_document_render_params
 from ..shared.document_scene import render_document_scene
 from ..shared.information_style import prepare_document_information_scene
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
 
-TASK_ID = "task_pages__form_section__section_expression_value"
+TASK_ID = "pages_form_section_section_expression_source"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "sum_two_amounts_in_section": 0.34,
@@ -49,7 +50,7 @@ _SCENE_LOAD_BY_VARIANT = {
     "invoice_sheet": 0.22,
     "receipt_sheet": 0.18,
 }
-_OPERAND_EVIDENCE_KEYS: Tuple[str, ...] = ("first_operand", "second_operand", "third_operand")
+_OPERAND_ANNOTATION_KEYS: Tuple[str, ...] = ("first_operand", "second_operand", "third_operand")
 
 _DEFAULTS = DocumentDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "arithmetic")
@@ -68,18 +69,18 @@ def _scene_sampling_params(params: Mapping[str, Any]) -> Mapping[str, Any]:
     return params
 
 
-def _operand_evidence_key_map(operand_value_bbox_ids: list[str]) -> Dict[str, str]:
-    """Return the role-keyed evidence mapping for expression operands."""
+def _operand_annotation_key_map(operand_value_bbox_ids: list[str]) -> Dict[str, str]:
+    """Return the role-keyed annotation mapping for expression operands."""
 
-    if len(operand_value_bbox_ids) > len(_OPERAND_EVIDENCE_KEYS):
-        raise ValueError("form-section arithmetic supports at most three operand evidence roles")
+    if len(operand_value_bbox_ids) > len(_OPERAND_ANNOTATION_KEYS):
+        raise ValueError("form-section arithmetic supports at most three operand annotation roles")
     return {
-        str(_OPERAND_EVIDENCE_KEYS[index]): str(bbox_id)
+        str(_OPERAND_ANNOTATION_KEYS[index]): str(bbox_id)
         for index, bbox_id in enumerate(operand_value_bbox_ids)
     }
 
 
-def _canonical_operand_example_evidence(*, query_id: str) -> Dict[str, list[int]]:
+def _canonical_operand_example_annotation(*, query_id: str) -> Dict[str, list[int]]:
     """Return stable role-keyed operand-value bbox examples for prompt JSON snippets."""
 
     example_bboxes = [
@@ -89,7 +90,7 @@ def _canonical_operand_example_evidence(*, query_id: str) -> Dict[str, list[int]
     if str(query_id) == "sum_minus_amount_in_section":
         example_bboxes.append([150, 380, 364, 414])
     return {
-        str(_OPERAND_EVIDENCE_KEYS[index]): list(bbox)
+        str(_OPERAND_ANNOTATION_KEYS[index]): list(bbox)
         for index, bbox in enumerate(example_bboxes)
     }
 
@@ -103,18 +104,17 @@ def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
         "sum_minus_amount_in_section": "$133.30",
     }
     answer_value = str(answer_by_variant[str(query_id)])
-    answer_and_evidence = {
-        "evidence": _canonical_operand_example_evidence(query_id=str(query_id)),
+    answer_and_annotation = {
+        "annotation": _canonical_operand_example_annotation(query_id=str(query_id)),
         "answer": str(answer_value),
     }
     answer_only = {"answer": str(answer_value)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
 
-@register_task
 class PagesArithmeticSectionExpressionValueTask:
     """Compute one section-local amount expression from visible document values."""
 
@@ -176,7 +176,7 @@ class PagesArithmeticSectionExpressionValueTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "object_description_form_sheet",
                 "object_description_invoice_sheet",
                 "object_description_receipt_sheet",
@@ -191,13 +191,13 @@ class PagesArithmeticSectionExpressionValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -206,17 +206,17 @@ class PagesArithmeticSectionExpressionValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_role_to_bbox_id = _operand_evidence_key_map(list(dataset["operand_value_bbox_ids"]))
-        evidence_projection = projected_document_keyed_bbox_evidence(
+        annotation_role_to_bbox_id = _operand_annotation_key_map(list(dataset["operand_value_bbox_ids"]))
+        annotation_projection = projected_document_keyed_bbox_annotation(
             dict(rendered_scene.field_value_bbox_map),
-            dict(evidence_role_to_bbox_id),
+            dict(annotation_role_to_bbox_id),
         )
-        evidence_bboxes = {
+        annotation_bboxes = {
             str(key): list(bbox)
-            for key, bbox in dict(evidence_projection["keyed_bbox_map"]).items()
+            for key, bbox in dict(annotation_projection["keyed_bbox_map"]).items()
         }
         answer_gt = TypedValue(type="string", value=str(dataset["result_value"]))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
 
         field_scan = normalize_int_with_bounds(int(dataset["field_count"]), list(dataset["field_count_range"]))
         operand_scan = normalize_int_with_bounds(len(list(dataset["operand_field_ids"])), [2, 3])
@@ -311,27 +311,27 @@ class PagesArithmeticSectionExpressionValueTask:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "operand_roles": list(evidence_bboxes.keys()),
+                "operand_roles": list(annotation_bboxes.keys()),
                 "operand_role_to_field_id": {
                     str(key): str(field_id)
-                    for key, field_id in zip(evidence_bboxes.keys(), dataset["operand_field_ids"], strict=True)
+                    for key, field_id in zip(annotation_bboxes.keys(), dataset["operand_field_ids"], strict=True)
                 },
-                "operand_role_to_bbox_id": dict(evidence_role_to_bbox_id),
+                "operand_role_to_bbox_id": dict(annotation_role_to_bbox_id),
                 "field_id_sequence": list(dataset["operand_field_ids"]),
                 "bbox_id_sequence": list(dataset["operand_value_bbox_ids"]),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id=f"{self.task_id}_image",
             trace_payload=trace_payload,
@@ -347,4 +347,45 @@ class PagesArithmeticSectionExpressionValueTask:
         )
 
 
-__all__ = ["PagesArithmeticSectionExpressionValueTask"]
+@register_task
+class PagesFormSectionSumTwoAmountsInSectionValueTask(FixedPagesQueryTaskMixin):
+    """Compute the sum of two visible amounts in one document section."""
+
+    task_id = "task_pages__form_section__sum_two_amounts_in_section_value"
+    domain = "pages"
+    task_group = "arithmetic"
+    public_scene_id = "form_section"
+    fixed_query_id = "sum_two_amounts_in_section"
+    source_task_cls = PagesArithmeticSectionExpressionValueTask
+
+
+@register_task
+class PagesFormSectionDifferenceTwoAmountsInSectionValueTask(FixedPagesQueryTaskMixin):
+    """Compute the difference between two visible amounts in one document section."""
+
+    task_id = "task_pages__form_section__difference_two_amounts_in_section_value"
+    domain = "pages"
+    task_group = "arithmetic"
+    public_scene_id = "form_section"
+    fixed_query_id = "difference_two_amounts_in_section"
+    source_task_cls = PagesArithmeticSectionExpressionValueTask
+
+
+@register_task
+class PagesFormSectionSumMinusAmountInSectionValueTask(FixedPagesQueryTaskMixin):
+    """Compute a sum-minus expression over visible amounts in one document section."""
+
+    task_id = "task_pages__form_section__sum_minus_amount_in_section_value"
+    domain = "pages"
+    task_group = "arithmetic"
+    public_scene_id = "form_section"
+    fixed_query_id = "sum_minus_amount_in_section"
+    source_task_cls = PagesArithmeticSectionExpressionValueTask
+
+
+__all__ = [
+    "PagesArithmeticSectionExpressionValueTask",
+    "PagesFormSectionDifferenceTwoAmountsInSectionValueTask",
+    "PagesFormSectionSumMinusAmountInSectionValueTask",
+    "PagesFormSectionSumTwoAmountsInSectionValueTask",
+]

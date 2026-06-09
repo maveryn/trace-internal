@@ -18,6 +18,8 @@ spacing, punctuation, and answer-support needs.
 - `categories/priority_labels.txt` - synthetic priority and risk category labels.
 - `categories/product_labels.txt` - synthetic product or service category labels.
 - `categories/status_labels.txt` - synthetic workflow status category labels.
+- `panel_titles/technical_topics.txt` - synthetic technical and scientific
+  topic labels for chart panel titles and subplot labels.
 - `occupations/occupations_bls_oews.txt` - BLS OEWS occupation titles.
 - `industries/industries_bls_qcew.txt` - BLS QCEW NAICS industry titles.
 - `mixed/proper_labels.txt` - broad people/place/organization/occupation/industry

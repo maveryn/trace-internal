@@ -1,4 +1,4 @@
-"""Shared config, generation, and evidence helpers for arithmetic puzzle tasks."""
+"""Shared config, generation, and annotation helpers for arithmetic puzzle tasks."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.text_rendering import load_font
-from .common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from .common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from .arithmetic_scene import PuzzleArithmeticRenderParams, SUPPORTED_PUZZLE_ARITHMETIC_SCENE_VARIANTS
 from .grid_scene import PuzzleGridRenderParams, SUPPORTED_PUZZLE_GRID_SCENE_VARIANTS
 from ....core.seed import spawn_rng
@@ -724,7 +724,7 @@ __all__ = [
     "adjust_render_params_for_equation_rows",
     "build_arithmetic_equation_dataset_for_variant",
     "build_arithmetic_grid_dataset_for_variant",
-    "projected_puzzle_bbox_evidence",
+    "projected_puzzle_bbox_annotation",
     "resolve_arithmetic_answer_bounds",
     "resolve_arithmetic_render_params",
     "resolve_grid_render_params",

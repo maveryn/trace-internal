@@ -4,26 +4,23 @@
 1. Domain: `geometry`
 2. Task group: `comparison`
 3. Scene id: `graph_paper`
-4. Public query id: `default`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `area_extremum`
-6. Answer type: `option_letter`
-7. Evidence type: `point_set`
+6. Answer schema: `option_letter`
+7. Annotation schema: `point_set`
+
+## Program Contract
+- `label(arg_extreme(visible_graph_paper_items, metric=area_extremum_label_metric, direction)); scene=graph_paper; scope=area_extremum_label`
 
 ## Prompt Bundle
-- Bundle id: `geometry_comparison_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Choose the labeled polygon with the requested area extremum.
-
-The public task uses the shared geometry `comparison` implementation. The concrete query branch is recorded in `query_id` and trace diagnostics; it is not a public sampling unit.
-
-## Evidence
-Verifier evidence is projected from the same generated scene metadata used to compute the answer. Verifiers must not infer answer or evidence from pixels.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Sampling axes, scene/query IDs, prompt bundle IDs, and render choices must be recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/comparison.yaml`

@@ -1,0 +1,12 @@
+dataset_name: example_task_icons__reference_canvas__reference_attribute_match_count
+output_root: outputs/example_task_icons__reference_canvas__reference_attribute_match_count
+instance_version: v0
+image_format: png
+max_attempts_per_instance: 200
+strict_repro: false
+sampling_seed: 31
+tasks:
+  - task_id: task_icons__reference_canvas__reference_attribute_match_count
+    count: 8
+    params:
+      query_id: match_type

@@ -10,12 +10,24 @@ import sqlite3
 from typing import Any, Dict, Iterable, Mapping
 from uuid import uuid4
 
-from .models import FeedbackCommentRecord, FeedbackNoteRecord, FeedbackRecord, SampleRecord, TaskAuditRecord
+from .models import (
+    FeedbackCommentRecord,
+    FeedbackNoteRecord,
+    FeedbackRecord,
+    FeedbackThreadEvent,
+    IllustrationObjectReviewRecord,
+    SampleRecord,
+    TaskAuditRecord,
+    TaxonomyDecisionReviewRecord,
+    ThreeDObjectReviewRecord,
+)
 
 
-VALID_CATEGORIES = {"prompt", "evidence", "rendering", "answer", "calibration", "other"}
+VALID_CATEGORIES = {"prompt", "annotation", "rendering", "answer", "calibration", "other"}
 VALID_SEVERITIES = {"note", "issue", "blocker"}
 VALID_STATUSES = {"open", "resolved"}
+VALID_THREE_D_OBJECT_REVIEW_DECISIONS = {"approve", "remove", "improve"}
+VALID_ILLUSTRATION_OBJECT_REVIEW_DECISIONS = {"approve", "remove", "improve"}
 
 
 class FeedbackStore:
@@ -107,6 +119,48 @@ class FeedbackStore:
                     str(domain),
                     str(scene_id),
                     str(task_id),
+                    now,
+                    now,
+                    str(author).strip(),
+                    category,
+                    severity,
+                    "open",
+                    text,
+                ),
+            )
+        return self.get_feedback(record_id)
+
+    def add_scene_feedback(
+        self,
+        *,
+        domain: str,
+        scene_id: str,
+        comment: str,
+        author: str = "",
+        category: str = "other",
+        severity: str = "issue",
+    ) -> FeedbackRecord:
+        text = str(comment).strip()
+        if not text:
+            raise ValueError("feedback comment must not be empty")
+        category = _normalize_choice(category, VALID_CATEGORIES, "other")
+        severity = _normalize_choice(severity, VALID_SEVERITIES, "issue")
+        now = _now()
+        record_id = uuid4().hex
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO feedback (
+                    id, sample_uid, domain, scene_id, task_id, query_id,
+                    data_rel_path, image_rel_path, instance_seed, sample_content_hash,
+                    created_at, updated_at, author, category, severity, status, comment
+                )
+                VALUES (?, '', ?, ?, '', '', '', '', 0, '', ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    record_id,
+                    str(domain),
+                    str(scene_id),
                     now,
                     now,
                     str(author).strip(),
@@ -309,6 +363,38 @@ class FeedbackStore:
             notes.setdefault(record.feedback_id, []).append(record)
         return notes
 
+    def thread_events_for_feedback(self, feedback_id: str) -> list[FeedbackThreadEvent]:
+        record = self.get_feedback(feedback_id)
+        comments = self.list_comments_for_feedback(feedback_id)
+        notes = self.list_notes_for_feedback(feedback_id)
+        return build_feedback_thread_events(record, comments=comments, notes=notes)
+
+    def thread_events_by_feedback(self, feedback_ids: Iterable[str]) -> Dict[str, list[FeedbackThreadEvent]]:
+        ids = [str(feedback_id) for feedback_id in feedback_ids if str(feedback_id)]
+        if not ids:
+            return {}
+        records: Dict[str, FeedbackRecord] = {}
+        placeholders = ", ".join("?" for _ in ids)
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM feedback WHERE id IN ({placeholders})",
+                tuple(ids),
+            ).fetchall()
+        for row in rows:
+            record = FeedbackRecord.from_row(dict(row))
+            records[record.id] = record
+        comments_by_feedback = self.comments_by_feedback(ids)
+        notes_by_feedback = self.notes_by_feedback(ids)
+        return {
+            feedback_id: build_feedback_thread_events(
+                records[feedback_id],
+                comments=comments_by_feedback.get(feedback_id, []),
+                notes=notes_by_feedback.get(feedback_id, []),
+            )
+            for feedback_id in ids
+            if feedback_id in records
+        }
+
     def get_feedback(self, feedback_id: str) -> FeedbackRecord:
         with self._connect() as conn:
             row = conn.execute("SELECT * FROM feedback WHERE id = ?", (str(feedback_id),)).fetchone()
@@ -350,8 +436,20 @@ class FeedbackStore:
             ).fetchall()
         return [FeedbackRecord.from_row(dict(row)) for row in rows]
 
+    def list_scene_feedback(self, *, domain: str, scene_id: str) -> list[FeedbackRecord]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM feedback
+                WHERE sample_uid = '' AND domain = ? AND scene_id = ? AND task_id = ''
+                ORDER BY created_at DESC, id DESC
+                """,
+                (str(domain), str(scene_id)),
+            ).fetchall()
+        return [FeedbackRecord.from_row(dict(row)) for row in rows]
+
     def counts_by_task(self) -> Dict[str, Dict[str, int]]:
-        raw = self._counts_by(["domain", "scene_id", "task_id"])
+        raw = self._counts_by(["domain", "scene_id", "task_id"], where="task_id != ''")
         return {"/".join(key.split("\x1f")): value for key, value in raw.items()}
 
     def counts_by_scene(self) -> Dict[str, Dict[str, int]]:
@@ -394,7 +492,7 @@ class FeedbackStore:
         task_id: str,
         prompt_pass: bool,
         image_pass: bool,
-        evidence_pass: bool,
+        annotation_pass: bool,
         distribution_pass: bool,
         solve_rate_pass: bool = False,
         notes: str = "",
@@ -409,7 +507,7 @@ class FeedbackStore:
             str(task_id),
             int(bool(prompt_pass)),
             int(bool(image_pass)),
-            int(bool(evidence_pass)),
+            int(bool(annotation_pass)),
             int(bool(distribution_pass)),
             int(bool(solve_rate_pass)),
             str(notes).strip(),
@@ -421,13 +519,13 @@ class FeedbackStore:
                 """
                 INSERT INTO task_audit (
                     domain, scene_id, task_id, prompt_pass, image_pass,
-                    evidence_pass, distribution_pass, solve_rate_pass, notes, updated_at, updated_by
+                    annotation_pass, distribution_pass, solve_rate_pass, notes, updated_at, updated_by
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(domain, scene_id, task_id) DO UPDATE SET
                     prompt_pass = excluded.prompt_pass,
                     image_pass = excluded.image_pass,
-                    evidence_pass = excluded.evidence_pass,
+                    annotation_pass = excluded.annotation_pass,
                     distribution_pass = excluded.distribution_pass,
                     solve_rate_pass = excluded.solve_rate_pass,
                     notes = excluded.notes,
@@ -437,6 +535,268 @@ class FeedbackStore:
                 values,
             )
         return self.get_task_audit(domain=domain, scene_id=scene_id, task_id=task_id)
+
+    def get_taxonomy_decision_review(
+        self,
+        *,
+        round_id: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+    ) -> TaxonomyDecisionReviewRecord:
+        """Return the persisted taxonomy decision approval for one current task."""
+
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM taxonomy_decision_review
+                WHERE round_id = ? AND domain = ? AND scene_id = ? AND task_id = ?
+                """,
+                (str(round_id), str(domain), str(scene_id), str(task_id)),
+            ).fetchone()
+        if row is None:
+            return TaxonomyDecisionReviewRecord.empty(
+                round_id=str(round_id),
+                domain=str(domain),
+                scene_id=str(scene_id),
+                task_id=str(task_id),
+            )
+        return TaxonomyDecisionReviewRecord.from_row(dict(row))
+
+    def taxonomy_decision_reviews_by_task(
+        self,
+        *,
+        round_id: str,
+    ) -> Dict[str, TaxonomyDecisionReviewRecord]:
+        """Return taxonomy approvals keyed by domain/scene/task for one round."""
+
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM taxonomy_decision_review
+                WHERE round_id = ?
+                ORDER BY domain, scene_id, task_id
+                """,
+                (str(round_id),),
+            ).fetchall()
+        return {
+            "/".join([str(row["domain"]), str(row["scene_id"]), str(row["task_id"])]): TaxonomyDecisionReviewRecord.from_row(dict(row))
+            for row in rows
+        }
+
+    def update_taxonomy_decision_review(
+        self,
+        *,
+        round_id: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+        approved: bool,
+        notes: str = "",
+        updated_by: str = "",
+    ) -> TaxonomyDecisionReviewRecord:
+        """Upsert one taxonomy task-boundary approval record."""
+
+        now = _now()
+        values = (
+            str(round_id),
+            str(domain),
+            str(scene_id),
+            str(task_id),
+            int(bool(approved)),
+            str(notes).strip(),
+            now,
+            str(updated_by).strip(),
+        )
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO taxonomy_decision_review (
+                    round_id, domain, scene_id, task_id, approved, notes, updated_at, updated_by
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(round_id, domain, scene_id, task_id) DO UPDATE SET
+                    approved = excluded.approved,
+                    notes = excluded.notes,
+                    updated_at = excluded.updated_at,
+                    updated_by = excluded.updated_by
+                """,
+                values,
+            )
+        return self.get_taxonomy_decision_review(
+            round_id=round_id,
+            domain=domain,
+            scene_id=scene_id,
+            task_id=task_id,
+        )
+
+    def get_three_d_object_review(self, *, profile_id: str) -> ThreeDObjectReviewRecord:
+        """Return the persisted review decision for one canonical 3D object profile."""
+
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM three_d_object_review
+                WHERE profile_id = ?
+                """,
+                (str(profile_id),),
+            ).fetchone()
+        if row is None:
+            return ThreeDObjectReviewRecord.empty(profile_id=str(profile_id))
+        return ThreeDObjectReviewRecord.from_row(dict(row))
+
+    def three_d_object_reviews_by_profile(self) -> Dict[str, ThreeDObjectReviewRecord]:
+        """Return persisted 3D object review decisions keyed by profile id."""
+
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM three_d_object_review
+                ORDER BY source_scene, renderer, object_type, profile_id
+                """
+            ).fetchall()
+        return {str(row["profile_id"]): ThreeDObjectReviewRecord.from_row(dict(row)) for row in rows}
+
+    def update_three_d_object_review(
+        self,
+        *,
+        profile_id: str,
+        canonical_id: str = "",
+        object_type: str = "",
+        renderer: str = "",
+        source_scene: str = "",
+        decision: str = "",
+        notes: str = "",
+        updated_by: str = "",
+    ) -> ThreeDObjectReviewRecord:
+        """Upsert one 3D object profile review decision."""
+
+        decision_text = str(decision or "").strip().lower()
+        if decision_text not in VALID_THREE_D_OBJECT_REVIEW_DECISIONS:
+            decision_text = ""
+        now = _now()
+        values = (
+            str(profile_id),
+            str(canonical_id),
+            str(object_type),
+            str(renderer),
+            str(source_scene),
+            decision_text,
+            str(notes).strip(),
+            now,
+            str(updated_by).strip(),
+        )
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO three_d_object_review (
+                    profile_id, canonical_id, object_type, renderer, source_scene,
+                    decision, notes, updated_at, updated_by
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(profile_id) DO UPDATE SET
+                    canonical_id = excluded.canonical_id,
+                    object_type = excluded.object_type,
+                    renderer = excluded.renderer,
+                    source_scene = excluded.source_scene,
+                    decision = excluded.decision,
+                    notes = excluded.notes,
+                    updated_at = excluded.updated_at,
+                    updated_by = excluded.updated_by
+                """,
+                values,
+            )
+        return self.get_three_d_object_review(profile_id=profile_id)
+
+    def export_three_d_object_reviews_jsonl(self) -> str:
+        return "\n".join(
+            json.dumps(asdict(record), ensure_ascii=False, sort_keys=True)
+            for record in self.three_d_object_reviews_by_profile().values()
+        )
+
+    def get_illustration_object_review(self, *, item_id: str) -> IllustrationObjectReviewRecord:
+        """Return the persisted review decision for one illustration object preview."""
+
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM illustration_object_review
+                WHERE item_id = ?
+                """,
+                (str(item_id),),
+            ).fetchone()
+        if row is None:
+            return IllustrationObjectReviewRecord.empty(item_id=str(item_id))
+        return IllustrationObjectReviewRecord.from_row(dict(row))
+
+    def illustration_object_reviews_by_item(self) -> Dict[str, IllustrationObjectReviewRecord]:
+        """Return persisted illustration object review decisions keyed by item id."""
+
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM illustration_object_review
+                ORDER BY renderer_style, category, object_type, label, item_id
+                """
+            ).fetchall()
+        return {str(row["item_id"]): IllustrationObjectReviewRecord.from_row(dict(row)) for row in rows}
+
+    def update_illustration_object_review(
+        self,
+        *,
+        item_id: str,
+        renderer_style: str = "",
+        category: str = "",
+        object_type: str = "",
+        label: str = "",
+        decision: str = "",
+        notes: str = "",
+        updated_by: str = "",
+    ) -> IllustrationObjectReviewRecord:
+        """Upsert one illustration object renderer review decision."""
+
+        decision_text = str(decision or "").strip().lower()
+        if decision_text not in VALID_ILLUSTRATION_OBJECT_REVIEW_DECISIONS:
+            decision_text = ""
+        now = _now()
+        values = (
+            str(item_id),
+            str(renderer_style),
+            str(category),
+            str(object_type),
+            str(label),
+            decision_text,
+            str(notes).strip(),
+            now,
+            str(updated_by).strip(),
+        )
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO illustration_object_review (
+                    item_id, renderer_style, category, object_type, label,
+                    decision, notes, updated_at, updated_by
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(item_id) DO UPDATE SET
+                    renderer_style = excluded.renderer_style,
+                    category = excluded.category,
+                    object_type = excluded.object_type,
+                    label = excluded.label,
+                    decision = excluded.decision,
+                    notes = excluded.notes,
+                    updated_at = excluded.updated_at,
+                    updated_by = excluded.updated_by
+                """,
+                values,
+            )
+        return self.get_illustration_object_review(item_id=item_id)
+
+    def export_illustration_object_reviews_jsonl(self) -> str:
+        return "\n".join(
+            json.dumps(asdict(record), ensure_ascii=False, sort_keys=True)
+            for record in self.illustration_object_reviews_by_item().values()
+        )
 
     def export_records(self, *, include_resolved: bool = True) -> Iterable[Dict[str, Any]]:
         sql = "SELECT * FROM feedback"
@@ -566,7 +926,7 @@ class FeedbackStore:
                     task_id TEXT NOT NULL,
                     prompt_pass INTEGER NOT NULL DEFAULT 0,
                     image_pass INTEGER NOT NULL DEFAULT 0,
-                    evidence_pass INTEGER NOT NULL DEFAULT 0,
+                    annotation_pass INTEGER NOT NULL DEFAULT 0,
                     distribution_pass INTEGER NOT NULL DEFAULT 0,
                     solve_rate_pass INTEGER NOT NULL DEFAULT 0,
                     notes TEXT NOT NULL DEFAULT '',
@@ -579,6 +939,69 @@ class FeedbackStore:
             columns = {str(row["name"]) for row in conn.execute("PRAGMA table_info(task_audit)").fetchall()}
             if "solve_rate_pass" not in columns:
                 conn.execute("ALTER TABLE task_audit ADD COLUMN solve_rate_pass INTEGER NOT NULL DEFAULT 0")
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS taxonomy_decision_review (
+                    round_id TEXT NOT NULL,
+                    domain TEXT NOT NULL,
+                    scene_id TEXT NOT NULL,
+                    task_id TEXT NOT NULL,
+                    approved INTEGER NOT NULL DEFAULT 0,
+                    notes TEXT NOT NULL DEFAULT '',
+                    updated_at TEXT NOT NULL,
+                    updated_by TEXT NOT NULL DEFAULT '',
+                    PRIMARY KEY (round_id, domain, scene_id, task_id)
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_taxonomy_decision_review_round
+                ON taxonomy_decision_review(round_id, approved)
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS three_d_object_review (
+                    profile_id TEXT PRIMARY KEY,
+                    canonical_id TEXT NOT NULL DEFAULT '',
+                    object_type TEXT NOT NULL DEFAULT '',
+                    renderer TEXT NOT NULL DEFAULT '',
+                    source_scene TEXT NOT NULL DEFAULT '',
+                    decision TEXT NOT NULL DEFAULT '',
+                    notes TEXT NOT NULL DEFAULT '',
+                    updated_at TEXT NOT NULL,
+                    updated_by TEXT NOT NULL DEFAULT ''
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_three_d_object_review_decision
+                ON three_d_object_review(decision, source_scene, renderer)
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS illustration_object_review (
+                    item_id TEXT PRIMARY KEY,
+                    renderer_style TEXT NOT NULL DEFAULT '',
+                    category TEXT NOT NULL DEFAULT '',
+                    object_type TEXT NOT NULL DEFAULT '',
+                    label TEXT NOT NULL DEFAULT '',
+                    decision TEXT NOT NULL DEFAULT '',
+                    notes TEXT NOT NULL DEFAULT '',
+                    updated_at TEXT NOT NULL,
+                    updated_by TEXT NOT NULL DEFAULT ''
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_illustration_object_review_decision
+                ON illustration_object_review(decision, renderer_style, category)
+                """
+            )
 
 
 def _now() -> str:
@@ -588,3 +1011,43 @@ def _now() -> str:
 def _normalize_choice(value: str, allowed: set[str], fallback: str) -> str:
     text = str(value).strip().lower()
     return text if text in allowed else fallback
+
+
+def build_feedback_thread_events(
+    record: FeedbackRecord,
+    *,
+    comments: Iterable[FeedbackCommentRecord],
+    notes: Iterable[FeedbackNoteRecord],
+) -> list[FeedbackThreadEvent]:
+    """Merge reviewer feedback/comments and agent notes into chronological order."""
+
+    events = [
+        FeedbackThreadEvent(
+            kind="reviewer",
+            created_at=str(record.created_at),
+            author=str(record.author),
+            text=str(record.comment),
+            label="Reviewer issue",
+        )
+    ]
+    events.extend(
+        FeedbackThreadEvent(
+            kind="reviewer",
+            created_at=str(comment.created_at),
+            author=str(comment.author),
+            text=str(comment.comment),
+            label="Reviewer follow-up",
+        )
+        for comment in comments
+    )
+    events.extend(
+        FeedbackThreadEvent(
+            kind="agent",
+            created_at=str(note.created_at),
+            author=str(note.author),
+            text=str(note.note),
+            label="Agent repair note",
+        )
+        for note in notes
+    )
+    return sorted(events, key=lambda event: (event.created_at, 0 if event.kind == "reviewer" else 1, event.text))

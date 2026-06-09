@@ -29,8 +29,8 @@ _ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
     r'^Use a valid JSON object with key "answer" for the final answer\.\s*$',
     re.IGNORECASE,
 )
-_ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
-    r'^Use a valid JSON object with keys (?:"evidence" and "answer" in that order|"answer" and "evidence") for the final answer\.\s*$',
+_ANSWER_AND_ANNOTATION_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with keys (?:"annotation" and "answer" in that order|"answer" and "annotation") for the final answer\.\s*$',
     re.IGNORECASE,
 )
 
@@ -48,16 +48,16 @@ def _render_template(
     return rendered
 
 
-def _strip_generic_output_contract_line(rendered_mode_text: str, *, answer_or_evidence_key: str | None) -> str:
+def _strip_generic_output_contract_line(rendered_mode_text: str, *, answer_or_annotation_key: str | None) -> str:
     """Remove generic schema boilerplate while preserving task-specific format guidance."""
-    if not rendered_mode_text or answer_or_evidence_key is None:
+    if not rendered_mode_text or answer_or_annotation_key is None:
         return rendered_mode_text
 
     schema_line_re = (
         _ANSWER_ONLY_SCHEMA_LINE_RE
-        if answer_or_evidence_key == "answer_only"
-        else _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE
-        if answer_or_evidence_key == "answer_and_evidence"
+        if answer_or_annotation_key == "answer_only"
+        else _ANSWER_AND_ANNOTATION_SCHEMA_LINE_RE
+        if answer_or_annotation_key == "answer_and_annotation"
         else None
     )
     if schema_line_re is None:
@@ -81,7 +81,7 @@ def _validate_required_slots(
     scene_key: str,
     task_key: str,
     query_key: str | None,
-    answer_or_evidence_key: str | None,
+    answer_or_annotation_key: str | None,
     slots: Mapping[str, Any],
 ) -> None:
     """Ensure all slots declared by the selected scene/task/query keys are present."""
@@ -93,8 +93,8 @@ def _validate_required_slots(
         else ()
     )
     required_mode = (
-        required_slots_by_key.get(f"answer_or_evidence:{answer_or_evidence_key}", ())
-        if answer_or_evidence_key
+        required_slots_by_key.get(f"answer_or_annotation:{answer_or_annotation_key}", ())
+        if answer_or_annotation_key
         else ()
     )
     missing = [
@@ -106,18 +106,18 @@ def _validate_required_slots(
         raise ValueError(f"missing required prompt slots: {sorted(set(missing))}")
 
 
-def _resolve_answer_or_evidence_key(bundle, requested_key: str | None) -> str | None:
-    """Resolve optional answer/evidence mode key for one bundle."""
-    mode_templates = bundle.answer_or_evidence_templates
+def _resolve_answer_or_annotation_key(bundle, requested_key: str | None) -> str | None:
+    """Resolve optional answer/annotation mode key for one bundle."""
+    mode_templates = bundle.answer_or_annotation_templates
     if not mode_templates:
         return None
     if requested_key is not None:
         key = str(requested_key).strip()
         if key not in mode_templates:
-            raise ValueError(f"missing answer_or_evidence key in bundle: {key}")
+            raise ValueError(f"missing answer_or_annotation key in bundle: {key}")
         return key
-    if "answer_and_evidence" in mode_templates:
-        return "answer_and_evidence"
+    if "answer_and_annotation" in mode_templates:
+        return "answer_and_annotation"
     return sorted(mode_templates.keys())[0]
 
 
@@ -129,7 +129,7 @@ def render_prompt(
     scene_key: str,
     task_key: str,
     query_key: str | None = None,
-    answer_or_evidence_key: str | None = None,
+    answer_or_annotation_key: str | None = None,
     slots: Mapping[str, Any],
     instance_seed: int,
 ) -> PromptRenderResult:
@@ -147,13 +147,13 @@ def render_prompt(
     else:
         resolved_query_key = None
 
-    resolved_mode_key = _resolve_answer_or_evidence_key(bundle, answer_or_evidence_key)
+    resolved_mode_key = _resolve_answer_or_annotation_key(bundle, answer_or_annotation_key)
     _validate_required_slots(
         bundle.required_slots_by_key,
         scene_key=scene_key,
         task_key=task_key,
         query_key=resolved_query_key,
-        answer_or_evidence_key=resolved_mode_key,
+        answer_or_annotation_key=resolved_mode_key,
         slots=slots,
     )
 
@@ -182,12 +182,12 @@ def render_prompt(
     mode_count = None
     if resolved_mode_key is not None:
         mode_template, mode_idx, mode_count = choose_variant(
-            bundle.answer_or_evidence_templates[resolved_mode_key],
+            bundle.answer_or_annotation_templates[resolved_mode_key],
             instance_seed=instance_seed,
-            namespace=f"prompt.answer_or_evidence.{resolved_mode_key}",
+            namespace=f"prompt.answer_or_annotation.{resolved_mode_key}",
         )
         mode_text = _render_template(mode_template, slots, allow_empty=True)
-        mode_text = _strip_generic_output_contract_line(mode_text, answer_or_evidence_key=resolved_mode_key)
+        mode_text = _strip_generic_output_contract_line(mode_text, answer_or_annotation_key=resolved_mode_key)
 
     scene_text = _render_template(scene_template, slots)
     task_text = _render_template(task_template, slots, allow_empty=bool(bundle.allow_empty_task_templates))
@@ -214,9 +214,9 @@ def render_prompt(
     if resolved_query_key is not None and query_count is not None:
         metadata["variant_count_by_key"][f"query:{resolved_query_key}"] = int(query_count)
     if resolved_mode_key is not None and mode_idx is not None and mode_count is not None:
-        metadata["answer_or_evidence_key"] = str(resolved_mode_key)
-        metadata["answer_or_evidence_query_id_index"] = int(mode_idx)
-        metadata["variant_count_by_key"][f"answer_or_evidence:{resolved_mode_key}"] = int(mode_count)
+        metadata["answer_or_annotation_key"] = str(resolved_mode_key)
+        metadata["answer_or_annotation_query_id_index"] = int(mode_idx)
+        metadata["variant_count_by_key"][f"answer_or_annotation:{resolved_mode_key}"] = int(mode_count)
     return PromptRenderResult(prompt=prompt, metadata=metadata)
 
 
@@ -228,15 +228,15 @@ def render_prompt_variants(
     scene_key: str,
     task_key: str,
     query_key: str | None = None,
-    answer_or_evidence_keys: Sequence[str],
+    answer_or_annotation_keys: Sequence[str],
     slots: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, PromptRenderResult]:
-    """Render multiple answer/evidence prompt modes deterministically for one instance."""
+    """Render multiple answer/annotation prompt modes deterministically for one instance."""
     rendered: Dict[str, PromptRenderResult] = {}
-    for key in [str(item).strip() for item in answer_or_evidence_keys]:
+    for key in [str(item).strip() for item in answer_or_annotation_keys]:
         if not key:
-            raise ValueError("answer_or_evidence_keys must not contain empty values")
+            raise ValueError("answer_or_annotation_keys must not contain empty values")
         rendered[key] = render_prompt(
             domain=domain,
             task_group=task_group,
@@ -244,7 +244,7 @@ def render_prompt_variants(
             scene_key=scene_key,
             task_key=task_key,
             query_key=query_key,
-            answer_or_evidence_key=key,
+            answer_or_annotation_key=key,
             slots=slots,
             instance_seed=instance_seed,
         )

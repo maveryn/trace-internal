@@ -25,7 +25,7 @@ from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
+    projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
@@ -36,9 +36,14 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
 SCENE_ID = "arithmetic_constraint"
-TASK_ID = "task_puzzles__arithmetic_constraint__arithmetic_constraint_value"
-CRYPTARITHM_TASK_ID = "task_puzzles__arithmetic_constraint__cryptarithm_digit_value"
-OPERATOR_GRID_TASK_ID = "task_puzzles__arithmetic_constraint__operator_grid_value"
+INTERNAL_TASK_ID = "puzzles_arithmetic_constraint_internal"
+CONSECUTIVE_WINDOW_SUM_TASK_ID = "task_puzzles__arithmetic_constraint__consecutive_window_sum_value"
+EQUAL_SUM_LINE_CONSTRAINT_TASK_ID = "task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value"
+PAIRED_CLUSTER_SUM_RELATION_TASK_ID = "task_puzzles__arithmetic_constraint__paired_cluster_sum_relation_value"
+LETTER_DIGIT_TASK_ID = "task_puzzles__arithmetic_constraint__letter_digit_value"
+VERTICAL_ARITHMETIC_HIDDEN_DIGIT_TASK_ID = "task_puzzles__arithmetic_constraint__vertical_arithmetic_hidden_digit_value"
+OPERATION_TABLE_CELL_TASK_ID = "task_puzzles__arithmetic_constraint__operation_table_cell_value"
+ROW_COLUMN_TOTAL_MISSING_TASK_ID = "task_puzzles__arithmetic_constraint__row_column_total_missing_value"
 NUMBER_WALL_TASK_ID = "task_puzzles__arithmetic_constraint__number_wall_value"
 ARITHMETIC_CONSTRAINT_QUERY_IDS: Tuple[str, ...] = (
     "equal_sum_line_constraint_value",
@@ -61,9 +66,13 @@ NUMBER_WALL_QUERY_IDS: Tuple[str, ...] = (
 )
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ARITHMETIC_CONSTRAINT_QUERY_IDS
 SUPPORTED_QUERY_IDS_BY_TASK_ID: Dict[str, Tuple[str, ...]] = {
-    TASK_ID: ARITHMETIC_CONSTRAINT_QUERY_IDS,
-    CRYPTARITHM_TASK_ID: CRYPTARITHM_QUERY_IDS,
-    OPERATOR_GRID_TASK_ID: OPERATOR_GRID_QUERY_IDS,
+    CONSECUTIVE_WINDOW_SUM_TASK_ID: ("consecutive_window_sum_value",),
+    EQUAL_SUM_LINE_CONSTRAINT_TASK_ID: ("equal_sum_line_constraint_value",),
+    PAIRED_CLUSTER_SUM_RELATION_TASK_ID: ("paired_cluster_sum_relation_value",),
+    LETTER_DIGIT_TASK_ID: ("letter_digit_value",),
+    VERTICAL_ARITHMETIC_HIDDEN_DIGIT_TASK_ID: ("hidden_addition_digit_value", "hidden_subtraction_digit_value"),
+    OPERATION_TABLE_CELL_TASK_ID: ("operation_table_cell_value",),
+    ROW_COLUMN_TOTAL_MISSING_TASK_ID: ("row_column_total_missing_value",),
     NUMBER_WALL_TASK_ID: NUMBER_WALL_QUERY_IDS,
 }
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -143,7 +152,7 @@ def _sample_int_from_range(
     return int(rng.randint(int(low), int(high)))
 
 
-def _load_defaults(task_id: str = TASK_ID) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
+def _load_defaults(task_id: str = INTERNAL_TASK_ID) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
     return load_puzzle_task_defaults(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
 
 
@@ -152,7 +161,7 @@ def _resolve_query_id(
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
     supported_query_ids: Sequence[str] = SUPPORTED_QUERY_IDS,
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_puzzle_axis_variant(
@@ -173,7 +182,7 @@ def _resolve_scene_variant(
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_puzzle_axis_variant(
         params=params,
@@ -194,7 +203,7 @@ def _resolve_answer_value(
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     query_id: str,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Tuple[int, List[int]]:
     query_min_key = f"{query_id}_answer_min"
     query_max_key = f"{query_id}_answer_max"
@@ -260,7 +269,7 @@ def _build_equal_sum_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.equal_sum")
     value_min, value_max = _get_range(
@@ -319,7 +328,7 @@ def _build_cluster_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.cluster")
     value_min, value_max = _get_range(
@@ -391,7 +400,7 @@ def _build_consecutive_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.consecutive")
     value_min, value_max = _get_range(
@@ -554,7 +563,7 @@ def _build_letter_digit_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = CRYPTARITHM_TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.letter_digit")
     letter_count = _sample_int_from_range(
@@ -674,7 +683,7 @@ def _build_row_column_total_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = OPERATOR_GRID_TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.row_column_total")
     value_min, value_max = _get_range(
@@ -766,7 +775,7 @@ def _build_operation_table_dataset(
     instance_seed: int,
     answer_value: int,
     answer_support: Sequence[int],
-    task_id: str = OPERATOR_GRID_TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{task_id}.operation_table")
     max_header = _get_int(params, gen_defaults, "operation_table_header_max", 12)
@@ -1104,9 +1113,9 @@ def _build_dataset(
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     query_id: str,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Dict[str, Any]:
-    if str(task_id) == CRYPTARITHM_TASK_ID:
+    if str(query_id) in CRYPTARITHM_QUERY_IDS:
         return _build_cryptarithm_dataset(
             params=params,
             gen_defaults=gen_defaults,
@@ -1114,7 +1123,7 @@ def _build_dataset(
             query_id=str(query_id),
             task_id=str(task_id),
         )
-    if str(task_id) == OPERATOR_GRID_TASK_ID:
+    if str(query_id) in OPERATOR_GRID_QUERY_IDS:
         return _build_operator_grid_dataset(
             params=params,
             gen_defaults=gen_defaults,
@@ -1172,7 +1181,7 @@ def _resolve_render_params(
     render_defaults: Mapping[str, Any],
     *,
     instance_seed: int,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> ArithmeticRenderParams:
     unit_scale, unit_meta = resolve_puzzle_unit_size_scale(
         params,
@@ -2092,7 +2101,7 @@ def _build_prompt(
     scene_variant: str,
     prompt_defaults: Mapping[str, Any],
     instance_seed: int,
-    task_id: str = TASK_ID,
+    task_id: str = INTERNAL_TASK_ID,
 ) -> Tuple[str, Dict[str, str], Dict[str, Any]]:
     required_keys = (
         "bundle_id",
@@ -2102,7 +2111,7 @@ def _build_prompt(
         "json_output_contract_answer_only",
         "answer_hint",
         f"object_description_{scene_variant}",
-        f"evidence_hint_{query_id}",
+        f"annotation_hint_{query_id}",
         f"json_example_{query_id}",
         f"json_example_answer_only_{query_id}",
     )
@@ -2118,13 +2127,13 @@ def _build_prompt(
         scene_key=str(prompt_config["scene_key"]),
         task_key=str(prompt_config["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_config[f"object_description_{scene_variant}"]),
             "json_output_contract": str(prompt_config["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_config["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_config["answer_hint"]),
-            "evidence_hint": str(prompt_config[f"evidence_hint_{query_id}"]),
+            "annotation_hint": str(prompt_config[f"annotation_hint_{query_id}"]),
             "json_example": str(prompt_config[f"json_example_{query_id}"]),
             "json_example_answer_only": str(prompt_config[f"json_example_answer_only_{query_id}"]),
         },
@@ -2142,7 +2151,7 @@ def _build_prompt(
 class _ArithmeticConstraintSceneTask:
     """Base class for integer arithmetic puzzles rendered in the shared scene."""
 
-    task_id = TASK_ID
+    task_id = INTERNAL_TASK_ID
     domain = "puzzles"
     task_group = "logic"
     default_dataset_enabled = True
@@ -2226,17 +2235,17 @@ class _ArithmeticConstraintSceneTask:
             instance_seed=int(instance_seed),
             task_id=task_id,
         )
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.item_bbox_map,
             [str(item_id) for item_id in dataset["supporting_item_ids"]],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         query_params = {
             "query_id": str(query_id),
@@ -2291,7 +2300,7 @@ class _ArithmeticConstraintSceneTask:
                     "image_id": "img0",
                     "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                     "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                    "evidence_source": "item_bboxes_px",
+                    "annotation_source": "item_bboxes_px",
                 },
                 render_params.unit_size_jitter,
             ),
@@ -2308,12 +2317,12 @@ class _ArithmeticConstraintSceneTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "value": list(annotation_bboxes),
             },
         }
         visual_scan_units = {
@@ -2340,7 +2349,7 @@ class _ArithmeticConstraintSceneTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -2353,27 +2362,59 @@ class _ArithmeticConstraintSceneTask:
 
 
 @register_task
-class PuzzlesLogicArithmeticConstraintValueTask(_ArithmeticConstraintSceneTask):
-    """Solve one integer in a compact arithmetic-constraint diagram."""
+class PuzzlesLogicConsecutiveWindowSumValueTask(_ArithmeticConstraintSceneTask):
+    """Solve a missing integer in a consecutive-window sum diagram."""
 
-    task_id = TASK_ID
-    supported_query_ids = ARITHMETIC_CONSTRAINT_QUERY_IDS
-
-
-@register_task
-class PuzzlesLogicCryptarithmDigitValueTask(_ArithmeticConstraintSceneTask):
-    """Solve one hidden digit in a compact cryptarithm diagram."""
-
-    task_id = CRYPTARITHM_TASK_ID
-    supported_query_ids = CRYPTARITHM_QUERY_IDS
+    task_id = CONSECUTIVE_WINDOW_SUM_TASK_ID
+    supported_query_ids = ("consecutive_window_sum_value",)
 
 
 @register_task
-class PuzzlesLogicOperatorGridValueTask(_ArithmeticConstraintSceneTask):
-    """Solve one hidden value in an operator-grid arithmetic puzzle."""
+class PuzzlesLogicEqualSumLineConstraintValueTask(_ArithmeticConstraintSceneTask):
+    """Solve a missing integer in an equal-sum line constraint diagram."""
 
-    task_id = OPERATOR_GRID_TASK_ID
-    supported_query_ids = OPERATOR_GRID_QUERY_IDS
+    task_id = EQUAL_SUM_LINE_CONSTRAINT_TASK_ID
+    supported_query_ids = ("equal_sum_line_constraint_value",)
+
+
+@register_task
+class PuzzlesLogicPairedClusterSumRelationValueTask(_ArithmeticConstraintSceneTask):
+    """Solve a missing integer in a paired-cluster sum relation diagram."""
+
+    task_id = PAIRED_CLUSTER_SUM_RELATION_TASK_ID
+    supported_query_ids = ("paired_cluster_sum_relation_value",)
+
+
+@register_task
+class PuzzlesLogicLetterDigitValueTask(_ArithmeticConstraintSceneTask):
+    """Solve one digit in a letter-digit cryptarithm."""
+
+    task_id = LETTER_DIGIT_TASK_ID
+    supported_query_ids = ("letter_digit_value",)
+
+
+@register_task
+class PuzzlesLogicVerticalArithmeticHiddenDigitValueTask(_ArithmeticConstraintSceneTask):
+    """Solve one hidden digit in vertical addition or subtraction."""
+
+    task_id = VERTICAL_ARITHMETIC_HIDDEN_DIGIT_TASK_ID
+    supported_query_ids = ("hidden_addition_digit_value", "hidden_subtraction_digit_value")
+
+
+@register_task
+class PuzzlesLogicOperationTableCellValueTask(_ArithmeticConstraintSceneTask):
+    """Solve one hidden value in an operation-table arithmetic puzzle."""
+
+    task_id = OPERATION_TABLE_CELL_TASK_ID
+    supported_query_ids = ("operation_table_cell_value",)
+
+
+@register_task
+class PuzzlesLogicRowColumnTotalMissingValueTask(_ArithmeticConstraintSceneTask):
+    """Solve one hidden value from row and column totals."""
+
+    task_id = ROW_COLUMN_TOTAL_MISSING_TASK_ID
+    supported_query_ids = ("row_column_total_missing_value",)
 
 
 @register_task
@@ -2386,18 +2427,26 @@ class PuzzlesLogicNumberWallValueTask(_ArithmeticConstraintSceneTask):
 
 __all__ = [
     "ARITHMETIC_CONSTRAINT_QUERY_IDS",
+    "CONSECUTIVE_WINDOW_SUM_TASK_ID",
     "CRYPTARITHM_QUERY_IDS",
-    "CRYPTARITHM_TASK_ID",
+    "EQUAL_SUM_LINE_CONSTRAINT_TASK_ID",
+    "LETTER_DIGIT_TASK_ID",
     "NUMBER_WALL_QUERY_IDS",
     "NUMBER_WALL_TASK_ID",
+    "OPERATION_TABLE_CELL_TASK_ID",
     "OPERATOR_GRID_QUERY_IDS",
-    "OPERATOR_GRID_TASK_ID",
+    "PAIRED_CLUSTER_SUM_RELATION_TASK_ID",
+    "ROW_COLUMN_TOTAL_MISSING_TASK_ID",
     "SCENE_ID",
     "SUPPORTED_QUERY_IDS",
     "SUPPORTED_QUERY_IDS_BY_TASK_ID",
-    "TASK_ID",
-    "PuzzlesLogicCryptarithmDigitValueTask",
-    "PuzzlesLogicArithmeticConstraintValueTask",
+    "VERTICAL_ARITHMETIC_HIDDEN_DIGIT_TASK_ID",
+    "PuzzlesLogicConsecutiveWindowSumValueTask",
+    "PuzzlesLogicEqualSumLineConstraintValueTask",
+    "PuzzlesLogicLetterDigitValueTask",
     "PuzzlesLogicNumberWallValueTask",
-    "PuzzlesLogicOperatorGridValueTask",
+    "PuzzlesLogicOperationTableCellValueTask",
+    "PuzzlesLogicPairedClusterSumRelationValueTask",
+    "PuzzlesLogicRowColumnTotalMissingValueTask",
+    "PuzzlesLogicVerticalArithmeticHiddenDigitValueTask",
 ]

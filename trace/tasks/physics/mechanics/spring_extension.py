@@ -160,16 +160,16 @@ class _SceneSpec:
     left: _ColumnSpec
     right: _ColumnSpec
     target_answer: int
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered spring-extension scene plus prompt-facing evidence metadata."""
+    """Rendered spring-extension scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
+    annotation_bboxes: List[List[float]]
+    annotation_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     shown_measurement_count: int
@@ -480,7 +480,7 @@ def _sample_scene_spec(
             missing_extension=False,
             detached_weight=False,
         )
-        evidence_entity_ids = (
+        annotation_entity_ids = (
             "left_weight_block",
             "left_extension_marker",
             "right_weight_block",
@@ -526,7 +526,7 @@ def _sample_scene_spec(
             missing_extension=True,
             detached_weight=True,
         )
-        evidence_entity_ids = (
+        annotation_entity_ids = (
             "left_weight_block",
             "left_extension_marker",
             "right_weight_block",
@@ -576,7 +576,7 @@ def _sample_scene_spec(
             missing_extension=False,
             detached_weight=False,
         )
-        evidence_entity_ids = ("left_extension_marker", "right_extension_marker")
+        annotation_entity_ids = ("left_extension_marker", "right_extension_marker")
 
     return _SceneSpec(
         scene_variant=str(scene_variant),
@@ -585,7 +585,7 @@ def _sample_scene_spec(
         left=left,
         right=right,
         target_answer=int(target_answer),
-        evidence_entity_ids=tuple(str(item) for item in evidence_entity_ids),
+        annotation_entity_ids=tuple(str(item) for item in annotation_entity_ids),
     )
 
 
@@ -627,7 +627,7 @@ def _resolve_spring_layout_placement(
     instance_seed: int,
     scene_variant: str,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve whole-spring-diagram placement before rendering and evidence projection."""
+    """Resolve whole-spring-diagram placement before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -1200,7 +1200,7 @@ def _render_scene(
         for entity in scene_entities
         if entity.get("bbox_px") is not None
     }
-    evidence_bboxes = [list(entity_bbox_map[entity_id]) for entity_id in scene_spec.evidence_entity_ids if entity_id in entity_bbox_map]
+    annotation_bboxes = [list(entity_bbox_map[entity_id]) for entity_id in scene_spec.annotation_entity_ids if entity_id in entity_bbox_map]
     shown_measurement_count = sum(
         1
         for spec in (scene_spec.left, scene_spec.right)
@@ -1211,8 +1211,8 @@ def _render_scene(
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
         "left_card_bbox_px": [round(float(value), 3) for value in left_card_bbox],
         "right_card_bbox_px": [round(float(value), 3) for value in right_card_bbox],
-        "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
-        "evidence_bboxes_px": [list(bbox) for bbox in evidence_bboxes],
+        "annotation_entity_ids": list(scene_spec.annotation_entity_ids),
+        "annotation_bboxes_px": [list(bbox) for bbox in annotation_bboxes],
         "entity_bbox_map_px": {str(key): list(value) for key, value in entity_bbox_map.items()},
         "columns": {
             "left": dict(left_trace),
@@ -1221,8 +1221,8 @@ def _render_scene(
     }
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_entity_ids=list(scene_spec.evidence_entity_ids),
+        annotation_bboxes=[list(bbox) for bbox in annotation_bboxes],
+        annotation_entity_ids=list(scene_spec.annotation_entity_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
         shown_measurement_count=int(shown_measurement_count),
@@ -1233,19 +1233,19 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for the active spring query."""
 
     if str(query_id) == "extension_difference":
-        evidence = [[210, 222, 260, 232], [620, 274, 670, 284]]
+        annotation = [[210, 222, 260, 232], [620, 274, 670, 284]]
     else:
-        evidence = {
+        annotation = {
             "reference_weight": [170, 342, 248, 396],
             "reference_extension": [204, 252, 256, 262],
             "query_weight": [595, 226, 647, 260],
             "query_extension": [598, 304, 650, 314],
         }
-    return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
+    return build_prompt_json_examples(annotation_value=annotation, answer_type="integer")
 
 
-def _spring_missing_value_evidence_map(rendered_scene: _RenderedScene) -> Dict[str, List[float]]:
-    """Return role-keyed evidence boxes for the public missing-value task."""
+def _spring_missing_value_annotation_map(rendered_scene: _RenderedScene) -> Dict[str, List[float]]:
+    """Return role-keyed annotation boxes for the public missing-value task."""
 
     entity_bbox_map = dict(rendered_scene.render_map.get("entity_bbox_map_px", {}))
     return {
@@ -1380,9 +1380,9 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "object_description_paired_springs",
                     "object_description_staggered_springs",
                     "object_description_textured_spring",
-                    "evidence_hint_missing_weight",
-                    "evidence_hint_missing_extension",
-                    "evidence_hint_difference",
+                    "annotation_hint_missing_weight",
+                    "annotation_hint_missing_extension",
+                    "annotation_hint_difference",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1394,7 +1394,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.public_query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "solve_for": str(axes.solve_for or ""),
@@ -1403,12 +1403,12 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(
-                        prompt_defaults["evidence_hint_difference"]
+                    "annotation_hint": str(
+                        prompt_defaults["annotation_hint_difference"]
                         if str(axes.query_id) == "extension_difference"
-                        else prompt_defaults["evidence_hint_missing_weight"]
+                        else prompt_defaults["annotation_hint_missing_weight"]
                         if str(axes.query_id) == "missing_weight_for_extension"
-                        else prompt_defaults["evidence_hint_missing_extension"]
+                        else prompt_defaults["annotation_hint_missing_extension"]
                     ),
                 },
                 instance_seed=int(instance_seed),
@@ -1417,21 +1417,21 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
             if str(axes.public_query_id) == "missing_value":
-                evidence_value = _spring_missing_value_evidence_map(rendered_scene)
-                evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_value))
-                projected_evidence = {
+                annotation_value = _spring_missing_value_annotation_map(rendered_scene)
+                annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
+                projected_annotation = {
                     "type": "keyed_bbox_map",
-                    "keyed_bbox_map": dict(evidence_value),
-                    "pixel_keyed_bbox_map": dict(evidence_value),
+                    "keyed_bbox_map": dict(annotation_value),
+                    "pixel_keyed_bbox_map": dict(annotation_value),
                 }
-                rendered_scene.render_map["evidence_bbox_map_px"] = dict(evidence_value)
+                rendered_scene.render_map["annotation_bbox_map_px"] = dict(annotation_value)
             else:
-                evidence_value = [list(bbox) for bbox in rendered_scene.evidence_bboxes]
-                evidence_gt = TypedValue(type="bbox_set", value=list(evidence_value))
-                projected_evidence = {
+                annotation_value = [list(bbox) for bbox in rendered_scene.annotation_bboxes]
+                annotation_gt = TypedValue(type="bbox_set", value=list(annotation_value))
+                projected_annotation = {
                     "type": "bbox_set",
-                    "bbox_set": list(evidence_value),
-                    "pixel_bbox_set": list(evidence_value),
+                    "bbox_set": list(annotation_value),
+                    "pixel_bbox_set": list(annotation_value),
                 }
             target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_spring_extension_complexity(
@@ -1442,7 +1442,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 target_answer=int(axes.target_answer),
                 scale_factor=int(scene_spec.scale_factor),
                 shown_measurement_count=int(rendered_scene.shown_measurement_count),
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                annotation_count=len(rendered_scene.annotation_bboxes),
             )
             trace_payload = {
                 "scene_ir": {
@@ -1456,7 +1456,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                         "accent_color_name": str(axes.accent_color_name),
                         "scale_factor": int(scene_spec.scale_factor),
                         "target_answer": int(axes.target_answer),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -1531,14 +1531,14 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                         "shown_extension_value": None if scene_spec.right.shown_extension_value is None else int(scene_spec.right.shown_extension_value),
                         "true_extension_value": int(scene_spec.right.true_extension_value),
                     },
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "object_set",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
                 },
-                "projected_evidence": {
-                    **dict(projected_evidence),
+                "projected_annotation": {
+                    **dict(projected_annotation),
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
@@ -1547,7 +1547,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

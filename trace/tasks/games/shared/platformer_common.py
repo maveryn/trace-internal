@@ -9,6 +9,7 @@ from typing import Tuple
 SUPPORTED_PLATFORMER_QUERY_IDS: Tuple[str, ...] = (
     "jump_landing_label",
     "collectible_count",
+    "jump_collectible_score_value",
 )
 SUPPORTED_PLATFORMER_SCENE_VARIANTS: Tuple[str, ...] = ("side_scroller",)
 SUPPORTED_PLATFORMER_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -57,6 +58,8 @@ class PlatformerCollectible:
     radius_norm: float
     on_path: bool
     color_index: int
+    kind: str = "coin"
+    score_value: int | None = None
 
 
 @dataclass(frozen=True)
@@ -77,7 +80,7 @@ class PlatformerSample:
     target_platform_id: str | None
     target_platform_label: str | None
     target_collectible_ids: Tuple[str, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 
@@ -100,7 +103,7 @@ def collectible_entity_id(index: int) -> str:
 
 
 def validate_platformer_sample(sample: PlatformerSample) -> None:
-    """Validate answer and evidence for one Platformer sample."""
+    """Validate answer and annotation for one Platformer sample."""
 
     platform_ids = [str(platform.platform_id) for platform in sample.platforms]
     platform_labels = [str(platform.label) for platform in sample.platforms if str(platform.label)]
@@ -119,25 +122,50 @@ def validate_platformer_sample(sample: PlatformerSample) -> None:
         raise ValueError("collectible ids must be unique")
 
     known_entities = set(platform_ids) | set(hazard_ids) | set(collectible_ids) | {"player"}
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("platformer evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("platformer annotation references unknown entities")
 
     query = str(sample.query_id)
     if query == "jump_landing_label":
         if sample.target_platform_id is None or sample.target_platform_label is None:
             raise ValueError("jump_landing_label requires a target platform")
         expected_answer: str | int = str(sample.target_platform_label)
-        expected_evidence = {str(sample.target_platform_id)}
+        expected_annotation = {str(sample.target_platform_id)}
     elif query == "collectible_count":
         expected_answer = int(len(sample.target_collectible_ids))
-        expected_evidence = set(str(value) for value in sample.target_collectible_ids)
+        expected_annotation = set(str(value) for value in sample.target_collectible_ids)
+    elif query == "jump_collectible_score_value":
+        collectible_by_id = {str(collectible.collectible_id): collectible for collectible in sample.collectibles}
+        expected_annotation = set(str(value) for value in sample.target_collectible_ids)
+        if not expected_annotation:
+            raise ValueError("jump_collectible_score_value requires scored collectibles")
+        saw_coin = False
+        saw_bonus = False
+        score_total = 0
+        for collectible_id in expected_annotation:
+            collectible = collectible_by_id.get(str(collectible_id))
+            if collectible is None:
+                raise ValueError("jump_collectible_score_value target references unknown collectible")
+            if not bool(collectible.on_path):
+                raise ValueError("jump_collectible_score_value target collectibles must lie on the jump arc")
+            if collectible.score_value is None:
+                score_total += 1
+                saw_coin = True
+            else:
+                if int(collectible.score_value) <= 0:
+                    raise ValueError("jump_collectible_score_value bonus scores must be positive")
+                score_total += int(collectible.score_value)
+                saw_bonus = True
+        if not saw_coin or not saw_bonus:
+            raise ValueError("jump_collectible_score_value requires at least one coin and one bonus item")
+        expected_answer = int(score_total)
     else:
         raise ValueError(f"unsupported platformer query_id: {sample.query_id}")
 
     if sample.answer != expected_answer:
         raise ValueError("platformer answer does not match active query")
-    if set(sample.evidence_entity_ids) != expected_evidence:
-        raise ValueError("platformer evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected_annotation:
+        raise ValueError("platformer annotation ids do not match active query")
 
 
 __all__ = [

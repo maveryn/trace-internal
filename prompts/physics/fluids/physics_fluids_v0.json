@@ -8,25 +8,65 @@
       "",
       "",
       ""
+    ],
+    "graduated_cylinder_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "manometer_pressure_difference_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "buoyancy_density_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "fluid_flow_continuity_speed_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ],
     "scene:hydraulic_piston_diagram": [
       "object_description"
+    ],
+    "scene:graduated_cylinder_diagram": [
+      "object_description"
+    ],
+    "scene:manometer_diagram": [
+      "object_description"
+    ],
+    "scene:buoyancy_density_diagram": [
+      "object_description"
+    ],
+    "scene:fluid_flow_diagram": [
+      "object_description"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -34,12 +74,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -47,6 +87,34 @@
       "The image shows {object_description}.",
       "The diagram shows {object_description}.",
       "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "graduated_cylinder_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This measurement diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "manometer_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This fluids diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "buoyancy_density_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This physics diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "fluid_flow_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This fluids diagram shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
     ]
@@ -72,6 +140,48 @@
       "Use the shown forces and input piston area. What output piston area is required at the red `?`?",
       "What output piston area corresponds to the shown input area and force labels?",
       "Determine the missing output piston area for the hydraulic piston system."
+    ],
+    "missing_input_area": [
+      "Using Pascal's law, what input piston area should replace the marked red `?` label?",
+      "The connected fluid transmits equal pressure. What integer input piston area belongs at the marked red `?`?",
+      "Use the shown forces and output piston area. What input piston area is required at the red `?`?",
+      "What input piston area corresponds to the shown output area and force labels?",
+      "Determine the missing input piston area for the hydraulic piston system."
+    ],
+    "single_cylinder_volume_readout": [
+      "What volume does the graduated cylinder show?",
+      "Read the meniscus against the tick marks. What integer volume is shown?",
+      "Using the mL scale, what is the liquid volume in the cylinder?",
+      "What is the cylinder's liquid volume in mL?",
+      "Read the shown graduated-cylinder level. What integer mL value is indicated?"
+    ],
+    "before_after_displacement_volume": [
+      "What volume is displaced, using the before and after cylinder readings?",
+      "Subtract the before reading from the after reading. What displaced volume is shown?",
+      "Using the two mL scales, what is the volume increase after the object is added?",
+      "What integer mL displacement is shown by the before/after cylinder pair?",
+      "Read both meniscus levels and compute the displaced volume in mL."
+    ],
+    "u_tube_pressure_difference": [
+      "Using the shown height difference and rho g conversion label, what is the absolute pressure difference between points A and B?",
+      "What integer pressure difference in kPa is indicated by the manometer between A and B?",
+      "Read the liquid-level height difference and conversion label. What is the absolute pressure difference between A and B?",
+      "Using the manometer height marker, determine the integer pressure difference between pressure points A and B in kPa.",
+      "What absolute pressure difference does the U-tube manometer show between A and B?"
+    ],
+    "floating_object_density_value": [
+      "Using the visible submerged fraction and the liquid density, what is the density of the floating object?",
+      "The object is floating. Compute its density from the submerged fraction and the shown liquid density.",
+      "What is the floating object's density in g/cm^3?",
+      "Use the fraction of the object below the liquid surface. What density does the object have?",
+      "Determine the object's density from the waterline and the liquid-density label."
+    ],
+    "continuity_missing_speed": [
+      "Using steady-flow continuity, what integer speed should replace the missing speed label?",
+      "Use A1 x v1 = A2 x v2 for the two stations. What is the missing flow speed in m/s?",
+      "Read the two area labels and the known speed label. What integer speed belongs at the missing station?",
+      "For this incompressible flow, compute the missing speed from the shown station areas and known speed.",
+      "What integer m/s value completes the continuity relation for station 1 and station 2?"
     ]
   },
   "allow_empty_task_templates": true

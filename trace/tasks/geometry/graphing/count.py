@@ -39,9 +39,9 @@ from ..shared.function_graph_scene import (
     graph_units_to_pixel_float,
 )
 from ..shared.graph_rendering import graph_paper_grid_from_frame
-from ..shared.labeled_point_evidence import (
-    empty_graph_point_set_evidence_artifacts,
-    graph_point_set_evidence_artifacts,
+from ..shared.labeled_point_annotation import (
+    empty_graph_point_set_annotation_artifacts,
+    graph_point_set_annotation_artifacts,
 )
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.shape_style import (
@@ -158,7 +158,7 @@ class _SampledGraphScene:
     """One sampled plotted-function scene before raster rendering."""
 
     polyline_graph: Tuple[GraphPolylinePoint, ...]
-    evidence_graph_points: Tuple[GraphPoint, ...]
+    annotation_graph_points: Tuple[GraphPoint, ...]
     query_line_y: int | None
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
@@ -168,14 +168,14 @@ class _SampledGraphScene:
 
 @dataclass(frozen=True)
 class _RenderedGraphScene:
-    """Rendered scene plus prompt-facing graph-point evidence artifacts."""
+    """Rendered scene plus prompt-facing graph-point annotation artifacts."""
 
     answer_value: int
-    evidence_type: str
-    evidence_value: List[List[float]]
-    projected_evidence: Dict[str, Any]
+    annotation_type: str
+    annotation_value: List[List[float]]
+    projected_annotation: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
-    required_evidence_labels: List[str]
+    required_annotation_labels: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     execution_trace: Dict[str, Any]
@@ -604,7 +604,7 @@ def _build_quadratic_scene(
     a_value = int(rng.choice((-1, 1)))
     h_value = int(rng.randint(-4, 4))
     query_line_y: int | None = None
-    evidence_points: Tuple[GraphPoint, ...]
+    annotation_points: Tuple[GraphPoint, ...]
 
     if str(query_id) != REFERENCE_LINE_CROSSING_COUNT:
         raise ValueError(f"unsupported quadratic query_id: {query_id}")
@@ -612,12 +612,12 @@ def _build_quadratic_scene(
     if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
         if int(target_count) == 0:
             k_value = int(rng.randint(1, 4)) if int(a_value) > 0 else -int(rng.randint(1, 4))
-            evidence_points = tuple()
+            annotation_points = tuple()
         elif int(target_count) == 2:
             root_delta = int(rng.randint(1, 3))
             h_value = int(rng.randint(-6 + root_delta, 6 - root_delta))
             k_value = int(-a_value * (root_delta**2))
-            evidence_points = (
+            annotation_points = (
                 (int(h_value - root_delta), 0),
                 (int(h_value + root_delta), 0),
             )
@@ -629,7 +629,7 @@ def _build_quadratic_scene(
             query_line_y = int(k_value - rng.randint(1, 3)) if int(a_value) > 0 else int(k_value + rng.randint(1, 3))
             if int(query_line_y) == 0:
                 query_line_y += -1 if int(a_value) > 0 else 1
-            evidence_points = tuple()
+            annotation_points = tuple()
         elif int(target_count) == 2:
             root_delta = int(rng.randint(1, 3))
             h_value = int(rng.randint(-6 + root_delta, 6 - root_delta))
@@ -639,7 +639,7 @@ def _build_quadratic_scene(
                 shift = 1 if int(query_line_y) <= 0 else -1
                 k_value += shift
                 query_line_y += shift
-            evidence_points = (
+            annotation_points = (
                 (int(h_value - root_delta), int(query_line_y)),
                 (int(h_value + root_delta), int(query_line_y)),
             )
@@ -651,7 +651,7 @@ def _build_quadratic_scene(
     sample_points = _quadratic_sample_points(a_value=int(a_value), h_value=int(h_value), k_value=int(k_value))
     return _SampledGraphScene(
         polyline_graph=sample_points,
-        evidence_graph_points=tuple(evidence_points),
+        annotation_graph_points=tuple(annotation_points),
         query_line_y=(None if query_line_y is None else int(query_line_y)),
         scene_entities=[
             {
@@ -664,13 +664,13 @@ def _build_quadratic_scene(
         render_map={
             "scene_variant": "quadratic",
             "function_parameters": {"a": int(a_value), "h": int(h_value), "k": int(k_value)},
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         execution_trace={
             "family": "quadratic",
             "parameters": {"a": int(a_value), "h": int(h_value), "k": int(k_value)},
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         object_count=1,
@@ -708,7 +708,7 @@ def _build_absolute_value_scene(
     slope = int(rng.choice((1, 2)))
     h_value = int(rng.randint(-4, 4))
     query_line_y: int | None = None
-    evidence_points: Tuple[GraphPoint, ...]
+    annotation_points: Tuple[GraphPoint, ...]
 
     if str(query_id) != REFERENCE_LINE_CROSSING_COUNT:
         raise ValueError(f"unsupported absolute-value query_id: {query_id}")
@@ -717,12 +717,12 @@ def _build_absolute_value_scene(
         if int(target_count) == 0:
             root_distance = int(rng.randint(1, 3))
             k_value = int(orientation * slope * root_distance)
-            evidence_points = tuple()
+            annotation_points = tuple()
         elif int(target_count) == 2:
             root_distance = int(rng.randint(1, 3))
             h_value = int(rng.randint(-6 + root_distance, 6 - root_distance))
             k_value = int(-orientation * slope * root_distance)
-            evidence_points = (
+            annotation_points = (
                 (int(h_value - root_distance), 0),
                 (int(h_value + root_distance), 0),
             )
@@ -734,7 +734,7 @@ def _build_absolute_value_scene(
             query_line_y = int(k_value - rng.randint(1, 3)) if int(orientation) > 0 else int(k_value + rng.randint(1, 3))
             if int(query_line_y) == 0:
                 query_line_y += -1 if int(orientation) > 0 else 1
-            evidence_points = tuple()
+            annotation_points = tuple()
         elif int(target_count) == 2:
             root_distance = int(rng.randint(1, 3))
             h_value = int(rng.randint(-6 + root_distance, 6 - root_distance))
@@ -744,7 +744,7 @@ def _build_absolute_value_scene(
                 shift = 1 if int(query_line_y) <= 0 else -1
                 k_value += shift
                 query_line_y += shift
-            evidence_points = (
+            annotation_points = (
                 (int(h_value - root_distance), int(query_line_y)),
                 (int(h_value + root_distance), int(query_line_y)),
             )
@@ -761,7 +761,7 @@ def _build_absolute_value_scene(
     )
     return _SampledGraphScene(
         polyline_graph=sample_points,
-        evidence_graph_points=tuple(evidence_points),
+        annotation_graph_points=tuple(annotation_points),
         query_line_y=(None if query_line_y is None else int(query_line_y)),
         scene_entities=[
             {
@@ -784,7 +784,7 @@ def _build_absolute_value_scene(
                 "h": int(h_value),
                 "k": int(k_value),
             },
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         execution_trace={
@@ -795,7 +795,7 @@ def _build_absolute_value_scene(
                 "h": int(h_value),
                 "k": int(k_value),
             },
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         object_count=1,
@@ -879,7 +879,7 @@ def _build_cubic_scene(
 
     if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
         baseline_y = 0
-        evidence_points = tuple(sorted({(int(root), 0) for root in visible_roots}))
+        annotation_points = tuple(sorted({(int(root), 0) for root in visible_roots}))
     elif str(reference_line_kind) == HORIZONTAL_REFERENCE_LINE:
         baseline_y = int(
             _sample_from(
@@ -888,7 +888,7 @@ def _build_cubic_scene(
             )
         )
         query_line_y = int(baseline_y)
-        evidence_points = tuple(sorted({(int(root), int(query_line_y)) for root in visible_roots}))
+        annotation_points = tuple(sorted({(int(root), int(query_line_y)) for root in visible_roots}))
     else:
         raise ValueError(f"unsupported reference_line_kind: {reference_line_kind}")
 
@@ -904,7 +904,7 @@ def _build_cubic_scene(
     }
     return _SampledGraphScene(
         polyline_graph=sample_points,
-        evidence_graph_points=tuple(evidence_points),
+        annotation_graph_points=tuple(annotation_points),
         query_line_y=(None if query_line_y is None else int(query_line_y)),
         scene_entities=[
             {
@@ -917,13 +917,13 @@ def _build_cubic_scene(
         render_map={
             "scene_variant": "cubic",
             "function_parameters": dict(parameters),
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         execution_trace={
             "family": "cubic",
             "parameters": dict(parameters),
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         object_count=1,
@@ -1011,18 +1011,18 @@ def _build_sinusoid_scene(
     amplitude = int(rng.randint(2, 4))
     query_line_y: int | None = None
     midline_y = 0
-    evidence_points: Tuple[GraphPoint, ...]
+    annotation_points: Tuple[GraphPoint, ...]
 
     if str(query_id) == REFERENCE_LINE_CROSSING_COUNT:
         if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
             if int(target_count) == 0:
                 phase_shift = int(_sample_from(range(-5, 7), rng))
                 midline_y = int(rng.choice((amplitude + 1, amplitude + 2, -amplitude - 1, -amplitude - 2)))
-                evidence_points = tuple()
+                annotation_points = tuple()
             elif int(target_count) in {3, 4}:
                 phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="midline")
                 midline_y = 0
-                evidence_points = tuple((int(x_value), 0) for x_value in _sinusoid_midline_positions(int(phase_shift)))
+                annotation_points = tuple((int(x_value), 0) for x_value in _sinusoid_midline_positions(int(phase_shift)))
             else:
                 raise ValueError(f"unsupported sinusoid reference-line target_count: {target_count}")
         elif str(reference_line_kind) == HORIZONTAL_REFERENCE_LINE:
@@ -1032,12 +1032,12 @@ def _build_sinusoid_scene(
                 query_line_y = int(midline_y + rng.choice((amplitude + 1, amplitude + 2, -amplitude - 1, -amplitude - 2)))
                 if int(query_line_y) == 0:
                     query_line_y += 1 if int(midline_y) >= 0 else -1
-                evidence_points = tuple()
+                annotation_points = tuple()
             elif int(target_count) in {3, 4}:
                 phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="midline")
                 midline_y = int(_sample_from((-3, -2, -1, 1, 2, 3), rng))
                 query_line_y = int(midline_y)
-                evidence_points = tuple((int(x_value), int(query_line_y)) for x_value in _sinusoid_midline_positions(int(phase_shift)))
+                annotation_points = tuple((int(x_value), int(query_line_y)) for x_value in _sinusoid_midline_positions(int(phase_shift)))
             else:
                 raise ValueError(f"unsupported sinusoid reference-line target_count: {target_count}")
         else:
@@ -1062,7 +1062,7 @@ def _build_sinusoid_scene(
             ]
             phase_shift = int(candidate_phase_shifts[0])
         midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
-        evidence_points = tuple(
+        annotation_points = tuple(
             (int(x_value), int(midline_y + amplitude)) for x_value in _sinusoid_maxima_positions(int(phase_shift))
         ) + tuple(
             (int(x_value), int(midline_y - amplitude)) for x_value in _sinusoid_minima_positions(int(phase_shift))
@@ -1073,14 +1073,14 @@ def _build_sinusoid_scene(
         if str(extremum_kind) == MINIMUM_EXTREMUM:
             phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="minima")
             midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
-            evidence_points = tuple(
+            annotation_points = tuple(
                 (int(x_value), int(midline_y - amplitude))
                 for x_value in _sinusoid_minima_positions(int(phase_shift))
             )
         elif str(extremum_kind) == MAXIMUM_EXTREMUM:
             phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="maxima")
             midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
-            evidence_points = tuple(
+            annotation_points = tuple(
                 (int(x_value), int(midline_y + amplitude))
                 for x_value in _sinusoid_maxima_positions(int(phase_shift))
             )
@@ -1103,7 +1103,7 @@ def _build_sinusoid_scene(
     }
     return _SampledGraphScene(
         polyline_graph=sample_points,
-        evidence_graph_points=tuple(evidence_points),
+        annotation_graph_points=tuple(annotation_points),
         query_line_y=(None if query_line_y is None else int(query_line_y)),
         scene_entities=[
             {
@@ -1116,13 +1116,13 @@ def _build_sinusoid_scene(
         render_map={
             "scene_variant": "sinusoid",
             "function_parameters": dict(parameters),
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         execution_trace={
             "family": "sinusoid",
             "parameters": dict(parameters),
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         object_count=1,
@@ -1160,17 +1160,17 @@ def _piecewise_polyline_for_intersections(
     selected_x = x_positions[start_index : start_index + vertex_count]
     sign_start = int(rng.choice((-1, 1)))
     vertices: List[GraphPoint] = []
-    evidence_points: List[GraphPoint] = []
+    annotation_points: List[GraphPoint] = []
     for index, x_value in enumerate(selected_x):
         if index % 2 == 1:
             point = (int(x_value), int(baseline_y))
             vertices.append(point)
-            evidence_points.append(point)
+            annotation_points.append(point)
             continue
         sign_value = int(sign_start * ((-1) ** (index // 2)))
         magnitude = int(rng.randint(2, 4))
         vertices.append((int(x_value), int(baseline_y + (sign_value * magnitude))))
-    return tuple(vertices), tuple(evidence_points)
+    return tuple(vertices), tuple(annotation_points)
 
 
 def _piecewise_polyline_for_turning_points(
@@ -1196,8 +1196,8 @@ def _piecewise_polyline_for_turning_points(
         sign_value = int(sign_start * ((-1) ** index))
         magnitude = int(rng.randint(2, 5))
         vertices.append((int(x_value), int(sign_value * magnitude)))
-    evidence_points = tuple(vertices[1:-1])
-    return tuple(vertices), tuple(evidence_points)
+    annotation_points = tuple(vertices[1:-1])
+    return tuple(vertices), tuple(annotation_points)
 
 
 def _piecewise_polyline_for_local_extrema(
@@ -1249,7 +1249,7 @@ def _piecewise_polyline_for_local_extrema(
     high_values = [int(rng.randint(2, 5)) for _ in selected_x]
     low_values = [-int(rng.randint(2, 5)) for _ in selected_x]
     vertices: List[GraphPoint] = []
-    evidence_points: List[GraphPoint] = []
+    annotation_points: List[GraphPoint] = []
     for index, x_value in enumerate(selected_x):
         use_high = (index % 2 == 0) if starts_high else (index % 2 == 1)
         y_value = int(high_values[index] if use_high else low_values[index])
@@ -1258,8 +1258,8 @@ def _piecewise_polyline_for_local_extrema(
         if 0 < index < (vertex_count - 1):
             is_target_extremum = (not use_high) if starts_high else use_high
             if is_target_extremum:
-                evidence_points.append(point)
-    return tuple(vertices), tuple(evidence_points)
+                annotation_points.append(point)
+    return tuple(vertices), tuple(annotation_points)
 
 
 def _build_piecewise_linear_scene(
@@ -1274,7 +1274,7 @@ def _build_piecewise_linear_scene(
 
     if str(query_id) == REFERENCE_LINE_CROSSING_COUNT:
         if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
-            vertices, evidence_points = _piecewise_polyline_for_intersections(
+            vertices, annotation_points = _piecewise_polyline_for_intersections(
                 rng,
                 target_count=int(target_count),
                 baseline_y=0,
@@ -1289,7 +1289,7 @@ def _build_piecewise_linear_scene(
                 ),
                 rng,
             )
-            vertices, evidence_points = _piecewise_polyline_for_intersections(
+            vertices, annotation_points = _piecewise_polyline_for_intersections(
                 rng,
                 target_count=int(target_count),
                 baseline_y=int(baseline_y),
@@ -1298,13 +1298,13 @@ def _build_piecewise_linear_scene(
         else:
             raise ValueError(f"unsupported reference_line_kind: {reference_line_kind}")
     elif str(query_id) == TURNING_POINT_COUNT:
-        vertices, evidence_points = _piecewise_polyline_for_turning_points(
+        vertices, annotation_points = _piecewise_polyline_for_turning_points(
             rng,
             target_count=int(target_count),
         )
         query_line_y = None
     elif str(query_id) == LOCAL_EXTREMUM_COUNT:
-        vertices, evidence_points = _piecewise_polyline_for_local_extrema(
+        vertices, annotation_points = _piecewise_polyline_for_local_extrema(
             rng,
             target_count=int(target_count),
             extremum_kind=str(extremum_kind),
@@ -1315,7 +1315,7 @@ def _build_piecewise_linear_scene(
 
     return _SampledGraphScene(
         polyline_graph=tuple((float(point[0]), float(point[1])) for point in vertices),
-        evidence_graph_points=tuple(evidence_points),
+        annotation_graph_points=tuple(annotation_points),
         query_line_y=(None if query_line_y is None else int(query_line_y)),
         scene_entities=[
             {
@@ -1328,13 +1328,13 @@ def _build_piecewise_linear_scene(
         render_map={
             "scene_variant": "piecewise_linear",
             "polyline_vertices_graph": [list(point) for point in vertices],
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         execution_trace={
             "family": "piecewise_linear",
             "polyline_vertices_graph": [list(point) for point in vertices],
-            "evidence_points_graph": [list(point) for point in evidence_points],
+            "annotation_points_graph": [list(point) for point in annotation_points],
             "query_line_y": (None if query_line_y is None else int(query_line_y)),
         },
         object_count=int(len(vertices)),
@@ -1483,7 +1483,7 @@ def _render_scene(
     guide_line_width: int,
     label_font_size_px: int,
 ) -> _RenderedGraphScene:
-    """Render one sampled graphing scene and build evidence artifacts."""
+    """Render one sampled graphing scene and build annotation artifacts."""
 
     render_polyline = draw_function_polyline(
         draw,
@@ -1529,10 +1529,10 @@ def _render_scene(
 
     points_by_label = {
         f"point_{index + 1}": _pixel_point(point, context=context)
-        for index, point in enumerate(sampled_scene.evidence_graph_points)
+        for index, point in enumerate(sampled_scene.annotation_graph_points)
     }
-    evidence = (
-        graph_point_set_evidence_artifacts(
+    annotation = (
+        graph_point_set_annotation_artifacts(
             points_by_label=points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
@@ -1540,15 +1540,15 @@ def _render_scene(
             ordered_labels=tuple(points_by_label.keys()),
         )
         if points_by_label
-        else empty_graph_point_set_evidence_artifacts(witness_type="graph_feature_points")
+        else empty_graph_point_set_annotation_artifacts(witness_type="graph_feature_points")
     )
     return _RenderedGraphScene(
-        answer_value=int(len(sampled_scene.evidence_graph_points)),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=[list(point) for point in evidence["evidence_value"]],
-        projected_evidence=dict(evidence["projected_evidence"]),
-        witness_symbolic=dict(evidence["witness_symbolic"]),
-        required_evidence_labels=list(evidence["required_labels"]),
+        answer_value=int(len(sampled_scene.annotation_graph_points)),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=[list(point) for point in annotation["annotation_value"]],
+        projected_annotation=dict(annotation["projected_annotation"]),
+        witness_symbolic=dict(annotation["witness_symbolic"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         scene_entities=list(sampled_scene.scene_entities),
         render_map=dict(render_map),
         execution_trace=dict(sampled_scene.execution_trace),
@@ -1576,10 +1576,10 @@ class GeometryGraphingCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_integer",
-                "evidence_hint_pixel_point_set",
-                "evidence_hint_reference_line_crossing_count",
-                "evidence_hint_turning_point_count",
-                "evidence_hint_local_extremum_count",
+                "annotation_hint_pixel_point_set",
+                "annotation_hint_reference_line_crossing_count",
+                "annotation_hint_turning_point_count",
+                "annotation_hint_local_extremum_count",
                 "json_example_reference_line_crossing_count",
                 "json_example_turning_point_count",
                 "json_example_local_extremum_count",
@@ -1679,7 +1679,7 @@ class GeometryGraphingCountTask:
             reference_line_kind=query.reference_line_kind,
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_value,
+            annotation_value=rendered_scene.annotation_value,
             answer_type="integer",
         )
         extremum_slots = _extremum_prompt_slots(
@@ -1691,19 +1691,19 @@ class GeometryGraphingCountTask:
             reference_line_kind=query.reference_line_kind,
             query_line_y=sampled_scene.query_line_y,
         )
-        evidence_hint = str(prompt_defaults["evidence_hint_pixel_point_set"])
+        annotation_hint = str(prompt_defaults["annotation_hint_pixel_point_set"])
         if str(query.query_id) == REFERENCE_LINE_CROSSING_COUNT:
-            evidence_hint = str(prompt_defaults["evidence_hint_reference_line_crossing_count"]).format(
+            annotation_hint = str(prompt_defaults["annotation_hint_reference_line_crossing_count"]).format(
                 reference_line_description=str(reference_line_description)
             )
             json_example = str(prompt_defaults["json_example_reference_line_crossing_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_reference_line_crossing_count"])
         elif str(query.query_id) == TURNING_POINT_COUNT:
-            evidence_hint = str(prompt_defaults["evidence_hint_turning_point_count"])
+            annotation_hint = str(prompt_defaults["annotation_hint_turning_point_count"])
             json_example = str(prompt_defaults["json_example_turning_point_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_turning_point_count"])
         elif str(query.query_id) == LOCAL_EXTREMUM_COUNT:
-            evidence_hint = str(prompt_defaults["evidence_hint_local_extremum_count"]).format(**dict(extremum_slots))
+            annotation_hint = str(prompt_defaults["annotation_hint_local_extremum_count"]).format(**dict(extremum_slots))
             json_example = str(prompt_defaults["json_example_local_extremum_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_local_extremum_count"])
         prompt_selection = render_task_prompt_variants(
@@ -1713,7 +1713,7 @@ class GeometryGraphingCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "reference_line_description": str(reference_line_description),
@@ -1723,7 +1723,7 @@ class GeometryGraphingCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1733,7 +1733,7 @@ class GeometryGraphingCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(rendered_scene.answer_value))
-        evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=list(rendered_scene.evidence_value))
+        annotation_gt = TypedValue(type=str(rendered_scene.annotation_type), value=list(rendered_scene.annotation_value))
 
         query_params = {
             "scene_variant": str(query.scene_variant),
@@ -1758,7 +1758,7 @@ class GeometryGraphingCountTask:
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
             "question_format": "count_graph_feature_points",
-            "required_evidence_labels": list(rendered_scene.required_evidence_labels),
+            "required_annotation_labels": list(rendered_scene.required_annotation_labels),
             **dict(rendered_scene.execution_trace),
         }
         if query.reference_line_kind is not None:
@@ -1810,7 +1810,7 @@ class GeometryGraphingCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": dict(execution_trace),
             "witness_symbolic": dict(rendered_scene.witness_symbolic),
-            "projected_evidence": dict(rendered_scene.projected_evidence),
+            "projected_annotation": dict(rendered_scene.projected_annotation),
         }
 
         complexity = build_geometry_graphing_complexity(
@@ -1822,14 +1822,14 @@ class GeometryGraphingCountTask:
             extremum_kind=query.extremum_kind,
             object_count=int(rendered_scene.object_count),
             target_count=int(query.target_count),
-            evidence_count=int(len(rendered_scene.evidence_value)),
+            annotation_count=int(len(rendered_scene.annotation_value)),
             has_query_line=bool(sampled_scene.query_line_y is not None),
         )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1846,13 +1846,25 @@ class GeometryGraphingReferenceLineCrossingCountTask(FixedGeometryQueryTaskMixin
 
     task_id = "task_geometry__function_graph__reference_line_crossing_count"
     fixed_query_id = REFERENCE_LINE_CROSSING_COUNT
+    scene_id = "function_graph"
     public_scene_id = "function_graph"
 
 
 @register_task
-class GeometryGraphingExtremumCountTask(MultiFixedGeometryQueryTaskMixin, GeometryGraphingCountTask):
-    """Count turning points or local extrema on a plotted function."""
+class GeometryGraphingLocalExtremumCountTask(FixedGeometryQueryTaskMixin, GeometryGraphingCountTask):
+    """Count local extrema on a plotted function."""
 
-    task_id = "task_geometry__function_graph__extremum_count"
-    fixed_query_ids = (TURNING_POINT_COUNT, LOCAL_EXTREMUM_COUNT)
+    task_id = "task_geometry__function_graph__extremum_count_local_extremum_count"
+    fixed_query_id = LOCAL_EXTREMUM_COUNT
+    scene_id = "function_graph"
+    public_scene_id = "function_graph"
+
+
+@register_task
+class GeometryGraphingTurningPointCountTask(FixedGeometryQueryTaskMixin, GeometryGraphingCountTask):
+    """Count turning points on a plotted function."""
+
+    task_id = "task_geometry__function_graph__extremum_count_turning_point_count"
+    fixed_query_id = TURNING_POINT_COUNT
+    scene_id = "function_graph"
     public_scene_id = "function_graph"

@@ -59,15 +59,15 @@ def test_icons_counting_named_grid_row_most_contract_matches_scene() -> None:
     assert out.query_id == "row_most_shape_number"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert execution["question_format"] == "select_grid_line_number_by_extreme_named_shape_count"
     assert counts == execution["row_target_counts"]
     assert counts[2] == max(counts)
     assert counts.count(max(counts)) == 1
-    assert len(out.evidence_gt.value) == counts[2]
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert len(out.annotation_gt.value) == counts[2]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert "axis_label_stroke_rgb" in style
     assert style["text_legibility"]["required_role_count"] >= 2
@@ -101,7 +101,7 @@ def test_icons_counting_named_grid_column_fewest_contract_matches_scene() -> Non
     assert execution["column_target_counts"] == counts
     assert counts[3] == min(counts)
     assert counts.count(min(counts)) == 1
-    assert len(out.evidence_gt.value) == counts[3]
+    assert len(out.annotation_gt.value) == counts[3]
 
 
 def test_icons_counting_named_grid_extreme_prompt_example_matches_contract() -> None:
@@ -113,11 +113,11 @@ def test_icons_counting_named_grid_extreme_prompt_example_matches_contract() -> 
     )
     assert '"bell"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_icons_counting_named_grid_extreme_sampling_distribution() -> None:
@@ -145,7 +145,7 @@ def test_icons_counting_named_grid_extreme_sampling_distribution() -> None:
         else:
             assert counts[answer_line_index] == min(counts)
             assert counts.count(min(counts)) == 1
-        assert len(out.evidence_gt.value) == int(execution["winning_target_count"])
+        assert len(out.annotation_gt.value) == int(execution["winning_target_count"])
         assert 4 <= int(execution["grid_rows"]) <= 6
         assert 4 <= int(execution["grid_cols"]) <= 6
         query_counts[query_id] += 1

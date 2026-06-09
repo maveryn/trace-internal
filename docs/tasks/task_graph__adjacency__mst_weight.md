@@ -10,10 +10,10 @@
 ## Query IDs
 1. `weighted_matrix_mst_weight`: find the minimum spanning tree in a connected undirected weighted graph shown as a matrix.
 
-## Evidence
+## Annotation
 1. Answer type: `integer`.
-2. Evidence type: `bbox_set`.
-3. Evidence boxes are `[x0,y0,x1,y1]` pixel boxes around one visible matrix cell for each MST edge.
+2. Annotation type: `bbox_set`.
+3. Annotation boxes are `[x0,y0,x1,y1]` pixel boxes around one visible matrix cell for each MST edge.
 
 ## Generation Notes
 1. Blank off-diagonal cells mean no edge; the diagonal uses `-`.

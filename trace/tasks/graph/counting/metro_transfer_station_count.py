@@ -11,7 +11,7 @@ class GraphCountingTransferStationCountTask(MetroRouteGraphTaskBase):
     task_id = "graph_metro_transfer_station_count_internal"
     task_group = "counting"
     query_id = "metro_transfer_station_count"
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = "metro_transfer_station_count_query"
 
 

@@ -12,18 +12,18 @@
 2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `row_rotation_violation`.
 4. Answer type: `answer_gt.type = integer` (the 1-based violating box index).
-5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the violating numbered box).
+5. Annotation type: `annotation_gt.type = bbox_set` (exactly one box: the violating numbered box).
 6. Rule policy: the row follows one constant rotation step over `{0, 90, 180, 270}` until exactly one box is corrupted.
 7. Answer support: default calibration samples the violating 1-based index from `2..6`, while the remaining cells provide context for the rotation rule.
 8. Asset policy: uses the asymmetric icon subset so orientation remains meaningful.
 9. Ambiguity policy: generation rejects any instance where another supported rotation rule would make a different violating index plausible.
-10. Evidence scope: public evidence is the violating cell bbox only; the observed and expected rotations stay in trace metadata.
+10. Annotation scope: public annotation is the violating cell bbox only; the observed and expected rotations stay in trace metadata.
 
 ## 3) Prompt Contract
 1. `prompt_bundle_id`: `icons_pattern_v0`
 2. `scene_key`: `structured_violation_scene`
 3. `task_key`: `structured_violation_query`
-4. Answer+evidence JSON shape: `{"evidence":[[540,126,654,458]],"answer":5}`
+4. Answer+annotation JSON shape: `{"annotation":[[540,126,654,458]],"answer":5}`
 5. Answer-only JSON shape: `{"answer":5}`
 
 ## 4) Determinism + Constraints
@@ -40,6 +40,6 @@
 ## Current Review Status
 Current browser-review sidecars live under
 `review/task-reviews/icons/sequence_strip/task_icons__sequence_strip__rotation_sequence_violation_index/`.
-Public evidence uses the shared icon `bbox_set` payload over the violating
+Public annotation uses the shared icon `bbox_set` payload over the violating
 numbered cell only. Solve-rate status is tracked in
 `review/calibration_sweep_status.json`.

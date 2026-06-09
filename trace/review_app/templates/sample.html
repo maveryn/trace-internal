@@ -1,30 +1,14 @@
 {% extends "base.html" %}
-{% macro reviewer_comments_readonly(item) -%}
-  {% set comments = reviewer_comments_by_feedback.get(item.id, []) %}
-  {% if comments %}
-    <div class="reviewer-comment-list">
-      {% for comment in comments %}
-        <article class="reviewer-comment-item">
-          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
-          <p>{{ comment.comment }}</p>
+{% macro feedback_events_readonly(item) -%}
+  {% set events = feedback_thread_events_by_feedback.get(item.id, []) %}
+  {% if events %}
+    <div class="feedback-event-list compact">
+      {% for event in events %}
+        <article class="feedback-event-item {{ event.kind }}">
+          <div class="feedback-event-meta">{{ event.label }}{% if event.author %} · {{ event.author }}{% endif %} · {{ event.created_at }}</div>
+          <p>{{ event.text }}</p>
         </article>
       {% endfor %}
-    </div>
-  {% endif %}
-{%- endmacro %}
-{% macro agent_notes_readonly(item) -%}
-  {% set notes = agent_notes_by_feedback.get(item.id, []) %}
-  {% if notes %}
-    <div class="agent-note-panel">
-      <div class="agent-note-heading">Agent repair notes</div>
-      <div class="agent-note-list">
-        {% for note in notes %}
-          <article class="agent-note-item">
-            <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
-            <p>{{ note.note }}</p>
-          </article>
-        {% endfor %}
-      </div>
     </div>
   {% endif %}
 {%- endmacro %}
@@ -51,8 +35,8 @@
           <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="original review sample">
         </figure>
         <figure class="sample-image-card">
-          <figcaption>Evidence</figcaption>
-          <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="evidence overlay review sample">
+          <figcaption>Annotation</figcaption>
+          <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="annotation overlay review sample">
         </figure>
       </div>
     {% else %}
@@ -64,8 +48,8 @@
     <h2>Answer</h2>
     <pre>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json }}</pre>
 
-    <h2>Evidence</h2>
-    <pre>{{ {"type": sample.evidence_type, "value": sample.evidence_value}|pretty_json }}</pre>
+    <h2>Annotation</h2>
+    <pre>{{ {"type": sample.annotation_type, "value": sample.annotation_value}|pretty_json }}</pre>
 
     <h2>Paths</h2>
     <dl>
@@ -84,21 +68,21 @@
       <pre>{{ sample.prompt_answer_only }}</pre>
     </article>
     <article>
-      <h3>Answer + evidence</h3>
-      <pre>{{ sample.prompt_answer_and_evidence }}</pre>
+      <h3>Answer + annotation</h3>
+      <pre>{{ sample.prompt_answer_and_annotation }}</pre>
     </article>
   </div>
 </section>
 
 <section id="feedback" class="feedback-panel">
-  <h2>Feedback</h2>
-  <form class="feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+  <h2>Issues</h2>
+  <form class="feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/issues') }}" method="post">
     <div class="form-row">
       <label>Author <input name="author" placeholder="optional"></label>
       <label>Category
         <select name="category">
           <option value="prompt">prompt</option>
-          <option value="evidence">evidence</option>
+          <option value="annotation">annotation</option>
           <option value="rendering">rendering</option>
           <option value="answer">answer</option>
           <option value="calibration">calibration</option>
@@ -114,7 +98,7 @@
       </label>
     </div>
     <textarea name="comment" rows="4" placeholder="Write a comment tied to this exact question/image." required></textarea>
-    <button type="submit">Save Feedback</button>
+    <button type="submit">Save Issue</button>
   </form>
 
   <div class="feedback-list">
@@ -128,13 +112,12 @@
         </header>
         <p>{{ item.comment }}</p>
         <div class="queue-feedback-links">
-          <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Open thread</a>
+          <a class="button-link feedback-thread-link" href="{{ app_path('/issues/' ~ item.id) }}">Open thread</a>
         </div>
-        {{ reviewer_comments_readonly(item) }}
-        {{ agent_notes_readonly(item) }}
+        {{ feedback_events_readonly(item) }}
         <details>
           <summary>Edit</summary>
-          <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post" class="feedback-form small">
+          <form action="{{ app_path('/issues/' ~ item.id) }}" method="post" class="feedback-form small">
             <div class="form-row">
               <label>Author <input name="author" value="{{ item.author }}"></label>
               <label>Category <input name="category" value="{{ item.category }}"></label>
@@ -147,12 +130,12 @@
               </label>
             </div>
             <textarea name="comment" rows="3">{{ item.comment }}</textarea>
-            <button type="submit">Update Feedback</button>
+            <button type="submit">Update Issue</button>
           </form>
         </details>
       </article>
     {% else %}
-      <p class="muted">No feedback yet.</p>
+      <p class="muted">No issues yet.</p>
     {% endfor %}
   </div>
 </section>

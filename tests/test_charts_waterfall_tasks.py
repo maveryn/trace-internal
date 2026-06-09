@@ -11,10 +11,8 @@ WATERFALL_TASKS = {
         "first_total_at_least_threshold",
         "first_total_at_most_threshold",
     },
-    "task_charts__waterfall__counterfactual_final_value": {
-        "remove_step_final_total",
-        "reverse_step_final_total",
-    },
+    "task_charts__waterfall__remove_step_final_total": {"remove_step_final_total"},
+    "task_charts__waterfall__reverse_step_final_total": {"reverse_step_final_total"},
 }
 
 
@@ -40,10 +38,10 @@ def test_waterfall_tasks_generate_default_query_outputs() -> None:
         assert output.scene_id == "waterfall"
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
-        assert output.evidence_gt.type == "bbox_set"
-        assert output.evidence_gt.value
-        assert output.trace_payload["projected_evidence"]["type"] == "bbox_set"
-        assert output.trace_payload["projected_evidence"]["bbox_set"] == output.evidence_gt.value
+        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
+        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
         assert str(output.trace_payload["render_spec"]["font_assets"]["chart_font_family"]).strip()
         assert output.trace_payload["render_spec"]["background_style"]
         assert output.trace_payload["render_map"]["bar_bboxes_px"]
@@ -61,7 +59,7 @@ def test_waterfall_tasks_generate_each_query_branch_and_answer_contract() -> Non
             )
             assert output.scene_id == "waterfall"
             assert output.query_id == query_id
-            assert output.trace_payload["projected_evidence"]["type"] == "bbox_set"
+            assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
             execution = output.trace_payload["execution_trace"]
             steps = _steps_by_id(output)
 

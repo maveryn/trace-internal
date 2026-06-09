@@ -104,11 +104,11 @@ def resolve_puzzle_axis_variant(
     return str(balanced), {str(key): float(value) for key, value in probabilities.items()}
 
 
-def projected_puzzle_bbox_evidence(
+def projected_puzzle_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     item_ids: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered puzzle item ids into prompt-facing `bbox_set` evidence."""
+    """Project ordered puzzle item ids into prompt-facing `bbox_set` annotation."""
 
     return {
         "bbox_set": [
@@ -119,17 +119,17 @@ def projected_puzzle_bbox_evidence(
     }
 
 
-def projected_puzzle_keyed_bbox_evidence(
+def projected_puzzle_keyed_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_item_ids: Mapping[str, str],
 ) -> Dict[str, Any]:
-    """Project role-bound puzzle item ids into prompt-facing `keyed_bbox_map` evidence."""
+    """Project role-bound puzzle item ids into prompt-facing `keyed_bbox_map` annotation."""
 
     keyed_bboxes: Dict[str, list[float]] = {}
     for role, item_id in role_item_ids.items():
         key = str(item_id)
         if key not in bbox_map:
-            raise RuntimeError(f"missing bbox evidence for role {role!r}: item id {key!r}")
+            raise RuntimeError(f"missing bbox annotation for role {role!r}: item id {key!r}")
         keyed_bboxes[str(role)] = list(bbox_map[key])
     return {
         "keyed_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
@@ -142,7 +142,7 @@ __all__ = [
     "get_int_param",
     "get_int_range",
     "load_puzzle_task_defaults",
-    "projected_puzzle_bbox_evidence",
-    "projected_puzzle_keyed_bbox_evidence",
+    "projected_puzzle_bbox_annotation",
+    "projected_puzzle_keyed_bbox_annotation",
     "resolve_puzzle_axis_variant",
 ]

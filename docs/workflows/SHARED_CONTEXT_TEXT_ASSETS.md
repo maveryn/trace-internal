@@ -17,7 +17,7 @@ task explicitly scopes a specific text element into its verifier contract.
    data during task generation.
 2. Treat context strings as non-answer-bearing by default. If a task asks about
    one of these strings, move that text into the task-specific scene/query
-   contract and record it as normal answer/evidence-bearing content.
+   contract and record it as normal answer/annotation-bearing content.
 3. Every drawn context text element must be trace-backed and bbox-backed. Record
    at least role, text, bbox, manifest path, source ids, and whether it is
    excluded from the answer contract.
@@ -37,8 +37,8 @@ task explicitly scopes a specific text element into its verifier contract.
    extra node/edge-looking callouts, and chart scenes should not add unrelated
    mark-like symbols inside the plot area.
 8. Place context text only after the scene layout mode is resolved, and compute
-   public evidence after final layout. If content-frame mode translates the main
-   scene, translate evidence bboxes/points with the same transform.
+   public annotation after final layout. If content-frame mode translates the main
+   scene, translate annotation bboxes/points with the same transform.
 9. Keep task prompts concise. Do not mention context text unless the task
    explicitly needs the model to ignore or inspect that context.
 10. Use only manifests with source/license metadata in `sources.json`. If a new
@@ -107,7 +107,7 @@ same non-answer and bbox-recording rules still apply.
 For pages, the default adapter is intentionally conservative: it draws only
 short safe-margin context text after the page artifact is rendered and skips any
 candidate that would overlap traced scene entities. This keeps structured page
-fields, controls, nodes, rows, routes, and evidence boxes as the only
+fields, controls, nodes, rows, routes, and annotation boxes as the only
 answer-bearing text. Page adapters may also use controlled density variants for
 one-sided or rare two-sided side-note blocks, but these blocks should remain
 outside the structured artifact, use non-answer manifests, and stay balanced

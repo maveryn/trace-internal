@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
-from ....core.sampling import normalize_positive_weights
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index
@@ -19,7 +18,9 @@ from .indoor_room_scene import (
     indoor_scene_entities,
     render_indoor_room_scene,
 )
-from .object_library import STYLE_IDS, display_name_for_object_type, serialize_object
+from .object_library import STYLE_IDS, display_name_for_object_type
+from .object_rendering import serialize_rendered_illustration_object
+from .style_registry import resolve_art_style_weights
 
 
 INDOOR_SETTING_NAMES: Dict[str, str] = {
@@ -98,10 +99,7 @@ def support_choice(
 
 
 def style_weights(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> Dict[str, float]:
-    raw = params.get("style_weights", group_default(render_defaults, "style_weights", {style: 1.0 for style in STYLE_IDS}))
-    if not isinstance(raw, Mapping):
-        raise ValueError("style_weights must be a mapping")
-    return normalize_positive_weights({str(key): float(value) for key, value in raw.items()}, default_keys=STYLE_IDS)
+    return resolve_art_style_weights(params, render_defaults, style_ids=STYLE_IDS)
 
 
 def indoor_theme_weights(theme_id: str) -> Dict[str, float]:
@@ -165,7 +163,7 @@ def render_indoor_scene_from_specs(
 
 
 def serialize_indoor_scene(scene: RenderedIndoorRoomScene) -> tuple[list[dict[str, Any]], Dict[str, list[float]], Dict[str, list[float]]]:
-    serialized_objects = [serialize_object(obj) for obj in scene.objects]
+    serialized_objects = [serialize_rendered_illustration_object(obj) for obj in scene.objects]
     object_bboxes = {str(obj["object_id"]): list(obj["bbox"]) for obj in serialized_objects}
     part_bboxes = {
         str(part["part_id"]): list(part["bbox"])

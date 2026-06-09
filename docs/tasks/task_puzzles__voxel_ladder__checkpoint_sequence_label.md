@@ -14,6 +14,6 @@
 5. The scene shows an isometric cube maze with a blue `START` cube, a red `GOAL` cube, colored checkpoint cubes, and black ladders between height levels.
 6. The task asks for the option letter matching the checkpoint color sequence on the shortest route from `START` to `GOAL`.
 7. `answer_gt.type`: `option_letter`
-8. `evidence_gt.type`: `bbox_set` over the route endpoints, route checkpoint cubes, and route ladders.
+8. `annotation_gt.type`: `bbox_set` over the route endpoints, route checkpoint cubes, and route ladders.
 9. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-10. Answers and evidence are produced from the same metadata execution trace.
+10. Answers and annotation are produced from the same metadata execution trace.

@@ -37,7 +37,8 @@ DOMAIN_DOCS: dict[str, str] = {
     "illustrations": "ILLUSTRATIONS_TASK_SETUP.md",
     "pages": "PAGES_TASK_SETUP.md",
     "physics": "PHYSICS_TASK_SETUP.md",
-    "puzzles": "PUZZLE_TASK_SETUP.md",
+    "misc": "MISC_TASK_SETUP.md",
+    "puzzles": "PUZZLES_TASK_SETUP.md",
     "three_d": "THREE_D_TASK_SETUP.md",
 }
 
@@ -48,7 +49,7 @@ REQUIRED_TRACE_KEYS: tuple[str, ...] = (
     "render_map",
     "execution_trace",
     "witness_symbolic",
-    "projected_evidence",
+    "projected_annotation",
 )
 CURRENT_CALIBRATION_BASELINE = "v0"
 CURRENT_CALIBRATION_MODEL_SLUG = "qwen25vl7b"
@@ -211,7 +212,7 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
                 "resolved_scene_id": taxonomy.scene_id,
                 "scene_id_matches_taxonomy": scene_id_matches,
                 "answer_type": str(getattr(getattr(output, "answer_gt", None), "type", "")),
-                "evidence_type": str(getattr(getattr(output, "evidence_gt", None), "type", "")),
+                "annotation_type": str(getattr(getattr(output, "annotation_gt", None), "type", "")),
                 "trace_missing_keys": trace_missing_keys,
                 "taxonomy_metadata_after_injection": {
                     "domain": str(taxonomy_payload.get("domain", "")),
@@ -238,7 +239,7 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
         "resolved_scene_id": "",
         "scene_id_matches_taxonomy": False,
         "answer_type": "",
-        "evidence_type": "",
+        "annotation_type": "",
         "trace_missing_keys": list(REQUIRED_TRACE_KEYS),
         "taxonomy_metadata_after_injection": {},
         "prompt_template_paths": [],
@@ -382,8 +383,8 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 blocking.append("trace_required_keys_missing")
             if not smoke.get("answer_type"):
                 blocking.append("answer_type_missing")
-            if not smoke.get("evidence_type"):
-                blocking.append("evidence_type_missing")
+            if not smoke.get("annotation_type"):
+                blocking.append("annotation_type_missing")
             if not smoke.get("scene_id_matches_taxonomy"):
                 blocking.append("output_scene_id_mismatch")
             if not smoke.get("query_id"):
@@ -609,7 +610,7 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                     smoke.get("query_id", "-"),
                     smoke.get("query_id", "-"),
                     smoke.get("answer_type", "-"),
-                    smoke.get("evidence_type", "-"),
+                    smoke.get("annotation_type", "-"),
                     ", ".join(task["blocking_issues"]) or "-",
                     ", ".join(task["audit_gaps"]) or "-",
                 ]
@@ -624,7 +625,7 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                     "Variant",
                     "Query",
                     "Answer",
-                    "Evidence",
+                    "Annotation",
                     "Blocking",
                     "Gaps",
                 ],

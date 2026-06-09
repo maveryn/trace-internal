@@ -15,7 +15,7 @@ generation:
     balanced_option_count_sampling: true
     move_option_count_support:
     - 4
-    - 5
+    - 6
     foundation_ready_target_answer_support:
     - 0
     - 1
@@ -28,6 +28,13 @@ generation:
     - 2
     - 3
     - 4
+    same_suit_run_length_target_answer_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
 rendering:
   shared:
     canvas_width: 1060
@@ -62,12 +69,15 @@ prompt:
     object_description_solitaire_tableau: a solitaire tableau with visible columns, foundation piles, and labeled exposed cards
     tableau_rule_text: In tableau moves, a card can be placed on another tableau card only if the target is exactly one rank higher and the opposite color.
     foundation_rule_text: A card can move to a foundation only if it matches that foundation suit and is exactly one rank above the foundation's current top card; an Ace can move to an empty foundation.
-    evidence_hint_move_legality_label: set "evidence" to an object mapping "source_card" and "target" to their bounding boxes [x0, y0, x1, y1]
-    evidence_hint_foundation_ready_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards and the foundation piles used to decide the count
-    evidence_hint_tableau_sequence_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the cards that belong to counted adjacent tableau pairs; use an empty array when the count is 0
+    same_suit_run_rule_text: A same-suit descending run follows cards downward in one column, with each next card the same suit and exactly one rank lower.
+    annotation_hint_move_legality_label: set "annotation" to an object mapping "source_card" and "target" to their bounding boxes [x0, y0, x1, y1]
+    annotation_hint_foundation_ready_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards and the foundation piles used to decide the count
+    annotation_hint_tableau_sequence_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the cards that belong to counted adjacent tableau pairs; use an empty array when the count is 0
+    annotation_hint_same_suit_descending_run_length: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for every card in the same-suit descending run that starts at the marked card
     answer_hint_move_legality_label: set "answer" to only the visible move option letter, for example "C"
     answer_hint_foundation_ready_count: set "answer" to the number of exposed tableau cards that can move to a foundation pile now
     answer_hint_tableau_sequence_count: set "answer" to the number of adjacent visible card pairs in the same column where the lower card is exactly one rank lower than the card directly above it and has the opposite color
+    answer_hint_same_suit_descending_run_length: set "answer" to the number of cards in the same-suit descending run that starts at the marked card, including the marked card
 visual:
   noise:
     apply_prob: 0.5

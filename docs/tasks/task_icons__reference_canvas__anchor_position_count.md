@@ -13,7 +13,7 @@
 3. Diagnostic `query_id`: `left_of_anchor|right_of_anchor|above_anchor|below_anchor`.
 4. Supported semantic parameter axis: `direction=left|right|above|below`.
 5. Answer type: `answer_gt.type = integer`.
-6. Evidence type: `evidence_gt.type = bbox_set` (counted Scene icon boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
+6. Annotation type: `annotation_gt.type = bbox_set` (counted Scene icon boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
 7. Count policy: `target_count` is sampled from `0..5`, `distractor_count` is sampled from the feasible support `max(1, target_count + 1)..10`, and `object_count = target_count + distractor_count` therefore ranges from `1..15`; the Anchor icon is additional and is not counted in `object_count`.
 8. Asset policy: reference, anchor, and scene icons are drawn from the curated `assets/icons/all_icons.txt` icon pool.
 9. Match policy: scene matches share the Reference icon type and strictly satisfy the requested side relation to the Anchor bbox; distractors are mixed across both spatially matching and spatially non-matching cases so the scene cannot be solved from side occupancy alone. When `distractor_count >= 2`, generation guarantees at least one same-type distractor on the wrong side and at least one different-type distractor on the queried side.
@@ -26,21 +26,21 @@
 1. `prompt_bundle_id`: `icons_relation_v0`
 2. `scene_key`: `reference_scene_anchor_relation`
 3. `task_key`: `relation_query`
-4. Answer+evidence JSON shape: `{"evidence":[[438,162,498,222],[602,302,670,370]],"answer":2}`
+4. Answer+annotation JSON shape: `{"annotation":[[438,162,498,222],[602,302,670,370]],"answer":2}`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Required slots:
    - shared: `object_description`, `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
 7. Variant counts (scene/task/mode): exactly 5 templates per required key.
 8. Prompt style: the scene stem establishes the Reference-vs-Scene layout and the marked Anchor; task wording asks only about the requested directional relation to that Anchor.
 
 ## 4) Determinism + constraints
 1. Seed namespaces used: scene-level RNG via `spawn_rng(instance_seed, "scene")`.
-2. Unique-answer policy: the matching scene set is sampled first, then placed/rendered; evidence boxes are the rendered boxes of those same matches.
+2. Unique-answer policy: the matching scene set is sampled first, then placed/rendered; annotation boxes are the rendered boxes of those same matches.
 3. Reject/resample conditions: unsupported count config, missing curated assets, anchor-placement failures, or directional overlap-constrained placement failures.
 4. No-auto-relaxation guarantee: generation fails on unmet spatial-capacity/asset/overlap constraints instead of weakening the Anchor relation contract.
-5. Evidence scope: the user-facing `bbox_set` covers counted Scene icons only; the Reference and Anchor boxes stay in trace metadata.
+5. Annotation scope: the user-facing `bbox_set` covers counted Scene icons only; the Reference and Anchor boxes stay in trace metadata.
 6. Trace style metadata records the sampled icon palette, overlap/noise config, anchor highlight styling, final per-instance `tint_rgb` assignments, and panel text-legibility metadata.
 7. Balanced defaults: seeded sampling balances the four direction branches while count sampling remains part of the same task generator used for normal dataset generation.
 
@@ -53,6 +53,6 @@
 ## Current Review Status
 Current browser-review sidecars live under
 `review/task-reviews/icons/reference_canvas/task_icons__reference_canvas__anchor_position_count/`.
-Public evidence uses the shared icon `bbox_set` payload over counted Scene icons
+Public annotation uses the shared icon `bbox_set` payload over counted Scene icons
 only; Reference and Anchor boxes remain trace metadata. Solve-rate status is
 tracked in `review/calibration_sweep_status.json`.

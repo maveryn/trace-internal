@@ -11,15 +11,16 @@ from trace.core.seed import hash64
 from trace.tasks.charts.pictogram.waffle_chart import (
     SUPPORTED_GLYPHS,
     SUPPORTED_SCENE_VARIANTS,
-    ChartsPictogramGroupArithmeticValueTask,
+    ChartsPictogramCategoryTotalValueTask,
+    ChartsPictogramGroupDifferenceValueTask,
     ChartsPictogramThresholdCountTask,
 )
 from trace.tasks.registry import list_default_task_ids
 
 
 TASK_CASES = (
-    (ChartsPictogramGroupArithmeticValueTask, "category_total_value"),
-    (ChartsPictogramGroupArithmeticValueTask, "group_difference_value"),
+    (ChartsPictogramCategoryTotalValueTask, "category_total_value"),
+    (ChartsPictogramGroupDifferenceValueTask, "group_difference_value"),
     (ChartsPictogramThresholdCountTask, "threshold_count"),
 )
 
@@ -63,9 +64,9 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
     assert str(execution["query_id"]) == query_id
     assert str(query_params["query_id"]) == query_id
     assert out.answer_gt.type == "integer"
-    expected_evidence_type = "bbox_set" if query_id == "threshold_count" else "keyed_bbox_map"
-    assert out.evidence_gt.type == expected_evidence_type
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    expected_annotation_type = "bbox_set" if query_id == "threshold_count" else "keyed_bbox_map"
+    assert out.annotation_gt.type == expected_annotation_type
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "pictogram_quantity"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(render["glyph_name"]) in SUPPORTED_GLYPHS
@@ -76,26 +77,26 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
     expected = _expected_answer(execution, query_params, query_id)
     assert int(out.answer_gt.value) == int(expected)
     assert int(execution["answer_value"]) == int(expected)
-    assert trace["projected_evidence"]["type"] == expected_evidence_type
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
 
-    evidence_category_ids = [str(value) for value in trace["projected_evidence"]["category_ids"]]
-    evidence_category_labels = [str(value) for value in trace["projected_evidence"]["category_labels"]]
-    expected_boxes = [render_map["category_bboxes_px"][category_id] for category_id in evidence_category_ids]
-    if expected_evidence_type == "keyed_bbox_map":
+    annotation_category_ids = [str(value) for value in trace["projected_annotation"]["category_ids"]]
+    annotation_category_labels = [str(value) for value in trace["projected_annotation"]["category_labels"]]
+    expected_boxes = [render_map["category_bboxes_px"][category_id] for category_id in annotation_category_ids]
+    if expected_annotation_type == "keyed_bbox_map":
         expected_keyed = {
             str(execution["category_id_to_label"][category_id]): box
-            for category_id, box in zip(evidence_category_ids, expected_boxes)
+            for category_id, box in zip(annotation_category_ids, expected_boxes)
         }
-        assert out.evidence_gt.value == expected_keyed
-        assert trace["projected_evidence"]["keyed_bbox_map"] == expected_keyed
-        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_keyed
-        assert trace["projected_evidence"]["bbox_set"] == list(expected_keyed.values())
-        boxes_to_check = list(out.evidence_gt.value.values())
+        assert out.annotation_gt.value == expected_keyed
+        assert trace["projected_annotation"]["keyed_bbox_map"] == expected_keyed
+        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == expected_keyed
+        assert trace["projected_annotation"]["bbox_set"] == list(expected_keyed.values())
+        boxes_to_check = list(out.annotation_gt.value.values())
     else:
-        assert out.evidence_gt.value == expected_boxes
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        boxes_to_check = list(out.evidence_gt.value)
-    assert evidence_category_labels == [str(execution["category_id_to_label"][category_id]) for category_id in evidence_category_ids]
+        assert out.annotation_gt.value == expected_boxes
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        boxes_to_check = list(out.annotation_gt.value)
+    assert annotation_category_labels == [str(execution["category_id_to_label"][category_id]) for category_id in annotation_category_ids]
     for bbox in boxes_to_check:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
@@ -104,11 +105,11 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
         )
 
     if query_id == "category_total_value":
-        assert len(out.evidence_gt.value) == 1
+        assert len(out.annotation_gt.value) == 1
     elif query_id == "group_difference_value":
-        assert len(out.evidence_gt.value) == 2
+        assert len(out.annotation_gt.value) == 2
     else:
-        assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+        assert int(out.answer_gt.value) == len(out.annotation_gt.value)
         assert 1 <= int(out.answer_gt.value) <= 5
 
     complexity = out.complexity.to_dict()
@@ -124,13 +125,13 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
 def test_charts_pictogram_prompt_examples_match_contract() -> None:
     for task_cls, query_id in TASK_CASES:
         out = task_cls().generate(91300 + len(task_cls.task_id) + len(query_id), params={"query_id": query_id}, max_attempts=60)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert isinstance(answer_and_evidence["answer"], int)
+        assert isinstance(answer_and_annotation["answer"], int)
         if query_id == "threshold_count":
-            assert isinstance(answer_and_evidence["evidence"], list)
+            assert isinstance(answer_and_annotation["annotation"], list)
         else:
-            assert isinstance(answer_and_evidence["evidence"], dict)
+            assert isinstance(answer_and_annotation["annotation"], dict)
         assert isinstance(answer_only["answer"], int)
 
 
@@ -152,11 +153,11 @@ def test_charts_pictogram_balanced_sampling_covers_scene_and_glyph_axes() -> Non
 
 def test_charts_pictogram_is_deterministic() -> None:
     params = {"query_id": "group_difference_value", "scene_variant": "pictogram_rows", "glyph_name": "star"}
-    out_a = ChartsPictogramGroupArithmeticValueTask().generate(91500, params=params, max_attempts=60)
-    out_b = ChartsPictogramGroupArithmeticValueTask().generate(91500, params=params, max_attempts=60)
+    out_a = ChartsPictogramGroupDifferenceValueTask().generate(91500, params=params, max_attempts=60)
+    out_b = ChartsPictogramGroupDifferenceValueTask().generate(91500, params=params, max_attempts=60)
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.complexity.to_dict() == out_b.complexity.to_dict()

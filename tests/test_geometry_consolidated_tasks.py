@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import csv
 from collections import Counter
+from pathlib import Path
 
 import pytest
 
@@ -22,108 +24,104 @@ from trace.tasks.geometry.similarity.count import (
     GeometrySimilarityCountTask,
     _resolve_axes as _resolve_similarity_axes,
 )
+from trace.tasks.geometry.shared.fixed_query_task import select_geometry_query_id
 from trace.tasks.geometry.transformation.match import (
     GeometryTransformationMatchTask,
     _resolve_axes,
 )
 from trace.tasks import TASK_REGISTRY
 
-EXPECTED_GEOMETRY_TASKS = {
-    "task_geometry__function_panels__relation_property_label",
-    "task_geometry__function_panels__intersection_property_label",
-    "task_geometry__function_panels__relation_property_label",
-    "task_geometry__function_panels__relation_property_label",
-    "task_geometry__function_panels__relation_property_label",
-    "task_geometry__function_panels__relation_property_label",
-    "task_geometry__circle_theorem__diameter_perpendicular_chord_length_value",
-    "task_geometry__circle_theorem__intersecting_chords_arc_measure_value",
-    "task_geometry__circle_theorem__inscribed_angle_value",
-    "task_geometry__circle_theorem__multi_step_angle_value",
-    "task_geometry__circle_theorem__secant_secant_length_value",
-    "task_geometry__circle_theorem__tangent_chord_angle_value",
-    "task_geometry__circle_theorem__tangent_secant_length_value",
-    "task_geometry__graph_paper__angle_extremum_label",
-    "task_geometry__graph_paper__area_extremum_label",
-    "task_geometry__graph_paper__length_extremum_label",
-    "task_geometry__graph_paper__perimeter_extremum_label",
-    "task_geometry__coordinate_plane__collinear_point_count",
-    "task_geometry__coordinate_plane__locus_panel_match_label",
-    "task_geometry__coordinate_plane__locus_point_label",
-    "task_geometry__coordinate_plane__missing_endpoint_label",
-    "task_geometry__coordinate_plane__point_in_polygon_count",
-    "task_geometry__coordinate_plane__quadrilateral_completion_label",
-    "task_geometry__coordinate_panels__quadrilateral_shape_match_label",
-    "task_geometry__coordinate_plane__same_quadrant_point_count",
-    "task_geometry__coordinate_plane__section_point_label",
-    "task_geometry__coordinate_plane__segment_relation_count",
-    "task_geometry__coordinate_plane__transformed_point_label",
-    "task_geometry__graph_paper__angle_type_count",
-    "task_geometry__graph_paper__polygon_convexity_count",
-    "task_geometry__graph_paper__quadrilateral_type_count",
-    "task_geometry__graph_paper__shape_type_count",
-    "task_geometry__graph_paper__triangle_type_count",
-    "task_geometry__function_graph__average_rate_value",
-    "task_geometry__function_graph__extremum_count",
-    "task_geometry__function_graph__reference_line_crossing_count",
-    "task_geometry__angle_relations__algebraic_angle_value",
-    "task_geometry__angle_relations__angle_chain_value",
-    "task_geometry__bearing_route__endpoint_position_label",
-    "task_geometry__bearing_route__final_displacement_value",
-    "task_geometry__triangle_relations__angle_bisector_segment_value",
-    "task_geometry__graph_paper__angle_value",
-    "task_geometry__triangle_relations__centroid_median_segment_value",
-    "task_geometry__graph_paper__circle_circumference_value",
-    "task_geometry__cone_net__cone_sector_net_value",
-    "task_geometry__cylinder_wrap__surface_path_length_value",
-    "task_geometry__cylinder_wrap__wrapped_mark_position_label",
-    "task_geometry__concentric_chord__concentric_circle_chord_value",
-    "task_geometry__composite_shape__composite_area_value",
-    "task_geometry__composite_shape__composite_perimeter_value",
-    "task_geometry__cuboid_views__cuboid_projection_surface_area_value",
-    "task_geometry__composite_shape__curvilinear_composite_area_value",
-    "task_geometry__composite_shape__curvilinear_composite_perimeter_value",
-    "task_geometry__composite_shape__curvilinear_missing_side_from_area_value",
-    "task_geometry__composite_shape__curvilinear_sector_angle_value",
-    "task_geometry__graph_paper__ellipse_area_value",
-    "task_geometry__incircle_tangents__incircle_radius_from_area_value",
-    "task_geometry__incircle_tangents__incircle_tangent_perimeter_value",
-    "task_geometry__graph_paper__line_slope_value",
-    "task_geometry__measuring_tools__protractor_angle_value",
-    "task_geometry__measuring_tools__ruler_length_value",
-    "task_geometry__triangle_relations__parallel_section_length_value",
-    "task_geometry__paper_fold__paper_fold_angle_value",
-    "task_geometry__area_partition__total_area_value",
-    "task_geometry__graph_paper__polygon_area_value",
-    "task_geometry__graph_paper__polygon_perimeter_value",
-    "task_geometry__triangle_relations__pythagorean_length_value",
-    "task_geometry__pythagorean_dissection__pythagorean_square_area_value",
-    "task_geometry__triangle_relations__right_triangle_angle_value",
-    "task_geometry__triangle_relations__right_triangle_missing_side_value",
-    "task_geometry__solid_revolution__revolution_cone_volume_value",
-    "task_geometry__solid_revolution__revolution_cylinder_volume_value",
-    "task_geometry__solid_revolution__revolution_double_cone_volume_value",
-    "task_geometry__solid_revolution__revolution_frustum_volume_value",
-    "task_geometry__sector__sector_angle_relation_value",
-    "task_geometry__sector__sector_measure_value",
-    "task_geometry__triangle_relations__parallel_section_length_value",
-    "task_geometry__solid_cross_section__solid_cross_section_area_value",
-    "task_geometry__solid_formula__solid_formula_missing_dimension_value",
-    "task_geometry__tangent_packing__tangent_packing_length_value",
-    "task_geometry__tangent_packing__tangent_packing_shaded_area_value",
-    "task_geometry__trapezoid_extension__trapezoid_extension_area_value",
-    "task_geometry__trapezoid_extension__trapezoid_extension_length_value",
-    "task_geometry__shape_gallery__shape_relation_count",
-    "task_geometry__shape_gallery__transformation_match_label",
+REQUIRED_GEOMETRY_SPLIT_TASKS = {
+    "task_geometry__function_panels__function_status_label",
+    "task_geometry__function_panels__one_to_one_status_label",
+    "task_geometry__function_panels__range_match_label",
+    "task_geometry__function_panels__sign_interval_label",
+    "task_geometry__function_panels__x_axis_symmetry_label",
+    "task_geometry__circle_theorem__inscribed_angle_value_central_angle_from_inscribed",
+    "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_arc",
+    "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_central",
+    "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_arc",
+    "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_inscribed",
+    "task_geometry__coordinate_plane__reflected_point_label",
+    "task_geometry__coordinate_plane__rotated_point_label",
+    "task_geometry__coordinate_plane__translated_point_label",
+    "task_geometry__function_graph__extremum_count_local_extremum_count",
+    "task_geometry__function_graph__extremum_count_turning_point_count",
+    "task_geometry__angle_relations__algebraic_angle_value_triangle_double_extension_expression",
+    "task_geometry__angle_relations__algebraic_angle_value_triangle_single_extension_expression",
+    "task_geometry__angle_relations__parallel_supplement_angle",
+    "task_geometry__angle_relations__triangle_exterior_angle",
+    "task_geometry__shape_gallery__congruent_count",
+    "task_geometry__shape_gallery__similar_count",
+    "task_geometry__shape_gallery__reflection_match",
+    "task_geometry__shape_gallery__rotation_match",
+    "task_geometry__shape_gallery__translation_match",
 }
 
+TAXONOMY_AUDIT_SUMMARY = (
+    Path(__file__).resolve().parents[1]
+    / "review/taxonomy-audit/contract_v0_reanalysis/proposed_task_summary.csv"
+)
 
-def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_families() -> (
-    None
-):
+
+def _retired_geometry_tasks_from_audit() -> set[str]:
+    with TAXONOMY_AUDIT_SUMMARY.open(newline="", encoding="utf-8") as handle:
+        return {
+            row["current_task_id"]
+            for row in csv.DictReader(handle)
+            if row["domain"] == "geometry" and row["decision"] != "keep"
+        }
+
+
+def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_families() -> None:
     geometry_tasks = {
-        task_id for task_id in TASK_REGISTRY if task_id.startswith("task_geometry__")
+        task_id
+        for task_id, task_cls in TASK_REGISTRY.items()
+        if task_id.startswith("task_geometry__")
+        and getattr(task_cls, "default_dataset_enabled", False)
     }
-    assert geometry_tasks == EXPECTED_GEOMETRY_TASKS
+
+    assert len(geometry_tasks) == 192
+    assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
+    assert _retired_geometry_tasks_from_audit().isdisjoint(geometry_tasks)
+
+
+def test_geometry_query_selection_uses_query_id_not_legacy_query_variant() -> None:
+    selected, probabilities = select_geometry_query_id(
+        {"query_variant": "second"},
+        query_ids=("first", "second"),
+        task_id="task_geometry__example__value",
+        instance_seed=17,
+    )
+
+    assert selected in {"first", "second"}
+    assert probabilities == {"first": 0.5, "second": 0.5}
+
+    forced, forced_probabilities = select_geometry_query_id(
+        {"query_id": "second", "query_variant": "first"},
+        query_ids=("first", "second"),
+        task_id="task_geometry__example__value",
+        instance_seed=17,
+    )
+
+    assert forced == "second"
+    assert forced_probabilities == {"second": 1.0}
+
+
+def _assert_consolidated_probability_metadata(trace: dict, *, scene_variant: str, query_id: str) -> None:
+    execution = trace["execution_trace"]
+    query_params = trace["query_spec"]["params"]
+    scene_probabilities = execution["scene_variant_probabilities"]
+    query_probabilities = execution["query_id_probabilities"]
+
+    assert scene_probabilities == query_params["scene_variant_probabilities"]
+    assert query_probabilities == query_params["query_id_probabilities"]
+    assert scene_variant in scene_probabilities
+    assert query_id in query_probabilities
+    assert scene_probabilities[scene_variant] == 1.0
+    assert query_probabilities[query_id] == 1.0
+    assert abs(sum(float(value) for value in scene_probabilities.values()) - 1.0) < 1e-9
+    assert abs(sum(float(value) for value in query_probabilities.values()) - 1.0) < 1e-9
 
 
 @pytest.mark.parametrize(
@@ -153,16 +151,8 @@ def test_geometry_measurement_value_tracks_scene_and_query_ids(
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_measurement_"
     )
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
-    assert out.evidence_gt.type == "point_set"
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
+    assert out.annotation_gt.type == "point_set"
 
 
 @pytest.mark.parametrize(
@@ -199,15 +189,7 @@ def test_geometry_comparison_label_tracks_scene_and_query_ids(
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_comparison_"
     )
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
     if scene_variant == "triangle":
         assert "triangle" in out.prompt.lower()
         assert "rectangle" not in out.prompt.lower()
@@ -250,15 +232,15 @@ def test_geometry_comparison_value_supports_eight_compared_objects(
     trace = out.trace_payload
     assert int(trace["execution_trace"]["object_count"]) == 8
     assert len(trace["execution_trace"]["object_labels"]) == 8
-    assert set(trace["execution_trace"]["object_labels"]).issubset(set("ABCDEFGH"))
+    assert len(set(trace["execution_trace"]["object_labels"])) == 8
     if scene_variant == "triangle":
-        assert len(out.evidence_gt.value) == 3
+        assert len(out.annotation_gt.value) == 3
         assert trace["execution_trace"]["shape_family"] == "triangle"
         assert "triangle" in out.prompt.lower()
         assert "rectangle" not in out.prompt.lower()
         assert "exactly three pixel points" in out.prompt
     if scene_variant == "rectangle":
-        assert len(out.evidence_gt.value) == 4
+        assert len(out.annotation_gt.value) == 4
         assert trace["execution_trace"]["shape_family"] == "rectangle"
 
 
@@ -288,22 +270,14 @@ def test_geometry_counting_value_tracks_scene_and_query_ids(
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_counting_"
     )
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
     assert trace["execution_trace"]["counted_class_parameter"]
     assert trace["execution_trace"]["counted_class"]
     assert trace["render_spec"]["text_style"]["draw_object_labels"] is False
@@ -386,20 +360,12 @@ def test_geometry_transformation_match_tracks_scene_and_query_ids(
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "option_letter"
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == expected_points
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == expected_points
     assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
     assert trace["scene_ir"]["relations"]["winner_label"] == out.answer_gt.value
     if query_id == "rotation_match":
         assert trace["execution_trace"]["rotation_mode"]
@@ -433,27 +399,19 @@ def test_geometry_similarity_count_tracks_scene_and_query_ids(
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(target_count)
-    assert len(out.evidence_gt.value) == int(target_count)
+    assert len(out.annotation_gt.value) == int(target_count)
     assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["target_count"] == target_count
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
     assert (
         trace["witness_symbolic"]["label_set"]
         == trace["scene_ir"]["relations"]["matching_labels"]
     )
-    assert trace["projected_evidence"]["bbox_set"] == list(out.evidence_gt.value)
+    assert trace["projected_annotation"]["bbox_set"] == list(out.annotation_gt.value)
 
 
 @pytest.mark.parametrize(
@@ -511,21 +469,13 @@ def test_geometry_graphing_count_tracks_scene_and_query_ids(
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(target_count)
-    assert len(out.evidence_gt.value) == int(target_count)
+    assert len(out.annotation_gt.value) == int(target_count)
     assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
     for key, value in params.items():
         assert trace["execution_trace"][key] == value
         assert trace["query_spec"]["params"][key] == value
@@ -764,7 +714,7 @@ def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> N
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_id", "answer_type", "evidence_type"),
+    ("scene_variant", "query_id", "answer_type", "annotation_type"),
     (
         ("segment_set", "parallel_count", "integer", "point_set"),
         ("segment_set", "perpendicular_count", "integer", "point_set"),
@@ -777,7 +727,7 @@ def test_geometry_coordinate_relation_tracks_scene_and_query_ids(
     scene_variant: str,
     query_id: str,
     answer_type: str,
-    evidence_type: str,
+    annotation_type: str,
 ) -> None:
     task = GeometryCoordinateRelationTask()
     params = {"scene_variant": scene_variant, "query_id": query_id}
@@ -790,19 +740,11 @@ def test_geometry_coordinate_relation_tracks_scene_and_query_ids(
     out = task.generate(23081, params=params, max_attempts=30)
     trace = out.trace_payload
     assert out.answer_gt.type == answer_type
-    assert out.evidence_gt.type == evidence_type
+    assert out.annotation_gt.type == annotation_type
     assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert (
-        trace["execution_trace"]["query_id_probabilities"]
-        == trace["execution_trace"]["query_id_probabilities"]
-    )
-    assert (
-        trace["query_spec"]["params"]["query_id_probabilities"]
-        == trace["query_spec"]["params"]["query_id_probabilities"]
-    )
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
 
 
 def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_stream() -> (

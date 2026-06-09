@@ -625,20 +625,20 @@ class IconsCountingSingletonTypeTask:
             context=f"prompt defaults for {self.task_id}",
         )
         question_text = _variant_prompt_text(_PROMPT_DEFAULTS, "question_text", query_id=str(query_id))
-        evidence_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "evidence_hint", query_id=str(query_id))
+        annotation_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "annotation_hint", query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -651,13 +651,13 @@ class IconsCountingSingletonTypeTask:
         repeated_icon_count = int(scene_payload.object_count) - int(scene_payload.target_count)
         if str(query_id) != "singleton_type_count":  # pragma: no cover - guarded by _resolve_query_id
             raise ValueError(f"unsupported query_id: {query_id}")
-        evidence_bboxes = sort_bboxes_reading_order(scene_payload.singleton_bboxes)
-        evidence_indices = list(scene_payload.singleton_indices)
+        annotation_bboxes = sort_bboxes_reading_order(scene_payload.singleton_bboxes)
+        annotation_indices = list(scene_payload.singleton_indices)
         answer_value = int(singleton_count)
         counting_rule = "singleton_icon_type_frequency"
         question_format = "count_singleton_type_icons"
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_singleton_type_counting",
@@ -726,7 +726,7 @@ class IconsCountingSingletonTypeTask:
                 "type_frequencies": dict(scene_payload.type_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
-                "evidence_indices": list(evidence_indices),
+                "annotation_indices": list(annotation_indices),
             },
             "witness_symbolic": {
                 "singleton_icon_ids": list(scene_payload.singleton_icon_ids),
@@ -734,10 +734,10 @@ class IconsCountingSingletonTypeTask:
                 "type_frequencies": dict(scene_payload.type_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
-                "evidence_indices": list(evidence_indices),
+                "annotation_indices": list(annotation_indices),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
         complexity = build_icons_counting_singleton_type_complexity(
@@ -759,7 +759,7 @@ class IconsCountingSingletonTypeTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -10,7 +10,8 @@ from PIL import Image, ImageDraw
 
 from ...shared.drawing import draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_centered_game_text
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .platformer_common import PlatformerCollectible, PlatformerHazard, PlatformerPlatform
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -412,9 +413,56 @@ def _draw_collectible(
     radius = float(params.collectible_radius_px) * (float(collectible.radius_norm) / 0.022)
     bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
     fill = theme.coin_palette_rgb[int(collectible.color_index) % len(theme.coin_palette_rgb)]
-    draw.ellipse(bbox, fill=tuple(int(v) for v in fill), outline=tuple(int(v) for v in theme.coin_outline_rgb), width=2)
-    shine = (cx - radius * 0.35, cy - radius * 0.45, cx - radius * 0.06, cy - radius * 0.16)
-    draw.ellipse(shine, fill=(255, 255, 246))
+    outline = tuple(int(v) for v in theme.coin_outline_rgb)
+    kind = str(collectible.kind or "coin")
+    if collectible.score_value is None:
+        draw.ellipse(bbox, fill=tuple(int(v) for v in fill), outline=outline, width=2)
+        shine = (cx - radius * 0.35, cy - radius * 0.45, cx - radius * 0.06, cy - radius * 0.16)
+        draw.ellipse(shine, fill=(255, 255, 246))
+        return tuple(round(float(v), 3) for v in bbox)
+
+    if kind == "star":
+        points = []
+        for index in range(10):
+            angle = (-math.pi / 2.0) + (float(index) * math.pi / 5.0)
+            point_radius = radius * (1.0 if index % 2 == 0 else 0.48)
+            points.append((cx + (point_radius * math.cos(angle)), cy + (point_radius * math.sin(angle))))
+        draw.polygon(points, fill=tuple(int(v) for v in fill), outline=outline)
+    else:
+        points = (
+            (cx, cy - radius),
+            (cx + radius * 0.92, cy),
+            (cx, cy + radius),
+            (cx - radius * 0.92, cy),
+        )
+        draw.polygon(points, fill=tuple(int(v) for v in fill), outline=outline)
+        draw.line((cx - radius * 0.42, cy - radius * 0.38, cx + radius * 0.42, cy - radius * 0.38), fill=(255, 255, 246), width=2)
+    text = str(int(collectible.score_value))
+    font = fit_font_to_box(
+        draw,
+        text=text,
+        max_width=max(8.0, radius * 1.22),
+        max_height=max(8.0, radius * 1.02),
+        bold=True,
+        font_family=str(params.font_family),
+        min_size_px=7,
+        max_size_px=max(10, int(params.label_font_size_px)),
+        fill_ratio=0.88,
+    )
+    draw_centered_game_text(
+        draw,
+        text=text,
+        center=(cx, cy),
+        font=font,
+        fill=theme.coin_outline_rgb,
+        stroke_fill=fill,
+        stroke_width=2,
+        role="readout",
+        required=True,
+        surface_rgbs=(fill,),
+        preferred_rgbs=(theme.coin_outline_rgb,),
+        namespace="games.platformer.collectible_score",
+    )
     return tuple(round(float(v), 3) for v in bbox)
 
 
@@ -536,10 +584,14 @@ def render_platformer_scene(
                 "id": str(collectible.collectible_id),
                 "type": "platformer_collectible",
                 "on_path": bool(collectible.on_path),
+                "kind": str(collectible.kind),
                 "bbox": list(bbox),
                 "point": list(entity_points[str(collectible.collectible_id)]),
             }
         )
+        if collectible.score_value is not None:
+            scene_entities[-1]["score_value"] = int(collectible.score_value)
+            scene_entities[-1]["display_text"] = str(int(collectible.score_value))
 
     player_bbox = _draw_player(draw, level_bbox=level_bbox, player_xy_norm=player_xy_norm, theme=theme, params=params)
     entity_bboxes["player"] = player_bbox

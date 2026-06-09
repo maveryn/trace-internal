@@ -1,4 +1,4 @@
-"""Month-view calendar page task with date lookup and marked-date counting queries."""
+"""Month-view calendar page tasks with date lookup, counting, and workday-offset queries."""
 
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ from ...shared.time_artifact_complexity import (
 )
 from ...shared.time_artifact_fixed_query import force_time_artifact_query_params, rewrite_time_artifact_query_output
 from ...shared.time_artifact_style import (
+  SUPPORTED_TIME_ARTIFACT_CALENDAR_TEXT_COLOR_MODES,
   SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
   SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
   build_time_artifact_calendar_theme,
@@ -46,6 +47,7 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 TASK_ID = "pages_calendar_month_view_base"
 WEEKDAY_OCCURRENCE_TASK_ID = "task_pages__calendar__weekday_occurrence_date"
 MARKED_DAY_CLASS_TASK_ID = "task_pages__calendar__marked_day_class_count"
+WORKDAY_OFFSET_TASK_ID = "task_pages__calendar__workday_offset_date"
 PUBLIC_SCENE_ID = "calendar"
 SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES: Tuple[str, ...] = (
   "center_clean",
@@ -59,6 +61,11 @@ SUPPORTED_PAGE_CALENDAR_TITLE_MODES: Tuple[str, ...] = (
   "generic",
   "full_month_year",
 )
+SUPPORTED_PAGE_CALENDAR_SURFACE_MODES: Tuple[str, ...] = (
+  "light",
+  "dark",
+)
+SUPPORTED_PAGE_CALENDAR_TEXT_COLOR_MODES: Tuple[str, ...] = SUPPORTED_TIME_ARTIFACT_CALENDAR_TEXT_COLOR_MODES
 _GENERIC_TITLE_TEXTS: Tuple[str, ...] = (
   "Calendar",
   "Month View",
@@ -67,16 +74,24 @@ _GENERIC_TITLE_TEXTS: Tuple[str, ...] = (
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "date_of_weekday_occurrence",
   "count_marked_day_class",
+  "workday_after_offset_date",
+  "workday_before_offset_date",
 )
 _SOURCE_MARKED_DAY_CLASS_BY_VARIANT = {
   "count_marked_weekend_days": "weekend",
   "count_marked_weekday_days": "weekday",
 }
 _SUPPORTED_MARKED_DAY_CLASSES: Tuple[str, ...] = ("weekend", "weekday")
+_WORKDAY_OFFSET_QUERY_IDS: Tuple[str, ...] = (
+  "workday_after_offset_date",
+  "workday_before_offset_date",
+)
 
 _CALENDAR_LOOKUP_BASE_BY_VARIANT = {
   "date_of_weekday_occurrence": 0.56,
   "count_marked_day_class": 0.45,
+  "workday_after_offset_date": 0.68,
+  "workday_before_offset_date": 0.68,
 }
 _VISUAL_SCAN_BASE_BY_SCENE = {
   "classic": 0.44,
@@ -112,6 +127,7 @@ class _TaskDefaults:
   marked_weekday_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
   marked_weekday_distractor_support: Tuple[int, ...] = (1, 2, 3, 4)
   marked_weekend_distractor_support: Tuple[int, ...] = (1, 2, 3, 4)
+  workday_offset_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
   canvas_width: int = 860
   canvas_height: int = 760
   outer_margin_px: int = 34
@@ -142,6 +158,8 @@ class _ResolvedQuery:
   accent_color_name: str
   layout_mode: str
   title_mode: str
+  surface_mode: str
+  text_color_mode: str
   year: int
   month: int
   month_name: str
@@ -149,16 +167,21 @@ class _ResolvedQuery:
   start_weekday_index: int
   days_in_month: int
   marked_dates: Tuple[int, ...]
-  evidence_dates: Tuple[int, ...]
+  annotation_dates: Tuple[int, ...]
   answer_value: int
   query_weekday_index: int | None
   query_occurrence: int | None
+  workday_direction: str | None
+  workday_offset: int | None
+  reference_date: int | None
+  target_date: int | None
   weekend_weekday_indices: Tuple[int, ...]
   date_occurrence_support: Tuple[int, ...]
   marked_weekend_count_support: Tuple[int, ...]
   marked_weekday_count_support: Tuple[int, ...]
   marked_weekday_distractor_support: Tuple[int, ...]
   marked_weekend_distractor_support: Tuple[int, ...]
+  workday_offset_support: Tuple[int, ...]
   query_id_probabilities: Dict[str, float]
   marked_day_class_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
@@ -166,6 +189,8 @@ class _ResolvedQuery:
   accent_color_name_probabilities: Dict[str, float]
   layout_mode_probabilities: Dict[str, float]
   title_mode_probabilities: Dict[str, float]
+  surface_mode_probabilities: Dict[str, float]
+  text_color_mode_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -242,6 +267,21 @@ def _resolve_query_id(
     supported=SUPPORTED_QUERY_IDS,
     namespace="query_id",
   )
+
+
+def _force_workday_offset_params(params: Mapping[str, Any]) -> Dict[str, Any]:
+  """Restrict one calendar public task to the workday-offset query family."""
+
+  forced = dict(params)
+  explicit_variant = forced.get("query_id")
+  allowed = set(_WORKDAY_OFFSET_QUERY_IDS)
+  if explicit_variant is not None and str(explicit_variant) != "default":
+    if str(explicit_variant) not in allowed:
+      raise ValueError(f"query_id={explicit_variant!r} is not valid for this calendar workday-offset task")
+    return forced
+  forced["query_id_weights"] = {str(query_id): 1.0 for query_id in _WORKDAY_OFFSET_QUERY_IDS}
+  forced.pop("query_id", None)
+  return forced
 
 
 def _normalize_marked_day_class(value: Any) -> str:
@@ -600,6 +640,68 @@ def _resolve_marked_count_query(
   return tuple(int(day) for day in marked_dates), tuple(int(day) for day in target_marked_dates), int(target_count)
 
 
+def _is_workday_date(day: int, *, start_weekday_index: int, weekend_weekday_indices: Tuple[int, ...]) -> bool:
+  """Return whether one date number is a weekday under the configured weekend indices."""
+
+  weekday_index = int((int(start_weekday_index) + int(day) - 1) % 7)
+  return int(weekday_index) not in set(int(value) for value in weekend_weekday_indices)
+
+
+def _resolve_workday_offset_query(
+  *,
+  instance_seed: int,
+  params: Mapping[str, Any],
+  query_id: str,
+  days_in_month: int,
+  start_weekday_index: int,
+  weekend_weekday_indices: Tuple[int, ...],
+  workday_offset_support: Tuple[int, ...],
+) -> Tuple[Tuple[int, ...], Tuple[int, ...], int, str, int, int, int]:
+  """Resolve one before/after weekday traversal inside a visible calendar month."""
+
+  direction = "after" if str(query_id) == "workday_after_offset_date" else "before"
+  workday_dates = [
+    int(day)
+    for day in range(1, int(days_in_month) + 1)
+    if _is_workday_date(
+      int(day),
+      start_weekday_index=int(start_weekday_index),
+      weekend_weekday_indices=tuple(int(value) for value in weekend_weekday_indices),
+    )
+  ]
+  if not workday_dates:
+    raise ValueError("sampled month has no feasible workday dates")
+  feasible: List[Tuple[int, int, int]] = []
+  for offset in workday_offset_support:
+    offset_value = int(offset)
+    if offset_value < 1:
+      continue
+    for index, reference_date in enumerate(workday_dates):
+      target_index = int(index + offset_value) if direction == "after" else int(index - offset_value)
+      if 0 <= int(target_index) < len(workday_dates):
+        feasible.append((int(offset_value), int(reference_date), int(workday_dates[int(target_index)])))
+  if not feasible:
+    raise ValueError("no feasible workday-offset query exists for the sampled month")
+  selected_index = int(
+    resolve_selection_index(
+      params=params,
+      instance_seed=int(instance_seed),
+      namespace=f"{TASK_ID}:{str(query_id)}",
+    )
+    % len(feasible)
+  )
+  workday_offset, reference_date, target_date = feasible[int(selected_index)]
+  return (
+    (int(reference_date),),
+    (int(reference_date), int(target_date)),
+    int(target_date),
+    str(direction),
+    int(workday_offset),
+    int(reference_date),
+    int(target_date),
+  )
+
+
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one concrete month-calendar query from balanced supports."""
 
@@ -652,6 +754,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     supported=SUPPORTED_PAGE_CALENDAR_TITLE_MODES,
     namespace="title_mode",
   )
+  surface_mode, surface_mode_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=params,
+    explicit_key="surface_mode",
+    weights_key="surface_mode_weights",
+    balance_flag_key="balanced_surface_mode_sampling",
+    supported=SUPPORTED_PAGE_CALENDAR_SURFACE_MODES,
+    namespace="surface_mode",
+  )
+  text_color_mode, text_color_mode_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=params,
+    explicit_key="text_color_mode",
+    weights_key="text_color_mode_weights",
+    balance_flag_key="balanced_text_color_mode_sampling",
+    supported=SUPPORTED_PAGE_CALENDAR_TEXT_COLOR_MODES,
+    namespace="text_color_mode",
+  )
 
   year, month, start_weekday_index, days_in_month = _sample_month(int(instance_seed), params)
   month_weeks = calendar.Calendar(firstweekday=0).monthdayscalendar(int(year), int(month))
@@ -686,12 +806,21 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     "marked_weekend_distractor_support",
     _DEFAULTS.marked_weekend_distractor_support,
   )
+  workday_offset_support = _resolve_int_support(
+    params,
+    "workday_offset_support",
+    _DEFAULTS.workday_offset_support,
+  )
 
   marked_dates: Tuple[int, ...] = ()
-  evidence_dates: Tuple[int, ...]
+  annotation_dates: Tuple[int, ...]
   answer_value: int
   query_weekday_index: int | None = None
   query_occurrence: int | None = None
+  workday_direction: str | None = None
+  workday_offset: int | None = None
+  reference_date: int | None = None
+  target_date: int | None = None
   marked_day_class: str | None = None
   marked_day_class_probabilities: Dict[str, float] = {}
 
@@ -713,13 +842,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
       % len(feasible_pairs)
     )
     query_weekday_index, query_occurrence, answer_value = feasible_pairs[int(pair_index)]
-    evidence_dates = (int(answer_value),)
-  else:
+    annotation_dates = (int(answer_value),)
+  elif str(query_id) == "count_marked_day_class":
     marked_day_class, marked_day_class_probabilities = _resolve_marked_day_class(
       instance_seed=int(instance_seed),
       params=params,
     )
-    marked_dates, evidence_dates, answer_value = _resolve_marked_count_query(
+    marked_dates, annotation_dates, answer_value = _resolve_marked_count_query(
       instance_seed=int(instance_seed),
       params=params,
       days_in_month=int(days_in_month),
@@ -728,6 +857,26 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
       month=int(month),
       target_weekend=str(marked_day_class) == "weekend",
     )
+  elif str(query_id) in set(_WORKDAY_OFFSET_QUERY_IDS):
+    (
+      marked_dates,
+      annotation_dates,
+      answer_value,
+      workday_direction,
+      workday_offset,
+      reference_date,
+      target_date,
+    ) = _resolve_workday_offset_query(
+      instance_seed=int(instance_seed),
+      params=params,
+      query_id=str(query_id),
+      days_in_month=int(days_in_month),
+      start_weekday_index=int(start_weekday_index),
+      weekend_weekday_indices=tuple(int(value) for value in weekend_weekday_indices),
+      workday_offset_support=tuple(int(value) for value in workday_offset_support),
+    )
+  else:
+    raise ValueError(f"unsupported calendar query_id: {query_id}")
 
   return _ResolvedQuery(
     query_id=str(query_id),
@@ -737,6 +886,8 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     accent_color_name=str(accent_color_name),
     layout_mode=str(layout_mode),
     title_mode=str(title_mode),
+    surface_mode=str(surface_mode),
+    text_color_mode=str(text_color_mode),
     year=int(year),
     month=int(month),
     month_name=str(month_name(int(month))),
@@ -744,16 +895,21 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     start_weekday_index=int(start_weekday_index),
     days_in_month=int(days_in_month),
     marked_dates=tuple(int(day) for day in marked_dates),
-    evidence_dates=tuple(int(day) for day in evidence_dates),
+    annotation_dates=tuple(int(day) for day in annotation_dates),
     answer_value=int(answer_value),
     query_weekday_index=(int(query_weekday_index) if query_weekday_index is not None else None),
     query_occurrence=(int(query_occurrence) if query_occurrence is not None else None),
+    workday_direction=(str(workday_direction) if workday_direction is not None else None),
+    workday_offset=(int(workday_offset) if workday_offset is not None else None),
+    reference_date=(int(reference_date) if reference_date is not None else None),
+    target_date=(int(target_date) if target_date is not None else None),
     weekend_weekday_indices=tuple(int(value) for value in weekend_weekday_indices),
     date_occurrence_support=tuple(int(value) for value in date_occurrence_support),
     marked_weekend_count_support=tuple(int(value) for value in marked_weekend_count_support),
     marked_weekday_count_support=tuple(int(value) for value in marked_weekday_count_support),
     marked_weekday_distractor_support=tuple(int(value) for value in marked_weekday_distractor_support),
     marked_weekend_distractor_support=tuple(int(value) for value in marked_weekend_distractor_support),
+    workday_offset_support=tuple(int(value) for value in workday_offset_support),
     query_id_probabilities=dict(query_id_probabilities),
     marked_day_class_probabilities=dict(marked_day_class_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
@@ -761,6 +917,8 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     accent_color_name_probabilities=dict(accent_color_name_probabilities),
     layout_mode_probabilities=dict(layout_mode_probabilities),
     title_mode_probabilities=dict(title_mode_probabilities),
+    surface_mode_probabilities=dict(surface_mode_probabilities),
+    text_color_mode_probabilities=dict(text_color_mode_probabilities),
   )
 
 
@@ -783,6 +941,8 @@ class _PagesCalendarMonthViewBase:
     calendar_theme = build_time_artifact_calendar_theme(
       accent_color_name=str(query.accent_color_name),
       style_variant=str(query.style_variant),
+      surface_mode=str(query.surface_mode),
+      text_color_mode=str(query.text_color_mode),
     )
     panel_bbox, panel_layout_meta = _resolve_calendar_panel_bbox(
       instance_seed=int(instance_seed),
@@ -824,13 +984,13 @@ class _PagesCalendarMonthViewBase:
       default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
 
-    evidence_bboxes = [
+    annotation_bboxes = [
       [round(float(value), 3) for value in rendered_scene.date_cell_bboxes_by_day[int(day)]]
-      for day in query.evidence_dates
+      for day in query.annotation_dates
     ]
 
     answer_hint_key = f"answer_hint_{query.query_id}"
-    evidence_hint_key = f"evidence_hint_{query.query_id}"
+    annotation_hint_key = f"annotation_hint_{query.query_id}"
     object_description_key = f"object_description_{query.query_id}"
     json_example_key = f"json_example_{query.query_id}"
     json_example_answer_only_key = f"json_example_answer_only_{query.query_id}"
@@ -844,7 +1004,7 @@ class _PagesCalendarMonthViewBase:
         "json_output_contract_answer_only",
         object_description_key,
         answer_hint_key,
-        evidence_hint_key,
+        annotation_hint_key,
         json_example_key,
         json_example_answer_only_key,
       ),
@@ -859,7 +1019,7 @@ class _PagesCalendarMonthViewBase:
       "object_description": str(object_description),
       "json_output_contract": str(prompt_defaults["json_output_contract"]),
       "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-      "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+      "annotation_hint": str(prompt_defaults[annotation_hint_key]),
       "answer_hint": str(prompt_defaults[answer_hint_key]),
       "json_example": str(prompt_defaults[json_example_key]),
       "json_example_answer_only": str(prompt_defaults[json_example_answer_only_key]),
@@ -872,6 +1032,10 @@ class _PagesCalendarMonthViewBase:
         raise ValueError("count_marked_day_class requires marked_day_class")
       slots["marked_day_class"] = str(query.marked_day_class)
       slots["marked_day_class_phrase"] = str(_marked_day_class_phrase(str(query.marked_day_class)))
+    if str(query.query_id) in set(_WORKDAY_OFFSET_QUERY_IDS):
+      if query.workday_offset is None:
+        raise ValueError("workday-offset calendar query requires workday_offset")
+      slots["workday_offset"] = str(int(query.workday_offset))
 
     prompt_selection = render_task_prompt_variants(
       domain=self.domain,
@@ -880,14 +1044,29 @@ class _PagesCalendarMonthViewBase:
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
       query_key=str(query.query_id),
-      answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+      answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
     answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-    evidence_gt = TypedValue(type="bbox_set", value=[list(box) for box in evidence_bboxes])
+    if str(query.query_id) in set(_WORKDAY_OFFSET_QUERY_IDS):
+      if query.reference_date is None or query.target_date is None:
+        raise ValueError("workday-offset calendar query requires reference_date and target_date")
+      annotation_value = {
+        "reference_date": [
+          round(float(value), 3)
+          for value in rendered_scene.date_cell_bboxes_by_day[int(query.reference_date)]
+        ],
+        "target_date": [
+          round(float(value), 3)
+          for value in rendered_scene.date_cell_bboxes_by_day[int(query.target_date)]
+        ],
+      }
+      annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
+    else:
+      annotation_gt = TypedValue(type="bbox_set", value=[list(box) for box in annotation_bboxes])
 
     query_params: Dict[str, Any] = {
       "query_id": str(query.query_id),
@@ -897,6 +1076,8 @@ class _PagesCalendarMonthViewBase:
       "accent_color_name": str(query.accent_color_name),
       "layout_mode": str(query.layout_mode),
       "title_mode": str(query.title_mode),
+      "surface_mode": str(query.surface_mode),
+      "text_color_mode": str(query.text_color_mode),
       "visible_title_text": str(rendered_scene.title_text),
       "year": int(query.year),
       "month": int(query.month),
@@ -910,6 +1091,7 @@ class _PagesCalendarMonthViewBase:
       "marked_weekday_count_support": [int(value) for value in query.marked_weekday_count_support],
       "marked_weekday_distractor_support": [int(value) for value in query.marked_weekday_distractor_support],
       "marked_weekend_distractor_support": [int(value) for value in query.marked_weekend_distractor_support],
+      "workday_offset_support": [int(value) for value in query.workday_offset_support],
       "query_id_probabilities": dict(query.query_id_probabilities),
       "marked_day_class_probabilities": dict(query.marked_day_class_probabilities),
       "scene_variant_probabilities": dict(query.scene_variant_probabilities),
@@ -917,6 +1099,8 @@ class _PagesCalendarMonthViewBase:
       "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
       "layout_mode_probabilities": dict(query.layout_mode_probabilities),
       "title_mode_probabilities": dict(query.title_mode_probabilities),
+      "surface_mode_probabilities": dict(query.surface_mode_probabilities),
+      "text_color_mode_probabilities": dict(query.text_color_mode_probabilities),
     }
     if query.query_weekday_index is not None:
       query_params["query_weekday_index"] = int(query.query_weekday_index)
@@ -924,6 +1108,14 @@ class _PagesCalendarMonthViewBase:
     if query.query_occurrence is not None:
       query_params["query_occurrence"] = int(query.query_occurrence)
       query_params["query_occurrence_label"] = str(ordinal_label(int(query.query_occurrence)))
+    if query.workday_direction is not None:
+      query_params["workday_direction"] = str(query.workday_direction)
+    if query.workday_offset is not None:
+      query_params["workday_offset"] = int(query.workday_offset)
+    if query.reference_date is not None:
+      query_params["reference_date"] = int(query.reference_date)
+    if query.target_date is not None:
+      query_params["target_date"] = int(query.target_date)
     trace_payload = {
       "scene_ir": {
         "scene_kind": "pages_month_calendar",
@@ -936,11 +1128,17 @@ class _PagesCalendarMonthViewBase:
           "accent_color_name": str(query.accent_color_name),
           "layout_mode": str(query.layout_mode),
           "title_mode": str(query.title_mode),
+          "surface_mode": str(query.surface_mode),
+          "text_color_mode": str(query.text_color_mode),
           "visible_title_text": str(rendered_scene.title_text),
           "year": int(query.year),
           "month": int(query.month),
           "month_name": str(query.month_name),
           "marked_dates": [int(day) for day in query.marked_dates],
+          "workday_direction": query.workday_direction,
+          "workday_offset": (int(query.workday_offset) if query.workday_offset is not None else None),
+          "reference_date": (int(query.reference_date) if query.reference_date is not None else None),
+          "target_date": (int(query.target_date) if query.target_date is not None else None),
         },
       },
       "query_spec": {
@@ -962,6 +1160,8 @@ class _PagesCalendarMonthViewBase:
         "calendar_style": {
           "accent_color_name": str(query.accent_color_name),
           "style_variant": str(query.style_variant),
+          "surface_mode": str(query.surface_mode),
+          "text_color_mode": str(query.text_color_mode),
           "layout_mode": str(query.layout_mode),
           "title_mode": str(query.title_mode),
           "title": dict(title_meta),
@@ -981,8 +1181,10 @@ class _PagesCalendarMonthViewBase:
             "weekday_text": [int(value) for value in calendar_theme.weekday_text_rgb],
             "grid_line": [int(value) for value in calendar_theme.grid_line_rgb],
             "date_text": [int(value) for value in calendar_theme.date_text_rgb],
+            "inactive_date_text": [int(value) for value in calendar_theme.inactive_date_text_rgb],
             "marker_fill": [int(value) for value in calendar_theme.marker_fill_rgb],
             "marker_outline": [int(value) for value in calendar_theme.marker_outline_rgb],
+            "marker_text": [int(value) for value in calendar_theme.marker_text_rgb],
           },
           "marker_kind": str(calendar_theme.marker_kind),
         },
@@ -1001,8 +1203,10 @@ class _PagesCalendarMonthViewBase:
           str(day): [round(float(value), 3) for value in bbox]
           for day, bbox in rendered_scene.date_cell_bboxes_by_day.items()
         },
-        "evidence_dates": [int(day) for day in query.evidence_dates],
+        "annotation_dates": [int(day) for day in query.annotation_dates],
         "marked_dates": [int(day) for day in query.marked_dates],
+        "reference_date": (int(query.reference_date) if query.reference_date is not None else None),
+        "target_date": (int(query.target_date) if query.target_date is not None else None),
       },
       "execution_trace": {
         "query_id": str(query.query_id),
@@ -1012,6 +1216,8 @@ class _PagesCalendarMonthViewBase:
         "accent_color_name": str(query.accent_color_name),
         "layout_mode": str(query.layout_mode),
         "title_mode": str(query.title_mode),
+        "surface_mode": str(query.surface_mode),
+        "text_color_mode": str(query.text_color_mode),
         "visible_title_text": str(rendered_scene.title_text),
         "year": int(query.year),
         "month": int(query.month),
@@ -1020,11 +1226,15 @@ class _PagesCalendarMonthViewBase:
         "start_weekday_index": int(query.start_weekday_index),
         "row_count": int(query.row_count),
         "marked_dates": [int(day) for day in query.marked_dates],
-        "evidence_dates": [int(day) for day in query.evidence_dates],
+        "annotation_dates": [int(day) for day in query.annotation_dates],
         "answer_value": int(query.answer_value),
         "weekend_weekday_indices": [int(value) for value in query.weekend_weekday_indices],
         "query_weekday_index": (int(query.query_weekday_index) if query.query_weekday_index is not None else None),
         "query_occurrence": (int(query.query_occurrence) if query.query_occurrence is not None else None),
+        "workday_direction": query.workday_direction,
+        "workday_offset": (int(query.workday_offset) if query.workday_offset is not None else None),
+        "reference_date": (int(query.reference_date) if query.reference_date is not None else None),
+        "target_date": (int(query.target_date) if query.target_date is not None else None),
         "query_id_probabilities": dict(query.query_id_probabilities),
         "marked_day_class_probabilities": dict(query.marked_day_class_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
@@ -1032,17 +1242,20 @@ class _PagesCalendarMonthViewBase:
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
         "layout_mode_probabilities": dict(query.layout_mode_probabilities),
         "title_mode_probabilities": dict(query.title_mode_probabilities),
+        "surface_mode_probabilities": dict(query.surface_mode_probabilities),
+        "text_color_mode_probabilities": dict(query.text_color_mode_probabilities),
       },
       "witness_symbolic": {
-        "type": "bbox_set",
-        "value": [list(box) for box in evidence_bboxes],
+        "type": str(annotation_gt.type),
+        "value": annotation_gt.value,
       },
-      "projected_evidence": {
-        "bbox_set": [list(box) for box in evidence_bboxes],
+      "projected_annotation": {
+        str(annotation_gt.type): annotation_gt.value,
       },
     }
 
     marked_count = len(query.marked_dates)
+    query_step_count = int(query.query_occurrence or query.workday_offset or marked_count or 1)
     complexity = build_time_artifact_complexity(
       weights=_COMPLEXITY_WEIGHTS,
       components={
@@ -1053,7 +1266,7 @@ class _PagesCalendarMonthViewBase:
             0.18
             * float(
               normalize_int_with_bounds(
-                int(query.query_occurrence or marked_count or 1),
+                int(query_step_count),
                 [1, 20],
               )
             )
@@ -1074,7 +1287,7 @@ class _PagesCalendarMonthViewBase:
             0.20
             * float(
               normalize_int_with_bounds(
-                int(query.query_occurrence or marked_count or 1),
+                int(query_step_count),
                 [1, 20],
               )
             )
@@ -1093,7 +1306,7 @@ class _PagesCalendarMonthViewBase:
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
       answer_gt=answer_gt,
-      evidence_gt=evidence_gt,
+      annotation_gt=annotation_gt,
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
@@ -1112,6 +1325,30 @@ def _marked_day_class_query_id(output: TaskOutput) -> str:
   if marked_day_class:
     return f"count_marked_{marked_day_class}_days"
   return "count_marked_day_class"
+
+
+def _calendar_output_query_id(output: TaskOutput) -> str:
+  """Return the generated calendar source query id."""
+
+  if str(output.query_id).strip() and str(output.query_id) != "default":
+    return str(output.query_id)
+  execution = output.trace_payload.get("execution_trace", {}) if isinstance(output.trace_payload, Mapping) else {}
+  query_id = execution.get("query_id")
+  return str(query_id) if query_id is not None else ""
+
+
+def _calendar_query_probabilities(output: TaskOutput, *, fallback_query_ids: Tuple[str, ...]) -> Dict[str, float]:
+  """Return query probabilities from one calendar output or a uniform fallback."""
+
+  payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
+  for source in (
+    payload.get("execution_trace") if isinstance(payload, Mapping) else None,
+    payload.get("query_spec", {}).get("params") if isinstance(payload.get("query_spec"), Mapping) else None,
+  ):
+    if isinstance(source, Mapping) and isinstance(source.get("query_id_probabilities"), Mapping):
+      return {str(key): float(value) for key, value in source["query_id_probabilities"].items()}
+  probability = 1.0 / float(len(fallback_query_ids)) if fallback_query_ids else 1.0
+  return {str(query_id): float(probability) for query_id in fallback_query_ids}
 
 
 @register_task
@@ -1167,7 +1404,37 @@ class PagesCalendarMarkedDayClassCountTask(_PagesCalendarMonthViewBase):
     )
 
 
+@register_task
+class PagesCalendarWorkdayOffsetDateTask(_PagesCalendarMonthViewBase):
+  """Find the date reached by moving a weekday offset from one marked date."""
+
+  task_id = WORKDAY_OFFSET_TASK_ID
+  fixed_query_ids = _WORKDAY_OFFSET_QUERY_IDS
+
+  def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    output = super().generate(
+      int(instance_seed),
+      params=_force_workday_offset_params(params),
+      max_attempts=int(max_attempts),
+    )
+    query_id = _calendar_output_query_id(output)
+    if str(query_id) not in set(_WORKDAY_OFFSET_QUERY_IDS):
+      raise ValueError(f"generated unsupported query id for calendar workday-offset task: {query_id}")
+    return rewrite_time_artifact_query_output(
+      output,
+      query_id=str(query_id),
+      scene_id=PUBLIC_SCENE_ID,
+      query_probabilities=_calendar_query_probabilities(
+        output,
+        fallback_query_ids=tuple(_WORKDAY_OFFSET_QUERY_IDS),
+      ),
+    )
+
+
 __all__ = [
   "PagesCalendarWeekdayOccurrenceDateTask",
   "PagesCalendarMarkedDayClassCountTask",
+  "PagesCalendarWorkdayOffsetDateTask",
+  "SUPPORTED_PAGE_CALENDAR_SURFACE_MODES",
+  "SUPPORTED_PAGE_CALENDAR_TEXT_COLOR_MODES",
 ]

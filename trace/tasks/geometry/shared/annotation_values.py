@@ -19,17 +19,17 @@ def _coerce_value_for_json(value: Any) -> Any:
     return str(value)
 
 
-def build_role_value_evidence(
+def build_role_value_annotation(
     *,
     roles: Sequence[str],
     role_to_annotation: Mapping[str, str],
     role_to_value: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    """Build annotation->value evidence payload from role-bound values.
+    """Build annotation->value annotation payload from role-bound values.
 
     Duplicate annotation tokens are permitted only when they map to the same value.
     """
-    evidence: Dict[str, Any] = {}
+    annotation: Dict[str, Any] = {}
     for role in [str(item) for item in roles]:
         if str(role) not in role_to_annotation:
             raise ValueError(f"missing annotation token for role: {role}")
@@ -39,18 +39,18 @@ def build_role_value_evidence(
         if not annotation:
             raise ValueError(f"empty annotation token for role: {role}")
         coerced_value = _coerce_value_for_json(role_to_value[str(role)])
-        if annotation in evidence:
-            if evidence[annotation] != coerced_value:
-                raise ValueError(f"conflicting values for annotation token in evidence map: {annotation}")
+        if annotation in annotation:
+            if annotation[annotation] != coerced_value:
+                raise ValueError(f"conflicting values for annotation token in annotation map: {annotation}")
             continue
-        evidence[annotation] = coerced_value
-    return {str(key): value for key, value in evidence.items()}
+        annotation[annotation] = coerced_value
+    return {str(key): value for key, value in annotation.items()}
 
 
-def build_annotation_value_tokens(evidence_map: Mapping[str, Any]) -> List[str]:
-    """Build one deterministic unordered symbolic evidence set from annotation values."""
+def build_annotation_value_tokens(annotation_map: Mapping[str, Any]) -> List[str]:
+    """Build one deterministic unordered symbolic annotation set from annotation values."""
     tokens: List[str] = []
-    for annotation, value in sorted(((str(key), item) for key, item in evidence_map.items()), key=lambda item: item[0]):
+    for annotation, value in sorted(((str(key), item) for key, item in annotation_map.items()), key=lambda item: item[0]):
         token = f"{annotation}={format_annotation_value(value)}"
         tokens.append(str(token))
     return list(tokens)
@@ -58,12 +58,12 @@ def build_annotation_value_tokens(evidence_map: Mapping[str, Any]) -> List[str]:
 
 def build_annotation_value_point_map(
     *,
-    evidence_map: Mapping[str, Any],
+    annotation_map: Mapping[str, Any],
     annotation_centers: Mapping[str, Sequence[float]],
 ) -> Dict[str, List[float]]:
-    """Project annotation=value evidence tokens back to annotation center points."""
+    """Project annotation=value annotation tokens back to annotation center points."""
     point_map: Dict[str, List[float]] = {}
-    for annotation, value in sorted(((str(key), item) for key, item in evidence_map.items()), key=lambda item: item[0]):
+    for annotation, value in sorted(((str(key), item) for key, item in annotation_map.items()), key=lambda item: item[0]):
         if annotation not in annotation_centers:
             continue
         center = annotation_centers[annotation]

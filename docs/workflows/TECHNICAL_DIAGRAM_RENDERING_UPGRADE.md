@@ -2,7 +2,7 @@
 
 Use this checklist when upgrading geometry and physics scenes with shared
 technical-diagram styling. The goal is broader non-semantic visual variety
-without changing task semantics, evidence contracts, verifier payloads, or
+without changing task semantics, annotation contracts, verifier payloads, or
 answer distributions.
 
 ## Scope
@@ -26,11 +26,11 @@ diagrams.
 - Sample style before rendering and record it under `render_spec`.
 - Do not apply a broad post-render recolor, crop, rotate, or move pass.
 - Preserve semantic colors. If a task asks about color or uses color as
-  evidence, pass protected semantic RGB values into the style resolver and
+  annotation, pass protected semantic RGB values into the style resolver and
   filter unsafe palettes/treatments.
 - Keep style choices independent of answer value, correct option, query id, and
   difficulty bucket.
-- Compute evidence bboxes/points after final layout and style-dependent stroke
+- Compute annotation bboxes/points after final layout and style-dependent stroke
   widths are resolved.
 - For full coordinate-plane geometry scenes, resolve the bounded graph-paper
   panel before projecting graph-unit geometry. Treat `graph_panel_bbox_px` as
@@ -54,7 +54,7 @@ diagrams.
   grid lines, axes, guides, labels, strokes, and accents onto domain-specific
   renderers.
 - Scene renderers still own semantic geometry, layout, entity tracing, and
-  evidence projection.
+  annotation projection.
 
 ## Required Metadata
 
@@ -87,7 +87,7 @@ For each scene:
 5. Compile touched modules.
 6. Smoke-generate multiple seeds and verify:
    - style metadata is present in `render_spec`
-   - evidence remains inside the final canvas
+   - annotation remains inside the final canvas
    - semantic colors remain unchanged where required
    - style changes are visible but non-semantic
    - post-image noise remains coordinate-preserving

@@ -615,17 +615,17 @@ def compute_val_reward(
             "ground_truth": ground_truth,
             **{
                 key: data.non_tensor_batch[key][i]
-                for key in ("answer_gt", "evidence_gt", "reward_contract")
+                for key in ("answer_gt", "annotation_gt", "reward_contract")
                 if key in data.non_tensor_batch
             },
         }
         answer_reward: float | None = None
-        evidence_reward: float | None = None
+        annotation_reward: float | None = None
         if is_trace_reward_input(reward_input):
             trace_score = score_trace_response(
                 response=response_str,
                 answer_gt=reward_input["answer_gt"],
-                evidence_gt=reward_input["evidence_gt"],
+                annotation_gt=reward_input["annotation_gt"],
                 reward_contract=reward_input["reward_contract"],
                 image_sizes=image_sizes,
                 metadata=metadata,
@@ -635,9 +635,9 @@ def compute_val_reward(
             overall = float(trace_score["overall"])
             format_score = float(trace_score.get("format", 0.0))
             answer_reward = float(trace_score.get("answer_reward", 0.0))
-            evidence_reward = float(trace_score.get("evidence_reward", 0.0))
+            annotation_reward = float(trace_score.get("annotation_reward", 0.0))
             hit = 1.0 if answer_reward >= 0.999999 else 0.0
-            extracted = bool(trace_score.get("answer_parse_ok", 0.0) or trace_score.get("evidence_parse_ok", 0.0))
+            extracted = bool(trace_score.get("answer_parse_ok", 0.0) or trace_score.get("annotation_parse_ok", 0.0))
             extracted_answer = trace_score.get("answer")
             parser_output = trace_score
         else:
@@ -654,7 +654,7 @@ def compute_val_reward(
 
         reward_tensor[i, cur_length - 1] = overall
         reward_metrics["answer_reward"].append(answer_reward)
-        reward_metrics["evidence_reward"].append(evidence_reward)
+        reward_metrics["annotation_reward"].append(annotation_reward)
         reward_metrics["overall"].append(overall)
         reward_metrics["format"].append(format_score)
         reward_metrics["accuracy_on_total"].append(hit)

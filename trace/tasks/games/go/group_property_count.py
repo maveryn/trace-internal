@@ -27,6 +27,7 @@ from ..shared.go_common import (
     SUPPORTED_GO_PLAYER_COLORS,
     GoBoardState,
     build_go_board_state,
+    build_go_stone_group_count_state,
     color_name,
     coord_to_point_id,
     liberty_point_ids,
@@ -41,6 +42,7 @@ from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_go_group_property_count_base"
+STONE_GROUP_TASK_ID = "task_games__go__stone_group_count"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "open_board",
     "crowded_board",
@@ -49,6 +51,10 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "marked_group_liberty_count",
     "marked_group_adjacent_enemy_count",
     "marked_group_shared_liberty_count",
+)
+SUPPORTED_STONE_GROUP_QUERY_IDS: Tuple[str, ...] = (
+    "black_stone_group_count",
+    "white_stone_group_count",
 )
 
 
@@ -59,6 +65,7 @@ class _TaskDefaults:
     liberty_count_support: Tuple[int, ...] = (1, 2, 3, 4, 6)
     adjacent_enemy_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     shared_liberty_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    stone_group_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
     board_size_support: Tuple[int, ...] = (6, 7, 8)
     canvas_width: int = 920
     canvas_height: int = 920
@@ -98,6 +105,24 @@ class _ResolvedAxes:
     target_answer_probabilities: Dict[str, float]
 
 
+@dataclass(frozen=True)
+class _ResolvedStoneGroupAxes:
+    """Resolved semantic and visual axes for one whole-board Go group-count scene."""
+
+    query_id: str
+    player_color: str
+    scene_variant: str
+    style_variant: str
+    target_answer: int
+    target_answer_support: Tuple[int, ...]
+    board_size: int
+    board_size_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
+    scene_variant_probabilities: Dict[str, float]
+    style_variant_probabilities: Dict[str, float]
+    target_answer_probabilities: Dict[str, float]
+
+
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("games", "go")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -117,8 +142,8 @@ def _params_with_source_query_aliases(params: Mapping[str, Any]) -> Dict[str, An
 
     alias_params = dict(params)
     explicit_query = alias_params.get("query_id")
-    if explicit_query is None and alias_params.get("query_id") is not None:
-        explicit_query = alias_params.get("query_id")
+    if explicit_query is None and alias_params.get("query_variant") is not None:
+        explicit_query = alias_params.get("query_variant")
         alias_params["query_id"] = explicit_query
     if explicit_query is None:
         return alias_params
@@ -147,6 +172,43 @@ def _resolve_query_id(
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_QUERY_IDS,
+    )
+
+
+def _params_with_stone_group_color_alias(params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Allow `player_color` to pin the matching whole-board group-count query."""
+
+    alias_params = dict(params)
+    explicit_query = alias_params.get("query_id")
+    if explicit_query is None and alias_params.get("query_variant") is not None:
+        explicit_query = alias_params.get("query_variant")
+        alias_params["query_id"] = explicit_query
+    explicit_color = alias_params.get("player_color")
+    if explicit_color is None:
+        return alias_params
+    color = str(explicit_color)
+    if color not in SUPPORTED_GO_PLAYER_COLORS:
+        raise ValueError(f"unsupported Go player_color: {explicit_color}")
+    expected_query = f"{color}_stone_group_count"
+    if explicit_query is not None and str(explicit_query) != str(expected_query):
+        raise ValueError(f"conflicting player_color={explicit_color!r} for query_id={explicit_query!r}")
+    alias_params["query_id"] = str(expected_query)
+    return alias_params
+
+
+def _resolve_stone_group_query_id(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve the queried stone color for the whole-board group-count task."""
+
+    return resolve_games_query_id(
+        task_id=STONE_GROUP_TASK_ID,
+        instance_seed=int(instance_seed),
+        params=_params_with_stone_group_color_alias(params),
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=SUPPORTED_STONE_GROUP_QUERY_IDS,
     )
 
 
@@ -179,7 +241,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
     """Return true when the query axis is using the default balanced cycle."""
 
     normalized_params = _params_with_source_query_aliases(params)
-    if normalized_params.get("query_id") is not None or normalized_params.get("query_id") is not None:
+    if normalized_params.get("query_id") is not None:
         return False
     enabled = bool(
         normalized_params.get(
@@ -223,6 +285,121 @@ def _support_key_for_query_id(query_id: str) -> str:
     if variant == "marked_group_shared_liberty_count":
         return "shared_liberty_count_support"
     raise ValueError(f"unsupported Go query id: {query_id}")
+
+
+def _uses_uniform_stone_group_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
+    """Return true when the whole-board query axis is using the default balanced cycle."""
+
+    normalized_params = _params_with_stone_group_color_alias(params)
+    if normalized_params.get("query_id") is not None:
+        return False
+    enabled = bool(
+        normalized_params.get(
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
+        )
+    )
+    if not enabled:
+        return False
+    positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_STONE_GROUP_QUERY_IDS):
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _stone_group_params_for_query_occurrence_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_id_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    """Use a per-query occurrence index for balanced stone-group axes."""
+
+    target_params = _params_with_stone_group_color_alias(params)
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is None:
+        return target_params
+    if not _uses_uniform_stone_group_query_cycle(params, query_id_probabilities):
+        return target_params
+    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_STONE_GROUP_QUERY_IDS))
+    return target_params
+
+
+def _resolve_stone_group_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedStoneGroupAxes:
+    """Resolve semantic/visual axes for whole-board Go stone-group counting."""
+
+    query_id, query_id_probabilities = _resolve_stone_group_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+    player_color = "black" if str(query_id) == "black_stone_group_count" else "white"
+    occurrence_params = _stone_group_params_for_query_occurrence_cycle(
+        params,
+        query_id_probabilities=query_id_probabilities,
+    )
+    scene_variant, scene_variant_probabilities = resolve_games_named_axis(
+        task_id=STONE_GROUP_TASK_ID,
+        instance_seed=int(instance_seed),
+        params=occurrence_params,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace="scene_variant",
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_flag_key="balanced_scene_variant_sampling",
+        supported_variants=SUPPORTED_SCENE_VARIANTS,
+    )
+    style_variant, style_variant_probabilities = resolve_games_named_axis(
+        task_id=STONE_GROUP_TASK_ID,
+        instance_seed=int(instance_seed),
+        params=occurrence_params,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace="style_variant",
+        explicit_key="style_variant",
+        weights_key="style_variant_weights",
+        balance_flag_key="balanced_style_variant_sampling",
+        supported_variants=SUPPORTED_GO_STYLE_VARIANTS,
+    )
+    target_answer, target_answer_probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=occurrence_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="stone_group_count_support",
+        explicit_key="target_answer",
+        fallback_support=supported_targets_for_query(str(query_id)),
+        namespace=f"{STONE_GROUP_TASK_ID}.target_answer",
+        balanced_flag_key="balanced_target_answer_sampling",
+        namespace_support_permutation=True,
+    )
+    target_answer_support = resolve_integer_support(
+        occurrence_params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="stone_group_count_support",
+        fallback=supported_targets_for_query(str(query_id)),
+    )
+    board_size, board_size_probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=occurrence_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="board_size_support",
+        explicit_key="board_size",
+        fallback_support=_DEFAULTS.board_size_support,
+        namespace=f"{STONE_GROUP_TASK_ID}.board_size",
+        balanced_flag_key="balanced_board_size_sampling",
+        namespace_support_permutation=True,
+    )
+    return _ResolvedStoneGroupAxes(
+        query_id=str(query_id),
+        player_color=str(player_color),
+        scene_variant=str(scene_variant),
+        style_variant=str(style_variant),
+        target_answer=int(target_answer),
+        target_answer_support=tuple(int(value) for value in target_answer_support),
+        board_size=int(board_size),
+        board_size_probabilities=dict(board_size_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
+        scene_variant_probabilities=dict(scene_variant_probabilities),
+        style_variant_probabilities=dict(style_variant_probabilities),
+        target_answer_probabilities=dict(target_answer_probabilities),
+    )
 
 
 def _scene_variant_params_for_query_cycle(
@@ -582,15 +759,16 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> GoRender
             )
         ),
         layout_jitter_meta=layout_jitter,
+        instance_seed=int(instance_seed),
     )
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return answer+evidence and answer-only JSON examples for the Go task."""
+    """Return answer+annotation and answer-only JSON examples for the Go task."""
 
     json_example = json.dumps(
         {
-            "evidence": [
+            "annotation": [
                 [343, 315],
                 [417, 389],
             ],
@@ -599,6 +777,24 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
         ensure_ascii=True,
     )
     json_example_answer_only = json.dumps({"answer": 4}, ensure_ascii=True)
+    return json_example, json_example_answer_only
+
+
+def _build_stone_group_prompt_json_examples() -> Tuple[str, str]:
+    """Return answer+annotation and answer-only JSON examples for the Go group-count task."""
+
+    json_example = json.dumps(
+        {
+            "annotation": [
+                [280, 220],
+                [426, 426],
+                [573, 646],
+            ],
+            "answer": 3,
+        },
+        ensure_ascii=True,
+    )
+    json_example_answer_only = json.dumps({"answer": 3}, ensure_ascii=True)
     return json_example, json_example_answer_only
 
 
@@ -669,14 +865,14 @@ class GamesGoGroupPropertyCountTask:
             raise RuntimeError(f"{self.task_id} failed to generate a valid Go board after {max_attempts} attempts")
 
         if str(axes.query_id) == "marked_group_liberty_count":
-            evidence_ids = liberty_point_ids(board_state.liberty_coords)
-            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
+            annotation_ids = liberty_point_ids(board_state.liberty_coords)
+            annotation_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in annotation_ids]
         elif str(axes.query_id) == "marked_group_adjacent_enemy_count":
-            evidence_ids = tuple(coord_to_point_id(coord) for coord in board_state.adjacent_enemy_coords)
-            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
+            annotation_ids = tuple(coord_to_point_id(coord) for coord in board_state.adjacent_enemy_coords)
+            annotation_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in annotation_ids]
         elif str(axes.query_id) == "marked_group_shared_liberty_count":
-            evidence_ids = liberty_point_ids(board_state.shared_liberty_coords)
-            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
+            annotation_ids = liberty_point_ids(board_state.shared_liberty_coords)
+            annotation_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in annotation_ids]
         else:
             raise ValueError(f"unsupported Go query id: {axes.query_id}")
         image, post_noise_meta = apply_post_image_noise(
@@ -702,11 +898,11 @@ class GamesGoGroupPropertyCountTask:
                 "shared_liberty_rule_text",
                 "marked_group_rule_text",
                 "answer_hint_marked_group_liberty_count",
-                "evidence_hint_marked_group_liberty_count",
+                "annotation_hint_marked_group_liberty_count",
                 "answer_hint_marked_group_adjacent_enemy_count",
-                "evidence_hint_marked_group_adjacent_enemy_count",
+                "annotation_hint_marked_group_adjacent_enemy_count",
                 "answer_hint_marked_group_shared_liberty_count",
-                "evidence_hint_marked_group_shared_liberty_count",
+                "annotation_hint_marked_group_shared_liberty_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -718,7 +914,7 @@ class GamesGoGroupPropertyCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -726,7 +922,7 @@ class GamesGoGroupPropertyCountTask:
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color)
                 ),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color)
                 ),
                 "json_example": str(json_example),
@@ -745,7 +941,7 @@ class GamesGoGroupPropertyCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         occupied_count = sum(
             1
             for row in board_state.board
@@ -760,7 +956,7 @@ class GamesGoGroupPropertyCountTask:
             occupied_count=int(occupied_count),
             marked_group_size=len(board_state.marked_group_coords),
             target_answer=int(axes.target_answer),
-            evidence_count=len(evidence_ids),
+            annotation_count=len(annotation_ids),
         )
 
         trace_payload = {
@@ -773,7 +969,7 @@ class GamesGoGroupPropertyCountTask:
                     "player_color": str(axes.player_color),
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": list(evidence_ids),
+                    "annotation_entity_ids": list(annotation_ids),
                     "board_size": int(axes.board_size),
                 },
             },
@@ -834,16 +1030,16 @@ class GamesGoGroupPropertyCountTask:
                 "liberty_coords": [[int(row), int(col)] for row, col in board_state.liberty_coords],
                 "adjacent_enemy_coords": [[int(row), int(col)] for row, col in board_state.adjacent_enemy_coords],
                 "shared_liberty_coords": [[int(row), int(col)] for row, col in board_state.shared_liberty_coords],
-                "evidence_entity_ids": [str(value) for value in evidence_ids],
+                "annotation_entity_ids": [str(value) for value in annotation_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(value) for value in evidence_ids],
+                "ids": [str(value) for value in annotation_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -852,7 +1048,248 @@ class GamesGoGroupPropertyCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
+            image=image,
+            image_id="img0",
+            trace_payload=trace_payload,
+            complexity=complexity,
+            task_versions=default_task_versions(),
+            scene_id="go",
+            query_id=str(axes.query_id),
+        )
+
+
+@register_task
+class GamesGoStoneGroupCountTask:
+    """Count connected Go stone groups for one queried color across the whole board."""
+
+    task_id = STONE_GROUP_TASK_ID
+    domain = "games"
+    task_group = "go"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        axes = _resolve_stone_group_axes(int(instance_seed), params=params)
+        render_params = _render_params(params, instance_seed=int(instance_seed))
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.go.stone_group.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+
+        board_state = None
+        rendered_scene = None
+        background_meta: Dict[str, Any] | None = None
+        for attempt_index in range(max(1, int(max_attempts))):
+            attempt_rng = spawn_rng(int(instance_seed), f"{STONE_GROUP_TASK_ID}.attempt.{int(attempt_index)}")
+            board_state = build_go_stone_group_count_state(
+                rng=attempt_rng,
+                query_id=str(axes.query_id),
+                scene_variant=str(axes.scene_variant),
+                target_answer=int(axes.target_answer),
+                board_size=int(axes.board_size),
+            )
+            background, background_meta = make_panel_scene_background(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                style=panel_style,
+            )
+            rendered_scene = render_go_board_scene(
+                board=board_state.board,
+                background=background,
+                scene_variant=str(axes.scene_variant),
+                style_variant=str(axes.style_variant),
+                marked_group_coords=(),
+                liberty_coords=(),
+                params=render_params,
+                panel_style=panel_style,
+            )
+            break
+
+        if board_state is None or rendered_scene is None or background_meta is None:
+            raise RuntimeError(f"{self.task_id} failed to generate a valid Go board after {max_attempts} attempts")
+
+        annotation_ids = tuple(coord_to_point_id(coord) for coord in board_state.representative_coords)
+        annotation_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in annotation_ids]
+        image, post_noise_meta = apply_post_image_noise(
+            rendered_scene.image,
+            instance_seed=int(instance_seed),
+            params=params,
+            default_config=POST_IMAGE_NOISE_DEFAULTS,
+        )
+
+        prompt_defaults = required_group_defaults(
+            _PROMPT_DEFAULTS,
+            (
+                "bundle_id",
+                "scene_key",
+                "task_key",
+                "json_output_contract",
+                "json_output_contract_answer_only",
+                "object_description_stone_group_open_board",
+                "object_description_stone_group_crowded_board",
+                "group_rule_text",
+                "answer_hint_stone_group_count",
+                "annotation_hint_stone_group_count",
+            ),
+            context=f"prompt defaults for {self.task_id}",
+        )
+        json_example, json_example_answer_only = _build_stone_group_prompt_json_examples()
+        prompt_selection = render_task_prompt_variants(
+            domain=self.domain,
+            task_group=self.task_group,
+            bundle_id=str(prompt_defaults["bundle_id"]),
+            scene_key=str(prompt_defaults["scene_key"]),
+            task_key=str(prompt_defaults["task_key"]),
+            query_key=str(axes.query_id),
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            slots={
+                "object_description": str(prompt_defaults[f"object_description_stone_group_{str(axes.scene_variant)}"]),
+                "json_output_contract": str(prompt_defaults["json_output_contract"]),
+                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+                "answer_hint": str(prompt_defaults["answer_hint_stone_group_count"]).format(
+                    player_color=str(axes.player_color)
+                ),
+                "annotation_hint": str(prompt_defaults["annotation_hint_stone_group_count"]).format(
+                    player_color=str(axes.player_color)
+                ),
+                "json_example": str(json_example),
+                "json_example_answer_only": str(json_example_answer_only),
+                "player_color": str(axes.player_color),
+                "group_rule_text": str(prompt_defaults["group_rule_text"]),
+            },
+            instance_seed=int(instance_seed),
+        )
+        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+
+        answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+        occupied_count = sum(
+            1
+            for row in board_state.board
+            for cell in row
+            if int(cell) != 0
+        )
+        max_group_size = max((len(group) for group in board_state.target_group_coords), default=0)
+        complexity = build_games_go_group_property_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=STONE_GROUP_TASK_ID,
+            scene_variant=str(axes.scene_variant),
+            query_id=str(axes.query_id),
+            occupied_count=int(occupied_count),
+            marked_group_size=int(max_group_size),
+            target_answer=int(axes.target_answer),
+            annotation_count=len(annotation_ids),
+        )
+
+        trace_payload = {
+            "scene_ir": {
+                "scene_kind": "games_go_single_board",
+                "entities": [dict(entity) for entity in rendered_scene.scene_entities],
+                "relations": {
+                    "scene_variant": str(axes.scene_variant),
+                    "query_id": str(axes.query_id),
+                    "player_color": str(axes.player_color),
+                    "style_variant": str(axes.style_variant),
+                    "target_answer": int(axes.target_answer),
+                    "annotation_entity_ids": list(annotation_ids),
+                    "board_size": int(axes.board_size),
+                },
+            },
+            "query_spec": {
+                "query_id": str(axes.query_id),
+                "template_id": str(prompt_defaults["bundle_id"]),
+                "prompt_variant": dict(prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+                "params": {
+                    "scene_variant": str(axes.scene_variant),
+                    "query_id": str(axes.query_id),
+                    "player_color": str(axes.player_color),
+                    "style_variant": str(axes.style_variant),
+                    "board_size": int(axes.board_size),
+                    "board_size_probabilities": dict(axes.board_size_probabilities),
+                    "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "style_variant_probabilities": dict(axes.style_variant_probabilities),
+                    "target_answer": int(axes.target_answer),
+                    "target_answer_support": [int(value) for value in axes.target_answer_support],
+                    "target_answer_probabilities": dict(axes.target_answer_probabilities),
+                },
+            },
+            "render_spec": {
+                "scene_variant": str(axes.scene_variant),
+                "style_variant": str(axes.style_variant),
+                "canvas_width": int(image.size[0]),
+                "canvas_height": int(image.size[1]),
+                "board_size": int(axes.board_size),
+                "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+            },
+            "render_map": dict(rendered_scene.render_map),
+            "execution_trace": {
+                "scene_variant": str(axes.scene_variant),
+                "query_id": str(axes.query_id),
+                "player_color": str(axes.player_color),
+                "style_variant": str(axes.style_variant),
+                "board_size": int(axes.board_size),
+                "target_group_color": str(color_name(board_state.target_color).lower()),
+                "target_answer": int(axes.target_answer),
+                "target_answer_support": [int(value) for value in axes.target_answer_support],
+                "stone_specs": [
+                    {
+                        "stone_id": str(spec.stone_id),
+                        "point_id": str(spec.point_id),
+                        "row": int(spec.row),
+                        "col": int(spec.col),
+                        "color": str(spec.color),
+                        "is_marked_group": bool(spec.is_marked_group),
+                    }
+                    for spec in board_state.stone_specs
+                ],
+                "target_group_coords": [
+                    [[int(row), int(col)] for row, col in group]
+                    for group in board_state.target_group_coords
+                ],
+                "representative_coords": [[int(row), int(col)] for row, col in board_state.representative_coords],
+                "representative_point_ids": [str(value) for value in annotation_ids],
+                "annotation_entity_ids": [str(value) for value in annotation_ids],
+            },
+            "witness_symbolic": {
+                "type": "object_set",
+                "ids": [str(value) for value in annotation_ids],
+            },
+            "projected_annotation": {
+                "type": "point_set",
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
+            },
+            "background": background_meta,
+            "post_image_noise": post_noise_meta,
+        }
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            answer_gt=answer_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -885,4 +1322,5 @@ class GamesGoGroupAdjacentEnemyCountTask(FixedQueryVariantTaskMixin, GamesGoGrou
 __all__ = [
     "GamesGoGroupAdjacentEnemyCountTask",
     "GamesGoGroupLibertyConditionCountTask",
+    "GamesGoStoneGroupCountTask",
 ]

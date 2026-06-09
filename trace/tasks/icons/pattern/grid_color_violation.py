@@ -27,7 +27,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icons_pattern_grid_color_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -813,7 +813,7 @@ class IconsPatternGridColorViolationTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -826,13 +826,13 @@ class IconsPatternGridColorViolationTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -841,12 +841,12 @@ class IconsPatternGridColorViolationTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
-        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
         color_ladder_rgb = [list(color) for color in scene_payload.color_ladder_rgb]
         color_level_names = [str(name) for name in scene_payload.color_level_names]
@@ -988,7 +988,7 @@ class IconsPatternGridColorViolationTask:
                 "violation_cell_index": int(scene_payload.violation_cell_index),
                 "plausible_rule_count": int(scene_payload.plausible_rule_count),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         expected_color_level = int(scene_payload.expected_grid_color_levels[scene_payload.violation_cell_index])
         violation_level_delta = abs(int(expected_color_level) - int(scene_payload.violation_color_level))
@@ -1011,7 +1011,7 @@ class IconsPatternGridColorViolationTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

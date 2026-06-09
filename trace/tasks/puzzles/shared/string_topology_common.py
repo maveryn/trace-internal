@@ -35,18 +35,6 @@ STRING_TOPOLOGY_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (47, 128, 117),
 )
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 @dataclass(frozen=True)
 class PuzzleStringTopologyDefaults:
     """Default generation bounds for topology string-component puzzles."""
@@ -722,7 +710,7 @@ def _supporting_item_ids_for_variant(
     groups: Sequence[Mapping[str, Any]],
     crossings: Sequence[Mapping[str, Any]],
 ) -> List[str]:
-    """Return ordered evidence ids for the selected query id."""
+    """Return ordered annotation ids for the selected query id."""
 
     selected = str(query_id)
     if selected == "open_rope_count":

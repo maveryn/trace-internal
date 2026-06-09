@@ -67,9 +67,9 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         render = trace["render_spec"]
         render_map = trace["render_map"]
         solver = execution["solver_trace"]
-        evidence_bboxes = {
+        annotation_bboxes = {
             str(key): [float(value) for value in bbox]
-            for key, bbox in out.evidence_gt.value.items()
+            for key, bbox in out.annotation_gt.value.items()
         }
         board_values = [[str(value) for value in row] for row in execution["board_values"]]
         symbol_pool = [str(value) for value in execution["symbol_pool"]]
@@ -79,9 +79,9 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         assert str(execution["query_id"]) == "king_non_touch"
         assert str(execution["internal_query_id"]) == "king_non_touch"
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert set(evidence_bboxes) == {"source_grid", "selected_option"}
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert set(annotation_bboxes) == {"source_grid", "selected_option"}
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -91,14 +91,14 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         assert int(execution["cell_count"]) == int(execution["board_size"]) ** 2
         assert int(execution["option_count"]) == 6
         assert str(execution["question_format"]) == "logic_grid_mcq"
-        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert trace["projected_evidence"]["keyed_bbox_map"] == evidence_bboxes
-        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == evidence_bboxes
-        assert execution["evidence_role_item_ids"] == {
+        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert trace["projected_annotation"]["keyed_bbox_map"] == annotation_bboxes
+        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation_bboxes
+        assert execution["annotation_role_item_ids"] == {
             "source_grid": "source_grid",
             "selected_option": str(execution["correct_option_panel_id"]),
         }
-        assert render_map["evidence_source"] == "keyed_source_grid_and_option_bboxes_px"
+        assert render_map["annotation_source"] == "keyed_source_grid_and_option_bboxes_px"
         assert render["text_style"]["font"]["source"] == "global_font_pool"
         assert render["text_style"]["font"]["font_family"]
         assert [str(option_id) for option_id in execution["supporting_option_panel_ids"]] == [
@@ -111,8 +111,8 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
             float(value)
             for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
         ]
-        assert evidence_bboxes["selected_option"] == expected_bbox
-        assert evidence_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
+        assert annotation_bboxes["selected_option"] == expected_bbox
+        assert annotation_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
 
         option_specs = execution["option_specs"]
         assert len(option_specs) == 6
@@ -147,10 +147,10 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
 def test_puzzle_logic_grid_king_non_touch_prompt_examples_match_selected_variant() -> None:
     task = PuzzlesLogicGridKingNonTouchLabelTask()
     out = task.generate(24780, params={}, max_attempts=10)
-    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {
-        "evidence": {
+    assert answer_and_annotation == {
+        "annotation": {
             "source_grid": [396, 98, 804, 506],
             "selected_option": [118, 621, 262, 793],
         },
@@ -166,7 +166,7 @@ def test_puzzle_logic_grid_king_non_touch_task_is_deterministic() -> None:
     out_b = task.generate(24810, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -210,9 +210,9 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             render = trace["render_spec"]
             render_map = trace["render_map"]
             solver = execution["solver_trace"]
-            evidence_bboxes = {
+            annotation_bboxes = {
                 str(key): [float(value) for value in bbox]
-                for key, bbox in out.evidence_gt.value.items()
+                for key, bbox in out.annotation_gt.value.items()
             }
             board_values = [[str(value) for value in row] for row in execution["board_values"]]
             symbol_pool = [str(value) for value in execution["symbol_pool"]]
@@ -221,9 +221,9 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             assert str(execution["query_id"]) == "grid_uniqueness_completion"
             assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "keyed_bbox_map"
-            assert set(evidence_bboxes) == {"source_grid", "selected_option"}
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "keyed_bbox_map"
+            assert set(annotation_bboxes) == {"source_grid", "selected_option"}
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -233,14 +233,14 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             assert int(execution["cell_count"]) == int(execution["board_size"]) ** 2
             assert int(execution["option_count"]) == 6
             assert str(execution["question_format"]) == "logic_grid_mcq"
-            assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-            assert trace["projected_evidence"]["keyed_bbox_map"] == evidence_bboxes
-            assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == evidence_bboxes
-            assert execution["evidence_role_item_ids"] == {
+            assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+            assert trace["projected_annotation"]["keyed_bbox_map"] == annotation_bboxes
+            assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation_bboxes
+            assert execution["annotation_role_item_ids"] == {
                 "source_grid": "source_grid",
                 "selected_option": str(execution["correct_option_panel_id"]),
             }
-            assert render_map["evidence_source"] == "keyed_source_grid_and_option_bboxes_px"
+            assert render_map["annotation_source"] == "keyed_source_grid_and_option_bboxes_px"
             assert render["text_style"]["font"]["source"] == "global_font_pool"
             assert render["text_style"]["font"]["font_family"]
             assert [str(option_id) for option_id in execution["supporting_option_panel_ids"]] == [
@@ -253,8 +253,8 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
                 float(value)
                 for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
             ]
-            assert evidence_bboxes["selected_option"] == expected_bbox
-            assert evidence_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
+            assert annotation_bboxes["selected_option"] == expected_bbox
+            assert annotation_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
             assert all(float(bbox[0]) >= 0.0 for bbox in render_map["cell_bboxes_px"].values())
             assert all(float(bbox[1]) >= 0.0 for bbox in render_map["cell_bboxes_px"].values())
             assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["option_panel_bboxes_px"].values())
@@ -303,7 +303,7 @@ def test_puzzle_logic_prompt_examples_match_selected_variants() -> None:
             PuzzlesLogicGridUniquenessCompletionLabelTask(),
             {"uniqueness_query": "axis_uniqueness", "uniqueness_axis": "row"},
             {
-                "evidence": {
+                "annotation": {
                     "source_grid": [330, 92, 870, 632],
                     "selected_option": [176, 650, 320, 822],
                 },
@@ -315,7 +315,7 @@ def test_puzzle_logic_prompt_examples_match_selected_variants() -> None:
             PuzzlesLogicGridUniquenessCompletionLabelTask(),
             {"uniqueness_query": "row_and_column_uniqueness"},
             {
-                "evidence": {
+                "annotation": {
                     "source_grid": [330, 92, 870, 632],
                     "selected_option": [504, 650, 648, 822],
                 },
@@ -327,7 +327,7 @@ def test_puzzle_logic_prompt_examples_match_selected_variants() -> None:
             PuzzlesLogicGridKingNonTouchLabelTask(),
             {},
             {
-                "evidence": {
+                "annotation": {
                     "source_grid": [396, 98, 804, 506],
                     "selected_option": [118, 621, 262, 793],
                 },
@@ -336,11 +336,11 @@ def test_puzzle_logic_prompt_examples_match_selected_variants() -> None:
             {"answer": "A"},
         ),
     )
-    for index, (task, params, expected_answer_and_evidence, expected_answer_only) in enumerate(cases, start=24580):
+    for index, (task, params, expected_answer_and_annotation, expected_answer_only) in enumerate(cases, start=24580):
         out = task.generate(index, params=params, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -351,7 +351,7 @@ def test_puzzle_logic_grid_completion_label_task_is_deterministic() -> None:
     out_b = task.generate(24640, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -470,16 +470,16 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
             render = trace["render_spec"]
             render_map = trace["render_map"]
             solver = execution["solver_trace"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
             assert str(out.query_id) == str(query_id)
             assert str(trace["query_spec"]["query_id"]) == str(query_id)
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(evidence_bboxes) == 1
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "bbox_set"
+            assert len(annotation_bboxes) == 1
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -489,7 +489,7 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
             assert int(execution["option_count"]) == 6
             assert trace["query_spec"]["prompt_variant"]["query_key"] is None
             assert str(execution["question_format"]) == "raven_matrix_mcq"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
             assert [str(option_id) for option_id in execution["supporting_option_panel_ids"]] == [
                 str(execution["correct_option_panel_id"])
             ]
@@ -500,7 +500,7 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
                 float(value)
                 for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
             ]
-            assert evidence_bboxes[0] == expected_bbox
+            assert annotation_bboxes[0] == expected_bbox
             assert all(float(bbox[0]) >= 0.0 for bbox in render_map["matrix_cell_bboxes_px"].values())
             assert all(float(bbox[1]) >= 0.0 for bbox in render_map["matrix_cell_bboxes_px"].values())
             assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["option_panel_bboxes_px"].values())
@@ -562,39 +562,39 @@ def test_puzzle_logic_raven_prompt_examples_match_selected_variants() -> None:
         (
             PuzzlesLogicRavenCountProgressionLabelTask(),
             {},
-            {"evidence": [[504, 650, 648, 822]], "answer": "B"},
+            {"annotation": [[504, 650, 648, 822]], "answer": "B"},
             {"answer": "B"},
         ),
         (
             PuzzlesLogicRavenSpatialTransformLabelTask(),
             {},
-            {"evidence": [[668, 650, 812, 822]], "answer": "D"},
+            {"annotation": [[668, 650, 812, 822]], "answer": "D"},
             {"answer": "D"},
         ),
         (
             PuzzlesLogicRavenSetOperationLabelTask(),
             {},
-            {"evidence": [[832, 650, 976, 822]], "answer": "E"},
+            {"annotation": [[832, 650, 976, 822]], "answer": "E"},
             {"answer": "E"},
         ),
         (
             PuzzlesLogicRavenAnalogicalTransformLabelTask(),
             {},
-            {"evidence": [[996, 650, 1140, 822]], "answer": "F"},
+            {"annotation": [[996, 650, 1140, 822]], "answer": "F"},
             {"answer": "F"},
         ),
         (
             PuzzlesLogicRavenPositionProgressionLabelTask(),
             {},
-            {"evidence": [[12, 650, 156, 822]], "answer": "A"},
+            {"annotation": [[12, 650, 156, 822]], "answer": "A"},
             {"answer": "A"},
         ),
     )
-    for index, (task, params, expected_answer_and_evidence, expected_answer_only) in enumerate(cases, start=25200):
+    for index, (task, params, expected_answer_and_annotation, expected_answer_only) in enumerate(cases, start=25200):
         out = task.generate(index, params=params, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -605,7 +605,7 @@ def test_puzzle_logic_raven_matrix_label_task_is_deterministic() -> None:
     out_b = task.generate(25250, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -621,10 +621,9 @@ def test_puzzle_logic_raven_sampler_index_covers_answer_letters_per_variant() ->
         PuzzlesLogicRavenPositionProgressionLabelTask(),
     )
 
-    for query_id_index, task in enumerate(task_cases):
+    for task in task_cases:
         observed_letters = []
-        for local_index in range(18):
-            sampling_index = local_index
+        for sampling_index in range(120):
             out = task.generate(
                 25290 + sampling_index,
                 params={},
@@ -633,4 +632,4 @@ def test_puzzle_logic_raven_sampler_index_covers_answer_letters_per_variant() ->
             observed_letters.append(str(out.answer_gt.value))
         letter_counts = Counter(observed_letters)
         assert set(letter_counts) == {"A", "B", "C", "D", "E", "F"}
-        assert max(letter_counts.values()) <= 8
+        assert max(letter_counts.values()) <= 35

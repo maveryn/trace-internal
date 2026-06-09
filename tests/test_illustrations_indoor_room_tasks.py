@@ -50,7 +50,7 @@ def test_object_type_on_surface_count_contract() -> None:
         for object_id in execution["counted_object_ids"]
     )
     _assert_objects_rest_on_surface(trace, execution["counted_object_ids"], "shelf")
-    assert sorted(out.evidence_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
+    assert sorted(out.annotation_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
 
 
 def test_counter_objects_rest_on_surface_baseline() -> None:
@@ -117,7 +117,7 @@ def test_furniture_side_count_contract() -> None:
         placements[object_id]["relations"][furniture_id]["left"] and placements[object_id]["object_type"] == "mug"
         for object_id in execution["counted_object_ids"]
     )
-    assert sorted(out.evidence_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
+    assert sorted(out.annotation_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
 
 
 def test_furniture_side_count_calibration_sampling_is_decoupled() -> None:

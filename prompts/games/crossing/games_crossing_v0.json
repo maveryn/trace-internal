@@ -14,25 +14,24 @@
     "scene:visible_crossing_lane": [
       "object_description"
     ],
-    "query:collision_time_value": [
-      "crossing_motion_rule_text"
-    ],
     "query:moving_object_count": [
       "crossing_motion_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:left_moving_object_count": [],
+    "query:right_moving_object_count": [],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -40,12 +39,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -58,19 +57,26 @@
     ]
   },
   "query_templates": {
-    "collision_time_value": [
-      "{crossing_motion_rule_text} The marked route cells are numbered by tick. At which tick does a moving object first reach the route cell with the same tick number?",
-      "Follow the marked route upward by tick number. {crossing_motion_rule_text} Report the smallest tick where a moving object reaches that same numbered route cell.",
-      "{crossing_motion_rule_text} The marked route cells show their tick numbers. Determine the earliest tick where a moving object reaches that route cell.",
-      "Using the numbered cells on the marked route, find the first moving-object collision at the matching tick. {crossing_motion_rule_text}",
-      "{crossing_motion_rule_text} What is the smallest tick at which a moving object reaches the marked route cell for that tick?"
-    ],
     "moving_object_count": [
       "{crossing_motion_rule_text} Use the numbered yellow route cells. Count moving objects that reach the same lane cell as the yellow route at the matching tick.",
       "Use the numbered yellow route cells. How many moving objects collide with the marked route at the matching tick? {crossing_motion_rule_text}",
       "{crossing_motion_rule_text} Determine how many moving objects reach a numbered yellow route cell at that cell's tick.",
       "For the yellow marked route, count every moving object that lands on the same lane cell at the same tick. {crossing_motion_rule_text}",
       "{crossing_motion_rule_text} Report the count of moving objects that collide with the numbered yellow route cells."
+    ],
+    "left_moving_object_count": [
+      "How many moving objects have arrows pointing left?",
+      "Count the moving objects whose arrows point left.",
+      "What is the number of moving objects moving left?",
+      "Determine how many moving objects show a left-pointing arrow.",
+      "Report the count of left-moving objects."
+    ],
+    "right_moving_object_count": [
+      "How many moving objects have arrows pointing right?",
+      "Count the moving objects whose arrows point right.",
+      "What is the number of moving objects moving right?",
+      "Determine how many moving objects show a right-pointing arrow.",
+      "Report the count of right-moving objects."
     ]
   },
   "allow_empty_task_templates": true

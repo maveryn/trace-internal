@@ -10,6 +10,6 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `toggle_result_label`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence target: start-grid panel bbox followed by the selected result-option panel bbox.
+4. Annotation type: `bbox_set`
+5. Annotation target: start-grid panel bbox followed by the selected result-option panel bbox.
 6. The verifier applies the recorded toggle rule to the recorded start state and pressed cells, not pixels.

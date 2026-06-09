@@ -17,7 +17,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.variant_sampling import resolve_variant
 from ..shared.complexity import build_icon_task_complexity
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace
 from ..shared.procedural_named_icons import (
@@ -39,7 +39,7 @@ from .named_grid_row_column_shape_count import (
 )
 
 
-TASK_ID = "task_icons__named_grid__line_condition_count"
+TASK_ID = "task_icons__named_grid__group_predicate_count"
 QUERY_IDS: Tuple[str, ...] = (
     "row_at_least_shape_count",
     "column_at_least_shape_count",
@@ -556,10 +556,10 @@ class IconsCountingNamedGridLineConditionCountTask:
             _line_region_bbox(scene, axis=str(sample.queried_axis), line_index=int(index))
             for index in sample.qualifying_line_indices
         )
-        evidence_bboxes = sort_bboxes_reading_order(qualifying_line_bboxes)
-        if len(evidence_bboxes) != int(sample.answer_count):
-            raise RuntimeError("rendered named-grid line-condition evidence count does not match answer")
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order(qualifying_line_bboxes)
+        if len(annotation_bboxes) != int(sample.answer_count):
+            raise RuntimeError("rendered named-grid line-condition annotation count does not match answer")
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -576,7 +576,7 @@ class IconsCountingNamedGridLineConditionCountTask:
                 "question_text_column_exactly_shape_count",
                 "question_text_row_no_shape_count",
                 "question_text_column_no_shape_count",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -591,7 +591,7 @@ class IconsCountingNamedGridLineConditionCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[question_key]).format(
@@ -600,7 +600,7 @@ class IconsCountingNamedGridLineConditionCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
                     target_shape_name=str(sample.target_shape_name),
                     line_kind=str(sample.queried_axis),
                     line_kind_plural=str(line_kind_plural),
@@ -732,12 +732,12 @@ class IconsCountingNamedGridLineConditionCountTask:
                 "qualifying_line_numbers": [int(value) for value in qualifying_line_numbers],
                 "qualifying_line_region_bboxes": dict(qualifying_region_map),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.answer_count)),
-            evidence_gt=TypedValue(type=str(evidence_payload["evidence_type"]), value=list(evidence_payload["evidence_value"])),
+            annotation_gt=TypedValue(type=str(annotation_payload["annotation_type"]), value=list(annotation_payload["annotation_value"])),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -22,9 +22,9 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.support_sampling import resolve_integer_choice
+from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ...shared.text_rendering import load_font
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_snake_grid_complexity
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
@@ -33,6 +33,7 @@ from ..shared.scene_style import make_panel_scene_background, resolve_game_panel
 from ..shared.snake_common import (
     DIRECTION_NAMES,
     PLANNED_MOVE_OUTCOMES,
+    SUPPORTED_SNAKE_FOOD_PATH_QUERY_IDS,
     SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS,
     SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS,
     SUPPORTED_SNAKE_SCENE_VARIANTS,
@@ -48,6 +49,7 @@ from ..shared.snake_common import (
     neighbor_coords,
     safe_next_directions,
     simulate_snake_moves,
+    shortest_static_path_to_food,
     step_coord,
     validate_snake_sample,
     visible_snake_trace,
@@ -66,6 +68,7 @@ class _TaskDefaults:
     board_size_support: Tuple[int, ...] = (7, 8, 9, 10)
     body_length_support: Tuple[int, ...] = (5, 6, 7, 8, 9, 10, 11)
     safe_direction_count_support: Tuple[int, ...] = (0, 1, 2, 3)
+    shortest_food_path_length_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
     planned_move_count_support: Tuple[int, ...] = (3, 4, 5)
     obstacle_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     planned_move_outcome_support: Tuple[str, ...] = PLANNED_MOVE_OUTCOMES
@@ -92,6 +95,7 @@ class _ResolvedAxes:
     planned_move_count: int
     obstacle_count: int
     target_safe_direction_count: int | None
+    target_shortest_food_path_length: int | None
     target_planned_outcome: str | None
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
@@ -101,6 +105,7 @@ class _ResolvedAxes:
     planned_move_count_probabilities: Dict[str, float]
     obstacle_count_probabilities: Dict[str, float]
     target_safe_direction_count_probabilities: Dict[str, float]
+    target_shortest_food_path_length_probabilities: Dict[str, float]
     target_planned_outcome_probabilities: Dict[str, float]
 
 
@@ -120,6 +125,39 @@ def _public_answer_for_query(query_id: str, raw_answer: str | int) -> str | int:
     if query == "path_result_option_label":
         return str(raw_answer)
     return int(raw_answer)
+
+
+def _answer_support_for_query(
+    *,
+    query_id: str,
+    params: Mapping[str, Any],
+    result_options: Sequence[Mapping[str, Any]],
+) -> list[int] | list[str] | None:
+    """Return the declared public answer support for distribution review."""
+
+    query = str(query_id)
+    if query == "safe_direction_count":
+        return list(
+            resolve_integer_support(
+                params,
+                gen_defaults=_GEN_DEFAULTS,
+                key="safe_direction_count_support",
+                fallback=_DEFAULTS.safe_direction_count_support,
+            )
+        )
+    if query == "shortest_food_path_length":
+        return list(
+            resolve_integer_support(
+                params,
+                gen_defaults=_GEN_DEFAULTS,
+                key="shortest_food_path_length_support",
+                fallback=_DEFAULTS.shortest_food_path_length_support,
+            )
+        )
+    if query == "path_result_option_label":
+        labels = [str(option.get("label", "")).strip() for option in result_options]
+        return [label for label in labels if label]
+    return None
 
 
 def _resolve_query_id(
@@ -249,7 +287,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     if not bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True))):
         return False
@@ -364,6 +402,8 @@ def _resolve_axes(
 
     target_safe_direction_count: int | None = None
     target_safe_direction_count_probabilities: Dict[str, float] = {}
+    target_shortest_food_path_length: int | None = None
+    target_shortest_food_path_length_probabilities: Dict[str, float] = {}
     target_planned_outcome: str | None = None
     target_planned_outcome_probabilities: Dict[str, float] = {}
 
@@ -377,6 +417,18 @@ def _resolve_axes(
             fallback_support=_DEFAULTS.safe_direction_count_support,
             namespace=f"{TASK_ID}.safe_direction_count",
             balanced_flag_key="balanced_safe_direction_count_sampling",
+            namespace_support_permutation=True,
+        )
+    elif str(query_id) == "shortest_food_path_length":
+        target_shortest_food_path_length, target_shortest_food_path_length_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=cycle_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="shortest_food_path_length_support",
+            explicit_key="target_shortest_food_path_length",
+            fallback_support=_DEFAULTS.shortest_food_path_length_support,
+            namespace=f"{TASK_ID}.shortest_food_path_length",
+            balanced_flag_key="balanced_shortest_food_path_length_sampling",
             namespace_support_permutation=True,
         )
     elif str(query_id) == "path_result_option_label":
@@ -394,6 +446,9 @@ def _resolve_axes(
         planned_move_count=int(planned_move_count),
         obstacle_count=int(obstacle_count),
         target_safe_direction_count=None if target_safe_direction_count is None else int(target_safe_direction_count),
+        target_shortest_food_path_length=(
+            None if target_shortest_food_path_length is None else int(target_shortest_food_path_length)
+        ),
         target_planned_outcome=None if target_planned_outcome is None else str(target_planned_outcome),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
@@ -403,6 +458,7 @@ def _resolve_axes(
         planned_move_count_probabilities=dict(planned_move_count_probabilities),
         obstacle_count_probabilities=dict(obstacle_count_probabilities),
         target_safe_direction_count_probabilities=dict(target_safe_direction_count_probabilities),
+        target_shortest_food_path_length_probabilities=dict(target_shortest_food_path_length_probabilities),
         target_planned_outcome_probabilities=dict(target_planned_outcome_probabilities),
     )
 
@@ -549,8 +605,8 @@ def _sample_obstacles(
     return tuple((int(row), int(col)) for row, col in candidates[: int(count)])
 
 
-def _planned_evidence_ids(state: SnakeState, simulation: SnakeSimulation) -> Tuple[str, ...]:
-    """Return public evidence cell ids for one planned move sequence."""
+def _planned_annotation_ids(state: SnakeState, simulation: SnakeSimulation) -> Tuple[str, ...]:
+    """Return public annotation cell ids for one planned move sequence."""
 
     coords = tuple(dict.fromkeys(simulation.traversed_coords))
     if coords:
@@ -586,7 +642,7 @@ def _sample_safe_direction_count(*, rng: Any, axes: _ResolvedAxes) -> SnakeSampl
             single_move=None,
             planned_moves=tuple(),
             safe_directions=tuple(safe_directions),
-            evidence_cell_ids=tuple(coord_to_cell_id(step_coord(state.head, direction)) for direction in safe_directions),
+            annotation_cell_ids=tuple(coord_to_cell_id(step_coord(state.head, direction)) for direction in safe_directions),
             target_outcome=None,
             observed_event_step=None,
             construction_mode=f"safe_direction_count_{target}",
@@ -594,6 +650,48 @@ def _sample_safe_direction_count(*, rng: Any, axes: _ResolvedAxes) -> SnakeSampl
         validate_snake_sample(sample)
         return sample
     raise ValueError("failed to construct Snake safe-direction count sample")
+
+
+def _sample_shortest_food_path_length(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
+    """Construct a sample with a target shortest safe path length to food."""
+
+    target = int(axes.target_shortest_food_path_length or 1)
+    for _attempt in range(900):
+        state = _random_snake_state(
+            rng=rng,
+            board_size=int(axes.board_size),
+            body_length=int(axes.body_length),
+        )
+        try:
+            obstacles = _sample_obstacles(rng=rng, state=state, count=int(axes.obstacle_count))
+        except ValueError:
+            continue
+        state = _with_obstacles(state, obstacles)
+        candidate_food = list(_open_cells(state))
+        rng.shuffle(candidate_food)
+        for food in candidate_food:
+            candidate_state = _with_food(state, food)
+            shortest_path = shortest_static_path_to_food(candidate_state)
+            if shortest_path is None or len(shortest_path) != int(target):
+                continue
+            sample = SnakeSample(
+                query_id=str(axes.query_id),
+                scene_variant=str(axes.scene_variant),
+                style_variant=str(axes.style_variant),
+                answer=int(len(shortest_path)),
+                state=candidate_state,
+                single_move=None,
+                planned_moves=tuple(),
+                safe_directions=tuple(),
+                annotation_cell_ids=tuple(coord_to_cell_id(coord) for coord in shortest_path),
+                target_outcome=None,
+                observed_event_step=None,
+                construction_mode=f"shortest_food_path_length_{target}",
+                shortest_path_coords=tuple(shortest_path),
+            )
+            validate_snake_sample(sample)
+            return sample
+    raise ValueError("failed to construct Snake shortest-food-path sample")
 
 
 def _dummy_food_state(state: SnakeState) -> SnakeState:
@@ -851,7 +949,7 @@ def _sample_path_result_option(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
             single_move=None,
             planned_moves=tuple(sequence),
             safe_directions=tuple(),
-            evidence_cell_ids=_planned_evidence_ids(final_state, simulation),
+            annotation_cell_ids=_planned_annotation_ids(final_state, simulation),
             target_outcome=str(target),
             observed_event_step=int(simulation.event_step),
             construction_mode=f"path_result_option_{target}",
@@ -868,6 +966,8 @@ def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
     query = str(axes.query_id)
     if query == "safe_direction_count":
         return _sample_safe_direction_count(rng=rng, axes=axes)
+    if query == "shortest_food_path_length":
+        return _sample_shortest_food_path_length(rng=rng, axes=axes)
     if query == "path_result_option_label":
         return _sample_path_result_option(rng=rng, axes=axes)
     raise ValueError(f"unsupported Snake query_id: {query}")
@@ -878,15 +978,18 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "safe_direction_count":
         answer: str | int = 2
-        evidence = [[338, 332, 410, 404], [482, 332, 554, 404]]
+        annotation = [[338, 332, 410, 404], [482, 332, 554, 404]]
+    elif str(query_id) == "shortest_food_path_length":
+        answer = 4
+        annotation = [[338, 332, 410, 404], [410, 332, 482, 404], [482, 332, 554, 404], [554, 332, 626, 404]]
     elif str(query_id) == "path_result_option_label":
         answer = "B"
-        evidence = [[410, 332, 482, 404], [482, 332, 554, 404], [554, 332, 626, 404]]
+        annotation = [[410, 332, 482, 404], [482, 332, 554, 404], [554, 332, 626, 404]]
     else:
         answer = 2
-        evidence = [[338, 332, 410, 404], [482, 332, 554, 404]]
+        annotation = [[338, 332, 410, 404], [482, 332, 554, 404]]
     return (
-        json.dumps({"evidence": evidence, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -948,9 +1051,9 @@ class GamesSnakeGridTask:
                 font_family=str(render_params.font_family),
             )
             render_map["result_option_bboxes_px"] = dict(option_bboxes)
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(render_map["cell_bboxes_px"][str(cell_id)])
-            for cell_id in sampled_scene.evidence_cell_ids
+            for cell_id in sampled_scene.annotation_cell_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             base_image,
@@ -969,11 +1072,14 @@ class GamesSnakeGridTask:
                 "json_output_contract_answer_only",
                 "object_description_square_grid",
                 "snake_rule_text",
-                "planned_move_wall_evidence_rule_text",
+                "shortest_food_path_rule_text",
+                "planned_move_wall_annotation_rule_text",
                 "answer_hint_safe_direction_count",
-                "evidence_hint_safe_direction_count",
+                "annotation_hint_safe_direction_count",
+                "answer_hint_shortest_food_path_length",
+                "annotation_hint_shortest_food_path_length",
                 "answer_hint_path_result_option_label",
-                "evidence_hint_path_result_option_label",
+                "annotation_hint_path_result_option_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -986,16 +1092,17 @@ class GamesSnakeGridTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "snake_rule_text": str(prompt_defaults["snake_rule_text"]),
-                "planned_move_wall_evidence_rule_text": str(prompt_defaults["planned_move_wall_evidence_rule_text"]),
+                "shortest_food_path_rule_text": str(prompt_defaults["shortest_food_path_rule_text"]),
+                "planned_move_wall_annotation_rule_text": str(prompt_defaults["planned_move_wall_annotation_rule_text"]),
                 "planned_moves": str(planned_moves_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -1008,11 +1115,12 @@ class GamesSnakeGridTask:
             answer_gt = TypedValue(type="option_letter", value=str(public_answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(public_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
         }
+        path_step_count = len(sampled_scene.planned_moves) if sampled_scene.planned_moves else len(sampled_scene.shortest_path_coords)
         complexity = build_games_snake_grid_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1020,8 +1128,8 @@ class GamesSnakeGridTask:
             query_id=str(axes.query_id),
             board_size=int(sampled_scene.state.board_size),
             body_length=len(sampled_scene.state.body),
-            planned_move_count=len(sampled_scene.planned_moves),
-            evidence_count=len(sampled_scene.evidence_cell_ids),
+            planned_move_count=int(path_step_count),
+            annotation_count=len(sampled_scene.annotation_cell_ids),
             target_answer=public_answer,
         )
         simulation_trace = None
@@ -1035,6 +1143,11 @@ class GamesSnakeGridTask:
                 "final_head": [int(simulation.final_head[0]), int(simulation.final_head[1])],
             }
         result_options = [dict(option) for option in sampled_scene.result_options]
+        answer_support = _answer_support_for_query(
+            query_id=str(axes.query_id),
+            params=params,
+            result_options=result_options,
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"games_snake_{str(axes.scene_variant)}",
@@ -1046,7 +1159,7 @@ class GamesSnakeGridTask:
                     "board_size": int(sampled_scene.state.board_size),
                     "obstacle_count": len(tuple(sampled_scene.state.obstacles)),
                     "obstacle_cell_ids": [coord_to_cell_id(coord) for coord in sampled_scene.state.obstacles],
-                    "evidence_cell_ids": [str(cell_id) for cell_id in sampled_scene.evidence_cell_ids],
+                    "annotation_cell_ids": [str(cell_id) for cell_id in sampled_scene.annotation_cell_ids],
                 },
             },
             "query_spec": {
@@ -1067,9 +1180,14 @@ class GamesSnakeGridTask:
                     "single_move": sampled_scene.single_move,
                     "planned_moves": [str(move) for move in sampled_scene.planned_moves],
                     "safe_directions": [str(direction) for direction in sampled_scene.safe_directions],
+                    "shortest_path_coords": [
+                        [int(row), int(col)] for row, col in sampled_scene.shortest_path_coords
+                    ],
                     "answer_value": public_answer,
+                    "answer_support": answer_support,
                     "result_options": list(result_options),
                     "target_safe_direction_count": axes.target_safe_direction_count,
+                    "target_shortest_food_path_length": axes.target_shortest_food_path_length,
                     "target_planned_outcome": axes.target_planned_outcome,
                     "target_outcome": sampled_scene.target_outcome,
                     "observed_event_step": sampled_scene.observed_event_step,
@@ -1081,6 +1199,7 @@ class GamesSnakeGridTask:
                     "planned_move_count_probabilities": dict(axes.planned_move_count_probabilities),
                     "obstacle_count_probabilities": dict(axes.obstacle_count_probabilities),
                     "target_safe_direction_count_probabilities": dict(axes.target_safe_direction_count_probabilities),
+                    "target_shortest_food_path_length_probabilities": dict(axes.target_shortest_food_path_length_probabilities),
                     "target_planned_outcome_probabilities": dict(axes.target_planned_outcome_probabilities),
                 },
             },
@@ -1103,21 +1222,25 @@ class GamesSnakeGridTask:
                 "planned_moves": [str(move) for move in sampled_scene.planned_moves],
                 "planned_move_count": len(sampled_scene.planned_moves) if sampled_scene.planned_moves else None,
                 "safe_directions": [str(direction) for direction in sampled_scene.safe_directions],
+                "shortest_path_coords": [
+                    [int(row), int(col)] for row, col in sampled_scene.shortest_path_coords
+                ],
                 "answer_value": public_answer,
                 "result_options": list(result_options),
                 "target_safe_direction_count": axes.target_safe_direction_count,
+                "target_shortest_food_path_length": axes.target_shortest_food_path_length,
                 "target_planned_outcome": axes.target_planned_outcome,
                 "observed_event_step": sampled_scene.observed_event_step,
                 "simulation": simulation_trace,
-                "evidence_cell_ids": [str(cell_id) for cell_id in sampled_scene.evidence_cell_ids],
+                "annotation_cell_ids": [str(cell_id) for cell_id in sampled_scene.annotation_cell_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "cell_set",
-                "ids": [str(cell_id) for cell_id in sampled_scene.evidence_cell_ids],
+                "ids": [str(cell_id) for cell_id in sampled_scene.annotation_cell_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1126,7 +1249,7 @@ class GamesSnakeGridTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1165,6 +1288,17 @@ class GamesSnakeMoveSafetyTask(GamesSnakeGridTask):
 
 
 @register_task
+class GamesSnakeShortestFoodPathLengthTask(GamesSnakeGridTask):
+    """Compute the shortest safe fixed-obstacle path length from head to food."""
+
+    task_id = "task_games__snake__shortest_food_path_length"
+    supported_query_ids = SUPPORTED_SNAKE_FOOD_PATH_QUERY_IDS
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
+
+
+@register_task
 class GamesSnakePathOutcomeTask(GamesSnakeGridTask):
     """Evaluate a listed Snake movement sequence."""
 
@@ -1179,4 +1313,5 @@ __all__ = [
     "GamesSnakeGridTask",
     "GamesSnakeMoveSafetyTask",
     "GamesSnakePathOutcomeTask",
+    "GamesSnakeShortestFoodPathLengthTask",
 ]

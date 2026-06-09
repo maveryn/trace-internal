@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from ...shared.drawing import draw_arrow, draw_dashed_line
 from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .bowling_common import BowlingPathOption, BowlingPin
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import (

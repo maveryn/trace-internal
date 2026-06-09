@@ -31,11 +31,14 @@ review/task-reviews/<domain>/<scene_id>/<task_id>/
 The browser review app reads that root by default. Resource review sheets live
 under `review/task-reviews/assets/`.
 
-Manual feedback and audit checkboxes live in:
+Manual issue threads and audit checkboxes live in:
 
 ```text
 review/feedback/review_feedback.sqlite
 ```
+
+The review app UI calls reviewer comments **issues**. The underlying path and
+schema retain the `feedback` name for compatibility.
 
 Aggregate solve-rate status defaults to:
 
@@ -56,7 +59,7 @@ acceptance must carry:
 
 Do not reuse stale artifacts from older roots, renamed tasks, removed tasks,
 pre-refactor configs, or files without the matching baseline metadata. If a
-task, prompt, renderer, config, verifier, or evidence contract changes, delete
+task, prompt, renderer, config, verifier, or annotation contract changes, delete
 or regenerate that task's current review and solve-rate artifacts before using
 them for acceptance.
 
@@ -84,7 +87,7 @@ but misses hard, easy, or mean gates needs manual tuning.
 A domain is done only when every active task has:
 
 - current browser-visible task-review sidecars under `review/task-reviews`;
-- manual audit passing in the web app for prompt, image, evidence,
+- manual audit passing in the web app for prompt, image, annotation,
   distribution, and solve-rate review;
 - accepted `qwen25vl7b` solve-rate status;
 - current docs and task inventory for the active public task surface.

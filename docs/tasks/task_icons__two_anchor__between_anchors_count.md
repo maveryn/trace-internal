@@ -12,7 +12,7 @@
 2. Supported `query_id` values: `inside_vertical_strip|inside_horizontal_strip`.
 3. Supported semantic parameter axis: `strip_axis=vertical|horizontal`.
 4. Answer type: `answer_gt.type = integer`.
-5. Evidence type: `evidence_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
+5. Annotation type: `annotation_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
 6. Count policy: `target_count` is sampled from `0..5`, `distractor_count` is sampled from `1..10`, and `object_count = target_count + distractor_count` therefore ranges from `1..15`; the two anchors are additional and are not counted in `object_count`.
 7. Anchor policy: the two anchors always share the same icon type, tint, and rotation. For `strip_axis=vertical`, the anchor centers share the same `y`; for `strip_axis=horizontal`, the anchor centers share the same `x`.
 8. Candidate policy: every non-anchor Scene icon uses a different icon type from the anchors, while tint and rotation may vary per icon.
@@ -25,21 +25,21 @@
 1. `prompt_bundle_id`: `icons_relation_v0`
 2. `scene_key`: `scene_two_anchor_relation`
 3. `task_key`: `relation_query`
-4. Answer+evidence JSON shape: `{"evidence":[[312,180,372,240],[540,286,612,358]],"answer":2}`
+4. Answer+annotation JSON shape: `{"annotation":[[312,180,372,240],[540,286,612,358]],"answer":2}`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Required slots:
    - shared: `object_description`, `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
 7. Variant counts (scene/task/mode): exactly 5 templates per required key.
 8. Prompt style: the scene stem establishes the single Scene panel plus the two icons marked A and B; task wording asks only about other icon centers inside the requested vertical or horizontal strip.
 
 ## 4) Determinism + constraints
 1. Seed namespaces used: scene-level RNG via `spawn_rng(instance_seed, "scene")`.
-2. Unique-answer policy: the matching Scene set is sampled first, then rendered; evidence boxes are the rendered boxes of those same matches.
+2. Unique-answer policy: the matching Scene set is sampled first, then rendered; annotation boxes are the rendered boxes of those same matches.
 3. Reject/resample conditions: unsupported count config, missing curated assets, anchor-pair layout failures, or strip/overlap-constrained placement failures.
 4. No-auto-relaxation guarantee: generation fails on unmet strip/asset/layout constraints instead of weakening the boundary margin or anchor alignment rule.
-5. Evidence scope: the user-facing `bbox_set` covers matching Scene icons only; both anchor boxes stay in trace metadata.
+5. Annotation scope: the user-facing `bbox_set` covers matching Scene icons only; both anchor boxes stay in trace metadata.
 6. Trace style metadata records the sampled palette, anchor styling, strip boundary margin, panel text-legibility metadata, anchor-label text draw records, and per-instance subtle-noise edits.
 7. Balanced defaults: seeded sampling balances the vertical/horizontal strip axis and target-count support using the same generator used for normal dataset generation.
 
@@ -52,6 +52,6 @@
 ## Current Review Status
 Current browser-review sidecars live under
 `review/task-reviews/icons/two_anchor/task_icons__two_anchor__between_anchors_count/`.
-Public evidence uses the shared icon `bbox_set` payload over counted non-anchor
+Public annotation uses the shared icon `bbox_set` payload over counted non-anchor
 Scene icons only. Solve-rate status is tracked in
 `review/calibration_sweep_status.json`.

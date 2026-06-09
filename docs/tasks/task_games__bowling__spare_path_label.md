@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `bowling`
-3. Source task group: `bowling`
-4. Query id: `spare_path_label`
-5. Objective: Choose the numbered aiming path whose straight extension passes through every remaining standing pin.
+2. Task group: `bowling`
+3. Scene id: `bowling`
+4. Public task id: `task_games__bowling__spare_path_label`
+5. Supported `query_id` values: `spare_path_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `point_pair_set`
+8. Program schema: `label(select_option(shot_paths, option_rule=clears_remaining_pins)); scene=bowling; scope=spare_path_label`
 
-## Answer and Evidence
-1. Answer type: `string`
-2. Evidence type: `point_pair_set` over the selected visible dashed path cue.
-3. `spare_path_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games bowling-lane renderer.
-2. Prompt bundle: `games_bowling_v0`
-3. Candidate paths are shown as shortened numbered dashed cues; the intended path is their straight extension toward the remaining standing pins.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Remaining pin count, path-option count, target path label, visible cue length, style, haphazard pin placement, and visual layout remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

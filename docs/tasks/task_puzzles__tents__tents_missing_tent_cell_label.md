@@ -13,7 +13,7 @@
 3. Grid size: `6x6..8x8`
 4. Candidate labels: `A..F`
 5. Answer type: `option_letter`
-6. Evidence type: `bbox_set`
-7. Evidence target: selected candidate cell, marked tree, selected row clue, and selected column clue
+6. Annotation type: `bbox_set`
+7. Annotation target: selected candidate cell, marked tree, selected row clue, and selected column clue
 8. Scene variants: `tents_classic|tents_card|tents_blueprint`
 9. Render palettes: `garden|autumn|lake|violet|slate`

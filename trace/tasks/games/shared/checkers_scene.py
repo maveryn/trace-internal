@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.marker_legibility import draw_semantic_bbox_marker, resolve_semantic_marker_style
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .checkers_common import BLACK, BOARD_SIZE, RED, Coord, coord_to_cell_id, piece_to_entity_id, player_name
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -45,6 +46,7 @@ class CheckersRenderParams:
     player_badge_font_size_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
     font_family: str = ""
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -333,6 +335,7 @@ def render_checkers_board_scene(
     cell_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
     piece_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
     marked_cell_bbox: Tuple[float, float, float, float] | None = None
+    marked_surface_rgb: Tuple[int, int, int] | None = None
 
     inner_inset = float(params.board_frame_width_px)
     playable_square_count = 0
@@ -391,6 +394,7 @@ def render_checkers_board_scene(
                 )
             if marked_cell is not None and (int(row), int(col)) == marked_cell:
                 marked_cell_bbox = cell_bbox
+                marked_surface_rgb = square_rgb
             cell_bboxes_px[str(cell_id)] = cell_bbox
             scene_entities.append(
                 {
@@ -420,16 +424,27 @@ def render_checkers_board_scene(
 
     if marked_cell_bbox is not None:
         inset = max(3.0, 0.06 * min(marked_cell_bbox[2] - marked_cell_bbox[0], marked_cell_bbox[3] - marked_cell_bbox[1]))
-        draw.rounded_rectangle(
-            [
-                marked_cell_bbox[0] + inset,
-                marked_cell_bbox[1] + inset,
-                marked_cell_bbox[2] - inset,
-                marked_cell_bbox[3] - inset,
-            ],
+        marker_bbox = [
+            marked_cell_bbox[0] + inset,
+            marked_cell_bbox[1] + inset,
+            marked_cell_bbox[2] - inset,
+            marked_cell_bbox[3] - inset,
+        ]
+        marker_style = resolve_semantic_marker_style(
+            instance_seed=int(params.instance_seed),
+            namespace="games.checkers.marked_cell",
+            role="marked_cell_outline",
+            surface_rgbs=(marked_surface_rgb or theme.dark_square_rgb,),
+            preferred_rgbs=((34, 102, 214),),
+        )
+        draw_semantic_bbox_marker(
+            draw,
+            marker_bbox,
             radius=max(5, int(0.10 * min(marked_cell_bbox[2] - marked_cell_bbox[0], marked_cell_bbox[3] - marked_cell_bbox[1]))),
-            outline=(34, 102, 214),
+            style=marker_style,
             width=7,
+            marker_kind="cell_outline",
+            extra_metadata={"source": "games_checkers_marked_cell"},
         )
 
     render_map = {

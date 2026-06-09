@@ -9,7 +9,8 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
-from ...shared.drawing import draw_centered_text, draw_dashed_line
+from ...shared.drawing import draw_dashed_line
+from .text import draw_centered_game_text as draw_centered_text
 from ...shared.text_rendering import load_font
 from .bubble_shooter_common import (
     BUBBLE_COLOR_KEYS,

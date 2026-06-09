@@ -23,7 +23,7 @@ from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import resolve_variant
 from ..shared.complexity import build_icon_task_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace, sort_bboxes_reading_order
 from ..shared.icon_style import sample_icon_palette
@@ -39,7 +39,7 @@ from ..shared.procedural_named_icons import (
 )
 
 
-TASK_ID = "task_icons__named_ring__arc_shape_count"
+TASK_ID = "task_icons__named_ring__scoped_attribute_count"
 SCENE_ID = "named_ring"
 QUERY_IDS: Tuple[str, ...] = ("clockwise_arc_shape_count", "counterclockwise_arc_shape_count")
 
@@ -845,10 +845,10 @@ class IconsCountingNamedRingArcShapeCountTask:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
         counted_icons = tuple(icon for icon in scene.icons if bool(icon.is_counted))
-        evidence_bboxes = sort_bboxes_reading_order(icon.bbox_xyxy for icon in counted_icons)
-        if len(evidence_bboxes) != int(sample.answer_count):
-            raise RuntimeError("rendered named-ring evidence count does not match answer")
-        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order(icon.bbox_xyxy for icon in counted_icons)
+        if len(annotation_bboxes) != int(sample.answer_count):
+            raise RuntimeError("rendered named-ring annotation count does not match answer")
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -861,7 +861,7 @@ class IconsCountingNamedRingArcShapeCountTask:
                 "object_description",
                 "question_text_clockwise_arc_shape_count",
                 "question_text_counterclockwise_arc_shape_count",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -875,13 +875,13 @@ class IconsCountingNamedRingArcShapeCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[question_key]).format(target_shape_name=str(sample.target_shape_name)),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
                     target_shape_name=str(sample.target_shape_name),
                     direction=str(sample.direction),
                 ),
@@ -1003,12 +1003,12 @@ class IconsCountingNamedRingArcShapeCountTask:
                 "counted_indices": [int(value) for value in sample.counted_indices],
                 "counted_instance_ids": list(counted_instance_ids),
             },
-            "projected_evidence": dict(evidence_payload["projected_evidence"]),
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.answer_count)),
-            evidence_gt=TypedValue(type=str(evidence_payload["evidence_type"]), value=list(evidence_payload["evidence_value"])),
+            annotation_gt=TypedValue(type=str(annotation_payload["annotation_type"]), value=list(annotation_payload["annotation_value"])),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

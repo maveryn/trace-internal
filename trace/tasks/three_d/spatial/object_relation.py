@@ -38,6 +38,7 @@ from ..shared.object_resources import (
     SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES,
 )
+from ..shared.option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
 from ..shared.object_scene import (
     LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
@@ -507,6 +508,10 @@ class ThreeDSpatialObjectRelationLabelTask:
             instance_seed=int(instance_seed),
             camera_yaw_band=camera_yaw_band,
         )
+        dataset = apply_independent_prompt_colors_to_dataset(
+            dataset,
+            rng=spawn_rng(int(instance_seed), f"{TASK_ID}.prompt_colors"),
+        )
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
@@ -514,7 +519,14 @@ class ThreeDSpatialObjectRelationLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_object_scene_3d(background, dataset=dataset, render_params=render_params)
+        option_choices = build_text_option_choices(dataset["point_specs"])
+        rendered_scene = render_object_scene_3d(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            draw_candidate_labels=False,
+            option_choices=option_choices,
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -532,7 +544,7 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -545,14 +557,14 @@ class ThreeDSpatialObjectRelationLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "reference_name": str(dataset["reference_object_name"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -562,8 +574,8 @@ class ThreeDSpatialObjectRelationLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.evidence_bboxes]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             query_id=str(query_id),
@@ -618,7 +630,9 @@ class ThreeDSpatialObjectRelationLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -633,6 +647,12 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "room_bbox_px": list(rendered_scene.room_bbox_px),
                 "point_bboxes_px": {str(key): list(value) for key, value in rendered_scene.point_bboxes_px.items()},
                 "point_centers_px": {str(key): list(value) for key, value in rendered_scene.point_centers_px.items()},
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.object_bboxes_px.items()},
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
                 "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
@@ -648,6 +668,11 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "point_specs": [dict(spec) for spec in dataset["point_specs"]],
                 "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
                 "object_specs": [dict(spec) for spec in dataset["object_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "answer_label": str(answer_label),
                 "answer_point_id": str(dataset["answer_point_id"]),
                 "reference_object_id": str(dataset["reference_object_id"]),
@@ -661,10 +686,10 @@ class ThreeDSpatialObjectRelationLabelTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -674,7 +699,7 @@ class ThreeDSpatialObjectRelationLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -1,0 +1,130 @@
+generation:
+  shared:
+    row_count_min: 5
+    row_count_max: 7
+    column_count_min: 7
+    column_count_max: 10
+    occupied_bin_count_min: 24
+    occupied_bin_count_max: 42
+    density_threshold_level_min: 2
+    density_threshold_level_max: 5
+    threshold_count_answer_min: 4
+    threshold_count_answer_max: 18
+    query_id_weights:
+      above_threshold_bin_count: 1.0
+      below_threshold_bin_count: 1.0
+    balanced_query_id_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 1280
+    canvas_height: 820
+    plot_margin_left_px: 96
+    plot_margin_right_px: 238
+    plot_margin_top_px: 94
+    plot_margin_bottom_px: 92
+    legend_width_px: 150
+    axis_line_width_px_min: 1
+    axis_line_width_px_max: 2
+    grid_line_width_px: 1
+    hex_outline_width_px: 2
+    tick_font_size_px: 15
+    label_font_size_px: 17
+    title_font_size_px: 26
+    plot_fill_rgb: [255, 255, 255]
+    axis_color_rgb: [55, 60, 70]
+    grid_color_rgb: [223, 227, 235]
+    text_color_rgb: [35, 40, 52]
+    muted_text_rgb: [83, 91, 105]
+    hex_outline_rgb: [226, 232, 240]
+    threshold_guide_fill_rgb: [255, 255, 255]
+    density_palette_scheme_weights:
+      blue: 1.0
+      teal: 1.0
+      green: 1.0
+      purple: 1.0
+      amber: 1.0
+      rose: 1.0
+      slate: 1.0
+      viridis: 1.0
+      cividis: 1.0
+    balanced_density_palette_scheme_sampling: true
+    density_palette_schemes:
+      blue:
+        - [210, 234, 247]
+        - [151, 203, 226]
+        - [88, 161, 197]
+        - [37, 113, 168]
+        - [15, 74, 127]
+      teal:
+        - [205, 236, 232]
+        - [140, 210, 202]
+        - [76, 174, 166]
+        - [25, 126, 137]
+        - [13, 82, 103]
+      green:
+        - [214, 238, 203]
+        - [166, 218, 145]
+        - [105, 186, 103]
+        - [49, 139, 80]
+        - [19, 90, 58]
+      purple:
+        - [225, 216, 243]
+        - [188, 171, 226]
+        - [148, 126, 205]
+        - [102, 79, 169]
+        - [67, 49, 122]
+      amber:
+        - [245, 224, 171]
+        - [236, 190, 101]
+        - [219, 148, 54]
+        - [183, 101, 32]
+        - [125, 65, 26]
+      rose:
+        - [245, 208, 216]
+        - [232, 150, 166]
+        - [206, 93, 124]
+        - [166, 49, 91]
+        - [109, 28, 62]
+      slate:
+        - [214, 224, 235]
+        - [164, 181, 199]
+        - [111, 135, 158]
+        - [67, 88, 112]
+        - [36, 52, 76]
+      viridis:
+        - [205, 225, 101]
+        - [124, 201, 88]
+        - [53, 164, 121]
+        - [41, 120, 142]
+        - [68, 45, 130]
+      cividis:
+        - [232, 211, 90]
+        - [196, 180, 84]
+        - [142, 144, 92]
+        - [87, 106, 110]
+        - [44, 65, 96]
+    chart_context_mode_weights:
+      clean: 0.18
+      minimal: 0.52
+      paragraph_box: 0.30
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.45
+      reasoning_load: 0.35
+      density_class_load: 0.20
+
+prompt:
+  shared:
+    bundle_id: charts_hexbin_density_v0
+    scene_key: hexbin_density_scene
+    task_key: hexbin_density_threshold_query
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description: a hexbin density chart with numeric axes and a discrete density-level legend
+    answer_hint_count: set "answer" to the requested count as an integer
+    annotation_hint_threshold_bin_count: set "annotation" to an array of [x0,y0,x1,y1] boxes around every visible hex bin matching the density-level threshold
+    json_example_threshold_bin_count: '{"annotation":[[216,188,252,220],[306,248,342,280]],"answer":2}'
+    json_example_answer_only_threshold_bin_count: '{"answer":2}'

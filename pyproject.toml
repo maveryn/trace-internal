@@ -48,3 +48,7 @@ include = ["trace*"]
 
 [tool.setuptools.package-data]
 "trace.review_app" = ["templates/*.html", "static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "rlvr/tests"]
+pythonpath = [".", "rlvr"]

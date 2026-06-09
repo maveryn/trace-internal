@@ -6,14 +6,24 @@
 3. Source implementation domain/group: `charts/trend`
 4. Query id: `turning_point_count`
 5. Semantic query details are recorded in `query_id` and trace params.
-6. Evidence type: `point_set`.
-
-## Evidence
-Prompt-facing evidence is a homogeneous `point_set` over every matching local
-turning point. Evidence cardinality equals the integer answer.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.trend.value.ChartsTrendTurningPointCountTask`
 2. Prompt lookup domain/group: `charts/trend`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and evidence are produced from the same metadata execution trace.
+4. Answers and annotation are produced from the same metadata execution trace.
+
+## Annotation Contract
+1. Answer schema: `integer_count`.
+2. Annotation schema: `point_set`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `turning_point_count` | `count.sequence_or_line_pattern` | `integer_count` | `point_set` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

@@ -1,15 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="resources-intro">
+<section class="resources-intro" id="resources-top">
   <p class="muted">
     Resource review assets are separate from task domains and do not affect task-review counts.
     Root: {{ resource_root_display }}
   </p>
+  <div class="resource-review-links" aria-label="Object review surfaces">
+    <a class="button-link" href="{{ app_path('/three-d/objects') }}">3D Objects</a>
+    <a class="button-link" href="{{ app_path('/illustrations/objects') }}">Illustration Objects</a>
+  </div>
 </section>
+
+{% if resources.collections %}
+  <nav class="resource-tabbar" aria-label="Resource collections" data-resource-tabs data-resource-page-tabs>
+    <a
+      class="resource-tab active"
+      href="#resources-top"
+      data-resource-tab="resources-top"
+      data-tooltip="All resource collections · {{ resources.collections|length }} set(s)"
+      aria-label="All resource collections, {{ resources.collections|length }} set(s)"
+    >
+      <span>All</span>
+    </a>
+    {% for collection in resources.collections %}
+      <a
+        class="resource-tab"
+        href="#resource-collection-{{ loop.index }}"
+        data-resource-tab="resource-collection-{{ loop.index }}"
+        data-tooltip="{{ collection.category }} / {{ collection.title }} · {{ collection.image_assets|length }} image(s), {{ collection.manifest_assets|length }} manifest(s)"
+        aria-label="{{ collection.category }} / {{ collection.title }}, {{ collection.image_assets|length }} image(s), {{ collection.manifest_assets|length }} manifest(s)"
+      >
+        <span>{{ collection.title }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+{% endif %}
 
 <section class="resource-collection-list">
   {% for collection in resources.collections %}
-    <article class="resource-collection">
+    <article class="resource-collection" id="resource-collection-{{ loop.index }}" data-resource-section>
       <header>
         <div>
           <h2>{{ collection.category }} / {{ collection.title }}</h2>
@@ -21,7 +50,7 @@
         <div class="resource-image-grid">
           {% for asset in collection.image_assets %}
             <figure>
-              <a href="{{ app_path('/resources/media/' ~ asset.id) }}">
+              <a href="{{ app_path('/resources/media/' ~ asset.id) }}" target="_blank" rel="noopener noreferrer">
                 <img src="{{ app_path('/resources/media/' ~ asset.id) }}" alt="{{ asset.file_name }}" loading="lazy">
               </a>
               <figcaption>{{ asset.file_name }}</figcaption>
@@ -33,7 +62,7 @@
       {% if collection.manifest_assets %}
         <div class="resource-manifest-list">
           {% for asset in collection.manifest_assets %}
-            <a class="pill" href="{{ app_path('/resources/media/' ~ asset.id) }}">{{ asset.file_name }}</a>
+            <a class="pill" href="{{ app_path('/resources/media/' ~ asset.id) }}" target="_blank" rel="noopener noreferrer">{{ asset.file_name }}</a>
           {% endfor %}
         </div>
       {% endif %}

@@ -10,7 +10,10 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.edge_attribute_label import GraphRelationEdgeAttributeLabelTask
+from trace.tasks.graph.relation.edge_attribute_label import (
+    GraphRelationEdgeBetweenNodesLabelTask,
+    GraphRelationShortestPathFirstEdgeLabelTask,
+)
 from tests.helpers import read_jsonl
 
 
@@ -22,7 +25,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 
 def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -> None:
-    task = GraphRelationEdgeAttributeLabelTask()
+    task = GraphRelationEdgeBetweenNodesLabelTask()
     out = task.generate(
         20901,
         params={
@@ -42,13 +45,13 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
         entity for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_edge"
     ]
 
-    assert "task_graph__node_link__edge_attribute_label" in TASK_REGISTRY
+    assert "task_graph__node_link__edge_between_nodes_label" in TASK_REGISTRY
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_edge_between_nodes_label"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "feeds"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_attribute_relation"
     assert execution["query_id"] == "directed_edge_between_nodes_label"
     assert execution["graph_directionality"] == "directed"
@@ -67,18 +70,18 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     assert labels_by_edge[query_edge] == "feeds"
     assert trace["witness_symbolic"]["edge"] == list(query_edge)
     assert trace["witness_symbolic"]["edge_label"] == "feeds"
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert sum(1 for edge in edge_entities if bool(edge["is_query_edge"])) == 1
     query_entity = [edge for edge in edge_entities if bool(edge["is_query_edge"])][0]
     assert query_entity["edge_attribute_label"] == "feeds"
-    assert query_entity["edge_label_bbox_xyxy"] == out.evidence_gt.value[0]
+    assert query_entity["edge_label_bbox_xyxy"] == out.annotation_gt.value[0]
     assert all(edge["edge_label_bbox_xyxy"] is not None for edge in edge_entities)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contract() -> None:
-    task = GraphRelationEdgeAttributeLabelTask()
+    task = GraphRelationEdgeBetweenNodesLabelTask()
     out = task.generate(
         20902,
         params={
@@ -94,15 +97,15 @@ def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contr
     assert out.answer_gt.value == "blocks"
     assert "edge" in str(out.prompt)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "feeds"}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[240, 190, 308, 214]]
-    assert answer_and_evidence["answer"] == "feeds"
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[240, 190, 308, 214]]
+    assert answer_and_annotation["answer"] == "feeds"
 
 
 def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract() -> None:
-    task = GraphRelationEdgeAttributeLabelTask()
+    task = GraphRelationShortestPathFirstEdgeLabelTask()
     out = task.generate(
         20903,
         params={
@@ -136,17 +139,17 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
         for entity in out.trace_payload["scene_ir"]["entities"]
         if entity["entity_kind"] == "graph_edge" and bool(entity["is_query_edge"])
     ][0]
-    assert query_entity["edge_label_bbox_xyxy"] == out.evidence_gt.value[0]
+    assert query_entity["edge_label_bbox_xyxy"] == out.annotation_gt.value[0]
 
 
 def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_support() -> None:
-    task = GraphRelationEdgeAttributeLabelTask()
+    task = GraphRelationEdgeBetweenNodesLabelTask()
     answers: Counter[str] = Counter()
     query_ids: Counter[str] = Counter()
     directionality: Counter[str] = Counter()
     label_variants: Counter[str] = Counter()
     edge_routing_variants: Counter[str] = Counter()
-    for index in range(180):
+    for index in range(120):
         out = task.generate(
             hash64(20910, "graph_relation_edge_attribute_label", index),
             params={},
@@ -168,13 +171,12 @@ def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_supp
         assert execution["edge_label_source_kind"] == "shared_label_manifest"
         assert execution["edge_label_bucket"]
         assert execution["edge_label_manifest"]
-        assert len(out.evidence_gt.value) == 1
+        assert len(out.annotation_gt.value) == 1
 
     assert len(answers) > 12
     assert set(query_ids) == {
         "edge_between_nodes_label",
         "directed_edge_between_nodes_label",
-        "shortest_path_first_edge_label",
     }
     assert all(count > 0 for count in query_ids.values())
     assert set(directionality) == {"undirected", "directed"}
@@ -191,7 +193,7 @@ def test_graph_relation_edge_attribute_label_build_smoke(tmp_path: Path) -> None
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph__node_link__edge_attribute_label",
+                task_id="task_graph__node_link__edge_between_nodes_label",
                 count=4,
                 params={},
             )
@@ -208,7 +210,7 @@ def test_graph_relation_edge_attribute_label_build_smoke(tmp_path: Path) -> None
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__edge_attribute_label"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__edge_between_nodes_label"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

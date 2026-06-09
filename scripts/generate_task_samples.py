@@ -21,9 +21,9 @@ from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
-from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_evidence
+from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
-from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
+from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 from trace.core.seed import hash64
 from trace.core.task_review_paths import task_review_dir
 from trace.core.taxonomy import resolve_task_taxonomy
@@ -42,11 +42,11 @@ _FIELD_LABELS: Dict[str, str] = {
     "data_path": "data_path",
     "prompt_answer": "prompt_answer",
     "ground_truth_answer": "ground_truth_answer",
-    "prompt_answer_and_evidence": "prompt_answer_and_evidence",
-    "ground_truth_answer_and_evidence": "ground_truth_answer_and_evidence",
+    "prompt_answer_and_annotation": "prompt_answer_and_annotation",
+    "ground_truth_answer_and_annotation": "ground_truth_answer_and_annotation",
     "answer_type": "answer_type",
     "answer_value": "answer_value",
-    "evidence_type": "evidence_type",
+    "annotation_type": "annotation_type",
 }
 
 _TASK_SHEET_FIELDS: List[str] = [
@@ -54,8 +54,8 @@ _TASK_SHEET_FIELDS: List[str] = [
     "query_id",
     "prompt_answer",
     "ground_truth_answer",
-    "prompt_answer_and_evidence",
-    "ground_truth_answer_and_evidence",
+    "prompt_answer_and_annotation",
+    "ground_truth_answer_and_annotation",
     "domain",
     "scene_id",
     "task_group",
@@ -64,7 +64,7 @@ _TASK_SHEET_FIELDS: List[str] = [
     "image_path",
     "data_path",
     "answer_type",
-    "evidence_type",
+    "annotation_type",
 ]
 
 _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
@@ -79,24 +79,24 @@ _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "data_path": 38,
     "prompt_answer": 34,
     "ground_truth_answer": 22,
-    "prompt_answer_and_evidence": 40,
-    "ground_truth_answer_and_evidence": 24,
+    "prompt_answer_and_annotation": 40,
+    "ground_truth_answer_and_annotation": 24,
     "answer_type": 14,
     "answer_value": 12,
-    "evidence_type": 14,
+    "annotation_type": 14,
 }
 
 _PREVIEW_COLUMN_WIDTH = 56
 _INT_FIELDS = {"sample_index", "instance_seed"}
-_JSON_FIELDS = {"answer_value", "ground_truth_answer", "ground_truth_answer_and_evidence"}
+_JSON_FIELDS = {"answer_value", "ground_truth_answer", "ground_truth_answer_and_annotation"}
 _WRAP_FIELDS = {
     "task",
     "image_path",
     "data_path",
     "prompt_answer",
     "ground_truth_answer",
-    "prompt_answer_and_evidence",
-    "ground_truth_answer_and_evidence",
+    "prompt_answer_and_annotation",
+    "ground_truth_answer_and_annotation",
     "answer_value",
 }
 _TASK_WRAP_MAX_CHARS = 20
@@ -206,7 +206,7 @@ def _populate_task_review_sheet(
     image_buffers: List[io.BytesIO],
 ) -> None:
     """Fill one task-style review sheet with preview image columns and row metadata."""
-    headers = ["image", "evidence_image", *[_FIELD_LABELS[field] for field in _TASK_SHEET_FIELDS]]
+    headers = ["image", "annotation_image", *[_FIELD_LABELS[field] for field in _TASK_SHEET_FIELDS]]
     sheet.append(headers)
 
     bold = Font(bold=True)
@@ -225,31 +225,31 @@ def _populate_task_review_sheet(
             with PILImage.open(image_path) as source:
                 source_rgb = source.convert("RGB")
                 preview = _build_preview_image(source_rgb, max_image_side=max_image_side)
-                evidence_overlay = render_evidence_overlay(
+                annotation_overlay = render_annotation_overlay(
                     source_rgb,
-                    evidence_type=str(row.get("_overlay_evidence_type", row.get("evidence_type", ""))),
-                    evidence_value=row.get("_overlay_evidence_value", row.get("answer_evidence")),
+                    annotation_type=str(row.get("_overlay_annotation_type", row.get("annotation_type", ""))),
+                    annotation_value=row.get("_overlay_annotation_value", row.get("answer_annotation")),
                 )
-                evidence_preview = _build_preview_image(evidence_overlay, max_image_side=max_image_side)
-                preview_height = max(int(preview.height), int(evidence_preview.height))
+                annotation_preview = _build_preview_image(annotation_overlay, max_image_side=max_image_side)
+                preview_height = max(int(preview.height), int(annotation_preview.height))
 
                 base_buffer = io.BytesIO()
                 preview.save(base_buffer, format="PNG")
                 base_buffer.seek(0)
                 image_buffers.append(base_buffer)
 
-                evidence_buffer = io.BytesIO()
-                evidence_preview.save(evidence_buffer, format="PNG")
-                evidence_buffer.seek(0)
-                image_buffers.append(evidence_buffer)
+                annotation_buffer = io.BytesIO()
+                annotation_preview.save(annotation_buffer, format="PNG")
+                annotation_buffer.seek(0)
+                image_buffers.append(annotation_buffer)
 
             xl_img = XLImage(base_buffer)
             xl_img.anchor = f"A{row_idx}"
             sheet.add_image(xl_img)
 
-            evidence_img = XLImage(evidence_buffer)
-            evidence_img.anchor = f"B{row_idx}"
-            sheet.add_image(evidence_img)
+            annotation_img = XLImage(annotation_buffer)
+            annotation_img.anchor = f"B{row_idx}"
+            sheet.add_image(annotation_img)
 
         for col_idx, field in enumerate(_TASK_SHEET_FIELDS, start=3):
             cell = sheet.cell(row=row_idx, column=col_idx, value=_field_value_for_sheet(row, field))
@@ -815,11 +815,11 @@ def _generate_samples_for_task(
 
         prompt_variants = dict(getattr(output, "prompt_variants", {}) or {})
         prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
-        prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", output.prompt))
+        prompt_answer_and_annotation = str(prompt_variants.get("answer_and_annotation", output.prompt))
 
-        trace_payload = sanitize_trace_payload_for_public_evidence(
+        trace_payload = sanitize_trace_payload_for_public_annotation(
             output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
-            evidence_gt=output.evidence_gt,
+            annotation_gt=output.annotation_gt,
         )
 
         payload = {
@@ -830,12 +830,12 @@ def _generate_samples_for_task(
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
             "query_id": str(getattr(output, "query_id", "default")),
-            "prompt": prompt_answer_and_evidence,
+            "prompt": prompt_answer_and_annotation,
             "prompt_answer": prompt_answer,
-            "prompt_answer_and_evidence": prompt_answer_and_evidence,
+            "prompt_answer_and_annotation": prompt_answer_and_annotation,
             "prompt_variants": prompt_variants,
             "answer_gt": output.answer_gt.to_dict(),
-            "evidence_gt": output.evidence_gt.to_dict(),
+            "annotation_gt": output.annotation_gt.to_dict(),
             "complexity": output.complexity.to_dict(),
             "image": {
                 "path": rel_image_path,
@@ -847,13 +847,13 @@ def _generate_samples_for_task(
         write_json_file(data_path, payload)
 
         distribution_hints = _extract_query_id_distribution_hints(trace_payload)
-        overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
-            evidence_type=str(output.evidence_gt.type),
-            evidence_value=output.evidence_gt.value,
+        overlay_annotation_type, overlay_annotation_value = resolve_overlay_annotation(
+            annotation_type=str(output.annotation_gt.type),
+            annotation_value=output.annotation_gt.value,
             trace_payload=trace_payload,
         )
         canonical_answer = {
-            "evidence": output.evidence_gt.value,
+            "annotation": output.annotation_gt.value,
             "answer": output.answer_gt.value,
         }
         answer_only_ground_truth = {
@@ -870,19 +870,19 @@ def _generate_samples_for_task(
                 "query_id": str(getattr(output, "query_id", "default")),
                 "image_path": rel_image_path,
                 "data_path": rel_data_path,
-                "prompt": prompt_answer_and_evidence,
+                "prompt": prompt_answer_and_annotation,
                 "prompt_answer": prompt_answer,
                 "prompt_answer_only": prompt_answer,
-                "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                "prompt_answer_and_annotation": prompt_answer_and_annotation,
                 "ground_truth_answer": answer_only_ground_truth,
-                "ground_truth_answer_and_evidence": canonical_answer,
+                "ground_truth_answer_and_annotation": canonical_answer,
                 "answer": canonical_answer,
                 "answer_type": output.answer_gt.type,
                 "answer_value": output.answer_gt.value,
-                "evidence_type": output.evidence_gt.type,
-                "answer_evidence": output.evidence_gt.value,
-                "_overlay_evidence_type": overlay_evidence_type,
-                "_overlay_evidence_value": overlay_evidence_value,
+                "annotation_type": output.annotation_gt.type,
+                "answer_annotation": output.annotation_gt.value,
+                "_overlay_annotation_type": overlay_annotation_type,
+                "_overlay_annotation_value": overlay_annotation_value,
                 "_query_id_probabilities": dict(distribution_hints.get("query_id_probabilities", {})),
                 "_source_kind": str(distribution_hints.get("source_kind", "")),
                 "_source_kind_probabilities": dict(distribution_hints.get("source_kind_probabilities", {})),

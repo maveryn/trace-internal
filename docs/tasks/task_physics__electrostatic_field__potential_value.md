@@ -3,23 +3,51 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `electrostatic_field`
-- Task group: `electrostatics`
-- Query id: `potential_value`
-- Answer type: `integer`
-- Evidence type: `keyed_point_map`
+- Implementation task group: `electrostatics`
+- Implementation source: `trace/tasks/physics/electrostatics/field_map.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__electrostatic_field__potential_value` -> `task_physics__electrostatic_field__potential_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows three fixed point charges labeled by combined key/value tags such as `Q1=+4`, a marked point `P`, and visible distance labels from each charge to `P`. The prompt asks for the signed electric potential at `P` using `k=1` and `V=sum(q/r)`.
+## Task Contract
+Computes the signed integer electric potential at a marked point from visible point charges with k=1.
 
-Charge values and distances are constructed so each contribution is an integer and the final answer is a signed integer.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Evidence
-Prompt-facing evidence is a `keyed_point_map` over fixed charge marker centers and the point `P` marker center, with keys `Q1`, `Q2`, `Q3`, and `P`. Charge and distance values remain visible attributes and trace metadata.
+## Query Branches
 
-## Prompt And Trace
-Prompt bundle: `physics_electrostatics_v0`; scene key: `electrostatics_field_map`; task key: `electrostatics_field_map_query`; query key: `potential_value`.
+| Query id | Program schema |
+| --- | --- |
+| `potential_value` | `sum(point_charge_potential(charges_q1_q2_q3, point_p, k=1)); scene=electrostatic_field; scope=potential_value` |
 
-Outputs `query_id="potential_value"`. The trace records charge values, distances, integer potential contributions, the final potential value, and input-witness evidence entity/key mapping.
+## Program Metadata
+- Program signatures: `physics.electric_potential_value`
+- Base program contract: `sum(point_charge_potential(charges_q1_q2_q3, point_p, k=1)); scene=electrostatic_field; scope=potential_value`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `charges_q1_q2_q3`: semantic_role; allowed `visible_point_charges_Q1_Q2_Q3`; source `program_schema_concrete`
+  - `point_p`: semantic_role; allowed `visible_point_P`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `potential_value`
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized potential scenario.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
+
+## Annotation Contract
+- Annotation schema: `keyed_point_map`
+- Generator `annotation_gt.type`: `keyed_point_map`
+- Annotation is keyed because point witnesses have distinct roles; each key maps to the final-image pixel point for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/electrostatic_field/task_physics__electrostatic_field__potential_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

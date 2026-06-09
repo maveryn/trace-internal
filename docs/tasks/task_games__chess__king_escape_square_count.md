@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `chess`
-3. Source task group: `chess`
-4. Query id: `king_escape_square_count`
-5. Objective: Count safe one-step destination squares for the blue-outlined king.
+2. Task group: `chess`
+3. Scene id: `chess`
+4. Public task id: `task_games__chess__king_escape_square_count`
+5. Supported `query_id` values: `king_escape_square_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(legal_escape_squares(king)); scene=chess; scope=king_escape_square_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set containing the safe destination-square boxes.
-3. `king_escape_square_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games Chess-board renderer for its scene id.
-2. Prompt bundle: `games_chess_v0`
-3. Generation constructs a marked-king board with target answer support `0..5`; a safe square is empty or capturable and is not attacked after the king moves there.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Scene density, visual style, marked king color, and target-answer support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

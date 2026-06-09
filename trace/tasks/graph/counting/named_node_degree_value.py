@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -29,10 +29,8 @@ from ..shared.complexity import (
 )
 from ..shared.fixed_query_task import rewrite_graph_query_output
 from ..shared.graph_sampling import (
-    SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_NAMED_NODE_DEGREE_DIRECTIONS,
     SUPPORTED_NAMED_NODE_DIRECTED_DEGREE_MODES,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_named_node_degree_value,
@@ -40,13 +38,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_edge_pair_evidence,
+    projected_edge_pair_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
@@ -131,11 +127,13 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(graph_directionality)}:{str(degree_mode)}:{int(target_degree)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(str(graph_directionality), str(degree_mode), int(target_degree), str(topology_profile)),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -258,83 +256,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for the requested named-node degree query")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
-    )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
     )
 
     return _ResolvedQuery(
@@ -343,12 +269,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_count=int(node_count),
         target_degree=int(target_degree),
         topology_profile=str(topology_profile),
-        layout_variant=str(layout_variant),
-        label_variant=str(label_variant),
-        node_shape_variant=str(node_shape_variant),
-        layout_transform_variant=str(layout_transform_variant),
-        edge_routing_variant=str(edge_routing_variant),
-        node_color_name=str(node_color_name),
+        layout_variant=str(visual_axes.layout_variant),
+        label_variant=str(visual_axes.label_variant),
+        node_shape_variant=str(visual_axes.node_shape_variant),
+        layout_transform_variant=str(visual_axes.layout_transform_variant),
+        edge_routing_variant=str(visual_axes.edge_routing_variant),
+        node_color_name=str(visual_axes.node_color_name),
         graph_directionality_probabilities=dict(graph_directionality_probabilities),
         degree_mode_probabilities=dict(degree_mode_probabilities),
         node_count_probabilities=dict(
@@ -364,12 +290,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             )
         ),
         topology_profile_probabilities=dict(topology_probabilities),
-        layout_variant_probabilities=dict(layout_probabilities),
-        label_variant_probabilities=dict(label_variant_probabilities),
-        node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
-        layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
-        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
-        node_color_name_probabilities=dict(node_color_name_probabilities),
+        layout_variant_probabilities=dict(visual_axes.layout_variant_probabilities),
+        label_variant_probabilities=dict(visual_axes.label_variant_probabilities),
+        node_shape_variant_probabilities=dict(visual_axes.node_shape_variant_probabilities),
+        layout_transform_variant_probabilities=dict(visual_axes.layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(visual_axes.edge_routing_variant_probabilities),
+        node_color_name_probabilities=dict(visual_axes.node_color_name_probabilities),
     )
 
 
@@ -530,23 +456,23 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint_named_node_degree_value",
-                "evidence_hint_named_node_in_degree_value",
-                "evidence_hint_named_node_out_degree_value",
-                "evidence_hint_named_node_total_degree_value",
+                "annotation_hint_named_node_degree_value",
+                "annotation_hint_named_node_in_degree_value",
+                "annotation_hint_named_node_out_degree_value",
+                "annotation_hint_named_node_total_degree_value",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[[180, 220], [310, 180]], [[180, 220], [430, 260]]], answer_value=2)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[[180, 220], [310, 180]], [[180, 220], [430, 260]]], answer_value=2)
         query_label_for_prompt = format_graph_prompt_label(
             str(graph_sample.query_label),
             label_variant=str(query.label_variant),
         )
         prompt_query_key = _query_key_for(query)
-        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
+        annotation_hint_key = f"annotation_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -554,7 +480,7 @@ class GraphCountingNamedNodeDegreeValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(prompt_query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults["object_description_directed"]
@@ -564,7 +490,7 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "query_label": str(query_label_for_prompt),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(query_label=str(query_label_for_prompt)),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(query_label=str(query_label_for_prompt)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -573,15 +499,15 @@ class GraphCountingNamedNodeDegreeValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_edges)))
-        evidence_projection = projected_edge_pair_evidence(rendered_scene, evidence_edges)
-        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+        annotation_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_edges)))
+        annotation_projection = projected_edge_pair_annotation(rendered_scene, annotation_edges)
+        annotation_point_pairs = [[list(point) for point in pair] for pair in annotation_projection["point_pair_set"]]
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
         queried_degrees = _queried_degrees_by_label(graph_sample=graph_sample, degree_mode=str(query.degree_mode))
-        evidence_edge_set = {
+        annotation_edge_set = {
             canonicalize_graph_edge_label(str(left), str(right), directed=bool(query.graph_directionality == "directed"))
-            for left, right in evidence_edges
+            for left, right in annotation_edges
         }
         node_entities = [
             {
@@ -599,9 +525,9 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "predecessors": list(node.predecessors),
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
-                "incident_evidence_edge_count": sum(
+                "incident_annotation_edge_count": sum(
                     1
-                    for edge in evidence_edges
+                    for edge in annotation_edges
                     if str(node.label) in {str(edge[0]), str(edge[1])}
                 ),
             }
@@ -623,7 +549,7 @@ class GraphCountingNamedNodeDegreeValueTask:
                         str(edge.node_v_label),
                         directed=bool(query.graph_directionality == "directed"),
                     )
-                    in evidence_edge_set
+                    in annotation_edge_set
                 ),
             }
             for edge in rendered_scene.edges
@@ -645,7 +571,7 @@ class GraphCountingNamedNodeDegreeValueTask:
                     "degree_mode": str(query.degree_mode),
                     "query_label": str(graph_sample.query_label),
                     "target_degree": int(graph_sample.target_degree),
-                    "counted_edges": [list(edge) for edge in evidence_edges],
+                    "counted_edges": [list(edge) for edge in annotation_edges],
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -740,8 +666,8 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "target_degree": int(query.target_degree),
-                "answer": int(len(evidence_edges)),
-                "counted_edges": [list(edge) for edge in evidence_edges],
+                "answer": int(len(annotation_edges)),
+                "counted_edges": [list(edge) for edge in annotation_edges],
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
                 "out_degrees_by_label": {str(key): int(value) for key, value in graph_sample.out_degrees_by_label.items()},
@@ -766,11 +692,11 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "type": "edge_pair_set",
                 "query_label": str(graph_sample.query_label),
                 "degree_mode": str(query.degree_mode),
-                "edges": [list(edge) for edge in evidence_edges],
+                "edges": [list(edge) for edge in annotation_edges],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_pair_set",
-                **dict(evidence_projection),
+                **dict(annotation_projection),
             },
         }
 
@@ -778,7 +704,7 @@ class GraphCountingNamedNodeDegreeValueTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

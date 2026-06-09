@@ -20,7 +20,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ..shared.text import draw_game_text_traced as draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -44,6 +44,8 @@ QUERY_X_WIN_MOVE = "x_winning_move_label"
 QUERY_O_WIN_MOVE = "o_winning_move_label"
 QUERY_X_BLOCK_MOVE = "x_blocking_move_label"
 QUERY_O_BLOCK_MOVE = "o_blocking_move_label"
+QUERY_X_IMMEDIATE_WIN_BOARD_COUNT = "x_immediate_win_board_count"
+QUERY_O_IMMEDIATE_WIN_BOARD_COUNT = "o_immediate_win_board_count"
 STATUS_QUERIES: Tuple[str, ...] = (
     QUERY_X_WON_COUNT,
     QUERY_O_WON_COUNT,
@@ -55,6 +57,10 @@ TACTIC_QUERIES: Tuple[str, ...] = (
     QUERY_O_WIN_MOVE,
     QUERY_X_BLOCK_MOVE,
     QUERY_O_BLOCK_MOVE,
+)
+MACRO_THREAT_QUERIES: Tuple[str, ...] = (
+    QUERY_X_IMMEDIATE_WIN_BOARD_COUNT,
+    QUERY_O_IMMEDIATE_WIN_BOARD_COUNT,
 )
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic_grid",
@@ -84,6 +90,7 @@ class _TaskDefaults:
     won_board_count_support: Tuple[int, ...] = (1, 2, 3, 4)
     drawn_board_count_support: Tuple[int, ...] = (1, 2, 3, 4)
     neither_won_board_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
+    macro_threat_board_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     option_count_support: Tuple[int, ...] = (5,)
     canvas_width: int = 820
     canvas_height: int = 820
@@ -125,7 +132,7 @@ class _Sample:
     option_cells: Tuple[int, ...]
     answer_cell: int | None
     support_cells: Tuple[int, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     metadata: Dict[str, Any]
 
 
@@ -227,7 +234,7 @@ def _query_params_for_inner_cycle(
 ) -> Dict[str, Any]:
     resolved = dict(params)
     sampling_index = params.get("_sample_cursor")
-    if sampling_index is None or params.get("query_id") is not None or params.get("query_id") is not None:
+    if sampling_index is None or params.get("query_id") is not None or params.get("query_variant") is not None:
         return resolved
     resolved["_sample_cursor"] = abs(int(sampling_index)) // max(1, int(query_count))
     return resolved
@@ -297,6 +304,22 @@ def _open_cells(rng) -> Tuple[str, ...]:
     return ("X", "", "O", "", "X", "", "O", "", "")
 
 
+def _open_cells_without_immediate_win(rng, *, player: str) -> Tuple[str, ...]:
+    """Sample an open local board where the requested player has no one-move win."""
+
+    target_player = str(player)
+    for _attempt in range(400):
+        cells = _open_cells(rng)
+        if not _immediate_winning_cells(cells, target_player):
+            return tuple(cells)
+    fallback = ("X", "O", "", "", "X", "O", "O", "", "")
+    if target_player == "X":
+        fallback = ("O", "X", "", "", "O", "X", "X", "", "")
+    if _immediate_winning_cells(fallback, target_player):
+        raise ValueError("failed to construct open board without immediate win")
+    return tuple(fallback)
+
+
 def _local_board_for_status(rng, status: str) -> _LocalBoard:
     if str(status) == "X_won":
         cells, line = _won_cells(rng, "X")
@@ -307,6 +330,27 @@ def _local_board_for_status(rng, status: str) -> _LocalBoard:
     if str(status) == "drawn":
         return _LocalBoard(cells=_drawn_cells(), status="drawn", winning_line=None)
     return _LocalBoard(cells=_open_cells(rng), status="open", winning_line=None)
+
+
+def _macro_threat_player(query_id: str) -> str:
+    """Return the player whose immediate-win boards are counted."""
+
+    if str(query_id) == QUERY_X_IMMEDIATE_WIN_BOARD_COUNT:
+        return "X"
+    if str(query_id) == QUERY_O_IMMEDIATE_WIN_BOARD_COUNT:
+        return "O"
+    raise ValueError(f"unsupported macro-threat query: {query_id}")
+
+
+def _matching_macro_threat_indices(board: Sequence[_LocalBoard], query_id: str) -> Tuple[int, ...]:
+    """Return small-board indices where the queried player can win in one move."""
+
+    player = _macro_threat_player(str(query_id))
+    return tuple(
+        int(index)
+        for index, local in enumerate(board)
+        if local.status == "open" and bool(_immediate_winning_cells(local.cells, player))
+    )
 
 
 def _matching_status_indices(board: Sequence[_LocalBoard], query_id: str) -> Tuple[int, ...]:
@@ -391,7 +435,7 @@ def _sample_status_count(
     matching = _matching_status_indices(board, str(query_id))
     if len(matching) != int(target_answer):
         raise ValueError("status target count mismatch")
-    evidence_ids = tuple(_board_entity_id(index) for index in matching)
+    annotation_ids = tuple(_board_entity_id(index) for index in matching)
     return _Sample(
         query_id=str(query_id),
         board=tuple(board),
@@ -402,11 +446,78 @@ def _sample_status_count(
         option_cells=(),
         answer_cell=None,
         support_cells=(),
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         metadata={
             "target_answer": int(target_answer),
             "target_answer_probabilities": dict(target_probabilities),
             "status_counts": dict(counts),
+            "matching_small_boards": [MACRO_LABELS[index] for index in matching],
+        },
+    )
+
+
+def _sample_non_threat_board(rng, *, player: str) -> _LocalBoard:
+    """Sample one non-counted small board for the macro-threat task."""
+
+    status = str(rng.choice(("X_won", "O_won", "drawn", "open_no_target_threat")))
+    if status == "open_no_target_threat":
+        return _LocalBoard(
+            cells=_open_cells_without_immediate_win(rng, player=str(player)),
+            status="open",
+            winning_line=None,
+        )
+    return _local_board_for_status(rng, status)
+
+
+def _sample_macro_threat_count(
+    rng,
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_id: str,
+) -> _Sample:
+    """Sample an Ultimate board with an exact count of immediate-win local boards."""
+
+    target_answer, target_probabilities = _sample_integer_axis(
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        params=_query_params_for_inner_cycle(params, query_count=len(MACRO_THREAT_QUERIES)),
+        support_key="macro_threat_board_count_support",
+        explicit_key="target_answer",
+        fallback_support=_DEFAULTS.macro_threat_board_count_support,
+        namespace=f"{str(query_id)}.target_answer",
+        balanced_flag_key="balanced_target_answer_sampling",
+    )
+    player = _macro_threat_player(str(query_id))
+    tactic_query = QUERY_X_WIN_MOVE if str(player) == "X" else QUERY_O_WIN_MOVE
+    boards: List[_LocalBoard] = []
+    for _index in range(int(target_answer)):
+        cells, _answer_cell, _support_cells, _threat_player = _make_tactic_cells(rng, query_id=str(tactic_query))
+        boards.append(_LocalBoard(cells=tuple(cells), status="open", winning_line=None))
+    while len(boards) < 9:
+        boards.append(_sample_non_threat_board(rng, player=str(player)))
+    rng.shuffle(boards)
+    board = tuple(boards)
+    matching = _matching_macro_threat_indices(board, str(query_id))
+    if len(matching) != int(target_answer):
+        raise ValueError("macro-threat target count mismatch")
+    annotation_ids = tuple(_board_entity_id(index) for index in matching)
+    return _Sample(
+        query_id=str(query_id),
+        board=tuple(board),
+        answer=int(target_answer),
+        answer_type="integer",
+        target_answer=int(target_answer),
+        highlighted_board_index=None,
+        option_cells=(),
+        answer_cell=None,
+        support_cells=(),
+        annotation_entity_ids=tuple(annotation_ids),
+        metadata={
+            "target_answer": int(target_answer),
+            "target_answer_probabilities": dict(target_probabilities),
+            "threat_player": str(player),
             "matching_small_boards": [MACRO_LABELS[index] for index in matching],
         },
     )
@@ -499,7 +610,7 @@ def _sample_local_tactic(
         else:
             board_values.append(_local_board_for_status(rng, str(rng.choice(status_options))))
     answer_label = OPTION_LABELS[int(answer_slot)]
-    evidence_ids = tuple(
+    annotation_ids = tuple(
         [_cell_entity_id(int(highlighted), int(answer_cell))]
         + [_cell_entity_id(int(highlighted), int(cell_index)) for cell_index in support_cells]
     )
@@ -513,7 +624,7 @@ def _sample_local_tactic(
         option_cells=tuple(int(cell) for cell in option_cells),
         answer_cell=int(answer_cell),
         support_cells=tuple(int(cell) for cell in support_cells),
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         metadata={
             "highlighted_small_board": MACRO_LABELS[int(highlighted)],
             "option_count": int(option_count),
@@ -869,16 +980,19 @@ def _render_scene(
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in TACTIC_QUERIES:
-        answer_and_evidence = {
-            "evidence": [[410, 240, 470, 300], [350, 240, 410, 300], [470, 240, 530, 300]],
+        answer_and_annotation = {
+            "annotation": [[410, 240, 470, 300], [350, 240, 410, 300], [470, 240, 530, 300]],
             "answer": "C",
         }
         answer_only = {"answer": "C"}
+    elif str(query_id) in MACRO_THREAT_QUERIES:
+        answer_and_annotation = {"annotation": [[110, 110, 260, 260], [450, 280, 600, 430]], "answer": 2}
+        answer_only = {"answer": 2}
     else:
-        answer_and_evidence = {"evidence": [[110, 110, 260, 260], [450, 280, 600, 430]], "answer": 2}
+        answer_and_annotation = {"annotation": [[110, 110, 260, 260], [450, 280, 600, 430]], "answer": 2}
         answer_only = {"answer": 2}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -894,9 +1008,10 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
             "json_output_contract_answer_only",
             "object_description_ultimate_tictactoe_board",
             f"answer_hint_{str(sample.query_id)}",
-            f"evidence_hint_{str(sample.query_id)}",
+            f"annotation_hint_{str(sample.query_id)}",
             "ultimate_tictactoe_status_rule_text",
             "ultimate_tictactoe_tactic_rule_text",
+            "ultimate_tictactoe_macro_threat_rule_text",
         ),
         context=f"prompt defaults for {str(sample.query_id)}",
     )
@@ -906,11 +1021,12 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_defaults[f"answer_hint_{str(sample.query_id)}"]),
-        "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sample.query_id)}"]),
+        "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sample.query_id)}"]),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         "status_rule_text": str(prompt_defaults["ultimate_tictactoe_status_rule_text"]),
         "tactic_rule_text": str(prompt_defaults["ultimate_tictactoe_tactic_rule_text"]),
+        "macro_threat_rule_text": str(prompt_defaults["ultimate_tictactoe_macro_threat_rule_text"]),
     }
     prompt_selection = render_task_prompt_variants(
         domain="games",
@@ -919,7 +1035,7 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(sample.query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -932,16 +1048,21 @@ def _build_prompt(sample: _Sample, *, instance_seed: int) -> Tuple[str, Dict[str
     }
 
 
-def _build_complexity(*, task_id: str, sample: _Sample, evidence_count: int) -> Any:
+def _build_complexity(*, task_id: str, sample: _Sample, annotation_count: int) -> Any:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
-    query_reasoning = 0.45 if str(sample.query_id) in STATUS_QUERIES else 0.74
+    if str(sample.query_id) in STATUS_QUERIES:
+        query_reasoning = 0.45
+    elif str(sample.query_id) in MACRO_THREAT_QUERIES:
+        query_reasoning = 0.64
+    else:
+        query_reasoning = 0.74
     return build_games_complexity(
         weights=weights,
         components={
             "visual_scan": 0.72,
             "game_reasoning": float(query_reasoning),
             "ambiguity": normalize_linear(float(len(sample.option_cells) or 4), min_value=1.0, max_value=6.0),
-            "output_burden": normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0),
+            "output_burden": normalize_linear(float(annotation_count), min_value=1.0, max_value=8.0),
         },
     )
 
@@ -958,6 +1079,14 @@ class _UltimateTicTacToeTask:
     def _sample(self, rng, *, task_id: str, instance_seed: int, params: Mapping[str, Any], query_id: str) -> _Sample:
         if str(query_id) in STATUS_QUERIES:
             return _sample_status_count(
+                rng,
+                task_id=str(task_id),
+                instance_seed=int(instance_seed),
+                params=params,
+                query_id=str(query_id),
+            )
+        if str(query_id) in MACRO_THREAT_QUERIES:
+            return _sample_macro_threat_count(
                 rng,
                 task_id=str(task_id),
                 instance_seed=int(instance_seed),
@@ -1017,13 +1146,13 @@ class _UltimateTicTacToeTask:
             instance_seed=int(instance_seed),
             params=params,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sample.evidence_entity_ids
+            for entity_id in sample.annotation_entity_ids
             if str(entity_id) in rendered.render_map["entity_bboxes_px"]
         ]
-        if len(evidence_bboxes) != len(sample.evidence_entity_ids):
-            raise RuntimeError("missing rendered evidence bbox")
+        if len(annotation_bboxes) != len(sample.annotation_entity_ids):
+            raise RuntimeError("missing rendered annotation bbox")
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1032,8 +1161,8 @@ class _UltimateTicTacToeTask:
         )
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, annotation_count=len(annotation_bboxes))
 
         board_trace = []
         for index, local in enumerate(sample.board):
@@ -1052,7 +1181,7 @@ class _UltimateTicTacToeTask:
                 "relations": {
                     "query_id": str(sample.query_id),
                     "style_variant": str(style_variant),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1092,16 +1221,17 @@ class _UltimateTicTacToeTask:
                 "answer_cell": None if sample.answer_cell is None else int(sample.answer_cell) + 1,
                 "support_cells": [int(cell) + 1 for cell in sample.support_cells],
                 "answer": sample.answer,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
+                "matching_small_boards": list(sample.metadata.get("matching_small_boards", [])),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1110,7 +1240,7 @@ class _UltimateTicTacToeTask:
             prompt=str(prompt),
             prompt_variants=dict(prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1131,9 +1261,18 @@ class GamesUltimateTicTacToeSmallBoardStatusCountTask(_UltimateTicTacToeTask):
 
 
 @register_task
-class GamesUltimateTicTacToeLocalTacticLabelTask(_UltimateTicTacToeTask):
-    """Choose the local winning or blocking move in one highlighted small board."""
+class GamesUltimateTicTacToeLineCompletionMoveLabelTask(_UltimateTicTacToeTask):
+    """Choose the local winning or blocking line-completion move."""
 
-    task_id = "task_games__ultimate_tictactoe__local_tactic_label"
+    task_id = "task_games__ultimate_tictactoe__line_completion_move_label"
     supported_queries = TACTIC_QUERIES
     query_weights_key = "local_tactic_query_id_weights"
+
+
+@register_task
+class GamesUltimateTicTacToeMacroThreatBoardCountTask(_UltimateTicTacToeTask):
+    """Count local boards where one player has an immediate winning move."""
+
+    task_id = "task_games__ultimate_tictactoe__macro_threat_board_count"
+    supported_queries = MACRO_THREAT_QUERIES
+    query_weights_key = "macro_threat_query_id_weights"

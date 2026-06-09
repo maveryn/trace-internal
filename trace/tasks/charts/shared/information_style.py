@@ -3,18 +3,42 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
+from ....core.task_group_config import get_task_group_defaults
+from ...shared.config_defaults import split_generation_rendering_prompt_defaults
 from ...shared.visual_style.information_scene import (
     Color,
     InformationSceneStyle,
     make_information_scene_background,
-    resolve_information_scene_style,
+    resolve_information_scene_style_from_request,
+)
+from ...shared.visual_style.request import (
+    build_visual_style_request,
+    resolve_style_bool,
 )
 from .chart_scene import ChartRenderParams
 
 
 ChartInformationStyle = InformationSceneStyle
+
+
+@lru_cache(maxsize=64)
+def _chart_task_group_render_defaults(task_group: str) -> dict[str, Any]:
+    """Return shared chart rendering defaults for style resolution."""
+
+    try:
+        defaults = get_task_group_defaults("charts", str(task_group))
+    except Exception:
+        return {}
+    if not isinstance(defaults, Mapping):
+        return {}
+    _gen, rendering, _prompt = split_generation_rendering_prompt_defaults(
+        defaults,
+        task_id=f"charts_{str(task_group)}_style_defaults",
+    )
+    return dict(rendering)
 
 
 def resolve_chart_information_style(
@@ -24,22 +48,45 @@ def resolve_chart_information_style(
     scene_id: str,
     task_group: str,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool | None = None,
+    allow_colored_surface: bool | None = None,
 ) -> tuple[ChartInformationStyle, dict[str, Any]]:
     """Resolve one chart presentation style without changing semantic marks."""
 
-    resolved_params = params or {}
-    return resolve_information_scene_style(
+    resolved_params = {
+        **_chart_task_group_render_defaults(str(task_group)),
+        **dict(params or {}),
+    }
+    resolved_allow_dark = (
+        resolve_style_bool(resolved_params, "information_scene_allow_dark", False)
+        if allow_dark is None
+        else bool(allow_dark)
+    )
+    resolved_allow_colored_surface = (
+        resolve_style_bool(resolved_params, "information_scene_allow_colored_surface", True)
+        if allow_colored_surface is None
+        else bool(allow_colored_surface)
+    )
+    request = build_visual_style_request(
+        domain="charts",
+        scene_id=str(scene_id),
+        task_group=str(task_group),
         instance_seed=int(instance_seed),
-        namespace=f"charts.{str(task_group)}.{str(scene_id)}.information_scene_style",
+        params=resolved_params,
+        style_family="information_scene",
+        allow_dark=bool(resolved_allow_dark),
+        allow_colored_surface=bool(resolved_allow_colored_surface),
+        protected_colors=protected_colors or (),
+        required_text_roles=("chart_label", "axis_tick", "legend_label"),
+    )
+    return resolve_information_scene_style_from_request(
+        request,
         treatments=resolved_params.get("information_scene_treatments"),
         treatment_weights=resolved_params.get("information_scene_treatment_weights", {}),
         palettes=resolved_params.get("information_scene_palettes"),
         palette_weights=resolved_params.get("information_scene_palette_weights", {}),
         chrome_modes=resolved_params.get("information_scene_chrome_modes"),
         chrome_mode_weights=resolved_params.get("information_scene_chrome_mode_weights", {}),
-        allow_dark=bool(allow_dark),
-        protected_colors=protected_colors or (),
     )
 
 
@@ -87,7 +134,8 @@ def prepare_chart_information_scene(
     task_group: str,
     render_params: ChartRenderParams,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool | None = None,
+    allow_colored_surface: bool | None = None,
 ) -> tuple[ChartRenderParams, Any, dict[str, Any], dict[str, Any]]:
     """Resolve chart information style, apply it, and create the background."""
 
@@ -97,7 +145,8 @@ def prepare_chart_information_scene(
         scene_id=str(scene_id),
         task_group=str(task_group),
         protected_colors=protected_colors or (),
-        allow_dark=bool(allow_dark),
+        allow_dark=allow_dark,
+        allow_colored_surface=allow_colored_surface,
     )
     styled_render_params = apply_chart_information_style(render_params, style)
     background, background_meta = make_chart_information_background(

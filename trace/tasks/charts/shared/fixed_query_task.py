@@ -5,7 +5,12 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence
 
 from ...base import TaskOutput
-from ...shared.fixed_query import force_query_id_params, rewrite_public_query_output
+from ...shared.fixed_query import (
+    explicit_query_id_param,
+    force_query_id_params,
+    normalize_query_id_params,
+    rewrite_public_query_output,
+)
 
 
 def forced_query_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
@@ -21,29 +26,18 @@ def merged_query_params(
 ) -> Dict[str, Any]:
     """Return params that restrict a shared chart task to one public query set."""
 
-    merged = dict(params)
+    merged = normalize_query_id_params(params)
     allowed = tuple(str(value) for value in allowed_query_ids if str(value).strip())
     allowed_set = set(allowed)
 
-    explicit_query = merged.get("query_id")
-    explicit_variant = merged.get("query_id")
-    if explicit_variant is not None and str(explicit_variant) == "default":
-        explicit_variant = None
-    if explicit_query is not None or explicit_variant is not None:
-        query_text = str(explicit_query if explicit_query is not None else explicit_variant)
-        if explicit_variant is not None and str(explicit_variant) != query_text:
-            raise ValueError("query_id conflicts with query_id")
-        merged["query_id"] = query_text
-        merged["query_id"] = query_text
-
-    explicit_variant = merged.get("query_id")
-    if allowed and explicit_variant is not None:
-        variant_text = str(explicit_variant)
+    explicit_query = explicit_query_id_param(params)
+    if allowed and explicit_query is not None:
+        variant_text = str(explicit_query)
         if variant_text not in allowed_set:
             raise ValueError(f"unsupported query id for merged chart task: {variant_text}")
         return merged
 
-    raw_weights = merged.get("query_id_weights")
+    raw_weights = merged.get("query_id_weights", merged.get("query_variant_weights"))
     if allowed and raw_weights is None:
         merged["query_id_weights"] = {str(value): 1.0 for value in allowed}
     elif allowed and isinstance(raw_weights, Mapping):
@@ -84,7 +78,7 @@ def infer_query_id_from_output(output: TaskOutput) -> str:
         for candidate_source in (source, params if isinstance(params, Mapping) else None):
             if not isinstance(candidate_source, Mapping):
                 continue
-            for key in ("query_id", "query_id"):
+            for key in ("query_id", "query_variant"):
                 value = candidate_source.get(str(key))
                 if value is not None and str(value).strip() and str(value) != "default":
                     return str(value)

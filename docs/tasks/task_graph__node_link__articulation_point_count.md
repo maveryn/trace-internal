@@ -11,7 +11,7 @@
 2. `query_id`: `articulation_point_count`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
-4. `evidence_gt.type`: `point_set`
+4. `annotation_gt.type`: `point_set`
 5. Scene contract:
    - one single-panel labeled undirected node-link graph per image,
    - simple unweighted graph only,
@@ -25,7 +25,7 @@
 7. Count policy:
    - `target_count` is sampled from `0..5`,
    - node count is chosen from the feasible support that can realize the requested articulation-point count,
-   - the sampler verifies the final articulation-point set from the realized adjacency map before emitting answer/evidence.
+   - the sampler verifies the final articulation-point set from the realized adjacency map before emitting answer/annotation.
 8. Topology variation:
    - `topology_profile` values are `balanced`, `low_degree`, and `hub_heavy`,
    - topology profile affects how articulation-supporting substructures are assembled,
@@ -50,16 +50,16 @@
    - scene: `object_description`
    - task: `question_text`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-5. Modes: `answer_only`, `answer_and_evidence`
+   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
+5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":3}`
-7. Answer+evidence JSON shape: `{"evidence":[[180,220],[310,180],[430,260]],"answer":3}`
-8. Prompt-facing evidence uses pixel-space node-center points; node labels remain in `witness_symbolic`.
+7. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180],[430,260]],"answer":3}`
+8. Prompt-facing annotation uses pixel-space node-center points; node labels remain in `witness_symbolic`.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_set` of pixel centers for all articulation-point nodes.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the `point_set` of pixel centers for all articulation-point nodes.
 2. The witness set is unordered semantically; the implementation keeps the corresponding labels in `witness_symbolic` and canonicalizes label order internally for deterministic serialization.
-3. `answer_gt.value == len(evidence_gt.value)` by construction.
+3. `answer_gt.value == len(annotation_gt.value)` by construction.
 4. `scene_ir.entities` stores one node entity per rendered node with:
    - visible label,
    - articulation-point flag,
@@ -67,7 +67,7 @@
    - node center,
    - node bbox.
 5. `scene_ir.relations` stores one undirected edge relation per graph edge.
-6. `projected_evidence` includes:
+6. `projected_annotation` includes:
    - `point_set`
    - `pixel_point_set`
    - `pixel_bbox_set`
@@ -88,7 +88,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized adjacency map and articulation-point computation.
+2. Answers and annotation come from the same finalized adjacency map and articulation-point computation.
 3. Unique-answer policy: the sampler targets one explicit articulation-point count and rejects any graph whose realized articulation-point set does not match it exactly.
 4. Reject/resample conditions:
    - no feasible node-count support for the requested articulation-point count,

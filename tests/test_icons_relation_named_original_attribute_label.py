@@ -40,12 +40,12 @@ def test_icons_relation_named_original_attribute_contract_all_queries() -> None:
         assert out.query_id == query_id
         assert out.answer_gt.type == "option_letter"
         assert answer == "C"
-        assert out.evidence_gt.type == "keyed_bbox_map"
-        assert len(out.evidence_gt.value) == 2
-        assert set(out.evidence_gt.value) == {"original_icon", "right_icon"}
-        assert payload["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert payload["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert len(out.annotation_gt.value) == 2
+        assert set(out.annotation_gt.value) == {"original_icon", "right_icon"}
+        assert payload["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert payload["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
         style = payload["render_spec"]["style"]
         assert "candidate_label_stroke_rgb" in style
         assert style["text_legibility"]["required_role_count"] >= 2

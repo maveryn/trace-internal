@@ -2,7 +2,7 @@
 
 Use this checklist when upgrading charts, pages, and graph scenes with shared
 structured-information styling. The goal is broad non-semantic presentation
-variety without changing task semantics, evidence contracts, verifier payloads,
+variety without changing task semantics, annotation contracts, verifier payloads,
 or answer distributions.
 
 ## Scope
@@ -25,7 +25,7 @@ Charts, pages, and graph use the shared `information_scene_style` family under
 - Sample style before rendering and record it under `render_spec`.
 - Do not apply a broad post-render recolor, crop, rotate, or move pass.
 - Preserve semantic colors. If a task asks about color or uses color as
-  evidence, pass protected semantic RGB values into the style resolver and
+  annotation, pass protected semantic RGB values into the style resolver and
   filter unsafe palettes/treatments.
 - Separate canvas/background styling from semantic mark styling. A scene should
   explicitly decide these non-semantic layers:
@@ -41,10 +41,10 @@ Charts, pages, and graph use the shared `information_scene_style` family under
   high-contrast light variants. Dark themes need scene-specific approval.
 - Plot/panel backgrounds may be tinted independently of the canvas when exact
   mark/value reading remains clear. Keep sufficient contrast against marks,
-  text, grid lines, and evidence overlays.
+  text, grid lines, and annotation overlays.
 - Keep style choices independent of answer value, correct option, query id, and
   difficulty bucket.
-- Compute evidence bboxes/points after final layout and style-dependent stroke
+- Compute annotation bboxes/points after final layout and style-dependent stroke
   widths are resolved.
 - Use coordinate-preserving post-image noise with default apply probability
   `0.5` unless a task documents a narrower reason.
@@ -72,8 +72,12 @@ Charts, pages, and graph use the shared `information_scene_style` family under
 - Domain adapters should be thin. They map shared roles such as canvas, surface,
   panel, grid, axis, connector, label, header, callout, and accent colors onto
   domain-specific renderers.
+- Domain adapters should build a `VisualStyleRequest` through the shared
+  visual-style request helper before calling the concrete style resolver. The
+  request records the domain, scene, task group, style family, dark/colored
+  surface permissions, protected semantic colors, and required text roles.
 - Scene renderers still own semantic geometry, layout, entity tracing, visible
-  values, chart marks, graph topology, and evidence projection.
+  values, chart marks, graph topology, and annotation projection.
 
 ## Chart Scene Review Addendum
 
@@ -121,7 +125,7 @@ configuration:
 
 6. **Layout and spacing**
    - Add only bounded layout jitter or reserved-region placement that preserves
-     evidence bboxes and does not crop axes/legends.
+     annotation bboxes and does not crop axes/legends.
    - Recheck known chart-specific rendering issues from coverage notes, such as
      label overlap, tiny legends, overly thin flow bands, crowded value labels,
      and ambiguous highlight boxes.
@@ -150,7 +154,7 @@ Record enough metadata to audit the rendered scene:
   `0.5`, `0.25`, and `0.25`
 - protected semantic colors and contrast/separation checks
 - background metadata and post-image noise metadata
-- scene-specific final layout metadata, scene bbox, and evidence maps
+- scene-specific final layout metadata, scene bbox, and annotation maps
 
 The current metadata key is `render_spec.information_scene_style`. Graph
 node-link tasks also carry the same payload under
@@ -174,7 +178,7 @@ For each scene:
 6. Compile touched modules.
 7. Smoke-generate multiple seeds and verify:
    - style metadata is present in `render_spec`
-   - evidence remains inside the final canvas
+   - annotation remains inside the final canvas
    - semantic colors remain unchanged where required
    - canvas and plot/panel backgrounds both show meaningful variation when safe
    - style changes are visible but non-semantic
@@ -193,7 +197,7 @@ Example scene-review command:
 
 ```bash
 PYTHONPATH=. python scripts/run_task_review.py \
-  --tasks task_charts__single_series__value_predicate_count,task_pages__infographic__metric_arithmetic_value,task_graph__node_link__degree_predicate_count \
+  --tasks task_charts__single_series__threshold_value_count,task_pages__infographic__sum_named_metrics_value,task_graph__node_link__degree_predicate_count \
   --mode inspection \
   --out-root review/task-reviews \
   --seed 20260523 \

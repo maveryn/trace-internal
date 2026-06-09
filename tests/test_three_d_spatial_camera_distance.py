@@ -1,4 +1,4 @@
-"""Tests for the synthetic lettered 3D object camera-distance task."""
+"""Tests for the synthetic 3D object camera-distance option task."""
 
 from __future__ import annotations
 
@@ -19,13 +19,14 @@ from trace.tasks.three_d.spatial.camera_distance import (
     _sample_camera,
 )
 from trace.tasks.registry import list_default_task_ids
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
 
 
 @pytest.mark.parametrize("query_id", ["closest_to_camera", "farthest_from_camera"])
-def test_camera_distance_extremum_answer_and_evidence(query_id: str) -> None:
+def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -77,14 +78,20 @@ def test_camera_distance_extremum_answer_and_evidence(query_id: str) -> None:
     assert all(0.96 <= float(spec["dimension_scale"]) <= 1.20 for spec in context_specs)
     assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
     assert any(max(spec["dimensions_xyz"]) > 1.35 for spec in context_specs)
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
-        output.trace_payload["render_map"]["point_bboxes_px"][expected_label]
-    ]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == (
+        output.trace_payload["render_map"]["object_bboxes_px"][str(expected["object_id"])]
+    )
+    assert_option_panel_matches_candidates(
+        output,
+        point_specs,
+        answer_label=expected_label,
+        answer_object_id=str(expected["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
     assert set(output.trace_payload["render_map"]["context_object_bboxes_px"]) == {
         str(spec["object_id"]) for spec in context_specs
     }
-    assert output.image.size == (1180, 900)
 
 
 def test_camera_distance_task_registered_in_three_d_taxonomy() -> None:

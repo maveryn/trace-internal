@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
 from ..shared.logic_common import PuzzleLogicDefaults, resolve_logic_render_params
@@ -1048,11 +1048,11 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 "object_description_raven_strip",
                 "object_description_raven_card",
                 "object_description_raven_outline",
-                "evidence_hint_count_progression_matrix",
-                "evidence_hint_spatial_transform_matrix",
-                "evidence_hint_set_operation_matrix",
-                "evidence_hint_analogical_transform_matrix",
-                "evidence_hint_position_progression_matrix",
+                "annotation_hint_count_progression_matrix",
+                "annotation_hint_spatial_transform_matrix",
+                "annotation_hint_set_operation_matrix",
+                "annotation_hint_analogical_transform_matrix",
+                "annotation_hint_position_progression_matrix",
                 "json_example_count_progression_matrix",
                 "json_example_spatial_transform_matrix",
                 "json_example_set_operation_matrix",
@@ -1067,7 +1067,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
@@ -1077,12 +1077,12 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=None,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1092,17 +1092,17 @@ class _PuzzlesLogicRavenMatrixBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_panel_id = str(dataset["correct_option_panel_id"])
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.option_panel_bbox_map,
             [str(correct_option_panel_id)],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         trace_payload = {
             "scene_ir": {
@@ -1183,10 +1183,10 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
         complexity = build_puzzle_complexity(
@@ -1200,7 +1200,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

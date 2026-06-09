@@ -4,6 +4,8 @@ generation:
       single_board: 1.0
     query_id_weights:
       all_pieces_in_mill_count: 1.0
+      white_mill_completion_point_count: 1.0
+      black_mill_completion_point_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -23,6 +25,20 @@ generation:
     - 7
     - 8
     - 9
+    white_mill_completion_point_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    black_mill_completion_point_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
 rendering:
   shared:
     canvas_width: 1180
@@ -54,7 +70,17 @@ prompt:
       pieces placed on intersections
     mill_rule_text: A mill is three same-color pieces on one straight line. Count
       each piece only once even if it belongs to more than one mill.
-    evidence_hint_all_pieces_in_mill_count: set "evidence" to [x, y] pixel points
+    annotation_hint_all_pieces_in_mill_count: set "annotation" to [x, y] pixel points
       at the centers of every piece that belongs to at least one mill
+    annotation_hint_white_mill_completion_point_count: set "annotation" to [x, y]
+      pixel points at the centers of every empty point where placing one white piece
+      would complete a mill
+    annotation_hint_black_mill_completion_point_count: set "annotation" to [x, y]
+      pixel points at the centers of every empty point where placing one black piece
+      would complete a mill
     answer_hint_all_pieces_in_mill_count: set "answer" to the total number of pieces
       that belong to at least one mill
+    answer_hint_white_mill_completion_point_count: set "answer" to the number of
+      empty points where placing one white piece would complete a mill
+    answer_hint_black_mill_completion_point_count: set "answer" to the number of
+      empty points where placing one black piece would complete a mill

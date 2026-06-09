@@ -14,7 +14,7 @@
 4. Candidate cells: four labeled orthogonal neighbors of the marked tree
 5. Answer type: `integer`
 6. Answer range: `0..4`
-7. Evidence type: `bbox_set`
-8. Evidence target: marked tree followed by every legal labeled candidate cell; when the count is zero, the evidence contains only the marked tree
+7. Annotation type: `bbox_set`
+8. Annotation target: marked tree followed by every legal labeled candidate cell; when the count is zero, the annotation contains only the marked tree
 9. Scene variants: `tents_classic|tents_card|tents_blueprint`
 10. Render palettes: `garden|autumn|lake|violet|slate`

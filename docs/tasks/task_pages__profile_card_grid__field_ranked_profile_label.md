@@ -1,0 +1,25 @@
+# `task_pages__profile_card_grid__field_ranked_profile_label`
+
+## 1) Identity
+1. Domain: `pages`
+2. Task group: `document_lookup`
+3. Scene id: `profile_card_grid`
+4. Task id: `task_pages__profile_card_grid__field_ranked_profile_label`
+5. Objective: Find the profile name at a requested rank after sorting a named visible numeric field.
+
+## 2) Scene + Task Contract
+1. Supported `query_id` values: `nth_highest_field_profile_label`, `nth_lowest_field_profile_label`
+2. `answer_gt.type`: `string`
+3. `annotation_gt.type`: `keyed_bbox_map`
+4. Annotation witness policy: Role-keyed boxes for the target profile name, queried field label, and target numeric value.
+5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+
+## 3) Prompt Contract
+1. `prompt_bundle_id`: `pages_document_lookup_v0`
+2. Prompt templates come from `prompts/pages/document_lookup/`.
+3. Output modes: `answer_only` and `answer_and_annotation`.
+
+## 4) Determinism + Constraints
+1. Generation is deterministic for `instance_seed` plus params.
+2. Answers and annotation come from the same rendered trace payload.
+3. The generator constructs unique numeric values for the queried field and samples non-extremal ranks from the supported rank positions.

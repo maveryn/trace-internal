@@ -13,8 +13,8 @@
    column has the most or fewest target-shape icons.
 4. The answer is the one-based row or column number with the unique extreme.
 5. `answer_gt.type = integer`.
-6. `evidence_gt.type = bbox_set` over the target-shape icons in the selected
-   row or column. `projected_evidence` mirrors this as typed bbox-set evidence
+6. `annotation_gt.type = bbox_set` over the target-shape icons in the selected
+   row or column. `projected_annotation` mirrors this as typed bbox-set annotation
    with `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 
 ## Query IDs
@@ -31,7 +31,7 @@ The selected row or column has a unique target-shape count extreme by
 construction. For most-count queries, every other row or column has fewer
 target-shape icons. For fewest-count queries, every other row or column has
 more target-shape icons. The winning line contains at least one target icon so
-prompt-facing evidence is non-empty.
+prompt-facing annotation is non-empty.
 
 Fill style and color are rendered as non-semantic visual variation.
 

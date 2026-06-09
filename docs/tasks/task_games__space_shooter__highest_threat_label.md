@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `space_shooter`
-3. Source task group: `space_shooter`
-4. Query id: `highest_threat_label`
-5. Objective: Identify the labeled enemy ship closest to the bottom player baseline.
+2. Task group: `space_shooter`
+3. Scene id: `space_shooter`
+4. Public task id: `task_games__space_shooter__highest_threat_label`
+5. Supported `query_id` values: `highest_threat_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `bbox_set`
+8. Program schema: `label(arg_extreme(enemies, metric=threat_score(enemy), direction=highest)); scene=space_shooter; scope=highest_threat_label`
 
-## Answer and Evidence
-1. Answer type: `string`
-2. Evidence type: bbox_set with one box around the selected enemy ship.
-3. `highest_threat_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games Space-shooter playfield renderer.
-2. Prompt bundle: `games_space_shooter_v0`
-3. The sampled scene has a unique lowest enemy ship by construction.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Lane count, enemy count, unique threat placement, and visual style remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

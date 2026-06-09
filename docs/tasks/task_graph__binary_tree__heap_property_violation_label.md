@@ -10,13 +10,14 @@
 ## Query IDs
 1. `heap_property_violation_label`: find the child node whose key is smaller than its parent key.
 
-## Evidence
+## Annotation
 1. Answer type: `string`.
-2. Evidence type: `bbox_sequence`.
-3. Evidence boxes are ordered as the checked parent node followed by the violating child node.
+2. Annotation type: `keyed_bbox_map`.
+3. Annotation uses keys `parent` and `child`, with each value a `[x0,y0,x1,y1]` pixel box around that node.
 
 ## Generation Notes
 1. Instances render a complete numeric-key binary tree with exactly one min-heap violation.
 2. Default node count is `7..13`.
 3. The renderer is the shared top-down `binary_tree` scene.
 4. Title and node labels use the role-appropriate shared font pool and readable text styles with recorded contrast metadata.
+5. Binary-tree rendering includes sampled tree treatments, node shapes/colors, light optional non-answer context text outside the tree content, bounded content jitter before projection, and scene-derived connector styles.

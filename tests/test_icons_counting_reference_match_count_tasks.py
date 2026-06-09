@@ -7,9 +7,11 @@ from collections import Counter
 
 import pytest
 
+from trace.core.taxonomy import resolve_task_taxonomy
 from trace.core.seed import hash64
-from trace.tasks.icons.counting.reference_match_count import IconsReferenceCanvasReferencePredicateCountTask
+from trace.tasks.icons.counting.reference_match_count import IconsReferenceCanvasReferenceAttributeMatchCountTask
 from trace.tasks import TASK_REGISTRY
+from trace.tasks.registry import list_default_task_ids
 
 
 EXPECTED_ICON_CANVAS_TREATMENTS = {
@@ -25,39 +27,6 @@ EXPECTED_ICON_CANVAS_TREATMENTS = {
     "printout_panel",
 }
 
-EXPECTED_ICONS_TASKS = {
-    "task_icons__icon_cutout__partial_match_label",
-    "task_icons__icon_field__type_frequency_count",
-    "task_icons__reference_canvas__reference_predicate_count",
-    "task_icons__named_field__closer_to_reference_count",
-    "task_icons__named_field__shape_attribute_boolean_count",
-    "task_icons__named_field__shape_count",
-    "task_icons__named_field__shape_counterfactual_count",
-    "task_icons__named_field__shape_pair_arithmetic_count",
-    "task_icons__named_field__region_shape_count",
-    "task_icons__named_grid__line_condition_count",
-    "task_icons__named_grid__row_column_shape_count",
-    "task_icons__named_grid__row_column_shape_extreme_number",
-    "task_icons__named_ring__arc_shape_count",
-    "task_icons__venn_field__venn_region_shape_count",
-    "task_icons__paired_canvas__panel_set_relation_count",
-    "task_icons__pattern_grid__attribute_pattern_violation_index",
-    "task_icons__sequence_strip__rotation_sequence_violation_index",
-    "task_icons__two_anchor__between_anchors_count",
-    "task_icons__mirror_grid__mirror_symmetry_count",
-    "task_icons__paired_canvas__original_attribute_label",
-    "task_icons__named_path__path_neighbor_label",
-    "task_icons__named_strip__shape_run_length",
-    "task_icons__named_field__reference_distance_rank_label",
-    "task_icons__overlap_grid__occlusion_order_count",
-    "task_icons__paired_canvas__panel_movement_direction_count",
-    "task_icons__mirror_grid__reflection_match_label",
-    "task_icons__reference_canvas__anchor_position_count",
-    "task_icons__sequence_strip__missing_count_value",
-    "task_icons__paired_canvas__panel_attribute_change_count",
-    "task_icons__pair_grid__pair_relation_count",
-}
-
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
@@ -70,24 +39,24 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     ("task_cls", "query_id", "expected_scene_kind"),
     (
         (
-            IconsReferenceCanvasReferencePredicateCountTask,
+            IconsReferenceCanvasReferenceAttributeMatchCountTask,
             "match_type",
-            "icons_reference_predicate_count",
+            "icons_reference_attribute_match_count",
         ),
         (
-            IconsReferenceCanvasReferencePredicateCountTask,
+            IconsReferenceCanvasReferenceAttributeMatchCountTask,
             "match_color",
-            "icons_reference_predicate_count",
+            "icons_reference_attribute_match_count",
         ),
         (
-            IconsReferenceCanvasReferencePredicateCountTask,
+            IconsReferenceCanvasReferenceAttributeMatchCountTask,
             "match_rotation",
-            "icons_reference_predicate_count",
+            "icons_reference_attribute_match_count",
         ),
         (
-            IconsReferenceCanvasReferencePredicateCountTask,
+            IconsReferenceCanvasReferenceAttributeMatchCountTask,
             "match_type_color_rotation",
-            "icons_reference_predicate_count",
+            "icons_reference_attribute_match_count",
         ),
     ),
 )
@@ -117,12 +86,12 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
     assert trace["query_spec"]["params"]["query_id"] == query_id
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert len(trace["projected_annotation"]["pixel_point_set"]) == len(out.annotation_gt.value)
     assert execution["query_id_probabilities"] == trace["query_spec"]["params"]["query_id_probabilities"]
     render_style = trace["render_spec"]["style"]
     assert bool(render_style["icon_canvas_style"]["enabled"]) is True
@@ -170,19 +139,19 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
 
 
 def test_icons_counting_attribute_match_count_prompt_example_matches_contract() -> None:
-    task = IconsReferenceCanvasReferencePredicateCountTask()
+    task = IconsReferenceCanvasReferenceAttributeMatchCountTask()
     out = task.generate(24011, params={"query_id": "match_type", "object_count": 8, "target_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 2
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 2
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_counting_single_attribute_match_count_balances_variants_by_default() -> None:
-    task = IconsReferenceCanvasReferencePredicateCountTask()
+    task = IconsReferenceCanvasReferenceAttributeMatchCountTask()
     counts: Counter[str] = Counter()
     for index in range(30):
         out = task.generate(
@@ -196,14 +165,12 @@ def test_icons_counting_single_attribute_match_count_balances_variants_by_defaul
         "match_color",
         "match_rotation",
         "match_type_color_rotation",
-        "size_smaller",
-        "size_larger",
     }
     assert sum(counts.values()) == 30
 
 
 def test_icons_counting_multi_attribute_match_count_is_harder_than_type_for_same_counts() -> None:
-    task = IconsReferenceCanvasReferencePredicateCountTask()
+    task = IconsReferenceCanvasReferenceAttributeMatchCountTask()
     type_out = task.generate(
         24016,
         params={"query_id": "match_type", "object_count": 9, "target_count": 3},
@@ -219,4 +186,9 @@ def test_icons_counting_multi_attribute_match_count_is_harder_than_type_for_same
 
 def test_icons_registry_contains_only_active_icons_tasks() -> None:
     active_icons = {task_id for task_id in TASK_REGISTRY if task_id.startswith("task_icons__")}
-    assert active_icons == EXPECTED_ICONS_TASKS
+    expected_icons = {
+        task_id
+        for task_id in list_default_task_ids()
+        if resolve_task_taxonomy(task_id).domain == "icons"
+    }
+    assert active_icons == expected_icons

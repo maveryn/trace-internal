@@ -70,6 +70,6 @@ def test_physics_mechanics_spring_defaults_expose_scene_query_and_answer_support
 
     assert "identical hanging springs" in str(prompt["object_description_paired_springs"])
 
-    assert "query_extension" in str(prompt["evidence_hint_missing_extension"])
+    assert "query_extension" in str(prompt["annotation_hint_missing_extension"])
 
-    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["evidence_hint_missing_extension"])
+    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["annotation_hint_missing_extension"])

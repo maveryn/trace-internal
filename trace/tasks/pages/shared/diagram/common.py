@@ -56,11 +56,11 @@ def resolve_diagrams_axis_variant(
     return str(balanced), {str(key): float(value) for key, value in probabilities.items()}
 
 
-def projected_diagram_bbox_evidence(
+def projected_diagram_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     item_ids: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered diagram ids into prompt-facing `bbox_set` evidence."""
+    """Project ordered diagram ids into prompt-facing `bbox_set` annotation."""
 
     return {
         "bbox_set": [
@@ -71,11 +71,11 @@ def projected_diagram_bbox_evidence(
     }
 
 
-def projected_diagram_bbox_sequence_evidence(
+def projected_diagram_bbox_sequence_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     item_ids: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered diagram ids into prompt-facing `bbox_sequence` evidence."""
+    """Project ordered diagram ids into prompt-facing `bbox_sequence` annotation."""
 
     return {
         "type": "bbox_sequence",
@@ -258,8 +258,8 @@ def draw_diagram_text_in_box(
 
 __all__ = [
     "draw_diagram_text_in_box",
-    "projected_diagram_bbox_evidence",
-    "projected_diagram_bbox_sequence_evidence",
+    "projected_diagram_bbox_annotation",
+    "projected_diagram_bbox_sequence_annotation",
     "resolve_jittered_diagram_panel_geometry",
     "resolve_diagram_panel_geometry",
     "resolve_diagrams_int_param",

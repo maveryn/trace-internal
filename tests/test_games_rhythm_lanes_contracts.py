@@ -9,9 +9,10 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.rhythm.lane_tasks import (
-    GamesRhythmHitWindowCountTask,
-    GamesRhythmLaneChoiceLabelTask,
+    GamesRhythmEarliestHitLaneLabelTask,
+    GamesRhythmLaneColorHitCountTask,
     GamesRhythmLanesTask,
+    GamesRhythmMostHitsLaneLabelTask,
 )
 from tests.helpers import read_jsonl
 
@@ -20,7 +21,7 @@ from tests.helpers import read_jsonl
     ("task_cls", "params", "expected_query"),
     (
         (
-            GamesRhythmHitWindowCountTask,
+            GamesRhythmLaneColorHitCountTask,
             {
                 "query_id": "lane_color_hit_count",
                 "lane_count": 6,
@@ -32,7 +33,7 @@ from tests.helpers import read_jsonl
             "lane_color_hit_count",
         ),
         (
-            GamesRhythmLaneChoiceLabelTask,
+            GamesRhythmEarliestHitLaneLabelTask,
             {
                 "query_id": "earliest_hit_lane_label",
                 "lane_count": 7,
@@ -54,18 +55,18 @@ def test_games_rhythm_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == expected_query
     assert out.scene_id == "rhythm"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert len(out.evidence_gt.value) >= 1
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert len(out.annotation_gt.value) >= 1
 
 
 def test_games_rhythm_lane_color_hit_count_matches_trace() -> None:
-    out = GamesRhythmHitWindowCountTask().generate(
+    out = GamesRhythmLaneColorHitCountTask().generate(
         98410,
         params={
             "query_id": "lane_color_hit_count",
@@ -90,12 +91,12 @@ def test_games_rhythm_lane_color_hit_count_matches_trace() -> None:
     ]
 
     assert int(out.answer_gt.value) == len(expected) == 4
-    assert set(execution["evidence_entity_ids"]) == {str(note["note_id"]) for note in expected}
-    assert len(out.evidence_gt.value) == len(expected)
+    assert set(execution["annotation_entity_ids"]) == {str(note["note_id"]) for note in expected}
+    assert len(out.annotation_gt.value) == len(expected)
 
 
 def test_games_rhythm_most_hits_lane_label_matches_trace() -> None:
-    out = GamesRhythmLaneChoiceLabelTask().generate(
+    out = GamesRhythmMostHitsLaneLabelTask().generate(
         98420,
         params={
             "query_id": "most_hits_lane_label",
@@ -127,7 +128,7 @@ def test_games_rhythm_most_hits_lane_label_matches_trace() -> None:
 
     assert hit_counts.count(max(hit_counts)) == 1
     assert int(out.answer_gt.value) == expected_lane + 1
-    assert set(execution["evidence_entity_ids"]) == expected_ids
+    assert set(execution["annotation_entity_ids"]) == expected_ids
 
 
 def test_games_rhythm_build_smoke(tmp_path: Path) -> None:
@@ -138,8 +139,8 @@ def test_games_rhythm_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__rhythm__hit_window_count", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__rhythm__lane_choice_value", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__rhythm__lane_hit_count", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__rhythm__most_hits_lane_label", count=1, params={}),
         ],
         max_attempts_per_instance=512,
         workers=1,

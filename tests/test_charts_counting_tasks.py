@@ -71,25 +71,25 @@ def test_chart_counting_variants_match_contract() -> None:
 
         labels = [str(label) for label in execution["labels"]]
         values = [int(value) for value in execution["values"]]
-        evidence_points = [list(point) for point in out.evidence_gt.value]
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
+        annotation_points = [list(point) for point in out.annotation_gt.value]
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
         values_by_label = {str(label): int(value) for label, value in execution["values_by_label"].items()}
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "point_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "point_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        assert evidence_labels == sorted(evidence_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
+        assert annotation_labels == sorted(annotation_labels)
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         assert int(out.answer_gt.value) == _expected_count(str(query_id), values, execution)
-        assert len(evidence_labels) == int(out.answer_gt.value)
-        assert len(evidence_points) == int(out.answer_gt.value)
+        assert len(annotation_labels) == int(out.answer_gt.value)
+        assert len(annotation_points) == int(out.answer_gt.value)
         assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
@@ -99,17 +99,17 @@ def test_chart_counting_variants_match_contract() -> None:
 
         if str(query_id) == "threshold_count" and str(execution["comparison"]) == "greater_than":
             threshold = int(execution["threshold"])
-            assert all(int(values_by_label[label]) > int(threshold) for label in evidence_labels)
+            assert all(int(values_by_label[label]) > int(threshold) for label in annotation_labels)
         elif str(query_id) == "threshold_count" and str(execution["comparison"]) == "less_than":
             threshold = int(execution["threshold"])
-            assert all(int(values_by_label[label]) < int(threshold) for label in evidence_labels)
+            assert all(int(values_by_label[label]) < int(threshold) for label in annotation_labels)
         else:
             interval_min = int(execution["interval_min"])
             interval_max = int(execution["interval_max"])
             assert bool(execution["interval_inclusive"]) is True
             assert all(
                 int(interval_min) <= int(values_by_label[label]) <= int(interval_max)
-                for label in evidence_labels
+                for label in annotation_labels
             )
 
 
@@ -142,7 +142,7 @@ def test_chart_counting_supports_additional_scene_variants() -> None:
     assert "y-values" in prompts["lollipop"]
 
 
-def test_chart_counting_bar_evidence_uses_value_endpoint() -> None:
+def test_chart_counting_bar_annotation_uses_value_endpoint() -> None:
     task = ChartsCountingValueCountTask()
     cases = (
         ("bar", 9927),
@@ -168,7 +168,7 @@ def test_chart_counting_bar_evidence_uses_value_endpoint() -> None:
             str(entity["attrs"]["label"]): entity["attrs"]
             for entity in out.trace_payload["scene_ir"]["entities"]
         }
-        for label, point in out.trace_payload["projected_evidence"]["pixel_point_map"].items():
+        for label, point in out.trace_payload["projected_annotation"]["pixel_point_map"].items():
             bbox = [float(value) for value in entities_by_label[str(label)]["mark_bbox_px"]]
             point_x, point_y = [float(value) for value in point]
             if str(scene_variant) == "bar":
@@ -193,14 +193,14 @@ def test_chart_counting_excludes_pie_donut_and_radar_scene_variants() -> None:
 def test_chart_counting_prompt_examples_match_selected_variant() -> None:
     task = ChartsCountingValueCountTask()
     expected = {
-        "threshold_count": {"evidence": [[180, 260], [390, 180], [610, 320]], "answer": 3},
-        "in_interval": {"evidence": [[165, 310], [380, 250], [590, 285]], "answer": 3},
+        "threshold_count": {"annotation": [[180, 260], [390, 180], [610, 320]], "answer": 3},
+        "in_interval": {"annotation": [[165, 310], [380, 250], [590, 285]], "answer": 3},
     }
     for index, query_id in enumerate(expected, start=9930):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -211,7 +211,7 @@ def test_chart_counting_task_is_deterministic() -> None:
     out_b = task.generate(9941, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -235,7 +235,7 @@ def test_chart_counting_complexity_is_normalized_and_monotonic() -> None:
     assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
-def test_chart_counting_supports_zero_answer_with_empty_evidence() -> None:
+def test_chart_counting_supports_zero_answer_with_empty_annotation() -> None:
     task = ChartsCountingValueCountTask()
     zero_cases = (
         ("threshold_count", {"comparison": "greater_than"}),
@@ -254,7 +254,7 @@ def test_chart_counting_supports_zero_answer_with_empty_evidence() -> None:
             max_attempts=10,
         )
         assert int(out.answer_gt.value) == 0
-        assert list(out.evidence_gt.value) == []
+        assert list(out.annotation_gt.value) == []
 
 
 def test_chart_counting_supports_explicit_mark_count_20() -> None:

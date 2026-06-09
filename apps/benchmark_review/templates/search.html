@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <form class="inline-search wide" action="{{ app_path('/search') }}" method="get">
+    <input type="search" name="q" value="{{ q|default('') }}" placeholder="Search benchmarks, prompts, responses">
+    <button type="submit">Search</button>
+  </form>
+</section>
+
+<section class="sample-table">
+  {% for sample in samples %}
+    <a class="sample-row {{ sample.status }}" href="{{ app_path('/samples/' ~ sample.uid) }}">
+      <div class="sample-image">
+        {% if sample.image_exists %}
+          <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+        {% endif %}
+      </div>
+      <div class="cell prompt-cell">
+        <div class="cell-label">{{ sample.display }} #{{ sample.doc_id }}</div>
+        <p>{{ sample.prompt|excerpt(900) }}</p>
+      </div>
+      <div class="cell response-cell">
+        <div class="cell-label">Model Response</div>
+        <p>{{ sample.model_response|excerpt(900) }}</p>
+      </div>
+      <div class="cell answer-cell">
+        <div class="status-line">
+          <span class="status-pill {{ sample.status }}">{{ sample.status }}</span>
+          <span>score {{ sample.score|score }}</span>
+        </div>
+        <dl>
+          {% if sample.category %}
+          <dt>Category</dt>
+          <dd>{{ sample.category|excerpt(180) }}</dd>
+          {% endif %}
+          <dt>Ground truth</dt>
+          <dd>{{ sample.target_label|excerpt(180) }}</dd>
+          <dt>Extracted</dt>
+          <dd>{{ sample.extracted_answer|excerpt(180) }}</dd>
+        </dl>
+      </div>
+    </a>
+  {% else %}
+    <div class="empty-state">No search results.</div>
+  {% endfor %}
+</section>
+{% endblock %}

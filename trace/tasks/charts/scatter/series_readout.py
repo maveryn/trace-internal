@@ -28,7 +28,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
+from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from ...shared.text_rendering import load_font, temporary_default_font_family
 from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
@@ -111,8 +111,8 @@ class _Query:
     answer_type: str
     target_series_label: str
     target_point_id: str
-    evidence_point_ids: Tuple[str, ...]
-    evidence_x_label: str
+    annotation_point_ids: Tuple[str, ...]
+    annotation_x_label: str
     trace: Dict[str, Any]
 
 
@@ -161,7 +161,7 @@ class _Rendered:
     plot_bbox_px: List[float]
     point_bboxes: Dict[str, List[float]]
     value_label_bboxes: Dict[str, List[float]]
-    point_evidence_bboxes: Dict[str, List[float]]
+    point_annotation_bboxes: Dict[str, List[float]]
     x_label_bboxes: Dict[str, List[float]]
     legend_bboxes: Dict[str, List[float]]
 
@@ -177,7 +177,16 @@ def _bbox(values: Sequence[float]) -> List[float]:
 
 
 def _resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), _RENDER_DEFAULTS.get(str(key), int(fallback))))
+    return int(
+        resolve_render_int(
+            params,
+            _RENDER_DEFAULTS,
+            str(key),
+            int(fallback),
+            instance_seed=_render_style_seed(params),
+            namespace=TASK_ID,
+        )
+    )
 
 
 def _render_style_seed(params: Mapping[str, Any]) -> int:
@@ -429,8 +438,8 @@ def _build_dataset(
                 "target_point_id": "",
                 "target_x_label": "",
                 "target_y_value": "",
-                "evidence_point_ids": [],
-                "evidence_x_label": "",
+                "annotation_point_ids": [],
+                "annotation_x_label": "",
                 "answer": UNANSWERABLE_ANSWER,
                 "answer_type": "string",
                 "answerability": "unanswerable",
@@ -455,8 +464,8 @@ def _build_dataset(
                 answer_type="string",
                 target_series_label=str(missing_series),
                 target_point_id="",
-                evidence_point_ids=(),
-                evidence_x_label="",
+                annotation_point_ids=(),
+                annotation_x_label="",
                 trace=dict(trace),
             ),
         )
@@ -465,15 +474,15 @@ def _build_dataset(
         target_point = max(target_series.points, key=lambda point: (int(point.y_value), str(point.x_label)))
         answer: int | str = str(target_point.x_label)
         answer_type = "string"
-        evidence_point_ids = (str(target_point.point_id),)
-        evidence_x_label = str(target_point.x_label)
+        annotation_point_ids = (str(target_point.point_id),)
+        annotation_x_label = str(target_point.x_label)
         trace["extremum"] = "highest"
     elif str(query_id) == "series_lowest_x_label":
         target_point = min(target_series.points, key=lambda point: (int(point.y_value), str(point.x_label)))
         answer = str(target_point.x_label)
         answer_type = "string"
-        evidence_point_ids = (str(target_point.point_id),)
-        evidence_x_label = str(target_point.x_label)
+        annotation_point_ids = (str(target_point.point_id),)
+        annotation_x_label = str(target_point.x_label)
         trace["extremum"] = "lowest"
     else:
         target_point = target_series.points[int(selection // max(1, len(series_items))) % len(target_series.points)]
@@ -483,8 +492,8 @@ def _build_dataset(
         ]
         comparison_point = comparison_series.points[int(target_point.x_index)]
         answer_type = "integer"
-        evidence_point_ids = (str(target_point.point_id), str(comparison_point.point_id))
-        evidence_x_label = str(target_point.x_label)
+        annotation_point_ids = (str(target_point.point_id), str(comparison_point.point_id))
+        annotation_x_label = str(target_point.x_label)
         if str(query_id) == "series_pair_value_gap_at_x":
             answer = abs(int(target_point.y_value) - int(comparison_point.y_value))
             trace.update(
@@ -511,8 +520,8 @@ def _build_dataset(
             "target_point_id": str(target_point.point_id),
             "target_x_label": str(target_point.x_label),
             "target_y_value": int(target_point.y_value),
-            "evidence_point_ids": list(evidence_point_ids),
-            "evidence_x_label": str(evidence_x_label),
+            "annotation_point_ids": list(annotation_point_ids),
+            "annotation_x_label": str(annotation_x_label),
             "answer": answer,
             "answer_type": str(answer_type),
         }
@@ -529,8 +538,8 @@ def _build_dataset(
             answer_type=str(answer_type),
             target_series_label=str(target_series.label),
             target_point_id=str(target_point.point_id),
-            evidence_point_ids=tuple(str(point_id) for point_id in evidence_point_ids),
-            evidence_x_label=str(evidence_x_label),
+            annotation_point_ids=tuple(str(point_id) for point_id in annotation_point_ids),
+            annotation_x_label=str(annotation_x_label),
             trace=dict(trace),
         ),
     )
@@ -698,7 +707,7 @@ def _render_scatter_readout(
 
     point_bboxes: Dict[str, List[float]] = {}
     value_label_bboxes: Dict[str, List[float]] = {}
-    point_evidence_bboxes: Dict[str, List[float]] = {}
+    point_annotation_bboxes: Dict[str, List[float]] = {}
     label_offsets = [(-22.0, -18.0), (22.0, -18.0), (-22.0, 18.0), (22.0, 18.0), (0.0, -30.0)]
     for series_index, series_item in enumerate(dataset.series):
         for point in series_item.points:
@@ -723,7 +732,7 @@ def _render_scatter_readout(
                 anchor="mm",
             )
             value_label_bboxes[str(point.point_id)] = list(value_box)
-            point_evidence_bboxes[str(point.point_id)] = _bbox_union([point_box, value_box])
+            point_annotation_bboxes[str(point.point_id)] = _bbox_union([point_box, value_box])
             entities.append(
                 {
                     "entity_id": str(point.point_id),
@@ -786,7 +795,7 @@ def _render_scatter_readout(
         plot_bbox_px=_bbox(plot_bbox),
         point_bboxes=dict(point_bboxes),
         value_label_bboxes=dict(value_label_bboxes),
-        point_evidence_bboxes=dict(point_evidence_bboxes),
+        point_annotation_bboxes=dict(point_annotation_bboxes),
         x_label_bboxes=dict(x_label_bboxes),
         legend_bboxes=dict(legend_bboxes),
     )
@@ -806,7 +815,7 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         "object_description": str(prompt_defaults["object_description_scatter_series_readout"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-        "evidence_hint": str(prompt_defaults["evidence_hint"]),
+        "annotation_hint": str(prompt_defaults["annotation_hint"]),
         "answer_hint": str(answer_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
@@ -819,8 +828,8 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
     }
 
 
-def _build_keyed_evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> Dict[str, List[float]]:
-    """Return role-bound evidence boxes for the scatter readout query."""
+def _build_keyed_annotation_bboxes(dataset: _Dataset, rendered: _Rendered) -> Dict[str, List[float]]:
+    """Return role-bound annotation boxes for the scatter readout query."""
 
     if str(dataset.query.answer) == UNANSWERABLE_ANSWER:
         return {}
@@ -829,14 +838,14 @@ def _build_keyed_evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> Dict
     keyed: Dict[str, List[float]] = {}
     target_point_id = str(dataset.query.target_point_id)
     if target_point_id:
-        keyed["target_point_readout"] = list(rendered.point_evidence_bboxes[str(target_point_id)])
+        keyed["target_point_readout"] = list(rendered.point_annotation_bboxes[str(target_point_id)])
 
     comparison_point_id = str(trace.get("comparison_point_id", ""))
     if comparison_point_id:
-        keyed["comparison_point_readout"] = list(rendered.point_evidence_bboxes[str(comparison_point_id)])
+        keyed["comparison_point_readout"] = list(rendered.point_annotation_bboxes[str(comparison_point_id)])
 
-    if str(dataset.query.evidence_x_label):
-        keyed["x_axis_label"] = list(rendered.x_label_bboxes[str(dataset.query.evidence_x_label)])
+    if str(dataset.query.annotation_x_label):
+        keyed["x_axis_label"] = list(rendered.x_label_bboxes[str(dataset.query.annotation_x_label)])
     return dict(keyed)
 
 
@@ -886,7 +895,7 @@ class ChartsScatterSeriesReadoutTask:
                 "json_output_contract_answer_only",
                 "answer_hint_x_label",
                 "answer_hint_y_value",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example_x_label",
                 "json_example_y_value",
                 "json_example_answer_only_x_label",
@@ -903,7 +912,7 @@ class ChartsScatterSeriesReadoutTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
         )
@@ -911,12 +920,12 @@ class ChartsScatterSeriesReadoutTask:
 
         is_unanswerable = str(dataset.query.answer) == UNANSWERABLE_ANSWER
         target_point = None if is_unanswerable else _point_by_id(dataset.series, str(dataset.query.target_point_id))
-        evidence_point_ids = [str(point_id) for point_id in dataset.query.evidence_point_ids]
-        evidence_bboxes_by_role = _build_keyed_evidence_bboxes(dataset, rendered)
-        evidence_bboxes = [list(bbox) for bbox in evidence_bboxes_by_role.values()]
+        annotation_point_ids = [str(point_id) for point_id in dataset.query.annotation_point_ids]
+        annotation_bboxes_by_role = _build_keyed_annotation_bboxes(dataset, rendered)
+        annotation_bboxes = [list(bbox) for bbox in annotation_bboxes_by_role.values()]
         answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes_by_role))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes_by_role))
 
         total_points = sum(len(series.points) for series in dataset.series)
         complexity = build_chart_complexity(
@@ -939,17 +948,17 @@ class ChartsScatterSeriesReadoutTask:
             ]
             for series in dataset.series
         }
-        projected_evidence = {
+        projected_annotation = {
             "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(evidence_bboxes_by_role),
-            "pixel_keyed_bbox_map": dict(evidence_bboxes_by_role),
-            "bbox_set": list(evidence_bboxes),
+            "keyed_bbox_map": dict(annotation_bboxes_by_role),
+            "pixel_keyed_bbox_map": dict(annotation_bboxes_by_role),
+            "bbox_set": list(annotation_bboxes),
             "point_id": "" if target_point is None else str(target_point.point_id),
-            "point_ids": list(evidence_point_ids),
+            "point_ids": list(annotation_point_ids),
             "series_label": str(dataset.query.target_series_label),
             "x_label": "" if target_point is None else str(target_point.x_label),
             "y_value": None if target_point is None else int(target_point.y_value),
-            "evidence_x_label": str(dataset.query.evidence_x_label),
+            "annotation_x_label": str(dataset.query.annotation_x_label),
         }
         trace_payload = {
             "scene_ir": {
@@ -960,7 +969,7 @@ class ChartsScatterSeriesReadoutTask:
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
                     "target_point_id": "" if target_point is None else str(target_point.point_id),
-                    "evidence_point_ids": list(evidence_point_ids),
+                    "annotation_point_ids": list(annotation_point_ids),
                     "answerability": "unanswerable" if is_unanswerable else "answerable",
                 },
             },
@@ -1000,7 +1009,7 @@ class ChartsScatterSeriesReadoutTask:
                 "plot_bbox_px": list(rendered.plot_bbox_px),
                 "point_bboxes_px": dict(rendered.point_bboxes),
                 "value_label_bboxes_px": dict(rendered.value_label_bboxes),
-                "point_evidence_bboxes_px": dict(rendered.point_evidence_bboxes),
+                "point_annotation_bboxes_px": dict(rendered.point_annotation_bboxes),
                 "x_label_bboxes_px": dict(rendered.x_label_bboxes),
                 "legend_bboxes_px": dict(rendered.legend_bboxes),
             },
@@ -1028,7 +1037,7 @@ class ChartsScatterSeriesReadoutTask:
             "witness_symbolic": {
                 "type": "scatter_series_readout_witness",
                 "point_id": "" if target_point is None else str(target_point.point_id),
-                "point_ids": list(evidence_point_ids),
+                "point_ids": list(annotation_point_ids),
                 "series_label": str(dataset.query.target_series_label),
                 "x_label": "" if target_point is None else str(target_point.x_label),
                 "y_value": None if target_point is None else int(target_point.y_value),
@@ -1036,14 +1045,14 @@ class ChartsScatterSeriesReadoutTask:
                 "answerability": "unanswerable" if is_unanswerable else "answerable",
                 **({"absence_proof": dict(dataset.query.trace["absence_proof"])} if is_unanswerable else {}),
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1065,17 +1074,26 @@ class ChartsScatterSeriesExtremumXLabelTask(MergedChartQueryVariantTaskMixin, Ch
 
 
 @register_task
-class ChartsScatterSeriesPointLookupTask(MergedChartQueryVariantTaskMixin, ChartsScatterSeriesReadoutTask):
-    """Read a point by combining a series legend with one axis/value cue."""
+class ChartsScatterSeriesYAnchorOtherSeriesValueTask(MergedChartQueryVariantTaskMixin, ChartsScatterSeriesReadoutTask):
+    """Use one series value as an anchor to read another series value."""
 
-    task_id = "task_charts__scatter_readout__series_point_lookup_value"
-    allowed_query_ids = _LOOKUP_QUERY_IDS
+    task_id = "task_charts__scatter_readout__series_y_anchor_other_series_value"
+    allowed_query_ids = ("series_y_anchor_other_series_value",)
+
+
+@register_task
+class ChartsScatterSeriesPairValueGapAtXTask(MergedChartQueryVariantTaskMixin, ChartsScatterSeriesReadoutTask):
+    """Compute the value gap between two series at a named x-axis position."""
+
+    task_id = "task_charts__scatter_readout__series_pair_value_gap_at_x"
+    allowed_query_ids = ("series_pair_value_gap_at_x",)
 
 
 __all__ = [
     "ChartsScatterSeriesExtremumXLabelTask",
-    "ChartsScatterSeriesPointLookupTask",
+    "ChartsScatterSeriesPairValueGapAtXTask",
     "ChartsScatterSeriesReadoutTask",
+    "ChartsScatterSeriesYAnchorOtherSeriesValueTask",
     "SUPPORTED_SCENE_VARIANTS",
     "SUPPORTED_QUERY_IDS",
 ]

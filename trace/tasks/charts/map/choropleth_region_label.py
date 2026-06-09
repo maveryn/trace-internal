@@ -208,9 +208,9 @@ class ChartsMapChoroplethRegionCountTask:
                 "answer_hint_count",
                 "answer_hint_label",
                 "answer_hint_value",
-                "evidence_hint_region_count",
-                "evidence_hint_region_value",
-                "evidence_hint_marker",
+                "annotation_hint_region_count",
+                "annotation_hint_region_value",
+                "annotation_hint_marker",
                 "json_example_numeric_threshold_region_count",
                 "json_example_numeric_interval_region_count",
                 "json_example_categorical_region_count",
@@ -274,18 +274,18 @@ class ChartsMapChoroplethRegionCountTask:
             scene_key=str("marker_map" if bool(marker_task) else prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(
-                    prompt_defaults["evidence_hint_marker"]
+                "annotation_hint": str(
+                    prompt_defaults["annotation_hint_marker"]
                     if bool(marker_task)
                     else (
-                        prompt_defaults["evidence_hint_region_value"]
+                        prompt_defaults["annotation_hint_region_value"]
                         if _is_region_sum_value_query_id(str(query_id))
-                        else prompt_defaults["evidence_hint_region_count"]
+                        else prompt_defaults["annotation_hint_region_count"]
                     )
                 ),
                 "answer_hint": str(
@@ -313,38 +313,38 @@ class ChartsMapChoroplethRegionCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_region_ids = [str(region_id) for region_id in dataset["evidence_region_ids"]]
+        annotation_region_ids = [str(region_id) for region_id in dataset["annotation_region_ids"]]
         if bool(marker_task):
-            evidence_bboxes = [
+            annotation_bboxes = [
                 list(marker_group_bbox_map[str(region_id)])
-                for region_id in evidence_region_ids
+                for region_id in annotation_region_ids
             ]
         else:
-            evidence_bboxes = [list(rendered_scene.region_bbox_map[str(region_id)]) for region_id in evidence_region_ids]
-        projected_evidence = {
+            annotation_bboxes = [list(rendered_scene.region_bbox_map[str(region_id)]) for region_id in annotation_region_ids]
+        projected_annotation = {
             "type": "bbox_set",
-            "bbox_set": list(evidence_bboxes),
-            "pixel_bbox_set": list(evidence_bboxes),
+            "bbox_set": list(annotation_bboxes),
+            "pixel_bbox_set": list(annotation_bboxes),
             "bbox_map": (
-                {str(region_id): list(marker_group_bbox_map[str(region_id)]) for region_id in evidence_region_ids}
+                {str(region_id): list(marker_group_bbox_map[str(region_id)]) for region_id in annotation_region_ids}
                 if bool(marker_task)
-                else {str(region_id): list(rendered_scene.region_bbox_map[str(region_id)]) for region_id in evidence_region_ids}
+                else {str(region_id): list(rendered_scene.region_bbox_map[str(region_id)]) for region_id in annotation_region_ids}
             ),
-            "region_ids": list(evidence_region_ids),
-            **({"marker_bboxes_by_region": {str(region_id): list(marker_bboxes_by_region.get(str(region_id), [])) for region_id in evidence_region_ids}} if bool(marker_task) else {}),
+            "region_ids": list(annotation_region_ids),
+            **({"marker_bboxes_by_region": {str(region_id): list(marker_bboxes_by_region.get(str(region_id), [])) for region_id in annotation_region_ids}} if bool(marker_task) else {}),
         }
         answer_gt = TypedValue(
             type=str(dataset["answer_type"]),
             value=(str(dataset["answer_value"]) if str(dataset["answer_type"]) == "string" else int(dataset["answer_value"])),
         )
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
-        evidence_scan = normalize_int_with_bounds(len(evidence_region_ids), [1, 16])
+        annotation_scan = normalize_int_with_bounds(len(annotation_region_ids), [1, 16])
         region_scan = normalize_int_with_bounds(int(dataset["region_count"]), [14, 28])
         legend_scan = normalize_int_with_bounds(len(dataset["legend_bins"]), [3, 6])
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BY_VARIANT[str(query_id)])
-            + (0.10 * float(evidence_scan))
+            + (0.10 * float(annotation_scan))
             + (0.06 * float(legend_scan))
         )
         complexity = build_chart_complexity(
@@ -377,7 +377,7 @@ class ChartsMapChoroplethRegionCountTask:
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": str(dataset["answer_value"]) if str(dataset["answer_type"]) == "string" else int(dataset["answer_value"]),
-                    "evidence_region_ids": list(evidence_region_ids),
+                    "annotation_region_ids": list(annotation_region_ids),
                     "target_bin_indices": [int(value) for value in dataset["target_bin_indices"]],
                 },
             },
@@ -458,11 +458,11 @@ class ChartsMapChoroplethRegionCountTask:
                 "regions_by_id": {str(key): dict(value) for key, value in dict(dataset["regions_by_id"]).items()},
                 "answer_value": str(dataset["answer_value"]) if str(dataset["answer_type"]) == "string" else int(dataset["answer_value"]),
                 "answer_type": str(dataset["answer_type"]),
-                "evidence_region_ids": list(evidence_region_ids),
+                "annotation_region_ids": list(annotation_region_ids),
                 "target_bin_indices": [int(value) for value in dataset["target_bin_indices"]],
                 "nonmatching_bin_indices": [int(value) for value in dataset["nonmatching_bin_indices"]],
                 "threshold_direction": str(dataset["threshold_direction"]),
-                "evidence_semantics": str(query_id),
+                "annotation_semantics": str(query_id),
             },
             "witness_symbolic": {
                 "type": (
@@ -470,10 +470,10 @@ class ChartsMapChoroplethRegionCountTask:
                     if bool(marker_task)
                     else ("map_region_value_witness" if _is_region_sum_value_query_id(str(query_id)) else "map_region_count_witness")
                 ),
-                "candidate_region_ids": list(evidence_region_ids),
+                "candidate_region_ids": list(annotation_region_ids),
                 "answer_value": str(dataset["answer_value"]) if str(dataset["answer_type"]) == "string" else int(dataset["answer_value"]),
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": dict(post_noise_meta),
         }
@@ -482,7 +482,7 @@ class ChartsMapChoroplethRegionCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -493,24 +493,76 @@ class ChartsMapChoroplethRegionCountTask:
         )
 
 @register_task
-class ChartsMapLegendPredicateRegionCountTask(
+class ChartsMapNumericThresholdRegionCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsMapChoroplethRegionCountTask,
 ):
-    """Count map regions satisfying a numeric or categorical legend predicate."""
+    """Count map regions satisfying a one-bound numeric legend predicate."""
 
-    task_id = "task_charts__region_map__legend_predicate_region_count"
-    allowed_query_ids = _SUPPORTED_REGION_VALUE_QUERY_IDS + _SUPPORTED_REGION_CATEGORY_QUERY_IDS
+    task_id = "task_charts__region_map__numeric_threshold_region_count"
+    allowed_query_ids = ("numeric_threshold_region_count",)
 
 @register_task
-class ChartsMapContinentFilteredCountTask(
+class ChartsMapNumericIntervalRegionCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsMapChoroplethRegionCountTask,
 ):
-    """Count world-map regions after applying a continent filter."""
+    """Count map regions whose numeric value falls inside a legend interval."""
 
-    task_id = "task_charts__region_map__continent_filtered_count"
-    allowed_query_ids = _SUPPORTED_WORLD_FILTERED_QUERY_IDS
+    task_id = "task_charts__region_map__numeric_interval_region_count"
+    allowed_query_ids = ("numeric_interval_region_count",)
+
+@register_task
+class ChartsMapCategoricalRegionCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count map regions assigned to one categorical legend class."""
+
+    task_id = "task_charts__region_map__categorical_region_count"
+    allowed_query_ids = ("categorical_region_count",)
+
+@register_task
+class ChartsMapContinentRegionCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count visible world-map regions in a named continent group."""
+
+    task_id = "task_charts__region_map__continent_region_count"
+    allowed_query_ids = ("continent_region_count",)
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        fixed_params = dict(params)
+        fixed_params["scene_variant"] = "geographic_region_map"
+        fixed_params["geographic_map_variant"] = "world_countries"
+        return super().generate(int(instance_seed), params=fixed_params, max_attempts=int(max_attempts))
+
+@register_task
+class ChartsMapContinentCategoryRegionCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count world-map regions in a continent group and categorical legend class."""
+
+    task_id = "task_charts__region_map__continent_category_region_count"
+    allowed_query_ids = ("continent_category_region_count",)
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        fixed_params = dict(params)
+        fixed_params["scene_variant"] = "geographic_region_map"
+        fixed_params["geographic_map_variant"] = "world_countries"
+        return super().generate(int(instance_seed), params=fixed_params, max_attempts=int(max_attempts))
+
+@register_task
+class ChartsMapContinentThresholdRegionCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count world-map regions in a continent group satisfying a numeric threshold."""
+
+    task_id = "task_charts__region_map__continent_threshold_region_count"
+    allowed_query_ids = ("continent_threshold_region_count",)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         fixed_params = dict(params)
@@ -545,14 +597,44 @@ class ChartsMapGroupFilteredRegionValueTask(
         return super().generate(int(instance_seed), params=fixed_params, max_attempts=int(max_attempts))
 
 @register_task
-class ChartsMapAdjacentConditionCountTask(
+class ChartsMapAdjacentSameCategoryCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsMapChoroplethRegionCountTask,
 ):
-    """Count highlighted-region neighbors satisfying a legend condition."""
+    """Count highlighted-region neighbors sharing the selected region category."""
 
-    task_id = "task_charts__region_map__adjacent_condition_count"
-    allowed_query_ids = _SUPPORTED_ADJACENT_QUERY_IDS
+    task_id = "task_charts__region_map__adjacent_same_category_count"
+    allowed_query_ids = ("adjacent_same_category_count",)
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        fixed_params = dict(params)
+        fixed_params["scene_variant"] = "synthetic_region_map"
+        return super().generate(int(instance_seed), params=fixed_params, max_attempts=int(max_attempts))
+
+@register_task
+class ChartsMapAdjacentCategoryCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count highlighted-region neighbors in a named categorical legend class."""
+
+    task_id = "task_charts__region_map__adjacent_category_count"
+    allowed_query_ids = ("adjacent_category_count",)
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        fixed_params = dict(params)
+        fixed_params["scene_variant"] = "synthetic_region_map"
+        return super().generate(int(instance_seed), params=fixed_params, max_attempts=int(max_attempts))
+
+@register_task
+class ChartsMapAdjacentNumericThresholdCountTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsMapChoroplethRegionCountTask,
+):
+    """Count highlighted-region neighbors satisfying a numeric threshold."""
+
+    task_id = "task_charts__region_map__adjacent_numeric_threshold_count"
+    allowed_query_ids = ("adjacent_numeric_threshold_count",)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         fixed_params = dict(params)
@@ -582,12 +664,18 @@ class ChartsMapMarkerRegionExtremumLabelTask(
 
 __all__ = [
     'ChartsMapChoroplethRegionCountTask',
-    'ChartsMapAdjacentConditionCountTask',
-    'ChartsMapContinentFilteredCountTask',
+    'ChartsMapAdjacentCategoryCountTask',
+    'ChartsMapAdjacentNumericThresholdCountTask',
+    'ChartsMapAdjacentSameCategoryCountTask',
+    'ChartsMapCategoricalRegionCountTask',
+    'ChartsMapContinentCategoryRegionCountTask',
+    'ChartsMapContinentRegionCountTask',
+    'ChartsMapContinentThresholdRegionCountTask',
     'ChartsMapGroupFilteredRegionValueTask',
-    'ChartsMapLegendPredicateRegionCountTask',
     'ChartsMapMarkerRegionExtremumLabelTask',
     'ChartsMapMarkerRegionThresholdCountTask',
+    'ChartsMapNumericIntervalRegionCountTask',
+    'ChartsMapNumericThresholdRegionCountTask',
     'ChartsMapNamedRegionSetTotalValueTask',
     'SUPPORTED_ADJACENT_QUERY_IDS',
     'SUPPORTED_GROUP_FILTERED_VALUE_QUERY_IDS',

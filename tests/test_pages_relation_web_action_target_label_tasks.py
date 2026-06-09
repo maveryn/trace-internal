@@ -16,7 +16,7 @@ from trace.tasks.pages.relation.web_action_target_label import (
 from tests.helpers import extract_prompt_json_example, read_jsonl
 
 
-TASK_ID = "task_pages__web_action__web_action_target_label"
+TASK_ID = "task_pages__web_action__click_target_label"
 SCENE_KIND = "gui_web_action_target"
 
 
@@ -38,10 +38,10 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
         trace = out.trace_payload
         execution = trace["execution_trace"]
         target = dict(execution["target_control"])
-        evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
+        annotation_supports = [dict(record) for record in execution["annotation_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
@@ -64,30 +64,30 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
             expected_roles = ("instruction_banner", "field_key_guide", "form_section", "target_input")
         else:
             expected_roles = ("instruction_banner", "option_key_guide", "option_group", "target_option")
-        expected_evidence = {
-            expected_roles[0]: evidence_supports[0]["bbox_px"],
-            expected_roles[1]: evidence_supports[1]["bbox_px"],
-            expected_roles[2]: evidence_supports[2]["bbox_px"],
+        expected_annotation = {
+            expected_roles[0]: annotation_supports[0]["bbox_px"],
+            expected_roles[1]: annotation_supports[1]["bbox_px"],
+            expected_roles[2]: annotation_supports[2]["bbox_px"],
             expected_roles[3]: target["bbox_px"],
         }
-        assert out.evidence_gt.value == expected_evidence
-        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert set(out.evidence_gt.value) == set(expected_roles)
-        assert execution["evidence_role_support_ids"] == {
+        assert out.annotation_gt.value == expected_annotation
+        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert set(out.annotation_gt.value) == set(expected_roles)
+        assert execution["annotation_role_support_ids"] == {
             expected_roles[0]: str(execution["instruction_support_id"]),
             expected_roles[1]: str(execution["guide_support_id"]),
             expected_roles[2]: str(target["support_id"]),
             expected_roles[3]: str(target["control_id"]),
         }
-        evidence_support_kinds = [record["support_kind"] for record in evidence_supports]
-        assert evidence_support_kinds[0] == "instruction_banner"
-        assert evidence_support_kinds[1] in {"action_guide_card", "field_guide_card", "option_guide_card"}
-        assert evidence_support_kinds[2] == str(target["support_kind"])
-        assert str(evidence_supports[1]["support_id"]) == str(execution["guide_support_id"])
-        assert str(evidence_supports[1]["cue_label"]) == str(execution["instruction_cue_label"])
-        assert str(evidence_supports[1]["code_label"]) == str(execution["instruction_code_label"])
-        assert str(evidence_supports[2]["support_id"]) == str(target["support_id"])
+        annotation_support_kinds = [record["support_kind"] for record in annotation_supports]
+        assert annotation_support_kinds[0] == "instruction_banner"
+        assert annotation_support_kinds[1] in {"action_guide_card", "field_guide_card", "option_guide_card"}
+        assert annotation_support_kinds[2] == str(target["support_kind"])
+        assert str(annotation_supports[1]["support_id"]) == str(execution["guide_support_id"])
+        assert str(annotation_supports[1]["cue_label"]) == str(execution["instruction_cue_label"])
+        assert str(annotation_supports[1]["code_label"]) == str(execution["instruction_code_label"])
+        assert str(annotation_supports[2]["support_id"]) == str(target["support_id"])
 
         if query_id == "click_target_label":
             assert str(target["role"]) == "web_button"
@@ -110,8 +110,8 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value.values() for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value.values() for coord in (box[1], box[3]))
+        assert all(0.0 <= float(coord) <= 1280.0 for box in out.annotation_gt.value.values() for coord in (box[0], box[2]))
+        assert all(0.0 <= float(coord) <= 800.0 for box in out.annotation_gt.value.values() for coord in (box[1], box[3]))
 
 
 def test_gui_relation_web_action_target_prompt_examples_match_option_contract() -> None:
@@ -123,8 +123,8 @@ def test_gui_relation_web_action_target_prompt_examples_match_option_contract() 
         "select_option_label": ("option_key_guide", "option_group", "target_option"),
     }
     guide_role, context_role, target_role = expected_roles_by_query[str(out.query_id)]
-    assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": {
+    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
+        "annotation": {
             "instruction_banner": [80, 150, 1200, 210],
             guide_role: [210, 222, 430, 278],
             context_role: [92, 310, 590, 430],
@@ -181,7 +181,7 @@ def test_gui_relation_web_action_target_deterministic() -> None:
     out_a = task.generate(99400, params=params, max_attempts=20)
     out_b = task.generate(99400, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()

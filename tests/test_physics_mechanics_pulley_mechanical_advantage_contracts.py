@@ -15,7 +15,7 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count"),
+    ("params", "expected_answer", "expected_annotation_count"),
     (
         (
             {
@@ -44,7 +44,7 @@ from tests.helpers import read_jsonl
 def test_physics_mechanics_pulley_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
-    expected_evidence_count: int | None,
+    expected_annotation_count: int | None,
 ) -> None:
     out = PhysicsMechanicsPulleyMechanicalAdvantageTask().generate(39001, params=params, max_attempts=40)
     trace = out.trace_payload
@@ -55,7 +55,7 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_bbox_map"
 
     assert out.query_id == "force_relation"
 
@@ -73,18 +73,18 @@ def test_physics_mechanics_pulley_emits_expected_contract(
         "load_force_from_effort",
     }
     expected_count = (
-        int(expected_evidence_count)
-        if expected_evidence_count is not None
+        int(expected_annotation_count)
+        if expected_annotation_count is not None
         else int(execution["support_segment_count"]) + 6
     )
 
-    assert len(out.evidence_gt.value) == int(expected_count)
+    assert len(out.annotation_gt.value) == int(expected_count)
 
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
-    assert trace["render_map"]["evidence_bbox_map_px"] == out.evidence_gt.value
-    assert set(out.evidence_gt.value) == {
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_bbox_map_px"] == out.annotation_gt.value
+    assert set(out.annotation_gt.value) == {
         *(f"support_{index}" for index in range(1, int(execution["support_segment_count"]) + 1)),
         "known_force",
         "target_force",
@@ -133,7 +133,7 @@ def test_physics_mechanics_pulley_is_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 

@@ -57,7 +57,7 @@ class AdjacencyGraphSample:
 
 @dataclass(frozen=True)
 class AdjacencyRepresentationRender:
-    """Rendered adjacency representation and pixel evidence anchors."""
+    """Rendered adjacency representation and pixel annotation anchors."""
 
     image: Image.Image
     representation_variant: str

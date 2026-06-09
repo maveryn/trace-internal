@@ -30,6 +30,8 @@ def test_games_space_shooter_defaults_present() -> None:
     assert list(generation["lane_count_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["enemy_count_support"]) == [10, 11, 12, 13, 14, 15, 16]
     assert list(generation["clear_shot_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["clear_shot_score_enemy_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["clear_shot_score_value_support"]) == [1, 2, 3, 5, 10]
     assert list(generation["projectile_intercept_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["safe_lane_count_support"]) == [1, 2, 3, 4, 5]
     assert int(rendering["canvas_width"]) == 1060
@@ -44,4 +46,5 @@ def test_games_space_shooter_defaults_present() -> None:
     }
     assert str(prompt["bundle_id"]) == "games_space_shooter_v0"
     assert "bottom lane pads" in str(prompt["space_shooter_lane_rule_text"]).lower()
-    assert "bounding boxes" in str(prompt["evidence_hint_safe_lane_count"])
+    assert "total score" in str(prompt["answer_hint_clear_shot_score_value"]).lower()
+    assert "bounding boxes" in str(prompt["annotation_hint_safe_lane_count"])

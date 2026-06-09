@@ -51,9 +51,12 @@ def main() -> int:
         print("Install requirements.txt before running the review app.", file=sys.stderr)
         return 2
 
+    repo_root = Path(__file__).resolve().parents[1]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
     from trace.review_app.server import create_app
 
-    repo_root = Path(__file__).resolve().parents[1]
     feedback_db = Path(args.feedback_db).resolve() if str(args.feedback_db).strip() else None
     app = create_app(
         review_root=Path(args.review_root).resolve(),

@@ -12,14 +12,20 @@ from trace.tasks.charts.error_interval.interval_chart import (
     REFERENCE_COUNT_QUERY_IDS,
     RELATION_LABEL_QUERY_IDS,
     SUPPORTED_SCENE_VARIANTS,
-    ChartsErrorIntervalReferenceCountTask,
+    ChartsErrorIntervalReferenceContainmentCountTask,
+    ChartsErrorIntervalReferenceExclusionSideCountTask,
     ChartsErrorIntervalRelationLabelTask,
 )
 from trace.tasks.registry import list_default_task_ids
 
 
 TASK_CASES = (
-    (ChartsErrorIntervalReferenceCountTask, REFERENCE_COUNT_QUERY_IDS, "integer"),
+    (ChartsErrorIntervalReferenceContainmentCountTask, ("contains_reference_count",), "integer"),
+    (
+        ChartsErrorIntervalReferenceExclusionSideCountTask,
+        ("entirely_above_reference_count", "entirely_below_reference_count"),
+        "integer",
+    ),
     (ChartsErrorIntervalRelationLabelTask, RELATION_LABEL_QUERY_IDS, "string"),
 )
 
@@ -68,8 +74,8 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
         assert out.query_id == query_id
         assert str(execution["query_id"]) == query_id
         assert out.answer_gt.type == answer_type
-        assert out.evidence_gt.type == "bbox_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["question_format"]) == "error_interval"
         assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -78,12 +84,12 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
         expected = _expected_answer(execution, query_id)
         assert out.answer_gt.value == expected
         assert execution["answer_value"] == expected
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
-        evidence_item_ids = [str(value) for value in trace["projected_evidence"]["item_ids"]]
-        expected_boxes = [render_map["interval_bboxes_px"][item_id] for item_id in evidence_item_ids]
-        assert out.evidence_gt.value == expected_boxes
-        for bbox in out.evidence_gt.value:
+        annotation_item_ids = [str(value) for value in trace["projected_annotation"]["item_ids"]]
+        expected_boxes = [render_map["interval_bboxes_px"][item_id] for item_id in annotation_item_ids]
+        assert out.annotation_gt.value == expected_boxes
+        for bbox in out.annotation_gt.value:
             _assert_bbox_inside_canvas(
                 [float(value) for value in bbox],
                 width=int(render["canvas_width"]),
@@ -91,10 +97,10 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
             )
 
         if query_id in REFERENCE_COUNT_QUERY_IDS:
-            assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+            assert int(out.answer_gt.value) == len(out.annotation_gt.value)
             assert 1 <= int(out.answer_gt.value) <= 5
         else:
-            assert len(out.evidence_gt.value) == 1
+            assert len(out.annotation_gt.value) == 1
 
         complexity = out.complexity.to_dict()
         assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -108,15 +114,15 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
 def test_charts_error_interval_prompt_examples_match_contract() -> None:
     for task_cls, _query_ids, answer_type in TASK_CASES:
         out = task_cls().generate(118000 + len(task_cls.task_id), params={}, max_attempts=60)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         if answer_type == "integer":
-            assert isinstance(answer_and_evidence["answer"], int)
+            assert isinstance(answer_and_annotation["answer"], int)
             assert isinstance(answer_only["answer"], int)
         else:
-            assert isinstance(answer_and_evidence["answer"], str)
+            assert isinstance(answer_and_annotation["answer"], str)
             assert isinstance(answer_only["answer"], str)
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_charts_error_interval_balanced_sampling_covers_scene_axis() -> None:
@@ -124,7 +130,7 @@ def test_charts_error_interval_balanced_sampling_covers_scene_axis() -> None:
     queries: Counter[str] = Counter()
 
     for index in range(64):
-        out = ChartsErrorIntervalReferenceCountTask().generate(
+        out = ChartsErrorIntervalReferenceContainmentCountTask().generate(
             hash64(119000, "charts_error_interval", index),
             params={},
             max_attempts=60,
@@ -133,7 +139,7 @@ def test_charts_error_interval_balanced_sampling_covers_scene_axis() -> None:
         queries[str(out.query_id)] += 1
 
     assert set(scenes) == set(SUPPORTED_SCENE_VARIANTS)
-    assert set(queries) == set(REFERENCE_COUNT_QUERY_IDS)
+    assert set(queries) == {"contains_reference_count"}
 
 
 def test_charts_error_interval_is_deterministic() -> None:
@@ -143,6 +149,6 @@ def test_charts_error_interval_is_deterministic() -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.complexity.to_dict() == out_b.complexity.to_dict()

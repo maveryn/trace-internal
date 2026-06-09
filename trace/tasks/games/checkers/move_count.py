@@ -60,6 +60,18 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "legal_move_count",
     "capture_move_count",
     "max_capture_chain_length",
+    "piece_with_legal_move_count",
+    "piece_with_capture_move_count",
+    "red_piece_count",
+    "black_piece_count",
+    "red_edge_piece_count",
+    "black_edge_piece_count",
+)
+PIECE_STATE_QUERY_IDS: Tuple[str, ...] = (
+    "red_piece_count",
+    "black_piece_count",
+    "red_edge_piece_count",
+    "black_edge_piece_count",
 )
 
 
@@ -70,6 +82,9 @@ class _TaskDefaults:
     legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     capture_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     max_capture_chain_length_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    piece_with_legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    piece_with_capture_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    piece_state_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     midgame_min_occupied_count: int = 8
     midgame_max_occupied_count: int = 12
     crowded_min_occupied_count: int = 13
@@ -114,9 +129,9 @@ class _SceneEvaluation:
     answer: int
     legal_moves: Tuple[CheckersMove, ...]
     capture_moves: Tuple[CheckersMove, ...]
-    evidence_coords: Tuple[Coord, ...]
-    evidence_entity_ids: Tuple[str, ...]
-    evidence_kind: str = "cell"
+    annotation_coords: Tuple[Coord, ...]
+    annotation_entity_ids: Tuple[str, ...]
+    annotation_kind: str = "cell"
     marked_coord: Coord | None = None
     max_capture_chains: Tuple[CheckersCaptureChain, ...] = ()
     selected_capture_chain: CheckersCaptureChain | None = None
@@ -149,13 +164,19 @@ def _target_support_key(query_id: str) -> str:
         "legal_move_count": "legal_move_count_support",
         "capture_move_count": "capture_move_count_support",
         "max_capture_chain_length": "max_capture_chain_length_support",
+        "piece_with_legal_move_count": "piece_with_legal_move_count_support",
+        "piece_with_capture_move_count": "piece_with_capture_move_count_support",
+        "red_piece_count": "piece_state_count_support",
+        "black_piece_count": "piece_state_count_support",
+        "red_edge_piece_count": "piece_state_count_support",
+        "black_edge_piece_count": "piece_state_count_support",
     }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -280,8 +301,8 @@ def _resolve_query_id(
     """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -516,6 +537,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Checkers
         ),
         layout_jitter_meta=layout_jitter,
         font_family=str(font_family),
+        instance_seed=int(instance_seed),
     )
 
 
@@ -539,6 +561,59 @@ def _scene_occupied_range(scene_variant: str) -> Tuple[int, int]:
     if str(scene_variant) == "crowded_board":
         return (int(_DEFAULTS.crowded_min_occupied_count), int(_DEFAULTS.crowded_max_occupied_count))
     return (int(_DEFAULTS.midgame_min_occupied_count), int(_DEFAULTS.midgame_max_occupied_count))
+
+
+def _piece_state_player(query_id: str) -> int:
+    """Return the checker color counted by one piece-state query."""
+
+    query = str(query_id)
+    if query in {"red_piece_count", "red_edge_piece_count"}:
+        return int(RED)
+    if query in {"black_piece_count", "black_edge_piece_count"}:
+        return int(BLACK)
+    raise ValueError(f"unsupported Checkers piece-state query_id: {query}")
+
+
+def _is_edge_coord(coord: Coord) -> bool:
+    """Return true when a playable coordinate lies on the board perimeter."""
+
+    row, col = int(coord[0]), int(coord[1])
+    return row in {0, BOARD_SIZE - 1} or col in {0, BOARD_SIZE - 1}
+
+
+def _piece_state_candidate_coords(query_id: str) -> Tuple[Coord, ...]:
+    """Return legal ordinary-piece coordinates that could satisfy one piece-state query."""
+
+    player = _piece_state_player(str(query_id))
+    coords = [
+        coord
+        for coord in playable_coords()
+        if allowed_non_king_row(int(player), int(coord[0]))
+    ]
+    if str(query_id) in {"red_edge_piece_count", "black_edge_piece_count"}:
+        coords = [coord for coord in coords if _is_edge_coord(coord)]
+    return tuple(coords)
+
+
+def _matches_piece_state_query(board: Sequence[Sequence[int]], coord: Coord, *, query_id: str) -> bool:
+    """Return true when the piece at one coordinate satisfies a piece-state query."""
+
+    row, col = int(coord[0]), int(coord[1])
+    if int(board[row][col]) != _piece_state_player(str(query_id)):
+        return False
+    if str(query_id) in {"red_edge_piece_count", "black_edge_piece_count"}:
+        return _is_edge_coord((row, col))
+    return True
+
+
+def _piece_state_target_coords(board: Sequence[Sequence[int]], *, query_id: str) -> Tuple[Coord, ...]:
+    """Return target piece coordinates for one piece-state query."""
+
+    return tuple(
+        coord
+        for coord in playable_coords()
+        if _matches_piece_state_query(board, coord, query_id=str(query_id))
+    )
 
 
 def _quiet_slots(player: int) -> Tuple[Tuple[Coord, Coord], ...]:
@@ -623,6 +698,20 @@ def _base_king_chain_board(*, rng, current_player: int, target_answer: int) -> T
     return freeze_board(mutable), marked_coord
 
 
+def _base_piece_state_board(*, rng, query_id: str, target_answer: int) -> Board:
+    """Construct a sparse board with an exact piece-state answer."""
+
+    candidates = list(_piece_state_candidate_coords(str(query_id)))
+    if int(target_answer) > len(candidates):
+        raise ValueError(f"piece-state target {target_answer} exceeds candidate count for {query_id}")
+    selected = set(rng.sample(candidates, k=int(target_answer)))
+    mutable = [list(int(cell) for cell in row) for row in empty_board()]
+    player = _piece_state_player(str(query_id))
+    for row, col in selected:
+        mutable[int(row)][int(col)] = int(player)
+    return freeze_board(mutable)
+
+
 def _evaluate_board(
     *,
     board: Board,
@@ -634,6 +723,18 @@ def _evaluate_board(
 
     legal_moves = tuple(enumerate_legal_moves(board, int(current_player)))
     capture_moves = tuple(move for move in legal_moves if move.captured is not None)
+    if str(query_id) in PIECE_STATE_QUERY_IDS:
+        target_coords = _piece_state_target_coords(board, query_id=str(query_id))
+        return _SceneEvaluation(
+            answer=int(len(target_coords)),
+            legal_moves=legal_moves,
+            capture_moves=capture_moves,
+            annotation_coords=target_coords,
+            annotation_entity_ids=tuple(
+                piece_to_entity_id(coord, player=_piece_state_player(str(query_id))) for coord in target_coords
+            ),
+            annotation_kind="piece_point",
+        )
     if str(query_id) == "max_capture_chain_length":
         if marked_coord is None:
             return None
@@ -648,31 +749,42 @@ def _evaluate_board(
         if len(max_chains) != 1:
             return None
         selected = max_chains[0]
-        evidence_coords = tuple(selected.captured)
+        annotation_coords = tuple(selected.captured)
         return _SceneEvaluation(
             answer=int(max_length),
             legal_moves=legal_moves,
             capture_moves=capture_moves,
-            evidence_coords=evidence_coords,
-            evidence_entity_ids=tuple(
-                piece_to_entity_id(coord, player=opponent(int(current_player))) for coord in evidence_coords
+            annotation_coords=annotation_coords,
+            annotation_entity_ids=tuple(
+                piece_to_entity_id(coord, player=opponent(int(current_player))) for coord in annotation_coords
             ),
-            evidence_kind="piece",
+            annotation_kind="piece",
             marked_coord=marked,
             max_capture_chains=max_chains,
             selected_capture_chain=selected,
+        )
+    if str(query_id) in {"piece_with_legal_move_count", "piece_with_capture_move_count"}:
+        relevant_moves = legal_moves if str(query_id) == "piece_with_legal_move_count" else capture_moves
+        source_coords = tuple(sorted({(int(move.origin[0]), int(move.origin[1])) for move in relevant_moves}))
+        return _SceneEvaluation(
+            answer=int(len(source_coords)),
+            legal_moves=legal_moves,
+            capture_moves=capture_moves,
+            annotation_coords=source_coords,
+            annotation_entity_ids=tuple(piece_to_entity_id(coord, player=int(current_player)) for coord in source_coords),
+            annotation_kind="piece_point",
         )
     relevant_moves = legal_moves if str(query_id) == "legal_move_count" else capture_moves
     destinations = tuple((int(move.landing[0]), int(move.landing[1])) for move in relevant_moves)
     if len(set(destinations)) != len(destinations):
         return None
-    evidence_coords = tuple(sorted(set(destinations)))
+    annotation_coords = tuple(sorted(set(destinations)))
     return _SceneEvaluation(
         answer=int(len(relevant_moves)),
         legal_moves=legal_moves,
         capture_moves=capture_moves,
-        evidence_coords=evidence_coords,
-        evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
+        annotation_coords=annotation_coords,
+        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
     )
 
 
@@ -688,27 +800,42 @@ def _base_board_for_axes(*, rng, current_player: int, query_id: str, target_answ
         )
         return board, "marked_king_capture_chain", marked_coord
 
-    if str(query_id) == "legal_move_count":
+    if str(query_id) in PIECE_STATE_QUERY_IDS:
+        return (
+            _base_piece_state_board(
+                rng=rng,
+                query_id=str(query_id),
+                target_answer=int(target_answer),
+            ),
+            "piece_state_count_templates",
+            None,
+        )
+
+    if str(query_id) in {"legal_move_count", "piece_with_legal_move_count"}:
         if int(target_answer) > 0:
             selected_slots = list(rng.sample(_quiet_slots(int(current_player)), k=int(target_answer)))
             for origin, _landing in selected_slots:
                 mutable[int(origin[0])][int(origin[1])] = int(current_player)
-            return freeze_board(mutable), "quiet_edge_templates", None
-        return freeze_board(mutable), "empty_zero_legal", None
+            mode = "piece_quiet_edge_templates" if str(query_id) == "piece_with_legal_move_count" else "quiet_edge_templates"
+            return freeze_board(mutable), mode, None
+        mode = "empty_zero_piece_legal" if str(query_id) == "piece_with_legal_move_count" else "empty_zero_legal"
+        return freeze_board(mutable), mode, None
 
     if int(target_answer) > 0:
         selected_slots = list(rng.sample(_capture_slots(int(current_player)), k=int(target_answer)))
         for origin, captured, _landing in selected_slots:
             mutable[int(origin[0])][int(origin[1])] = int(current_player)
             mutable[int(captured[0])][int(captured[1])] = int(opponent(int(current_player)))
-        return freeze_board(mutable), "capture_edge_templates", None
+        mode = "piece_capture_edge_templates" if str(query_id) == "piece_with_capture_move_count" else "capture_edge_templates"
+        return freeze_board(mutable), mode, None
 
     quiet_slots = _quiet_slots(int(current_player))
     quiet_count = min(len(quiet_slots), max(1, int(rng.randint(2, 4))))
     selected_slots = list(rng.sample(quiet_slots, k=int(quiet_count)))
     for origin, _landing in selected_slots:
         mutable[int(origin[0])][int(origin[1])] = int(current_player)
-    return freeze_board(mutable), "quiet_zero_capture", None
+    mode = "quiet_zero_piece_capture" if str(query_id) == "piece_with_capture_move_count" else "quiet_zero_capture"
+    return freeze_board(mutable), mode, None
 
 
 def _try_add_fillers(
@@ -806,10 +933,14 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
 def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for the active Checkers query id."""
 
-    answer_value = 4 if str(query_id) == "max_capture_chain_length" else 2 if str(query_id) == "capture_move_count" else 3
-    evidence_value = [[132, 188, 196, 252], [204, 188, 268, 252]]
+    answer_value = 4 if str(query_id) == "max_capture_chain_length" else 2 if str(query_id) in {"capture_move_count", "piece_with_capture_move_count"} else 3
+    annotation_value = (
+        [[164.0, 220.0], [236.0, 292.0]]
+        if str(query_id) in {"piece_with_legal_move_count", "piece_with_capture_move_count", *PIECE_STATE_QUERY_IDS}
+        else [[132, 188, 196, 252], [204, 188, 268, 252]]
+    )
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -882,15 +1013,26 @@ class GamesCheckersMoveCountTask:
             king_coords=() if sampled_scene.evaluation.marked_coord is None else (sampled_scene.evaluation.marked_coord,),
             panel_style=panel_style,
         )
-        if str(sampled_scene.evaluation.evidence_kind) == "piece":
-            evidence_bboxes = [
+        annotation_points: list[list[float]] = []
+        if str(sampled_scene.evaluation.annotation_kind) == "piece_point":
+            annotation_bboxes = []
+            for entity_id in sampled_scene.evaluation.annotation_entity_ids:
+                bbox = rendered_scene.render_map["piece_bboxes_px"][str(entity_id)]
+                annotation_points.append(
+                    [
+                        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+                        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+                    ]
+                )
+        elif str(sampled_scene.evaluation.annotation_kind) == "piece":
+            annotation_bboxes = [
                 list(rendered_scene.render_map["piece_bboxes_px"][str(entity_id)])
-                for entity_id in sampled_scene.evaluation.evidence_entity_ids
+                for entity_id in sampled_scene.evaluation.annotation_entity_ids
             ]
         else:
-            evidence_bboxes = [
+            annotation_bboxes = [
                 list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
-                for entity_id in sampled_scene.evaluation.evidence_entity_ids
+                for entity_id in sampled_scene.evaluation.annotation_entity_ids
             ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -916,9 +1058,21 @@ class GamesCheckersMoveCountTask:
                 "answer_hint_legal_move_count",
                 "answer_hint_capture_move_count",
                 "answer_hint_max_capture_chain_length",
-                "evidence_hint_legal_move_count",
-                "evidence_hint_capture_move_count",
-                "evidence_hint_max_capture_chain_length",
+                "answer_hint_piece_with_legal_move_count",
+                "answer_hint_piece_with_capture_move_count",
+                "answer_hint_red_piece_count",
+                "answer_hint_black_piece_count",
+                "answer_hint_red_edge_piece_count",
+                "answer_hint_black_edge_piece_count",
+                "annotation_hint_legal_move_count",
+                "annotation_hint_capture_move_count",
+                "annotation_hint_max_capture_chain_length",
+                "annotation_hint_piece_with_legal_move_count",
+                "annotation_hint_piece_with_capture_move_count",
+                "annotation_hint_red_piece_count",
+                "annotation_hint_black_piece_count",
+                "annotation_hint_red_edge_piece_count",
+                "annotation_hint_black_edge_piece_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -931,13 +1085,13 @@ class GamesCheckersMoveCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "current_player_name": str(current_player_name),
@@ -952,7 +1106,11 @@ class GamesCheckersMoveCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = (
+            TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+            if str(sampled_scene.evaluation.annotation_kind) == "piece_point"
+            else TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        )
         complexity = build_games_checkers_move_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -960,7 +1118,7 @@ class GamesCheckersMoveCountTask:
             query_id=str(axes.query_id),
             occupied_count=int(sampled_scene.occupied_count),
             target_answer=int(axes.target_answer),
-            evidence_count=len(sampled_scene.evaluation.evidence_entity_ids),
+            annotation_count=len(sampled_scene.evaluation.annotation_entity_ids),
         )
 
         legal_move_specs = [
@@ -991,7 +1149,7 @@ class GamesCheckersMoveCountTask:
                     "board_size": int(BOARD_SIZE),
                     "current_player": str(current_player_name),
                     "target_answer": int(axes.target_answer),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1054,18 +1212,24 @@ class GamesCheckersMoveCountTask:
                     }
                     for chain in sampled_scene.evaluation.max_capture_chains
                 ],
-                "evidence_kind": str(sampled_scene.evaluation.evidence_kind),
-                "evidence_coords": [
-                    [int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.evidence_coords
+                "annotation_kind": str(sampled_scene.evaluation.annotation_kind),
+                "annotation_coords": [
+                    [int(coord[0]), int(coord[1])] for coord in sampled_scene.evaluation.annotation_coords
                 ],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evaluation.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.evaluation.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "type": "point_set",
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
+            }
+            if str(sampled_scene.evaluation.annotation_kind) == "piece_point"
+            else {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1074,7 +1238,7 @@ class GamesCheckersMoveCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1104,7 +1268,28 @@ class GamesCheckersMaxCaptureChainLengthTask(FixedQueryVariantTaskMixin, GamesCh
     fixed_query_id = "max_capture_chain_length"
 
 
+@register_task
+class GamesCheckersPieceMobilityCountTask(QuerySubsetTaskMixin, GamesCheckersMoveCountTask):
+    """Count current-player pieces that have at least one sampled move condition."""
+
+    task_id = "task_games__checkers__piece_mobility_count"
+    supported_query_ids = (
+        "piece_with_legal_move_count",
+        "piece_with_capture_move_count",
+    )
+
+
+@register_task
+class GamesCheckersPieceStateCountTask(QuerySubsetTaskMixin, GamesCheckersMoveCountTask):
+    """Count visible Checkers pieces by color and board-edge state."""
+
+    task_id = "task_games__checkers__piece_state_count"
+    supported_query_ids = PIECE_STATE_QUERY_IDS
+
+
 __all__ = [
     "GamesCheckersMaxCaptureChainLengthTask",
     "GamesCheckersMoveCountPublicTask",
+    "GamesCheckersPieceMobilityCountTask",
+    "GamesCheckersPieceStateCountTask",
 ]

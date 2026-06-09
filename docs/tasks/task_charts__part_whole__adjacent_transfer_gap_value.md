@@ -5,14 +5,25 @@
 2. Scene id: `part_whole`
 3. Source implementation domain/group: `charts/composition`
 4. Query id: `chart_order_adjacent_transfer_gap`
-5. Answer type: integer
-6. Evidence type: `keyed_point_map`
-7. Semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.share_arithmetic_value.ChartsCompositionChartAdjacentTransferGapValueTask`
 2. Prompt lookup domain/group: `charts/composition`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and evidence are produced from the same metadata execution trace.
-5. Prompt-facing evidence maps the source category label and the adjacent
-   target category label to the center points of their chart segments.
+4. Answers and annotation are produced from the same metadata execution trace.
+
+## Annotation Contract
+1. Answer schema: `integer_value`.
+2. Annotation schema: `keyed_point_map`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `chart_order_adjacent_transfer_gap` | `numeric.difference_or_change` | `integer_value` | `keyed_point_map` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

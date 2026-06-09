@@ -33,9 +33,9 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_bbox_map"
 
-    assert set(out.evidence_gt.value) == {"field_orientation", "charge", "velocity"}
+    assert set(out.annotation_gt.value) == {"field_orientation", "charge", "velocity"}
 
     assert out.scene_id == "magnetic_force"
 
@@ -54,15 +54,15 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert scenario["option_directions"]["D"] == "south"
 
-    assert execution["evidence_entity_ids"] == ["field_orientation_label", "particle", "velocity_vector"]
+    assert execution["annotation_entity_ids"] == ["field_orientation_label", "particle", "velocity_vector"]
 
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
 
-    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
 
-    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
 
-    assert trace["render_map"]["correct_option_bbox_px"] not in out.evidence_gt.value.values()
+    assert trace["render_map"]["correct_option_bbox_px"] not in out.annotation_gt.value.values()
 
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
 
@@ -85,7 +85,7 @@ def test_physics_magnetism_tasks_are_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 
@@ -136,6 +136,16 @@ def test_physics_magnetism_prompt_bundle_supports_variants() -> None:
 
     assert len(bundle["scene_templates"]["magnetic_force_field"]) == 5
 
-    assert set(bundle["query_templates"]) == {"force_direction_choice"}
+    assert {
+        "force_direction_choice",
+        "field_direction_at_point",
+        "clockwise_induced_current_count",
+        "counterclockwise_induced_current_count",
+        "no_induced_current_count",
+    }.issubset(set(bundle["query_templates"]))
 
     assert len(bundle["query_templates"]["force_direction_choice"]) == 5
+
+    assert len(bundle["query_templates"]["field_direction_at_point"]) == 5
+
+    assert len(bundle["query_templates"]["clockwise_induced_current_count"]) == 5

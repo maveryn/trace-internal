@@ -73,7 +73,7 @@ def _ensure_record(records: dict[int, dict[str, Any]], dataset_index: int, item:
 
     metadata = _parse_metadata(item.get("metadata"))
     answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
-    evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
+    annotation_gt = _maybe_parse_json_mapping(item["annotation_gt"])
     query_id = metadata.get("query_id")
     record = {
         "dataset_index": int(dataset_index),
@@ -87,7 +87,7 @@ def _ensure_record(records: dict[int, dict[str, Any]], dataset_index: int, item:
         "bucket_id_str": None if item.get("bucket_id_str") is None else str(item.get("bucket_id_str")),
         "prompt_length": int(len(item["raw_prompt_ids"])),
         "answer_type": str(answer_gt.get("type", "")),
-        "evidence_type": str(evidence_gt.get("type", "")),
+        "annotation_type": str(annotation_gt.get("type", "")),
         "rollout_count": 0,
         "positive_rollout_count": 0,
         "perfect_rollout_count": 0,
@@ -125,7 +125,7 @@ def _score_generated_outputs(
     for dataset_index, item, generated in zip(batch_indices, batch_items, outputs, strict=True):
         record = _ensure_record(records, dataset_index, item)
         answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
-        evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
+        annotation_gt = _maybe_parse_json_mapping(item["annotation_gt"])
         reward_contract = _maybe_parse_json_mapping(item["reward_contract"])
 
         stage_positive = 0
@@ -138,7 +138,7 @@ def _score_generated_outputs(
                 response=response,
                 item=item,
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 reward_contract=reward_contract,
                 trace_reward_mode=args.trace_reward_mode,
                 trace_answer_scoring=args.trace_answer_scoring,
@@ -152,7 +152,7 @@ def _score_generated_outputs(
                 response=normalized_response,
                 item=item,
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 reward_contract=reward_contract,
                 trace_reward_mode=args.trace_reward_mode,
                 trace_answer_scoring=args.trace_answer_scoring,
@@ -777,10 +777,10 @@ def main() -> None:
     parser.add_argument("--parquet", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", default="Qwen/Qwen3-VL-4B-Instruct")
-    parser.add_argument("--trace-output-mode", default="answer", choices=("answer", "answer_and_evidence", "evidence"))
+    parser.add_argument("--trace-output-mode", default="answer", choices=("answer", "answer_and_annotation", "annotation"))
     parser.add_argument("--prompt-key", default="prompt_answer")
     parser.add_argument("--system-prompt", default=str(RLVR_ROOT / "examples/prompts/trace_vero_json_system_prompt_answer.txt"))
-    parser.add_argument("--trace-reward-mode", default="answer", choices=("answer", "answer_and_evidence", "auto"))
+    parser.add_argument("--trace-reward-mode", default="answer", choices=("answer", "answer_and_annotation", "auto"))
     parser.add_argument("--trace-answer-scoring", default="exact_json", choices=("legacy_strict", "exact_json", "strict", "legacy", "exact"))
     parser.add_argument("--trace-format-weight", type=float, default=0.0)
     parser.add_argument("--start-index", type=int, default=0)

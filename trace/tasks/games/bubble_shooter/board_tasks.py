@@ -210,7 +210,7 @@ def _resolve_label_choice(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -772,7 +772,7 @@ def _sample_pop_count_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
         target_answer=int(target),
         option_specs=tuple(),
         outcome=outcome,
-        evidence_entity_ids=tuple(bubble_entity_id(coord) for coord in outcome.popped_coords),
+        annotation_entity_ids=tuple(bubble_entity_id(coord) for coord in outcome.popped_coords),
         construction_mode="single_shot_pop_component",
     )
     validate_bubble_shooter_sample(sample)
@@ -799,7 +799,7 @@ def _sample_drop_count_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample
         target_answer=int(target),
         option_specs=tuple(),
         outcome=outcome,
-        evidence_entity_ids=tuple(bubble_entity_id(coord) for coord in outcome.dropped_coords),
+        annotation_entity_ids=tuple(bubble_entity_id(coord) for coord in outcome.dropped_coords),
         construction_mode="pop_bridge_then_drop_floating_tail",
     )
     validate_bubble_shooter_sample(sample)
@@ -839,7 +839,7 @@ def _sample_pop_color_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
     if len(positive) != 1 or str(positive[0].label) != target_label:
         raise ValueError("constructed color-option board has ambiguous popping option")
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=target_color)
-    evidence_ids = tuple(bubble_entity_id(coord) for coord in outcome.popped_coords)
+    annotation_ids = tuple(bubble_entity_id(coord) for coord in outcome.popped_coords)
     sample = BubbleShooterSample(
         row_count=int(axes.row_count),
         col_count=int(axes.col_count),
@@ -853,7 +853,7 @@ def _sample_pop_color_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
         target_answer=str(target_label),
         option_specs=option_specs,
         outcome=outcome,
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         construction_mode="one_displayed_color_reaches_pop_threshold",
     )
     validate_bubble_shooter_sample(sample)
@@ -878,15 +878,15 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "pop_color_label":
         answer_value: str | int = "C"
-        evidence_value = [[403, 279], [449, 279]]
+        annotation_value = [[403, 279], [449, 279]]
     elif str(query_id) == "drop_count":
         answer_value = 4
-        evidence_value = [[483, 373], [529, 373], [506, 413], [552, 413]]
+        annotation_value = [[483, 373], [529, 373], [506, 413], [552, 413]]
     else:
         answer_value = 5
-        evidence_value = [[373, 237], [419, 237], [396, 277], [442, 277], [488, 277]]
+        annotation_value = [[373, 237], [419, 237], [396, 277], [442, 277], [488, 277]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -953,9 +953,9 @@ class GamesBubbleShooterBoardTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_points = [
+        annotation_points = [
             list(rendered_scene.render_map["entity_centers_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -976,11 +976,11 @@ class GamesBubbleShooterBoardTask:
                 "object_description_dense_pack",
                 "bubble_shooter_rule_text",
                 "answer_hint_pop_count",
-                "evidence_hint_pop_count",
+                "annotation_hint_pop_count",
                 "answer_hint_drop_count",
-                "evidence_hint_drop_count",
+                "annotation_hint_drop_count",
                 "answer_hint_pop_color_label",
-                "evidence_hint_pop_color_label",
+                "annotation_hint_pop_color_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -992,14 +992,14 @@ class GamesBubbleShooterBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "bubble_shooter_rule_text": str(prompt_defaults["bubble_shooter_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -1012,7 +1012,7 @@ class GamesBubbleShooterBoardTask:
             if str(axes.query_id) == "pop_color_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -1027,7 +1027,7 @@ class GamesBubbleShooterBoardTask:
             col_count=int(sampled_scene.col_count),
             target_answer=sampled_scene.answer,
             option_count=len(sampled_scene.option_specs),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         board_trace = [
             {
@@ -1056,7 +1056,7 @@ class GamesBubbleShooterBoardTask:
                     "style_variant": str(axes.style_variant),
                     "row_count": int(sampled_scene.row_count),
                     "col_count": int(sampled_scene.col_count),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1113,16 +1113,16 @@ class GamesBubbleShooterBoardTask:
                     "popped_coords": [[int(row), int(col)] for row, col in sampled_scene.outcome.popped_coords],
                     "dropped_coords": [[int(row), int(col)] for row, col in sampled_scene.outcome.dropped_coords],
                 },
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+            "projected_annotation": {
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1131,7 +1131,7 @@ class GamesBubbleShooterBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1143,14 +1143,19 @@ class GamesBubbleShooterBoardTask:
 
 
 @register_task
-class GamesBubbleShooterShotEffectCountTask(QuerySubsetTaskMixin, GamesBubbleShooterBoardTask):
-    """Count bubbles matching a sampled immediate shot-effect condition."""
+class GamesBubbleShooterPopCountTask(QuerySubsetTaskMixin, GamesBubbleShooterBoardTask):
+    """Count bubbles popped by the marked shot."""
 
-    task_id = "task_games__bubble_shooter__shot_effect_count"
-    supported_query_ids = (
-        "pop_count",
-        "drop_count",
-    )
+    task_id = "task_games__bubble_shooter__pop_count"
+    supported_query_ids = ("pop_count",)
+
+
+@register_task
+class GamesBubbleShooterDropCountTask(QuerySubsetTaskMixin, GamesBubbleShooterBoardTask):
+    """Count bubbles dropped after the marked shot."""
+
+    task_id = "task_games__bubble_shooter__drop_count"
+    supported_query_ids = ("drop_count",)
 
 
 @register_task
@@ -1163,6 +1168,7 @@ class GamesBubbleShooterPopColorLabelTask(FixedQueryVariantTaskMixin, GamesBubbl
 
 __all__ = [
     "GamesBubbleShooterBoardTask",
+    "GamesBubbleShooterDropCountTask",
     "GamesBubbleShooterPopColorLabelTask",
-    "GamesBubbleShooterShotEffectCountTask",
+    "GamesBubbleShooterPopCountTask",
 ]

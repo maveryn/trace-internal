@@ -29,6 +29,66 @@ generation:
       parallel_component_count_options: [2, 3, 4]
       parallel_block_count_options: [1, 2]
       series_parallel_branch_count_options: [2, 3]
+    physics_circuits_bulb_brightness_family:
+      scene_variant_weights:
+        series_unequal: 1.0
+        parallel_unequal: 1.0
+        mixed_branch: 1.0
+      query_id_weights:
+        brightest_bulb_label: 1.0
+        dimmest_bulb_label: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_target_answer_sampling: true
+      resistance_options: [2, 3, 4, 5, 6, 8, 10, 12]
+    physics_circuits_switch_circuit_family:
+      scene_variant_weights:
+        mixed_branch: 1.0
+      query_id_weights:
+        lit_bulb_count: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_target_answer_sampling: true
+      target_answer_support: [0, 1, 2, 3, 4, 5]
+    physics_circuits_state_change_bulb_brightness_family:
+      query_id_weights:
+        brightens_after_switch_change: 1.0
+        dims_after_switch_change: 1.0
+        turns_on_after_switch_change: 1.0
+        turns_off_after_switch_change: 1.0
+      balanced_query_id_sampling: true
+      balanced_target_answer_sampling: true
+      resistance_options: [2, 3, 4, 5, 6, 8, 10, 12]
+    physics_circuits_bridge_missing_resistance_family:
+      scene_variant_weights:
+        rectangular_bridge: 1.0
+      query_id_weights:
+        missing_bridge_resistance: 1.0
+      missing_resistor_weights:
+        R1: 1.0
+        R2: 1.0
+        R3: 1.0
+        R4: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_missing_resistor_sampling: true
+      balanced_target_answer_sampling: true
+      target_answer_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+      component_value_max: 60
+    physics_circuits_analog_meter_family:
+      query_id_weights:
+        ammeter_readout: 1.0
+        voltmeter_readout: 1.0
+      meter_profile_weights:
+        ammeter_a: 1.0
+        ammeter_ma: 1.0
+        voltmeter_v: 1.0
+      balanced_query_id_sampling: true
+      balanced_meter_profile_sampling: true
+      balanced_target_answer_sampling: true
+      ammeter_a_answer_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      ammeter_ma_answer_support: [10, 20, 30, 40, 50, 60, 70, 80, 90]
+      voltmeter_v_answer_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 rendering:
   shared:
@@ -57,6 +117,61 @@ rendering:
     layout_jitter_y_px_max: 42
   task_overrides:
     physics_circuits_equivalent_component_family: {}
+    physics_circuits_bulb_brightness_family:
+      canvas_width: 1280
+      canvas_height: 720
+      panel_left_px: 56
+      panel_top_px: 58
+      panel_right_px: 1224
+      panel_bottom_px: 662
+      bulb_label_font_size_px: 20
+    physics_circuits_switch_circuit_family:
+      canvas_width: 1280
+      canvas_height: 720
+      panel_left_px: 56
+      panel_top_px: 58
+      panel_right_px: 1224
+      panel_bottom_px: 662
+      wire_width_px: 5
+      wire_width_px_min: 4
+      wire_width_px_max: 6
+      bulb_radius_px: 27
+      switch_width_px: 74
+      switch_height_px: 46
+      component_label_font_size_px: 20
+      title_font_size_px: 28
+      label_stroke_width_px: 2
+    physics_circuits_state_change_bulb_brightness_family:
+      canvas_width: 1280
+      canvas_height: 720
+      panel_left_px: 56
+      panel_top_px: 58
+      panel_right_px: 1224
+      panel_bottom_px: 662
+      wire_width_px: 5
+      component_label_font_size_px: 20
+      title_font_size_px: 28
+      label_stroke_width_px: 2
+    physics_circuits_bridge_missing_resistance_family:
+      canvas_width: 1280
+      canvas_height: 720
+      panel_left_px: 56
+      panel_top_px: 58
+      panel_right_px: 1224
+      panel_bottom_px: 662
+      component_label_font_size_px: 20
+    physics_circuits_analog_meter_family:
+      canvas_width: 1120
+      canvas_height: 720
+      panel_left_px: 64
+      panel_top_px: 54
+      panel_right_margin_px: 64
+      panel_bottom_margin_px: 56
+      meter_center_x_px: 560
+      meter_center_y_px: 472
+      scale_radius_px: 270
+      needle_radius_px: 222
+      face_radius_px: 318
 
 complexity:
   shared: {}
@@ -67,6 +182,36 @@ complexity:
         circuit_reasoning: 0.50
         ambiguity: 0.14
         output_burden: 0.10
+    physics_circuits_bulb_brightness_family:
+      criteria_weights:
+        visual_scan: 0.28
+        brightness_reasoning: 0.46
+        ambiguity: 0.16
+        output_burden: 0.10
+    physics_circuits_switch_circuit_family:
+      criteria_weights:
+        visual_scan: 0.30
+        connectivity_reasoning: 0.46
+        ambiguity: 0.14
+        output_burden: 0.10
+    physics_circuits_state_change_bulb_brightness_family:
+      criteria_weights:
+        visual_scan: 0.32
+        state_change_reasoning: 0.46
+        ambiguity: 0.12
+        output_burden: 0.10
+    physics_circuits_bridge_missing_resistance_family:
+      criteria_weights:
+        visual_scan: 0.28
+        bridge_reasoning: 0.48
+        ambiguity: 0.14
+        output_burden: 0.10
+    physics_circuits_analog_meter_family:
+      criteria_weights:
+        visual_readout: 0.58
+        scale_mapping: 0.16
+        ambiguity: 0.12
+        output_burden: 0.14
 
 prompt:
   shared:
@@ -77,7 +222,43 @@ prompt:
       task_key: equivalent_component_query
       object_description_series_parallel_total_resistance: one resistor circuit between terminals A and B with at least one labeled zigzag resistor in series with one or two labeled parallel resistor blocks
       object_description_series_parallel_total_capacitance: one capacitor circuit between terminals A and B with at least one labeled parallel-plate capacitor in series with one or two labeled parallel capacitor blocks
-      evidence_hint_total_resistance: set "evidence" to an object mapping each visible resistor label such as R1 or R2 to one bounding box [x0, y0, x1, y1] around that resistor symbol and its value label
-      evidence_hint_total_capacitance: set "evidence" to an object mapping each visible capacitor label such as C1 or C2 to one bounding box [x0, y0, x1, y1] around that capacitor symbol and its value label
+      annotation_hint_total_resistance: set "annotation" to an object mapping each visible resistor label such as R1 or R2 to one bounding box [x0, y0, x1, y1] around that resistor symbol and its value label
+      annotation_hint_total_capacitance: set "annotation" to an object mapping each visible capacitor label such as C1 or C2 to one bounding box [x0, y0, x1, y1] around that capacitor symbol and its value label
       answer_hint_total_resistance: set "answer" to the total equivalent resistance between terminals A and B as an integer number of ohms
       answer_hint_total_capacitance: set "answer" to the total equivalent capacitance between terminals A and B as an integer number of microfarads
+    physics_circuits_bulb_brightness_family:
+      scene_key: bulb_circuit_diagram
+      task_key: bulb_brightness_query
+      object_description: a visible ideal-battery circuit with five labeled bulbs and resistance labels
+      annotation_hint_brightness_extremum: set "annotation" to an object mapping each visible bulb label such as B1, B2, B3, B4, or B5 to one bounding box [x0, y0, x1, y1] around that bulb symbol and its resistance label
+      answer_hint_brightest_bulb_label: set "answer" to the label of the brightest bulb, for example "B2"
+      answer_hint_dimmest_bulb_label: set "answer" to the label of the dimmest bulb, for example "B2"
+    physics_circuits_switch_circuit_family:
+      scene_key: switch_circuit_diagram
+      task_key: switch_circuit_query
+      object_description: a mixed branch battery circuit with five labeled bulbs and visibly open or closed switches
+      annotation_hint_lit_bulb_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the bulb symbols that will be on; use an empty array [] if no bulbs will be on
+      answer_hint_lit_bulb_count: set "answer" to the number of bulbs that will be on
+    physics_circuits_state_change_bulb_brightness_family:
+      scene_key: circuit_state_change_diagram
+      task_key: state_change_brightness_query
+      object_description: a visible ideal-battery circuit with five labeled bulbs, resistance labels, and one red-boxed switch action cue
+      annotation_hint_state_change_brightness: set "annotation" to an object mapping changed_switch and each visible bulb label B1 through B5 to bounding boxes [x0, y0, x1, y1] around the switch action cue and each bulb symbol with its resistance label
+      answer_hint_brightens_after_switch_change: set "answer" to the label of the bulb that becomes brighter after the switch action
+      answer_hint_dims_after_switch_change: set "answer" to the label of the bulb that becomes dimmer after the switch action
+      answer_hint_turns_on_after_switch_change: set "answer" to the label of the bulb that turns on after the switch action
+      answer_hint_turns_off_after_switch_change: set "answer" to the label of the bulb that turns off after the switch action
+    physics_circuits_bridge_missing_resistance_family:
+      scene_key: bridge_circuit_diagram
+      task_key: bridge_missing_resistance_query
+      object_description: a balanced resistor bridge circuit with four labeled bridge resistors, one resistor marked with a question mark, and a center meter reading zero
+      annotation_hint_missing_bridge_resistance: set "annotation" to an object mapping each known visible resistor label plus "target_resistor" and "zero_meter" to one bounding box [x0, y0, x1, y1] around that visual witness
+      answer_hint_missing_bridge_resistance: set "answer" to the missing resistance as an integer number of ohms
+    physics_circuits_analog_meter_family:
+      scene_key: analog_meter_diagram
+      task_key: analog_meter_readout_query
+      object_description: one analog meter face with a visible needle, numeric tick scale, and unit label
+      annotation_hint_ammeter_readout: set "annotation" to an object mapping needle, scale_region, and unit_label to pixel bounding boxes [x0,y0,x1,y1]
+      annotation_hint_voltmeter_readout: set "annotation" to an object mapping needle, scale_region, and unit_label to pixel bounding boxes [x0,y0,x1,y1]
+      answer_hint_ammeter_readout: set "answer" to the integer ammeter reading in the displayed unit
+      answer_hint_voltmeter_readout: set "answer" to the integer voltmeter reading in the displayed unit

@@ -29,6 +29,62 @@
       "",
       "",
       ""
+    ],
+    "collision_aftermath_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "free_body_force_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "orbital_motion_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "motion_graph_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "motion_graph_interval_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "stack_stability_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "gear_train_direction_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "gear_train_speed_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -41,6 +97,24 @@
     "scene:sticky_collision_diagram": [
       "object_description"
     ],
+    "scene:collision_aftermath_diagram": [
+      "object_description"
+    ],
+    "scene:free_body_force_diagram": [
+      "object_description"
+    ],
+    "scene:orbital_motion_diagram": [
+      "object_description"
+    ],
+    "scene:motion_graph_diagram": [
+      "object_description"
+    ],
+    "scene:stack_stability_diagram": [
+      "object_description"
+    ],
+    "scene:gear_train_diagram": [
+      "object_description"
+    ],
     "query:side_torque": [
       "torque_side"
     ],
@@ -50,14 +124,14 @@
     "query:force_relation": [
       "solve_for"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ],
@@ -65,7 +139,7 @@
       "object_description"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -73,12 +147,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -107,6 +181,48 @@
       "The image shows {object_description}.",
       "The diagram shows {object_description}.",
       "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "collision_aftermath_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This collision diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "free_body_force_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This force diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "orbital_motion_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This orbit diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "motion_graph_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This kinematics diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "stack_stability_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This stability diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "gear_train_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This mechanical diagram shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
     ]
@@ -160,6 +276,97 @@
       "Conserve {component_axis} momentum. What integer {component_axis} velocity component results after the pucks stick?",
       "Using the shown puck data and combined mass, what is the final signed {component_axis} component?",
       "What is the stuck pucks' final velocity component along the {component_axis} axis in m/s?"
+    ],
+    "incoming_path_cause_choice": [
+      "Which labeled incoming path caused the shown target puck motion after impact?",
+      "Use the impact point and the target puck's aftermath trail. Which incoming path A-F caused it?",
+      "The target puck is shown after the collision. Which labeled incoming arrow matches the cause of that motion?",
+      "Which candidate incoming path leads to the visible target puck motion from the impact point?",
+      "From the target puck's final trail, choose the incoming path that caused the collision aftermath."
+    ],
+    "net_force_direction_choice": [
+      "Which candidate arrow A-H shows the direction of the net force on the object?",
+      "Use the shown force magnitudes and directions. Which option arrow matches the net force?",
+      "Add the applied force arrows on the object. Which labeled candidate arrow gives the resultant direction?",
+      "Which option arrow points in the direction of the total force from the shown applied forces?",
+      "From the visible force arrows and magnitude labels, choose the candidate arrow showing the net force direction."
+    ],
+    "sun_focus_label": [
+      "Which labeled point can be the Sun at a focus of the elliptical orbit?",
+      "Kepler's first law places the Sun at a focus. Which candidate point is a focus?",
+      "Choose the labeled point that lies at a focus of the shown ellipse.",
+      "Which option marks a valid focus location for the Sun in this orbit?",
+      "Using the ellipse shape, which labeled point is the focus location?"
+    ],
+    "greatest_speed_position_label": [
+      "At which labeled planet position is the orbital speed greatest?",
+      "The Sun is shown at a focus. Which labeled position is closest to the Sun and has greatest speed?",
+      "Choose the planet position where the orbiting body moves fastest.",
+      "Which labeled point on the orbit is the perihelion speed maximum?",
+      "Using the Sun-focus distance, which candidate position has greatest orbital speed?"
+    ],
+    "least_speed_position_label": [
+      "At which labeled planet position is the orbital speed least?",
+      "The Sun is shown at a focus. Which labeled position is farthest from the Sun and has least speed?",
+      "Choose the planet position where the orbiting body moves slowest.",
+      "Which labeled point on the orbit is the aphelion speed minimum?",
+      "Using the Sun-focus distance, which candidate position has least orbital speed?"
+    ],
+    "velocity_sign_choice": [
+      "On the marked interval of the position-time graph, which option describes the object's motion?",
+      "Use the slope of the marked position-time segment. Which option gives the object's motion during that interval?",
+      "Which candidate state matches the marked interval on the x-t graph?",
+      "For the highlighted interval, choose the option that describes the object's velocity direction.",
+      "Read the marked position-time segment. Which option describes the motion state?"
+    ],
+    "speed_change_state_choice": [
+      "On the marked interval of the velocity-time graph, which option describes how the object's speed changes?",
+      "Use the sign and slope of the marked velocity-time segment. Which option gives the speed-change state?",
+      "Which candidate state matches the marked interval on the v-t graph?",
+      "For the highlighted interval, choose the option that describes whether the object speeds up, slows down, or keeps constant speed.",
+      "Read the marked velocity-time segment. Which option describes the speed state?"
+    ],
+    "constant_velocity_interval_displacement": [
+      "What is the displacement during the marked time interval?",
+      "Use the velocity-time graph. What integer displacement is shown over the highlighted interval?",
+      "Read the constant velocity segment and the marked time interval. What displacement does it represent?",
+      "For the marked interval on the v-t graph, what displacement is covered?",
+      "Using the visible velocity and interval width, determine the displacement over the marked interval."
+    ],
+    "constant_acceleration_interval_displacement": [
+      "What is the displacement during the marked time interval?",
+      "Use the velocity-time graph. What integer displacement is shown over the highlighted interval?",
+      "Read the sloped velocity segment and the marked time interval. What displacement does it represent?",
+      "For the marked interval on the v-t graph, what displacement is covered?",
+      "Using the visible endpoint velocities and interval width, determine the displacement over the marked interval."
+    ],
+    "stable_stack_label": [
+      "Which labeled stack will stay upright because its center-of-mass projection falls within its support base?",
+      "Use the red center-of-mass marker and dashed projection. Which stack remains stable?",
+      "Choose the stack whose center-of-mass projection lands inside the support-footprint bracket.",
+      "Which option shows a stack that will not tip over?",
+      "From the COM projection and support base, which labeled stack stays upright?"
+    ],
+    "tipping_stack_label": [
+      "Which labeled stack will tip over because its center-of-mass projection falls outside its support base?",
+      "Use the red center-of-mass marker and dashed projection. Which stack tips over?",
+      "Choose the stack whose center-of-mass projection lands outside the support-footprint bracket.",
+      "Which option shows a stack that will not stay upright?",
+      "From the COM projection and support base, which labeled stack tips over?"
+    ],
+    "marked_output_direction": [
+      "Will the marked output gear rotate clockwise or counterclockwise?",
+      "Using the input rotation arrow and each gear mesh, what direction will the marked output gear rotate?",
+      "Follow the meshed gear train from input to output. What is the output gear's rotation direction?",
+      "Each meshed gear reverses rotation from its neighbor. What direction does the marked output gear rotate?",
+      "From the shown input gear direction, determine whether the marked output gear rotates clockwise or counterclockwise."
+    ],
+    "simple_gear_ratio_output_speed": [
+      "Using the input and output gear tooth counts and the input speed, what is the marked output gear speed in rpm?",
+      "Read the input rpm and the input/output gear tooth counts. What integer rpm should replace the marked output speed?",
+      "For this simple gear train, what output speed is implied by the shown input speed and the input/output tooth counts?",
+      "Use the input and output gear tooth counts to compute the marked output gear's rpm.",
+      "What integer rotational speed in rpm belongs at the marked output gear, using the input/output tooth-count ratio?"
     ]
   },
   "allow_empty_task_templates": true

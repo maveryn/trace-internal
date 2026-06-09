@@ -4,20 +4,20 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `paper_fold`
-4. Public query id: `default`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `fold_angle_from_total_label`
-6. Answer type: `number`
-7. Evidence type: `bbox_set`
+6. Answer schema: `decimal_value_1dp`
+7. Annotation schema: `bbox_set`
+
+## Program Contract
+- `solve_formula(visible_paper_fold_measurements, unknown_role=angle_measure, formula_schema=fold_crease_bisects_total_angle); scene=paper_fold; scope=paper_fold_angle_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_paper_fold_measurement_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Compute a marked angle in a folded-paper corner diagram. The visible crease bisects the marked fold angle, so `x` is one half of the visible total angle label. Answers are numeric angle measures in degrees rounded to one decimal place.
-
-## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around the target `x` angle cue followed by the supporting visible angle label. Verifier evidence is projected from the same generated fold geometry used to compute the answer.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

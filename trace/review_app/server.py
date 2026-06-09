@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict, replace
+from functools import lru_cache
 import io
 import json
 from pathlib import Path
+import re
 import threading
 import time
+from types import SimpleNamespace
 from typing import Any, Dict
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
@@ -17,12 +20,22 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image as PILImage
 
-from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
+from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 
 from .artifact_index import build_review_index, load_sample_payload
 from .feedback import FeedbackStore
+from .illustration_object_review import (
+    RENDERER_LABELS as ILLUSTRATION_RENDERER_LABELS,
+    VALID_REVIEW_DECISIONS as ILLUSTRATION_OBJECT_REVIEW_DECISIONS,
+    filtered_illustration_object_items,
+    illustration_object_category_tabs,
+    illustration_object_renderer_tabs,
+    illustration_object_review_item,
+    render_illustration_object_review_image,
+)
 from .models import ReviewIndex, SampleRecord, TaskAuditRecord
 from .resource_index import build_resource_index
+from .taxonomy_index import DEFAULT_TAXONOMY_ROUND, build_taxonomy_audit_index
 
 
 class ReviewAppState:
@@ -111,6 +124,7 @@ def create_app(
 
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next: Any) -> Response:
+        _strip_base_url_from_scope(request.scope, resolved_base_url)
         if _request_is_public(request) or not app.state.auth_token:
             return await call_next(request)
         if _request_has_token(request, app.state.auth_token):
@@ -162,19 +176,33 @@ def create_app(
         index = state.index()
         return templates.TemplateResponse(request, "index.html", _context(request, index=index, title="Domains"))
 
-    @app.get("/feedback", response_class=HTMLResponse)
-    async def feedback_page(request: Request) -> HTMLResponse:
+    @app.get("/feedback")
+    async def feedback_page_redirect(request: Request) -> RedirectResponse:
+        target = "/issues"
+        if request.url.query:
+            target = f"{target}?{request.url.query}"
+        return RedirectResponse(_app_path(resolved_base_url, target), status_code=303)
+
+    @app.get("/issues", response_class=HTMLResponse)
+    async def feedback_page(request: Request, domain: str = "") -> HTMLResponse:
         index = state.index()
-        queue = _build_feedback_work_queue(index=index, feedback=state.feedback)
+        selected_domain = str(domain or "").strip()
+        queue = _build_feedback_work_queue(index=index, feedback=state.feedback, domain=selected_domain)
         return templates.TemplateResponse(
             request,
             "feedback.html",
             _context(
                 request,
                 index=index,
-                title="Feedback Work Queue",
+                title="Issue Work Queue",
                 work_queue=queue["groups"],
                 work_queue_summary=queue["summary"],
+                selected_feedback_domain=selected_domain,
+                feedback_domain_tabs=_feedback_domain_tabs(
+                    index=index,
+                    feedback_by_domain=state.feedback.counts_by_domain(),
+                    selected_domain=selected_domain,
+                ),
             ),
         )
 
@@ -245,6 +273,416 @@ def create_app(
             raise HTTPException(status_code=404, detail="unknown resource asset")
         return FileResponse(asset.path, headers={"Cache-Control": "no-cache"})
 
+    @app.get("/three-d/objects", response_class=HTMLResponse)
+    async def three_d_objects_page(request: Request, group: str = "", decision: str = "") -> HTMLResponse:
+        index = state.index()
+        review_state = _build_three_d_object_review_state(
+            feedback=state.feedback,
+            selected_group=group,
+            selected_decision=decision,
+        )
+        return templates.TemplateResponse(
+            request,
+            "three_d_objects.html",
+            _context(
+                request,
+                index=index,
+                title="3D Object Review",
+                three_d_object_review=review_state,
+            ),
+        )
+
+    @app.get("/three-d/objects/previews/{profile_token}")
+    async def three_d_object_preview(profile_token: str) -> Response:
+        profile_id = _decode_three_d_profile_token(profile_token)
+        if profile_id not in _three_d_object_profile_by_id():
+            raise HTTPException(status_code=404, detail="unknown 3D object profile")
+        try:
+            png = _three_d_object_preview_png(profile_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from None
+        return Response(png, media_type="image/png", headers={"Cache-Control": "no-cache"})
+
+    @app.post("/three-d/objects/reviews/{profile_token}")
+    async def three_d_object_review_submit(request: Request, profile_token: str) -> RedirectResponse:
+        profile_id = _decode_three_d_profile_token(profile_token)
+        profile = _three_d_object_profile_by_id().get(profile_id)
+        if profile is None:
+            raise HTTPException(status_code=404, detail="unknown 3D object profile")
+        data = await _request_data(request)
+        review = state.feedback.update_three_d_object_review(
+            profile_id=str(profile.profile_id),
+            canonical_id=str(profile.canonical_id),
+            object_type=str(profile.object_type),
+            renderer=str(profile.renderer),
+            source_scene=str(profile.source_scene),
+            decision=str(data.get("decision", "")),
+            notes=str(data.get("notes", "")),
+            updated_by=str(data.get("updated_by", "")),
+        )
+        decision = str(review.decision or "").strip().lower()
+        if decision not in {"approve", "remove", "improve"}:
+            decision = "unreviewed"
+        if _request_wants_json(request):
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "decision": decision,
+                    "status_label": _three_d_object_status_label(decision),
+                    "review": asdict(review),
+                }
+            )
+        default_next = f"/three-d/objects#{_three_d_object_anchor_id(profile.profile_id)}"
+        next_url = _safe_next(str(data.get("next", default_next)))
+        return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
+
+    @app.get("/illustration-objects")
+    async def illustration_objects_legacy_redirect(request: Request) -> RedirectResponse:
+        target = "/illustrations/objects"
+        if request.url.query:
+            target = f"{target}?{request.url.query}"
+        return RedirectResponse(_app_path(resolved_base_url, target), status_code=303)
+
+    @app.get("/illustrations/objects", response_class=HTMLResponse)
+    async def illustration_objects_page(request: Request, renderer: str = "", category: str = "", decision: str = "") -> HTMLResponse:
+        index = state.index()
+        review_state = _build_illustration_object_review_state(
+            feedback=state.feedback,
+            selected_renderer=renderer,
+            selected_category=category,
+            selected_decision=decision,
+        )
+        return templates.TemplateResponse(
+            request,
+            "illustration_objects.html",
+            _context(
+                request,
+                index=index,
+                title="Illustration Object Review",
+                illustration_object_review=review_state,
+            ),
+        )
+
+    @app.get("/illustrations/objects/previews/{item_token}")
+    async def illustration_object_preview(item_token: str) -> Response:
+        item_id = _decode_illustration_object_token(item_token)
+        if illustration_object_review_item(item_id) is None:
+            raise HTTPException(status_code=404, detail="unknown illustration object preview")
+        png = _illustration_object_preview_png(item_id)
+        return Response(png, media_type="image/png", headers={"Cache-Control": "no-cache"})
+
+    @app.post("/illustrations/objects/reviews/{item_token}")
+    async def illustration_object_review_submit(request: Request, item_token: str) -> Response:
+        item_id = _decode_illustration_object_token(item_token)
+        item = illustration_object_review_item(item_id)
+        if item is None:
+            raise HTTPException(status_code=404, detail="unknown illustration object preview")
+        data = await _request_data(request)
+        review = state.feedback.update_illustration_object_review(
+            item_id=str(item.item_id),
+            renderer_style=str(item.renderer_style),
+            category=str(item.category),
+            object_type=str(item.object_type),
+            label=str(item.display_label),
+            decision=str(data.get("decision", "")),
+            notes=str(data.get("notes", "")),
+            updated_by=str(data.get("updated_by", "")),
+        )
+        decision = str(review.decision or "").strip().lower()
+        if decision not in ILLUSTRATION_OBJECT_REVIEW_DECISIONS:
+            decision = "unreviewed"
+        if _request_wants_json(request):
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "decision": decision,
+                    "status_label": _illustration_object_status_label(decision),
+                    "review": asdict(review),
+                }
+            )
+        default_next = (
+            f"/illustrations/objects?renderer={_url_segment(item.renderer_style)}"
+            f"&category={_url_segment(item.category)}#{_illustration_object_anchor_id(item.item_id)}"
+        )
+        next_url = _safe_next(str(data.get("next", default_next)))
+        return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
+
+    @app.get("/taxonomy")
+    async def taxonomy_redirect() -> RedirectResponse:
+        return RedirectResponse(
+            _app_path(resolved_base_url, f"/taxonomy/{_taxonomy_round_slug(DEFAULT_TAXONOMY_ROUND)}"),
+            status_code=303,
+        )
+
+    @app.get("/taxonomy/{round_slug}", response_class=HTMLResponse)
+    async def taxonomy_page(
+        request: Request,
+        round_slug: str,
+        domain: str = "",
+        decision: str = "",
+        review: str = "",
+        q: str = "",
+    ) -> HTMLResponse:
+        index = state.index()
+        taxonomy = build_taxonomy_audit_index(
+            repo_root=state.repo_root,
+            review_index=index,
+            round_id=round_slug,
+        )
+        selected_domain = str(domain or "").strip()
+        selected_decision = str(decision or "").strip().lower()
+        selected_review = str(review or "").strip().lower()
+        query = str(q or "").strip().lower()
+        review_by_task = state.feedback.taxonomy_decision_reviews_by_task(round_id=taxonomy.round_id)
+        open_feedback = state.feedback.list_open_feedback()
+        taxonomy_open_issue_counts = _taxonomy_open_issue_counts(open_feedback, taxonomy.round_id)
+        taxonomy_open_issues_by_task = _taxonomy_open_issues_by_task(open_feedback, taxonomy.round_id)
+        tasks = taxonomy.domain_tasks(selected_domain)
+        if selected_decision in {"keep", "split", "rename", "merge", "retire", "blocked_needs_inspection"}:
+            tasks = [task for task in tasks if task.decision == selected_decision]
+        if selected_review == "approved":
+            tasks = [task for task in tasks if _taxonomy_task_approved(task, review_by_task)]
+        elif selected_review == "pending":
+            tasks = [task for task in tasks if not _taxonomy_task_approved(task, review_by_task)]
+        elif selected_review == "open_issues":
+            tasks = [task for task in tasks if taxonomy_open_issue_counts.get(task.task_key, 0)]
+        if query:
+            tasks = [task for task in tasks if _taxonomy_task_matches(task, query)]
+        sample_uids = [uid for task in tasks for uid in task.sample_uids[:1]]
+        samples_by_uid = {uid: index.samples[uid] for uid in sample_uids if uid in index.samples}
+        all_tasks = taxonomy.domain_tasks("")
+        return templates.TemplateResponse(
+            request,
+            "taxonomy.html",
+            _context(
+                request,
+                index=index,
+                title="Taxonomy Audit",
+                taxonomy=taxonomy,
+                taxonomy_round_slug=_taxonomy_round_slug(taxonomy.round_id),
+                taxonomy_tasks=tasks,
+                taxonomy_review_progress=_taxonomy_review_progress(
+                    tasks=all_tasks,
+                    review_by_task=review_by_task,
+                    open_issue_counts=taxonomy_open_issue_counts,
+                ),
+                taxonomy_domain_review_progress=_taxonomy_review_progress(
+                    tasks=taxonomy.domain_tasks(selected_domain) if selected_domain else all_tasks,
+                    review_by_task=review_by_task,
+                    open_issue_counts=taxonomy_open_issue_counts,
+                ),
+                taxonomy_decision_reviews_by_task=review_by_task,
+                taxonomy_open_issue_counts=taxonomy_open_issue_counts,
+                taxonomy_open_issues_by_task=taxonomy_open_issues_by_task,
+                selected_taxonomy_domain=selected_domain,
+                selected_taxonomy_decision=selected_decision,
+                selected_taxonomy_review=selected_review,
+                taxonomy_query=q,
+                taxonomy_samples_by_uid=samples_by_uid,
+                taxonomy_domain_doc=taxonomy.domain_docs.get(selected_domain, "") if selected_domain else "",
+            ),
+        )
+
+    @app.get("/taxonomy/{round_slug}/tree", response_class=HTMLResponse)
+    async def taxonomy_tree_page(request: Request, round_slug: str, domain: str = "") -> HTMLResponse:
+        index = state.index()
+        taxonomy = build_taxonomy_audit_index(
+            repo_root=state.repo_root,
+            review_index=index,
+            round_id=round_slug,
+        )
+        selected_domain = str(domain or "").strip()
+        units = taxonomy.domain_units(selected_domain)
+        sample_uids = [uid for unit in units for uid in unit.sample_uids[:1]]
+        samples_by_uid = {uid: index.samples[uid] for uid in sample_uids if uid in index.samples}
+        return templates.TemplateResponse(
+            request,
+            "taxonomy_tree.html",
+            _context(
+                request,
+                index=index,
+                title="Taxonomy Tree",
+                taxonomy=taxonomy,
+                taxonomy_round_slug=_taxonomy_round_slug(taxonomy.round_id),
+                selected_taxonomy_domain=selected_domain,
+                taxonomy_tree=_build_taxonomy_tree(units),
+                taxonomy_samples_by_uid=samples_by_uid,
+            ),
+        )
+
+    @app.get("/taxonomy/{round_slug}/domains/{domain}", response_class=HTMLResponse)
+    async def taxonomy_domain_page(request: Request, round_slug: str, domain: str) -> RedirectResponse:
+        target = f"/taxonomy/{_url_segment(round_slug)}?domain={_url_segment(domain)}"
+        return RedirectResponse(_app_path(resolved_base_url, target), status_code=303)
+
+    @app.get("/taxonomy/{round_slug}/domains/{domain}/scenes/{scene_id}/tasks/{task_id}", response_class=HTMLResponse)
+    async def taxonomy_task_page(
+        request: Request,
+        round_slug: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+    ) -> HTMLResponse:
+        index = state.index()
+        taxonomy = build_taxonomy_audit_index(
+            repo_root=state.repo_root,
+            review_index=index,
+            round_id=round_slug,
+        )
+        task = taxonomy.tasks.get(ReviewIndex.task_key(domain, scene_id, task_id))
+        if task is None:
+            raise HTTPException(status_code=404, detail="unknown taxonomy task")
+        samples_by_uid = {
+            uid: index.samples[uid]
+            for query in task.queries
+            for uid in query.sample_uids
+            if uid in index.samples
+        }
+        task_feedback = state.feedback.list_task_feedback(domain=domain, scene_id=scene_id, task_id=task_id)
+        taxonomy_feedback = _taxonomy_feedback_records(task_feedback, taxonomy.round_id)
+        feedback_ids = [record.id for record in taxonomy_feedback]
+        taxonomy_decision_review = state.feedback.get_taxonomy_decision_review(
+            round_id=taxonomy.round_id,
+            domain=domain,
+            scene_id=scene_id,
+            task_id=task_id,
+        )
+        review_by_task = state.feedback.taxonomy_decision_reviews_by_task(round_id=taxonomy.round_id)
+        domain_tasks = taxonomy.domain_tasks(domain)
+        taxonomy_next_pending_task = _next_taxonomy_task(
+            tasks=domain_tasks,
+            current_task=task,
+            review_by_task=review_by_task,
+            pending_only=True,
+        )
+        taxonomy_next_task = _next_taxonomy_task(
+            tasks=domain_tasks,
+            current_task=task,
+            review_by_task=review_by_task,
+            pending_only=False,
+        )
+        return templates.TemplateResponse(
+            request,
+            "taxonomy_task.html",
+            _context(
+                request,
+                index=index,
+                title=f"Taxonomy: {task.current_task_id}",
+                taxonomy=taxonomy,
+                taxonomy_round_slug=_taxonomy_round_slug(taxonomy.round_id),
+                taxonomy_task=task,
+                taxonomy_units_by_id=taxonomy.proposed_units,
+                taxonomy_samples_by_uid=samples_by_uid,
+                taxonomy_feedback=taxonomy_feedback,
+                taxonomy_decision_review=taxonomy_decision_review,
+                taxonomy_open_issue_count=sum(1 for record in taxonomy_feedback if record.status == "open"),
+                taxonomy_next_pending_path=(
+                    _taxonomy_task_path(taxonomy.round_id, taxonomy_next_pending_task)
+                    if taxonomy_next_pending_task is not None
+                    else ""
+                ),
+                taxonomy_next_task_path=(
+                    _taxonomy_task_path(taxonomy.round_id, taxonomy_next_task)
+                    if taxonomy_next_task is not None
+                    else ""
+                ),
+                reviewer_comments_by_feedback=state.feedback.comments_by_feedback(feedback_ids),
+                agent_notes_by_feedback=state.feedback.notes_by_feedback(feedback_ids),
+                feedback_thread_events_by_feedback=state.feedback.thread_events_by_feedback(feedback_ids),
+            ),
+        )
+
+    @app.post("/taxonomy/{round_slug}/domains/{domain}/scenes/{scene_id}/tasks/{task_id}/decision-review")
+    async def taxonomy_task_decision_review(
+        request: Request,
+        round_slug: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+    ) -> RedirectResponse:
+        data = await _request_data(request)
+        round_id = _normalize_taxonomy_round(round_slug)
+        action = str(data.get("action", "")).strip().lower()
+        if action:
+            approved = action in {"approve", "approve_next"}
+        else:
+            approved = str(data.get("approved", "")).strip().lower() in {"1", "true", "yes", "on"}
+        state.feedback.update_taxonomy_decision_review(
+            round_id=round_id,
+            domain=domain,
+            scene_id=scene_id,
+            task_id=task_id,
+            approved=approved,
+            notes=str(data.get("notes", "")),
+            updated_by=str(data.get("updated_by", "")),
+        )
+        default_next = (
+            f"/taxonomy/{_taxonomy_round_slug(round_id)}/domains/{_url_segment(domain)}"
+            f"/scenes/{_url_segment(scene_id)}/tasks/{_url_segment(task_id)}"
+        )
+        if action == "approve_next":
+            default_next = f"/taxonomy/{_taxonomy_round_slug(round_id)}?domain={_url_segment(domain)}&review=pending"
+        next_field = "next_pending" if action == "approve_next" else "next"
+        next_value = str(data.get(next_field, "")).strip()
+        if not next_value:
+            next_value = default_next if action == "approve_next" else str(data.get("next", default_next)).strip()
+        next_url = _safe_next(next_value)
+        return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
+
+    @app.post("/taxonomy/{round_slug}/domains/{domain}/scenes/{scene_id}/tasks/{task_id}/issues")
+    async def taxonomy_task_feedback(
+        request: Request,
+        round_slug: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+    ) -> RedirectResponse:
+        data = await _request_data(request)
+        round_id = _normalize_taxonomy_round(round_slug)
+        query_id = str(data.get("query_id", "")).strip()
+        prefix = _taxonomy_feedback_prefix(round_id, query_id=query_id)
+        comment = f"{prefix} {str(data.get('comment', '')).strip()}"
+        try:
+            state.feedback.add_task_feedback(
+                domain=domain,
+                scene_id=scene_id,
+                task_id=task_id,
+                comment=comment,
+                author=str(data.get("author", "")),
+                category=str(data.get("category", "other")),
+                severity=str(data.get("severity", "issue")),
+            )
+            existing_review = state.feedback.get_taxonomy_decision_review(
+                round_id=round_id,
+                domain=domain,
+                scene_id=scene_id,
+                task_id=task_id,
+            )
+            state.feedback.update_taxonomy_decision_review(
+                round_id=round_id,
+                domain=domain,
+                scene_id=scene_id,
+                task_id=task_id,
+                approved=False,
+                notes=existing_review.notes,
+                updated_by=str(data.get("author", "")),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+        next_mode = str(data.get("next_mode", "")).strip().lower()
+        default_next = (
+            f"/taxonomy/{_taxonomy_round_slug(round_id)}/domains/{_url_segment(domain)}"
+            f"/scenes/{_url_segment(scene_id)}/tasks/{_url_segment(task_id)}"
+        )
+        if next_mode == "next_pending":
+            default_next = f"/taxonomy/{_taxonomy_round_slug(round_id)}?domain={_url_segment(domain)}&review=pending"
+        next_field = "next_pending" if next_mode == "next_pending" else "next"
+        next_value = str(data.get(next_field, "")).strip()
+        if not next_value:
+            next_value = default_next if next_mode == "next_pending" else str(data.get("next", default_next)).strip()
+        next_url = _safe_next(next_value)
+        return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
+
     @app.get("/domains/{domain}", response_class=HTMLResponse)
     async def domain_page(request: Request, domain: str) -> Response:
         if domain == "assets":
@@ -267,10 +705,73 @@ def create_app(
         if scene is None:
             raise HTTPException(status_code=404, detail="unknown scene")
         tasks = [index.tasks[ReviewIndex.task_key(domain, scene_id, task_id)] for task_id in scene.tasks]
+        scene_feedback = state.feedback.list_scene_feedback(domain=domain, scene_id=scene_id)
         return templates.TemplateResponse(
             request,
             "scene.html",
-            _context(request, index=index, title=f"Scene: {scene_id}", scene=scene, tasks=tasks),
+            _context(
+                request,
+                index=index,
+                title=f"Scene: {scene_id}",
+                scene=scene,
+                tasks=tasks,
+                scene_level_feedback=scene_feedback,
+                scene_open_feedback=[record for record in scene_feedback if record.status == "open"],
+            ),
+        )
+
+    @app.get("/domains/{domain}/scenes/{scene_id}/review", response_class=HTMLResponse)
+    async def scene_review_page(request: Request, domain: str, scene_id: str) -> HTMLResponse:
+        index = state.index()
+        scene = index.scenes.get(ReviewIndex.scene_key(domain, scene_id))
+        if scene is None:
+            raise HTTPException(status_code=404, detail="unknown scene")
+        tasks = [index.tasks[ReviewIndex.task_key(domain, scene_id, task_id)] for task_id in scene.tasks]
+        scene_feedback = state.feedback.list_scene_feedback(domain=domain, scene_id=scene_id)
+        feedback_ids = [record.id for record in scene_feedback]
+        return templates.TemplateResponse(
+            request,
+            "scene_review.html",
+            _context(
+                request,
+                index=index,
+                title=f"Scene Review: {scene_id}",
+                scene=scene,
+                tasks=tasks,
+                scene_review=_build_scene_review_samples(index=index, tasks=tasks, samples_per_query=2),
+                scene_level_feedback=scene_feedback,
+                scene_open_feedback=[record for record in scene_feedback if record.status == "open"],
+                reviewer_comments_by_feedback=state.feedback.comments_by_feedback(feedback_ids),
+                agent_notes_by_feedback=state.feedback.notes_by_feedback(feedback_ids),
+                feedback_thread_events_by_feedback=state.feedback.thread_events_by_feedback(feedback_ids),
+            ),
+        )
+
+    @app.post("/domains/{domain}/scenes/{scene_id}/issues")
+    @app.post("/domains/{domain}/scenes/{scene_id}/feedback")
+    async def scene_feedback_submit(request: Request, domain: str, scene_id: str) -> RedirectResponse:
+        index = state.index()
+        scene = index.scenes.get(ReviewIndex.scene_key(domain, scene_id))
+        if scene is None:
+            raise HTTPException(status_code=404, detail="unknown scene")
+        data = await _request_data(request)
+        try:
+            state.feedback.add_scene_feedback(
+                domain=domain,
+                scene_id=scene_id,
+                comment=str(data.get("comment", "")),
+                author=str(data.get("author", "")),
+                category=str(data.get("category", "other")),
+                severity=str(data.get("severity", "issue")),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+        next_url = _safe_next(str(data.get("next", "")))
+        if next_url != "/":
+            return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
+        return RedirectResponse(
+            _app_path(resolved_base_url, f"/domains/{_url_segment(domain)}/scenes/{_url_segment(scene_id)}/review#scene-feedback"),
+            status_code=303,
         )
 
     @app.get("/domains/{domain}/scenes/{scene_id}/tasks/{task_id}", response_class=HTMLResponse)
@@ -338,12 +839,14 @@ def create_app(
                 payload=payload,
                 feedback=feedback_records,
                 reviewer_comments_by_feedback=state.feedback.comments_by_feedback(feedback_ids),
-                agent_notes_by_feedback=state.feedback.notes_by_feedback(record.id for record in feedback_records),
+                agent_notes_by_feedback=state.feedback.notes_by_feedback(feedback_ids),
+                feedback_thread_events_by_feedback=state.feedback.thread_events_by_feedback(feedback_ids),
                 previous_uid=previous_uid,
                 next_uid=next_uid,
             ),
         )
 
+    @app.post("/samples/{sample_uid}/issues")
     @app.post("/samples/{sample_uid}/feedback")
     async def sample_feedback_submit(request: Request, sample_uid: str) -> RedirectResponse:
         index = state.index()
@@ -363,7 +866,11 @@ def create_app(
             return RedirectResponse(_app_path(resolved_base_url, next_url), status_code=303)
         return RedirectResponse(_app_path(resolved_base_url, f"/samples/{sample_uid}#feedback"), status_code=303)
 
-    @app.get("/feedback/{feedback_id}", response_class=HTMLResponse)
+    @app.get("/feedback/{feedback_id}")
+    async def feedback_detail_redirect(feedback_id: str) -> RedirectResponse:
+        return RedirectResponse(_app_path(resolved_base_url, f"/issues/{_url_segment(feedback_id)}"), status_code=303)
+
+    @app.get("/issues/{feedback_id}", response_class=HTMLResponse)
     async def feedback_detail_page(request: Request, feedback_id: str) -> HTMLResponse:
         index = state.index()
         try:
@@ -372,27 +879,26 @@ def create_app(
             raise HTTPException(status_code=404, detail="unknown feedback") from None
         sample = index.samples.get(record.sample_uid) if record.sample_uid else None
         task = index.tasks.get(ReviewIndex.task_key(record.domain, record.scene_id, record.task_id))
-        task_path = (
-            f"/domains/{_url_segment(record.domain)}"
-            f"/scenes/{_url_segment(record.scene_id)}"
-            f"/tasks/{_url_segment(record.task_id)}"
-        )
+        task_path = _feedback_task_path(record)
         return templates.TemplateResponse(
             request,
             "feedback_detail.html",
             _context(
                 request,
                 index=index,
-                title="Feedback Thread",
+                title="Issue Thread",
                 feedback_record=record,
                 feedback_comments=state.feedback.list_comments_for_feedback(record.id),
                 feedback_notes=state.feedback.list_notes_for_feedback(record.id),
+                feedback_thread_events=state.feedback.thread_events_for_feedback(record.id),
                 feedback_sample=sample,
                 feedback_task=task,
                 feedback_task_path=task_path,
+                feedback_source_path=_feedback_source_path(record),
             ),
         )
 
+    @app.post("/issues/{feedback_id}")
     @app.post("/feedback/{feedback_id}")
     async def feedback_update_submit(request: Request, feedback_id: str) -> RedirectResponse:
         data = await _request_data(request)
@@ -410,6 +916,7 @@ def create_app(
         referer = request.headers.get("referer", "/")
         return RedirectResponse(_safe_next(referer), status_code=303)
 
+    @app.post("/issues/{feedback_id}/comments")
     @app.post("/feedback/{feedback_id}/comments")
     async def feedback_comment_submit(request: Request, feedback_id: str) -> RedirectResponse:
         data = await _request_data(request)
@@ -429,6 +936,7 @@ def create_app(
         referer = request.headers.get("referer", "/")
         return RedirectResponse(_safe_next(referer), status_code=303)
 
+    @app.post("/issues/{feedback_id}/notes")
     @app.post("/feedback/{feedback_id}/notes")
     async def feedback_note_submit(request: Request, feedback_id: str) -> RedirectResponse:
         data = await _request_data(request)
@@ -461,7 +969,7 @@ def create_app(
             task_id=task_id,
             prompt_pass=_truthy(data.get("prompt_pass")),
             image_pass=_truthy(data.get("image_pass")),
-            evidence_pass=_truthy(data.get("evidence_pass")),
+            annotation_pass=_truthy(data.get("annotation_pass")),
             distribution_pass=_truthy(data.get("distribution_pass")),
             solve_rate_pass=_truthy(data.get("solve_rate_pass")),
             notes=str(data.get("notes", "")),
@@ -470,6 +978,7 @@ def create_app(
         referer = request.headers.get("referer", "/")
         return RedirectResponse(_safe_next(referer), status_code=303)
 
+    @app.post("/domains/{domain}/scenes/{scene_id}/tasks/{task_id}/issues")
     @app.post("/domains/{domain}/scenes/{scene_id}/tasks/{task_id}/feedback")
     async def task_feedback_submit(request: Request, domain: str, scene_id: str, task_id: str) -> RedirectResponse:
         index = state.index()
@@ -555,7 +1064,7 @@ def create_app(
             task_id=task_id,
             prompt_pass=_truthy(data.get("prompt_pass", existing.prompt_pass)),
             image_pass=_truthy(data.get("image_pass", existing.image_pass)),
-            evidence_pass=_truthy(data.get("evidence_pass", existing.evidence_pass)),
+            annotation_pass=_truthy(data.get("annotation_pass", existing.annotation_pass)),
             distribution_pass=_truthy(data.get("distribution_pass", existing.distribution_pass)),
             solve_rate_pass=_truthy(data.get("solve_rate_pass", existing.solve_rate_pass)),
             notes=str(data.get("notes", existing.notes)),
@@ -569,6 +1078,40 @@ def create_app(
     @app.get("/api/feedback/export.jsonl")
     async def api_export_feedback(include_resolved: bool = True) -> Response:
         body = state.feedback.export_jsonl(include_resolved=include_resolved)
+        if body:
+            body += "\n"
+        return Response(body, media_type="application/x-ndjson")
+
+    @app.get("/api/three-d/objects/reviews")
+    async def api_three_d_object_reviews() -> Dict[str, Any]:
+        review_state = _build_three_d_object_review_state(feedback=state.feedback)
+        return {
+            "summary": dict(review_state["summary"]),
+            "reviews": [asdict(record) for record in state.feedback.three_d_object_reviews_by_profile().values()],
+        }
+
+    @app.get("/api/three-d/objects/reviews/export.jsonl")
+    async def api_export_three_d_object_reviews() -> Response:
+        body = state.feedback.export_three_d_object_reviews_jsonl()
+        if body:
+            body += "\n"
+        return Response(body, media_type="application/x-ndjson")
+
+    @app.get("/api/illustrations/objects/reviews")
+    async def api_illustration_object_reviews(renderer: str = "", category: str = "") -> Dict[str, Any]:
+        review_state = _build_illustration_object_review_state(
+            feedback=state.feedback,
+            selected_renderer=renderer,
+            selected_category=category,
+        )
+        return {
+            "summary": dict(review_state["summary"]),
+            "reviews": [asdict(record) for record in state.feedback.illustration_object_reviews_by_item().values()],
+        }
+
+    @app.get("/api/illustrations/objects/reviews/export.jsonl")
+    async def api_export_illustration_object_reviews() -> Response:
+        body = state.feedback.export_illustration_object_reviews_jsonl()
         if body:
             body += "\n"
         return Response(body, media_type="application/x-ndjson")
@@ -637,20 +1180,20 @@ def create_app(
         if image_path is None or not image_path.exists():
             raise HTTPException(status_code=404, detail="sample image missing")
         payload = load_sample_payload(index, sample)
-        evidence_gt = payload.get("evidence_gt", {}) if isinstance(payload, dict) else {}
+        annotation_gt = payload.get("annotation_gt", {}) if isinstance(payload, dict) else {}
         trace_payload = payload.get("trace_payload", {}) if isinstance(payload, dict) else {}
-        evidence_type = str(evidence_gt.get("type", sample.evidence_type)) if isinstance(evidence_gt, dict) else sample.evidence_type
-        evidence_value = evidence_gt.get("value", sample.evidence_value) if isinstance(evidence_gt, dict) else sample.evidence_value
-        overlay_type, overlay_value = resolve_overlay_evidence(
-            evidence_type=evidence_type,
-            evidence_value=evidence_value,
+        annotation_type = str(annotation_gt.get("type", sample.annotation_type)) if isinstance(annotation_gt, dict) else sample.annotation_type
+        annotation_value = annotation_gt.get("value", sample.annotation_value) if isinstance(annotation_gt, dict) else sample.annotation_value
+        overlay_type, overlay_value = resolve_overlay_annotation(
+            annotation_type=annotation_type,
+            annotation_value=annotation_value,
             trace_payload=trace_payload if isinstance(trace_payload, dict) else {},
         )
         with PILImage.open(image_path) as source:
-            rendered = render_evidence_overlay(
+            rendered = render_annotation_overlay(
                 source.convert("RGB"),
-                evidence_type=str(overlay_type),
-                evidence_value=overlay_value,
+                annotation_type=str(overlay_type),
+                annotation_value=overlay_value,
             )
             buffer = io.BytesIO()
             rendered.save(buffer, format="PNG")
@@ -720,71 +1263,134 @@ def _task_page_response(
             primary_task_open_feedback=task_open_feedback[0] if task_open_feedback else None,
             reviewer_comments_by_feedback=feedback.comments_by_feedback(feedback_ids),
             agent_notes_by_feedback=feedback.notes_by_feedback(feedback_ids),
+            feedback_thread_events_by_feedback=feedback.thread_events_by_feedback(feedback_ids),
         ),
     )
 
 
-def _build_feedback_work_queue(*, index: ReviewIndex, feedback: FeedbackStore) -> Dict[str, Any]:
+def _build_scene_review_samples(
+    *,
+    index: ReviewIndex,
+    tasks: list[Any],
+    samples_per_query: int = 2,
+) -> Dict[str, Any]:
+    task_groups: list[Dict[str, Any]] = []
+    summary = {
+        "task_count": len(tasks),
+        "query_count": 0,
+        "requested_card_count": 0,
+        "sample_card_count": 0,
+        "missing_card_count": 0,
+        "samples_per_query": int(samples_per_query),
+    }
+    for task in tasks:
+        query_groups: list[Dict[str, Any]] = []
+        for query_id in sorted(task.query_counts):
+            query_key = ReviewIndex.query_key(task.domain, task.scene_id, task.task_id, query_id)
+            sample_ids = list(index.samples_by_query.get(query_key, []))
+            cards: list[Dict[str, Any]] = []
+            for slot_index in range(int(samples_per_query)):
+                sample = index.samples[sample_ids[slot_index]] if slot_index < len(sample_ids) else None
+                if sample is None:
+                    summary["missing_card_count"] += 1
+                else:
+                    summary["sample_card_count"] += 1
+                cards.append(
+                    {
+                        "slot": slot_index + 1,
+                        "sample": sample,
+                        "missing": sample is None,
+                    }
+                )
+            summary["query_count"] += 1
+            summary["requested_card_count"] += int(samples_per_query)
+            query_groups.append(
+                {
+                    "query_id": str(query_id),
+                    "query_sample_count": int(task.query_counts.get(query_id, 0) or 0),
+                    "query_path": (
+                        f"/domains/{_url_segment(task.domain)}"
+                        f"/scenes/{_url_segment(task.scene_id)}"
+                        f"/tasks/{_url_segment(task.task_id)}"
+                        f"/queries/{_url_segment(query_id)}?view=images"
+                    ),
+                    "cards": cards,
+                }
+            )
+        task_groups.append(
+            {
+                "task": task,
+                "task_path": (
+                    f"/domains/{_url_segment(task.domain)}"
+                    f"/scenes/{_url_segment(task.scene_id)}"
+                    f"/tasks/{_url_segment(task.task_id)}"
+                ),
+                "query_groups": query_groups,
+            }
+        )
+    return {"summary": summary, "task_groups": task_groups}
+
+
+def _build_feedback_work_queue(*, index: ReviewIndex, feedback: FeedbackStore, domain: str = "") -> Dict[str, Any]:
     open_feedback = feedback.list_open_feedback()
+    selected_domain = str(domain or "").strip()
+    if selected_domain:
+        open_feedback = [record for record in open_feedback if record.domain == selected_domain]
     open_by_task: Dict[str, list[Any]] = {}
     for record in open_feedback:
         key = ReviewIndex.task_key(record.domain, record.scene_id, record.task_id)
         open_by_task.setdefault(key, []).append(record)
 
-    audits = feedback.task_audits_by_task()
     task_entries = []
     summary = {
         "task_count": 0,
         "open_feedback_count": len(open_feedback),
-        "manual_missing_count": 0,
-        "solve_manual_missing_count": 0,
-        "automated_solve_missing_count": 0,
-        "automated_solve_not_accepted_count": 0,
     }
-    for task_key, task in sorted(index.tasks.items()):
-        audit = _effective_task_audit(
-            task,
-            audits.get(task_key) or TaskAuditRecord.empty(
-                domain=task.domain,
-                scene_id=task.scene_id,
-                task_id=task.task_id,
-            ),
-        )
-        missing_manual = []
-        if not audit.prompt_pass:
-            missing_manual.append("prompt")
-        if not audit.image_pass:
-            missing_manual.append("image")
-        if not audit.evidence_pass:
-            missing_manual.append("evidence")
-        if not audit.distribution_pass:
-            missing_manual.append("distribution")
-
+    for task_key, open_records in sorted(open_by_task.items()):
+        task = index.tasks.get(task_key)
+        indexed = task is not None
+        if task is None:
+            first_record = open_records[0]
+            if str(first_record.task_id):
+                task = SimpleNamespace(
+                    domain=first_record.domain,
+                    scene_id=first_record.scene_id,
+                    task_id=first_record.task_id,
+                    sample_count=0,
+                )
+            else:
+                scene = index.scenes.get(ReviewIndex.scene_key(first_record.domain, first_record.scene_id))
+                task = SimpleNamespace(
+                    domain=first_record.domain,
+                    scene_id=first_record.scene_id,
+                    task_id="Scene review",
+                    sample_count=int(getattr(scene, "sample_count", 0) or 0),
+                )
+                indexed = scene is not None
         open_records = open_by_task.get(task_key, [])
-        flags = []
-        if missing_manual:
-            summary["manual_missing_count"] += 1
-            flags.append({"kind": "manual", "label": "Missing manual audit: " + ", ".join(missing_manual)})
-        if not audit.solve_rate_pass:
-            summary["solve_manual_missing_count"] += 1
-            flags.append({"kind": "manual", "label": "Solve-rate manual checkbox not checked"})
-        if not task.solve_stats:
-            summary["automated_solve_missing_count"] += 1
-            flags.append({"kind": "solve", "label": "Automated solve-rate missing"})
-        elif not task.solve_pass:
-            summary["automated_solve_not_accepted_count"] += 1
-            flags.append({"kind": "solve", "label": "Automated solve-rate not accepted"})
-        if open_records:
-            flags.append({"kind": "feedback", "label": f"{len(open_records)} open feedback"})
-        if not flags:
-            continue
+        scene_scope = not str(open_records[0].task_id) if open_records else False
         task_entries.append(
             {
                 "task": task,
-                "audit": audit,
-                "flags": flags,
+                "scope": "scene" if scene_scope else "task",
+                "indexed": indexed,
+                "flags": (
+                    [
+                        {
+                            "kind": "feedback",
+                            "label": f"{len(open_records)} open issue"
+                            f"{'' if len(open_records) == 1 else 's'}",
+                        }
+                    ]
+                    + ([{"kind": "scene", "label": "scene-level"}] if scene_scope else [])
+                    + ([] if indexed else [{"kind": "stale", "label": "not in current index"}])
+                ),
                 "open_feedback": open_records,
-                "task_path": f"/domains/{_url_segment(task.domain)}/scenes/{_url_segment(task.scene_id)}/tasks/{_url_segment(task.task_id)}",
+                "task_path": (
+                    f"/domains/{_url_segment(task.domain)}/scenes/{_url_segment(task.scene_id)}/review"
+                    if scene_scope
+                    else f"/domains/{_url_segment(task.domain)}/scenes/{_url_segment(task.scene_id)}/tasks/{_url_segment(task.task_id)}"
+                ),
             }
         )
 
@@ -801,6 +1407,412 @@ def _build_feedback_work_queue(*, index: ReviewIndex, feedback: FeedbackStore) -
         scenes = list(domain_group["scenes"].values())
         groups.append({"domain": domain_group["domain"], "scenes": scenes})
     return {"groups": groups, "summary": summary}
+
+
+def _feedback_domain_tabs(
+    *,
+    index: ReviewIndex,
+    feedback_by_domain: Dict[str, Dict[str, int]],
+    selected_domain: str,
+) -> list[Dict[str, Any]]:
+    total_open = sum(int(value.get("open", 0)) for value in feedback_by_domain.values())
+    tabs: list[Dict[str, Any]] = [
+        {
+            "domain": "",
+            "label": "All",
+            "path": "/issues",
+            "open": total_open,
+            "active": not selected_domain,
+        }
+    ]
+    domain_names = sorted(set(index.domains) | set(feedback_by_domain))
+    for domain_name in domain_names:
+        open_count = int(feedback_by_domain.get(domain_name, {}).get("open", 0))
+        tabs.append(
+            {
+                "domain": domain_name,
+                "label": domain_name,
+                "path": f"/issues?domain={_url_segment(domain_name)}",
+                "open": open_count,
+                "active": selected_domain == domain_name,
+            }
+        )
+    return tabs
+
+
+def _build_three_d_object_review_state(
+    *,
+    feedback: FeedbackStore,
+    selected_group: str = "",
+    selected_decision: str = "",
+) -> Dict[str, Any]:
+    profiles = _three_d_object_profiles()
+    reviews_by_profile = feedback.three_d_object_reviews_by_profile()
+    group_counts: Dict[str, int] = {}
+    group_labels: Dict[str, str] = {}
+    for profile in profiles:
+        group_id = _three_d_object_group_id(profile)
+        group_counts[group_id] = group_counts.get(group_id, 0) + 1
+        group_labels.setdefault(group_id, _three_d_object_group_label(profile))
+    selected_group_id = str(selected_group or "all")
+    if selected_group_id not in {"all", *group_counts.keys()}:
+        selected_group_id = "all"
+    decision_filter = str(selected_decision or "").strip().lower()
+    if decision_filter not in {"approve", "remove", "improve", "unreviewed"}:
+        decision_filter = ""
+    selected_profiles = tuple(
+        profile
+        for profile in profiles
+        if selected_group_id == "all" or _three_d_object_group_id(profile) == selected_group_id
+    )
+    summary = {
+        "total": len(selected_profiles),
+        "all": len(selected_profiles),
+        "approve": 0,
+        "remove": 0,
+        "improve": 0,
+        "unreviewed": 0,
+    }
+    entries: list[Dict[str, Any]] = []
+    for profile in selected_profiles:
+        review = reviews_by_profile.get(str(profile.profile_id))
+        if review is None:
+            review = _empty_three_d_object_review_for_profile(profile)
+        decision = str(review.decision or "").strip().lower()
+        if decision not in {"approve", "remove", "improve"}:
+            decision = "unreviewed"
+        summary[decision] += 1
+        if decision_filter and decision != decision_filter:
+            continue
+        next_path = f"/three-d/objects?group={_url_segment(selected_group_id)}"
+        if decision_filter:
+            next_path = f"{next_path}&decision={_url_segment(decision_filter)}"
+        entries.append(
+            {
+                "profile": profile,
+                "review": review,
+                "decision": decision,
+                "status_label": _three_d_object_status_label(decision),
+                "anchor_id": _three_d_object_anchor_id(profile.profile_id),
+                "preview_path": f"/three-d/objects/previews/{quote(str(profile.profile_id), safe='')}.png",
+                "group_id": _three_d_object_group_id(profile),
+                "group_label": _three_d_object_group_label(profile),
+                "next_path": f"{next_path}#{_three_d_object_anchor_id(profile.profile_id)}",
+            }
+        )
+    summary["total"] = len(entries)
+    group_tabs = (
+        {
+            "id": "all",
+            "label": "All groups",
+            "count": len(profiles),
+            "active": selected_group_id == "all",
+            "href": "/three-d/objects"
+            + (f"?decision={_url_segment(decision_filter)}" if decision_filter else ""),
+        },
+        *tuple(
+            {
+                "id": group_id,
+                "label": group_labels[group_id],
+                "count": group_counts[group_id],
+                "active": selected_group_id == group_id,
+                "href": (
+                    f"/three-d/objects?group={_url_segment(group_id)}"
+                    + (f"&decision={_url_segment(decision_filter)}" if decision_filter else "")
+                ),
+            }
+            for group_id in sorted(
+                group_counts,
+                key=lambda value: (_three_d_object_group_sort_index(value), group_labels[value]),
+            )
+        ),
+    )
+    group_query = "" if selected_group_id == "all" else f"?group={_url_segment(selected_group_id)}"
+    group_and = "&" if group_query else "?"
+    decision_tabs = (
+        {
+            "id": "",
+            "label": "All decisions",
+            "count": summary["all"],
+            "active": not decision_filter,
+            "href": f"/three-d/objects{group_query}",
+        },
+        {
+            "id": "approve",
+            "label": "Approved",
+            "count": summary["approve"],
+            "active": decision_filter == "approve",
+            "href": f"/three-d/objects{group_query}{group_and}decision=approve",
+        },
+        {
+            "id": "improve",
+            "label": "Improve",
+            "count": summary["improve"],
+            "active": decision_filter == "improve",
+            "href": f"/three-d/objects{group_query}{group_and}decision=improve",
+        },
+        {
+            "id": "remove",
+            "label": "Remove",
+            "count": summary["remove"],
+            "active": decision_filter == "remove",
+            "href": f"/three-d/objects{group_query}{group_and}decision=remove",
+        },
+        {
+            "id": "unreviewed",
+            "label": "Unreviewed",
+            "count": summary["unreviewed"],
+            "active": decision_filter == "unreviewed",
+            "href": f"/three-d/objects{group_query}{group_and}decision=unreviewed",
+        },
+    )
+    return {
+        "selected_group": selected_group_id,
+        "selected_decision": decision_filter,
+        "group_tabs": group_tabs,
+        "decision_tabs": decision_tabs,
+        "entries": entries,
+        "summary": summary,
+        "decisions": (
+            {"id": "approve", "label": "Approve"},
+            {"id": "remove", "label": "Remove"},
+            {"id": "improve", "label": "Improve rendering"},
+        ),
+    }
+
+
+def _empty_three_d_object_review_for_profile(profile: Any) -> Any:
+    from .models import ThreeDObjectReviewRecord
+
+    return ThreeDObjectReviewRecord(
+        profile_id=str(profile.profile_id),
+        canonical_id=str(profile.canonical_id),
+        object_type=str(profile.object_type),
+        renderer=str(profile.renderer),
+        source_scene=str(profile.source_scene),
+    )
+
+
+@lru_cache(maxsize=1)
+def _three_d_object_profiles() -> tuple[Any, ...]:
+    from trace.tasks.three_d.shared.object_resources import THREE_D_OBJECT_PROFILES
+
+    return tuple(
+        sorted(
+            THREE_D_OBJECT_PROFILES,
+            key=lambda profile: (
+                _three_d_object_group_sort_index(_three_d_object_group_id(profile)),
+                str(profile.size_class) != "small",
+                str(profile.display_name).lower(),
+                str(profile.source_scene),
+                str(profile.role),
+                str(profile.object_type),
+            ),
+        )
+    )
+
+
+@lru_cache(maxsize=1)
+def _three_d_object_profile_by_id() -> Dict[str, Any]:
+    return {str(profile.profile_id): profile for profile in _three_d_object_profiles()}
+
+
+@lru_cache(maxsize=512)
+def _three_d_object_preview_png(profile_id: str) -> bytes:
+    from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_object_profile_preview
+
+    profile = _three_d_object_profile_by_id().get(str(profile_id))
+    if profile is None:
+        raise ValueError(f"unknown 3D object profile: {profile_id}")
+    preview = render_three_d_object_profile_preview(
+        profile,
+        canvas_width=420,
+        canvas_height=330,
+        instance_seed=17,
+        crop_to_object=True,
+        crop_padding_px=18,
+    )
+    buffer = io.BytesIO()
+    preview.image.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def _decode_three_d_profile_token(profile_token: str) -> str:
+    token = unquote(str(profile_token))
+    if token.endswith(".png"):
+        token = token[:-4]
+    return token
+
+
+def _three_d_object_group_id(profile: Any) -> str:
+    return f"{profile.source_scene}__{profile.renderer}"
+
+
+def _three_d_object_group_label(profile: Any) -> str:
+    labels = {
+        "object_scene__object_scene_shape": "Object Scene",
+        "object_cluster__object_scene_shape": "Object Cluster",
+        "room__room_wall_object": "Room Wall",
+        "room__room_floor_object": "Room Floor",
+        "street__street_object": "Street",
+        "warehouse__warehouse_object": "Warehouse",
+    }
+    return labels.get(_three_d_object_group_id(profile), f"{profile.source_scene} / {profile.renderer}")
+
+
+def _three_d_object_group_sort_index(group_id: str) -> int:
+    order = {
+        "object_scene__object_scene_shape": 0,
+        "object_cluster__object_scene_shape": 1,
+        "room__room_wall_object": 2,
+        "room__room_floor_object": 3,
+        "street__street_object": 4,
+        "warehouse__warehouse_object": 5,
+    }
+    return order.get(str(group_id), 99)
+
+
+def _three_d_object_status_label(decision: str) -> str:
+    return {
+        "approve": "Approved",
+        "remove": "Remove",
+        "improve": "Improve rendering",
+        "unreviewed": "Unreviewed",
+    }.get(str(decision), "Unreviewed")
+
+
+def _three_d_object_anchor_id(profile_id: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_-]+", "-", str(profile_id)).strip("-")
+    return f"three-d-object-{cleaned or 'profile'}"
+
+
+def _build_illustration_object_review_state(
+    *,
+    feedback: FeedbackStore,
+    selected_renderer: str,
+    selected_category: str,
+    selected_decision: str = "",
+) -> Dict[str, Any]:
+    renderer = str(selected_renderer or "")
+    if renderer not in ILLUSTRATION_RENDERER_LABELS:
+        renderer = next(iter(ILLUSTRATION_RENDERER_LABELS))
+    category = str(selected_category or "all")
+    decision_filter = str(selected_decision or "").strip().lower()
+    if decision_filter not in {*ILLUSTRATION_OBJECT_REVIEW_DECISIONS, "unreviewed"}:
+        decision_filter = ""
+    category_tabs = illustration_object_category_tabs(
+        renderer_style=renderer,
+        selected_category=category,
+    )
+    valid_categories = {str(tab["category"]) for tab in category_tabs}
+    if category not in valid_categories:
+        category = "all"
+        category_tabs = illustration_object_category_tabs(
+            renderer_style=renderer,
+            selected_category=category,
+        )
+    items = filtered_illustration_object_items(
+        renderer_style=renderer,
+        category=category,
+    )
+    reviews_by_item = feedback.illustration_object_reviews_by_item()
+    summary = {
+        "total": len(items),
+        "all": len(items),
+        "approve": 0,
+        "remove": 0,
+        "improve": 0,
+        "unreviewed": 0,
+    }
+    entries: list[Dict[str, Any]] = []
+    for item in items:
+        review = reviews_by_item.get(str(item.item_id))
+        if review is None:
+            review = _empty_illustration_object_review_for_item(item)
+        decision = str(review.decision or "").strip().lower()
+        if decision not in ILLUSTRATION_OBJECT_REVIEW_DECISIONS:
+            decision = "unreviewed"
+        summary[decision] += 1
+        if decision_filter and decision != decision_filter:
+            continue
+        next_path = f"/illustrations/objects?renderer={_url_segment(renderer)}&category={_url_segment(category)}"
+        if decision_filter:
+            next_path = f"{next_path}&decision={_url_segment(decision_filter)}"
+        entries.append(
+            {
+                "item": item,
+                "review": review,
+                "decision": decision,
+                "status_label": _illustration_object_status_label(decision),
+                "anchor_id": _illustration_object_anchor_id(item.item_id),
+                "preview_path": f"/illustrations/objects/previews/{quote(str(item.item_id), safe='')}.png",
+                "next_path": f"{next_path}#{_illustration_object_anchor_id(item.item_id)}",
+            }
+        )
+    summary["total"] = len(entries)
+    decision_tabs = (
+        {"id": "", "label": "All decisions", "count": summary["all"], "active": not decision_filter},
+        {"id": "approve", "label": "Approved", "count": summary["approve"], "active": decision_filter == "approve"},
+        {"id": "improve", "label": "Improve", "count": summary["improve"], "active": decision_filter == "improve"},
+        {"id": "remove", "label": "Remove", "count": summary["remove"], "active": decision_filter == "remove"},
+        {"id": "unreviewed", "label": "Unreviewed", "count": summary["unreviewed"], "active": decision_filter == "unreviewed"},
+    )
+    return {
+        "selected_renderer": renderer,
+        "selected_category": category,
+        "selected_decision": decision_filter,
+        "renderer_tabs": illustration_object_renderer_tabs(renderer),
+        "category_tabs": category_tabs,
+        "decision_tabs": decision_tabs,
+        "entries": entries,
+        "summary": summary,
+        "decisions": (
+            {"id": "approve", "label": "Approve"},
+            {"id": "remove", "label": "Remove"},
+            {"id": "improve", "label": "Improve rendering"},
+        ),
+    }
+
+
+def _empty_illustration_object_review_for_item(item: Any) -> Any:
+    from .models import IllustrationObjectReviewRecord
+
+    return IllustrationObjectReviewRecord(
+        item_id=str(item.item_id),
+        renderer_style=str(item.renderer_style),
+        category=str(item.category),
+        object_type=str(item.object_type),
+        label=str(item.display_label),
+    )
+
+
+@lru_cache(maxsize=1024)
+def _illustration_object_preview_png(item_id: str) -> bytes:
+    preview = render_illustration_object_review_image(str(item_id))
+    buffer = io.BytesIO()
+    preview.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def _decode_illustration_object_token(item_token: str) -> str:
+    token = unquote(str(item_token))
+    if token.endswith(".png"):
+        token = token[:-4]
+    return token
+
+
+def _illustration_object_status_label(decision: str) -> str:
+    return {
+        "approve": "Approved",
+        "remove": "Remove",
+        "improve": "Improve rendering",
+        "unreviewed": "Unreviewed",
+    }.get(str(decision), "Unreviewed")
+
+
+def _illustration_object_anchor_id(item_id: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_-]+", "-", str(item_id)).strip("-")
+    return f"illustration-object-{cleaned or 'item'}"
 
 
 def _context(request: Request, *, index: ReviewIndex, title: str, **extra: Any) -> Dict[str, Any]:
@@ -823,6 +1835,7 @@ def _context(request: Request, *, index: ReviewIndex, title: str, **extra: Any) 
         "task_status_by_task": task_status_by_task,
         "status_by_scene": status_by_scene,
         "status_by_domain": status_by_domain,
+        "feedback_source_path": _feedback_source_path,
     }
     context.update(extra)
     return context
@@ -841,16 +1854,17 @@ def _status_summaries(index: ReviewIndex, audit_by_task: Dict[str, Any]) -> tupl
         task_status[task_key] = payload
         scene_entry = scene_status.setdefault(
             ReviewIndex.scene_key(task.domain, task.scene_id),
-            {"total": 0, "manual_pass": 0, "solve_pass": 0, "complete": 0},
+            {"total": 0, "review_pass": 0, "solve_rate_pass": 0, "solve_artifact_pass": 0, "complete": 0},
         )
         domain_entry = domain_status.setdefault(
             task.domain,
-            {"total": 0, "manual_pass": 0, "solve_pass": 0, "complete": 0},
+            {"total": 0, "review_pass": 0, "solve_rate_pass": 0, "solve_artifact_pass": 0, "complete": 0},
         )
         for entry in (scene_entry, domain_entry):
             entry["total"] += 1
-            entry["manual_pass"] += int(payload["manual_pass"])
-            entry["solve_pass"] += int(payload["solve_pass"])
+            entry["review_pass"] += int(payload["review_pass"])
+            entry["solve_rate_pass"] += int(payload["solve_rate_pass"])
+            entry["solve_artifact_pass"] += int(payload["solve_artifact_pass"])
             entry["complete"] += int(payload["complete"])
     return task_status, scene_status, domain_status
 
@@ -884,14 +1898,22 @@ def _empty_task_audit(domain: str, scene_id: str, task_id: str) -> TaskAuditReco
 
 
 def _task_status_payload(*, task: Any, audit: Any) -> Dict[str, Any]:
-    manual_pass = bool(getattr(audit, "manual_pass", False))
-    solve_pass = bool(getattr(task, "solve_pass", False))
+    review_pass = bool(getattr(audit, "review_pass", False))
+    solve_rate_pass = bool(getattr(audit, "solve_rate_pass", False))
+    solve_artifact_pass = bool(getattr(task, "solve_pass", False))
+    complete = bool(review_pass and solve_rate_pass)
     return {
-        "manual_pass": manual_pass,
-        "manual_count": int(getattr(audit, "passed_count", 0)),
-        "manual_total": int(getattr(audit, "total_count", 4)),
-        "solve_pass": solve_pass,
-        "complete": manual_pass and solve_pass,
+        "review_pass": review_pass,
+        "review_count": int(getattr(audit, "review_count", 0)),
+        "review_total": int(getattr(audit, "review_total", 4)),
+        "solve_rate_pass": solve_rate_pass,
+        "solve_artifact_pass": solve_artifact_pass,
+        "complete": complete,
+        # Backward-compatible API aliases.
+        "manual_pass": review_pass,
+        "manual_count": int(getattr(audit, "review_count", 0)),
+        "manual_total": int(getattr(audit, "review_total", 4)),
+        "solve_pass": solve_artifact_pass,
     }
 
 
@@ -1055,6 +2077,222 @@ def _url_segment(value: Any) -> str:
     return quote(str(value), safe="")
 
 
+def _feedback_task_path(record: Any) -> str:
+    if not str(getattr(record, "task_id", "") or ""):
+        return (
+            f"/domains/{_url_segment(record.domain)}"
+            f"/scenes/{_url_segment(record.scene_id)}"
+            "/review"
+        )
+    return (
+        f"/domains/{_url_segment(record.domain)}"
+        f"/scenes/{_url_segment(record.scene_id)}"
+        f"/tasks/{_url_segment(record.task_id)}"
+    )
+
+
+def _feedback_source_path(record: Any) -> str:
+    taxonomy_path = _taxonomy_feedback_source_path(record)
+    if taxonomy_path:
+        return taxonomy_path
+    task_path = _feedback_task_path(record)
+    if not str(getattr(record, "task_id", "") or ""):
+        return f"{task_path}#scene-feedback"
+    if not getattr(record, "sample_uid", ""):
+        return task_path
+    query_id = str(getattr(record, "query_id", "") or "")
+    if query_id:
+        task_path = f"{task_path}/queries/{_url_segment(query_id)}"
+    return f"{task_path}?view=rows#sample-{_url_segment(getattr(record, 'sample_uid', ''))}"
+
+
+def _taxonomy_task_matches(task: Any, query: str) -> bool:
+    haystack = " ".join(
+        [
+            str(task.domain),
+            str(task.scene_id),
+            str(task.current_task_id),
+            str(task.current_objective),
+            str(task.decision),
+            " ".join(str(value) for value in getattr(task, "proposed_task_ids", [])),
+            " ".join(str(getattr(row, "query_id", "")) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "proposed_objective", "")) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "program_signature_id", "")) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "program_schema", "")) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "base_program_contract", "")) for row in getattr(task, "queries", [])),
+            " ".join(json.dumps(getattr(row, "program_arguments", {}), sort_keys=True) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "answer_schema", "")) for row in getattr(task, "queries", [])),
+            " ".join(str(getattr(row, "annotation_schema", "")) for row in getattr(task, "queries", [])),
+        ]
+    ).lower()
+    return query in haystack
+
+
+def _taxonomy_task_approved(task: Any, review_by_task: Dict[str, Any]) -> bool:
+    review = review_by_task.get(getattr(task, "task_key", ""))
+    return bool(getattr(review, "approved", False))
+
+
+def _taxonomy_task_path(round_id: str, task: Any) -> str:
+    return (
+        f"/taxonomy/{_taxonomy_round_slug(round_id)}"
+        f"/domains/{_url_segment(getattr(task, 'domain', ''))}"
+        f"/scenes/{_url_segment(getattr(task, 'scene_id', ''))}"
+        f"/tasks/{_url_segment(getattr(task, 'current_task_id', ''))}"
+    )
+
+
+def _next_taxonomy_task(
+    *,
+    tasks: list[Any],
+    current_task: Any,
+    review_by_task: Dict[str, Any],
+    pending_only: bool,
+) -> Any | None:
+    current_key = str(getattr(current_task, "task_key", ""))
+    found_current = False
+    for candidate in tasks:
+        candidate_key = str(getattr(candidate, "task_key", ""))
+        if not found_current:
+            found_current = candidate_key == current_key
+            continue
+        if pending_only and _taxonomy_task_approved(candidate, review_by_task):
+            continue
+        return candidate
+    return None
+
+
+def _taxonomy_review_progress(
+    *,
+    tasks: list[Any],
+    review_by_task: Dict[str, Any],
+    open_issue_counts: Dict[str, int],
+) -> Any:
+    total = len(tasks)
+    approved = sum(1 for task in tasks if _taxonomy_task_approved(task, review_by_task))
+    open_issue_tasks = sum(1 for task in tasks if open_issue_counts.get(getattr(task, "task_key", ""), 0))
+    open_issues = sum(open_issue_counts.get(getattr(task, "task_key", ""), 0) for task in tasks)
+    pending = max(0, total - approved)
+    return SimpleNamespace(
+        total=total,
+        approved=approved,
+        pending=pending,
+        open_issue_tasks=open_issue_tasks,
+        open_issues=open_issues,
+        percent=(100.0 * approved / total) if total else 0.0,
+    )
+
+
+def _taxonomy_open_issue_counts(records: list[Any], round_id: str) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for key, task_records in _taxonomy_open_issues_by_task(records, round_id).items():
+        counts[key] = len(task_records)
+    return counts
+
+
+def _taxonomy_open_issues_by_task(records: list[Any], round_id: str) -> Dict[str, list[Any]]:
+    issues_by_task: Dict[str, list[Any]] = {}
+    for record in _taxonomy_feedback_records(records, round_id):
+        if str(getattr(record, "status", "")) != "open":
+            continue
+        key = ReviewIndex.task_key(
+            str(getattr(record, "domain", "")),
+            str(getattr(record, "scene_id", "")),
+            str(getattr(record, "task_id", "")),
+        )
+        issues_by_task.setdefault(key, []).append(record)
+    return issues_by_task
+
+
+def _build_taxonomy_tree(units: list[Any]) -> list[Any]:
+    by_domain: Dict[str, Dict[str, Dict[str, list[Any]]]] = {}
+    for unit in units:
+        domain = str(getattr(unit, "domain", ""))
+        root = str(getattr(unit, "semantic_root", "")) or "uncategorized"
+        family = str(getattr(unit, "semantic_family", "")) or "uncategorized"
+        by_domain.setdefault(domain, {}).setdefault(root, {}).setdefault(family, []).append(unit)
+
+    tree: list[Any] = []
+    for domain, roots in sorted(by_domain.items()):
+        root_entries: list[Any] = []
+        for root, families in sorted(roots.items()):
+            family_entries: list[Any] = []
+            for family, family_units in sorted(families.items()):
+                ordered_units = sorted(family_units, key=lambda unit: (unit.scene_id, unit.proposed_task_id))
+                family_entries.append(
+                    SimpleNamespace(
+                        family=family,
+                        unit_count=len(ordered_units),
+                        units=ordered_units,
+                    )
+                )
+            root_entries.append(
+                SimpleNamespace(
+                    root=root,
+                    unit_count=sum(entry.unit_count for entry in family_entries),
+                    families=family_entries,
+                )
+            )
+        tree.append(
+            SimpleNamespace(
+                domain=domain,
+                unit_count=sum(entry.unit_count for entry in root_entries),
+                roots=root_entries,
+            )
+        )
+    return tree
+
+
+def _normalize_taxonomy_round(round_slug: str) -> str:
+    text = str(round_slug or DEFAULT_TAXONOMY_ROUND).strip().lower()
+    aliases = {
+        "current": DEFAULT_TAXONOMY_ROUND,
+        "v0": DEFAULT_TAXONOMY_ROUND,
+        "contract-v0": DEFAULT_TAXONOMY_ROUND,
+        "contract_v0": DEFAULT_TAXONOMY_ROUND,
+        "contract-v0-reanalysis": DEFAULT_TAXONOMY_ROUND,
+    }
+    return aliases.get(text, text)
+
+
+def _taxonomy_round_slug(round_id: str) -> str:
+    text = _normalize_taxonomy_round(round_id)
+    if text == DEFAULT_TAXONOMY_ROUND:
+        return "contract-v0"
+    return text
+
+
+def _taxonomy_feedback_prefix(round_id: str, *, query_id: str = "") -> str:
+    normalized_round = _normalize_taxonomy_round(round_id)
+    query_text = str(query_id or "").strip()
+    if query_text:
+        return f"[taxonomy:{normalized_round} query={query_text}]"
+    return f"[taxonomy:{normalized_round}]"
+
+
+def _taxonomy_feedback_records(records: list[Any], round_id: str) -> list[Any]:
+    round_prefix = f"[taxonomy:{_normalize_taxonomy_round(round_id)}"
+    return [record for record in records if str(getattr(record, "comment", "")).startswith(round_prefix)]
+
+
+def _taxonomy_feedback_source_path(record: Any) -> str:
+    comment = str(getattr(record, "comment", ""))
+    match = re.match(r"\[taxonomy:([a-z0-9_-]+)(?: query=([^\]]+))?\]", comment)
+    if not match:
+        return ""
+    round_slug = _taxonomy_round_slug(match.group(1))
+    path = (
+        f"/taxonomy/{_url_segment(round_slug)}"
+        f"/domains/{_url_segment(getattr(record, 'domain', ''))}"
+        f"/scenes/{_url_segment(getattr(record, 'scene_id', ''))}"
+        f"/tasks/{_url_segment(getattr(record, 'task_id', ''))}"
+    )
+    query_id = str(match.group(2) or "").strip()
+    if query_id:
+        path = f"{path}#query-{_url_segment(query_id)}"
+    return path
+
+
 def _static_version(static_dir: Path) -> str:
     mtimes = []
     for filename in ("app.css", "app.js"):
@@ -1114,6 +2352,19 @@ def _app_path(base_url: str, path: str = "") -> str:
     return f"{base}{suffix}" if base else suffix
 
 
+def _strip_base_url_from_scope(scope: dict[str, Any], base_url: str) -> None:
+    """Accept requests whose proxy prefix was not stripped before forwarding."""
+
+    base = _normalize_base_url(base_url)
+    if not base:
+        return
+    path = str(scope.get("path") or "")
+    if path == base:
+        scope["path"] = "/"
+    elif path.startswith(f"{base}/"):
+        scope["path"] = path[len(base) :] or "/"
+
+
 def _request_is_public(request: Request) -> bool:
     path = request.url.path
     return path.startswith("/static/") or path == "/login" or path == "/healthz"
@@ -1147,13 +2398,23 @@ def _truthy(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "on", "checked"}
 
 
+def _request_wants_json(request: Request) -> bool:
+    requested_with = str(request.headers.get("x-requested-with", "")).strip().lower()
+    accept = str(request.headers.get("accept", "")).strip().lower()
+    return requested_with in {"fetch", "xmlhttprequest"} or "application/json" in accept
+
+
 async def _request_data(request: Request) -> Dict[str, str]:
-    content_type = str(request.headers.get("content-type", ""))
+    content_type = str(request.headers.get("content-type", "")).lower()
     if "application/json" in content_type:
         payload = await request.json()
         if isinstance(payload, dict):
             return {str(key): "" if value is None else str(value) for key, value in payload.items()}
         return {}
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        items = form.multi_items() if hasattr(form, "multi_items") else form.items()
+        return {str(key): "" if value is None else str(value) for key, value in items}
     body = (await request.body()).decode("utf-8")
     parsed = parse_qs(body, keep_blank_values=True)
     return {str(key): values[-1] if values else "" for key, values in parsed.items()}

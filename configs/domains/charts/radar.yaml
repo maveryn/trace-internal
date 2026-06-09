@@ -14,6 +14,12 @@ generation:
     threshold_max: 7
     target_count_min: 1
     target_count_max: 6
+    panel_label_variant_weights:
+      subplot_letters: 1.0
+      named_compact: 0.75
+      technical_topics: 0.75
+      condition_labels: 0.5
+      temporal_sequence: 0.25
     min_condition_metric_count_min: 2
     min_condition_metric_count_max: 4
     query_id_weights:
@@ -79,20 +85,20 @@ prompt:
     bundle_id: charts_radar_v0
     scene_key: radar_profile_charts
     task_key: radar_profile_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_small_multiple_radar: small multiple radar charts. Each panel has the same metric spokes and one colored profile polygon; panel labels identify the separate radar charts
     object_description_single_radar_multi_profile: one radar chart with the same metric spokes for two colored profile polygons. The legend names the two profiles
     answer_hint_label: set "answer" to the exact visible panel label as a string
     answer_hint_count: set "answer" to the count as an integer
-    evidence_hint_highlighted_metric_threshold_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel whose highlighted metric is above the threshold
-    evidence_hint_threshold_metric_count_for_panel: set "evidence" to an array of [x,y] pixel points, one at each counted vertex in the queried panel
-    evidence_hint_profile_advantage_count: set "evidence" to an array of pixel-space point pairs [[x, y], [x, y]], one pair for each counted metric; put the first named profile point first in each pair
-    evidence_hint_matching_condition_panel_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel satisfying the condition
-    json_example_highlighted_metric_threshold_panel_count: '{"evidence":[[160,130,432,390],[516,130,788,390],[872,130,1144,390]],"answer":3}'
-    json_example_threshold_metric_count_for_panel: '{"evidence":[[512,356],[588,420],[474,488]],"answer":3}'
-    json_example_profile_advantage_count: '{"evidence":[[[650,244],[622,270]],[[744,430],[708,408]]],"answer":2}'
-    json_example_matching_condition_panel_count: '{"evidence":[[160,130,432,390],[516,130,788,390]],"answer":2}'
+    annotation_hint_highlighted_metric_threshold_panel_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel whose highlighted metric is above the threshold
+    annotation_hint_threshold_metric_count_for_panel: set "annotation" to an array of [x,y] pixel points, one at each counted vertex in the queried panel
+    annotation_hint_profile_advantage_count: set "annotation" to an array of pixel-space point pairs [[x, y], [x, y]], one pair for each counted metric; put the first named profile point first in each pair
+    annotation_hint_matching_condition_panel_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel satisfying the condition
+    json_example_highlighted_metric_threshold_panel_count: '{"annotation":[[160,130,432,390],[516,130,788,390],[872,130,1144,390]],"answer":3}'
+    json_example_threshold_metric_count_for_panel: '{"annotation":[[512,356],[588,420],[474,488]],"answer":3}'
+    json_example_profile_advantage_count: '{"annotation":[[[650,244],[622,270]],[[744,430],[708,408]]],"answer":2}'
+    json_example_matching_condition_panel_count: '{"annotation":[[160,130,432,390],[516,130,788,390]],"answer":2}'
     json_example_answer_only_highlighted_metric_threshold_panel_count: '{"answer":3}'
     json_example_answer_only_threshold_metric_count_for_panel: '{"answer":3}'
     json_example_answer_only_profile_advantage_count: '{"answer":2}'

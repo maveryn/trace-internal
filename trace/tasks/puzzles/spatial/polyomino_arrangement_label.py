@@ -41,14 +41,13 @@ from ..shared.assembly_common import (
     unique_rotations,
 )
 from ..shared.assembly_scene import _draw_polyomino
-from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import (
     build_puzzle_complexity,
     clamp_unit_interval,
     normalize_int_with_bounds,
     resolve_puzzle_complexity_weights,
 )
-from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
 from ..shared.drawing import draw_rounded_rect
 from ..shared.option_layout import centered_option_grid_shape, centered_option_row_counts
 from ..shared.option_panels import render_puzzle_option_panel
@@ -62,7 +61,8 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
 TASK_ID = "puzzles_spatial_polyomino_arrangement_internal"
-POLYOMINO_MISSING_REGION_PIECE_LABEL_TASK_ID = "task_puzzles__polyomino_missing__polyomino_missing_region_piece_label"
+MARKED_REGION_PIECE_TASK_ID = "task_puzzles__polyomino_missing__marked_region_piece_label"
+RECTANGLE_COMPLEMENT_PIECE_TASK_ID = "task_puzzles__polyomino_missing__rectangle_complement_piece"
 POLYOMINO_MISSING_REGION_SCENE_ID = "polyomino_missing"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "marked_region_piece_label",
@@ -76,10 +76,6 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 SUPPORTED_COMPLEMENT_MATCHING_POLICIES: Tuple[str, ...] = (
     "exact_orientation",
     "rotation_reflection_allowed",
-)
-SUPPORTED_MISSING_REGION_QUERY_IDS: Tuple[str, ...] = (
-    "marked_region_piece_label",
-    "rectangle_complement_piece",
 )
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "marked_region_piece_label": 0.64,
@@ -149,15 +145,21 @@ _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, ta
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
 
 
-def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(
+    params: Mapping[str, Any],
+    *,
+    task_id: str,
+    supported_query_ids: Sequence[str],
+    instance_seed: int,
+) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic polyomino arrangement variant."""
 
     return resolve_puzzle_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_IDS,
-        task_id=TASK_ID,
+        supported_variants=tuple(str(query_id) for query_id in supported_query_ids),
+        task_id=str(task_id),
         explicit_key="query_id",
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
@@ -919,17 +921,22 @@ def _render_marked_region_scene(
 class _PuzzlesSpatialPolyominoArrangementBaseTask:
     """Answer static polyomino arrangement questions from options or board state."""
 
-    task_id = TASK_ID
     domain = "puzzles"
     task_group = "spatial"
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(
+            params,
+            task_id=str(self.task_id),
+            supported_query_ids=self.supported_query_ids,
+            instance_seed=int(instance_seed),
+        )
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset_params = decouple_axis_sampling(
             params,
-            preceding_axis_size=len(SUPPORTED_QUERY_IDS),
+            preceding_axis_size=len(tuple(self.supported_query_ids)),
             explicit_key="query_id",
         )
         render_params = resolve_assembly_render_params(
@@ -978,7 +985,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 render_params=render_params,
                 custom_params=custom_render_params,
             )
-            evidence_item_ids = [str(dataset["correct_option_panel_id"]), "marked_region"]
+            annotation_item_ids = [str(dataset["correct_option_panel_id"]), "marked_region"]
             question_format = "polyomino_marked_region_piece"
             view_family = "polyomino_marked_target_piece_option_puzzle"
         elif str(query_id) == "rectangle_complement_piece":
@@ -998,7 +1005,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 render_params=render_params,
                 custom_params=custom_render_params,
             )
-            evidence_item_ids = [str(dataset["correct_option_panel_id"]), "marked_region"]
+            annotation_item_ids = [str(dataset["correct_option_panel_id"]), "marked_region"]
             question_format = "polyomino_rectangle_complement_piece"
             view_family = "polyomino_rectangle_complement_piece_option_puzzle"
         else:
@@ -1026,8 +1033,8 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 "object_description_polyomino_strip",
                 "object_description_polyomino_card",
                 "object_description_polyomino_outline",
-                "evidence_hint_marked_region_piece_label",
-                "evidence_hint_rectangle_complement_piece",
+                "annotation_hint_marked_region_piece_label",
+                "annotation_hint_rectangle_complement_piece",
                 "json_example_marked_region_piece_label",
                 "json_example_rectangle_complement_piece",
                 "json_example_answer_only_marked_region_piece_label",
@@ -1048,12 +1055,12 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
                 "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
@@ -1063,14 +1070,14 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.bbox_map, evidence_item_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.bbox_map, annotation_item_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         option_count = int(dataset.get("option_count", len(dataset.get("option_specs", []))))
         target_cell_count = int(dataset.get("target_cell_count", len(dataset.get("target_cells", []))))
@@ -1097,6 +1104,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"puzzle_spatial_{str(scene_variant)}",
+                "scene_id": POLYOMINO_MISSING_REGION_SCENE_ID,
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
                     "query_id": str(query_id),
@@ -1131,6 +1139,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(render_params.canvas_height),
                 "coord_space": "pixel",
+                "scene_id": POLYOMINO_MISSING_REGION_SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "scene_style": dict(scene_style_meta),
@@ -1156,7 +1165,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 "answer_option_label": str(answer_value),
                 "correct_option_index": int(dataset["correct_option_index"]),
                 "correct_option_panel_id": str(dataset["correct_option_panel_id"]),
-                "evidence_item_ids": [str(item) for item in evidence_item_ids],
+                "annotation_item_ids": [str(item) for item in annotation_item_ids],
                 "option_specs": [dict(spec) for spec in dataset.get("option_specs", [])],
                 "solver_trace": dict(dataset.get("solver_trace", {})),
                 "variant_payload": {
@@ -1165,73 +1174,44 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                     if str(key) not in {"option_specs", "solver_trace"}
                 },
             },
-            "witness_symbolic": {"type": "bbox_set", "value": list(evidence_bboxes)},
-            "projected_evidence": dict(evidence_projection),
+            "witness_symbolic": {"type": "bbox_set", "value": list(annotation_bboxes)},
+            "projected_annotation": dict(annotation_projection),
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
+            scene_id=POLYOMINO_MISSING_REGION_SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
 @register_task
-class PuzzlesSpatialPolyominoMissingRegionPieceLabelTask(_PuzzlesSpatialPolyominoArrangementBaseTask):
-    """Choose the piece that fills a marked or rectangular missing region."""
+class PuzzlesSpatialPolyominoMarkedRegionPieceLabelTask(_PuzzlesSpatialPolyominoArrangementBaseTask):
+    """Choose the piece that fills a marked missing region."""
 
-    task_id = POLYOMINO_MISSING_REGION_PIECE_LABEL_TASK_ID
-    public_scene_id = POLYOMINO_MISSING_REGION_SCENE_ID
+    task_id = MARKED_REGION_PIECE_TASK_ID
+    supported_query_ids = ("marked_region_piece_label",)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_ids = tuple(str(value) for value in SUPPORTED_MISSING_REGION_QUERY_IDS)
-        query_id_set = set(query_ids)
-        merged_params = dict(params)
-        explicit_query = merged_params.get("query_id")
-        explicit_task = merged_params.get("query_id")
-        explicit = explicit_task if explicit_task is not None else explicit_query
-        if explicit is not None:
-            explicit_text = str(explicit)
-            if explicit_text not in query_id_set:
-                raise ValueError(f"unsupported query_id for {self.task_id}: {explicit_text}")
-            merged_params["query_id"] = explicit_text
-            merged_params["query_id"] = explicit_text
-        else:
-            raw_weights = merged_params.get("query_id_weights")
-            if isinstance(raw_weights, Mapping):
-                weights = {
-                    str(key): float(raw_weights[key])
-                    for key in query_ids
-                    if str(key) in raw_weights and float(raw_weights[key]) > 0.0
-                }
-                if not weights:
-                    weights = {key: 1.0 for key in query_ids}
-            else:
-                weights = {key: 1.0 for key in query_ids}
-            merged_params["query_id_weights"] = weights
 
-        output = super().generate(int(instance_seed), params=merged_params, max_attempts=int(max_attempts))
-        payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
-        execution = payload.get("execution_trace") if isinstance(payload, Mapping) else {}
-        query_id = str(output.query_id)
-        if isinstance(execution, Mapping):
-            query_id = str(execution.get("query_id") or execution.get("query_id") or query_id)
-        if query_id not in query_id_set:
-            raise ValueError(f"unsupported resolved query_id for {self.task_id}: {query_id}")
-        return rewrite_fixed_puzzle_query_output(
-            output,
-            query_id=str(query_id),
-            scene_id=str(self.public_scene_id),
-        )
+@register_task
+class PuzzlesSpatialPolyominoRectangleComplementPieceTask(_PuzzlesSpatialPolyominoArrangementBaseTask):
+    """Choose the piece that completes a rectangular target region."""
+
+    task_id = RECTANGLE_COMPLEMENT_PIECE_TASK_ID
+    supported_query_ids = ("rectangle_complement_piece",)
 
 
 __all__ = [
-    "PuzzlesSpatialPolyominoMissingRegionPieceLabelTask",
+    "MARKED_REGION_PIECE_TASK_ID",
+    "PuzzlesSpatialPolyominoMarkedRegionPieceLabelTask",
+    "PuzzlesSpatialPolyominoRectangleComplementPieceTask",
+    "RECTANGLE_COMPLEMENT_PIECE_TASK_ID",
 ]

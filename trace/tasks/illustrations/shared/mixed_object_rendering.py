@@ -13,11 +13,16 @@ from .object_library import (
     STYLE_IDS,
     aspect_ratio_for_object,
     choose_object_colors,
-    draw_illustration_object,
     family_for_object,
-    serialize_object,
 )
 from .object_catalog import variant_ids_with_tag
+from .object_rendering import (
+    IllustrationObjectSpec,
+    RenderContext,
+    render_illustration_object,
+    serialize_rendered_illustration_object,
+)
+from .object_variants import RENDERER_STYLE_VECTOR
 from .person_rendering import sample_person_gender
 
 
@@ -432,16 +437,27 @@ def render_mixed_object_scene(
     _draw_background(draw, background_id=background_id, width=width, height=height, scale=scale, background_layout=background_layout)
     rendered_objects = []
     for placement in sorted(placements, key=lambda item: (float(item.bbox_xyxy[1]), float(item.bbox_xyxy[0]), str(item.object_id))):
-        rendered = draw_illustration_object(
-            draw,
-            object_id=str(placement.object_id),
-            object_type=str(placement.object_type),
-            bbox_xyxy=placement.bbox_xyxy,
-            primary_color_rgb=placement.primary_color_rgb,
-            accent_color_rgb=placement.accent_color_rgb,
-            style_id=str(placement.style_id),
-            render_scale=scale,
-            gender_id=sample_person_gender(rng) if family_for_object(str(placement.object_type)) == "person" else None,
+        visual_attributes: dict[str, Any] = {
+            "primary_color_rgb": placement.primary_color_rgb,
+            "accent_color_rgb": placement.accent_color_rgb,
+            "style_id": str(placement.style_id),
+        }
+        gender_id = sample_person_gender(rng) if family_for_object(str(placement.object_type)) == "person" else None
+        if gender_id is not None:
+            visual_attributes["gender_id"] = gender_id
+        rendered = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=str(placement.object_id),
+                object_type=str(placement.object_type),
+                bbox_xyxy=placement.bbox_xyxy,
+                visual_attributes=visual_attributes,
+                source_entity_type="illustration_object",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=scale,
+            ),
         )
         rendered_objects.append(rendered)
     if scale != 1:
@@ -464,7 +480,7 @@ def scene_entities(scene: RenderedMixedObjectScene) -> List[Dict[str, Any]]:
 
     entities: List[Dict[str, Any]] = []
     for rendered in scene.objects:
-        serialized = serialize_object(rendered)
+        serialized = serialize_rendered_illustration_object(rendered)
         entities.append(
             {
                 "entity_id": serialized["object_id"],

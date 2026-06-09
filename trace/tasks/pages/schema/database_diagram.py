@@ -41,7 +41,7 @@ from ..shared.complexity import (
     resolve_pages_complexity_weights,
 )
 from ..shared.diagram.common import (
-    projected_diagram_bbox_evidence,
+    projected_diagram_bbox_annotation,
     resolve_jittered_diagram_panel_geometry,
     round_diagram_bbox,
 )
@@ -52,6 +52,8 @@ from ..shared.public_query_task import rewrite_pages_query_output
 SCENE_ID = "schema"
 FIELD_ROLE_COUNT_TASK_ID = "task_pages__schema__field_role_count"
 RELATIONSHIP_COUNT_TASK_ID = "task_pages__schema__relationship_count"
+RELATIONSHIP_ENDPOINT_TASK_ID = "task_pages__schema__relationship_endpoint_label"
+RELATIONSHIP_CARDINALITY_TASK_ID = "task_pages__schema__relationship_cardinality_label"
 
 _LAYOUT_VARIANTS: Tuple[str, ...] = ("grid", "layered", "radial")
 _STYLE_VARIANTS: Tuple[str, ...] = (
@@ -70,14 +72,20 @@ _CONTEXT_VARIANTS: Tuple[str, ...] = (
 )
 _FIELD_QUERY_IDS: Tuple[str, ...] = ("all_field_count", "attribute_field_count")
 _REL_QUERY_IDS: Tuple[str, ...] = ("total_relationship_count",)
+_ENDPOINT_QUERY_IDS: Tuple[str, ...] = ("target_table_for_relationship_label",)
+_CARDINALITY_QUERY_IDS: Tuple[str, ...] = ("relationship_cardinality_between_tables",)
 _TASK_QUERY_IDS: Dict[str, Tuple[str, ...]] = {
     FIELD_ROLE_COUNT_TASK_ID: _FIELD_QUERY_IDS,
     RELATIONSHIP_COUNT_TASK_ID: _REL_QUERY_IDS,
+    RELATIONSHIP_ENDPOINT_TASK_ID: _ENDPOINT_QUERY_IDS,
+    RELATIONSHIP_CARDINALITY_TASK_ID: _CARDINALITY_QUERY_IDS,
 }
 _TASK_KEYS: Dict[str, str] = {
     "all_field_count": "all_field_count_query",
     "attribute_field_count": "attribute_field_count_query",
     "total_relationship_count": "total_relationship_count_query",
+    "target_table_for_relationship_label": "relationship_endpoint_label_query",
+    "relationship_cardinality_between_tables": "relationship_cardinality_label_query",
 }
 
 _CONTEXTS: Dict[str, Dict[str, Any]] = {
@@ -1075,6 +1083,181 @@ def _relationship_degree_map(relationships: Sequence[Mapping[str, Any]]) -> Dict
     return degree
 
 
+def _bbox_area(bbox: Sequence[float]) -> float:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return max(0.0, x1 - x0) * max(0.0, y1 - y0)
+
+
+def _bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
+    ax0, ay0, ax1, ay1 = [float(value) for value in a]
+    bx0, by0, bx1, by1 = [float(value) for value in b]
+    return max(0.0, min(ax1, bx1) - max(ax0, bx0)) * max(0.0, min(ay1, by1) - max(ay0, by0))
+
+
+def _relationship_label_overlap_score(
+    *,
+    label_bbox: Sequence[float],
+    table_bboxes: Sequence[Sequence[float]],
+) -> float:
+    label_area = max(1.0, _bbox_area(label_bbox))
+    overlap = sum(_bbox_intersection_area(label_bbox, table_bbox) for table_bbox in table_bboxes)
+    return round(float(overlap) / float(label_area), 6)
+
+
+def _select_relationship_endpoint_query(
+    *,
+    query_id: str,
+    rng,
+    tables: Sequence[Mapping[str, Any]],
+    relationships: Sequence[Mapping[str, Any]],
+    layout_variant: str,
+    answer_index: int,
+) -> Dict[str, Any]:
+    table_by_id = {str(table["table_id"]): dict(table) for table in tables}
+    relation_key_counts: Dict[tuple[str, str], int] = {}
+    for relationship in relationships:
+        key = (str(relationship["source_label"]), str(relationship["label"]))
+        relation_key_counts[key] = relation_key_counts.get(key, 0) + 1
+
+    scored: list[tuple[float, str, str, str, int, Dict[str, Any], list[float]]] = []
+    all_table_bboxes = [list(table["bbox"]) for table in table_by_id.values()]
+    for index, relationship in enumerate(relationships):
+        source_id = str(relationship["source_table_id"])
+        target_id = str(relationship["target_table_id"])
+        if source_id not in table_by_id or target_id not in table_by_id:
+            continue
+        key = (str(relationship["source_label"]), str(relationship["label"]))
+        if relation_key_counts.get(key, 0) != 1:
+            continue
+        points = _edge_points(
+            source_bbox=table_by_id[source_id]["bbox"],
+            target_bbox=table_by_id[target_id]["bbox"],
+            layout_variant=str(layout_variant),
+            relationship_index=int(index),
+        )
+        label_bbox = round_diagram_bbox(
+            _relationship_label_bbox(points, str(relationship["label"]), index=int(index))
+        )
+        scored.append(
+            (
+                _relationship_label_overlap_score(label_bbox=label_bbox, table_bboxes=all_table_bboxes),
+                str(relationship["source_label"]),
+                str(relationship["label"]),
+                str(relationship["target_label"]),
+                int(index),
+                dict(relationship),
+                list(label_bbox),
+            )
+        )
+    if not scored:
+        for index, relationship in enumerate(relationships):
+            source_id = str(relationship["source_table_id"])
+            target_id = str(relationship["target_table_id"])
+            if source_id not in table_by_id or target_id not in table_by_id:
+                continue
+            points = _edge_points(
+                source_bbox=table_by_id[source_id]["bbox"],
+                target_bbox=table_by_id[target_id]["bbox"],
+                layout_variant=str(layout_variant),
+                relationship_index=int(index),
+            )
+            label_bbox = round_diagram_bbox(
+                _relationship_label_bbox(points, str(relationship["label"]), index=int(index))
+            )
+            scored.append(
+                (
+                    _relationship_label_overlap_score(label_bbox=label_bbox, table_bboxes=all_table_bboxes),
+                    str(relationship["source_label"]),
+                    str(relationship["label"]),
+                    str(relationship["target_label"]),
+                    int(index),
+                    dict(relationship),
+                    list(label_bbox),
+                )
+            )
+    if not scored:
+        raise ValueError("schema endpoint query requires at least one relationship")
+
+    scored.sort(key=lambda item: (item[0], item[1], item[2], item[3], item[4]))
+    best_score = float(scored[0][0])
+    low_overlap_candidates = [item for item in scored if float(item[0]) == best_score]
+    _, _, _, _, relationship_index, selected, label_bbox = low_overlap_candidates[
+        int(abs(int(answer_index)) + rng.randrange(max(1, len(low_overlap_candidates)))) % len(low_overlap_candidates)
+    ]
+    return {
+        "query_id": str(query_id),
+        "task_key": _TASK_KEYS[str(query_id)],
+        "relationship_id": str(selected["relationship_id"]),
+        "relationship_index": int(relationship_index),
+        "source_table_id": str(selected["source_table_id"]),
+        "target_table_id": str(selected["target_table_id"]),
+        "source_table_label": str(selected["source_label"]),
+        "target_table_label": str(selected["target_label"]),
+        "relationship_label": str(selected["label"]),
+        "relationship_label_overlap_score": float(best_score),
+        "relationship_label_bbox_estimate_px": list(label_bbox),
+        "answer": str(selected["target_label"]),
+    }
+
+
+def _select_relationship_cardinality_query(
+    *,
+    query_id: str,
+    rng,
+    tables: Sequence[Mapping[str, Any]],
+    relationships: Sequence[Mapping[str, Any]],
+    answer_index: int,
+) -> Dict[str, Any]:
+    table_by_id = {str(table["table_id"]): dict(table) for table in tables}
+    pair_counts: Dict[tuple[str, str], int] = {}
+    for relationship in relationships:
+        pair = (str(relationship["source_table_id"]), str(relationship["target_table_id"]))
+        pair_counts[pair] = int(pair_counts.get(pair, 0)) + 1
+
+    candidates: list[tuple[str, str, str, int, Dict[str, Any]]] = []
+    for index, relationship in enumerate(relationships):
+        source_id = str(relationship["source_table_id"])
+        target_id = str(relationship["target_table_id"])
+        if source_id not in table_by_id or target_id not in table_by_id:
+            continue
+        if int(pair_counts.get((source_id, target_id), 0)) != 1:
+            continue
+        candidates.append(
+            (
+                str(relationship["cardinality_kind"]),
+                str(relationship["source_label"]),
+                str(relationship["target_label"]),
+                int(index),
+                dict(relationship),
+            )
+        )
+    if not candidates:
+        raise ValueError("schema cardinality query requires a unique directed relationship between two tables")
+
+    target_kind = str(_CARDINALITY_ORDER[abs(int(answer_index)) % len(_CARDINALITY_ORDER)])
+    preferred = [candidate for candidate in candidates if str(candidate[0]) == str(target_kind)]
+    pool = preferred if preferred else candidates
+    pool.sort(key=lambda item: (item[0], item[1], item[2], item[3]))
+    _, _, _, relationship_index, selected = pool[
+        int(abs(int(answer_index)) + rng.randrange(max(1, len(pool)))) % len(pool)
+    ]
+    return {
+        "query_id": str(query_id),
+        "task_key": _TASK_KEYS[str(query_id)],
+        "relationship_id": str(selected["relationship_id"]),
+        "relationship_index": int(relationship_index),
+        "source_table_id": str(selected["source_table_id"]),
+        "target_table_id": str(selected["target_table_id"]),
+        "source_table_label": str(selected["source_label"]),
+        "target_table_label": str(selected["target_label"]),
+        "relationship_label": str(selected["label"]),
+        "cardinality_kind": str(selected["cardinality_kind"]),
+        "source_cardinality_marker": str(selected["source_marker"]),
+        "target_cardinality_marker": str(selected["target_marker"]),
+        "answer": str(selected["cardinality_kind"]),
+    }
+
+
 def _build_query(
     *,
     task_id: str,
@@ -1082,6 +1265,7 @@ def _build_query(
     rng,
     tables: list[Dict[str, Any]],
     relationships: list[Dict[str, Any]],
+    layout_variant: str,
     answer_index: int,
 ) -> Dict[str, Any]:
     if str(task_id) == FIELD_ROLE_COUNT_TASK_ID:
@@ -1110,7 +1294,7 @@ def _build_query(
                 "table_label": str(table["label"]),
                 "field_role_description": "ordinary attribute fields",
                 "answer": int(len(fields)),
-                "evidence_field_ids": [str(field["field_id"]) for field in fields],
+                "annotation_field_ids": [str(field["field_id"]) for field in fields],
             }
         target_count = 3 + (abs(int(answer_index)) % 7)
         ranked_tables = sorted(
@@ -1131,30 +1315,66 @@ def _build_query(
             "table_label": str(table["label"]),
             "field_role_description": "fields",
             "answer": int(len(fields)),
-            "evidence_field_ids": [str(field["field_id"]) for field in fields],
+            "annotation_field_ids": [str(field["field_id"]) for field in fields],
         }
+
+    if str(task_id) == RELATIONSHIP_ENDPOINT_TASK_ID:
+        return _select_relationship_endpoint_query(
+            query_id=str(query_id),
+            rng=rng,
+            tables=tables,
+            relationships=relationships,
+            layout_variant=str(layout_variant),
+            answer_index=int(answer_index),
+        )
+
+    if str(task_id) == RELATIONSHIP_CARDINALITY_TASK_ID:
+        return _select_relationship_cardinality_query(
+            query_id=str(query_id),
+            rng=rng,
+            tables=tables,
+            relationships=relationships,
+            answer_index=int(answer_index),
+        )
 
     matched = list(relationships)
     return {
         "query_id": str(query_id),
         "task_key": _TASK_KEYS[str(query_id)],
         "answer": int(len(matched)),
-        "evidence_relationship_ids": [str(rel["relationship_id"]) for rel in matched],
+        "annotation_relationship_ids": [str(rel["relationship_id"]) for rel in matched],
     }
 
 
-def _build_prompt_json_examples(*, answer_type: str, evidence_kind: str) -> tuple[str, str]:
-    answer_only = {"answer": 3}
-    if str(evidence_kind) == "relationship":
-        evidence: Any = [
+def _build_prompt_json_examples(*, answer_type: str, annotation_kind: str) -> tuple[str, str]:
+    answer_only: Dict[str, Any] = {"answer": "Order"}
+    if str(answer_type) == "integer":
+        answer_only = {"answer": 3}
+    if str(annotation_kind) == "relationship_cardinality":
+        answer_only = {"answer": "one_to_many"}
+    if str(annotation_kind) == "relationship":
+        annotation: Any = [
             [[150, 180], [330, 260]],
             [[420, 260], [610, 360]],
         ]
+    elif str(annotation_kind) == "relationship_endpoint":
+        annotation = {
+            "source_table": [90, 120, 250, 300],
+            "relationship_label": [320, 210, 410, 236],
+            "target_table": [480, 150, 650, 330],
+        }
+    elif str(annotation_kind) == "relationship_cardinality":
+        annotation = {
+            "source_table": [90, 120, 250, 300],
+            "target_table": [480, 150, 650, 330],
+            "source_cardinality_marker": [270, 202, 300, 226],
+            "target_cardinality_marker": [440, 202, 470, 226],
+        }
     else:
-        evidence = [[90, 120, 220, 146], [240, 168, 390, 194]]
-    with_evidence = {"evidence": evidence, "answer": 3}
+        annotation = [[90, 120, 220, 146], [240, 168, 390, 194]]
+    with_annotation = {"annotation": annotation, "answer": answer_only["answer"]}
     return (
-        json.dumps(with_evidence, separators=(",", ":")),
+        json.dumps(with_annotation, separators=(",", ":")),
         json.dumps(answer_only, separators=(",", ":")),
     )
 
@@ -1275,6 +1495,7 @@ def _build_scene_and_query(
         rng=rng,
         tables=tables,
         relationships=relationships,
+        layout_variant=str(layout_variant),
         answer_index=int(sampling_index),
     )
     scene = {
@@ -1350,34 +1571,48 @@ def _build_output(
             "json_output_contract",
             "json_output_contract_answer_only",
             "integer_answer_hint",
-            "evidence_hint_field_count",
-            "evidence_hint_relationship_count",
+            "string_answer_hint",
+            "annotation_hint_field_count",
+            "annotation_hint_relationship_count",
+            "annotation_hint_relationship_endpoint",
+            "cardinality_answer_hint",
+            "annotation_hint_relationship_cardinality",
         ),
         context=f"prompt defaults for {task_id}",
     )
     answer_type = "integer"
     if str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
-        evidence_kind = "relationship"
+        annotation_kind = "relationship"
         answer_hint = str(prompt_defaults["integer_answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint_relationship_count"])
+        annotation_hint = str(prompt_defaults["annotation_hint_relationship_count"])
+    elif str(task_id) == RELATIONSHIP_ENDPOINT_TASK_ID:
+        answer_type = "string"
+        annotation_kind = "relationship_endpoint"
+        answer_hint = str(prompt_defaults["string_answer_hint"])
+        annotation_hint = str(prompt_defaults["annotation_hint_relationship_endpoint"])
+    elif str(task_id) == RELATIONSHIP_CARDINALITY_TASK_ID:
+        answer_type = "string"
+        annotation_kind = "relationship_cardinality"
+        answer_hint = str(prompt_defaults["cardinality_answer_hint"])
+        annotation_hint = str(prompt_defaults["annotation_hint_relationship_cardinality"])
     else:
-        evidence_kind = "field"
+        annotation_kind = "field"
         answer_hint = str(prompt_defaults["integer_answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint_field_count"])
+        annotation_hint = str(prompt_defaults["annotation_hint_field_count"])
     json_example, json_example_answer_only = _build_prompt_json_examples(
         answer_type=answer_type,
-        evidence_kind=str(evidence_kind),
+        annotation_kind=str(annotation_kind),
     )
     slots = {
         "object_description": str(prompt_defaults["object_description"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(answer_hint),
-        "evidence_hint": str(evidence_hint),
+        "annotation_hint": str(annotation_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
-    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "evidence_field_ids", "evidence_table_ids", "evidence_relationship_ids"}})
+    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "annotation_field_ids", "annotation_table_ids", "annotation_relationship_ids"}})
     prompt_selection = render_task_prompt_variants(
         domain=str(domain),
         task_group=str(task_group),
@@ -1385,64 +1620,131 @@ def _build_output(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(query["task_key"]),
         query_key=str(query["query_id"]),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
     bbox_source_map: Dict[str, Sequence[float]] = {}
-    evidence_ids: list[str] = []
-    evidence_point_pairs: list[list[list[float]]] = []
-    for field_id in [str(item) for item in query.get("evidence_field_ids", [])]:
-        evidence_id = f"field:{field_id}"
-        evidence_ids.append(evidence_id)
-        bbox_source_map[evidence_id] = render_map["field_bboxes_px"][field_id]
-    for table_id in [str(item) for item in query.get("evidence_table_ids", [])]:
-        evidence_id = f"table:{table_id}"
-        evidence_ids.append(evidence_id)
-        bbox_source_map[evidence_id] = render_map["table_bboxes_px"][table_id]
-    for relationship_id in [str(item) for item in query.get("evidence_relationship_ids", [])]:
-        evidence_id = f"relationship_points:{relationship_id}"
-        evidence_ids.append(evidence_id)
-        evidence_point_pairs.append(
+    annotation_ids: list[str] = []
+    annotation_point_pairs: list[list[list[float]]] = []
+    for field_id in [str(item) for item in query.get("annotation_field_ids", [])]:
+        annotation_id = f"field:{field_id}"
+        annotation_ids.append(annotation_id)
+        bbox_source_map[annotation_id] = render_map["field_bboxes_px"][field_id]
+    for table_id in [str(item) for item in query.get("annotation_table_ids", [])]:
+        annotation_id = f"table:{table_id}"
+        annotation_ids.append(annotation_id)
+        bbox_source_map[annotation_id] = render_map["table_bboxes_px"][table_id]
+    for relationship_id in [str(item) for item in query.get("annotation_relationship_ids", [])]:
+        annotation_id = f"relationship_points:{relationship_id}"
+        annotation_ids.append(annotation_id)
+        annotation_point_pairs.append(
             [
                 [round(float(value), 3) for value in point]
                 for point in render_map["relationship_point_pairs_px"][relationship_id]
             ]
         )
-    if str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
-        evidence_projection = {
-            "type": "point_pair_set",
-            "point_pair_set": list(evidence_point_pairs),
-            "pixel_point_pair_set": list(evidence_point_pairs),
-            "evidence_ids": list(evidence_ids),
+    keyed_bbox_map: Dict[str, list[float]] = {}
+    keyed_bbox_ids: Dict[str, str] = {}
+    if str(task_id) == RELATIONSHIP_ENDPOINT_TASK_ID:
+        relationship_id = str(query["relationship_id"])
+        source_table_id = str(query["source_table_id"])
+        target_table_id = str(query["target_table_id"])
+        keyed_bbox_ids = {
+            "source_table": f"table:{source_table_id}",
+            "relationship_label": f"relationship_label:{relationship_id}",
+            "target_table": f"table:{target_table_id}",
         }
-        evidence_bboxes: list[list[float]] = []
+        keyed_bbox_map = {
+            "source_table": [round(float(value), 3) for value in render_map["table_bboxes_px"][source_table_id]],
+            "relationship_label": [
+                round(float(value), 3) for value in render_map["relationship_label_bboxes_px"][relationship_id]
+            ],
+            "target_table": [round(float(value), 3) for value in render_map["table_bboxes_px"][target_table_id]],
+        }
+        annotation_ids = [keyed_bbox_ids[key] for key in ("source_table", "relationship_label", "target_table")]
+        annotation_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(keyed_bbox_map),
+            "pixel_keyed_bbox_map": dict(keyed_bbox_map),
+            "annotation_ids": list(annotation_ids),
+            "keyed_annotation_ids": dict(keyed_bbox_ids),
+        }
+        annotation_bboxes: list[list[float]] = []
+    elif str(task_id) == RELATIONSHIP_CARDINALITY_TASK_ID:
+        relationship_id = str(query["relationship_id"])
+        source_table_id = str(query["source_table_id"])
+        target_table_id = str(query["target_table_id"])
+        source_marker_id = f"{relationship_id}:source"
+        target_marker_id = f"{relationship_id}:target"
+        keyed_bbox_ids = {
+            "source_table": f"table:{source_table_id}",
+            "target_table": f"table:{target_table_id}",
+            "source_cardinality_marker": f"cardinality_marker:{source_marker_id}",
+            "target_cardinality_marker": f"cardinality_marker:{target_marker_id}",
+        }
+        keyed_bbox_map = {
+            "source_table": [round(float(value), 3) for value in render_map["table_bboxes_px"][source_table_id]],
+            "target_table": [round(float(value), 3) for value in render_map["table_bboxes_px"][target_table_id]],
+            "source_cardinality_marker": [
+                round(float(value), 3) for value in render_map["cardinality_marker_bboxes_px"][source_marker_id]
+            ],
+            "target_cardinality_marker": [
+                round(float(value), 3) for value in render_map["cardinality_marker_bboxes_px"][target_marker_id]
+            ],
+        }
+        annotation_ids = [
+            keyed_bbox_ids[key]
+            for key in ("source_table", "target_table", "source_cardinality_marker", "target_cardinality_marker")
+        ]
+        annotation_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(keyed_bbox_map),
+            "pixel_keyed_bbox_map": dict(keyed_bbox_map),
+            "annotation_ids": list(annotation_ids),
+            "keyed_annotation_ids": dict(keyed_bbox_ids),
+        }
+        annotation_bboxes = []
+    elif str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
+        annotation_projection = {
+            "type": "point_pair_set",
+            "point_pair_set": list(annotation_point_pairs),
+            "pixel_point_pair_set": list(annotation_point_pairs),
+            "annotation_ids": list(annotation_ids),
+        }
+        annotation_bboxes: list[list[float]] = []
     else:
-        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_diagram_bbox_annotation(bbox_source_map, annotation_ids)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
     answer_gt = (
         TypedValue(type="string", value=str(query["answer"]))
         if answer_type == "string"
         else TypedValue(type="integer", value=int(query["answer"]))
     )
-    evidence_gt = (
-        TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+    annotation_gt = (
+        TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
         if str(task_id) == RELATIONSHIP_COUNT_TASK_ID
-        else TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        else (
+            TypedValue(type="keyed_bbox_map", value=dict(keyed_bbox_map))
+            if str(task_id) in {RELATIONSHIP_ENDPOINT_TASK_ID, RELATIONSHIP_CARDINALITY_TASK_ID}
+            else TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        )
     )
 
     field_scan = normalize_int_with_bounds(int(scene["field_count"]), [24, 72])
     table_scan = normalize_int_with_bounds(int(scene["table_count"]), [5, 8])
     rel_scan = normalize_int_with_bounds(int(scene["relationship_count"]), [5, 9])
     answer_load = normalize_int_with_bounds(
-        int(len(evidence_ids)) if answer_type == "string" else int(answer_gt.value),
+        int(len(annotation_ids)) if answer_type == "string" else int(answer_gt.value),
         [1, 12],
     )
     base_reasoning = {
         FIELD_ROLE_COUNT_TASK_ID: 0.30,
         RELATIONSHIP_COUNT_TASK_ID: 0.50,
+        RELATIONSHIP_ENDPOINT_TASK_ID: 0.56,
+        RELATIONSHIP_CARDINALITY_TASK_ID: 0.58,
     }[str(task_id)]
     complexity = build_pages_complexity(
         weights=complexity_weights,
@@ -1476,6 +1778,20 @@ def _build_output(
                     "bbox_id": f"field:{field['field_id']}",
                 }
             )
+    supporting_bbox_ids = [] if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else list(annotation_ids)
+    supporting_point_pair_ids = list(annotation_ids) if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else []
+    if str(task_id) in {RELATIONSHIP_ENDPOINT_TASK_ID, RELATIONSHIP_CARDINALITY_TASK_ID}:
+        witness_symbolic = {
+            "type": "keyed_bbox_id_map",
+            "ids": dict(keyed_bbox_ids),
+            "bboxes": dict(keyed_bbox_map),
+        }
+    else:
+        witness_symbolic = {
+            "type": "point_pair_id_set" if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else "bbox_id_set",
+            "ids": list(annotation_ids),
+            "point_pairs": list(annotation_point_pairs),
+        }
     trace_payload = {
         "scene_ir": {
             "scene_id": SCENE_ID,
@@ -1496,6 +1812,8 @@ def _build_output(
                         "target_field_id": str(rel["target_field_id"]),
                         "label": str(rel["label"]),
                         "cardinality_kind": str(rel["cardinality_kind"]),
+                        "source_marker": str(rel["source_marker"]),
+                        "target_marker": str(rel["target_marker"]),
                     }
                     for rel in scene["relationships"]
                 ],
@@ -1519,6 +1837,13 @@ def _build_output(
                 "table_count": int(scene["table_count"]),
                 "field_count": int(scene["field_count"]),
                 "relationship_count": int(scene["relationship_count"]),
+                "selected_relationship_id": str(query.get("relationship_id", "")),
+                "source_table_label": str(query.get("source_table_label", "")),
+                "target_table_label": str(query.get("target_table_label", "")),
+                "cardinality_kind": str(query.get("cardinality_kind", "")),
+                "source_cardinality_marker": str(query.get("source_cardinality_marker", "")),
+                "target_cardinality_marker": str(query.get("target_cardinality_marker", "")),
+                **({"answer_support": list(_CARDINALITY_ORDER)} if str(task_id) == RELATIONSHIP_CARDINALITY_TASK_ID else {}),
             },
         },
         "render_spec": {
@@ -1563,16 +1888,12 @@ def _build_output(
             ],
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
-            "evidence_ids": list(evidence_ids),
-            "supporting_bbox_ids": [] if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else list(evidence_ids),
-            "supporting_point_pair_ids": list(evidence_ids) if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else [],
+            "annotation_ids": list(annotation_ids),
+            "supporting_bbox_ids": list(supporting_bbox_ids),
+            "supporting_point_pair_ids": list(supporting_point_pair_ids),
         },
-        "witness_symbolic": {
-            "type": "point_pair_id_set" if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else "bbox_id_set",
-            "ids": list(evidence_ids),
-            "point_pairs": list(evidence_point_pairs),
-        },
-        "projected_evidence": dict(evidence_projection),
+        "witness_symbolic": dict(witness_symbolic),
+        "projected_annotation": dict(annotation_projection),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
     }
@@ -1580,7 +1901,7 @@ def _build_output(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
         answer_gt=answer_gt,
-        evidence_gt=evidence_gt,
+        annotation_gt=annotation_gt,
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -1634,9 +1955,51 @@ class PagesSchemaRelationshipCountTask:
         )
 
 
+@register_task
+class PagesSchemaRelationshipEndpointLabelTask:
+    """Identify the target table reached by a named schema relationship."""
+
+    task_id = RELATIONSHIP_ENDPOINT_TASK_ID
+    domain = "pages"
+    task_group = "schema"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _build_output(
+            task_id=self.task_id,
+            domain=self.domain,
+            task_group=self.task_group,
+            instance_seed=int(instance_seed),
+            params=dict(params),
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class PagesSchemaRelationshipCardinalityLabelTask:
+    """Identify the cardinality class shown by relationship endpoint markers."""
+
+    task_id = RELATIONSHIP_CARDINALITY_TASK_ID
+    domain = "pages"
+    task_group = "schema"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _build_output(
+            task_id=self.task_id,
+            domain=self.domain,
+            task_group=self.task_group,
+            instance_seed=int(instance_seed),
+            params=dict(params),
+            max_attempts=int(max_attempts),
+        )
+
+
 __all__ = [
     "FIELD_ROLE_COUNT_TASK_ID",
+    "RELATIONSHIP_CARDINALITY_TASK_ID",
     "RELATIONSHIP_COUNT_TASK_ID",
+    "RELATIONSHIP_ENDPOINT_TASK_ID",
     "PagesSchemaFieldRoleCountTask",
+    "PagesSchemaRelationshipCardinalityLabelTask",
     "PagesSchemaRelationshipCountTask",
+    "PagesSchemaRelationshipEndpointLabelTask",
 ]

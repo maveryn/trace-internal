@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -29,31 +29,27 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     SUPPORTED_UNIQUE_NODE_LABEL_RELATION_MODES,
     sample_unique_node_label_relation_graph,
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import (
     format_graph_prompt_label,
     resolve_forced_graph_query_id,
-    resolve_graph_balanced_node_color_name,
     resolve_graph_named_variant,
     resolve_graph_render_params,
 )
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__node_link__unique_node_label"
+TASK_ID = "task_graph__node_link__unique_related_node_label"
 SCENE_ID = "node_link"
 
 SUPPORTED_UNIQUE_NODE_LABEL_QUERY_IDS = (
@@ -158,11 +154,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match the node-center evidence format."""
+    """Return prompt examples that match the node-center annotation format."""
 
-    example_evidence = [[303, 187]]
+    example_annotation = [[303, 187]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": "B"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": "B"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": "B"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -200,8 +196,16 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved unique-node query."""
 
-    namespace = f"{TASK_ID}:node_count:{str(query_id)}:{str(topology_profile)}"
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(query_id),
+            str(topology_profile),
+        ),
+    )
 
 
 
@@ -331,77 +335,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             layout_balance_flag_key = "balanced_unique_directed_layout_variant_sampling"
             layout_namespace = "unique_directed_layout_variant"
     layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{layout_namespace}")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key=str(layout_weights_key),
-        balance_flag_key=str(layout_balance_flag_key),
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace=str(layout_namespace),
-    )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    node_color_name, node_color_name_probabilities = resolve_graph_balanced_node_color_name(
+    visual_axes = resolve_node_link_visual_axes(
         int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         task_id=TASK_ID,
-        supported=SUPPORTED_NODE_COLOR_NAMES,
     )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -550,8 +501,8 @@ class GraphRelationUniqueNodeLabelTask:
                     edge_style_by_label=supporting_edge_style,
                     layout_fallback_variants=layout_fallback_variants,
                 )
-                evidence_projection = projected_node_point_evidence(rendered_scene, (str(graph_sample.answer_label),))
-                if not evidence_projection.get("pixel_point_set"):
+                annotation_projection = projected_node_point_annotation(rendered_scene, (str(graph_sample.answer_label),))
+                if not annotation_projection.get("pixel_point_set"):
                     raise ValueError("answer node center was not rendered")
                 image, post_noise_meta = apply_post_image_noise(
                     rendered_scene.image,
@@ -578,9 +529,9 @@ class GraphRelationUniqueNodeLabelTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint_unique_neighbor_label",
-                "evidence_hint_unique_successor_label",
-                "evidence_hint_unique_predecessor_label",
+                "annotation_hint_unique_neighbor_label",
+                "annotation_hint_unique_successor_label",
+                "annotation_hint_unique_predecessor_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -593,7 +544,7 @@ class GraphRelationUniqueNodeLabelTask:
             label_variant=str(query.label_variant),
         )
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description_undirected"
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -601,13 +552,13 @@ class GraphRelationUniqueNodeLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[object_description_key]),
                 "query_label": str(prompt_query_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(query_label=str(prompt_query_label)),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(query_label=str(prompt_query_label)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -616,10 +567,10 @@ class GraphRelationUniqueNodeLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_node_point_evidence(rendered_scene, (str(graph_sample.answer_label),))
-        evidence_points = [[int(round(float(value))) for value in point] for point in evidence_projection["pixel_point_set"]]
+        annotation_projection = projected_node_point_annotation(rendered_scene, (str(graph_sample.answer_label),))
+        annotation_points = [[int(round(float(value))) for value in point] for point in annotation_projection["pixel_point_set"]]
         answer_gt = TypedValue(type="string", value=str(graph_sample.answer_label))
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
         supporting_edge = (str(graph_sample.supporting_edge[0]), str(graph_sample.supporting_edge[1]))
         node_entities = [
             {
@@ -814,18 +765,18 @@ class GraphRelationUniqueNodeLabelTask:
                 "answer_label": str(graph_sample.answer_label),
                 "supporting_edge": list(supporting_edge),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_projection["pixel_bbox_set"]],
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_projection["pixel_bbox_set"]],
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

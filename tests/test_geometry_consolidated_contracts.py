@@ -34,7 +34,7 @@ def test_geometry_consolidated_tasks_are_deterministic(task_cls, params) -> None
     out_a = task.generate(23101, params=params, max_attempts=40)
     out_b = task.generate(23101, params=params, max_attempts=40)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
@@ -64,14 +64,14 @@ def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> 
         ("task_geometry__graph_paper__polygon_area_value", "measurement"),
         ("task_geometry__graph_paper__area_extremum_label", "comparison"),
         ("task_geometry__graph_paper__triangle_type_count", "counting"),
-        ("task_geometry__function_panels__relation_property_label", "analytical"),
+        ("task_geometry__function_panels__function_status_label", "analytical"),
         ("task_geometry__function_panels__intersection_property_label", "analytical"),
         ("task_geometry__circle_theorem__secant_secant_length_value", "circle"),
         ("task_geometry__coordinate_plane__segment_relation_count", "coordinate"),
-        ("task_geometry__function_graph__extremum_count", "graphing"),
+        ("task_geometry__function_graph__extremum_count_turning_point_count", "graphing"),
         ("task_geometry__function_graph__reference_line_crossing_count", "graphing"),
-        ("task_geometry__shape_gallery__shape_relation_count", "similarity"),
-        ("task_geometry__shape_gallery__transformation_match_label", "transformation"),
+        ("task_geometry__shape_gallery__congruent_count", "similarity"),
+        ("task_geometry__shape_gallery__reflection_match", "transformation"),
     ),
 )
 def test_geometry_consolidated_build_smoke(task_id: str, task_group: str, tmp_path: Path) -> None:

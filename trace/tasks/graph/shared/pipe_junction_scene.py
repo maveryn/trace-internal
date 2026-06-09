@@ -141,11 +141,11 @@ def feasible_pipe_node_counts(*, node_count_min: int, node_count_max: int, grid_
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
-def projected_pipe_node_point_evidence(
+def projected_pipe_node_point_annotation(
     rendered_scene: RenderedPipeJunctionScene,
     labels: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered junction labels into pixel point/bbox evidence."""
+    """Project ordered junction labels into pixel point/bbox annotation."""
 
     node_by_label = {str(node.label): node for node in rendered_scene.nodes}
     point_map: Dict[str, list[float]] = {}
@@ -168,11 +168,11 @@ def projected_pipe_node_point_evidence(
     }
 
 
-def projected_pipe_edge_pair_evidence(
+def projected_pipe_edge_pair_annotation(
     rendered_scene: RenderedPipeJunctionScene,
     edges: Sequence[Sequence[str]],
 ) -> Dict[str, Any]:
-    """Project edge endpoint labels into node-center point-pair evidence."""
+    """Project edge endpoint labels into node-center point-pair annotation."""
 
     node_by_label = {str(node.label): node for node in rendered_scene.nodes}
     point_pair_set: list[list[list[float]]] = []
@@ -1529,8 +1529,8 @@ __all__ = [
     "SUPPORTED_PIPE_LABEL_VARIANTS",
     "feasible_pipe_node_counts",
     "parse_pipe_grid_shape",
-    "projected_pipe_edge_pair_evidence",
-    "projected_pipe_node_point_evidence",
+    "projected_pipe_edge_pair_annotation",
+    "projected_pipe_node_point_annotation",
     "render_pipe_network_scene",
     "sample_pipe_bridge_network",
     "sample_pipe_exact_distance_network",

@@ -19,7 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -33,6 +33,7 @@ from ..shared.procedural_named_icon_field_scene import (
     rotation_for_named_shape,
     uniform_string_probability_map,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
@@ -45,7 +46,13 @@ from ..shared.procedural_named_icons import (
 )
 
 
-TASK_ID = "task_icons__named_field__shape_attribute_boolean_count"
+MULTI_ATTRIBUTE_AND_TASK_ID = "task_icons__named_field__multi_attribute_and_count"
+MULTI_ATTRIBUTE_OR_TASK_ID = "task_icons__named_field__multi_attribute_or_count"
+MULTI_ATTRIBUTE_EXCLUSION_TASK_ID = "task_icons__named_field__multi_attribute_exclusion_count"
+MULTI_ATTRIBUTE_COMPLEMENT_TASK_ID = "task_icons__named_field__multi_attribute_complement_count"
+MULTI_ATTRIBUTE_XOR_TASK_ID = "task_icons__named_field__multi_attribute_xor_count"
+
+TASK_ID = MULTI_ATTRIBUTE_AND_TASK_ID
 
 QUERY_IDS: Tuple[str, ...] = (
     "shape_and_color_count",
@@ -55,6 +62,14 @@ QUERY_IDS: Tuple[str, ...] = (
     "neither_shape_nor_color_count",
     "exactly_one_shape_or_color_count",
 )
+
+QUERY_IDS_BY_TASK_ID: Dict[str, Tuple[str, ...]] = {
+    MULTI_ATTRIBUTE_AND_TASK_ID: ("shape_and_color_count",),
+    MULTI_ATTRIBUTE_OR_TASK_ID: ("shape_or_color_count",),
+    MULTI_ATTRIBUTE_EXCLUSION_TASK_ID: ("shape_and_not_color_count", "color_and_not_shape_count"),
+    MULTI_ATTRIBUTE_COMPLEMENT_TASK_ID: ("neither_shape_nor_color_count",),
+    MULTI_ATTRIBUTE_XOR_TASK_ID: ("exactly_one_shape_or_color_count",),
+}
 
 _ATTRIBUTE_AXES: Tuple[str, ...] = ("color", "fill_style")
 
@@ -648,7 +663,7 @@ def _counted_instance_ids(sample: _SampleSpec, instances: Sequence[Any]) -> Tupl
     )
 
 
-def _evidence_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[list[int]]:
+def _annotation_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[list[int]]:
     return sort_bboxes_reading_order(
         tuple(
             instance.bbox_xyxy
@@ -733,15 +748,35 @@ def _query_expression(sample: _SampleSpec) -> str:
     return template.format(attribute_expression=_attribute_expression(sample))
 
 
-@register_task
-class IconsCountingNamedShapeColorBooleanCountTask:
+def _params_for_public_task(params: Mapping[str, Any], *, task_id: str, query_ids: Sequence[str]) -> Dict[str, Any]:
+    resolved = dict(params)
+    allowed = tuple(str(query_id) for query_id in query_ids)
+    if not allowed:
+        raise ValueError(f"{task_id} must expose at least one query id")
+    requested = resolved.get("query_id", resolved.get("boolean_query_id"))
+    if requested is not None and str(requested) not in set(allowed):
+        raise ValueError(f"{task_id} only supports query_id values {allowed}")
+    resolved["boolean_query_ids"] = list(allowed)
+    weights = resolved.get("query_id_weights")
+    if isinstance(weights, Mapping):
+        resolved["query_id_weights"] = {
+            str(key): float(value)
+            for key, value in weights.items()
+            if str(key) in set(allowed)
+        }
+    return resolved
+
+
+class _IconsCountingNamedShapeColorBooleanCountTaskBase:
     """Count named shape plus color-or-fill-style Boolean predicates in a single icon field."""
 
     task_id = TASK_ID
     domain = "icons"
     task_group = "counting"
+    query_ids: Tuple[str, ...] = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        params = _params_for_public_task(params, task_id=str(self.task_id), query_ids=tuple(self.query_ids))
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
@@ -799,10 +834,10 @@ class IconsCountingNamedShapeColorBooleanCountTask:
         if scene is None or sample is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        evidence_bboxes = _evidence_bboxes(sample, scene.instances)
-        if len(evidence_bboxes) != int(sample.target_answer):
+        annotation_bboxes = _annotation_bboxes(sample, scene.instances)
+        if len(annotation_bboxes) != int(sample.target_answer):
             raise RuntimeError("rendered Boolean named-icon count did not match target answer")
-        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
 
         question_key = f"question_text_{sample.query_id}"
         attribute_phrase = _attribute_phrase(sample)
@@ -816,7 +851,7 @@ class IconsCountingNamedShapeColorBooleanCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 question_key,
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -829,7 +864,7 @@ class IconsCountingNamedShapeColorBooleanCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults[question_key]).format(
@@ -839,7 +874,7 @@ class IconsCountingNamedShapeColorBooleanCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
                     shape_name=str(sample.target_shape_name),
                     color_label=str(sample.target_attribute_label),
                     attribute_phrase=str(attribute_phrase),
@@ -1017,16 +1052,16 @@ class IconsCountingNamedShapeColorBooleanCountTask:
                 "answer": int(sample.target_answer),
                 "counted_instance_ids": list(counted_instance_ids),
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
             },
         }
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",
@@ -1037,6 +1072,59 @@ class IconsCountingNamedShapeColorBooleanCountTask:
             query_id=str(sample.query_id),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(sample.query_id),
+            scene_id=SCENE_ID,
+            task_id=str(self.task_id),
+            query_probabilities=dict(sample.query_probabilities),
+        )
 
 
-__all__ = ["IconsCountingNamedShapeColorBooleanCountTask"]
+@register_task
+class IconsNamedFieldMultiAttributeAndCountTask(_IconsCountingNamedShapeColorBooleanCountTaskBase):
+    """Count icons satisfying a shape AND attribute predicate."""
+
+    task_id = MULTI_ATTRIBUTE_AND_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[MULTI_ATTRIBUTE_AND_TASK_ID]
+
+
+@register_task
+class IconsNamedFieldMultiAttributeOrCountTask(_IconsCountingNamedShapeColorBooleanCountTaskBase):
+    """Count icons satisfying an inclusive shape OR attribute predicate."""
+
+    task_id = MULTI_ATTRIBUTE_OR_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[MULTI_ATTRIBUTE_OR_TASK_ID]
+
+
+@register_task
+class IconsNamedFieldMultiAttributeExclusionCountTask(_IconsCountingNamedShapeColorBooleanCountTaskBase):
+    """Count icons satisfying one shape/attribute condition while excluding the other."""
+
+    task_id = MULTI_ATTRIBUTE_EXCLUSION_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[MULTI_ATTRIBUTE_EXCLUSION_TASK_ID]
+
+
+@register_task
+class IconsNamedFieldMultiAttributeComplementCountTask(_IconsCountingNamedShapeColorBooleanCountTaskBase):
+    """Count icons satisfying neither the shape nor the queried attribute."""
+
+    task_id = MULTI_ATTRIBUTE_COMPLEMENT_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[MULTI_ATTRIBUTE_COMPLEMENT_TASK_ID]
+
+
+@register_task
+class IconsNamedFieldMultiAttributeXorCountTask(_IconsCountingNamedShapeColorBooleanCountTaskBase):
+    """Count icons satisfying exactly one of the shape/attribute predicates."""
+
+    task_id = MULTI_ATTRIBUTE_XOR_TASK_ID
+    query_ids = QUERY_IDS_BY_TASK_ID[MULTI_ATTRIBUTE_XOR_TASK_ID]
+
+
+__all__ = [
+    "IconsNamedFieldMultiAttributeAndCountTask",
+    "IconsNamedFieldMultiAttributeOrCountTask",
+    "IconsNamedFieldMultiAttributeExclusionCountTask",
+    "IconsNamedFieldMultiAttributeComplementCountTask",
+    "IconsNamedFieldMultiAttributeXorCountTask",
+]

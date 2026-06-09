@@ -15,6 +15,13 @@
       "",
       "",
       ""
+    ],
+    "warehouse_shelf_level_object_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -25,19 +32,31 @@
       "reference_object_name"
     ],
     "query:closest_object_to_robot": [],
-    "answer_or_evidence:answer_only": [
+    "query:top_shelf_item_count": [
+      "shelf_level_name",
+      "rack_color_label"
+    ],
+    "query:middle_shelf_item_count": [
+      "shelf_level_name",
+      "rack_color_label"
+    ],
+    "query:bottom_shelf_item_count": [
+      "shelf_level_name",
+      "rack_color_label"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -45,44 +64,65 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer field: {answer_hint}.\nEvidence field: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFor \"evidence\": {evidence_hint}.\nFor \"answer\": {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field contents: {evidence_hint}.\nAnswer field contents: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer field: {answer_hint}.\nAnnotation field: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
     "warehouse": [
       "The image shows {object_description}.",
       "The scene shows {object_description}.",
-      "This 3D view shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The rendered scene shows {object_description}."
+      "The image presents {object_description}.",
+      "The picture shows {object_description}.",
+      "The view shows {object_description}."
     ]
   },
   "query_templates": {
     "first_object_ahead": [
-      "Which lettered object will the red-boxed robot reach first if it moves straight ahead along the red arrow?",
-      "Choose the letter for the first object in the red-boxed robot's forward path.",
-      "If the red-boxed robot continues straight along the red arrow, which lettered object comes first?",
-      "Which letter marks the first warehouse object the red-boxed robot would encounter by moving straight forward?",
-      "Following the red-boxed robot's forward direction, which lettered object is reached first?"
+      "Which option describes the object the red-boxed robot will reach first if it moves straight ahead along the red arrow?",
+      "Choose the option for the first object in the red-boxed robot's forward path.",
+      "If the red-boxed robot continues straight along the red arrow, which option describes the object that comes first?",
+      "Which option describes the first warehouse object the red-boxed robot would encounter by moving straight forward?",
+      "Following the red-boxed robot's forward direction, which option describes the object reached first?"
     ],
     "closest_robot_to_reference": [
-      "Which lettered robot is closest to the {reference_object_name}?",
-      "Choose the letter for the robot nearest to the {reference_object_name}.",
-      "Which robot letter marks the robot closest to the {reference_object_name}?",
-      "Among the lettered robots, which one is nearest to the {reference_object_name}?",
-      "Which lettered robot has the smallest distance to the {reference_object_name}?"
+      "Which option describes the robot closest to the {reference_object_name}?",
+      "Choose the option for the robot nearest to the {reference_object_name}.",
+      "Which option describes the robot closest to the {reference_object_name}?",
+      "Among the candidate robots, which option is nearest to the {reference_object_name}?",
+      "Which option describes the robot with the smallest distance to the {reference_object_name}?"
     ],
     "closest_object_to_robot": [
-      "Which lettered warehouse object is closest to the robot?",
-      "Choose the letter for the object nearest to the robot.",
-      "Which object letter marks the warehouse object closest to the robot?",
-      "Among the lettered warehouse objects, which one is nearest to the robot?",
-      "Which lettered object has the smallest distance to the robot?"
+      "Which option describes the warehouse object closest to the robot?",
+      "Choose the option for the object nearest to the robot.",
+      "Which option describes the warehouse object closest to the robot?",
+      "Among the candidate warehouse objects, which option is nearest to the robot?",
+      "Which option describes the object with the smallest distance to the robot?"
+    ],
+    "top_shelf_item_count": [
+      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
+      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
+      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
+    ],
+    "middle_shelf_item_count": [
+      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
+      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
+      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
+    ],
+    "bottom_shelf_item_count": [
+      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
+      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
+      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
+      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
     ]
   },
   "allow_empty_task_templates": true

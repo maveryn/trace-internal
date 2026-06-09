@@ -13,6 +13,6 @@
 3. Grid size: `6x6..9x9`
 4. Option count: `4..6`
 5. Answer type: `option_letter`
-6. Evidence type: `bbox_set`
-7. Evidence target: marked row clue box, marked row box, and selected option panel box
+6. Annotation type: `bbox_set`
+7. Annotation target: marked row clue box, marked row box, and selected option panel box
 8. Scene variants: `nonogram_classic|nonogram_card|nonogram_blueprint`

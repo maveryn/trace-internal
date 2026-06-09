@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_evidence
-from trace.core.prompt_evidence_contract_audit import _normalize_jsonable, _validate_evidence_value
+from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
+from trace.core.prompt_annotation_contract_audit import _normalize_jsonable, _validate_annotation_value
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,
@@ -24,7 +24,7 @@ REQUIRED_TRACE_KEYS = {
     "render_map",
     "execution_trace",
     "witness_symbolic",
-    "projected_evidence",
+    "projected_annotation",
 }
 
 COUNT_CARDINALITY_SOURCE_KEYS = {
@@ -46,15 +46,14 @@ COUNT_CARDINALITY_SOURCE_KEYS = {
     "matching_labels",
 }
 
-EXACT_EVIDENCE_SOURCE_KEYS = {
-    "evidence_entity_ids",
-    "evidence_ids",
-    "evidence_cell_edges",
-    "evidence_state_path_labels",
+EXACT_ANNOTATION_SOURCE_KEYS = {
+    "annotation_ids",
+    "annotation_cell_edges",
+    "annotation_state_path_labels",
     "accepting_path_labels",
 }
 
-SET_EVIDENCE_TYPES = {
+SET_ANNOTATION_TYPES = {
     "bbox_set",
     "keyed_bbox_map",
     "keyed_point_map",
@@ -97,7 +96,7 @@ def _values_equal(left, right) -> bool:
     return str(left_value) == str(right_value)
 
 
-def _evidence_cardinality(value) -> int:
+def _annotation_cardinality(value) -> int:
     if isinstance(value, dict):
         return len(value)
     if isinstance(value, (list, tuple)):
@@ -116,51 +115,51 @@ def _iter_nested_lists(value, *, prefix: str = ""):
             yield from _iter_nested_lists(item, prefix=full_key)
 
 
-def _projected_value_for_type(projected: dict, evidence_type: str):
-    value = projected.get(evidence_type)
-    if value is None and evidence_type == "point_set":
+def _projected_value_for_type(projected: dict, annotation_type: str):
+    value = projected.get(annotation_type)
+    if value is None and annotation_type == "point_set":
         value = projected.get("pixel_point_set")
-    if value is None and evidence_type == "point_sequence":
+    if value is None and annotation_type == "point_sequence":
         value = projected.get("pixel_point_sequence")
-    if value is None and evidence_type == "keyed_point_map":
+    if value is None and annotation_type == "keyed_point_map":
         value = projected.get("pixel_keyed_point_map")
-    if value is None and evidence_type == "keyed_bbox_map":
+    if value is None and annotation_type == "keyed_bbox_map":
         value = projected.get("pixel_keyed_bbox_map")
     return value
 
 
-def _assert_answer_evidence_consistency(output, *, task_id: str, query_id: str) -> None:
-    """Check domain-agnostic answer/evidence invariants for one generated output."""
+def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str) -> None:
+    """Check domain-agnostic answer/annotation invariants for one generated output."""
 
-    evidence_type = str(output.evidence_gt.type)
-    evidence_value = _normalize_jsonable(output.evidence_gt.value)
-    evidence_len = _evidence_cardinality(evidence_value)
+    annotation_type = str(output.annotation_gt.type)
+    annotation_value = _normalize_jsonable(output.annotation_gt.value)
+    annotation_len = _annotation_cardinality(annotation_value)
     image_size = tuple(output.image.size) if output.image is not None else None
 
-    evidence_errors = _validate_evidence_value(
-        evidence_type,
-        evidence_value,
+    annotation_errors = _validate_annotation_value(
+        annotation_type,
+        annotation_value,
         image_size=image_size,
-        field="evidence_gt",
+        field="annotation_gt",
     )
-    assert evidence_errors == [], (task_id, query_id, evidence_errors)
+    assert annotation_errors == [], (task_id, query_id, annotation_errors)
 
-    sanitized = sanitize_trace_payload_for_public_evidence(
+    sanitized = sanitize_trace_payload_for_public_annotation(
         output.trace_payload,
-        evidence_gt=output.evidence_gt,
+        annotation_gt=output.annotation_gt,
     )
-    projected = sanitized.get("projected_evidence", {})
+    projected = sanitized.get("projected_annotation", {})
     assert isinstance(projected, dict), (task_id, query_id, projected)
-    assert str(projected.get("type", "")) == evidence_type, (task_id, query_id, projected)
-    projected_value = _projected_value_for_type(projected, evidence_type)
+    assert str(projected.get("type", "")) == annotation_type, (task_id, query_id, projected)
+    projected_value = _projected_value_for_type(projected, annotation_type)
     assert projected_value is not None, (task_id, query_id, projected)
     projected_value = _normalize_jsonable(projected_value)
-    assert projected_value == evidence_value, (task_id, query_id, projected_value, evidence_value)
-    projected_errors = _validate_evidence_value(
-        evidence_type,
+    assert projected_value == annotation_value, (task_id, query_id, projected_value, annotation_value)
+    projected_errors = _validate_annotation_value(
+        annotation_type,
         projected_value,
         image_size=image_size,
-        field="projected_evidence",
+        field="projected_annotation",
     )
     assert projected_errors == [], (task_id, query_id, projected_errors)
 
@@ -176,31 +175,31 @@ def _assert_answer_evidence_consistency(output, *, task_id: str, query_id: str) 
 
     witness = output.trace_payload.get("witness_symbolic", {})
     if isinstance(witness, dict) and _is_number(witness.get("count")):
-        assert int(witness["count"]) == evidence_len, (task_id, query_id, witness, evidence_len)
+        assert int(witness["count"]) == annotation_len, (task_id, query_id, witness, annotation_len)
 
     for source_key, source_value in _iter_nested_lists(execution_trace):
         leaf_key = source_key.split(".")[-1]
-        if leaf_key in EXACT_EVIDENCE_SOURCE_KEYS:
-            assert len(source_value) == evidence_len, (
+        if leaf_key in EXACT_ANNOTATION_SOURCE_KEYS:
+            assert len(source_value) == annotation_len, (
                 task_id,
                 query_id,
                 source_key,
                 len(source_value),
-                evidence_len,
+                annotation_len,
             )
 
     count_like_query = "count" in str(query_id).lower() or "number" in str(query_id).lower()
-    if str(output.answer_gt.type) == "integer" and evidence_type in SET_EVIDENCE_TYPES and count_like_query:
+    if str(output.answer_gt.type) == "integer" and annotation_type in SET_ANNOTATION_TYPES and count_like_query:
         for source_key, source_value in _iter_nested_lists(execution_trace):
             leaf_key = source_key.split(".")[-1]
-            if leaf_key in COUNT_CARDINALITY_SOURCE_KEYS and len(source_value) == evidence_len:
+            if leaf_key in COUNT_CARDINALITY_SOURCE_KEYS and len(source_value) == annotation_len:
                 assert int(output.answer_gt.value) == len(source_value), (
                     task_id,
                     query_id,
                     source_key,
                     output.answer_gt.value,
                     len(source_value),
-                    evidence_len,
+                    annotation_len,
                 )
 
 
@@ -226,7 +225,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     assert str(output.query_id) == query_id
     assert query_id
     assert str(output.answer_gt.type)
-    assert str(output.evidence_gt.type)
+    assert str(output.annotation_gt.type)
     assert REQUIRED_TRACE_KEYS.issubset(set(output.trace_payload))
 
     trace_taxonomy = trace_payload["taxonomy"]
@@ -253,4 +252,4 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     assert trace_taxonomy["source"]["config_task_group"] == str(getattr(task, "task_group", ""))
     assert trace_taxonomy["source"]["prompt_domain"]
     assert trace_taxonomy["source"]["prompt_task_group"]
-    _assert_answer_evidence_consistency(output, task_id=task_id, query_id=query_id)
+    _assert_answer_annotation_consistency(output, task_id=task_id, query_id=query_id)

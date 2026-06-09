@@ -2,19 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `nine_mens_morris`
-3. Source task group: `nine_mens_morris`
-4. Query id: `all_pieces_in_mill_count`
-5. Objective: Count all visible pieces that belong to at least one mill.
+2. Task group: `nine_mens_morris`
+3. Scene id: `nine_mens_morris`
+4. Public task id: `task_games__nine_mens_morris__pieces_in_mill_count`
+5. Supported `query_id` values: `all_pieces_in_mill_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `point_set`
+8. Program schema: `count(filter(pieces, participates_in_mill(piece)=True)); scene=nine_mens_morris; scope=pieces_in_mill_count; query_branch=all_pieces_in_mill_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: `point_set` over the center points of all counted mill pieces.
-3. `all_pieces_in_mill_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games scene renderer for its scene id.
-2. Prompt bundle: `games_nine_mens_morris_v0`
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Semantic mirror knobs such as player color, board size, axis, direction, style, and target-answer support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

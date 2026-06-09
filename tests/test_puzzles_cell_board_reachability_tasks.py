@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from trace.tasks.puzzles.cell_board.reachability_region_size import TileRegionSizeTask
-from tests.cell_board_evidence_helpers import tile_coords_from_points, tile_ids_from_points
+from tests.cell_board_annotation_helpers import tile_coords_from_points, tile_ids_from_points
 
 
 def _assert_normalized_complexity(out: object) -> None:
@@ -55,27 +55,27 @@ def test_cell_board_region_size_outputs_expected_contract() -> None:
 
     assert str(out.query_id) == "region_size"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(render["tiling_type"]) == "rectangular_tiling"
     assert int(render["rows"]) == 4
     assert int(render["cols"]) == 5
     assert int(render["tile_width_px"]) != int(render["tile_height_px"])
     assert out.image.size == (int(render["canvas_width_px"]), int(render["canvas_height_px"]))
 
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    evidence_coords = tile_coords_from_points(trace, out.evidence_gt.value)
-    assert evidence_coords == sorted(evidence_coords, key=lambda item: (int(item[0]), int(item[1])))
-    assert evidence_coords == execution["reachable_coords"]
-    assert int(out.answer_gt.value) == len(evidence_coords)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    annotation_coords = tile_coords_from_points(trace, out.annotation_gt.value)
+    assert annotation_coords == sorted(annotation_coords, key=lambda item: (int(item[0]), int(item[1])))
+    assert annotation_coords == execution["reachable_coords"]
+    assert int(out.answer_gt.value) == len(annotation_coords)
     assert 3 <= int(out.answer_gt.value) <= 8
     assert int(execution["answer_min"]) == 4
     assert int(execution["answer_max"]) == 4
     assert list(execution["answer_range"]) == [4, 4]
     assert int(execution["target_region_size"]) == int(out.answer_gt.value)
-    assert execution["start_coord"] in evidence_coords
+    assert execution["start_coord"] in annotation_coords
     assert str(execution["obstacle_color_label"]).endswith("[#000000]")
     assert str(execution["start_color_label"]) in str(out.prompt)
 
@@ -86,7 +86,7 @@ def test_cell_board_region_size_outputs_expected_contract() -> None:
         for entity in trace["scene_ir"]["entities"]
         if bool(entity["attrs"]["is_reachable"])
     ]
-    assert len(reachable_entities) == len(evidence_coords)
+    assert len(reachable_entities) == len(annotation_coords)
     start_entities = [entity for entity in reachable_entities if bool(entity["attrs"]["is_start"])]
     assert len(start_entities) == 1
     assert start_entities[0]["attrs"]["fill_rgb"] == execution["start_color_rgb"]
@@ -109,7 +109,7 @@ def test_cell_board_region_size_is_deterministic() -> None:
     out_b = task.generate(99101, params=params, max_attempts=80)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert (
@@ -124,7 +124,7 @@ def test_cell_board_region_size_is_deterministic() -> None:
 def test_cell_board_region_size_prompt_example_matches_contract() -> None:
     task = TileRegionSizeTask()
     out = task.generate(6629, params={}, max_attempts=80)
-    example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert list(example.keys()) == ["evidence", "answer"]
-    assert example["evidence"] == [[120, 120], [168, 120], [168, 168], [168, 216]]
+    example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    assert list(example.keys()) == ["annotation", "answer"]
+    assert example["annotation"] == [[120, 120], [168, 120], [168, 168], [168, 216]]
     assert int(example["answer"]) == 4

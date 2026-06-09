@@ -12,7 +12,13 @@ from ....core.seed import spawn_rng
 from ...shared.font_assets import font_asset_version, get_font_family_record
 from ...shared.text_legibility import draw_centered_readable_text, resolve_readable_text_style
 from ...shared.text_rendering import fit_font_to_box, load_font
-from .graph_scene import GraphRenderParams, SUPPORTED_NODE_SHAPE_VARIANTS
+from .graph_scene import (
+    GraphRenderParams,
+    SUPPORTED_NODE_SHAPE_VARIANTS,
+    apply_graph_content_layout_jitter,
+    draw_graph_context_text_blocks,
+    draw_graph_context_text_chips,
+)
 from .label_assets import default_graph_label_bucket_weights, resolve_graph_node_labels
 
 
@@ -33,6 +39,10 @@ SUPPORTED_BINARY_TREE_SCENE_VARIANTS: Tuple[str, ...] = (
     "classic_tree",
     "paper_tree",
     "boxed_tree",
+)
+SUPPORTED_BINARY_TREE_CONNECTOR_STYLE_VARIANTS: Tuple[str, ...] = (
+    "diagonal_edges",
+    "elbow_edges",
 )
 
 
@@ -97,6 +107,8 @@ class RenderedBinaryTreeEdge:
     child_label: str
     child_side: str
     segment_px: Tuple[Tuple[int, int], Tuple[int, int]]
+    connector_path_px: Tuple[Tuple[int, int], ...]
+    connector_style_variant: str
 
 
 @dataclass(frozen=True)
@@ -108,6 +120,7 @@ class RenderedBinaryTreeScene:
     nodes: Tuple[RenderedBinaryTreeNode, ...]
     edges: Tuple[RenderedBinaryTreeEdge, ...]
     scene_variant: str
+    connector_style_variant: str
     resolved_label_font_size_px: int
     resolved_label_stroke_width_px: int
 
@@ -611,6 +624,7 @@ def _resolve_panel_geometry(render_params: GraphRenderParams) -> Dict[str, Any]:
     return {
         "canvas_size": [width, height],
         "panel_xyxy": [int(value) for value in panel],
+        "scene_panel_xyxy": [int(value) for value in panel],
         "title_band_xyxy": [int(value) for value in title_band],
         "scene_content_xyxy": [int(value) for value in content],
     }
@@ -679,6 +693,37 @@ def _trim_segment(
     )
 
 
+def _connector_path(
+    start: Tuple[int, int],
+    end: Tuple[int, int],
+    *,
+    connector_style_variant: str,
+    trim_px: int,
+) -> Tuple[Tuple[int, int], ...]:
+    """Return a rendered parent-child connector path outside node interiors."""
+
+    if str(connector_style_variant) != "elbow_edges":
+        segment = _trim_segment(start, end, trim_px=max(1, int(trim_px)))
+        return (tuple(segment[0]), tuple(segment[1]))
+
+    direction = 1 if int(end[1]) >= int(start[1]) else -1
+    start_trim = (int(start[0]), int(start[1] + (direction * max(1, int(trim_px)))))
+    end_trim = (int(end[0]), int(end[1] - (direction * max(1, int(trim_px)))))
+    mid_y = int(round(0.5 * float(start_trim[1] + end_trim[1])))
+    return (
+        tuple(start_trim),
+        (int(start_trim[0]), int(mid_y)),
+        (int(end_trim[0]), int(mid_y)),
+        tuple(end_trim),
+    )
+
+
+def _connector_style_for_scene(scene_variant: str) -> str:
+    """Use worksheet-style elbow connectors on paper trees, diagonal elsewhere."""
+
+    return "elbow_edges" if str(scene_variant) == "paper_tree" else "diagonal_edges"
+
+
 def _binary_tree_positions(
     sample: BinaryTreeSample,
     *,
@@ -721,11 +766,11 @@ def _binary_tree_positions(
     }
 
 
-def projected_binary_tree_bbox_evidence(
+def projected_binary_tree_bbox_annotation(
     rendered_scene: RenderedBinaryTreeScene,
     labels: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered node labels into pixel bbox evidence."""
+    """Project ordered node labels into pixel bbox annotation."""
 
     requested = [str(label) for label in labels]
     node_by_label = {str(node.label): node for node in rendered_scene.nodes}
@@ -758,6 +803,7 @@ def render_binary_tree_scene(
     render_params: GraphRenderParams,
     scene_variant: str,
     scene_title: str,
+    layout_seed: int = 0,
     base_image: Image.Image | None = None,
 ) -> RenderedBinaryTreeScene:
     """Render one top-down labeled binary-tree scene."""
@@ -785,9 +831,9 @@ def render_binary_tree_scene(
     panel_geometry["font_exclusion_reason"] = str(render_params.font_exclusion_reason)
     panel = tuple(int(value) for value in panel_geometry["panel_xyxy"])
     title_band = tuple(int(value) for value in panel_geometry["title_band_xyxy"])
-    content = tuple(int(value) for value in panel_geometry["scene_content_xyxy"])
     panel_fill = tuple(int(value) for value in render_params.panel_fill_rgb)
     panel_border = tuple(int(value) for value in render_params.panel_border_rgb)
+    resolved_layout_seed = int(layout_seed) + int(sum(ord(ch) for ch in str(scene_title)))
     draw.rounded_rectangle(
         panel,
         radius=max(6, int(render_params.panel_corner_radius_px)),
@@ -795,25 +841,13 @@ def render_binary_tree_scene(
         outline=panel_border,
         width=2,
     )
-    if str(scene_variant) == "paper_tree":
-        line_color = tuple(max(0, min(255, int((int(v) + 178) / 2))) for v in panel_border)
-        for y in range(content[1] + 10, content[3], 34):
-            draw.line((content[0], y, content[2], y), fill=line_color, width=1)
-    elif str(scene_variant) == "boxed_tree":
-        draw.rounded_rectangle(
-            (content[0] - 8, content[1] - 8, content[2] + 8, content[3] + 8),
-            radius=max(8, int(render_params.panel_corner_radius_px // 2)),
-            outline=tuple(int(value) for value in render_params.panel_border_rgb),
-            width=1,
-        )
-
     title_font = load_font(
         int(render_params.panel_title_font_size_px),
         bold=True,
         font_family=str(render_params.font_family or ""),
     )
     title_style = resolve_readable_text_style(
-        instance_seed=int(sum(ord(ch) for ch in str(scene_title)) + int(render_params.canvas_width) + int(render_params.canvas_height)),
+        instance_seed=int(resolved_layout_seed + int(render_params.canvas_width) + int(render_params.canvas_height)),
         namespace="graph.binary_tree.panel_title_text",
         role="graph_panel_title_text",
         surface_rgbs=(panel_fill,),
@@ -830,6 +864,44 @@ def render_binary_tree_scene(
         stroke_width=1,
     )
 
+    block_context_elements = list(
+        draw_graph_context_text_blocks(
+            image,
+            panel_geometry=panel_geometry,
+            render_params=render_params,
+            layout_seed=int(resolved_layout_seed),
+        )
+    )
+    chip_context_elements = draw_graph_context_text_chips(
+        image,
+        panel_geometry=panel_geometry,
+        render_params=render_params,
+        layout_seed=int(resolved_layout_seed),
+    )
+    panel_context_elements = list(panel_geometry.get("context_text_elements", []))
+    panel_context_elements.extend([dict(element) for element in block_context_elements])
+    panel_context_elements.extend([dict(element) for element in chip_context_elements])
+    if panel_context_elements:
+        panel_geometry["context_text_elements"] = [dict(element) for element in panel_context_elements]
+
+    apply_graph_content_layout_jitter(
+        panel_geometry,
+        render_params=render_params,
+        layout_seed=int(resolved_layout_seed),
+    )
+    content = tuple(int(value) for value in panel_geometry["scene_content_xyxy"])
+    if str(scene_variant) == "paper_tree":
+        line_color = tuple(max(0, min(255, int((int(v) + 178) / 2))) for v in panel_border)
+        for y in range(content[1] + 10, content[3], 34):
+            draw.line((content[0], y, content[2], y), fill=line_color, width=1)
+    elif str(scene_variant) == "boxed_tree":
+        draw.rounded_rectangle(
+            (content[0] - 8, content[1] - 8, content[2] + 8, content[3] + 8),
+            radius=max(8, int(render_params.panel_corner_radius_px // 2)),
+            outline=tuple(int(value) for value in render_params.panel_border_rgb),
+            width=1,
+        )
+
     positions = _binary_tree_positions(
         sample,
         content_bbox=content,
@@ -837,15 +909,21 @@ def render_binary_tree_scene(
     )
     node_by_id = {str(node.node_id): node for node in sample.nodes}
     rendered_edges: List[RenderedBinaryTreeEdge] = []
+    connector_style = _connector_style_for_scene(str(scene_variant))
     for node in sample.nodes:
         for side, child_id in (("left", node.left_id), ("right", node.right_id)):
             if child_id is None:
                 continue
             start = tuple(int(value) for value in positions[str(node.node_id)])
             end = tuple(int(value) for value in positions[str(child_id)])
-            segment = _trim_segment(start, end, trim_px=max(1, int(render_params.node_radius_px) - 1))
+            path = _connector_path(
+                start,
+                end,
+                connector_style_variant=str(connector_style),
+                trim_px=max(1, int(render_params.node_radius_px) - 1),
+            )
             draw.line(
-                segment,
+                list(path),
                 fill=tuple(int(value) for value in render_params.edge_color_rgb),
                 width=max(1, int(render_params.edge_width_px)),
             )
@@ -855,7 +933,9 @@ def render_binary_tree_scene(
                     parent_label=str(node.label),
                     child_label=str(node_by_id[str(child_id)].label),
                     child_side=str(side),
-                    segment_px=(tuple(segment[0]), tuple(segment[1])),
+                    segment_px=(tuple(path[0]), tuple(path[-1])),
+                    connector_path_px=tuple(tuple(point) for point in path),
+                    connector_style_variant=str(connector_style),
                 )
             )
 
@@ -932,6 +1012,7 @@ def render_binary_tree_scene(
         nodes=tuple(rendered_nodes),
         edges=tuple(rendered_edges),
         scene_variant=str(scene_variant),
+        connector_style_variant=str(connector_style),
         resolved_label_font_size_px=int(resolved_font_size),
         resolved_label_stroke_width_px=int(stroke_width),
     )
@@ -941,9 +1022,10 @@ __all__ = [
     "BinaryTreeSample",
     "RenderedBinaryTreeScene",
     "SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS",
+    "SUPPORTED_BINARY_TREE_CONNECTOR_STYLE_VARIANTS",
     "SUPPORTED_BINARY_TREE_SCENE_VARIANTS",
     "SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS",
-    "projected_binary_tree_bbox_evidence",
+    "projected_binary_tree_bbox_annotation",
     "render_binary_tree_scene",
     "sample_binary_tree_for_count_query",
     "sample_binary_tree_for_traversal_query",

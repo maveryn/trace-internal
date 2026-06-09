@@ -460,7 +460,7 @@ def _prompt_defaults(task_id: str) -> Mapping[str, Any]:
             "json_output_contract",
             "json_output_contract_answer_only",
             "answer_hint_option_letter",
-            "evidence_hint",
+            "annotation_hint",
             "json_example",
             "json_example_answer_only",
         ),
@@ -507,12 +507,12 @@ class _ToggleBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(self.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults["object_description"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                    "annotation_hint": str(prompt_defaults["annotation_hint"]),
                     "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                     "json_example": str(prompt_defaults["json_example"]),
                     "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -549,12 +549,12 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
         prompt_defaults = _prompt_defaults(self.task_id)
         prompt_artifacts = self._prompt(prompt_defaults=prompt_defaults, instance_seed=int(instance_seed))
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in render_meta["start_grid_bbox_px"]],
             [round(float(value), 3) for value in option_bbox],
         ]
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = self._complexity(dataset)
         option_specs = _option_specs_for_result(dataset.result_options)
         trace_payload = {
@@ -578,7 +578,7 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
                 "post_image_noise": dict(post_noise_meta),
                 **dict(render_meta),
             },
-            "render_map": {"image_id": "img0", **dict(render_meta), "evidence_source": "start_grid_bbox_px+option_panel_bboxes_px"},
+            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "start_grid_bbox_px+option_panel_bboxes_px"},
             "execution_trace": {
                 "scene_id": SCENE_ID,
                 "query_id": RESULT_QUERY_ID,
@@ -593,15 +593,15 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
                 "toggle_rule": "pressing a switch toggles that cell and its orthogonal neighbors",
             },
             "witness_symbolic": {"type": "toggle_grid_result", "value": {"pressed_cells": [[int(r), int(c)] for r, c in dataset.pressed_cells]}},
-            "projected_evidence": {"bbox_set": list(evidence_bboxes)},
+            "projected_annotation": {"bbox_set": list(annotation_bboxes)},
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -629,13 +629,13 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
         prompt_artifacts = self._prompt(prompt_defaults=prompt_defaults, instance_seed=int(instance_seed))
         correct = next(option for option in dataset.switch_options if bool(option.is_correct))
         switch_bbox = render_meta["start_cell_bboxes_px"][f"cell_{correct.row}_{correct.col}"]
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in render_meta["start_grid_bbox_px"]],
             [round(float(value), 3) for value in render_meta["target_grid_bbox_px"]],
             [round(float(value), 3) for value in switch_bbox],
         ]
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         complexity = self._complexity(dataset)
         option_specs = _option_specs_for_repair(dataset.switch_options)
         trace_payload = {
@@ -659,7 +659,7 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
                 "post_image_noise": dict(post_noise_meta),
                 **dict(render_meta),
             },
-            "render_map": {"image_id": "img0", **dict(render_meta), "evidence_source": "start_grid_bbox_px+target_grid_bbox_px+start_cell_bboxes_px"},
+            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "start_grid_bbox_px+target_grid_bbox_px+start_cell_bboxes_px"},
             "execution_trace": {
                 "scene_id": SCENE_ID,
                 "query_id": REPAIR_QUERY_ID,
@@ -674,15 +674,15 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
                 "toggle_rule": "pressing a switch toggles that cell and its orthogonal neighbors",
             },
             "witness_symbolic": {"type": "toggle_grid_repair_switch", "value": {"correct_cell": [int(correct.row), int(correct.col)]}},
-            "projected_evidence": {"bbox_set": list(evidence_bboxes)},
+            "projected_annotation": {"bbox_set": list(annotation_bboxes)},
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

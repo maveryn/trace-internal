@@ -24,7 +24,7 @@ from ..shared.complexity import build_geometry_coordinate_relation_complexity
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_ids
 from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin, MultiFixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
-from ..shared.labeled_point_evidence import empty_graph_point_set_evidence_artifacts, graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import empty_graph_point_set_annotation_artifacts, graph_point_set_annotation_artifacts
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
 from ..shared.polygon_transformations import apply_rigid_transform_recipe, translate_polygon
@@ -96,7 +96,7 @@ class _TaskDefaults:
     label_font_size_max: int = 28
     label_stroke_width: int = 1
     label_stroke_width_min: int = 1
-    label_stroke_width_max: int = 2
+    label_stroke_width_max: int = 1
     label_offset_px: int = 14
     segment_candidate_count: int = 6
     segment_endpoint_abs_max: int = 8
@@ -145,16 +145,16 @@ class _ResolvedQuery:
 
 @dataclass(frozen=True)
 class _RenderedCoordinateScene:
-    """Rendered coordinate-relation scene plus trace-ready evidence artifacts."""
+    """Rendered coordinate-relation scene plus trace-ready annotation artifacts."""
 
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     answer_value: str | int
-    evidence_type: str
-    evidence_value: Any
-    projected_evidence: Dict[str, Any]
+    annotation_type: str
+    annotation_value: Any
+    projected_annotation: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
-    required_evidence_labels: List[str]
+    required_annotation_labels: List[str]
     object_count: int
     matching_labels: Tuple[str, ...] = field(default_factory=tuple)
 
@@ -725,8 +725,8 @@ def _sample_segment_count_scene(
         canvas_size=int(render_canvas_size),
     )
 
-    evidence = (
-        graph_point_set_evidence_artifacts(
+    annotation = (
+        graph_point_set_annotation_artifacts(
             points_by_label={
                 f"{segment_id}_endpoint_{int(index) + 1}": candidate_segment_px_by_id[str(segment_id)][int(index)]
                 for segment_id in matching_ids
@@ -742,7 +742,7 @@ def _sample_segment_count_scene(
             ),
         )
         if matching_ids
-        else empty_graph_point_set_evidence_artifacts(witness_type="matching_segment_endpoints")
+        else empty_graph_point_set_annotation_artifacts(witness_type="matching_segment_endpoints")
     )
 
     scene_entities: List[Dict[str, Any]] = [
@@ -776,11 +776,11 @@ def _sample_segment_count_scene(
             "matching_segment_ids": list(matching_ids),
         },
         answer_value=int(len(matching_ids)),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=list(evidence["evidence_value"]),
-        projected_evidence=dict(evidence["projected_evidence"]),
-        witness_symbolic=dict(evidence["witness_symbolic"]),
-        required_evidence_labels=list(evidence["required_labels"]),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=list(annotation["annotation_value"]),
+        projected_annotation=dict(annotation["projected_annotation"]),
+        witness_symbolic=dict(annotation["witness_symbolic"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         object_count=len(candidate_ids),
         matching_labels=tuple(matching_ids),
     )
@@ -876,8 +876,8 @@ def _sample_quadrant_count_scene(
         color=shape_style.line_color,
     )
 
-    evidence = (
-        graph_point_set_evidence_artifacts(
+    annotation = (
+        graph_point_set_annotation_artifacts(
             points_by_label={
                 f"match_{int(index) + 1}": candidate_points_px[str(label)]
                 for index, label in enumerate(matching_labels)
@@ -888,7 +888,7 @@ def _sample_quadrant_count_scene(
             ordered_labels=tuple(f"match_{int(index) + 1}" for index in range(len(matching_labels))),
         )
         if matching_labels
-        else empty_graph_point_set_evidence_artifacts(witness_type="same_quadrant_points")
+        else empty_graph_point_set_annotation_artifacts(witness_type="same_quadrant_points")
     )
     scene_entities = [
         {
@@ -921,11 +921,11 @@ def _sample_quadrant_count_scene(
             "matching_points_graph": [list(candidate_point_by_label[str(label)]) for label in matching_labels],
         },
         answer_value=int(len(matching_labels)),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=list(evidence["evidence_value"]),
-        projected_evidence=dict(evidence["projected_evidence"]),
-        witness_symbolic=dict(evidence["witness_symbolic"]),
-        required_evidence_labels=list(evidence["required_labels"]),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=list(annotation["annotation_value"]),
+        projected_annotation=dict(annotation["projected_annotation"]),
+        witness_symbolic=dict(annotation["witness_symbolic"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         object_count=len(candidate_labels),
         matching_labels=tuple(matching_labels),
     )
@@ -1051,8 +1051,8 @@ def _sample_collinear_count_scene(
         canvas_size=int(render_canvas_size),
     )
 
-    evidence = (
-        graph_point_set_evidence_artifacts(
+    annotation = (
+        graph_point_set_annotation_artifacts(
             points_by_label={
                 f"match_{int(index) + 1}": _pixel_point(point, context=context)
                 for index, point in enumerate(matching_points)
@@ -1063,7 +1063,7 @@ def _sample_collinear_count_scene(
             ordered_labels=tuple(f"match_{int(index) + 1}" for index in range(len(matching_points))),
         )
         if matching_points
-        else empty_graph_point_set_evidence_artifacts(witness_type="collinear_points")
+        else empty_graph_point_set_annotation_artifacts(witness_type="collinear_points")
     )
 
     scene_entities: List[Dict[str, Any]] = [
@@ -1101,11 +1101,11 @@ def _sample_collinear_count_scene(
             "line_direction_graph": [int(direction[0]), int(direction[1])],
         },
         answer_value=int(len(matching_points)),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=list(evidence["evidence_value"]),
-        projected_evidence=dict(evidence["projected_evidence"]),
-        witness_symbolic=dict(evidence["witness_symbolic"]),
-        required_evidence_labels=list(evidence["required_labels"]),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=list(annotation["annotation_value"]),
+        projected_annotation=dict(annotation["projected_annotation"]),
+        witness_symbolic=dict(annotation["witness_symbolic"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         object_count=len(candidate_points),
         matching_labels=tuple(f"match_{int(index) + 1}" for index in range(len(matching_points))),
     )
@@ -1278,7 +1278,7 @@ def _sample_point_in_shape_scene(
         color=shape_style.line_color,
     )
 
-    evidence = graph_point_set_evidence_artifacts(
+    annotation = graph_point_set_annotation_artifacts(
         points_by_label={
             f"point_{int(index) + 1}": _pixel_point(point, context=context)
             for index, point in enumerate(interior_points)
@@ -1287,7 +1287,7 @@ def _sample_point_in_shape_scene(
         graph_spacing=int(context.graph_spacing),
         witness_type="strict_interior_lattice_points",
         ordered_labels=tuple(f"point_{int(index) + 1}" for index in range(len(interior_points))),
-    ) if interior_points else empty_graph_point_set_evidence_artifacts(witness_type="strict_interior_lattice_points")
+    ) if interior_points else empty_graph_point_set_annotation_artifacts(witness_type="strict_interior_lattice_points")
 
     return _RenderedCoordinateScene(
         scene_entities=[
@@ -1305,11 +1305,11 @@ def _sample_point_in_shape_scene(
             "strict_interior_points_graph": [list(point) for point in interior_points],
         },
         answer_value=int(len(interior_points)),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=list(evidence["evidence_value"]),
-        projected_evidence=dict(evidence["projected_evidence"]),
-        witness_symbolic=dict(evidence["witness_symbolic"]),
-        required_evidence_labels=list(evidence["required_labels"]),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=list(annotation["annotation_value"]),
+        projected_annotation=dict(annotation["projected_annotation"]),
+        witness_symbolic=dict(annotation["witness_symbolic"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         object_count=len(polygon_vertices),
     )
 
@@ -1508,10 +1508,10 @@ class GeometryCoordinateRelationTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_integer",
-                "evidence_hint_segment_endpoints",
-                "evidence_hint_collinear_pixel_point_set",
-                "evidence_hint_quadrant_pixel_point_set",
-                "evidence_hint_pixel_point_set",
+                "annotation_hint_segment_endpoints",
+                "annotation_hint_collinear_pixel_point_set",
+                "annotation_hint_quadrant_pixel_point_set",
+                "annotation_hint_pixel_point_set",
                 "json_example_segment_count",
                 "json_example_segment_count_answer_only",
                 "object_description_segment_set",
@@ -1534,16 +1534,16 @@ class GeometryCoordinateRelationTask:
         answer_type = "integer"
         answer_hint = str(prompt_defaults["answer_hint_integer"])
         if str(query.query_id) in SEGMENT_COUNT_QUERY_IDS:
-            evidence_hint = str(prompt_defaults["evidence_hint_segment_endpoints"])
+            annotation_hint = str(prompt_defaults["annotation_hint_segment_endpoints"])
         elif str(query.query_id) == "collinear_count":
-            evidence_hint = str(prompt_defaults["evidence_hint_collinear_pixel_point_set"])
+            annotation_hint = str(prompt_defaults["annotation_hint_collinear_pixel_point_set"])
         elif str(query.query_id) == "same_quadrant_count":
-            evidence_hint = str(prompt_defaults["evidence_hint_quadrant_pixel_point_set"])
+            annotation_hint = str(prompt_defaults["annotation_hint_quadrant_pixel_point_set"])
         else:
-            evidence_hint = str(prompt_defaults["evidence_hint_pixel_point_set"])
+            annotation_hint = str(prompt_defaults["annotation_hint_pixel_point_set"])
 
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_value,
+            annotation_value=rendered_scene.annotation_value,
             answer_type=str(answer_type),
         )
         if str(query.scene_variant) == "segment_set":
@@ -1560,12 +1560,12 @@ class GeometryCoordinateRelationTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1575,7 +1575,7 @@ class GeometryCoordinateRelationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type=str(answer_type), value=rendered_scene.answer_value)
-        evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=rendered_scene.evidence_value)
+        annotation_gt = TypedValue(type=str(rendered_scene.annotation_type), value=rendered_scene.annotation_value)
 
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
@@ -1600,7 +1600,7 @@ class GeometryCoordinateRelationTask:
             "query_id": str(query.query_id),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
-            "required_evidence_labels": list(rendered_scene.required_evidence_labels),
+            "required_annotation_labels": list(rendered_scene.required_annotation_labels),
             "question_format": str(question_format),
         }
         if query.target_count is not None:
@@ -1657,7 +1657,7 @@ class GeometryCoordinateRelationTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": dict(execution_trace),
             "witness_symbolic": dict(rendered_scene.witness_symbolic),
-            "projected_evidence": dict(rendered_scene.projected_evidence),
+            "projected_annotation": dict(rendered_scene.projected_annotation),
         }
 
         target_count_for_complexity = int(query.target_count or 0) if str(query.query_id) in COUNT_QUERY_IDS else None
@@ -1668,14 +1668,14 @@ class GeometryCoordinateRelationTask:
             query_id=str(query.query_id),
             object_count=int(rendered_scene.object_count),
             target_count=target_count_for_complexity,
-            evidence_type=str(rendered_scene.evidence_type),
-            evidence_count=len(rendered_scene.required_evidence_labels),
+            annotation_type=str(rendered_scene.annotation_type),
+            annotation_count=len(rendered_scene.required_annotation_labels),
         )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1692,6 +1692,7 @@ class GeometryCoordinateSegmentRelationCountTask(MultiFixedGeometryQueryTaskMixi
 
     task_id = "task_geometry__coordinate_plane__segment_relation_count"
     fixed_query_ids = ("parallel_count", "perpendicular_count")
+    scene_id = "coordinate_plane"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("segment_set",)
 
@@ -1702,6 +1703,7 @@ class GeometryCoordinateCollinearPointCountTask(FixedGeometryQueryTaskMixin, Geo
 
     task_id = "task_geometry__coordinate_plane__collinear_point_count"
     fixed_query_id = "collinear_count"
+    scene_id = "coordinate_plane"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("line_points",)
 
@@ -1712,6 +1714,7 @@ class GeometryCoordinateSameQuadrantPointCountTask(FixedGeometryQueryTaskMixin, 
 
     task_id = "task_geometry__coordinate_plane__same_quadrant_point_count"
     fixed_query_id = "same_quadrant_count"
+    scene_id = "coordinate_plane"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("quadrant_points",)
 
@@ -1722,5 +1725,6 @@ class GeometryCoordinatePointInPolygonCountTask(FixedGeometryQueryTaskMixin, Geo
 
     task_id = "task_geometry__coordinate_plane__point_in_polygon_count"
     fixed_query_id = "point_in_shape_count"
+    scene_id = "coordinate_plane"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("polygon_lattice",)

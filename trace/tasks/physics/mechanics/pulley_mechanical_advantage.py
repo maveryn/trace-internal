@@ -194,18 +194,18 @@ class _SceneSpec:
     shown_effort_force_value: int | None
     shown_load_force_value: int | None
     target_answer: int
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered pulley scene plus prompt-facing evidence metadata."""
+    """Rendered pulley scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
-    evidence_bbox_map: Dict[str, List[float]]
-    evidence_entity_ids: List[str]
-    evidence_entity_id_map: Dict[str, str]
+    annotation_bboxes: List[List[float]]
+    annotation_bbox_map: Dict[str, List[float]]
+    annotation_entity_ids: List[str]
+    annotation_entity_id_map: Dict[str, str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     support_segment_bboxes: List[List[float]]
@@ -634,13 +634,13 @@ def _sample_scene_spec(
         disconnected_segment_count=int(disconnected_count),
         cut_slot_indices=cut_slot_indices,
     )
-    evidence_entity_ids: List[str] = [
+    annotation_entity_ids: List[str] = [
         f"support_segment_{index}" for index in range(1, int(support_count) + 1)
     ]
     if query_id == "effort_force_for_load":
-        evidence_entity_ids.extend(["load_force_label", "effort_force_label"])
+        annotation_entity_ids.extend(["load_force_label", "effort_force_label"])
     else:
-        evidence_entity_ids.extend(["effort_force_label", "load_force_label"])
+        annotation_entity_ids.extend(["effort_force_label", "load_force_label"])
 
     return _SceneSpec(
         scene_variant=str(scene_variant),
@@ -654,7 +654,7 @@ def _sample_scene_spec(
         shown_effort_force_value=None if shown_effort is None else int(shown_effort),
         shown_load_force_value=None if shown_load is None else int(shown_load),
         target_answer=int(target_answer),
-        evidence_entity_ids=tuple(str(entity_id) for entity_id in evidence_entity_ids),
+        annotation_entity_ids=tuple(str(entity_id) for entity_id in annotation_entity_ids),
     )
 
 
@@ -1099,29 +1099,29 @@ def _render_scene(
         for entity in scene_entities
         if entity.get("bbox_px") is not None
     }
-    evidence_bboxes = [
+    annotation_bboxes = [
         list(entity_bbox_map[entity_id])
-        for entity_id in scene_spec.evidence_entity_ids
+        for entity_id in scene_spec.annotation_entity_ids
         if str(entity_id) in entity_bbox_map
     ]
-    evidence_bbox_map: Dict[str, List[float]] = {}
-    evidence_entity_id_map: Dict[str, str] = {}
+    annotation_bbox_map: Dict[str, List[float]] = {}
+    annotation_entity_id_map: Dict[str, str] = {}
     for support_index in range(1, int(scene_spec.support_segment_count) + 1):
         key = f"support_{int(support_index)}"
         entity_id = f"support_segment_{int(support_index)}"
         if entity_id in entity_bbox_map:
-            evidence_bbox_map[str(key)] = list(entity_bbox_map[entity_id])
-            evidence_entity_id_map[str(key)] = str(entity_id)
+            annotation_bbox_map[str(key)] = list(entity_bbox_map[entity_id])
+            annotation_entity_id_map[str(key)] = str(entity_id)
     if str(scene_spec.query_id) == "effort_force_for_load":
         known_entity_id = "load_force_label"
         target_entity_id = "effort_force_label"
     else:
         known_entity_id = "effort_force_label"
         target_entity_id = "load_force_label"
-    evidence_bbox_map["known_force"] = list(entity_bbox_map[str(known_entity_id)])
-    evidence_bbox_map["target_force"] = list(entity_bbox_map[str(target_entity_id)])
-    evidence_entity_id_map["known_force"] = str(known_entity_id)
-    evidence_entity_id_map["target_force"] = str(target_entity_id)
+    annotation_bbox_map["known_force"] = list(entity_bbox_map[str(known_entity_id)])
+    annotation_bbox_map["target_force"] = list(entity_bbox_map[str(target_entity_id)])
+    annotation_entity_id_map["known_force"] = str(known_entity_id)
+    annotation_entity_id_map["target_force"] = str(target_entity_id)
 
     render_map = {
         "accent_color_name": str(accent_color_name),
@@ -1136,17 +1136,17 @@ def _render_scene(
         "pulley_bboxes_px": [list(bbox) for bbox in pulley_bboxes],
         "load_force_label_bbox_px": list(load_label_bbox),
         "effort_force_label_bbox_px": list(effort_label_bbox),
-        "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
-        "evidence_bbox_map_px": dict(evidence_bbox_map),
-        "evidence_entity_id_map": dict(evidence_entity_id_map),
+        "annotation_entity_ids": list(scene_spec.annotation_entity_ids),
+        "annotation_bbox_map_px": dict(annotation_bbox_map),
+        "annotation_entity_id_map": dict(annotation_entity_id_map),
     }
 
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_bbox_map=dict(evidence_bbox_map),
-        evidence_entity_ids=list(scene_spec.evidence_entity_ids),
-        evidence_entity_id_map=dict(evidence_entity_id_map),
+        annotation_bboxes=[list(bbox) for bbox in annotation_bboxes],
+        annotation_bbox_map=dict(annotation_bbox_map),
+        annotation_entity_ids=list(scene_spec.annotation_entity_ids),
+        annotation_entity_id_map=dict(annotation_entity_id_map),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
         support_segment_bboxes=[list(bbox) for bbox in support_segment_bboxes],
@@ -1207,7 +1207,7 @@ def _resolve_pulley_layout_placement(
     instance_seed: int,
     scene_spec: _SceneSpec,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve whole-diagram placement before rendering and evidence projection."""
+    """Resolve whole-diagram placement before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -1277,13 +1277,13 @@ def _resolve_pulley_layout_placement(
 def _build_prompt_examples(_: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for pulley force queries."""
 
-    evidence = {
+    annotation = {
         "support_1": [420, 166, 427, 428],
         "support_2": [468, 166, 475, 428],
         "known_force": [649, 538, 819, 612],
         "target_force": [1036, 190, 1196, 350],
     }
-    return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
+    return build_prompt_json_examples(annotation_value=annotation, answer_type="integer")
 
 
 @register_task
@@ -1400,8 +1400,8 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "object_description_open_block",
                     "object_description_compact_block",
                     "object_description_tall_block",
-                    "evidence_hint_effort_force",
-                    "evidence_hint_load_force",
+                    "annotation_hint_effort_force",
+                    "annotation_hint_load_force",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1413,7 +1413,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.public_query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "solve_for": str(axes.solve_for).replace("_", " "),
@@ -1422,10 +1422,10 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(
-                        prompt_defaults["evidence_hint_effort_force"]
+                    "annotation_hint": str(
+                        prompt_defaults["annotation_hint_effort_force"]
                         if str(axes.query_id) == "effort_force_for_load"
-                        else prompt_defaults["evidence_hint_load_force"]
+                        else prompt_defaults["annotation_hint_load_force"]
                     ),
                 },
                 instance_seed=int(instance_seed),
@@ -1433,11 +1433,11 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_value = {
+            annotation_value = {
                 str(key): [float(value) for value in bbox]
-                for key, bbox in rendered_scene.evidence_bbox_map.items()
+                for key, bbox in rendered_scene.annotation_bbox_map.items()
             }
-            evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_value))
+            annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
             target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_pulley_mechanical_advantage_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1447,7 +1447,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                 support_segment_count=int(scene_spec.support_segment_count),
                 disconnected_segment_count=int(scene_spec.disconnected_segment_count),
                 target_answer=int(axes.target_answer),
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                annotation_count=len(rendered_scene.annotation_bboxes),
             )
             cut_segment_payload = [
                 {
@@ -1483,7 +1483,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                         "connected_slot_indices": [int(value) for value in scene_spec.connected_slot_indices],
                         "cut_segments": [dict(item) for item in cut_segment_payload],
                         "target_answer": int(axes.target_answer),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -1561,17 +1561,17 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     else int(scene_spec.shown_load_force_value),
                     "connected_slot_indices": [int(value) for value in scene_spec.connected_slot_indices],
                     "cut_segments": [dict(item) for item in cut_segment_payload],
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "object_map",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_id_map.values()],
-                    "key_to_entity_id": dict(rendered_scene.evidence_entity_id_map),
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_id_map.values()],
+                    "key_to_entity_id": dict(rendered_scene.annotation_entity_id_map),
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "keyed_bbox_map",
-                    "keyed_bbox_map": dict(evidence_value),
-                    "pixel_keyed_bbox_map": dict(evidence_value),
+                    "keyed_bbox_map": dict(annotation_value),
+                    "pixel_keyed_bbox_map": dict(annotation_value),
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
@@ -1581,7 +1581,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     prompt=str(prompt_artifacts.prompt),
                     prompt_variants=dict(prompt_artifacts.prompt_variants),
                     answer_gt=answer_gt,
-                    evidence_gt=evidence_gt,
+                    annotation_gt=annotation_gt,
                     image=image,
                     image_id="img0",
                     trace_payload=trace_payload,

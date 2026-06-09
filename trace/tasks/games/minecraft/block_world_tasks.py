@@ -20,7 +20,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.support_sampling import resolve_integer_choice
+from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_complexity, clamp_unit_interval, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.minecraft_common import (
@@ -30,11 +30,10 @@ from ..shared.minecraft_common import (
     MinecraftSceneSample,
     SUPPORTED_MINECRAFT_RESOURCE_KINDS,
     SUPPORTED_MINECRAFT_STYLE_VARIANTS,
-    ore_block_entity_id,
     resource_prompt_name,
     route_obstacle_entity_id,
     terrain_cell_entity_id,
-    tunnel_block_entity_id,
+    stack_entity_id,
     validate_minecraft_sample,
     water_cell_entity_id,
 )
@@ -48,10 +47,13 @@ TASK_GROUP = "minecraft"
 SCENE_ID = "minecraft"
 BASE_TASK_ID = "games_minecraft_block_world_base"
 
-ORE_BLOCK_QUERY_ID = "ore_block_count"
-TUNNEL_CLEARANCE_QUERY_ID = "tunnel_clearance_count"
+TOP_ORE_STACK_QUERY_ID = "top_ore_stack_count"
+REACHABLE_ORE_STACK_QUERY_ID = "reachable_ore_stack_count"
 RESOURCE_ROUTE_QUERY_ID = "resource_route_cost"
-MINECRAFT_ORE_KINDS: Tuple[str, ...] = ("diamond_ore", "gold_ore")
+EXACT_HEIGHT_QUERY_ID = "exact_height_count"
+AT_LEAST_HEIGHT_QUERY_ID = "at_least_height_count"
+STACK_HEIGHT_QUERY_IDS: Tuple[str, ...] = (EXACT_HEIGHT_QUERY_ID, AT_LEAST_HEIGHT_QUERY_ID)
+MINECRAFT_ORE_KINDS: Tuple[str, ...] = ("iron_ore", "gold_ore", "diamond_ore")
 
 
 @dataclass(frozen=True)
@@ -60,11 +62,19 @@ class _TaskDefaults:
 
     grid_width_support: Tuple[int, ...] = (8, 9, 10)
     grid_depth_support: Tuple[int, ...] = (8, 9, 10)
-    ore_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
-    tunnel_answer_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
+    top_ore_stack_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    reachable_ore_stack_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    reachable_line_length_support: Tuple[int, ...] = (6, 7, 8, 9, 10)
+    reachable_grid_width_support: Tuple[int, ...] = (8, 9, 10, 11, 12)
+    reachable_grid_depth_support: Tuple[int, ...] = (5,)
     route_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    stack_height_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    exact_target_height_support: Tuple[int, ...] = (2, 3, 4, 5)
+    at_least_target_height_support: Tuple[int, ...] = (2, 3, 4)
+    stack_height_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     route_grid_width_support: Tuple[int, ...] = (11,)
     route_grid_depth_support: Tuple[int, ...] = (8, 9, 10)
+    route_option_count_support: Tuple[int, ...] = (2, 3)
     canvas_width: int = 840
     canvas_height: int = 680
     tile_width_px: int = 58
@@ -83,10 +93,16 @@ class _ResolvedAxes:
     grid_width: int
     grid_depth: int
     target_answer: int
+    target_stack_height: int
+    line_length: int
+    route_option_count: int
     style_variant_probabilities: Dict[str, float]
     grid_width_probabilities: Dict[str, float]
     grid_depth_probabilities: Dict[str, float]
     answer_probabilities: Dict[str, float]
+    target_stack_height_probabilities: Dict[str, float]
+    line_length_probabilities: Dict[str, float]
+    route_option_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -99,16 +115,29 @@ POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group=TASK_GROUP, app
 
 
 def _answer_support_key(query_id: str) -> tuple[str, str, Tuple[int, ...]]:
-    if str(query_id) == ORE_BLOCK_QUERY_ID:
-        return ("ore_answer_support", "target_answer", _DEFAULTS.ore_answer_support)
-    if str(query_id) == TUNNEL_CLEARANCE_QUERY_ID:
-        return ("tunnel_answer_support", "target_answer", _DEFAULTS.tunnel_answer_support)
+    if str(query_id) == TOP_ORE_STACK_QUERY_ID:
+        return ("top_ore_stack_answer_support", "target_answer", _DEFAULTS.top_ore_stack_answer_support)
+    if str(query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        return (
+            "reachable_ore_stack_answer_support",
+            "target_answer",
+            _DEFAULTS.reachable_ore_stack_answer_support,
+        )
     if str(query_id) == RESOURCE_ROUTE_QUERY_ID:
         return ("route_answer_support", "target_answer", _DEFAULTS.route_answer_support)
+    if str(query_id) in STACK_HEIGHT_QUERY_IDS:
+        return ("stack_height_answer_support", "target_answer", _DEFAULTS.stack_height_answer_support)
     raise ValueError(f"unsupported minecraft query_id: {query_id}")
 
 
 def _grid_support_keys(query_id: str) -> tuple[str, str, Tuple[int, ...], Tuple[int, ...]]:
+    if str(query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        return (
+            "reachable_grid_width_support",
+            "reachable_grid_depth_support",
+            _DEFAULTS.reachable_grid_width_support,
+            _DEFAULTS.reachable_grid_depth_support,
+        )
     if str(query_id) == RESOURCE_ROUTE_QUERY_ID:
         return (
             "route_grid_width_support",
@@ -117,6 +146,14 @@ def _grid_support_keys(query_id: str) -> tuple[str, str, Tuple[int, ...], Tuple[
             _DEFAULTS.route_grid_depth_support,
         )
     return ("grid_width_support", "grid_depth_support", _DEFAULTS.grid_width_support, _DEFAULTS.grid_depth_support)
+
+
+def _target_height_support_key(query_id: str) -> tuple[str, Tuple[int, ...]]:
+    if str(query_id) == EXACT_HEIGHT_QUERY_ID:
+        return ("exact_target_height_support", _DEFAULTS.exact_target_height_support)
+    if str(query_id) == AT_LEAST_HEIGHT_QUERY_ID:
+        return ("at_least_target_height_support", _DEFAULTS.at_least_target_height_support)
+    return ("", (0,))
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any], query_id: str) -> _ResolvedAxes:
@@ -133,29 +170,35 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any], query_id: st
         balance_flag_key="balanced_style_variant_sampling",
         supported_variants=SUPPORTED_MINECRAFT_STYLE_VARIANTS,
     )
-    width_support_key, depth_support_key, width_fallback, depth_fallback = _grid_support_keys(str(query_id))
-    grid_width, grid_width_probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key=width_support_key,
-        explicit_key="grid_width",
-        fallback_support=width_fallback,
-        namespace=f"{BASE_TASK_ID}.grid_width",
-        balanced_flag_key="balanced_grid_width_sampling",
-        namespace_support_permutation=True,
-    )
-    grid_depth, grid_depth_probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key=depth_support_key,
-        explicit_key="grid_depth",
-        fallback_support=depth_fallback,
-        namespace=f"{BASE_TASK_ID}.grid_depth",
-        balanced_flag_key="balanced_grid_depth_sampling",
-        namespace_support_permutation=True,
-    )
+    if str(query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        grid_width = 0
+        grid_depth = 0
+        grid_width_probabilities: Dict[str, float] = {}
+        grid_depth_probabilities: Dict[str, float] = {}
+    else:
+        width_support_key, depth_support_key, width_fallback, depth_fallback = _grid_support_keys(str(query_id))
+        grid_width, grid_width_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key=width_support_key,
+            explicit_key="grid_width",
+            fallback_support=width_fallback,
+            namespace=f"{BASE_TASK_ID}.grid_width",
+            balanced_flag_key="balanced_grid_width_sampling",
+            namespace_support_permutation=True,
+        )
+        grid_depth, grid_depth_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key=depth_support_key,
+            explicit_key="grid_depth",
+            fallback_support=depth_fallback,
+            namespace=f"{BASE_TASK_ID}.grid_depth",
+            balanced_flag_key="balanced_grid_depth_sampling",
+            namespace_support_permutation=True,
+        )
     support_key, explicit_key, fallback = _answer_support_key(str(query_id))
     target_answer, answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -168,16 +211,84 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any], query_id: st
         balanced_flag_key="balanced_answer_sampling",
         namespace_support_permutation=True,
     )
+    if str(query_id) == RESOURCE_ROUTE_QUERY_ID:
+        route_option_count, route_option_count_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="route_option_count_support",
+            explicit_key="route_option_count",
+            fallback_support=_DEFAULTS.route_option_count_support,
+            namespace=f"{BASE_TASK_ID}.{str(query_id)}.route_option_count",
+            balanced_flag_key="balanced_route_option_count_sampling",
+            namespace_support_permutation=True,
+        )
+    else:
+        route_option_count = 0
+        route_option_count_probabilities = {"0": 1.0}
+    if str(query_id) in STACK_HEIGHT_QUERY_IDS:
+        height_support_key, height_fallback = _target_height_support_key(str(query_id))
+        target_stack_height, target_stack_height_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key=height_support_key,
+            explicit_key="target_stack_height",
+            fallback_support=height_fallback,
+            namespace=f"{BASE_TASK_ID}.{str(query_id)}.target_stack_height",
+            balanced_flag_key="balanced_target_stack_height_sampling",
+            namespace_support_permutation=True,
+        )
+    else:
+        target_stack_height = 0
+        target_stack_height_probabilities = {"0": 1.0}
+    if str(query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        raw_line_length_support = resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="reachable_line_length_support",
+            fallback=_DEFAULTS.reachable_line_length_support,
+        )
+        min_line_length = max(6, int(target_answer) + 2)
+        line_length_support = tuple(length for length in raw_line_length_support if int(length) >= int(min_line_length))
+        if not line_length_support:
+            raise ValueError("reachable_line_length_support cannot support the sampled target answer")
+        line_params = dict(params)
+        line_params["reachable_line_length_support"] = tuple(int(length) for length in line_length_support)
+        line_length, line_length_probabilities = resolve_integer_choice(
+            instance_seed=int(instance_seed),
+            params=line_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="reachable_line_length_support",
+            explicit_key="line_length",
+            fallback_support=line_length_support,
+            namespace=f"{BASE_TASK_ID}.{str(query_id)}.line_length",
+            balanced_flag_key="balanced_reachable_line_length_sampling",
+            namespace_support_permutation=True,
+        )
+        grid_width = int(line_length)
+        grid_depth = 4
+        grid_width_probabilities = {str(int(grid_width)): 1.0}
+        grid_depth_probabilities = {str(int(grid_depth)): 1.0}
+    else:
+        line_length = 0
+        line_length_probabilities = {"0": 1.0}
     return _ResolvedAxes(
         query_id=str(query_id),
         style_variant=str(style_variant),
         grid_width=int(grid_width),
         grid_depth=int(grid_depth),
         target_answer=int(target_answer),
+        target_stack_height=int(target_stack_height),
+        line_length=int(line_length),
+        route_option_count=int(route_option_count),
         style_variant_probabilities=dict(style_variant_probabilities),
         grid_width_probabilities=dict(grid_width_probabilities),
         grid_depth_probabilities=dict(grid_depth_probabilities),
         answer_probabilities=dict(answer_probabilities),
+        target_stack_height_probabilities=dict(target_stack_height_probabilities),
+        line_length_probabilities=dict(line_length_probabilities),
+        route_option_count_probabilities=dict(route_option_count_probabilities),
     )
 
 
@@ -221,6 +332,8 @@ def _render_params(
     instance_seed: int,
     grid_width: int,
     grid_depth: int,
+    max_stack_height: int = 1,
+    player_marker_label: str = "P",
 ) -> MinecraftRenderParams:
     """Resolve Minecraft-like rendering parameters from config/defaults."""
 
@@ -245,7 +358,8 @@ def _render_params(
     default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
     default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
     world_width = float((int(grid_width) + int(grid_depth)) * int(tile_width) / 2.0)
-    world_height = float((int(grid_width) + int(grid_depth)) * int(tile_height) / 2.0) + float(cube_height)
+    stack_height = max(1, int(max_stack_height))
+    world_height = float((int(grid_width) + int(grid_depth)) * int(tile_height) / 2.0) + float(cube_height * stack_height)
     canvas_width = int(params.get("canvas_width", min(default_canvas_width, max(520, int(round(world_width + 190.0))))))
     canvas_height = int(params.get("canvas_height", min(default_canvas_height, max(430, int(round(world_height + 165.0))))))
     font_family = sample_font_family(
@@ -264,6 +378,8 @@ def _render_params(
         player_marker_size_px=scale_games_px(params.get("player_marker_size_px", group_default(_RENDER_DEFAULTS, "player_marker_size_px", _DEFAULTS.player_marker_size_px)), unit_scale, min_px=14),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
+        max_stack_height=int(stack_height),
+        player_marker_label=str(player_marker_label or "P"),
     )
 
 
@@ -324,47 +440,55 @@ def _sample_distinct_cells(
     return tuple(rng.sample(candidates, int(count)))
 
 
-def _sample_ore_block_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
+def _sample_top_ore_stack_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
     answer = int(axes.target_answer)
     grid_width = int(axes.grid_width)
     grid_depth = int(axes.grid_depth)
     target_kind = _resource_kind(rng=rng, params=params, allowed_kinds=MINECRAFT_ORE_KINDS)
-    distractor_kind = "gold_ore" if target_kind == "diamond_ore" else "diamond_ore"
-    target_cells = _sample_distinct_cells(
+    distractor_ore_kinds = tuple(kind for kind in MINECRAFT_ORE_KINDS if str(kind) != str(target_kind))
+    height_support = tuple(sorted(set(_stack_height_support(params))))
+    if not height_support:
+        raise ValueError("top-ore stack count requires stack_height_support")
+    distractor_count = int(rng.randrange(4, 8))
+    total_stacks = int(answer) + int(distractor_count)
+    stack_cells = _sample_distinct_cells(
         rng=rng,
         grid_width=grid_width,
         grid_depth=grid_depth,
-        count=answer,
-        min_x=1,
-        max_x_exclusive=grid_width - 1,
-        min_y=1,
-        max_y_exclusive=grid_depth - 1,
-    )
-    distractor_count = int(rng.randrange(3, 6))
-    distractor_cells = _sample_distinct_cells(
-        rng=rng,
-        grid_width=grid_width,
-        grid_depth=grid_depth,
-        count=distractor_count,
-        avoid=target_cells,
+        count=total_stacks,
         min_x=1,
         max_x_exclusive=grid_width - 1,
         min_y=1,
         max_y_exclusive=grid_depth - 1,
     )
     blocks: list[MinecraftBlock] = []
-    evidence_ids: list[str] = []
-    for index, (x, y) in enumerate(target_cells):
-        block_id = ore_block_entity_id(int(index))
-        blocks.append(MinecraftBlock(block_id=block_id, x=int(x), y=int(y), z=0, kind=target_kind))
-        evidence_ids.append(block_id)
-    for index, (x, y) in enumerate(distractor_cells):
-        kind = str(rng.choice((distractor_kind, "stone", "dirt", "pumpkin")))
-        blocks.append(MinecraftBlock(block_id=f"ore_distractor_{int(index):02d}", x=int(x), y=int(y), z=0, kind=kind))
+    annotation_ids: list[str] = []
+    for stack_index, (x, y) in enumerate(stack_cells):
+        qualifies = int(stack_index) < int(answer)
+        height = int(rng.choice(height_support))
+        top_kind = (
+            str(target_kind)
+            if qualifies
+            else str(rng.choice(("stone", "dirt", *distractor_ore_kinds)))
+        )
+        if qualifies:
+            annotation_ids.append(stack_entity_id(int(x), int(y)))
+        for z in range(int(height)):
+            kind = str(top_kind if int(z) == int(height) - 1 else rng.choice(("stone", "dirt")))
+            blocks.append(
+                MinecraftBlock(
+                    block_id=f"top_ore_stack_{int(stack_index):02d}_z{int(z):02d}",
+                    x=int(x),
+                    y=int(y),
+                    z=int(z),
+                    kind=kind,
+                )
+            )
+    rng.shuffle(blocks)
     sample = MinecraftSceneSample(
         grid_width=grid_width,
         grid_depth=grid_depth,
-        query_id=ORE_BLOCK_QUERY_ID,
+        query_id=TOP_ORE_STACK_QUERY_ID,
         style_variant=str(axes.style_variant),
         answer=answer,
         terrain_cells=_terrain_cells_from_kinds(grid_width=grid_width, grid_depth=grid_depth),
@@ -374,8 +498,8 @@ def _sample_ore_block_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
         river_width=0,
         scaffold_cost=0,
         ladder_present=False,
-        evidence_entity_ids=tuple(evidence_ids),
-        construction_mode=f"count_{target_kind}_{answer}",
+        annotation_entity_ids=tuple(sorted(annotation_ids)),
+        construction_mode=f"top_{target_kind}_stack_count_{answer}",
         target_resource_kind=target_kind,
         counted_resource_kind=target_kind,
     )
@@ -383,76 +507,108 @@ def _sample_ore_block_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
     return sample
 
 
-def _bent_path(*, start: Tuple[int, int], end: Tuple[int, int], bend_x: int) -> Tuple[Tuple[int, int], ...]:
-    sx, sy = int(start[0]), int(start[1])
-    ex, ey = int(end[0]), int(end[1])
-    cells: list[Tuple[int, int]] = []
-    step_x = 1 if int(bend_x) >= sx else -1
-    for x in range(sx, int(bend_x) + step_x, step_x):
-        cells.append((int(x), sy))
-    step_y = 1 if ey >= sy else -1
-    for y in range(sy + step_y, ey + step_y, step_y):
-        cells.append((int(bend_x), int(y)))
-    step_x2 = 1 if ex >= int(bend_x) else -1
-    for x in range(int(bend_x) + step_x2, ex + step_x2, step_x2):
-        cells.append((int(x), ey))
-    deduped: list[Tuple[int, int]] = []
-    for cell in cells:
-        if not deduped or deduped[-1] != cell:
-            deduped.append(cell)
-    return tuple(deduped)
-
-
-def _sample_tunnel_clearance_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
+def _sample_reachable_ore_stack_count(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
     answer = int(axes.target_answer)
-    grid_width = int(axes.grid_width)
-    grid_depth = int(axes.grid_depth)
-    start = (1, int(rng.randrange(1, 3)))
-    end = (grid_width - 2, int(rng.randrange(grid_depth - 3, grid_depth - 1)))
-    bend_x = int(rng.randrange(3, grid_width - 3))
-    path_cells = _bent_path(start=start, end=end, bend_x=bend_x)
-    interior_cells = tuple(cell for cell in path_cells[1:-1])
-    if len(interior_cells) < answer:
-        raise ValueError("tunnel path too short for answer")
-    blocked_cells = tuple(rng.sample(interior_cells, answer))
-    blocked_set = set(blocked_cells)
+    if not (0 <= answer <= 6):
+        raise ValueError("reachable-ore answer must be in 0..6")
+    target_kind = _resource_kind(rng=rng, params=params, allowed_kinds=MINECRAFT_ORE_KINDS)
+    height_support = tuple(sorted(set(_stack_height_support(params))))
+    if len(height_support) < 3:
+        raise ValueError("reachable-ore task requires at least three stack heights")
+    max_height = int(max(height_support))
+    low_prefix_heights = tuple(int(height) for height in height_support if int(height) <= int(max_height) - 2)
+    if not low_prefix_heights:
+        raise ValueError("reachable-ore task requires a stack height at least two below the maximum")
+
+    line_length = int(axes.line_length)
+    if not (6 <= line_length <= 10) or int(line_length) < int(answer) + 2:
+        raise ValueError("reachable-ore line length must be 6..10 and at least answer + 2")
+
+    min_prefix_length = max(1, int(answer))
+    max_prefix_length = int(line_length) - 2
+    prefix_length = int(rng.randrange(int(min_prefix_length), int(max_prefix_length) + 1))
+
+    # The platformer-style line starts on the ground-level stack; later stacks
+    # rise from that baseline so the first visual support is always height 0.
+    heights: list[int] = [1]
+    for _index in range(1, int(prefix_length)):
+        previous_height = int(heights[-1])
+        candidates = tuple(
+            int(height)
+            for height in height_support
+            if int(previous_height) <= int(height) <= int(previous_height) + 1 and int(height) <= int(max_height) - 2
+        )
+        if not candidates:
+            raise ValueError("reachable-ore prefix cannot maintain the movement rule")
+        heights.append(int(rng.choice(candidates)))
+
+    blocker_candidates = tuple(int(height) for height in height_support if int(height) >= int(heights[-1]) + 2)
+    if not blocker_candidates:
+        raise ValueError("reachable-ore task cannot create a blocking height jump")
+    heights.append(int(rng.choice(blocker_candidates)))
+    while len(heights) < int(line_length):
+        previous_height = int(heights[-1])
+        suffix_candidates = tuple(int(height) for height in height_support if int(height) >= int(previous_height))
+        heights.append(int(rng.choice(suffix_candidates or (previous_height,))))
+
+    prefix_target_indices = set(rng.sample(tuple(range(int(prefix_length))), int(answer))) if answer else set()
+    suffix_target_indices = {int(rng.randrange(int(prefix_length), int(line_length)))}
+    for index in range(int(prefix_length), int(line_length)):
+        if int(index) not in suffix_target_indices and float(rng.random()) < 0.25:
+            suffix_target_indices.add(int(index))
+
+    row_y = 1
+    grid_width = int(line_length)
+    grid_depth = 4
+    line_cells = tuple((int(index), row_y) for index in range(int(line_length)))
+    cell_kinds = {cell: "route_path" for cell in line_cells}
+
     blocks: list[MinecraftBlock] = []
-    evidence_ids: list[str] = []
-    for index, (x, y) in enumerate(blocked_cells):
-        block_id = tunnel_block_entity_id(int(index))
-        blocks.append(MinecraftBlock(block_id=block_id, x=int(x), y=int(y), z=0, kind=str(rng.choice(("stone", "dirt", "stone")))))
-        evidence_ids.append(block_id)
-    distractor_count = int(rng.randrange(3, 6))
-    distractor_cells = _sample_distinct_cells(
-        rng=rng,
-        grid_width=grid_width,
-        grid_depth=grid_depth,
-        count=distractor_count,
-        avoid=tuple(path_cells),
-    )
-    for index, (x, y) in enumerate(distractor_cells):
-        blocks.append(MinecraftBlock(block_id=f"tunnel_distractor_{int(index):02d}", x=int(x), y=int(y), z=0, kind=str(rng.choice(("stone", "dirt")))))
-    cell_kinds = {cell: "tunnel_path" for cell in path_cells}
-    route = MinecraftRouteOverlay(label="", cells=path_cells, rgb=(237, 159, 47))
+    annotation_ids: list[str] = []
+    for stack_index, (x, y) in enumerate(line_cells):
+        is_counted = int(stack_index) in prefix_target_indices
+        is_suffix_target = int(stack_index) in suffix_target_indices
+        top_kind = (
+            str(target_kind)
+            if is_counted or is_suffix_target
+            else str(rng.choice(("stone", "dirt")))
+        )
+        if is_counted:
+            annotation_ids.append(stack_entity_id(int(x), int(y)))
+        for z in range(int(heights[int(stack_index)])):
+            kind = str(top_kind if int(z) == int(heights[int(stack_index)]) - 1 else rng.choice(("stone", "dirt")))
+            blocks.append(
+                MinecraftBlock(
+                    block_id=f"reachable_stack_{int(stack_index):02d}_z{int(z):02d}",
+                    x=int(x),
+                    y=int(y),
+                    z=int(z),
+                    kind=kind,
+                )
+            )
+    rng.shuffle(blocks)
+
     sample = MinecraftSceneSample(
-        grid_width=grid_width,
-        grid_depth=grid_depth,
-        query_id=TUNNEL_CLEARANCE_QUERY_ID,
+        grid_width=int(grid_width),
+        grid_depth=int(grid_depth),
+        query_id=REACHABLE_ORE_STACK_QUERY_ID,
         style_variant=str(axes.style_variant),
         answer=answer,
         terrain_cells=_terrain_cells_from_kinds(grid_width=grid_width, grid_depth=grid_depth, cell_kinds=cell_kinds),
         blocks=tuple(blocks),
-        player_cell=start,
+        player_cell=None,
         target_cell=None,
         river_width=0,
         scaffold_cost=0,
         ladder_present=False,
-        evidence_entity_ids=tuple(evidence_ids),
-        construction_mode=f"marked_tunnel_blocked_{answer}_path_{len(path_cells)}",
-        route_overlays=(route,),
+        annotation_entity_ids=tuple(sorted(annotation_ids)),
+        construction_mode=f"reachable_{target_kind}_{answer}_of_{line_length}_prefix_{prefix_length}",
+        route_overlays=(),
+        target_resource_kind=target_kind,
+        counted_resource_kind=target_kind,
+        stack_line_cells=line_cells,
+        reachable_prefix_length=int(prefix_length),
     )
-    if not blocked_set <= set(interior_cells):
-        raise ValueError("invalid tunnel blocked cells")
     validate_minecraft_sample(sample)
     return sample
 
@@ -469,7 +625,7 @@ def _sample_resource_route_cost(*, rng, axes: _ResolvedAxes, params: Mapping[str
     answer = int(axes.target_answer)
     grid_width = int(axes.grid_width)
     grid_depth = int(axes.grid_depth)
-    option_count = 2
+    option_count = max(2, min(3, int(axes.route_option_count)))
     labels = tuple("ABCD"[:option_count])
     queried_label = str(rng.choice(labels))
     max_route_cost = max(3, min(9, grid_width - 3))
@@ -489,7 +645,7 @@ def _sample_resource_route_cost(*, rng, axes: _ResolvedAxes, params: Mapping[str
     cell_kinds: dict[Tuple[int, int], str] = {}
     blocks: list[MinecraftBlock] = []
     route_overlays: list[MinecraftRouteOverlay] = []
-    evidence_ids: list[str] = []
+    annotation_ids: list[str] = []
     route_costs: list[Tuple[str, int]] = []
     rows = _route_rows(grid_depth=grid_depth, option_count=option_count)
     for label, row_y in zip(labels, rows):
@@ -505,16 +661,16 @@ def _sample_resource_route_cost(*, rng, axes: _ResolvedAxes, params: Mapping[str
         if int(route_cost) > len(path_cells):
             raise ValueError("route path too short for requested route cost")
         obstacle_cells = tuple(rng.sample(path_cells, int(route_cost)))
-        route_evidence_ids: list[str] = []
+        route_annotation_ids: list[str] = []
         for obstacle_index, (x, y) in enumerate(obstacle_cells):
             block_id = route_obstacle_entity_id(str(label), int(obstacle_index))
             blocks.append(MinecraftBlock(block_id=block_id, x=int(x), y=int(y), z=0, kind=str(rng.choice(("stone", "dirt")))))
-            route_evidence_ids.append(block_id)
+            route_annotation_ids.append(block_id)
         for cell in path_cells:
             cell_kinds.setdefault((int(cell[0]), int(cell[1])), "route_path")
 
         if str(label) == queried_label:
-            evidence_ids = route_evidence_ids
+            annotation_ids = route_annotation_ids
         route_costs.append((str(label), int(route_cost)))
 
     sample = MinecraftSceneSample(
@@ -530,7 +686,7 @@ def _sample_resource_route_cost(*, rng, axes: _ResolvedAxes, params: Mapping[str
         river_width=0,
         scaffold_cost=0,
         ladder_present=False,
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         construction_mode=f"route_cost_{answer}_{queried_label}",
         route_overlays=tuple(route_overlays),
         route_costs=tuple(route_costs),
@@ -542,55 +698,159 @@ def _sample_resource_route_cost(*, rng, axes: _ResolvedAxes, params: Mapping[str
     return sample
 
 
+def _stack_height_support(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return tuple(
+        int(value)
+        for value in resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="stack_height_support",
+            fallback=_DEFAULTS.stack_height_support,
+        )
+    )
+
+
+def _sample_stack_height_condition(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
+    answer = int(axes.target_answer)
+    grid_width = int(axes.grid_width)
+    grid_depth = int(axes.grid_depth)
+    target_height = int(axes.target_stack_height)
+    height_support = tuple(sorted(set(_stack_height_support(params))))
+    if target_height not in height_support:
+        raise ValueError("target stack height must be in stack_height_support")
+    if str(axes.query_id) == EXACT_HEIGHT_QUERY_ID:
+        qualifying_heights = tuple(height for height in height_support if int(height) == target_height)
+        distractor_heights = tuple(height for height in height_support if int(height) != target_height)
+    elif str(axes.query_id) == AT_LEAST_HEIGHT_QUERY_ID:
+        qualifying_heights = tuple(height for height in height_support if int(height) >= target_height)
+        distractor_heights = tuple(height for height in height_support if int(height) < target_height)
+    else:
+        raise ValueError(f"unsupported stack-height query_id: {axes.query_id}")
+    if not qualifying_heights or not distractor_heights:
+        raise ValueError("stack-height query needs both qualifying and distractor heights")
+
+    distractor_count = int(rng.randrange(4, 8))
+    total_stacks = int(answer) + int(distractor_count)
+    stack_cells = _sample_distinct_cells(
+        rng=rng,
+        grid_width=grid_width,
+        grid_depth=grid_depth,
+        count=total_stacks,
+        min_x=1,
+        max_x_exclusive=grid_width - 1,
+        min_y=1,
+        max_y_exclusive=grid_depth - 1,
+    )
+    block_kinds = ("stone", "dirt")
+    blocks: list[MinecraftBlock] = []
+    annotation_ids: list[str] = []
+    for stack_index, (x, y) in enumerate(stack_cells):
+        qualifies = int(stack_index) < int(answer)
+        height = int(rng.choice(qualifying_heights if qualifies else distractor_heights))
+        if qualifies:
+            annotation_ids.append(stack_entity_id(int(x), int(y)))
+        for z in range(int(height)):
+            kind = str(rng.choice(block_kinds))
+            blocks.append(
+                MinecraftBlock(
+                    block_id=f"stack_{int(stack_index):02d}_z{int(z):02d}",
+                    x=int(x),
+                    y=int(y),
+                    z=int(z),
+                    kind=kind,
+                )
+            )
+    rng.shuffle(blocks)
+    sample = MinecraftSceneSample(
+        grid_width=grid_width,
+        grid_depth=grid_depth,
+        query_id=str(axes.query_id),
+        style_variant=str(axes.style_variant),
+        answer=answer,
+        terrain_cells=_terrain_cells_from_kinds(grid_width=grid_width, grid_depth=grid_depth),
+        blocks=tuple(blocks),
+        player_cell=None,
+        target_cell=None,
+        river_width=0,
+        scaffold_cost=0,
+        ladder_present=False,
+        annotation_entity_ids=tuple(sorted(annotation_ids)),
+        construction_mode=f"{str(axes.query_id)}_{target_height}_{answer}",
+        target_resource_kind="",
+        counted_resource_kind="",
+        target_stack_height=int(target_height),
+        stack_height_condition="exact" if str(axes.query_id) == EXACT_HEIGHT_QUERY_ID else "at_least",
+    )
+    validate_minecraft_sample(sample)
+    return sample
+
+
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> MinecraftSceneSample:
-    if str(axes.query_id) == ORE_BLOCK_QUERY_ID:
-        return _sample_ore_block_count(rng=rng, axes=axes, params=params)
-    if str(axes.query_id) == TUNNEL_CLEARANCE_QUERY_ID:
-        return _sample_tunnel_clearance_count(rng=rng, axes=axes, params=params)
+    if str(axes.query_id) == TOP_ORE_STACK_QUERY_ID:
+        return _sample_top_ore_stack_count(rng=rng, axes=axes, params=params)
+    if str(axes.query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        return _sample_reachable_ore_stack_count(rng=rng, axes=axes, params=params)
     if str(axes.query_id) == RESOURCE_ROUTE_QUERY_ID:
         return _sample_resource_route_cost(rng=rng, axes=axes, params=params)
+    if str(axes.query_id) in STACK_HEIGHT_QUERY_IDS:
+        return _sample_stack_height_condition(rng=rng, axes=axes, params=params)
     raise ValueError(f"unsupported minecraft query_id: {axes.query_id}")
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
-    if str(query_id) == TUNNEL_CLEARANCE_QUERY_ID:
+    if str(query_id) == RESOURCE_ROUTE_QUERY_ID:
         answer_value = 4
-        evidence_value = [[352, 245, 410, 304], [381, 274, 439, 333], [410, 303, 468, 362], [439, 332, 497, 391]]
-    elif str(query_id) == RESOURCE_ROUTE_QUERY_ID:
-        answer_value = 4
-        evidence_value = [
-            [286, 302, 344, 332],
-            [315, 273, 373, 303],
-            [492, 182, 554, 242],
-            [521, 210, 579, 270],
+        annotation_value = [
+            [315, 316],
+            [344, 287],
+            [523, 212],
+            [552, 240],
         ]
+    elif str(query_id) in STACK_HEIGHT_QUERY_IDS:
+        answer_value = 3
+        annotation_value = [[290, 250], [423, 206], [542, 282]]
+    elif str(query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+        answer_value = 2
+        annotation_value = [[304, 252], [422, 222]]
     else:
         answer_value = 5
-        evidence_value = [[310, 310, 367, 371], [368, 281, 425, 342], [426, 252, 483, 313], [455, 223, 512, 284], [339, 194, 396, 255]]
+        annotation_value = [[339, 310], [397, 281], [455, 252], [484, 223], [368, 194]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
+
+
+def _stack_heights_for_cells(blocks: Sequence[MinecraftBlock], cells: Sequence[Tuple[int, int]]) -> list[int]:
+    """Return visible stack heights for an ordered stack line."""
+
+    z_values_by_coord: dict[Tuple[int, int], set[int]] = {}
+    for block in blocks:
+        z_values_by_coord.setdefault((int(block.x), int(block.y)), set()).add(int(block.z))
+    return [int(len(z_values_by_coord.get((int(x), int(y)), set()))) for x, y in cells]
 
 
 def _build_complexity(*, task_id: str, sample: MinecraftSceneSample) -> TaskComplexity:
     weights = resolve_games_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=task_id)
     query_id = str(sample.query_id)
-    if query_id == ORE_BLOCK_QUERY_ID:
-        block_reasoning = 0.30
+    if query_id == TOP_ORE_STACK_QUERY_ID:
+        block_reasoning = 0.44
         arithmetic_load = 0.12
-    elif query_id == TUNNEL_CLEARANCE_QUERY_ID:
-        block_reasoning = 0.48
-        arithmetic_load = 0.18
-    else:
+    elif query_id == REACHABLE_ORE_STACK_QUERY_ID:
+        block_reasoning = 0.78
+        arithmetic_load = 0.16
+    elif query_id == RESOURCE_ROUTE_QUERY_ID:
         block_reasoning = 0.76
         arithmetic_load = 0.56
+    else:
+        block_reasoning = 0.54
+        arithmetic_load = 0.20
     visual_scan = clamp_unit_interval(
         (0.45 * normalize_linear(float(sample.grid_width * sample.grid_depth), min_value=64.0, max_value=120.0))
         + (0.35 * normalize_linear(float(len(sample.blocks)), min_value=0.0, max_value=6.0))
         + (0.20 * normalize_linear(float(sample.river_width), min_value=0.0, max_value=6.0))
     )
-    output_burden = normalize_linear(float(len(sample.evidence_entity_ids)), min_value=1.0, max_value=11.0)
+    output_burden = normalize_linear(float(len(sample.annotation_entity_ids)), min_value=1.0, max_value=11.0)
     return build_games_complexity(
         weights=weights,
         components={
@@ -608,8 +868,8 @@ class GamesMinecraftBlockWorldTask:
     task_id = BASE_TASK_ID
     domain = "games"
     task_group = TASK_GROUP
-    query_id = ORE_BLOCK_QUERY_ID
-    supported_query_ids: Tuple[str, ...] = (ORE_BLOCK_QUERY_ID,)
+    query_id = TOP_ORE_STACK_QUERY_ID
+    supported_query_ids: Tuple[str, ...] = (TOP_ORE_STACK_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query_id, query_id_probabilities = _resolve_task_query_id(
@@ -619,12 +879,6 @@ class GamesMinecraftBlockWorldTask:
             supported_query_ids=getattr(self, "supported_query_ids", (str(self.query_id),)),
         )
         axes = _resolve_axes(int(instance_seed), params=params, query_id=str(query_id))
-        render_params = _render_params(
-            params,
-            instance_seed=int(instance_seed),
-            grid_width=int(axes.grid_width),
-            grid_depth=int(axes.grid_depth),
-        )
         sampled_scene: MinecraftSceneSample | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{self.task_id}.attempt.{int(attempt_index)}")
@@ -636,6 +890,20 @@ class GamesMinecraftBlockWorldTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
+        max_stack_height = (
+            max(_stack_height_support(params))
+            if str(query_id) in STACK_HEIGHT_QUERY_IDS
+            or str(query_id) in {TOP_ORE_STACK_QUERY_ID, REACHABLE_ORE_STACK_QUERY_ID}
+            else 1
+        )
+        render_params = _render_params(
+            params,
+            instance_seed=int(instance_seed),
+            grid_width=int(sampled_scene.grid_width),
+            grid_depth=int(sampled_scene.grid_depth),
+            max_stack_height=int(max_stack_height),
+            player_marker_label="START" if str(query_id) == REACHABLE_ORE_STACK_QUERY_ID else "P",
+        )
         panel_style, panel_style_meta = resolve_game_panel_scene_style(
             instance_seed=int(instance_seed),
             namespace="games.minecraft.panel_scene",
@@ -661,9 +929,9 @@ class GamesMinecraftBlockWorldTask:
             ladder_columns=ladder_columns,
             route_overlays=sampled_scene.route_overlays,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+        annotation_points = [
+            list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -681,15 +949,17 @@ class GamesMinecraftBlockWorldTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_block_world",
-                "minecraft_tunnel_rule_text",
                 "minecraft_route_cost_rule_text",
                 f"answer_hint_{str(sampled_scene.query_id)}",
-                f"evidence_hint_{str(sampled_scene.query_id)}",
+                f"annotation_hint_{str(sampled_scene.query_id)}",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         target_kind = str(sampled_scene.target_resource_kind or sampled_scene.counted_resource_kind or "")
         json_example, json_example_answer_only = _build_prompt_json_examples(str(sampled_scene.query_id))
+        object_description = str(prompt_defaults["object_description_block_world"])
+        if str(sampled_scene.query_id) == REACHABLE_ORE_STACK_QUERY_ID:
+            object_description = str(_PROMPT_DEFAULTS.get("object_description_reachable_stack_line", object_description))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -697,18 +967,18 @@ class GamesMinecraftBlockWorldTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(sampled_scene.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
-                "object_description": str(prompt_defaults["object_description_block_world"]),
-                "minecraft_tunnel_rule_text": str(prompt_defaults["minecraft_tunnel_rule_text"]),
+                "object_description": str(object_description),
                 "minecraft_route_cost_rule_text": str(prompt_defaults["minecraft_route_cost_rule_text"]),
                 "queried_route_label": str(sampled_scene.selected_route_label),
                 "target_resource_name": resource_prompt_name(target_kind),
                 "counted_resource_name": resource_prompt_name(sampled_scene.counted_resource_kind or target_kind),
+                "target_stack_height": str(int(sampled_scene.target_stack_height)),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(sampled_scene.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(sampled_scene.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(sampled_scene.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -717,7 +987,7 @@ class GamesMinecraftBlockWorldTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         block_trace = [
             {
                 "block_id": str(block.block_id),
@@ -737,6 +1007,12 @@ class GamesMinecraftBlockWorldTask:
             }
             for cell in sampled_scene.terrain_cells
         ]
+        stack_heights = _stack_heights_for_cells(sampled_scene.blocks, sampled_scene.stack_line_cells)
+        first_blocker_index = (
+            int(sampled_scene.reachable_prefix_length)
+            if int(sampled_scene.reachable_prefix_length) < int(len(sampled_scene.stack_line_cells))
+            else -1
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "games_minecraft_block_world",
@@ -749,8 +1025,15 @@ class GamesMinecraftBlockWorldTask:
                     "river_width": int(sampled_scene.river_width),
                     "scaffold_cost": int(sampled_scene.scaffold_cost),
                     "route_costs": [[str(label), int(cost)] for label, cost in sampled_scene.route_costs],
+                    "route_option_count": int(len(sampled_scene.route_costs)),
                     "selected_route_label": str(sampled_scene.selected_route_label),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "target_stack_height": int(sampled_scene.target_stack_height),
+                    "stack_height_condition": str(sampled_scene.stack_height_condition),
+                    "stack_line_cells": [list(cell) for cell in sampled_scene.stack_line_cells],
+                    "reachable_prefix_length": int(sampled_scene.reachable_prefix_length),
+                    "stack_heights": list(stack_heights),
+                    "first_blocker_index": int(first_blocker_index),
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -769,7 +1052,17 @@ class GamesMinecraftBlockWorldTask:
                     "ladder_present": bool(sampled_scene.ladder_present),
                     "ladder_columns": [list(column) for column in sampled_scene.ladder_columns],
                     "route_costs": [[str(label), int(cost)] for label, cost in sampled_scene.route_costs],
+                    "route_option_count": int(len(sampled_scene.route_costs)),
                     "selected_route_label": str(sampled_scene.selected_route_label),
+                    "target_stack_height": int(sampled_scene.target_stack_height),
+                    "target_stack_height_probabilities": dict(axes.target_stack_height_probabilities),
+                    "stack_height_condition": str(sampled_scene.stack_height_condition),
+                    "line_length": int(len(sampled_scene.stack_line_cells)),
+                    "line_length_probabilities": dict(axes.line_length_probabilities),
+                    "stack_line_cells": [list(cell) for cell in sampled_scene.stack_line_cells],
+                    "reachable_prefix_length": int(sampled_scene.reachable_prefix_length),
+                    "stack_heights": list(stack_heights),
+                    "first_blocker_index": int(first_blocker_index),
                     "target_resource_kind": str(sampled_scene.target_resource_kind),
                     "counted_resource_kind": str(sampled_scene.counted_resource_kind),
                     "player_cell": list(sampled_scene.player_cell) if sampled_scene.player_cell is not None else None,
@@ -778,6 +1071,7 @@ class GamesMinecraftBlockWorldTask:
                     "grid_width_probabilities": dict(axes.grid_width_probabilities),
                     "grid_depth_probabilities": dict(axes.grid_depth_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),
+                    "route_option_count_probabilities": dict(axes.route_option_count_probabilities),
                     "query_id_probabilities": dict(query_id_probabilities),
                 },
             },
@@ -802,22 +1096,32 @@ class GamesMinecraftBlockWorldTask:
                 "ladder_present": bool(sampled_scene.ladder_present),
                 "ladder_columns": [list(column) for column in sampled_scene.ladder_columns],
                 "route_costs": [[str(label), int(cost)] for label, cost in sampled_scene.route_costs],
+                "route_option_count": int(len(sampled_scene.route_costs)),
                 "selected_route_label": str(sampled_scene.selected_route_label),
+                "target_stack_height": int(sampled_scene.target_stack_height),
+                "stack_height_condition": str(sampled_scene.stack_height_condition),
+                "line_length": int(len(sampled_scene.stack_line_cells)),
+                "stack_line_cells": [list(cell) for cell in sampled_scene.stack_line_cells],
+                "reachable_prefix_length": int(sampled_scene.reachable_prefix_length),
+                "stack_heights": list(stack_heights),
+                "first_blocker_index": int(first_blocker_index),
                 "target_resource_kind": str(sampled_scene.target_resource_kind),
                 "counted_resource_kind": str(sampled_scene.counted_resource_kind),
                 "player_cell": list(sampled_scene.player_cell) if sampled_scene.player_cell is not None else None,
                 "target_cell": list(sampled_scene.target_cell) if sampled_scene.target_cell is not None else None,
                 "terrain_cells": terrain_trace,
                 "blocks": block_trace,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "type": "point_set",
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "panel_scene_style": dict(panel_style_meta),
@@ -827,7 +1131,7 @@ class GamesMinecraftBlockWorldTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -839,28 +1143,51 @@ class GamesMinecraftBlockWorldTask:
 
 
 @register_task
-class GamesMinecraftOreBlockCountTask(GamesMinecraftBlockWorldTask):
-    """Count visible blocks of a requested Minecraft-like ore type."""
+class GamesMinecraftTopOreStackCountTask(GamesMinecraftBlockWorldTask):
+    """Count visible stacks whose top cube is a requested Minecraft-like ore type."""
 
-    task_id = "task_games__minecraft__ore_block_count"
-    query_id = ORE_BLOCK_QUERY_ID
-    supported_query_ids = (ORE_BLOCK_QUERY_ID,)
+    task_id = "task_games__minecraft__top_ore_stack_count"
+    query_id = TOP_ORE_STACK_QUERY_ID
+    supported_query_ids = (TOP_ORE_STACK_QUERY_ID,)
 
 
 @register_task
-class GamesMinecraftRouteBlockCountTask(GamesMinecraftBlockWorldTask):
-    """Count blocks along a marked tunnel path or named mining route."""
+class GamesMinecraftReachableOreStackCountTask(GamesMinecraftBlockWorldTask):
+    """Count target-ore stack tops reachable along a height-constrained Minecraft-like line."""
 
-    task_id = "task_games__minecraft__route_block_count"
-    query_id = TUNNEL_CLEARANCE_QUERY_ID
-    supported_query_ids = (TUNNEL_CLEARANCE_QUERY_ID, RESOURCE_ROUTE_QUERY_ID)
+    task_id = "task_games__minecraft__reachable_ore_stack_count"
+    query_id = REACHABLE_ORE_STACK_QUERY_ID
+    supported_query_ids = (REACHABLE_ORE_STACK_QUERY_ID,)
+
+
+@register_task
+class GamesMinecraftResourceRouteCostTask(GamesMinecraftBlockWorldTask):
+    """Compute the block cost along a named Minecraft-like mining route."""
+
+    task_id = "task_games__minecraft__resource_route_cost"
+    query_id = RESOURCE_ROUTE_QUERY_ID
+    supported_query_ids = (RESOURCE_ROUTE_QUERY_ID,)
+
+
+@register_task
+class GamesMinecraftStackHeightConditionCountTask(GamesMinecraftBlockWorldTask):
+    """Count visible cube stacks satisfying a sampled height condition."""
+
+    task_id = "task_games__minecraft__stack_height_condition_count"
+    query_id = EXACT_HEIGHT_QUERY_ID
+    supported_query_ids = STACK_HEIGHT_QUERY_IDS
 
 
 __all__ = [
+    "AT_LEAST_HEIGHT_QUERY_ID",
+    "EXACT_HEIGHT_QUERY_ID",
     "GamesMinecraftBlockWorldTask",
-    "GamesMinecraftOreBlockCountTask",
-    "GamesMinecraftRouteBlockCountTask",
-    "ORE_BLOCK_QUERY_ID",
+    "GamesMinecraftReachableOreStackCountTask",
+    "GamesMinecraftResourceRouteCostTask",
+    "GamesMinecraftStackHeightConditionCountTask",
+    "GamesMinecraftTopOreStackCountTask",
+    "REACHABLE_ORE_STACK_QUERY_ID",
     "RESOURCE_ROUTE_QUERY_ID",
-    "TUNNEL_CLEARANCE_QUERY_ID",
+    "STACK_HEIGHT_QUERY_IDS",
+    "TOP_ORE_STACK_QUERY_ID",
 ]

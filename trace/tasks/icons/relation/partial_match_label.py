@@ -26,7 +26,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icon_task_complexity, icon_scene_clutter_score, icon_visual_scan_score
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import keyed_bbox_map_evidence
+from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_assets import icon_transform_signature, render_icon_rgba, resolve_icon_pool
 from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scene
 from ..shared.icon_noise import default_icon_noise_value_ranges, serialize_icon_noise_edits
@@ -786,7 +786,7 @@ class IconsRelationPartialMatchLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text_partial_icon_match_label",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -799,13 +799,13 @@ class IconsRelationPartialMatchLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text_partial_icon_match_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -815,16 +815,16 @@ class IconsRelationPartialMatchLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         matching_cell = next(cell for cell in scene_payload.scene_cells if bool(cell.get("is_match")))
-        evidence_artifacts = keyed_bbox_map_evidence(
+        annotation_artifacts = keyed_bbox_map_annotation(
             {
                 "source_fragment": scene_payload.reference_cell["fragment_bbox_xyxy"],
                 "selected_option": matching_cell["cell_bbox_xyxy"],
             }
         )
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=dict(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=dict(annotation_artifacts["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -905,7 +905,7 @@ class IconsRelationPartialMatchLabelTask:
                 "fragment_window_style": str(scene_payload.fragment_window_style),
                 "fragment_visible_alpha_ratio": float(scene_payload.fragment_visible_alpha_ratio),
                 "fragment_alpha_density": float(scene_payload.fragment_alpha_density),
-                "evidence_roles": ["source_fragment", "selected_option"],
+                "annotation_roles": ["source_fragment", "selected_option"],
             },
             "witness_symbolic": {
                 "source_fragment_icon_id": str(scene_payload.correct_icon_id),
@@ -914,12 +914,12 @@ class IconsRelationPartialMatchLabelTask:
                 "source_fragment_bbox": list(scene_payload.reference_cell["fragment_bbox_xyxy"]),
                 "selected_option_bbox": list(matching_cell["cell_bbox_xyxy"]),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

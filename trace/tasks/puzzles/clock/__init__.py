@@ -1,1 +1,0 @@
-"""Puzzle clock task group."""

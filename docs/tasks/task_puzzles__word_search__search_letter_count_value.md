@@ -15,11 +15,11 @@
    - target letter count: `2..12`
    - scene variant: `word_search_classic|word_search_notebook|word_search_card`
 
-## Answer And Evidence
+## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the count of target-letter cells.
-3. `evidence_gt.type = bbox_set`
-4. Evidence contains every grid-cell box where the target letter appears.
+3. `annotation_gt.type = bbox_set`
+4. Annotation contains every grid-cell box where the target letter appears.
 
 ## Trace Contract
 1. `execution_trace.grid` records the generated letter grid.

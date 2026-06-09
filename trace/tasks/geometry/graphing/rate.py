@@ -41,7 +41,7 @@ from ..shared.function_graph_scene import (
     graph_units_to_pixel_float,
 )
 from ..shared.graph_rendering import graph_paper_grid_from_frame
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.shape_style import (
     extract_background_anchor_colors,
@@ -107,14 +107,14 @@ class _SampledRateScene:
 
 @dataclass(frozen=True)
 class _RenderedRateScene:
-    """Rendered scene and metadata-backed evidence artifacts."""
+    """Rendered scene and metadata-backed annotation artifacts."""
 
     answer_value: float
-    evidence_type: str
-    evidence_value: list[list[float]]
-    projected_evidence: Dict[str, Any]
+    annotation_type: str
+    annotation_value: list[list[float]]
+    projected_annotation: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
-    required_evidence_labels: list[str]
+    required_annotation_labels: list[str]
     scene_entities: list[Dict[str, Any]]
     render_map: Dict[str, Any]
     execution_trace: Dict[str, Any]
@@ -354,7 +354,7 @@ def _draw_marked_point(
         font=font,
         fill=tuple(int(value) for value in label_color),
         stroke_fill=tuple(int(value) for value in label_stroke_color),
-        stroke_width=max(1, int(2 * scale)),
+        stroke_width=max(1, int(scale)),
     )
 
 
@@ -369,7 +369,7 @@ def _render_scene(
     marker_radius: int,
     label_font_size_px: int,
 ) -> _RenderedRateScene:
-    """Render the plotted function, marked endpoints, and evidence payload."""
+    """Render the plotted function, marked endpoints, and annotation payload."""
 
     render_polyline = draw_function_polyline(
         draw,
@@ -450,14 +450,14 @@ def _render_scene(
         "A": point_a_pixel,
         "B": point_b_pixel,
     }
-    evidence = graph_point_set_evidence_artifacts(
+    annotation = graph_point_set_annotation_artifacts(
         points_by_label=points_by_label,
         graph_origin=context.graph_origin,
         graph_spacing=int(context.graph_spacing),
         witness_type="marked_average_rate_points",
         ordered_labels=("A", "B"),
     )
-    witness_symbolic = dict(evidence["witness_symbolic"])
+    witness_symbolic = dict(annotation["witness_symbolic"])
     witness_symbolic.update(
         {
             "type": "marked_average_rate_points",
@@ -468,18 +468,18 @@ def _render_scene(
     )
     return _RenderedRateScene(
         answer_value=float(sampled_scene.answer_value),
-        evidence_type=str(evidence["evidence_type"]),
-        evidence_value=[list(point) for point in evidence["evidence_value"]],
-        projected_evidence=dict(evidence["projected_evidence"]),
+        annotation_type=str(annotation["annotation_type"]),
+        annotation_value=[list(point) for point in annotation["annotation_value"]],
+        projected_annotation=dict(annotation["projected_annotation"]),
         witness_symbolic=dict(witness_symbolic),
-        required_evidence_labels=list(evidence["required_labels"]),
+        required_annotation_labels=list(annotation["required_labels"]),
         scene_entities=list(sampled_scene.scene_entities),
         render_map=dict(render_map),
         execution_trace=dict(sampled_scene.execution_trace),
     )
 
 
-def _build_complexity(*, target_rate: float, evidence_count: int) -> Any:
+def _build_complexity(*, target_rate: float, annotation_count: int) -> Any:
     """Build normalized complexity metadata for the average-rate task."""
 
     weights = resolve_geometry_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
@@ -489,7 +489,7 @@ def _build_complexity(*, target_rate: float, evidence_count: int) -> Any:
             "visual_scan": 0.42,
             "graphing_reasoning": clamp_unit_interval(0.64 + (0.10 * normalize_linear(abs(float(target_rate)), min_value=0.5, max_value=2.0))),
             "ambiguity": 0.46,
-            "output_burden": normalize_linear(float(evidence_count), min_value=0.0, max_value=6.0),
+            "output_burden": normalize_linear(float(annotation_count), min_value=0.0, max_value=6.0),
         },
     )
 
@@ -500,6 +500,7 @@ class GeometryGraphingAverageRateValueBaseTask:
     task_id = TASK_ID
     domain = "geometry"
     task_group = "graphing"
+    scene_id = "function_graph"
     public_scene_id = "function_graph"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -517,7 +518,7 @@ class GeometryGraphingAverageRateValueBaseTask:
                 "json_output_contract_answer_only",
                 "object_description_average_rate",
                 "answer_hint_number_one_decimal",
-                "evidence_hint_average_rate_points",
+                "annotation_hint_average_rate_points",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -592,7 +593,7 @@ class GeometryGraphingAverageRateValueBaseTask:
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=rendered_scene.evidence_value,
+            annotation_value=rendered_scene.annotation_value,
             answer_type="number",
         )
         prompt_selection = render_task_prompt_variants(
@@ -602,14 +603,14 @@ class GeometryGraphingAverageRateValueBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_average_rate"]),
                 "point_label_start": "A",
                 "point_label_end": "B",
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_average_rate_points"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_average_rate_points"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number_one_decimal"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -619,7 +620,7 @@ class GeometryGraphingAverageRateValueBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="number", value=float(round(rendered_scene.answer_value, 1)))
-        evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=list(rendered_scene.evidence_value))
+        annotation_gt = TypedValue(type=str(rendered_scene.annotation_type), value=list(rendered_scene.annotation_value))
         query_params = {
             "query_id": str(query.query_id),
             "query_id_probabilities": dict(query.query_id_probabilities),
@@ -633,7 +634,7 @@ class GeometryGraphingAverageRateValueBaseTask:
             "target_rate_probabilities": dict(query.target_rate_probabilities),
             "answer_type": "number",
             "answer_value": float(answer_gt.value),
-            "required_evidence_labels": list(rendered_scene.required_evidence_labels),
+            "required_annotation_labels": list(rendered_scene.required_annotation_labels),
             **dict(rendered_scene.execution_trace),
         }
         trace_payload = {
@@ -667,18 +668,18 @@ class GeometryGraphingAverageRateValueBaseTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": dict(execution_trace),
             "witness_symbolic": dict(rendered_scene.witness_symbolic),
-            "projected_evidence": dict(rendered_scene.projected_evidence),
+            "projected_annotation": dict(rendered_scene.projected_annotation),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
             complexity=_build_complexity(
                 target_rate=float(query.target_rate),
-                evidence_count=len(rendered_scene.evidence_value),
+                annotation_count=len(rendered_scene.annotation_value),
             ),
             task_versions=default_task_versions(),
             query_id=str(query.query_id),

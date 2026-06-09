@@ -68,8 +68,8 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
 
     assert "textured lever beam" in str(prompt["object_description_textured_beam"])
 
-    assert "queried side" in str(prompt["evidence_hint_torque"])
+    assert "queried side" in str(prompt["annotation_hint_torque"])
 
-    assert "known weight blocks" in str(prompt["evidence_hint_missing_weight"])
+    assert "known weight blocks" in str(prompt["annotation_hint_missing_weight"])
 
-    assert "marked `?` weight" in str(prompt["evidence_hint_missing_weight"])
+    assert "marked `?` weight" in str(prompt["annotation_hint_missing_weight"])

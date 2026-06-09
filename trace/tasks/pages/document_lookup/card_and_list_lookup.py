@@ -27,10 +27,15 @@ from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
+from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
 
-PROFILE_TASK_ID = "task_pages__profile_card_grid__attribute_lookup_label"
+PROFILE_FOR_FIELD_VALUE_TASK_ID = "task_pages__profile_card_grid__profile_for_field_value"
+VALUE_FOR_NAMED_PROFILE_FIELD_TASK_ID = "task_pages__profile_card_grid__value_for_named_profile_field"
+FIELD_EXTREMUM_PROFILE_TASK_ID = "task_pages__profile_card_grid__field_extremum_profile_label"
+FIELD_RANKED_PROFILE_TASK_ID = "task_pages__profile_card_grid__field_ranked_profile_label"
 RANKED_TASK_ID = "task_pages__ranked_list__ordinal_entry_label"
 TASK_GROUP = "document_lookup"
 PROFILE_SCENE_ID = "profile_card_grid"
@@ -39,6 +44,10 @@ RANKED_SCENE_ID = "ranked_list"
 PROFILE_QUERY_IDS: Tuple[str, ...] = (
     "value_for_named_profile_field",
     "profile_for_field_value",
+    "highest_field_profile_label",
+    "lowest_field_profile_label",
+    "nth_highest_field_profile_label",
+    "nth_lowest_field_profile_label",
 )
 PROFILE_SCENE_VARIANTS: Tuple[str, ...] = (
     "directory_grid",
@@ -56,20 +65,6 @@ RANKED_SCENE_VARIANTS: Tuple[str, ...] = (
 ORDINAL_REFERENCES: Tuple[str, ...] = ("first", "interior", "final")
 FROM_END_REFERENCES: Tuple[str, ...] = ("last", "second_last", "third_last")
 
-_PROFILE_NAMES: Tuple[str, ...] = (
-    "Aster",
-    "Boreal",
-    "Cinder",
-    "Dovetail",
-    "Elm",
-    "Fable",
-    "Grove",
-    "Harbor",
-    "Iris",
-    "Juniper",
-    "Keystone",
-    "Lumen",
-)
 _PROFILE_FIELDS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
         "Role",
@@ -92,41 +87,16 @@ _PROFILE_FIELDS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("Signal", ("Amber", "Cobalt", "Indigo", "Violet", "Copper", "Silver", "Teal", "Crimson", "Olive")),
     ("Code", ("K-17", "M-42", "R-08", "T-63", "V-29", "X-54", "B-31", "D-76", "H-90")),
 )
-_PROFILE_PAGE_TITLES: Tuple[str, ...] = (
-    "Team Profile Directory",
-    "Field Contact Cards",
-    "Assignment Roster",
-    "Profile Reference Sheet",
+_PROFILE_NUMERIC_FIELDS: Tuple[Tuple[str, Tuple[int, ...]], ...] = (
+    ("Score", (42, 55, 61, 68, 73, 81, 89, 94, 101)),
+    ("Cases", (6, 9, 12, 15, 18, 22, 26, 31, 35)),
+    ("Hours", (18, 24, 29, 34, 41, 47, 53, 58, 64)),
 )
-_PROFILE_SUBTITLES: Tuple[str, ...] = (
-    "short fields for each listed profile",
-    "lookup cards with labels and values",
-    "compact entity records",
-)
-
-_RANKED_LIST_BANK: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
-    ("Recycling Types", ("Glass", "Paper", "Metal", "Batteries", "Textiles", "Electronics", "Compost")),
-    ("Reading Benefits", ("Focus", "Vocabulary", "Memory", "Empathy", "Reasoning", "Patience", "Reflection")),
-    ("Weekend Trends", ("Menswear", "Bold Colors", "Leather", "Sneakers", "Denim", "Layering", "Canvas Bags")),
-    ("Travel Checks", ("Passport", "Tickets", "Luggage", "Adapters", "Itinerary", "Insurance", "Hotel Code")),
-    (
-        "Safety Notes",
-        ("Lock Doors", "Check Lights", "Clear Aisles", "Test Alarm", "Mark Exits", "Store Tools", "Report Hazards"),
-    ),
-    ("Workshop Topics", ("Planning", "Budgeting", "Outreach", "Design", "Testing", "Launch", "Review")),
-)
-_RANKED_PAGE_TITLES: Tuple[str, ...] = (
-    "Ranked Reference Lists",
-    "Ordered Item Summary",
-    "List Index Page",
-    "Priority Lists",
-)
-_RANKED_SUBTITLES: Tuple[str, ...] = (
-    "numbered entries grouped by topic",
-    "short ordered lists",
-    "ranked item groups",
-)
-
+_PROFILE_RANK_POSITION_SUPPORT: Tuple[int, ...] = (2, 3)
+_PROFILE_RANK_ORDINALS: Dict[int, str] = {
+    2: "second",
+    3: "third",
+}
 _PALETTE: Tuple[Tuple[int, int, int], ...] = (
     (57, 118, 172),
     (48, 143, 112),
@@ -160,6 +130,7 @@ class _ProfileCard:
     profile_id: str
     name: str
     fields: Dict[str, str]
+    numeric_fields: Dict[str, int]
     accent_rgb: Tuple[int, int, int]
 
 
@@ -182,18 +153,22 @@ class _RenderedDocument:
 
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", TASK_GROUP)
-_PROFILE_GEN_DEFAULTS, _PROFILE_RENDER_DEFAULTS, _PROFILE_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=PROFILE_TASK_ID,
-)
 _RANKED_GEN_DEFAULTS, _RANKED_RENDER_DEFAULTS, _RANKED_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=RANKED_TASK_ID,
 )
-_PROFILE_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=PROFILE_TASK_ID)
 _RANKED_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=RANKED_TASK_ID)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group=TASK_GROUP)
 POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group=TASK_GROUP, apply_prob=0.0)
+
+
+def _resolve_profile_defaults(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
+    gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        task_id=str(task_id),
+    )
+    complexity_weights = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
+    return gen_defaults, render_defaults, prompt_defaults, complexity_weights
 
 
 def _resolve_named_variant(
@@ -441,33 +416,75 @@ def _draw_panel_header(
     return draw, panel_bbox, title_bbox
 
 
-def _build_profile_cards(*, card_count: int, instance_seed: int) -> Tuple[List[_ProfileCard], str, str]:
-    rng = spawn_rng(int(instance_seed), f"{PROFILE_TASK_ID}.cards")
-    names = list(_PROFILE_NAMES)
-    rng.shuffle(names)
+def _build_profile_cards(
+    *,
+    card_count: int,
+    instance_seed: int,
+    include_numeric_fields: bool = False,
+) -> Tuple[List[_ProfileCard], str, str, Dict[str, Any]]:
+    rng = spawn_rng(int(instance_seed), "profile_card_grid.cards")
+    title_batch = sample_page_context_batch(
+        rng,
+        role="profile_card_grid_title",
+        count=1,
+        manifest_names=("phrases/headlines.txt",),
+    )
+    subtitle_batch = sample_page_context_batch(
+        rng,
+        role="profile_card_grid_subtitle",
+        count=1,
+        manifest_names=("phrases/captions.txt", "phrases/legend_notes.txt"),
+    )
+    name_batch = sample_page_label_batch(
+        rng,
+        role="profile_card_grid_profile_name",
+        count=int(card_count),
+        manifest_name="people/first_names_ssa.txt",
+        min_chars=3,
+        max_chars=12,
+        allow_spaces=False,
+        allow_punctuation=False,
+    )
+    names = list(name_batch.values)
     field_values_by_label: Dict[str, List[str]] = {}
-    for field_label, values in _PROFILE_FIELDS:
+    profile_field_specs = _PROFILE_FIELDS[:2] if bool(include_numeric_fields) else _PROFILE_FIELDS
+    for field_label, values in profile_field_specs:
         shuffled = list(values)
         rng.shuffle(shuffled)
         field_values_by_label[str(field_label)] = shuffled
-    if int(card_count) > len(names):
-        raise ValueError("profile card count exceeds available unique names")
+    numeric_values_by_label: Dict[str, List[int]] = {}
+    if bool(include_numeric_fields):
+        for field_label, values in _PROFILE_NUMERIC_FIELDS:
+            shuffled_numeric = [int(value) for value in values]
+            rng.shuffle(shuffled_numeric)
+            numeric_values_by_label[str(field_label)] = shuffled_numeric
     cards: List[_ProfileCard] = []
     color_offset = int(rng.randrange(len(_PALETTE)))
     for index in range(int(card_count)):
         fields = {
             str(field_label): str(field_values_by_label[str(field_label)][int(index)])
-            for field_label, _values in _PROFILE_FIELDS
+            for field_label, _values in profile_field_specs
         }
+        numeric_fields = {
+            str(field_label): int(values[int(index)])
+            for field_label, values in numeric_values_by_label.items()
+        }
+        fields.update({str(label): str(value) for label, value in numeric_fields.items()})
         cards.append(
             _ProfileCard(
                 profile_id=f"profile_{index + 1}",
                 name=str(names[int(index)]),
                 fields=fields,
+                numeric_fields=dict(numeric_fields),
                 accent_rgb=_PALETTE[(int(index) + int(color_offset)) % len(_PALETTE)],
             )
         )
-    return cards, str(rng.choice(_PROFILE_PAGE_TITLES)), str(rng.choice(_PROFILE_SUBTITLES))
+    return (
+        cards,
+        str(title_batch.values[0]),
+        str(subtitle_batch.values[0]),
+        page_text_resource_metadata(title_batch, subtitle_batch, name_batch),
+    )
 
 
 def _render_profile_cards(
@@ -609,33 +626,216 @@ def _profile_maps(
     return card_map, name_map, label_map, value_map
 
 
+def _profile_numeric_field_labels() -> Tuple[str, ...]:
+    return tuple(str(label) for label, _values in _PROFILE_NUMERIC_FIELDS)
+
+
+def _is_profile_extremum_query(query_id: str) -> bool:
+    return str(query_id) in {"highest_field_profile_label", "lowest_field_profile_label"}
+
+
+def _is_profile_ranked_query(query_id: str) -> bool:
+    return str(query_id) in {"nth_highest_field_profile_label", "nth_lowest_field_profile_label"}
+
+
+def _profile_rank_direction(query_id: str) -> str:
+    if str(query_id) in {"highest_field_profile_label", "nth_highest_field_profile_label"}:
+        return "highest"
+    if str(query_id) in {"lowest_field_profile_label", "nth_lowest_field_profile_label"}:
+        return "lowest"
+    return ""
+
+
+def _select_profile_numeric_field(
+    *,
+    task_id: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> str:
+    field_labels = _profile_numeric_field_labels()
+    explicit_field = params.get("field_label")
+    if explicit_field is not None:
+        target_field = str(explicit_field)
+        if target_field not in set(field_labels):
+            raise ValueError(f"field_label must be one of {list(field_labels)}")
+        return str(target_field)
+    field_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.numeric_field_label",
+    ) % len(field_labels)
+    return str(field_labels[int(field_index)])
+
+
+def _profile_rank_ordinal(rank_position: int) -> str:
+    return str(_PROFILE_RANK_ORDINALS.get(int(rank_position), f"{int(rank_position)}th"))
+
+
+def _resolve_profile_rank_position(
+    *,
+    task_id: str,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    card_count: int,
+    instance_seed: int,
+) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
+    rank_position, support, probabilities = _resolve_supported_int(
+        task_id=str(task_id),
+        params=params,
+        gen_defaults=gen_defaults,
+        explicit_key="rank_position",
+        support_key="rank_position_support",
+        fallback=_PROFILE_RANK_POSITION_SUPPORT,
+        instance_seed=int(instance_seed),
+        namespace=f"rank_position.{int(card_count)}",
+    )
+    if int(rank_position) > int(card_count):
+        raise ValueError("rank_position cannot exceed card_count")
+    return int(rank_position), tuple(int(value) for value in support), dict(probabilities)
+
+
+def _profile_numeric_candidates(
+    *,
+    cards: Sequence[_ProfileCard],
+    target_field: str,
+) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    for card in cards:
+        if str(target_field) not in card.numeric_fields:
+            raise ValueError(f"numeric field {target_field} missing from profile card")
+        value = int(card.numeric_fields[str(target_field)])
+        candidates.append(
+            {
+                "profile_id": str(card.profile_id),
+                "profile_name": str(card.name),
+                "field_label": str(target_field),
+                "field_value": str(card.fields[str(target_field)]),
+                "numeric_value": int(value),
+            }
+        )
+    values = [int(candidate["numeric_value"]) for candidate in candidates]
+    if len(values) != len(set(values)):
+        raise ValueError(f"numeric field {target_field} values must be unique")
+    return candidates
+
+
+def _sort_profile_numeric_candidates(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    rank_direction: str,
+) -> List[Dict[str, Any]]:
+    want_highest = str(rank_direction) == "highest"
+    return [
+        dict(candidate)
+        for candidate in sorted(
+            candidates,
+            key=lambda candidate: (
+                -int(candidate["numeric_value"]) if want_highest else int(candidate["numeric_value"]),
+                str(candidate["profile_name"]),
+            ),
+        )
+    ]
+
+
+def _card_by_profile_id(cards: Sequence[_ProfileCard], profile_id: str) -> _ProfileCard:
+    for card in cards:
+        if str(card.profile_id) == str(profile_id):
+            return card
+    raise ValueError(f"missing profile card {profile_id}")
+
+
+def _select_profile_extremum_target(
+    *,
+    cards: Sequence[_ProfileCard],
+    target_field: str,
+    query_id: str,
+) -> tuple[_ProfileCard, List[Dict[str, Any]]]:
+    sorted_candidates = _sort_profile_numeric_candidates(
+        _profile_numeric_candidates(cards=cards, target_field=str(target_field)),
+        rank_direction=_profile_rank_direction(str(query_id)),
+    )
+    target_card = _card_by_profile_id(cards, str(sorted_candidates[0]["profile_id"]))
+    return target_card, sorted_candidates
+
+
+def _select_profile_ranked_target(
+    *,
+    cards: Sequence[_ProfileCard],
+    target_field: str,
+    query_id: str,
+    rank_position: int,
+) -> tuple[_ProfileCard, List[Dict[str, Any]]]:
+    sorted_candidates = _sort_profile_numeric_candidates(
+        _profile_numeric_candidates(cards=cards, target_field=str(target_field)),
+        rank_direction=_profile_rank_direction(str(query_id)),
+    )
+    if int(rank_position) < 1 or int(rank_position) > len(sorted_candidates):
+        raise ValueError("rank_position out of range for profile candidates")
+    target = sorted_candidates[int(rank_position) - 1]
+    target_card = _card_by_profile_id(cards, str(target["profile_id"]))
+    return target_card, sorted_candidates
+
+
 def _build_ranked_sections(
     *,
     section_count: int,
     item_count: int,
     instance_seed: int,
-) -> Tuple[List[_RankedSection], str, str]:
+) -> Tuple[List[_RankedSection], str, str, Dict[str, Any]]:
     rng = spawn_rng(int(instance_seed), f"{RANKED_TASK_ID}.sections")
-    banks = list(_RANKED_LIST_BANK)
-    rng.shuffle(banks)
-    if int(section_count) > len(banks):
-        raise ValueError("ranked section count exceeds section bank")
+    title_batch = sample_page_context_batch(
+        rng,
+        role="ranked_list_title",
+        count=1,
+        manifest_names=("phrases/headlines.txt",),
+    )
+    subtitle_batch = sample_page_context_batch(
+        rng,
+        role="ranked_list_subtitle",
+        count=1,
+        manifest_names=("phrases/captions.txt", "phrases/legend_notes.txt"),
+    )
+    section_batch = sample_page_label_batch(
+        rng,
+        role="ranked_list_section_title",
+        count=int(section_count),
+        manifest_name="categories/product_labels.txt",
+        min_chars=3,
+        max_chars=16,
+        allow_spaces=True,
+        allow_punctuation=False,
+    )
+    item_batch = sample_page_label_batch(
+        rng,
+        role="ranked_list_item_label",
+        count=int(section_count) * int(item_count),
+        manifest_name="mixed/compact_labels.txt",
+        min_chars=4,
+        max_chars=16,
+        allow_spaces=True,
+        allow_punctuation=False,
+        exclude=section_batch.values,
+    )
     sections: List[_RankedSection] = []
     color_offset = int(rng.randrange(len(_PALETTE)))
+    item_cursor = 0
     for index in range(int(section_count)):
-        title, items = banks[int(index)]
-        item_values = list(items)
-        if int(item_count) > len(item_values):
-            raise ValueError("ranked item count exceeds item bank")
+        item_values = list(item_batch.values[item_cursor : item_cursor + int(item_count)])
+        item_cursor += int(item_count)
         sections.append(
             _RankedSection(
                 section_id=f"section_{index + 1}",
-                title=str(title),
+                title=str(section_batch.values[int(index)]),
                 items=tuple(str(value) for value in item_values[: int(item_count)]),
                 accent_rgb=_PALETTE[(int(index) + int(color_offset)) % len(_PALETTE)],
             )
         )
-    return sections, str(rng.choice(_RANKED_PAGE_TITLES)), str(rng.choice(_RANKED_SUBTITLES))
+    return (
+        sections,
+        str(title_batch.values[0]),
+        str(subtitle_batch.values[0]),
+        page_text_resource_metadata(title_batch, subtitle_batch, section_batch, item_batch),
+    )
 
 
 def _layout_sections(
@@ -778,52 +978,62 @@ def _ranked_maps(
     return section_title_map, item_map
 
 
-def _build_profile_prompt_examples(*, answer: str) -> Tuple[str, str]:
-    evidence = {
-        "profile_name": [120, 160, 210, 188],
-        "field_label": [120, 216, 174, 244],
-        "field_value": [220, 216, 340, 244],
-    }
-    answer_and_evidence = {"evidence": evidence, "answer": str(answer)}
+def _build_profile_prompt_examples(*, answer: str, query_id: str) -> Tuple[str, str]:
+    if _is_profile_extremum_query(str(query_id)) or _is_profile_ranked_query(str(query_id)):
+        annotation = {
+            "target_profile": [120, 160, 210, 188],
+            "field_label": [120, 216, 174, 244],
+            "target_value": [220, 216, 300, 244],
+        }
+    else:
+        annotation = {
+            "profile_name": [120, 160, 210, 188],
+            "field_label": [120, 216, 174, 244],
+            "field_value": [220, 216, 340, 244],
+        }
+    answer_and_annotation = {"annotation": annotation, "answer": str(answer)}
     answer_only = {"answer": str(answer)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
 
 def _build_ranked_prompt_examples(*, answer: str, include_source: bool) -> Tuple[str, str]:
-    evidence = {
+    annotation = {
         "section_title": [120, 160, 240, 188],
     }
     if bool(include_source):
-        evidence["source_item"] = [160, 216, 260, 244]
-    evidence["target_item"] = [160, 256, 270, 284]
-    answer_and_evidence = {"evidence": evidence, "answer": str(answer)}
+        annotation["source_item"] = [160, 216, 260, 244]
+    annotation["target_item"] = [160, 256, 270, 284]
+    answer_and_annotation = {"annotation": annotation, "answer": str(answer)}
     answer_only = {"answer": str(answer)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
 
-@register_task
-class PagesProfileCardGridAttributeLookupLabelTask:
+class _PagesProfileCardGridAttributeLookupBaseTask:
     """Read or reverse-lookup one attribute on a profile-card page."""
 
-    task_id = PROFILE_TASK_ID
+    task_id: str
+    allowed_query_ids: Tuple[str, ...] = PROFILE_QUERY_IDS
     domain = "pages"
     task_group = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
+        profile_gen_defaults, profile_render_defaults, profile_prompt_defaults, profile_complexity_weights = (
+            _resolve_profile_defaults(str(self.task_id))
+        )
         query_id, query_id_probabilities = _resolve_named_variant(
             task_id=self.task_id,
-            gen_defaults=_PROFILE_GEN_DEFAULTS,
+            gen_defaults=profile_gen_defaults,
             params=params,
             instance_seed=int(instance_seed),
-            supported=PROFILE_QUERY_IDS,
+            supported=tuple(self.allowed_query_ids),
             explicit_key="query_id",
             weights_key="query_id_weights",
             balance_flag_key="balanced_query_id_sampling",
@@ -831,7 +1041,7 @@ class PagesProfileCardGridAttributeLookupLabelTask:
         )
         scene_variant, scene_variant_probabilities = _resolve_named_variant(
             task_id=self.task_id,
-            gen_defaults=_PROFILE_GEN_DEFAULTS,
+            gen_defaults=profile_gen_defaults,
             params=params,
             instance_seed=int(instance_seed),
             supported=PROFILE_SCENE_VARIANTS,
@@ -843,49 +1053,92 @@ class PagesProfileCardGridAttributeLookupLabelTask:
         card_count, card_count_support, card_count_probabilities = _resolve_supported_int(
             task_id=self.task_id,
             params=params,
-            gen_defaults=_PROFILE_GEN_DEFAULTS,
+            gen_defaults=profile_gen_defaults,
             explicit_key="card_count",
             support_key="card_count_support",
             fallback=(6, 9),
             instance_seed=int(instance_seed),
             namespace="card_count",
         )
-        cards, page_title, page_subtitle = _build_profile_cards(
+        is_extremum_query = _is_profile_extremum_query(str(query_id))
+        is_ranked_query = _is_profile_ranked_query(str(query_id))
+        is_order_query = bool(is_extremum_query or is_ranked_query)
+        cards, page_title, page_subtitle, page_text_resources = _build_profile_cards(
             card_count=int(card_count),
             instance_seed=int(instance_seed),
+            include_numeric_fields=bool(is_order_query),
         )
-        field_labels = [str(label) for label, _values in _PROFILE_FIELDS]
-        explicit_field = params.get("field_label")
-        if explicit_field is not None:
-            target_field = str(explicit_field)
-            if target_field not in field_labels:
-                raise ValueError(f"field_label must be one of {field_labels}")
-        else:
-            field_index = resolve_selection_index(
+        candidate_profiles: List[Dict[str, Any]] = []
+        rank_position = 0
+        rank_position_support: Tuple[int, ...] = ()
+        rank_position_probabilities: Dict[str, float] = {}
+        if bool(is_extremum_query):
+            target_field = _select_profile_numeric_field(
+                task_id=str(self.task_id),
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{self.task_id}.field_label",
-            ) % len(field_labels)
-            target_field = str(field_labels[int(field_index)])
-        explicit_profile_index = params.get("profile_index")
-        if explicit_profile_index is not None:
-            target_index = int(explicit_profile_index)
-            if target_index < 0 or target_index >= int(card_count):
-                raise ValueError("profile_index out of range")
+            )
+            target_card, candidate_profiles = _select_profile_extremum_target(
+                cards=cards,
+                target_field=str(target_field),
+                query_id=str(query_id),
+            )
+        elif bool(is_ranked_query):
+            target_field = _select_profile_numeric_field(
+                task_id=str(self.task_id),
+                params=params,
+                instance_seed=int(instance_seed),
+            )
+            rank_position, rank_position_support, rank_position_probabilities = _resolve_profile_rank_position(
+                task_id=str(self.task_id),
+                params=params,
+                gen_defaults=profile_gen_defaults,
+                card_count=int(card_count),
+                instance_seed=int(instance_seed),
+            )
+            target_card, candidate_profiles = _select_profile_ranked_target(
+                cards=cards,
+                target_field=str(target_field),
+                query_id=str(query_id),
+                rank_position=int(rank_position),
+            )
         else:
-            target_index = int(
-                resolve_selection_index(
+            field_labels = [str(label) for label, _values in _PROFILE_FIELDS]
+            explicit_field = params.get("field_label")
+            if explicit_field is not None:
+                target_field = str(explicit_field)
+                if target_field not in field_labels:
+                    raise ValueError(f"field_label must be one of {field_labels}")
+            else:
+                field_index = resolve_selection_index(
                     params=params,
                     instance_seed=int(instance_seed),
-                    namespace=f"{self.task_id}.profile_index.{target_field}",
+                    namespace=f"{self.task_id}.field_label",
+                ) % len(field_labels)
+                target_field = str(field_labels[int(field_index)])
+            explicit_profile_index = params.get("profile_index")
+            if explicit_profile_index is not None:
+                target_index = int(explicit_profile_index)
+                if target_index < 0 or target_index >= int(card_count):
+                    raise ValueError("profile_index out of range")
+            else:
+                target_index = int(
+                    resolve_selection_index(
+                        params=params,
+                        instance_seed=int(instance_seed),
+                        namespace=f"{self.task_id}.profile_index.{target_field}",
+                    )
+                    % int(card_count)
                 )
-                % int(card_count)
-            )
-        target_card = cards[int(target_index)]
+            target_card = cards[int(target_index)]
         target_value = str(target_card.fields[str(target_field)])
-        answer_value = str(target_value) if str(query_id) == "value_for_named_profile_field" else str(target_card.name)
+        answer_value = (
+            str(target_value)
+            if str(query_id) == "value_for_named_profile_field"
+            else str(target_card.name)
+        )
 
-        render_params = _resolve_render_params(params, _PROFILE_RENDER_DEFAULTS)
+        render_params = _resolve_render_params(params, profile_render_defaults)
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
@@ -908,20 +1161,51 @@ class PagesProfileCardGridAttributeLookupLabelTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         card_bbox_map, name_bbox_map, field_label_bbox_map, field_value_bbox_map = _profile_maps(rendered.item_traces)
-        evidence_keyed_bboxes = {
-            "profile_name": [float(value) for value in name_bbox_map[str(target_card.profile_id)]],
-            "field_label": [
-                float(value)
-                for value in field_label_bbox_map[str(target_card.profile_id)][str(target_field)]
-            ],
-            "field_value": [
-                float(value)
-                for value in field_value_bbox_map[str(target_card.profile_id)][str(target_field)]
-            ],
-        }
+        if bool(is_order_query):
+            annotation_keyed_bboxes = {
+                "target_profile": [float(value) for value in name_bbox_map[str(target_card.profile_id)]],
+                "field_label": [
+                    float(value)
+                    for value in field_label_bbox_map[str(target_card.profile_id)][str(target_field)]
+                ],
+                "target_value": [
+                    float(value)
+                    for value in field_value_bbox_map[str(target_card.profile_id)][str(target_field)]
+                ],
+            }
+            candidate_profiles = [
+                {
+                    **dict(candidate),
+                    "field_label_bbox_px": [
+                        float(value)
+                        for value in field_label_bbox_map[str(candidate["profile_id"])][str(target_field)]
+                    ],
+                    "field_value_bbox_px": [
+                        float(value)
+                        for value in field_value_bbox_map[str(candidate["profile_id"])][str(target_field)]
+                    ],
+                    "profile_name_bbox_px": [
+                        float(value)
+                        for value in name_bbox_map[str(candidate["profile_id"])]
+                    ],
+                }
+                for candidate in candidate_profiles
+            ]
+        else:
+            annotation_keyed_bboxes = {
+                "profile_name": [float(value) for value in name_bbox_map[str(target_card.profile_id)]],
+                "field_label": [
+                    float(value)
+                    for value in field_label_bbox_map[str(target_card.profile_id)][str(target_field)]
+                ],
+                "field_value": [
+                    float(value)
+                    for value in field_value_bbox_map[str(target_card.profile_id)][str(target_field)]
+                ],
+            }
 
         prompt_defaults = required_group_defaults(
-            _PROFILE_PROMPT_DEFAULTS,
+            profile_prompt_defaults,
             (
                 "bundle_id",
                 "scene_key",
@@ -929,12 +1213,17 @@ class PagesProfileCardGridAttributeLookupLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "object_description",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_profile_prompt_examples(answer="North Pier")
+        json_example, json_example_answer_only = _build_profile_prompt_examples(
+            answer="Aster" if bool(is_order_query) else "North Pier",
+            query_id=str(query_id),
+        )
+        rank_direction = _profile_rank_direction(str(query_id)) if bool(is_ranked_query) else ""
+        rank_ordinal = _profile_rank_ordinal(int(rank_position)) if bool(is_ranked_query) else ""
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -942,16 +1231,18 @@ class PagesProfileCardGridAttributeLookupLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "profile_name": f'"{str(target_card.name)}"',
                 "field_label": str(target_field),
                 "field_value": f'"{str(target_value)}"',
+                "rank_ordinal": str(rank_ordinal),
+                "rank_direction": str(rank_direction),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -964,6 +1255,14 @@ class PagesProfileCardGridAttributeLookupLabelTask:
             "field_label": str(target_field),
             "field_value": str(target_value),
         }
+        if bool(is_order_query):
+            target_profile_payload["field_numeric_value"] = int(target_card.numeric_fields[str(target_field)])
+        extremum_direction = ""
+        if str(query_id) == "highest_field_profile_label":
+            extremum_direction = "highest"
+        elif str(query_id) == "lowest_field_profile_label":
+            extremum_direction = "lowest"
+        rank_position_payload = int(rank_position) if bool(is_ranked_query) else 0
         trace_payload = {
             "scene_ir": {
                 "scene_id": PROFILE_SCENE_ID,
@@ -973,6 +1272,11 @@ class PagesProfileCardGridAttributeLookupLabelTask:
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "target_profile": dict(target_profile_payload),
+                    "extremum_direction": str(extremum_direction),
+                    "rank_direction": str(rank_direction),
+                    "rank_position": int(rank_position_payload),
+                    "rank_ordinal": str(rank_ordinal),
+                    "candidate_profiles": [dict(candidate) for candidate in candidate_profiles],
                     "answer_value": str(answer_value),
                 },
             },
@@ -987,10 +1291,17 @@ class PagesProfileCardGridAttributeLookupLabelTask:
                     "scene_variant": str(scene_variant),
                     "card_count": int(card_count),
                     "target_profile": dict(target_profile_payload),
+                    "extremum_direction": str(extremum_direction),
+                    "rank_direction": str(rank_direction),
+                    "rank_position": int(rank_position_payload),
+                    "rank_ordinal": str(rank_ordinal),
+                    "candidate_profiles": [dict(candidate) for candidate in candidate_profiles],
                     "target_answer": str(answer_value),
                     "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "card_count_probabilities": dict(card_count_probabilities),
+                    "rank_position_support": [int(value) for value in rank_position_support],
+                    "rank_position_probabilities": dict(rank_position_probabilities),
                 },
             },
             "render_spec": {
@@ -1003,6 +1314,7 @@ class PagesProfileCardGridAttributeLookupLabelTask:
                 "post_image_noise": dict(post_noise_meta),
                 "panel_bbox_px": list(rendered.panel_bbox_px),
                 "layout": dict(rendered.layout_meta),
+                "page_text_resources": dict(page_text_resources),
             },
             "render_map": {
                 "image_id": "img0",
@@ -1019,33 +1331,61 @@ class PagesProfileCardGridAttributeLookupLabelTask:
                 "card_count": int(card_count),
                 "card_count_support": [int(value) for value in card_count_support],
                 "target_profile": dict(target_profile_payload),
+                "extremum_direction": str(extremum_direction),
+                "rank_direction": str(rank_direction),
+                "rank_position": int(rank_position_payload),
+                "rank_ordinal": str(rank_ordinal),
+                "candidate_profiles": [dict(candidate) for candidate in candidate_profiles],
                 "answer_value": str(answer_value),
                 "cards": [dict(trace) for trace in rendered.item_traces],
+                "page_text_resources": dict(page_text_resources),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "card_count_probabilities": dict(card_count_probabilities),
+                "rank_position_support": [int(value) for value in rank_position_support],
+                "rank_position_probabilities": dict(rank_position_probabilities),
             },
             "witness_symbolic": {
-                "type": "profile_card_attribute_lookup",
+                "type": (
+                    "profile_card_field_ranked"
+                    if bool(is_ranked_query)
+                    else ("profile_card_field_extremum" if bool(is_extremum_query) else "profile_card_attribute_lookup")
+                ),
                 "target_profile_id": str(target_card.profile_id),
                 "field_label": str(target_field),
                 "field_value": str(target_value),
+                "extremum_direction": str(extremum_direction),
+                "rank_direction": str(rank_direction),
+                "rank_position": int(rank_position_payload),
+                "rank_ordinal": str(rank_ordinal),
                 "answer_value": str(answer_value),
-                "evidence_keys": list(evidence_keyed_bboxes.keys()),
+                "annotation_keys": list(annotation_keyed_bboxes.keys()),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "bbox_set": list(evidence_keyed_bboxes.values()),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "bbox_set": list(annotation_keyed_bboxes.values()),
                 "target_profile_id": str(target_card.profile_id),
                 "field_label": str(target_field),
+                "extremum_direction": str(extremum_direction),
+                "rank_direction": str(rank_direction),
+                "rank_position": int(rank_position_payload),
+                "rank_ordinal": str(rank_ordinal),
             },
         }
         complexity = build_pages_complexity(
-            weights=_PROFILE_COMPLEXITY_WEIGHTS,
+            weights=profile_complexity_weights,
             components={
-                "lookup_reasoning": 0.52 if str(query_id) == "profile_for_field_value" else 0.42,
+                "lookup_reasoning": (
+                    0.72
+                    if bool(is_ranked_query)
+                    else (
+                        0.64
+                        if bool(is_extremum_query)
+                        else (0.52 if str(query_id) == "profile_for_field_value" else 0.42)
+                    )
+                ),
                 "visual_scan": normalize_int_with_bounds(
                     int(card_count),
                     [min(card_count_support), max(card_count_support)],
@@ -1056,7 +1396,7 @@ class PagesProfileCardGridAttributeLookupLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="string", value=str(answer_value)),
-            evidence_gt=TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes)),
+            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1068,7 +1408,38 @@ class PagesProfileCardGridAttributeLookupLabelTask:
 
 
 @register_task
-class PagesRankedListOrdinalEntryLabelTask:
+class PagesProfileCardGridProfileForFieldValueTask(_PagesProfileCardGridAttributeLookupBaseTask):
+    """Find the profile name whose visible field has a requested value."""
+
+    task_id = PROFILE_FOR_FIELD_VALUE_TASK_ID
+    allowed_query_ids = ("profile_for_field_value",)
+
+
+@register_task
+class PagesProfileCardGridValueForNamedProfileFieldTask(_PagesProfileCardGridAttributeLookupBaseTask):
+    """Read a named field value from a named profile card."""
+
+    task_id = VALUE_FOR_NAMED_PROFILE_FIELD_TASK_ID
+    allowed_query_ids = ("value_for_named_profile_field",)
+
+
+@register_task
+class PagesProfileCardGridFieldExtremumProfileLabelTask(_PagesProfileCardGridAttributeLookupBaseTask):
+    """Find the profile with the highest or lowest visible numeric field value."""
+
+    task_id = FIELD_EXTREMUM_PROFILE_TASK_ID
+    allowed_query_ids = ("highest_field_profile_label", "lowest_field_profile_label")
+
+
+@register_task
+class PagesProfileCardGridFieldRankedProfileLabelTask(_PagesProfileCardGridAttributeLookupBaseTask):
+    """Find the profile at a requested rank after sorting a visible numeric field."""
+
+    task_id = FIELD_RANKED_PROFILE_TASK_ID
+    allowed_query_ids = ("nth_highest_field_profile_label", "nth_lowest_field_profile_label")
+
+
+class _PagesRankedListEntryLabelSourceTask:
     """Read one item from a sectioned ranked-list page."""
 
     task_id = RANKED_TASK_ID
@@ -1120,7 +1491,7 @@ class PagesRankedListOrdinalEntryLabelTask:
             instance_seed=int(instance_seed),
             namespace="item_count",
         )
-        sections, page_title, page_subtitle = _build_ranked_sections(
+        sections, page_title, page_subtitle, page_text_resources = _build_ranked_sections(
             section_count=int(section_count),
             item_count=int(item_count),
             instance_seed=int(instance_seed),
@@ -1229,15 +1600,15 @@ class PagesRankedListOrdinalEntryLabelTask:
         )
         section_title_bbox_map, item_bbox_map = _ranked_maps(rendered.item_traces)
         target_item_id = f"{target_section.section_id}_item_{target_index + 1}"
-        evidence_keyed_bboxes = {
+        annotation_keyed_bboxes = {
             "section_title": [float(value) for value in section_title_bbox_map[str(target_section.section_id)]],
         }
         if source_index is not None:
             source_item_id = f"{target_section.section_id}_item_{source_index + 1}"
-            evidence_keyed_bboxes["source_item"] = [
+            annotation_keyed_bboxes["source_item"] = [
                 float(value) for value in item_bbox_map[str(target_section.section_id)][str(source_item_id)]
             ]
-        evidence_keyed_bboxes["target_item"] = [
+        annotation_keyed_bboxes["target_item"] = [
             float(value) for value in item_bbox_map[str(target_section.section_id)][str(target_item_id)]
         ]
 
@@ -1250,7 +1621,7 @@ class PagesRankedListOrdinalEntryLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "object_description",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -1266,7 +1637,7 @@ class PagesRankedListOrdinalEntryLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "section_title": f'"{str(target_section.title)}"',
@@ -1275,7 +1646,7 @@ class PagesRankedListOrdinalEntryLabelTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -1335,6 +1706,7 @@ class PagesRankedListOrdinalEntryLabelTask:
                 "post_image_noise": dict(post_noise_meta),
                 "panel_bbox_px": list(rendered.panel_bbox_px),
                 "layout": dict(rendered.layout_meta),
+                "page_text_resources": dict(page_text_resources),
             },
             "render_map": {
                 "image_id": "img0",
@@ -1351,6 +1723,7 @@ class PagesRankedListOrdinalEntryLabelTask:
                 "target_entry": dict(target_payload),
                 "answer_value": str(answer_value),
                 "sections": [dict(trace) for trace in rendered.item_traces],
+                "page_text_resources": dict(page_text_resources),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "section_count_probabilities": dict(section_count_probabilities),
@@ -1362,13 +1735,13 @@ class PagesRankedListOrdinalEntryLabelTask:
                 "target_item_id": str(target_item_id),
                 "source_item": str(source_item),
                 "answer_value": str(answer_value),
-                "evidence_keys": list(evidence_keyed_bboxes.keys()),
+                "annotation_keys": list(annotation_keyed_bboxes.keys()),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "bbox_set": list(evidence_keyed_bboxes.values()),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "bbox_set": list(annotation_keyed_bboxes.values()),
                 "section_id": str(target_section.section_id),
                 "target_item_id": str(target_item_id),
             },
@@ -1390,7 +1763,7 @@ class PagesRankedListOrdinalEntryLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="string", value=str(answer_value)),
-            evidence_gt=TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes)),
+            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1401,11 +1774,42 @@ class PagesRankedListOrdinalEntryLabelTask:
         )
 
 
+@register_task
+class PagesRankedListOrdinalEntryLabelTask(MergedPagesQueryTaskMixin):
+    """Read an ordinally referenced item from a sectioned ranked-list page."""
+
+    task_id = RANKED_TASK_ID
+    domain = "pages"
+    task_group = TASK_GROUP
+    public_scene_id = RANKED_SCENE_ID
+    allowed_query_ids = (
+        "nth_entry_label",
+        "from_end_entry_label",
+    )
+    source_task_cls = _PagesRankedListEntryLabelSourceTask
+
+
+@register_task
+class PagesRankedListEntryAfterNamedEntryLabelTask(FixedPagesQueryTaskMixin):
+    """Read the item that immediately follows a named source item."""
+
+    task_id = "task_pages__ranked_list__entry_after_named_entry_label"
+    domain = "pages"
+    task_group = TASK_GROUP
+    public_scene_id = RANKED_SCENE_ID
+    fixed_query_id = "entry_after_named_entry"
+    source_task_cls = _PagesRankedListEntryLabelSourceTask
+
+
 __all__ = [
     "PROFILE_QUERY_IDS",
     "PROFILE_SCENE_VARIANTS",
     "RANKED_QUERY_IDS",
     "RANKED_SCENE_VARIANTS",
-    "PagesProfileCardGridAttributeLookupLabelTask",
+    "PagesProfileCardGridProfileForFieldValueTask",
+    "PagesProfileCardGridValueForNamedProfileFieldTask",
+    "PagesProfileCardGridFieldExtremumProfileLabelTask",
+    "PagesProfileCardGridFieldRankedProfileLabelTask",
+    "PagesRankedListEntryAfterNamedEntryLabelTask",
     "PagesRankedListOrdinalEntryLabelTask",
 ]

@@ -115,18 +115,18 @@ prompt:
     scene_key: radial_progress_scene
     task_key: radial_progress_condition_count_query
     task_key_remaining_extremum: radial_progress_remaining_extremum_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_full_progress_rings: labeled circular progress rings on a 0 to 100 percent scale
     object_description_semicircle_gauges: labeled semicircular progress gauges on a 0 to 100 percent scale
     object_description_segmented_radial_bars: labeled segmented radial progress bars on a 0 to 100 percent scale
-    evidence_hint: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the progress widget or widgets counted for the answer
+    annotation_hint: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the progress widget or widgets counted for the answer
     answer_hint: set "answer" to the requested integer count
-    evidence_hint_label: set "evidence" to an array containing one [x0, y0, x1, y1] bounding box around the progress widget for the answer label
+    annotation_hint_label: set "annotation" to an array containing one [x0, y0, x1, y1] bounding box around the progress widget for the answer label
     answer_hint_label: set "answer" to the exact visible label as a string
-    json_example_condition_count: '{"evidence":[[96,150,310,405],[340,150,554,405]],"answer":2}'
+    json_example_condition_count: '{"annotation":[[96,150,310,405],[340,150,554,405]],"answer":2}'
     json_example_answer_only_condition_count: '{"answer":2}'
-    json_example_remaining_extremum_label: '{"evidence":[[96,150,310,405]],"answer":"AB"}'
+    json_example_remaining_extremum_label: '{"annotation":[[96,150,310,405]],"answer":"AB"}'
     json_example_answer_only_remaining_extremum_label: '{"answer":"AB"}'
 
 complexity:

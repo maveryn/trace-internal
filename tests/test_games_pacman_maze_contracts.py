@@ -11,7 +11,9 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.pacman.maze_tasks import (
     GamesPacmanMazeTask,
     GamesPacmanNextItemLabelTask,
-    GamesPacmanRoutePelletCountTask,
+    GamesPacmanPathPelletCountTask,
+    GamesPacmanPelletCountBeforeGhostTask,
+    GamesPacmanRouteScoreValueTask,
 )
 from trace.tasks.games.shared.pacman_common import (
     PACMAN_ITEM_LABELS,
@@ -24,9 +26,10 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_query", "answer_type"),
     (
-        (GamesPacmanRoutePelletCountTask, {"query_id": "path_pellet_count", "target_answer": 5, "row_count": 8, "col_count": 11}, "path_pellet_count", "integer"),
+        (GamesPacmanPathPelletCountTask, {"query_id": "path_pellet_count", "target_answer": 5, "row_count": 8, "col_count": 11}, "path_pellet_count", "integer"),
         (GamesPacmanNextItemLabelTask, {"target_label": "E", "item_count": 6}, "next_item_label", "string"),
-        (GamesPacmanRoutePelletCountTask, {"query_id": "pellet_count_before_ghost", "target_answer": 4, "row_count": 9, "col_count": 13}, "pellet_count_before_ghost", "integer"),
+        (GamesPacmanPelletCountBeforeGhostTask, {"query_id": "pellet_count_before_ghost", "target_answer": 4, "row_count": 9, "col_count": 13}, "pellet_count_before_ghost", "integer"),
+        (GamesPacmanRouteScoreValueTask, {"query_id": "route_score_value", "row_count": 9, "col_count": 13}, "route_score_value", "integer"),
     ),
 )
 def test_games_pacman_public_tasks_emit_expected_contract(
@@ -40,37 +43,37 @@ def test_games_pacman_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == answer_type
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert out.query_id == expected_query
     assert out.scene_id == "pacman"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
-def test_games_pacman_path_pellet_count_evidence_is_on_route() -> None:
-    out = GamesPacmanRoutePelletCountTask().generate(
+def test_games_pacman_path_pellet_count_annotation_is_on_route() -> None:
+    out = GamesPacmanPathPelletCountTask().generate(
         120010,
         params={"query_id": "path_pellet_count", "target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
     route = {tuple(coord) for coord in execution["route_coords"]}
-    evidence_coords = {
+    annotation_coords = {
         coord_from_entity_id(entity_id)
-        for entity_id in execution["evidence_entity_ids"]
+        for entity_id in execution["annotation_entity_ids"]
         if str(entity_id).startswith("pellet_r")
     }
 
     assert int(out.answer_gt.value) == 5
-    assert len(evidence_coords) == 5
-    assert evidence_coords.issubset(route)
+    assert len(annotation_coords) == 5
+    assert annotation_coords.issubset(route)
 
 
 def test_games_pacman_next_item_label_is_first_route_item() -> None:
@@ -88,12 +91,12 @@ def test_games_pacman_next_item_label_is_first_route_item() -> None:
     ]
 
     assert out.answer_gt.value == "F"
-    assert execution["evidence_entity_ids"] == [item_entity_id("F")]
+    assert execution["annotation_entity_ids"] == [item_entity_id("F")]
     assert min(item_steps)[1] == "F"
 
 
 def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> None:
-    out = GamesPacmanRoutePelletCountTask().generate(
+    out = GamesPacmanPelletCountBeforeGhostTask().generate(
         120030,
         params={"query_id": "pellet_count_before_ghost", "target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
@@ -101,29 +104,70 @@ def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> 
     execution = out.trace_payload["execution_trace"]
     route_order = {tuple(coord): index for index, coord in enumerate(execution["route_coords"])}
     stop_ghosts = [ghost for ghost in execution["ghosts"] if bool(ghost["is_stop_ghost"])]
-    evidence_coords = {
+    annotation_coords = {
         coord_from_entity_id(entity_id)
-        for entity_id in execution["evidence_entity_ids"]
+        for entity_id in execution["annotation_entity_ids"]
         if str(entity_id).startswith("pellet_r")
     }
-    evidence_ghosts = [entity_id for entity_id in execution["evidence_entity_ids"] if str(entity_id).startswith("ghost_")]
+    annotation_ghosts = [entity_id for entity_id in execution["annotation_entity_ids"] if str(entity_id).startswith("ghost_")]
 
     assert int(out.answer_gt.value) == 5
     assert len(stop_ghosts) == 1
-    assert evidence_ghosts == [stop_ghosts[0]["entity_id"]]
+    assert annotation_ghosts == [stop_ghosts[0]["entity_id"]]
     stop_index = route_order[tuple(stop_ghosts[0]["coord"])]
-    assert len(evidence_coords) == 5
-    assert all(route_order[coord] < stop_index for coord in evidence_coords)
+    assert len(annotation_coords) == 5
+    assert all(route_order[coord] < stop_index for coord in annotation_coords)
+
+
+def test_games_pacman_route_score_value_annotation_recomputes_score() -> None:
+    out = GamesPacmanRouteScoreValueTask().generate(
+        120040,
+        params={"row_count": 9, "col_count": 13},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    route = {tuple(coord) for coord in execution["route_coords"]}
+    pellet_coords = {
+        tuple(pellet["coord"])
+        for pellet in execution["pellets"]
+    }
+    item_by_id = {str(item["entity_id"]): item for item in execution["items"]}
+    scored_total = 0
+    saw_pellet = False
+    saw_bonus = False
+
+    for entity_id in execution["annotation_entity_ids"]:
+        entity_id = str(entity_id)
+        if entity_id.startswith("pellet_r"):
+            coord = coord_from_entity_id(entity_id)
+            assert coord in route
+            assert coord in pellet_coords
+            scored_total += 1
+            saw_pellet = True
+            continue
+        item = item_by_id[entity_id]
+        assert tuple(item["coord"]) in route
+        assert "score_value" in item
+        scored_total += int(item["score_value"])
+        saw_bonus = True
+
+    off_route_items = [item for item in execution["items"] if tuple(item["coord"]) not in route]
+    assert saw_pellet
+    assert saw_bonus
+    assert off_route_items
+    assert int(out.answer_gt.value) == scored_total
+    assert "Pellets score 1; bonus items score their printed value." in out.prompt
 
 
 def test_games_pacman_query_cycle_covers_support() -> None:
-    task = GamesPacmanRoutePelletCountTask()
+    tasks = (GamesPacmanPathPelletCountTask(), GamesPacmanPelletCountBeforeGhostTask())
     queries: set[str] = set()
     rows: set[int] = set()
     cols: set[int] = set()
     counts: set[int] = set()
 
     for sampling_index in range(144):
+        task = tasks[int(sampling_index) % len(tasks)]
         out = task.generate(
             120100 + sampling_index,
             params={},
@@ -164,8 +208,9 @@ def test_games_pacman_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__pacman__route_pellet_count", count=2, params={}),
+            BuildTaskConfig(task_id="task_games__pacman__path_pellet_count", count=2, params={}),
             BuildTaskConfig(task_id="task_games__pacman__next_item_label", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__pacman__route_score_value", count=1, params={}),
         ],
         max_attempts_per_instance=256,
         workers=1,
@@ -173,6 +218,6 @@ def test_games_pacman_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-pacman-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 3
+    assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
     assert all(row["task_group"] == "pacman" for row in rows)

@@ -4,15 +4,13 @@
 1. Domain: `games`
 2. Task group: `snake`
 3. Scene id: `snake`
-4. Query id: `safe_direction_count`
-5. Prompt bundle: `games_snake_v0`
-6. Evidence type: `bbox_set`
-7. Answer type: `integer`
-
-## Query Notes
-1. `safe_direction_count` asks how many of the four immediate directions are safe from the current snake head.
-2. A safe move stays inside the board and avoids both the snake body and gray wall cells. Moving onto the red food is safe.
-3. Evidence boxes mark the destination cells that are safe next moves.
+4. Public task id: `task_games__snake__safe_direction_count`
+5. Supported `query_id` values: `safe_direction_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(directions, move_collision(direction)=False)); scene=snake; scope=safe_direction_count`
 
 ## Generation Notes
-The scene renders a visible Snake board with a yellow head, connected body cells, red food, and gray wall cells. The generator constructs a connected snake chain, samples wall cells away from the snake and food, and targets the requested safe-move count by construction before rendering.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

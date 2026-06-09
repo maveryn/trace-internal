@@ -3,25 +3,54 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `spring`
-- Task group: `mechanics`
-- Query id: `missing_value`
-- Answer type: `integer`
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `mechanics`
+- Implementation source: `trace/tasks/physics/mechanics/spring_extension.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__spring__spring_missing_value` -> `task_physics__spring__spring_missing_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows two identical springs with rulers and weight blocks. The task asks for a missing weight or missing extension using the proportional relation represented by the reference spring.
+## Task Contract
+Solves a missing weight or extension for identical springs using a visible reference pair.
 
-Evidence contains the reference weight and extension markers plus the queried value and its paired measurement. The prompt-facing keys are `reference_weight`, `reference_extension`, `query_weight`, and `query_extension`; whichever query value is marked red `?` remains under its semantic key. `solve_for=weight|extension` is an inverse parameter inside this task.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Evidence is projected after the final whole-diagram layout offset, so each bbox uses rendered pixel coordinates.
+## Query Branches
 
-## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query id key: `missing_value`.
+| Query id | Program schema |
+| --- | --- |
+| `missing_value` | `solve_hooke_ratio(reference_weight, reference_extension, query_weight, query_extension, unknown_slot); scene=spring; scope=spring_missing_value; query_branch=missing_value` |
 
-Outputs `query_id="missing_value"`. The trace records the scale factor, solve target, measurements, answer support, keyed evidence boxes, technical diagram style, font family, whole-diagram layout placement, and post-render noise metadata.
+## Program Metadata
+- Program signatures: `physics.hooke_law_solve`
+- Base program contract: `solve_hooke_ratio(reference_weight, reference_extension, query_weight, query_extension, unknown_slot); scene=spring; scope=spring_missing_value`
+- Parameter axes: `unknown_slot`
+- Arguments:
+  - `query_extension`: semantic_role; allowed `right_spring_extension`; source `program_schema_concrete`
+  - `query_weight`: semantic_role; allowed `right_spring_weight`; source `program_schema_concrete`
+  - `reference_extension`: semantic_role; allowed `reference_spring_extension`; source `program_schema_concrete`
+  - `reference_weight`: semantic_role; allowed `reference_spring_weight`; source `program_schema_concrete`
+  - `unknown_slot`: semantic_role; allowed `missing_extension`, `missing_weight`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `missing_value`
 
-## Rendering
-The renderer uses shared `technical_diagram_style` for the outer sheet, card/ruler palette, frame, and post-render noise. It samples one readout font family per diagram and applies whole-diagram layout placement before computing evidence.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized spring layout.
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/spring/task_physics__spring__spring_missing_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

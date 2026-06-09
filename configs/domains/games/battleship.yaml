@@ -5,6 +5,9 @@ generation:
     query_id_weights:
       sunk_ship_count: 1.0
       partial_ship_count: 1.0
+      named_ship_hit_cell_count: 1.0
+      named_ship_unhit_cell_count: 1.0
+      last_ship_cell_label: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -17,20 +20,37 @@ generation:
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true
     balanced_target_answer_sampling: true
+    balanced_target_ship_id_sampling: true
+    balanced_target_ship_answer_pair_sampling: true
+    balanced_last_ship_cell_option_count_sampling: true
+    target_ship_id_weights:
+      line5: 1.0
+      line4: 1.0
+      line3: 1.0
+      square4: 1.0
+      elbow3: 1.0
     board_size_support:
     - 8
     - 9
     - 10
     sunk_ship_count_support:
+    - 0
     - 1
     - 2
     - 3
     - 4
+    - 5
     partial_ship_count_support:
+    - 0
     - 1
     - 2
     - 3
     - 4
+    - 5
+    last_ship_cell_option_count_support:
+    - 4
+    - 5
+    - 6
     min_partial_ship_count: 2
     max_partial_ship_count: 4
     min_miss_count: 7
@@ -65,14 +85,35 @@ prompt:
     object_description_standard_fleet: a Battleship board with the full fleet placed
       on the grid, red hit markers on ship cells, miss markers on water, and a fleet-shape
       panel beside the grid
+    object_description_hidden_fleet: a Battleship tracking board with red hit markers,
+      gray miss markers, labeled candidate cells, and a fleet-shape panel beside
+      the grid
     battleship_rule_text: Each fleet ship is placed exactly once on the board. A ship
       is sunk only when every cell of that ship has a red hit marker. Ships with
       only some red hit markers are not sunk.
-    evidence_hint_sunk_ship_count: set "evidence" to bounding boxes [x0, y0, x1,
-      y1] for every cell belonging to a sunk ship
+    annotation_hint_sunk_ship_count: set "annotation" to a JSON object mapping each
+      sunk ship's displayed fleet-shape name to a list of pixel-space points
+      [x, y] at the centers of every red hit-marker cell on that ship; use
+      an empty object if no ship is sunk
     answer_hint_sunk_ship_count: set "answer" to the number of ships whose every
       cell has a red hit marker
-    evidence_hint_partial_ship_count: set "evidence" to bounding boxes [x0, y0,
-      x1, y1] for every cell belonging to a partially hit ship
+    annotation_hint_partial_ship_count: set "annotation" to a JSON object mapping
+      each partially hit ship's displayed fleet-shape name to a list of pixel-space
+      points [x, y] at the centers of every red hit-marker cell on that ship;
+      use an empty object if no ship is partially hit
     answer_hint_partial_ship_count: set "answer" to the number of ships that have
       at least one red hit marker but are not sunk
+    annotation_hint_named_ship_hit_cell_count: set "annotation" to a JSON array
+      of pixel-space points [x, y] at the centers of the red hit-marker cells
+      on the named ship; use an empty array if none of that ship's cells are hit
+    answer_hint_named_ship_hit_cell_count: set "answer" to the number of cells
+      on the named ship that have red hit markers
+    annotation_hint_named_ship_unhit_cell_count: set "annotation" to a JSON array
+      of pixel-space points [x, y] at the centers of the named ship's intact
+      cells; use an empty array if every cell of that ship is hit
+    answer_hint_named_ship_unhit_cell_count: set "answer" to the number of cells
+      on the named ship that do not have red hit markers
+    annotation_hint_last_ship_cell_label: set "annotation" to a JSON array containing
+      one pixel-space point [x, y] at the center of the selected labeled cell
+    answer_hint_last_ship_cell_label: set "answer" to the single selected option
+      label shown on the board

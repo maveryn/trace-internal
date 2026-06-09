@@ -54,7 +54,8 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.evidence_gt.type == "bbox_set"
+    expected_annotation_type = "keyed_bbox_set_map" if expected_query_id == "missing_weight_to_balance" else "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
 
     assert out.query_id == expected_query_id
 
@@ -75,25 +76,30 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    if expected_query_id == "missing_weight_to_balance":
+        assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
+    else:
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_lever_diagram_offset"
     if expected_query_id == "missing_weight_to_balance":
 
-        assert trace["render_map"]["missing_weight_marker_bbox_px"] in out.evidence_gt.value
+        assert trace["render_map"]["missing_weight_marker_bbox_px"] in out.annotation_gt.value["target_weight"]
 
-        assert "missing_weight_marker" in execution["evidence_entity_ids"]
+        assert set(execution["annotation_entity_ids"]) == {"known_weights", "target_weight"}
+        assert "missing_weight_marker" in execution["witness_entity_ids"]
 
         assert execution["placeholder_side"] in {"left", "right"}
-        assert len(out.evidence_gt.value) == len(execution["relevant_weight_ids"])
-        assert len(out.evidence_gt.value) >= 2
+        flattened_annotation = [box for boxes in out.annotation_gt.value.values() for box in boxes]
+        assert len(flattened_annotation) == len(execution["relevant_weight_ids"])
+        assert len(flattened_annotation) >= 2
     else:
 
         assert str(execution["internal_query_id"]) in {"left_torque", "right_torque"}
 
-        assert len(out.evidence_gt.value) == len(execution["relevant_weight_ids"])
+        assert len(out.annotation_gt.value) == len(execution["relevant_weight_ids"])
 
-        assert len(out.evidence_gt.value) >= 1
+        assert len(out.annotation_gt.value) >= 1
         queried_side = str(execution["torque_side"])
         for spec in execution["weight_specs"]:
             if bool(spec["relevant_to_query"]):
@@ -112,7 +118,7 @@ def test_physics_mechanics_missing_weight_balance_value_is_deterministic() -> No
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 

@@ -129,8 +129,8 @@ def test_chart_composition_variants_match_contract(query_id: str, scene_variant:
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "keyed_point_map"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "keyed_point_map"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) == str(scene_variant)
     assert str(render["scene_variant"]) == str(scene_variant)
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -140,16 +140,16 @@ def test_chart_composition_variants_match_contract(query_id: str, scene_variant:
     assert all(int(panel["total"]) % 100 == 0 for panel in execution["panels"])
     assert int(out.answer_gt.value) == int(execution["answer_value"])
     assert int(out.answer_gt.value) == _expected_answer(execution)
-    assert "integer_list" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["type"] == "keyed_point_map"
-    assert trace["projected_evidence"]["keyed_point_map"] == dict(out.evidence_gt.value)
-    assert trace["projected_evidence"]["pixel_keyed_point_map"] == dict(out.evidence_gt.value)
-    assert len(out.evidence_gt.value) == len(execution["evidence_point_keys"])
-    for x_coord, y_coord in out.evidence_gt.value.values():
+    assert "integer_list" not in trace["projected_annotation"]
+    assert trace["projected_annotation"]["type"] == "keyed_point_map"
+    assert trace["projected_annotation"]["keyed_point_map"] == dict(out.annotation_gt.value)
+    assert trace["projected_annotation"]["pixel_keyed_point_map"] == dict(out.annotation_gt.value)
+    assert len(out.annotation_gt.value) == len(execution["annotation_point_keys"])
+    for x_coord, y_coord in out.annotation_gt.value.values():
         assert 0 <= float(x_coord) <= int(render["canvas_width"])
         assert 0 <= float(y_coord) <= int(render["canvas_height"])
-    assert {tuple(point) for point in trace["projected_evidence"]["point_set"]} == {
-        tuple(point) for point in out.evidence_gt.value.values()
+    assert {tuple(point) for point in trace["projected_annotation"]["point_set"]} == {
+        tuple(point) for point in out.annotation_gt.value.values()
     }
     assert len(trace["scene_ir"]["entities"]) == int(execution["panel_count"]) * int(execution["segment_count"])
     assert str(trace["query_spec"]["query_id"]) == str(query_id)
@@ -199,7 +199,7 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
     task = ChartsCompositionSmallMultiplesAggregateValueTask()
     expected = {
         "top_k_by_segment_then_sum_other_segment_count": {
-            "evidence": {
+            "annotation": {
                 "rank|2020|A": [230, 250],
                 "target|2020|B": [260, 280],
                 "total|2020": [245, 110],
@@ -210,7 +210,7 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
             "answer": 780,
         },
         "conditioned_panel_sum_from_percent": {
-            "evidence": {
+            "annotation": {
                 "condition|2020|A": [210, 260],
                 "target|2020|B": [240, 290],
                 "total|2020": [225, 110],
@@ -221,7 +221,7 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
             "answer": 720,
         },
         "average_top_k_minus_average_bottom_k": {
-            "evidence": {
+            "annotation": {
                 "rank|2020|A": [220, 240],
                 "target|2020|B": [240, 260],
                 "rank|2021|A": [460, 260],
@@ -234,7 +234,7 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
             "answer": 20,
         },
         "composition_shift_l1_distance": {
-            "evidence": {
+            "annotation": {
                 "start|2020|A": [240, 250],
                 "end|2023|A": [620, 250],
                 "start|2020|B": [240, 310],
@@ -245,9 +245,9 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
     }
     for index, query_id in enumerate(expected, start=30200):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -266,8 +266,10 @@ def test_chart_composition_rejects_non_small_multiple_scene_variants() -> None:
 
 
 def test_chart_composition_task_is_registered_and_deterministic() -> None:
-    assert "task_charts__small_multiple__aggregate_value" in TASK_REGISTRY
-    assert "task_charts__small_multiple__difference_value" in TASK_REGISTRY
+    assert "task_charts__small_multiple__top_k_by_segment_then_sum_other_segment_count" in TASK_REGISTRY
+    assert "task_charts__small_multiple__conditioned_panel_sum_from_percent" in TASK_REGISTRY
+    assert "task_charts__small_multiple__average_top_k_minus_average_bottom_k" in TASK_REGISTRY
+    assert "task_charts__small_multiple__composition_shift_l1_distance" in TASK_REGISTRY
     task = ChartsCompositionSmallMultiplesAggregateValueTask()
     params = {
         "query_id": "composition_shift_l1_distance",
@@ -277,7 +279,7 @@ def test_chart_composition_task_is_registered_and_deterministic() -> None:
     out_b = task.generate(30400, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -388,6 +390,15 @@ def _expected_share_arithmetic_answer(trace: dict) -> int:
         selected_share = int(sum(values_by_label[str(labels[index])] for index in selected_indices))
         assert int(trace["selected_share_value"]) == int(selected_share)
         return int(int(trace["total_count"]) * int(selected_share) // 100)
+    if variant == "subset_denominator_share_value":
+        selected_share = int(sum(values_by_label[str(label)] for label in trace["category_list"]))
+        target_share = int(values_by_label[str(trace["target_category"])])
+        assert int(trace["selected_share_value"]) == int(selected_share)
+        assert int(trace["subset_share_total"]) == int(selected_share)
+        assert int(trace["target_share_value"]) == int(target_share)
+        assert str(trace["target_category"]) in {str(label) for label in trace["category_list"]}
+        assert (100 * int(target_share)) % int(selected_share) == 0
+        return int(100 * int(target_share) // int(selected_share))
     if variant == "chart_order_remaining_count":
         labels = [str(label) for label in trace["chart_order_labels"]]
         start = labels.index(str(trace["start_category"]))
@@ -485,13 +496,14 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
         "positional_segment_share_sum",
         "chart_order_share_to_count",
         "chart_order_remaining_count",
+        "subset_denominator_share_value",
         "sector_share_to_angle",
         "chart_order_adjacent_transfer_gap",
     }
     transfer_variants = {
         "chart_order_adjacent_transfer_gap",
     }
-    part_whole_variants = {
+    chart_order_part_whole_variants = {
         "chart_order_share_to_count",
         "chart_order_remaining_count",
         "sector_share_to_angle",
@@ -515,8 +527,8 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "keyed_point_map"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "keyed_point_map"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) == str(scene_variant)
     assert str(render["scene_variant"]) == str(scene_variant)
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -526,11 +538,18 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
         assert int(execution["span_count"]) < int(execution["category_count"])
     elif query_id in transfer_variants:
         assert 4 <= int(execution["category_count"]) <= 8
-    elif query_id in part_whole_variants:
+    elif query_id in chart_order_part_whole_variants:
         assert 4 <= int(execution["category_count"]) <= 8
         assert int(execution["span_count"]) < int(execution["category_count"])
         if query_id == "sector_share_to_angle":
             assert int(execution["sector_angle_degrees"]) != 360
+    elif query_id == "subset_denominator_share_value":
+        assert 4 <= int(execution["category_count"]) <= 8
+        assert 2 <= int(execution["subset_size"]) <= 4
+        assert int(execution["subset_size"]) < int(execution["category_count"])
+        assert set(execution["annotation_labels"]) == {str(label) for label in execution["category_list"]}
+        assert str(execution["target_category"]) in {str(label) for label in execution["category_list"]}
+        assert int(out.answer_gt.value) == int(execution["subset_denominator_percent"])
     elif query_id == "positional_segment_share_sum":
         assert int(execution["category_count"]) in {4, 6, 8}
     else:
@@ -539,16 +558,16 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_id: st
     assert execution["table_order_labels"] == sorted(execution["chart_order_labels"])
     assert int(out.answer_gt.value) == int(execution["answer_value"])
     assert int(out.answer_gt.value) == _expected_share_arithmetic_answer(execution)
-    assert trace["projected_evidence"]["type"] == "keyed_point_map"
-    assert trace["projected_evidence"]["keyed_point_map"] == dict(out.evidence_gt.value)
-    assert trace["projected_evidence"]["pixel_keyed_point_map"] == dict(out.evidence_gt.value)
-    assert len(out.evidence_gt.value) == len(execution["evidence_keys"])
-    assert set(out.evidence_gt.value) == set(execution["evidence_keys"])
-    assert len(trace["projected_evidence"]["point_set"]) == len(execution["evidence_labels"])
-    assert len(trace["projected_evidence"]["bbox_set"]) == len(execution["evidence_labels"])
-    assert len(execution["evidence_values"]) == len(execution["evidence_labels"])
-    for label, key in zip(execution["evidence_labels"], execution["evidence_keys"]):
-        point = out.evidence_gt.value[str(key)]
+    assert trace["projected_annotation"]["type"] == "keyed_point_map"
+    assert trace["projected_annotation"]["keyed_point_map"] == dict(out.annotation_gt.value)
+    assert trace["projected_annotation"]["pixel_keyed_point_map"] == dict(out.annotation_gt.value)
+    assert len(out.annotation_gt.value) == len(execution["annotation_keys"])
+    assert set(out.annotation_gt.value) == set(execution["annotation_keys"])
+    assert len(trace["projected_annotation"]["point_set"]) == len(execution["annotation_labels"])
+    assert len(trace["projected_annotation"]["bbox_set"]) == len(execution["annotation_labels"])
+    assert len(execution["annotation_values"]) == len(execution["annotation_labels"])
+    for label, key in zip(execution["annotation_labels"], execution["annotation_keys"]):
+        point = out.annotation_gt.value[str(key)]
         assert len(point) == 2
         assert 0 <= float(point[0]) <= int(render["canvas_width"])
         assert 0 <= float(point[1]) <= int(render["canvas_height"])
@@ -568,13 +587,14 @@ def test_chart_composition_share_arithmetic_balances_variants_and_scenes() -> No
     task = ChartsCompositionShareArithmeticValueTask()
     variants = []
     scenes = []
-    for index in range(72):
+    for index in range(112):
         out = task.generate(41100 + index, params={}, max_attempts=10)
         variants.append(str(out.query_id))
         scenes.append(str(out.trace_payload["execution_trace"]["scene_variant"]))
     query_id_counts = {variant: variants.count(variant) for variant in set(variants)}
     assert set(query_id_counts) == set(SHARE_ARITHMETIC_QUERY_IDS)
-    assert max(query_id_counts.values()) - min(query_id_counts.values()) <= 12
+    assert min(query_id_counts.values()) >= 8
+    assert max(query_id_counts.values()) - min(query_id_counts.values()) <= 24
     assert set(scenes) == {"pie", "donut"}
     for restricted_variant in set(SHARE_ARITHMETIC_QUERY_IDS):
         restricted_scenes = [
@@ -601,6 +621,7 @@ def test_chart_composition_share_arithmetic_decouples_category_count_from_varian
     for variant in {
         "chart_order_share_to_count",
         "chart_order_remaining_count",
+        "subset_denominator_share_value",
         "sector_share_to_angle",
         "chart_order_adjacent_transfer_gap",
     }:
@@ -614,7 +635,7 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
     task = ChartsCompositionShareArithmeticValueTask()
     expected = {
         "contiguous_chart_order_sum": {
-            "evidence": {
+            "annotation": {
                 "Aster": [565, 236],
                 "Birch": [716, 314],
                 "Cedar": [680, 472],
@@ -623,7 +644,7 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
             "answer": 42,
         },
         "positional_segment_share_sum": {
-            "evidence": {
+            "annotation": {
                 "Teal": [620, 235],
                 "Birch": [735, 365],
                 "Valley": [548, 500],
@@ -631,7 +652,7 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
             "answer": 31,
         },
         "chart_order_share_to_count": {
-            "evidence": {
+            "annotation": {
                 "Aster": [565, 236],
                 "Birch": [716, 314],
                 "Cedar": [680, 472],
@@ -639,15 +660,23 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
             "answer": 600,
         },
         "chart_order_remaining_count": {
-            "evidence": {
+            "annotation": {
                 "Aster": [565, 236],
                 "Birch": [716, 314],
                 "Cedar": [680, 472],
             },
             "answer": 900,
         },
+        "subset_denominator_share_value": {
+            "annotation": {
+                "Aster": [565, 236],
+                "Birch": [716, 314],
+                "Cedar": [680, 472],
+            },
+            "answer": 40,
+        },
         "sector_share_to_angle": {
-            "evidence": {
+            "annotation": {
                 "Aster": [565, 236],
                 "Birch": [716, 314],
                 "Cedar": [680, 472],
@@ -655,7 +684,7 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
             "answer": 108,
         },
         "chart_order_adjacent_transfer_gap": {
-            "evidence": {
+            "annotation": {
                 "Ruby": [590, 250],
                 "Crimson": [740, 380],
             },
@@ -664,9 +693,9 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
     }
     for index, query_id in enumerate(expected, start=41300):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -684,7 +713,11 @@ def test_chart_composition_share_arithmetic_rejects_unsupported_scene_variant() 
 
 
 def test_chart_composition_share_arithmetic_task_is_registered_and_deterministic() -> None:
-    assert "task_charts__part_whole__ordered_segment_value" in TASK_REGISTRY
+    assert "task_charts__part_whole__contiguous_chart_order_sum" in TASK_REGISTRY
+    assert "task_charts__part_whole__positional_segment_share_sum" in TASK_REGISTRY
+    assert "task_charts__part_whole__chart_order_share_to_count" in TASK_REGISTRY
+    assert "task_charts__part_whole__subset_denominator_share_value" in TASK_REGISTRY
+    assert "task_charts__part_whole__sector_share_to_angle" in TASK_REGISTRY
     assert "task_charts__part_whole__adjacent_transfer_gap_value" in TASK_REGISTRY
     task = ChartsCompositionShareArithmeticValueTask()
     params = {
@@ -695,7 +728,7 @@ def test_chart_composition_share_arithmetic_task_is_registered_and_deterministic
     out_b = task.generate(41500, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

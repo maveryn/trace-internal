@@ -173,7 +173,7 @@ def draw_coordinate_panel_grid(
         font=label_font,
         fill=tuple(int(value) for value in resolved_style.text_color),
         stroke_fill=tuple(int(value) for value in resolved_style.text_stroke_color),
-        stroke_width=2,
+        stroke_width=1,
     )
 
     grid_min = int(config.grid_min)

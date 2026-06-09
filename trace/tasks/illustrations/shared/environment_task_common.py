@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
-from ....core.sampling import normalize_positive_weights
 from ...shared.config_defaults import group_default
 from .environment_object_scene import (
     ENVIRONMENT_THEME_IDS,
@@ -13,7 +12,9 @@ from .environment_object_scene import (
     effective_environment_object_count,
     environment_scene_entities,
 )
-from .object_library import STYLE_IDS, serialize_object
+from .object_library import STYLE_IDS
+from .object_rendering import serialize_rendered_illustration_object
+from .style_registry import resolve_art_style_weights
 
 
 FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
@@ -34,10 +35,7 @@ ENVIRONMENT_SETTING_NAMES: Dict[str, str] = {
 
 
 def style_weights(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> Dict[str, float]:
-    raw = params.get("style_weights", group_default(render_defaults, "style_weights", {style: 1.0 for style in STYLE_IDS}))
-    if not isinstance(raw, Mapping):
-        raise ValueError("style_weights must be a mapping")
-    return normalize_positive_weights({str(key): float(value) for key, value in raw.items()}, default_keys=STYLE_IDS)
+    return resolve_art_style_weights(params, render_defaults, style_ids=STYLE_IDS)
 
 
 def environment_render_params(
@@ -106,7 +104,7 @@ def target_feature(scene: RenderedEnvironmentObjectScene, feature_type: str) -> 
 
 
 def serialize_environment_objects(scene: RenderedEnvironmentObjectScene) -> tuple[list[dict[str, Any]], Dict[str, list[float]], Dict[str, list[float]]]:
-    serialized_objects = [serialize_object(obj) for obj in scene.objects]
+    serialized_objects = [serialize_rendered_illustration_object(obj) for obj in scene.objects]
     object_bboxes = {str(obj["object_id"]): list(obj["bbox"]) for obj in serialized_objects}
     part_bboxes = {
         str(part["part_id"]): list(part["bbox"])

@@ -16,16 +16,16 @@
    - option labels: exactly six options `A..F`
    - rotations are allowed when testing whether an option fits.
 
-## Answer And Evidence
+## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label on the correct 2x2 option panel.
-3. `evidence_gt.type = bbox_set`
-4. Evidence contains bboxes for the correct option panel and the black 2x2 missing-region.
+3. `annotation_gt.type = bbox_set`
+4. Annotation contains bboxes for the correct option panel and the black 2x2 missing-region.
 
 ## Trace Contract
 1. `scene_ir.entities` includes one `pipe_flow_panel`, one `pipe_flow_missing_2x2_region`, one `pipe_flow_tile` per visible pipe/conduit tile, one `pipe_flow_start_marker`, one `pipe_flow_finish_flag`, and six `pipe_flow_option_panel` entities.
 2. Internal `render_map.item_bboxes_px` contains all option panel ids and the missing-region id used for verifier projection.
-3. Public review sidecars expose the projected pixel boxes through `evidence_gt` / `projected_evidence`; internal item ids may be sanitized from persisted `execution_trace`.
+3. Public review sidecars expose the projected pixel boxes through `annotation_gt` / `projected_annotation`; internal item ids may be sanitized from persisted `execution_trace`.
 4. `execution_trace.tiles` records each visible tile's current openings, required path openings, and whether it belongs to the main path or an offshoot branch.
 5. Offshoot branches are generated from the main path and terminate on a grid side; `execution_trace.branch_terminal_cells` records those side cells.
 6. `execution_trace.option_specs` records the six 2x2 option pieces, records that rotation is allowed, and identifies the unique correct option under rotation.

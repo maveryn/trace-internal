@@ -18,8 +18,7 @@ Guidance:
    - paper-fold spatial tasks should usually rise with more marks, a higher fraction of marks that originate on the folded side, and option sets that contain stronger near-miss reflections.
    - cube-removal spatial tasks should usually rise with the original footprint size, total cube count, maximum height, removal count, and how many distinct columns changed between the left and right structures.
    - topology bead-loop tasks should usually rise with option count, bead count, how many valid options must be counted, and whether the identity depends on color only, shape only, or a mixed color+shape token.
-   - cell-board tasks should usually rise with board area, obstacle/color-region count, path length or component count, and the size of the evidence set or path.
+   - cell-board tasks should usually rise with board area, obstacle/color-region count, path length or component count, and the size of the annotation set or path.
 4. Use `scene_variant_load` only when the task genuinely supports multiple visible scene grammars inside the same task.
 5. If a later puzzle family uses only one stable presentation, give `scene_variant_load` zero weight for that task/family instead of inventing fake variation.
-6. Cell-board tasks should usually rise with board area, obstacle/color-region count, path length or component count, and the size of the evidence set or path.
-7. Clock tasks should usually rise with minute-grid difficulty, hand-angle separation, offset size, direct-readout versus transformed readout, and any visual clutter that affects clock-hand reading.
+6. Cell-board tasks should usually rise with board area, obstacle/color-region count, path length or component count, and the size of the annotation set or path.

@@ -4,37 +4,24 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query id: `default`
-5. Query id: `circle_inequality_panel_match`, `vertical_strip_panel_match`, `horizontal_halfplane_panel_match`, or `two_inequality_panel_match`
-6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+5. Query id: `circle_inequality_panel_match`, `horizontal_halfplane_panel_match`, `two_inequality_panel_match`, `vertical_strip_panel_match`
+6. Answer schema: `option_letter`
+7. Annotation schema: `bbox_set`
+
+## Program Contract
+- `label(select_panel(candidate_region_panels, condition_box, region_rule_family)); scene=coordinate_plane; scope=locus_panel_match_label`
 
 ## Prompt Bundle
-- Bundle id: `geometry_coordinate_locus_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Choose the labeled mini coordinate panel whose shaded region matches the
-condition shown in the condition box.
-
-Each image contains six coordinate panels. The target panel has the exact
-circle inequality, strip, half-plane, or two-inequality intersection described
-by the condition box. Distractor panels use related but nonmatching regions,
-such as shifted strips, opposite half-planes, shifted circles, or rings.
-
-## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected
-panel. This is a visual-option witness: the answer is one of the rendered
-mini coordinate panels, and each panel's semantic region specification and
-answer flag are recorded in trace metadata.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt
-bundle version. Query IDs, panel labels, region specs, prompt bundle IDs, and
-render choices are recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/coordinate.yaml`
-- Prompt bundle: `prompts/geometry/coordinate/geometry_coordinate_locus_v0.json`
 - Task module: `trace/tasks/geometry/coordinate/locus_region.py`

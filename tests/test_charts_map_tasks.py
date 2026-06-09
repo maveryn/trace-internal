@@ -12,14 +12,37 @@ from trace.tasks.charts.map.choropleth_region_label import (
     SUPPORTED_ADJACENT_QUERY_IDS,
     SUPPORTED_REGION_VALUE_QUERY_IDS,
     SUPPORTED_WORLD_FILTERED_QUERY_IDS,
-    ChartsMapAdjacentConditionCountTask,
-    ChartsMapContinentFilteredCountTask,
+    ChartsMapAdjacentCategoryCountTask,
+    ChartsMapAdjacentNumericThresholdCountTask,
+    ChartsMapAdjacentSameCategoryCountTask,
+    ChartsMapCategoricalRegionCountTask,
+    ChartsMapContinentCategoryRegionCountTask,
+    ChartsMapContinentRegionCountTask,
+    ChartsMapContinentThresholdRegionCountTask,
     ChartsMapGroupFilteredRegionValueTask,
-    ChartsMapLegendPredicateRegionCountTask,
     ChartsMapMarkerRegionExtremumLabelTask,
     ChartsMapMarkerRegionThresholdCountTask,
     ChartsMapNamedRegionSetTotalValueTask,
+    ChartsMapNumericIntervalRegionCountTask,
+    ChartsMapNumericThresholdRegionCountTask,
 )
+
+
+REGION_VALUE_TASKS = {
+    "numeric_threshold_region_count": ChartsMapNumericThresholdRegionCountTask,
+    "numeric_interval_region_count": ChartsMapNumericIntervalRegionCountTask,
+    "categorical_region_count": ChartsMapCategoricalRegionCountTask,
+}
+WORLD_FILTERED_TASKS = {
+    "continent_region_count": ChartsMapContinentRegionCountTask,
+    "continent_category_region_count": ChartsMapContinentCategoryRegionCountTask,
+    "continent_threshold_region_count": ChartsMapContinentThresholdRegionCountTask,
+}
+ADJACENT_TASKS = {
+    "adjacent_same_category_count": ChartsMapAdjacentSameCategoryCountTask,
+    "adjacent_category_count": ChartsMapAdjacentCategoryCountTask,
+    "adjacent_numeric_threshold_count": ChartsMapAdjacentNumericThresholdCountTask,
+}
 
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
@@ -39,20 +62,20 @@ def _assert_common_output(out) -> None:
     render = trace["render_spec"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) in {"synthetic_region_map", "geographic_region_map"}
     assert str(execution["question_format"]) == "map_region_count"
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["region_ids"]) == int(out.answer_gt.value)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert len(trace["projected_annotation"]["region_ids"]) == int(out.answer_gt.value)
     assert "background_style" in render
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
     assert "choropleth" not in out.prompt.lower()
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -67,7 +90,7 @@ def _expected_bin_count(execution: dict) -> int:
 
 @pytest.mark.parametrize("query_id", SUPPORTED_REGION_VALUE_QUERY_IDS)
 def test_chart_map_region_value_count_supports_synthetic_and_geographic_maps(query_id: str) -> None:
-    task = ChartsMapLegendPredicateRegionCountTask()
+    task = REGION_VALUE_TASKS[str(query_id)]()
     for scene_index, scene_variant in enumerate(("synthetic_region_map", "geographic_region_map")):
         out = task.generate(
             67100 + scene_index + SUPPORTED_REGION_VALUE_QUERY_IDS.index(query_id),
@@ -93,7 +116,7 @@ def test_chart_map_region_value_count_supports_synthetic_and_geographic_maps(que
 
 
 def test_chart_map_region_category_count_uses_shared_label_assets() -> None:
-    task = ChartsMapLegendPredicateRegionCountTask()
+    task = ChartsMapCategoricalRegionCountTask()
     out = task.generate(
         67200,
         params={"query_id": "categorical_region_count", "scene_variant": "geographic_region_map"},
@@ -113,13 +136,13 @@ def test_chart_map_region_category_count_uses_shared_label_assets() -> None:
         assert bin_spec["upper"] is None
         assert str(bin_spec["category"])
         assert dict(bin_spec["label_source"])["label_source_kind"] == "shared_label_manifest"
-    for region_id in trace["projected_evidence"]["region_ids"]:
+    for region_id in trace["projected_annotation"]["region_ids"]:
         assert str(_regions_by_id(execution)[str(region_id)]["category"]) == target_category
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_WORLD_FILTERED_QUERY_IDS)
 def test_chart_map_continent_filtered_count_uses_world_map_filter(query_id: str) -> None:
-    task = ChartsMapContinentFilteredCountTask()
+    task = WORLD_FILTERED_TASKS[str(query_id)]()
     out = task.generate(
         67250 + SUPPORTED_WORLD_FILTERED_QUERY_IDS.index(query_id),
         params={"query_id": query_id},
@@ -139,15 +162,15 @@ def test_chart_map_continent_filtered_count_uses_world_map_filter(query_id: str)
     continent = str(qparams["continent_label"])
     assert continent in {"Africa", "Asia", "Europe", "North America", "South America"}
     regions_by_id = _regions_by_id(execution)
-    evidence_ids = [str(region_id) for region_id in trace["projected_evidence"]["region_ids"]]
-    assert all(str(regions_by_id[region_id]["continent"]) == continent for region_id in evidence_ids)
+    annotation_ids = [str(region_id) for region_id in trace["projected_annotation"]["region_ids"]]
+    assert all(str(regions_by_id[region_id]["continent"]) == continent for region_id in annotation_ids)
 
     if str(query_id) == "continent_category_region_count":
         target_category = str(qparams["category_label"])
-        assert all(str(regions_by_id[region_id]["category"]) == target_category for region_id in evidence_ids)
+        assert all(str(regions_by_id[region_id]["category"]) == target_category for region_id in annotation_ids)
     elif str(query_id) == "continent_threshold_region_count":
         target_bins = {int(value) for value in qparams["target_bin_indices"]}
-        assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in evidence_ids)
+        assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in annotation_ids)
 
 
 def test_chart_map_named_region_set_total_value_sums_visible_labeled_regions() -> None:
@@ -157,17 +180,17 @@ def test_chart_map_named_region_set_total_value_sums_visible_labeled_regions() -
     execution = trace["execution_trace"]
     qparams = trace["query_spec"]["params"]
     regions_by_id = _regions_by_id(execution)
-    evidence_ids = [str(region_id) for region_id in trace["projected_evidence"]["region_ids"]]
+    annotation_ids = [str(region_id) for region_id in trace["projected_annotation"]["region_ids"]]
 
     assert out.query_id == "named_region_set_total_value"
     assert out.scene_id == "region_map"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert str(execution["question_format"]) == "map_region_value"
     assert str(qparams["region_set_label_list"])
-    assert evidence_ids == [str(region_id) for region_id in qparams["region_set_region_ids"]]
-    assert int(out.answer_gt.value) == sum(int(regions_by_id[region_id]["region_value"]) for region_id in evidence_ids)
-    assert all(str(regions_by_id[region_id]["region_label"]) for region_id in evidence_ids)
+    assert annotation_ids == [str(region_id) for region_id in qparams["region_set_region_ids"]]
+    assert int(out.answer_gt.value) == sum(int(regions_by_id[region_id]["region_value"]) for region_id in annotation_ids)
+    assert all(str(regions_by_id[region_id]["region_label"]) for region_id in annotation_ids)
     assert any(str(entity.get("entity_type")) == "map_region_value_label" for entity in trace["scene_ir"]["entities"])
 
 
@@ -178,20 +201,20 @@ def test_chart_map_group_filtered_region_value_uses_geographic_group_and_thresho
     execution = trace["execution_trace"]
     qparams = trace["query_spec"]["params"]
     regions_by_id = _regions_by_id(execution)
-    evidence_ids = [str(region_id) for region_id in trace["projected_evidence"]["region_ids"]]
+    annotation_ids = [str(region_id) for region_id in trace["projected_annotation"]["region_ids"]]
 
     assert out.query_id == "group_filtered_region_value"
     assert out.scene_id == "region_map"
     assert str(execution["scene_variant"]) == "geographic_region_map"
     assert str(execution["geographic_map_variant"]) == "world_countries"
     assert str(execution["question_format"]) == "map_region_value"
-    assert int(out.answer_gt.value) == sum(int(regions_by_id[region_id]["region_value"]) for region_id in evidence_ids)
+    assert int(out.answer_gt.value) == sum(int(regions_by_id[region_id]["region_value"]) for region_id in annotation_ids)
 
     continent = str(qparams["continent_label"])
     target_bins = {int(value) for value in qparams["target_bin_indices"]}
     assert continent in {"Africa", "Asia", "Europe", "North America", "South America"}
-    assert all(str(regions_by_id[region_id]["continent"]) == continent for region_id in evidence_ids)
-    assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in evidence_ids)
+    assert all(str(regions_by_id[region_id]["continent"]) == continent for region_id in annotation_ids)
+    assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in annotation_ids)
     for region_id in qparams["same_group_distractor_region_ids"]:
         if str(region_id) in regions_by_id:
             assert str(regions_by_id[str(region_id)]["continent"]) == continent
@@ -200,7 +223,7 @@ def test_chart_map_group_filtered_region_value_uses_geographic_group_and_thresho
 
 @pytest.mark.parametrize("query_id", SUPPORTED_ADJACENT_QUERY_IDS)
 def test_chart_map_adjacent_condition_count_uses_highlighted_reference(query_id: str) -> None:
-    task = ChartsMapAdjacentConditionCountTask()
+    task = ADJACENT_TASKS[str(query_id)]()
     out = task.generate(
         67400 + SUPPORTED_ADJACENT_QUERY_IDS.index(query_id),
         params={"query_id": query_id, "scene_variant": "geographic_region_map"},
@@ -216,43 +239,44 @@ def test_chart_map_adjacent_condition_count_uses_highlighted_reference(query_id:
     assert str(execution["scene_variant"]) == "synthetic_region_map"
     reference_region_id = str(qparams["reference_region_id"])
     assert bool(regions_by_id[reference_region_id]["is_reference_region"])
-    assert reference_region_id not in set(trace["projected_evidence"]["region_ids"])
-    assert set(trace["projected_evidence"]["region_ids"]).issubset(set(qparams["adjacent_neighbor_region_ids"]))
+    assert reference_region_id not in set(trace["projected_annotation"]["region_ids"])
+    assert set(trace["projected_annotation"]["region_ids"]).issubset(set(qparams["adjacent_neighbor_region_ids"]))
 
-    evidence_ids = [str(region_id) for region_id in trace["projected_evidence"]["region_ids"]]
+    annotation_ids = [str(region_id) for region_id in trace["projected_annotation"]["region_ids"]]
     if query_id == "adjacent_same_category_count":
         reference_category = str(regions_by_id[reference_region_id]["category"])
-        assert all(str(regions_by_id[region_id]["category"]) == reference_category for region_id in evidence_ids)
+        assert all(str(regions_by_id[region_id]["category"]) == reference_category for region_id in annotation_ids)
     elif query_id == "adjacent_category_count":
         target_category = str(qparams["category_label"])
-        assert all(str(regions_by_id[region_id]["category"]) == target_category for region_id in evidence_ids)
+        assert all(str(regions_by_id[region_id]["category"]) == target_category for region_id in annotation_ids)
     else:
         target_bins = {int(value) for value in qparams["target_bin_indices"]}
-        assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in evidence_ids)
+        assert all(int(regions_by_id[region_id]["bin_index"]) in target_bins for region_id in annotation_ids)
 
 
 def test_chart_map_tasks_prompt_examples_match_contract() -> None:
     expected = [
-        (ChartsMapLegendPredicateRegionCountTask, "numeric_interval_region_count", 4),
-        (ChartsMapLegendPredicateRegionCountTask, "categorical_region_count", 3),
+        (ChartsMapNumericIntervalRegionCountTask, "numeric_interval_region_count", 4),
+        (ChartsMapCategoricalRegionCountTask, "categorical_region_count", 3),
         (ChartsMapNamedRegionSetTotalValueTask, "named_region_set_total_value", 126),
-        (ChartsMapAdjacentConditionCountTask, "adjacent_same_category_count", 2),
+        (ChartsMapAdjacentSameCategoryCountTask, "adjacent_same_category_count", 2),
     ]
     for index, (task_cls, query_id, answer) in enumerate(expected, start=67500):
         out = task_cls().generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence["answer"] == answer
+        assert answer_and_annotation["answer"] == answer
         assert answer_only == {"answer": answer}
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_chart_map_task_sampling_covers_map_scene_types() -> None:
-    task = ChartsMapLegendPredicateRegionCountTask()
     scenes: Counter[str] = Counter()
     map_variants: Counter[str] = Counter()
     query_ids: Counter[str] = Counter()
     for index in range(24):
+        query_id = SUPPORTED_REGION_VALUE_QUERY_IDS[int(index) % len(SUPPORTED_REGION_VALUE_QUERY_IDS)]
+        task = REGION_VALUE_TASKS[str(query_id)]()
         out = task.generate(hash64(67600, "charts_map", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
         scenes[str(execution["scene_variant"])] += 1
@@ -260,7 +284,7 @@ def test_chart_map_task_sampling_covers_map_scene_types() -> None:
         if str(execution["scene_variant"]) == "geographic_region_map":
             map_variants[str(execution["geographic_map_variant"])] += 1
     assert set(scenes.keys()) == {"synthetic_region_map", "geographic_region_map"}
-    assert set(query_ids.keys()) == set(SUPPORTED_REGION_VALUE_QUERY_IDS).union({"categorical_region_count"})
+    assert set(query_ids.keys()) == set(SUPPORTED_REGION_VALUE_QUERY_IDS)
     assert set(map_variants.keys()).issubset({"world_countries", "usa_states", "eu_countries", "china_provinces"})
 
 
@@ -271,7 +295,7 @@ def test_chart_map_task_sampling_covers_map_scene_types() -> None:
         (ChartsMapMarkerRegionExtremumLabelTask, "marker_region_extremum_label", "string"),
     ],
 )
-def test_chart_map_marker_tasks_use_marker_bubble_evidence(task_cls, expected_query_id: str, expected_answer_type: str) -> None:
+def test_chart_map_marker_tasks_use_marker_bubble_annotation(task_cls, expected_query_id: str, expected_answer_type: str) -> None:
     task = task_cls()
     render_variant = "proportional_bubble"
     out = task.generate(
@@ -282,12 +306,12 @@ def test_chart_map_marker_tasks_use_marker_bubble_evidence(task_cls, expected_qu
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
-    projected = trace["projected_evidence"]
+    projected = trace["projected_annotation"]
 
     assert out.query_id == expected_query_id
     assert out.scene_id == "marker_map"
     assert out.answer_gt.type == expected_answer_type
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert str(execution["question_format"]) == "map_marker_query"
     assert str(execution["query_id"]) == expected_query_id
     assert str(trace["query_spec"]["params"]["marker_render_variant"]) == render_variant
@@ -295,17 +319,17 @@ def test_chart_map_marker_tasks_use_marker_bubble_evidence(task_cls, expected_qu
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
     assert projected["type"] == "bbox_set"
-    assert projected["bbox_set"] == out.evidence_gt.value
+    assert projected["bbox_set"] == out.annotation_gt.value
     assert projected["marker_bboxes_by_region"]
-    assert len(out.evidence_gt.value) == len(projected["region_ids"])
-    assert out.evidence_gt.value == [projected["bbox_map"][str(region_id)] for region_id in projected["region_ids"]]
-    assert len(out.evidence_gt.value) >= 1
+    assert len(out.annotation_gt.value) == len(projected["region_ids"])
+    assert out.annotation_gt.value == [projected["bbox_map"][str(region_id)] for region_id in projected["region_ids"]]
+    assert len(out.annotation_gt.value) >= 1
     assert "marker" in out.prompt.lower()
     assert "choropleth" not in out.prompt.lower()
     marker_label_entities = [
         entity for entity in trace["scene_ir"]["entities"] if str(entity.get("entity_type")) == "map_marker_label"
     ]
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),

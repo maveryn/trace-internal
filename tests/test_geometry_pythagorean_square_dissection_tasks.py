@@ -24,20 +24,18 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
     out = task.generate(58001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
 
     vertical_leg = trace["execution_trace"]["leg_vertical"]
     horizontal_leg = trace["execution_trace"]["leg_horizontal"]
@@ -65,7 +63,7 @@ def test_pythagorean_square_dissection_tasks_are_deterministic(task_cls) -> None
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert (
         out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     )
@@ -91,7 +89,7 @@ def test_pythagorean_square_dissection_tasks_support_every_explicit_query(
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_pythagorean_square_dissection_evidence_stays_inside_canvas(task_cls) -> None:
+def test_pythagorean_square_dissection_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(
@@ -100,7 +98,7 @@ def test_pythagorean_square_dissection_evidence_stays_inside_canvas(task_cls) ->
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value:
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
@@ -116,8 +114,8 @@ def test_pythagorean_square_dissection_tasks_reject_unknown_query_id() -> None:
 def test_pythagorean_square_dissection_target_orientation_varies() -> None:
     task = GeometryPythagoreanSquareAreaValueTask()
     orientations = set()
-    evidence_centers = set()
-    for index in range(8):
+    annotation_centers = set()
+    for index in range(16):
         out = task.generate(
             58101 + index,
             params={},
@@ -126,7 +124,7 @@ def test_pythagorean_square_dissection_target_orientation_varies() -> None:
         trace = out.trace_payload
         orientations.add(trace["render_spec"]["orientation"])
         x0, y0, x1, y1 = trace["render_map"]["label_bboxes"]["given_triangle_leg"]
-        evidence_centers.add((round((x0 + x1) / 20.0), round((y0 + y1) / 20.0)))
+        annotation_centers.add((round((x0 + x1) / 20.0), round((y0 + y1) / 20.0)))
 
     assert len(orientations) == 4
-    assert len(evidence_centers) >= 3
+    assert len(annotation_centers) >= 3

@@ -5,14 +5,25 @@
 2. Scene id: `region_map`
 3. Source implementation domain/group: `charts/map`
 4. Query id: `named_region_set_total_value`
-5. The prompt names a set of visible region labels; the answer is the sum of the printed integer values in those regions.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.map.choropleth_region_label.ChartsMapNamedRegionSetTotalValueTask`
 2. Prompt lookup domain/group: `charts/map`
-3. Generation is deterministic for the same seed, params, and task versions.
-4. Answers and evidence are verifier-backed by trace metadata, not image pixels.
+3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
+4. Answers and annotation are produced from the same metadata execution trace.
 
-## Evidence
-1. Evidence type: `bbox_set`.
-2. Boxes mark the named regions whose printed integer values are included in the total.
+## Annotation Contract
+1. Answer schema: `integer_value`.
+2. Annotation schema: `bbox_set`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `named_region_set_total_value` | `numeric.aggregate_sum` | `integer_value` | `bbox_set` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

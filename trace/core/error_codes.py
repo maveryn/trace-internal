@@ -48,3 +48,6 @@ PROMPT_UNRESOLVED_PLACEHOLDER = "prompt_unresolved_placeholder"
 
 TEXT_LEGIBILITY_INVALID = "text_legibility_invalid"
 TEXT_LEGIBILITY_CONTRAST_FAILED = "text_legibility_contrast_failed"
+
+MARKER_LEGIBILITY_INVALID = "marker_legibility_invalid"
+MARKER_LEGIBILITY_CONTRAST_FAILED = "marker_legibility_contrast_failed"

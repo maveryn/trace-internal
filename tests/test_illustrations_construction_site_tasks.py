@@ -24,7 +24,7 @@ _CONSTRUCTION_TASK_CASES = (
 
 
 @pytest.mark.parametrize(("task_id", "params", "seed_index"), _CONSTRUCTION_TASK_CASES)
-def test_construction_site_tasks_record_zone_label_font_and_projected_evidence(
+def test_construction_site_tasks_record_zone_label_font_and_projected_annotation(
     task_id: str,
     params: dict[str, object],
     seed_index: int,
@@ -49,9 +49,9 @@ def test_construction_site_tasks_record_zone_label_font_and_projected_evidence(
     assert zone_fonts
     assert all(zone_font == font_trace for zone_font in zone_fonts)
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     canvas_width, canvas_height = trace["render_spec"]["canvas_size"]
-    for x0, y0, x1, y1 in out.evidence_gt.value:
+    for x0, y0, x1, y1 in out.annotation_gt.value:
         assert 0.0 <= x0 < x1 <= float(canvas_width)
         assert 0.0 <= y0 < y1 <= float(canvas_height)
 

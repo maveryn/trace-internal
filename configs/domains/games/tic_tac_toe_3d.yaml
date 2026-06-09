@@ -1,0 +1,83 @@
+generation:
+  shared:
+    winning_move_query_id_weights:
+      x_winning_move_label: 1.0
+      o_winning_move_label: 1.0
+    layer_piece_count_query_id_weights:
+      x_piece_count_in_layer: 1.0
+      o_piece_count_in_layer: 1.0
+    layout_variant_weights:
+      vertical_perspective_stack: 1.0
+    style_variant_weights:
+      classic_grid: 1.0
+      paper_board: 1.0
+      arcade_blue: 1.0
+      mint_table: 1.0
+      charcoal_lines: 1.0
+    target_layer_weights:
+      top: 1.0
+      middle: 1.0
+      bottom: 1.0
+    balanced_query_id_sampling: true
+    balanced_layout_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_layer_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_option_count_sampling: true
+    balanced_answer_option_sampling: true
+    layer_piece_count_support: [0, 1, 2, 3, 4, 5, 6]
+    option_count_support: [4, 5, 6]
+rendering:
+  shared:
+    canvas_width: 760
+    canvas_height: 900
+    canvas_min_width_px: 580
+    canvas_min_height_px: 720
+    canvas_side_padding_px: 72
+    panel_margin_px: 38
+    panel_inner_padding_px: 36
+    cell_size_px: 104
+    cell_gap_px: 0
+    layer_gap_px: 52
+    skew_x_px: 40
+    skew_y_px: 20
+    mark_size_px: 66
+    option_font_size_px: 22
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    dynamic_canvas_size_enabled: true
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.32
+      game_reasoning: 0.42
+      ambiguity: 0.14
+      output_burden: 0.12
+prompt:
+  shared:
+    bundle_id: games_tic_tac_toe_3d_v0
+    scene_key: tic_tac_toe_3d_board
+    task_key: tic_tac_toe_3d_query
+    object_description_tic_tac_toe_3d: three stacked 3 by 3 layers of a 3D Tic-Tac-Toe board, ordered from top to bottom
+    tic_tac_toe_3d_winning_rule_text: A line can run within one layer, straight through the layers, diagonally across a face, or diagonally through all three layers.
+    annotation_hint_x_winning_move_label: set "annotation" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two X cells that support the winning line
+    answer_hint_x_winning_move_label: set "answer" to only the selected option letter
+    annotation_hint_o_winning_move_label: set "annotation" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two O cells that support the winning line
+    answer_hint_o_winning_move_label: set "answer" to only the selected option letter
+    annotation_hint_x_piece_count_in_layer: set "annotation" to an array containing [x, y] points at the centers of all X pieces in the requested layer
+    answer_hint_x_piece_count_in_layer: set "answer" to the number of X pieces in the requested layer
+    annotation_hint_o_piece_count_in_layer: set "annotation" to an array containing [x, y] points at the centers of all O pieces in the requested layer
+    answer_hint_o_piece_count_in_layer: set "answer" to the number of O pieces in the requested layer
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.15, 0.4]
+      downsample:
+        scale: [0.9, 0.97]
+      jpeg:
+        quality: [78.0, 94.0]
+      noise:
+        alpha: [0.015, 0.045]

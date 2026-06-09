@@ -1,20 +1,41 @@
 generation:
   shared:
-    candidate_label_pool: ["A", "B", "C", "D", "E", "F"]
+    candidate_label_pool:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    candidate_count_weights:
+      '4': 1.0
+      '6': 1.0
     candidate_slots:
-      - [6, 6]
-      - [13, 6]
-      - [6, 0]
-      - [13, 0]
-      - [6, -6]
-      - [13, -6]
+    - - 6
+      - 6
+    - - 13
+      - 6
+    - - 6
+      - 0
+    - - 13
+      - 0
+    - - 6
+      - -6
+    - - 13
+      - -6
     translation_vectors:
-      - [10, 0]
-      - [10, 4]
-      - [10, -4]
-      - [15, 0]
-      - [15, 4]
-      - [15, -4]
+    - - 10
+      - 0
+    - - 10
+      - 4
+    - - 10
+      - -4
+    - - 15
+      - 0
+    - - 15
+      - 4
+    - - 15
+      - -4
     translation_cue_gap_graph: 4
     candidate_min_gap_graph: 0.75
     reflection_axis_x: 0
@@ -31,7 +52,6 @@ generation:
         rotation_match: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_id_sampling: true
-
 rendering:
   shared:
     canvas_size_min: 720
@@ -45,7 +65,7 @@ rendering:
     label_font_size_max: 28
     label_stroke_width: 1
     label_stroke_width_min: 1
-    label_stroke_width_max: 2
+    label_stroke_width_max: 1
     object_label_offset_px: 14
     reference_label_gap_px: 20
     cue_label_gap_px: 18
@@ -55,20 +75,19 @@ rendering:
     cue_arrow_head_width_px: 14
     cue_point_radius_px: 4
     cue_line_padding_px: 18
-
 prompt:
   shared:
     bundle_id: geometry_transformation_v0
     scene_key: transformation_graph_scene
     task_key: transformation_query
-    object_description: a Reference polygon, one transformation cue, and six labeled candidate polygons A through F
-    evidence_hint_template: 'set "evidence" to an array of exactly {vertex_count} pixel points [x,y] for the winning polygon vertices'
-    answer_hint: 'set "answer" to the single-letter label of the correct polygon'
-
+    object_description: a Reference polygon, one transformation cue, and labeled candidate polygons
+    annotation_hint_template: set "annotation" to an array of exactly {vertex_count} pixel points [x,y] for the winning polygon
+      vertices
+    answer_hint: set "answer" to the single-letter label of the correct polygon
 complexity:
   shared:
     criteria_weights:
       visual_scan: 0.25
-      transformation_reasoning: 0.40
+      transformation_reasoning: 0.4
       ambiguity: 0.25
-      output_burden: 0.10
+      output_burden: 0.1

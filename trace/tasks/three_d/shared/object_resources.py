@@ -14,6 +14,7 @@ from typing import Dict, Mapping, Sequence, Tuple
 
 
 OBJECT_SCENE_ID = "object_scene"
+OBJECT_CLUSTER_SCENE_ID = "object_cluster"
 ROOM_SCENE_ID = "room"
 STREET_SCENE_ID = "street"
 WAREHOUSE_SCENE_ID = "warehouse"
@@ -93,9 +94,71 @@ OBJECT_SCENE_SMALL_SHAPE_TYPES: Tuple[str, ...] = (
     "pyramid",
     "wedge",
     "star_prism",
-    "hexagonal_prism",
     "half_cylinder",
 )
+OBJECT_CLUSTER_EXTRA_SHAPE_TYPES: Tuple[str, ...] = (
+    "pen",
+    "pencil",
+    "card",
+    "bookmark",
+    "packet",
+    "candy_disc",
+    "cd",
+    "berry",
+    "button",
+    "screw",
+    "paper_clip",
+    "hex_nut",
+    "plate",
+    "fork",
+    "spoon",
+    "bowl",
+    "basket",
+    "puzzle_piece",
+    "small_box",
+    "mini_chair",
+    "mini_table",
+    "heater",
+    "flower",
+    "towel",
+    "glass",
+    "jar",
+    "can",
+    "lid",
+    "tube",
+    "clip",
+    "socket",
+    "chess_piece",
+    "marker",
+    "hanger",
+    "light_bulb",
+    "egg",
+    "chili",
+    "paint_brush",
+    "paint_roller",
+    "stick",
+    "straw",
+    "ticket",
+    "marble",
+    "bead",
+    "dot",
+    "bolt",
+    "pillow",
+    "cushion",
+    "stool",
+    "bucket",
+    "tray",
+    "coaster",
+    "rose",
+    "tomato",
+    "peanut",
+    "coffee_bean",
+    "hook",
+    "bracket",
+    "tape_roll",
+    "bag",
+)
+OBJECT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES + OBJECT_CLUSTER_EXTRA_SHAPE_TYPES
 OBJECT_SCENE_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = (
     "arch",
     "table",
@@ -163,7 +226,6 @@ OBJECT_SCENE_NAME_BY_SHAPE_TYPE: Dict[str, str] = {
     "pyramid": "pyramid",
     "wedge": "ramp",
     "star_prism": "star",
-    "hexagonal_prism": "hexagon",
     "half_cylinder": "half cylinder",
     "arch": "arch",
     "table": "table",
@@ -180,6 +242,72 @@ OBJECT_SCENE_NAME_BY_SHAPE_TYPE: Dict[str, str] = {
     "sofa": "sofa",
     "barrel": "barrel",
     "chair": "chair",
+}
+OBJECT_CLUSTER_EXTRA_NAME_BY_SHAPE_TYPE: Dict[str, str] = {
+    "pen": "pen",
+    "pencil": "pencil",
+    "card": "card",
+    "bookmark": "bookmark",
+    "packet": "packet",
+    "candy_disc": "candy",
+    "cd": "CD",
+    "berry": "berry",
+    "button": "button",
+    "screw": "screw",
+    "paper_clip": "paper clip",
+    "hex_nut": "hex nut",
+    "plate": "plate",
+    "fork": "fork",
+    "spoon": "spoon",
+    "bowl": "bowl",
+    "basket": "basket",
+    "puzzle_piece": "puzzle piece",
+    "small_box": "small box",
+    "mini_chair": "chair",
+    "mini_table": "table",
+    "heater": "heater",
+    "flower": "flower",
+    "towel": "towel",
+    "glass": "glass",
+    "jar": "jar",
+    "can": "can",
+    "lid": "lid",
+    "tube": "tube",
+    "clip": "clip",
+    "socket": "socket",
+    "chess_piece": "chess piece",
+    "marker": "marker",
+    "hanger": "hanger",
+    "light_bulb": "light bulb",
+    "egg": "egg",
+    "chili": "chili",
+    "paint_brush": "paint brush",
+    "paint_roller": "paint roller",
+    "stick": "stick",
+    "straw": "straw",
+    "ticket": "ticket",
+    "marble": "marble",
+    "bead": "bead",
+    "dot": "dot",
+    "bolt": "bolt",
+    "pillow": "pillow",
+    "cushion": "cushion",
+    "stool": "stool",
+    "bucket": "bucket",
+    "tray": "tray",
+    "coaster": "coaster",
+    "rose": "rose",
+    "tomato": "tomato",
+    "peanut": "peanut",
+    "coffee_bean": "coffee bean",
+    "hook": "hook",
+    "bracket": "bracket",
+    "tape_roll": "tape roll",
+    "bag": "bag",
+}
+OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE: Dict[str, str] = {
+    **OBJECT_SCENE_NAME_BY_SHAPE_TYPE,
+    **OBJECT_CLUSTER_EXTRA_NAME_BY_SHAPE_TYPE,
 }
 OBJECT_SCENE_SMALL_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "sphere": (0.48, 0.48, 0.48),
@@ -230,8 +358,73 @@ OBJECT_SCENE_SMALL_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "pyramid": (0.58, 0.58, 0.58),
     "wedge": (0.70, 0.52, 0.54),
     "star_prism": (0.72, 0.72, 0.42),
-    "hexagonal_prism": (0.66, 0.66, 0.52),
     "half_cylinder": (0.72, 0.52, 0.50),
+}
+OBJECT_CLUSTER_EXTRA_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
+    "pen": (0.30, 1.10, 0.16),
+    "pencil": (0.32, 1.08, 0.18),
+    "card": (0.66, 0.88, 0.06),
+    "bookmark": (0.24, 0.94, 0.05),
+    "packet": (0.68, 0.80, 0.14),
+    "candy_disc": (0.42, 0.42, 0.12),
+    "cd": (0.54, 0.54, 0.08),
+    "berry": (0.34, 0.34, 0.34),
+    "button": (0.42, 0.42, 0.10),
+    "screw": (0.34, 0.92, 0.16),
+    "paper_clip": (0.34, 0.76, 0.06),
+    "hex_nut": (0.48, 0.48, 0.16),
+    "plate": (0.58, 0.58, 0.10),
+    "fork": (0.48, 0.82, 0.12),
+    "spoon": (0.34, 0.76, 0.14),
+    "bowl": (0.52, 0.52, 0.26),
+    "basket": (0.64, 0.58, 0.38),
+    "puzzle_piece": (0.54, 0.54, 0.10),
+    "small_box": (0.48, 0.42, 0.32),
+    "mini_chair": (0.66, 0.60, 0.72),
+    "mini_table": (0.72, 0.62, 0.46),
+    "heater": (0.70, 0.32, 0.48),
+    "flower": (0.58, 0.58, 0.68),
+    "towel": (0.70, 0.86, 0.08),
+    "glass": (0.42, 0.42, 0.62),
+    "jar": (0.46, 0.46, 0.60),
+    "can": (0.42, 0.42, 0.54),
+    "lid": (0.46, 0.46, 0.10),
+    "tube": (0.30, 0.88, 0.18),
+    "clip": (0.48, 0.62, 0.18),
+    "socket": (0.62, 0.52, 0.34),
+    "chess_piece": (0.58, 0.58, 0.78),
+    "marker": (0.38, 1.04, 0.20),
+    "hanger": (0.86, 0.22, 0.76),
+    "light_bulb": (0.54, 0.54, 0.70),
+    "egg": (0.50, 0.50, 0.58),
+    "chili": (0.36, 0.82, 0.18),
+    "paint_brush": (0.48, 0.92, 0.22),
+    "paint_roller": (0.64, 0.84, 0.24),
+    "stick": (0.18, 0.88, 0.12),
+    "straw": (0.26, 1.02, 0.12),
+    "ticket": (0.64, 0.86, 0.06),
+    "marble": (0.34, 0.34, 0.34),
+    "bead": (0.36, 0.36, 0.18),
+    "dot": (0.30, 0.30, 0.06),
+    "bolt": (0.36, 0.82, 0.20),
+    "pillow": (0.70, 0.62, 0.18),
+    "cushion": (0.62, 0.58, 0.16),
+    "stool": (0.60, 0.56, 0.52),
+    "bucket": (0.54, 0.54, 0.58),
+    "tray": (0.86, 0.66, 0.18),
+    "coaster": (0.46, 0.46, 0.08),
+    "rose": (0.54, 0.54, 0.68),
+    "tomato": (0.46, 0.46, 0.42),
+    "peanut": (0.42, 0.64, 0.20),
+    "coffee_bean": (0.38, 0.52, 0.16),
+    "hook": (0.46, 0.62, 0.42),
+    "bracket": (0.58, 0.52, 0.28),
+    "tape_roll": (0.58, 0.58, 0.18),
+    "bag": (0.58, 0.46, 0.62),
+}
+OBJECT_CLUSTER_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
+    **OBJECT_SCENE_SMALL_DIMENSIONS,
+    **OBJECT_CLUSTER_EXTRA_DIMENSIONS,
 }
 OBJECT_SCENE_CONTEXT_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "arch": (1.92, 0.66, 1.84),
@@ -318,8 +511,46 @@ SPATIAL_HEIGHT_SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, flo
     ("chair_seat", "chair", (2.32, 0.18)),
     ("shelf_top", "shelf", (1.46, 2.24)),
 )
-SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = ("sphere", "cube", "cylinder", "cone", "pyramid")
-SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = ("cube", "cylinder")
+SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
+    "sphere",
+    "cube",
+    "cylinder",
+    "cone",
+    "pyramid",
+    "wedge",
+    "torus",
+    "dice",
+    "apple",
+    "hat",
+    "helmet",
+    "mushroom",
+    "drum",
+)
+SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
+    "sphere",
+    "cube",
+    "cylinder",
+    "cone",
+    "pyramid",
+    "wedge",
+    "torus",
+    "dice",
+    "cup",
+    "bottle",
+    "drum",
+    "bell",
+    "trophy",
+    "lantern",
+    "candle",
+    "goblet",
+    "flask",
+    "clock",
+    "apple",
+    "cactus",
+    "hat",
+    "helmet",
+    "mushroom",
+)
 
 
 ROOM_QUERY_OBJECT_TYPE_BY_VARIANT: Dict[str, str] = {
@@ -949,6 +1180,19 @@ def _build_profiles() -> Tuple[ThreeDObjectProfile, ...]:
                 dimensions_xyz=OBJECT_SCENE_CONTEXT_DIMENSIONS[object_type],
             )
         )
+    for object_type in OBJECT_CLUSTER_SHAPE_TYPES:
+        profiles.append(
+            _make_profile(
+                source_scene=OBJECT_CLUSTER_SCENE_ID,
+                role="cluster_small_shape",
+                object_type=object_type,
+                display_name=OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE[object_type],
+                size_class="small",
+                renderer="object_scene_shape",
+                resource_kind="standalone",
+                dimensions_xyz=OBJECT_CLUSTER_DIMENSIONS[object_type],
+            )
+        )
     for object_type in (*ROOM_QUERY_TARGET_TYPES, *ROOM_EXTRA_WALL_TYPES):
         profiles.append(
             _make_profile(
@@ -1035,7 +1279,7 @@ def _build_profiles() -> Tuple[ThreeDObjectProfile, ...]:
                 display_name=STREET_OBJECT_NAMES[object_type],
                 size_class="large",
                 renderer="street_object",
-                resource_kind="standalone",
+                resource_kind="scene_support" if object_type in {"building", "store", "office_building"} else "standalone",
                 mounting="ground",
                 dimensions_xyz=STREET_OBJECT_BASE_DIMENSIONS[object_type],
             )
@@ -1066,7 +1310,7 @@ def _build_profiles() -> Tuple[ThreeDObjectProfile, ...]:
                 display_name=WAREHOUSE_OBJECT_NAMES[object_type],
                 size_class="large" if object_type in warehouse_large else "small",
                 renderer="warehouse_object",
-                resource_kind="standalone",
+                resource_kind="scene_support" if object_type == "shelf_rack" else "standalone",
                 mounting="floor",
                 dimensions_xyz=WAREHOUSE_OBJECT_BASE_DIMENSIONS[object_type],
             )
@@ -1088,6 +1332,7 @@ def _build_profiles() -> Tuple[ThreeDObjectProfile, ...]:
 
 
 THREE_D_OBJECT_PROFILES: Tuple[ThreeDObjectProfile, ...] = _build_profiles()
+_PROFILE_BY_ID: Dict[str, ThreeDObjectProfile] = {profile.profile_id: profile for profile in THREE_D_OBJECT_PROFILES}
 
 
 def object_profiles(
@@ -1109,6 +1354,91 @@ def object_profiles(
     if resource_kind is not None:
         profiles = tuple(profile for profile in profiles if profile.resource_kind == str(resource_kind))
     return tuple(profiles)
+
+
+def object_profile_by_id(profile_id: str) -> ThreeDObjectProfile:
+    """Return one canonical object profile by stable profile id."""
+
+    try:
+        return _PROFILE_BY_ID[str(profile_id)]
+    except KeyError as exc:
+        raise KeyError(f"unknown three_d object profile_id: {profile_id}") from exc
+
+
+def object_profile_or_none(
+    *,
+    source_scene: str,
+    object_type: str,
+    role: str | None = None,
+    resource_kind: str | None = None,
+) -> ThreeDObjectProfile | None:
+    """Return one profile for a scene/object filter, or ``None`` when unavailable or ambiguous."""
+
+    matches = object_profiles(source_scene=str(source_scene), role=role, resource_kind=resource_kind)
+    matches = tuple(profile for profile in matches if profile.object_type == str(object_type))
+    if len(matches) != 1:
+        return None
+    return matches[0]
+
+
+def object_profile(
+    *,
+    source_scene: str,
+    object_type: str,
+    role: str | None = None,
+    resource_kind: str | None = None,
+) -> ThreeDObjectProfile:
+    """Return exactly one profile for a scene/object filter."""
+
+    profile = object_profile_or_none(
+        source_scene=str(source_scene),
+        object_type=str(object_type),
+        role=role,
+        resource_kind=resource_kind,
+    )
+    if profile is None:
+        role_text = f", role={role}" if role is not None else ""
+        kind_text = f", resource_kind={resource_kind}" if resource_kind is not None else ""
+        raise KeyError(f"expected one three_d object profile for scene={source_scene}, object_type={object_type}{role_text}{kind_text}")
+    return profile
+
+
+def scene_profile_ids(*, source_scene: str, role: str | None = None, resource_kind: str | None = None) -> Tuple[str, ...]:
+    """Return stable profile ids available to one scene/profile filter."""
+
+    return tuple(
+        profile.profile_id
+        for profile in object_profiles(source_scene=str(source_scene), role=role, resource_kind=resource_kind)
+    )
+
+
+def profile_display_name(
+    *,
+    source_scene: str,
+    object_type: str,
+    role: str | None = None,
+    fallback: str | None = None,
+) -> str:
+    """Return the prompt-facing display name for one scene object profile."""
+
+    profile = object_profile_or_none(source_scene=str(source_scene), role=role, object_type=str(object_type))
+    if profile is not None:
+        return str(profile.display_name)
+    if fallback is not None:
+        return str(fallback)
+    return str(object_type).replace("_", " ")
+
+
+def profile_dimensions_xyz(
+    *,
+    source_scene: str,
+    object_type: str,
+    role: str | None = None,
+) -> Tuple[float, ...] | None:
+    """Return profile dimensions for one scene object, when the registry owns them."""
+
+    profile = object_profile_or_none(source_scene=str(source_scene), role=role, object_type=str(object_type))
+    return tuple(float(value) for value in profile.dimensions_xyz) if profile is not None and profile.dimensions_xyz is not None else None
 
 
 def profiles_by_canonical_id() -> Mapping[str, Tuple[ThreeDObjectProfile, ...]]:

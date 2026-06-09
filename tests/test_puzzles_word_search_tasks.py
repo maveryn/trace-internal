@@ -25,7 +25,6 @@ def test_word_search_location_contract() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "word_search"
-    assert out.query_id == "default"
     assert out.query_id == "word_location_label"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value in "ABCDEFGH"
@@ -35,8 +34,8 @@ def test_word_search_location_contract() -> None:
     assert len(correct) == 1
     assert correct[0]["label"] == out.answer_gt.value
     assert correct[0]["direction_code"] in {"R", "L", "U", "D", "DR", "UR", "DL", "UL"}
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == len(trace["supporting_item_ids"])
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == len(trace["supporting_item_ids"])
 
 
 def test_word_search_letter_count_matches_trace() -> None:
@@ -46,12 +45,11 @@ def test_word_search_letter_count_matches_trace() -> None:
     grid_count = sum(1 for row in trace["grid"] for value in row if value == target)
 
     assert out.scene_id == "word_search"
-    assert out.query_id == "default"
     assert out.query_id == "letter_count_value"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == grid_count
     assert len(trace["supporting_item_ids"]) == grid_count
-    assert len(out.evidence_gt.value) == grid_count
+    assert len(out.annotation_gt.value) == grid_count
 
 
 def test_word_search_present_word_count_matches_trace() -> None:
@@ -59,14 +57,13 @@ def test_word_search_present_word_count_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "word_search"
-    assert out.query_id == "default"
     assert out.query_id == "present_word_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == len(trace["present_words"])
     assert len(trace["word_bank"]) == 5
     assert 1 <= out.answer_gt.value <= 5
     assert len(trace["placements"]) == out.answer_gt.value
-    assert len(out.evidence_gt.value) == len(trace["supporting_item_ids"])
+    assert len(out.annotation_gt.value) == len(trace["supporting_item_ids"])
 
 
 def test_word_search_generation_is_deterministic() -> None:

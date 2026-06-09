@@ -60,7 +60,7 @@ from ..shared.object_scene import (
 )
 
 
-TASK_ID = "task_three_d__object_scene__spatial_relation_count"
+TASK_ID = "task_three_d__object_scene__relation_attribute_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "on_top_of_reference_count",
     "under_reference_count",
@@ -80,7 +80,7 @@ UNDER_COUNTABLE_SHAPES: Tuple[str, ...] = (
     "wedge",
 )
 DISTRACTOR_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
-RELATION_SMALL_DIMENSION_SCALE = 0.94
+RELATION_SMALL_DIMENSION_SCALE = 0.62
 MIN_PROJECTED_OBJECT_AREA_PX = 420.0
 MAX_PAIRWISE_OVERLAP_PX = 3900.0
 
@@ -219,7 +219,12 @@ def _target_offsets(query_id: str, reference_spec: Mapping[str, Any], *, target_
         scale_x, scale_y = 0.32, 0.28
     else:
         scale_x, scale_y = 0.34, 0.30
-    base_offsets = [(-1.0, -0.55), (1.0, -0.55), (0.0, 0.55), (-0.16, 0.0)]
+    base_offsets = [
+        (-1.0, -0.55),
+        (1.0, -0.55),
+        (0.0, 0.55),
+        (0.0, -1.15),
+    ]
     return [
         (round(float(dx) * float(width) * float(scale_x), 4), round(float(dy) * float(depth) * float(scale_y), 4))
         for dx, dy in base_offsets[: int(target_count)]
@@ -240,6 +245,14 @@ def _distractor_slots() -> List[Tuple[float, float]]:
         (2.58, 0.02),
         (0.0, -2.72),
         (0.0, 2.58),
+        (-3.02, -0.92),
+        (3.02, 0.88),
+        (-2.98, 2.36),
+        (2.98, -2.28),
+        (-1.06, 2.92),
+        (1.10, -2.98),
+        (-3.08, 0.76),
+        (3.10, -0.78),
     ]
 
 
@@ -529,7 +542,7 @@ def _build_complexity(
             "under_reference_count": 0.62,
             "inside_reference_count": 0.66,
         }.get(str(query_id), 0.56),
-        "target_count": _normalize_unit(int(target_count), 1, 4),
+        "target_count": _normalize_unit(int(target_count), 0, 4),
         "scene_variant_load": {
             "floor_grid_room": 0.30,
             "tabletop_room": 0.34,
@@ -560,7 +573,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 
 @register_task
-class ThreeDSpatialRelationCountTask:
+class ThreeDObjectSceneRelationAttributeCountTask:
     """Count small objects in a spatial relation to one named prop."""
 
     task_id = TASK_ID
@@ -631,8 +644,8 @@ class ThreeDSpatialRelationCountTask:
             prefix="target_count",
             minimum_default=int(group_default(_GEN_DEFAULTS, "target_count_min", 2)),
             maximum_default=int(group_default(_GEN_DEFAULTS, "target_count_max", 3)),
-            lower=1,
-            upper=max(1, min(4, int(object_count) - 5)),
+            lower=0,
+            upper=max(0, min(4, int(object_count) - 5)),
         )
         reference_support = _reference_shape_support(str(query_id), target_count=int(target_count))
         explicit_reference_shape = params.get("reference_shape_type")
@@ -674,7 +687,7 @@ class ThreeDSpatialRelationCountTask:
             dataset=dataset,
             render_params=render_params,
             draw_candidate_labels=False,
-            compute_single_evidence=False,
+            compute_single_annotation=False,
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -683,7 +696,7 @@ class ThreeDSpatialRelationCountTask:
             default_config=_NOISE_DEFAULTS,
         )
         target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-        evidence_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+        annotation_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -695,7 +708,7 @@ class ThreeDSpatialRelationCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -708,14 +721,14 @@ class ThreeDSpatialRelationCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "reference_name": str(dataset["reference_object_name"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -725,7 +738,7 @@ class ThreeDSpatialRelationCountTask:
 
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             query_id=str(query_id),
@@ -827,10 +840,10 @@ class ThreeDSpatialRelationCountTask:
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "answer_value": int(answer_value),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -840,7 +853,7 @@ class ThreeDSpatialRelationCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -851,4 +864,4 @@ class ThreeDSpatialRelationCountTask:
         )
 
 
-__all__ = ["ThreeDSpatialRelationCountTask"]
+__all__ = ["ThreeDObjectSceneRelationAttributeCountTask"]

@@ -34,18 +34,6 @@ class PuzzleShapeComplementDefaults:
     transform_allowed_cutout_cell_count_min: int = 5
     shape_bbox_max_dim: int = 6
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 def _canonicalize_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
     """Shift one cell set so its minimum x/y is `(0, 0)`."""
 

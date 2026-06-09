@@ -33,13 +33,18 @@ from ..shared.environment_task_common import (
 )
 
 
-TASK_ID = "task_illustrations__environment__feature_relation_count"
+TASK_ID = "private_environment_feature_relation_count"
 SCENE_ID = "environment"
 QUERY_IDS: Tuple[str, ...] = (
     "feature_side_object_count",
     "on_feature_object_count",
     "crossing_feature_count",
 )
+PUBLIC_TASK_BY_QUERY: Dict[str, str] = {
+    "feature_side_object_count": "task_illustrations__environment__feature_side_object_count",
+    "on_feature_object_count": "task_illustrations__environment__on_feature_object_count",
+    "crossing_feature_count": "task_illustrations__environment__crossing_feature_count",
+}
 RELATION_SUPPORT: Tuple[str, ...] = ("above", "below")
 CROSSING_THEME_SUPPORT: Dict[str, Tuple[str, ...]] = {
     "bridge": ("river_meadow", "road_and_river", "canal_city"),
@@ -367,8 +372,7 @@ def _build_complexity(*, query_id: str, object_count: int, target_count: int, th
     )
 
 
-@register_task
-class IllustrationsCountingFeatureRelationObjectCountTask:
+class _FeatureRelationCountImpl:
     """Count environment objects or crossing features relative to roads/rivers."""
 
     task_id = TASK_ID
@@ -463,10 +467,10 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
         feature_bboxes = feature_bbox_map(scene)
         feature_paths = feature_path_map(scene)
         if choice.query_id == "crossing_feature_count":
-            evidence_value = sort_bboxes_by_ids(feature_bboxes, counted_feature_ids)
+            annotation_value = sort_bboxes_by_ids(feature_bboxes, counted_feature_ids)
             answer = int(len(counted_feature_ids))
         else:
-            evidence_value = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
+            annotation_value = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
             answer = int(len(counted_object_ids))
 
         prompt_defaults = required_group_defaults(
@@ -478,15 +482,15 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_feature_side",
-                "evidence_hint_feature_side",
+                "annotation_hint_feature_side",
                 "json_example_feature_side",
                 "json_example_answer_only_feature_side",
                 "answer_hint_on_feature",
-                "evidence_hint_on_feature",
+                "annotation_hint_on_feature",
                 "json_example_on_feature",
                 "json_example_answer_only_on_feature",
                 "answer_hint_crossing_feature",
-                "evidence_hint_crossing_feature",
+                "annotation_hint_crossing_feature",
                 "json_example_crossing_feature",
                 "json_example_answer_only_crossing_feature",
             ],
@@ -501,7 +505,7 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 relation_word=str(choice.relation),
                 feature_name=str(feature_name),
             )
-            evidence_hint = str(prompt_defaults["evidence_hint_feature_side"]).format(
+            annotation_hint = str(prompt_defaults["annotation_hint_feature_side"]).format(
                 relation_word=str(choice.relation),
                 feature_name=str(feature_name),
             )
@@ -509,7 +513,7 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_feature_side"])
         elif choice.query_id == "on_feature_object_count":
             answer_hint = str(prompt_defaults["answer_hint_on_feature"]).format(feature_phrase=str(feature_phrase))
-            evidence_hint = str(prompt_defaults["evidence_hint_on_feature"]).format(feature_phrase=str(feature_phrase))
+            annotation_hint = str(prompt_defaults["annotation_hint_on_feature"]).format(feature_phrase=str(feature_phrase))
             json_example = str(prompt_defaults["json_example_on_feature"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_on_feature"])
         else:
@@ -517,7 +521,7 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 crossing_name=str(crossing_name),
                 crossed_feature_name=str(crossed_feature_name),
             )
-            evidence_hint = str(prompt_defaults["evidence_hint_crossing_feature"]).format(
+            annotation_hint = str(prompt_defaults["annotation_hint_crossing_feature"]).format(
                 crossing_name=str(crossing_name),
                 crossed_feature_name=str(crossed_feature_name),
             )
@@ -535,7 +539,7 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(answer_hint),
-            "evidence_hint": str(evidence_hint),
+            "annotation_hint": str(annotation_hint),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         }
@@ -548,8 +552,8 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             query_key=str(choice.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         feature_id = str(feature.feature_id) if feature is not None else None
@@ -639,13 +643,13 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 "crossing_type": choice.crossing_type,
                 "answer": int(answer),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -661,4 +665,102 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
         )
 
 
-__all__ = ["IllustrationsCountingFeatureRelationObjectCountTask"]
+def _generate_public_feature_relation(
+    *,
+    public_task_id: str,
+    query_id: str,
+    instance_seed: int,
+    params: Dict[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    requested_query = params.get("query_id")
+    if requested_query is not None and str(requested_query) != str(query_id):
+        raise ValueError(f"query_id must be {query_id!r} for {public_task_id}")
+    branch_params = dict(params)
+    branch_params["query_id"] = str(query_id)
+    branch_params["query_id_support"] = [str(query_id)]
+    output = _FeatureRelationCountImpl().generate(
+        int(instance_seed),
+        params=branch_params,
+        max_attempts=int(max_attempts),
+    )
+    trace_payload = output.trace_payload
+    query_spec = trace_payload.setdefault("query_spec", {})
+    if isinstance(query_spec, dict):
+        query_spec["task_id"] = str(public_task_id)
+        query_spec["branch_id"] = str(query_id)
+    scene_ir = trace_payload.setdefault("scene_ir", {})
+    if isinstance(scene_ir, dict):
+        relations = scene_ir.setdefault("relations", {})
+        if isinstance(relations, dict):
+            relations["branch_id"] = str(query_id)
+    execution_trace = trace_payload.setdefault("execution_trace", {})
+    if isinstance(execution_trace, dict):
+        execution_trace["public_task_id"] = str(public_task_id)
+        execution_trace["branch_id"] = str(query_id)
+    output.trace_payload = trace_payload
+    return output
+
+
+@register_task
+class IllustrationsCountingFeatureSideObjectCountTask:
+    """Count foreground objects on one side of a road or river."""
+
+    task_id = PUBLIC_TASK_BY_QUERY["feature_side_object_count"]
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_feature_relation(
+            public_task_id=self.task_id,
+            query_id="feature_side_object_count",
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class IllustrationsCountingOnFeatureObjectCountTask:
+    """Count foreground objects located on/in a road or river feature."""
+
+    task_id = PUBLIC_TASK_BY_QUERY["on_feature_object_count"]
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_feature_relation(
+            public_task_id=self.task_id,
+            query_id="on_feature_object_count",
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class IllustrationsCountingCrossingFeatureCountTask:
+    """Count bridges or crosswalks crossing a road or river."""
+
+    task_id = PUBLIC_TASK_BY_QUERY["crossing_feature_count"]
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_feature_relation(
+            public_task_id=self.task_id,
+            query_id="crossing_feature_count",
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+__all__ = [
+    "IllustrationsCountingFeatureSideObjectCountTask",
+    "IllustrationsCountingOnFeatureObjectCountTask",
+    "IllustrationsCountingCrossingFeatureCountTask",
+]

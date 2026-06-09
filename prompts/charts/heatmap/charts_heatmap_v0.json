@@ -29,19 +29,29 @@
     "query:condition_run_extremum_label": [
       "condition_phrase"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:colorbar_above_threshold_cell_count": [
+      "threshold_value"
+    ],
+    "query:colorbar_below_threshold_cell_count": [
+      "threshold_value"
+    ],
+    "query:colorbar_interval_cell_count": [
+      "lower_bound",
+      "upper_bound"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -49,12 +59,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -87,6 +97,27 @@
       "Across all rows, which row contains the longest uninterrupted sequence of {condition_phrase} cells?",
       "Using the heatmap order from left to right, which row label has the longest run of {condition_phrase} cells?",
       "What row label corresponds to the longest consecutive streak of {condition_phrase} cells?"
+    ],
+    "colorbar_above_threshold_cell_count": [
+      "Using the colorbar scale, how many cells have values above {threshold_value}?",
+      "How many heatmap cells are above {threshold_value} according to the colorbar scale?",
+      "Count the cells whose color corresponds to a value greater than {threshold_value} on the colorbar.",
+      "Using the numeric colorbar, what is the number of cells with values above {threshold_value}?",
+      "How many cells fall above {threshold_value} on the displayed color scale?"
+    ],
+    "colorbar_below_threshold_cell_count": [
+      "Using the colorbar scale, how many cells have values below {threshold_value}?",
+      "How many heatmap cells are below {threshold_value} according to the colorbar scale?",
+      "Count the cells whose color corresponds to a value less than {threshold_value} on the colorbar.",
+      "Using the numeric colorbar, what is the number of cells with values below {threshold_value}?",
+      "How many cells fall below {threshold_value} on the displayed color scale?"
+    ],
+    "colorbar_interval_cell_count": [
+      "Using the colorbar scale, how many cells have values from {lower_bound} to {upper_bound}, inclusive?",
+      "How many heatmap cells fall between {lower_bound} and {upper_bound}, inclusive, according to the colorbar?",
+      "Count the cells whose color corresponds to a value in the inclusive interval {lower_bound} to {upper_bound}.",
+      "Using the numeric colorbar, what is the number of cells with values from {lower_bound} through {upper_bound}?",
+      "How many cells fall within the inclusive colorbar range {lower_bound} to {upper_bound}?"
     ]
   },
   "allow_empty_task_templates": true

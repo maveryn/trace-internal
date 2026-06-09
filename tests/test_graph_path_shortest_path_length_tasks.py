@@ -43,7 +43,7 @@ def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_sequence"
+    assert out.annotation_gt.type == "point_sequence"
     assert trace["scene_ir"]["scene_kind"] == "graph_shortest_path_length"
     assert execution["question_format"] == "count_edges_in_unique_shortest_path"
     assert out.query_id == "undirected_shortest_path_length"
@@ -52,15 +52,15 @@ def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
     assert execution["graph_directionality"] == "undirected"
     assert 5 <= int(execution["node_count"]) <= 15
     assert 3 <= int(execution["target_shortest_path_length"]) <= 8
-    evidence_labels = list(str(label) for label in execution["shortest_path_labels"])
-    evidence_path = list(out.evidence_gt.value)
-    assert int(out.answer_gt.value) == len(evidence_path) - 1
-    assert str(execution["source_label"]) == str(evidence_labels[0])
-    assert str(execution["goal_label"]) == str(evidence_labels[-1])
+    annotation_labels = list(str(label) for label in execution["shortest_path_labels"])
+    annotation_path = list(out.annotation_gt.value)
+    assert int(out.answer_gt.value) == len(annotation_path) - 1
+    assert str(execution["source_label"]) == str(annotation_labels[0])
+    assert str(execution["goal_label"]) == str(annotation_labels[-1])
     assert len(node_entities) == 8
     assert len(edge_entities) == int(execution["edge_count"])
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -79,19 +79,19 @@ def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
         dist_start=dist_start,
         dist_goal=dist_goal,
     )
-    assert reconstructed == evidence_labels
+    assert reconstructed == annotation_labels
     assert int(dist_start[str(execution["goal_label"])]) == int(out.answer_gt.value)
     assert int(count_start[str(execution["goal_label"])]) == 1
 
     assert trace["witness_symbolic"]["type"] == "node_path"
-    assert trace["witness_symbolic"]["nodes"] == evidence_labels
-    assert "label_path" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == evidence_path
-    assert trace["projected_evidence"]["pixel_point_sequence"] == evidence_path
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_path)
+    assert trace["witness_symbolic"]["nodes"] == annotation_labels
+    assert "label_path" not in trace["projected_annotation"]
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == annotation_path
+    assert trace["projected_annotation"]["pixel_point_sequence"] == annotation_path
+    assert len(trace["projected_annotation"]["pixel_bbox_set"]) == len(annotation_path)
     width, height = trace["render_spec"]["canvas_size"]
-    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_path)
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in annotation_path)
 
 
 def test_graph_path_directed_shortest_path_contract_matches_trace() -> None:
@@ -168,9 +168,9 @@ def test_graph_path_shortest_path_prompt_examples_follow_label_variant() -> None
         },
         max_attempts=80,
     )
-    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
-    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    expected_example = {"evidence": [[180, 220], [310, 180], [430, 260]], "answer": 2}
+    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_annotation"])
+    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_annotation"])
+    expected_example = {"annotation": [[180, 220], [310, 180], [430, 260]], "answer": 2}
     assert letters_example == expected_example
     assert numbers_example == expected_example
 

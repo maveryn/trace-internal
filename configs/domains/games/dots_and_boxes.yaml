@@ -12,6 +12,8 @@ generation:
       three_sided_box_count: 1.0
       capture_move_count: 1.0
       highlighted_candidate_capture_count: 1.0
+      player_a_owned_box_count: 1.0
+      player_b_owned_box_count: 1.0
     capture_move_query_id_weights:
       capture_move_count: 1.0
       highlighted_candidate_capture_count: 1.0
@@ -50,6 +52,16 @@ generation:
     - 3
     - 4
     - 5
+    owned_box_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
     candidate_edge_count_support:
     - 5
     - 6
@@ -90,17 +102,26 @@ prompt:
     task_key: dots_and_boxes_capture_query
     object_description_single_board: a dots-and-boxes grid with some edges already
       drawn
-    evidence_hint_three_sided_box_count: set "evidence" to a JSON array of bounding
-      boxes [x0, y0, x1, y1] for every box with exactly three drawn sides
+    annotation_hint_three_sided_box_count: set "annotation" to a JSON array of full-cell
+      bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides
     answer_hint_three_sided_box_count: set "answer" to the number of boxes with exactly
       three drawn sides
-    evidence_hint_capture_move_count: set "evidence" to a JSON array of bounding
-      boxes [x0, y0, x1, y1] for every missing edge that would complete at least
-      one box if drawn
+    annotation_hint_capture_move_count: set "annotation" to a JSON array of endpoint
+      point-pairs, with each endpoint as a pixel-space point [x, y], for every
+      missing edge that would complete at least one box if drawn
     answer_hint_capture_move_count: set "answer" to the number of missing edges that
       would complete at least one box if drawn
-    evidence_hint_highlighted_candidate_capture_count: set "evidence" to a JSON
-      array of bounding boxes [x0, y0, x1, y1] for every highlighted missing edge
-      that would complete at least one box if drawn
+    annotation_hint_highlighted_candidate_capture_count: set "annotation" to a JSON
+      array of endpoint point-pairs, with each endpoint as a pixel-space point
+      [x, y], for every highlighted missing edge that would complete at least
+      one box if drawn
     answer_hint_highlighted_candidate_capture_count: set "answer" to the number of
       highlighted missing edges that would complete at least one box if drawn
+    annotation_hint_player_a_owned_box_count: set "annotation" to a JSON array of full-cell
+      bounding boxes [x0, y0, x1, y1] for every box marked with player A
+    answer_hint_player_a_owned_box_count: set "answer" to the number of boxes marked
+      with player A
+    annotation_hint_player_b_owned_box_count: set "annotation" to a JSON array of full-cell
+      bounding boxes [x0, y0, x1, y1] for every box marked with player B
+    answer_hint_player_b_owned_box_count: set "answer" to the number of boxes marked
+      with player B

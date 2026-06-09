@@ -6,8 +6,6 @@ import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import (
     get_domain_defaults,
@@ -24,7 +22,6 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -32,13 +29,11 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.task_support import normalize_unit as _normalize_unit
-from ..shared.task_support import float_value as _float_value
-from ..shared.task_support import int_value as _int_value
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
+from ..shared.option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
 from ..shared.camera_projection import (
     CameraSpec as _CameraSpec,
     ProjectionFrame as _ProjectionFrame,
@@ -60,149 +55,6 @@ from ..shared.camera_projection import (
     vec_dot as _vec_dot,
     vec_norm as _vec_norm,
     vec_sub as _vec_sub,
-)
-from ..shared.object_scene_rendering import (
-    _bbox_union,
-    _draw_line,
-    _draw_room,
-    _shade,
-    _tint,
-    _object_vertices,
-    _draw_polyline,
-    _bbox_from_screen_points,
-    _project_face,
-    _face_distance,
-    _draw_box_object,
-    _sub_box_spec,
-    _draw_box_parts_object,
-    _draw_footprint_prism_object,
-    _star_footprint_points,
-    _hexagon_footprint_points,
-    _arrow_footprint_points,
-    _gear_footprint_points,
-    _draw_half_cylinder_object,
-    _draw_pyramid_object,
-    _draw_wedge_object,
-    _upright_profile_world_points,
-    _draw_upright_profile_object,
-    _heart_profile_points,
-    _draw_shield_object,
-    _draw_heart_object,
-    _draw_diamond_object,
-    _draw_sword_object,
-    _draw_key_object,
-    _draw_crown_object,
-    _draw_hourglass_object,
-    _draw_anchor_object,
-    _draw_horseshoe_object,
-    _draw_hammer_object,
-    _draw_bell_object,
-    _draw_trophy_object,
-    _draw_open_book_object,
-    _draw_dumbbell_object,
-    _draw_mushroom_object,
-    _draw_lantern_object,
-    _draw_wrench_object,
-    _oval_profile_points,
-    _draw_padlock_object,
-    _draw_magnifying_glass_object,
-    _draw_candle_object,
-    _draw_scroll_object,
-    _draw_paint_brush_object,
-    _draw_paint_palette_object,
-    _draw_goblet_object,
-    _draw_teapot_object,
-    _draw_watering_can_object,
-    _draw_basket_object,
-    _draw_mail_envelope_object,
-    _draw_camera_object,
-    _draw_compass_object,
-    _draw_flask_object,
-    _draw_test_tube_rack_object,
-    _draw_scroll_map_object,
-    _draw_microphone_object,
-    _draw_stopwatch_object,
-    _upright_screen_points,
-    _draw_apple_object,
-    _draw_carrot_object,
-    _draw_pear_object,
-    _draw_fish_object,
-    _draw_leaf_object,
-    _draw_feather_object,
-    _draw_shoe_object,
-    _draw_glove_object,
-    _draw_hat_object,
-    _draw_helmet_object,
-    _draw_cup_object,
-    _draw_bottle_object,
-    _draw_vase_object,
-    _draw_umbrella_object,
-    _draw_scissors_object,
-    _draw_screwdriver_object,
-    _draw_pencil_object,
-    _draw_spoon_object,
-    _draw_spatula_object,
-    _draw_toothbrush_object,
-    _draw_whistle_object,
-    _draw_flashlight_object,
-    _draw_calculator_object,
-    _draw_phone_object,
-    _draw_light_bulb_object,
-    _draw_suitcase_object,
-    _draw_dice_object,
-    _draw_rocket_object,
-    _draw_kite_object,
-    _draw_paint_can_object,
-    _draw_cactus_object,
-    _draw_pumpkin_object,
-    _draw_acorn_object,
-    _draw_pinecone_object,
-    _draw_seashell_object,
-    _draw_magnet_object,
-    _draw_guitar_object,
-    _draw_drum_object,
-    _draw_shovel_object,
-    _draw_saw_object,
-    _draw_pliers_object,
-    _draw_telescope_object,
-    _draw_ruler_object,
-    _draw_pickaxe_object,
-    _draw_paint_roller_object,
-    _draw_tape_measure_object,
-    _draw_remote_control_object,
-    _draw_plug_object,
-    _draw_wallet_object,
-    _draw_purse_object,
-    _draw_sunglasses_object,
-    _draw_violin_object,
-    _draw_trumpet_object,
-    _draw_donut_object,
-    _draw_pretzel_object,
-    _draw_lollipop_object,
-    _draw_ice_cream_cone_object,
-    _draw_soap_bar_object,
-    _draw_clock_object,
-    _radius_px_for_object,
-    _draw_sphere_object,
-    _draw_cylinder_object,
-    _draw_cone_object,
-    _draw_torus_object,
-    _draw_arch_object,
-    _draw_table_object,
-    _draw_shelf_object,
-    _draw_open_box_object,
-    _draw_refrigerator_object,
-    _draw_washing_machine_object,
-    _draw_vending_machine_object,
-    _draw_trash_bin_object,
-    _draw_bench_object,
-    _draw_piano_object,
-    _draw_locker_object,
-    _draw_cabinet_object,
-    _draw_sofa_object,
-    _draw_barrel_object,
-    _draw_chair_object,
-    _draw_option_label,
 )
 from ..shared.object_resources import (
     OBJECT_SCENE_CONTEXT_DIMENSIONS,
@@ -571,6 +423,10 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             instance_seed=int(instance_seed),
             camera_yaw_band=camera_yaw_band,
         )
+        dataset = apply_independent_prompt_colors_to_dataset(
+            dataset,
+            rng=spawn_rng(int(instance_seed), f"{TASK_ID}.prompt_colors"),
+        )
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
@@ -578,7 +434,14 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             params=params,
             default_config=_BACKGROUND_DEFAULTS,
         )
-        rendered_scene = render_object_scene_3d(background, dataset=dataset, render_params=render_params)
+        option_choices = build_text_option_choices(dataset["point_specs"])
+        rendered_scene = render_object_scene_3d(
+            background,
+            dataset=dataset,
+            render_params=render_params,
+            draw_candidate_labels=False,
+            option_choices=option_choices,
+        )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -596,7 +459,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -609,13 +472,13 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -625,8 +488,8 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.evidence_bboxes]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             query_id=str(query_id),
@@ -683,7 +546,9 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_height": int(image.height),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
@@ -698,6 +563,12 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 "room_bbox_px": list(rendered_scene.room_bbox_px),
                 "point_bboxes_px": {str(key): list(value) for key, value in rendered_scene.point_bboxes_px.items()},
                 "point_centers_px": {str(key): list(value) for key, value in rendered_scene.point_centers_px.items()},
+                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
+                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
+                "option_choice_bboxes_px": {
+                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
+                },
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
                 "object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.object_bboxes_px.items()},
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
                 "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
@@ -713,6 +584,11 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 "point_specs": [dict(spec) for spec in dataset["point_specs"]],
                 "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
                 "object_specs": [dict(spec) for spec in dataset["object_specs"]],
+                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
+                "option_descriptor_by_label": {
+                    str(choice["label"]): str(choice["descriptor"])
+                    for choice in rendered_scene.option_choices
+                },
                 "answer_label": str(answer_label),
                 "answer_point_id": str(dataset["answer_point_id"]),
                 "camera": dict(dataset["camera"]),
@@ -723,10 +599,10 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -736,7 +612,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

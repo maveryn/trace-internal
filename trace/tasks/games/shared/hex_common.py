@@ -13,6 +13,14 @@ BLUE = -1
 SUPPORTED_HEX_QUERY_IDS: Tuple[str, ...] = (
     "winning_move_cell_label",
     "connection_gap_count",
+    "red_neighbor_count",
+    "blue_neighbor_count",
+    "empty_neighbor_count",
+)
+HEX_NEIGHBOR_QUERY_IDS: Tuple[str, ...] = (
+    "red_neighbor_count",
+    "blue_neighbor_count",
+    "empty_neighbor_count",
 )
 SUPPORTED_HEX_SCENE_VARIANTS: Tuple[str, ...] = (
     "open_board",
@@ -47,11 +55,15 @@ class HexSample:
     answer: str | int
     target_answer: str | int
     candidate_specs: Tuple[HexCandidateSpec, ...]
-    evidence_coords: Tuple[Coord, ...]
+    annotation_coords: Tuple[Coord, ...]
     winning_move_coord: Coord | None
     min_gap_path: Tuple[Coord, ...]
     min_gap_empty_coords: Tuple[Coord, ...]
     construction_mode: str
+    reference_coord: Coord | None = None
+    reference_label: str | None = None
+    neighbor_target_state: str | None = None
+    neighbor_match_coords: Tuple[Coord, ...] = tuple()
 
 
 @dataclass(frozen=True)
@@ -284,7 +296,7 @@ def minimum_connection_gap_sets(
     """Return distinct minimum empty-cell sets that can complete the connection.
 
     The scalar answer for the gap-count task is the minimum number of empty cells.
-    Its public evidence is the set of empty cells that witnesses that count, so
+    Its public annotation is the set of empty cells that witnesses that count, so
     generation needs to reject boards with multiple distinct minimum gap sets.
     This search stops once `max_sets` distinct sets are found.
     """
@@ -416,7 +428,7 @@ def make_connection_path(*, rng, board_size: int, player_value: int) -> Tuple[Co
 
 
 def validate_hex_sample(sample: HexSample) -> None:
-    """Validate task answer and evidence contracts for one Hex sample."""
+    """Validate task answer and annotation contracts for one Hex sample."""
 
     board = tuple(tuple(int(value) for value in row) for row in sample.board)
     if len(board) != int(sample.board_size) or any(len(row) != int(sample.board_size) for row in board):
@@ -445,8 +457,8 @@ def validate_hex_sample(sample: HexSample) -> None:
             player_value=int(sample.player_value),
             move_coord=sample.winning_move_coord,
         )
-        if tuple(sample.evidence_coords) != tuple(path):
-            raise ValueError("Hex winning-move evidence must be one completed winning path")
+        if tuple(sample.annotation_coords) != tuple(path):
+            raise ValueError("Hex winning-move annotation must be one completed winning path")
         return
 
     if str(sample.query_id) == "connection_gap_count":
@@ -459,16 +471,46 @@ def validate_hex_sample(sample: HexSample) -> None:
         if int(gap_search.gap_count) != int(gap_count):
             raise ValueError("Hex gap-count gap-set search disagrees with shortest path cost")
         if len(gap_search.gap_sets) != 1:
-            raise ValueError("Hex gap-count board must have exactly one minimum empty-cell evidence set")
+            raise ValueError("Hex gap-count board must have exactly one minimum empty-cell annotation set")
         if tuple(sample.min_gap_path) != tuple(path):
             raise ValueError("Hex gap-count stored path does not match shortest path")
         empty_on_path = tuple(coord for coord in path if int(board[coord[0]][coord[1]]) == EMPTY)
         if sorted_coords(sample.min_gap_empty_coords) != tuple(gap_search.gap_sets[0]):
-            raise ValueError("Hex gap-count empty-cell evidence set mismatch")
+            raise ValueError("Hex gap-count empty-cell annotation set mismatch")
         if sorted_coords(empty_on_path) != tuple(gap_search.gap_sets[0]):
             raise ValueError("Hex gap-count stored path does not use the unique minimum gap set")
-        if sorted_coords(sample.evidence_coords) != tuple(gap_search.gap_sets[0]):
-            raise ValueError("Hex gap-count evidence must be the unique minimum empty-cell set")
+        if sorted_coords(sample.annotation_coords) != tuple(gap_search.gap_sets[0]):
+            raise ValueError("Hex gap-count annotation must be the unique minimum empty-cell set")
+        return
+
+    if str(sample.query_id) in HEX_NEIGHBOR_QUERY_IDS:
+        if sample.reference_coord is None:
+            raise ValueError("Hex neighbor-count sample is missing reference_coord")
+        reference_coord = (int(sample.reference_coord[0]), int(sample.reference_coord[1]))
+        if not (0 <= reference_coord[0] < int(sample.board_size) and 0 <= reference_coord[1] < int(sample.board_size)):
+            raise ValueError("Hex neighbor-count reference_coord is out of bounds")
+        adjacent = neighbors(reference_coord, board_size=int(sample.board_size))
+        if len(adjacent) != 6:
+            raise ValueError("Hex neighbor-count reference cell must have six adjacent cells")
+        target_value_by_query = {
+            "red_neighbor_count": RED,
+            "blue_neighbor_count": BLUE,
+            "empty_neighbor_count": EMPTY,
+        }
+        target_value = int(target_value_by_query[str(sample.query_id)])
+        expected = sorted_coords(
+            coord
+            for coord in adjacent
+            if int(board[coord[0]][coord[1]]) == int(target_value)
+        )
+        if int(sample.answer) != len(expected):
+            raise ValueError("Hex neighbor-count answer does not match adjacent-cell state count")
+        if sorted_coords(sample.annotation_coords) != expected:
+            raise ValueError("Hex neighbor-count annotation must be matching adjacent-cell centers")
+        if sorted_coords(sample.neighbor_match_coords) != expected:
+            raise ValueError("Hex neighbor-count stored match coords mismatch")
+        if reference_coord in expected:
+            raise ValueError("Hex neighbor-count annotation must not include the reference cell")
         return
 
     raise ValueError(f"unsupported Hex query_id: {sample.query_id}")
@@ -484,6 +526,7 @@ __all__ = [
     "HexCandidateSpec",
     "HexGapSetSearch",
     "HexSample",
+    "HEX_NEIGHBOR_QUERY_IDS",
     "SUPPORTED_HEX_PLAYER_COLORS",
     "SUPPORTED_HEX_QUERY_IDS",
     "SUPPORTED_HEX_SCENE_VARIANTS",

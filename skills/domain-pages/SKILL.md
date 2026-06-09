@@ -31,7 +31,7 @@ Use this whenever the task lives under `domain=pages`.
 ## Practical review checklist
 - Keep prompts explicit about the queried field, section, step, event, or control; do not rely on layout conventions alone.
 - Keep text typed and controlled; prefer normalization plus resampling over blind truncation.
-- Keep prompt-facing evidence local to the decisive field, section header, value, checkbox, control, route landmark, step, event, or schema witness.
-- For role-keyed page evidence, use concrete visible-role keys. Prefer names like `purchase_code`, `receiving_code`, `action_code_header`, `code_target_row`, `target_button`, or `endpoint_step` over generic keys like `context`, `guide_card`, `path_context`, or `target_control` when the scene has a specific witness type.
+- Keep prompt-facing annotation local to the decisive field, section header, value, checkbox, control, route landmark, step, event, or schema witness.
+- For role-keyed page annotation, use concrete visible-role keys. Prefer names like `purchase_code`, `receiving_code`, `action_code_header`, `code_target_row`, `target_button`, or `endpoint_step` over generic keys like `context`, `guide_card`, `path_context`, or `target_control` when the scene has a specific witness type.
 - Reuse one page grammar across families before adding a new scaffold.
 - Preserve the layout-first, OCR-light boundary; avoid drifting into long-form paragraph OCR or generic table-on-paper tasks.

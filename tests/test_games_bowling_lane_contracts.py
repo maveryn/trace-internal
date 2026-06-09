@@ -43,29 +43,29 @@ def test_games_bowling_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "string"
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.annotation_gt.value) == 1
     if expected_query == "spare_path_label":
-        assert out.evidence_gt.type == "point_pair_set"
-        assert trace["projected_evidence"]["point_pair_set"] == out.evidence_gt.value
+        assert out.annotation_gt.type == "point_pair_set"
+        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
     else:
-        assert out.evidence_gt.type == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert out.annotation_gt.type == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert out.query_id == expected_query
     assert out.scene_id == "bowling"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert len(execution["evidence_entity_ids"]) == 1
+    assert len(execution["annotation_entity_ids"]) == 1
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert float(trace["render_map"]["path_color_safety"]["min_path_anchor_lab_distance"]) >= 40.0
     assert len(trace["render_map"]["path_palette_rgb"]) >= 6
-    if out.evidence_gt.type == "bbox_set":
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+    if out.annotation_gt.type == "bbox_set":
+        for x0, y0, x1, y1 in out.annotation_gt.value:
             assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
             assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
     else:
-        for point_pair in out.evidence_gt.value:
+        for point_pair in out.annotation_gt.value:
             assert len(point_pair) == 2
             for x, y in point_pair:
                 assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
@@ -105,7 +105,7 @@ def test_games_bowling_first_pin_hit_label_matches_target_pin() -> None:
 
     assert str(out.answer_gt.value) == str(target_pin["label"]) == str(execution["target_pin_label"])
     assert str(first_hit) == target_id
-    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert list(execution["annotation_entity_ids"]) == [target_id]
     assert bool(target_pin["standing"]) is True
     assert 4 <= int(execution["visible_pin_count"]) <= 9
     assert len(execution["pins"]) == int(execution["visible_pin_count"])
@@ -124,14 +124,14 @@ def test_games_bowling_spare_path_label_matches_target_path() -> None:
     standing_pin_ids = {str(pin["pin_id"]) for pin in execution["pins"] if bool(pin["standing"])}
 
     assert str(out.answer_gt.value) == str(target_path["label"]) == str(execution["target_path_label"])
-    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert list(execution["annotation_entity_ids"]) == [target_id]
     assert set(execution["remaining_pin_ids"]) == standing_pin_ids
     assert len(standing_pin_ids) >= 1
     assert all(bool(pin["standing"]) for pin in execution["pins"])
     assert len(execution["pins"]) == len(standing_pin_ids)
     assert target_id in out.trace_payload["render_map"]["motion_paths_px"]
-    assert out.evidence_gt.type == "point_pair_set"
-    assert out.evidence_gt.value == [out.trace_payload["render_map"]["path_point_pairs_px"][target_id]]
+    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.value == [out.trace_payload["render_map"]["path_point_pairs_px"][target_id]]
 
 
 def test_games_bowling_build_smoke(tmp_path: Path) -> None:

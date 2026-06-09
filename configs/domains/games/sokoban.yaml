@@ -1,0 +1,82 @@
+generation:
+  task_overrides:
+    games_sokoban_grid_internal:
+      board_rows_min: 6
+      board_rows_max: 9
+      board_cols_min: 6
+      board_cols_max: 9
+      internal_wall_count_min: 2
+      internal_wall_count_max: 8
+      path_option_count_support: [4, 6]
+      relation_option_count_support: [4, 5, 6]
+      balanced_path_option_count_sampling: true
+      balanced_relation_option_count_sampling: true
+      path_length_min: 4
+      path_length_max: 12
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      query_id_weights:
+        shortest_path_sequence_label: 1.0
+        valid_path_sequence_label: 1.0
+        blocked_path_sequence_label: 1.0
+        nearest_target_for_marked_box_label: 1.0
+        box_closest_to_marked_target_label: 1.0
+        box_target_manhattan_rank_label: 1.0
+      scene_variant_weights:
+        warehouse_classic: 1.0
+        paper_grid: 1.0
+        cool_room: 1.0
+
+rendering:
+  task_overrides:
+    games_sokoban_grid_internal:
+      canvas_width: 1220
+      canvas_height: 900
+      scene_margin_left_px: 52
+      scene_margin_top_px: 48
+      board_panel_width_px: 650
+      board_panel_height_px: 740
+      option_panel_width_px: 188
+      option_panel_height_px: 170
+      option_gap_px: 20
+      option_row_gap_px: 20
+      panel_corner_radius_px: 22
+      board_border_width_px: 4
+      grid_width_px: 2
+      coord_gutter_px: 34
+      main_cell_size_px: 58
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+      mini_cell_size_px: 16
+      option_label_font_size_px: 28
+      cell_label_font_size_px: 18
+      sequence_font_size_px: 22
+      text_color_rgb: [28, 32, 38]
+      text_stroke_rgb: [255, 255, 255]
+
+complexity:
+  task_overrides:
+    games_sokoban_grid_internal:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.42
+        scene_variant_load: 0.18
+
+prompt:
+  task_overrides:
+    games_sokoban_grid_internal:
+      bundle_id: games_sokoban_v0
+      scene_key: sokoban_grid
+      task_key: sokoban_grid_query
+      object_description_path_sequence_label: a Sokoban-style grid with start and goal cells, boxes treated as blockers, and labeled move-sequence options
+      object_description_box_target_relation_label: a Sokoban-style grid with walls, floor cells, boxes, targets, and option letters drawn directly on candidate boxes, targets, or same-letter box-target pairs
+      answer_hint_option_letter: set "answer" to the single option label as a capital letter
+      annotation_hint_option_panel: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected option panel
+      annotation_hint_relation_option_marker: set "annotation" to an array containing the bounding box [x0, y0, x1, y1] for the selected option-lettered board cell; for a same-letter pair, include the box cell bbox followed by the target cell bbox
+      json_example_option_label: '{"annotation":[[720,250,908,420]],"answer":"C"}'
+      json_example_relation_option_label: '{"annotation":[[435,214,493,272]],"answer":"C"}'
+      json_example_answer_only_option_label: '{"answer":"C"}'
+
+visual:
+  noise:
+    apply_prob: 0.0

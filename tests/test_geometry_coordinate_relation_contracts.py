@@ -10,7 +10,7 @@ from trace.tasks.shared.text_rendering import load_font, resolve_text_label_cent
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer_type", "expected_evidence_type", "expected_evidence_count"),
+    ("params", "expected_answer_type", "expected_annotation_type", "expected_annotation_count"),
     (
         ({"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2}, "integer", "point_set", 4),
         ({"scene_variant": "segment_set", "query_id": "perpendicular_count", "target_count": 1}, "integer", "point_set", 2),
@@ -23,14 +23,14 @@ from trace.tasks.shared.text_rendering import load_font, resolve_text_label_cent
 def test_geometry_coordinate_relation_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer_type: str,
-    expected_evidence_type: str,
-    expected_evidence_count: int,
+    expected_annotation_type: str,
+    expected_annotation_count: int,
 ) -> None:
     out = GeometryCoordinateRelationTask().generate(23301, params=params, max_attempts=25)
     assert out.answer_gt.type == expected_answer_type
-    assert out.evidence_gt.type == expected_evidence_type
-    assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == expected_annotation_type
+    assert len(out.annotation_gt.value) == int(expected_annotation_count)
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
 
 
@@ -52,7 +52,7 @@ def test_geometry_coordinate_relation_rejects_incompatible_scene_query_pair() ->
         )
 
 
-def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_point_evidence() -> None:
+def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_point_annotation() -> None:
     segment_out = GeometryCoordinateRelationTask().generate(
         23313,
         params={"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2},
@@ -83,8 +83,8 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
     quadrant_frame = quadrant_out.trace_payload["render_spec"]["graph_coordinate_frame"]
     assert float(quadrant_frame["origin_fraction_x"]) == pytest.approx(0.5)
     assert float(quadrant_frame["origin_fraction_y"]) == pytest.approx(0.5)
-    assert quadrant_out.evidence_gt.type == "point_set"
-    assert all(isinstance(point, list) and len(point) == 2 for point in quadrant_out.evidence_gt.value)
+    assert quadrant_out.annotation_gt.type == "point_set"
+    assert all(isinstance(point, list) and len(point) == 2 for point in quadrant_out.annotation_gt.value)
 
 
 def test_geometry_coordinate_relation_collinear_scene_keeps_reference_and_candidates_inside_centered_board() -> None:

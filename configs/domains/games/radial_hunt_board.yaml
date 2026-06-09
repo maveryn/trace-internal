@@ -1,0 +1,69 @@
+generation:
+  shared:
+    scene_variant_weights:
+      open_position: 1.0
+      mixed_position: 1.0
+      crowded_position: 1.0
+    style_variant_weights:
+      ink_rings: 1.0
+      carved_wood: 1.0
+      temple_cloth: 1.0
+      night_gold: 1.0
+      chalk_circle: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+    min_total_piece_count: 5
+    max_total_piece_count: 16
+rendering:
+  shared:
+    canvas_width: 780
+    canvas_height: 760
+    panel_margin_px: 52
+    max_board_size_px: 560
+    edge_width_px: 5
+    point_radius_px: 13
+    piece_radius_px: 23
+    marker_width_px: 5
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 540
+    canvas_side_padding_px: 150
+    canvas_vertical_padding_px: 150
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      movement_reasoning: 0.42
+      ambiguity: 0.10
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_radial_hunt_board_v0
+    scene_key: radial_hunt_board
+    task_key: radial_hunt_board_query
+    object_description_open_position: a radial point-and-line hunt board with three concentric circles, three diameters, and a few pieces
+    object_description_mixed_position: a radial point-and-line hunt board with three concentric circles, three diameters, and several pieces
+    object_description_crowded_position: a radial point-and-line hunt board with three concentric circles, three diameters, and many pieces
+    movement_rule_text: A piece can move one step along a drawn circle or diameter line to an adjacent empty point.
+    capture_rule_text: A capture move jumps over one adjacent opposing piece along the same drawn circle or diameter line and lands on the empty point immediately beyond it.
+    annotation_hint_marked_piece_destination_count: set "annotation" to [x, y] pixel points at the centers of every empty point the X-marked piece can legally move to; use an empty array if there are none
+    answer_hint_marked_piece_destination_count: set "answer" to the number of legal destinations for the X-marked piece
+    annotation_hint_capture_move_count: set "annotation" to [x, y] pixel points at the centers of every empty point where the X-marked piece can land by a capture jump; use an empty array if there are none
+    answer_hint_capture_move_count: set "answer" to the number of legal capture moves for the X-marked piece
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.15, 0.4]
+      downsample:
+        scale: [0.9, 0.97]
+      jpeg:
+        quality: [78.0, 94.0]
+      noise:
+        alpha: [0.015, 0.045]

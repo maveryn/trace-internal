@@ -269,7 +269,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
         )
         if len(counted_equipment_ids) != int(sample.target_count):
             raise RuntimeError("rendered playground equipment count did not match sample target")
-        evidence_value = sort_park_bboxes(decor_bboxes, counted_equipment_ids)
+        annotation_value = sort_park_bboxes(decor_bboxes, counted_equipment_ids)
         equipment_counts = dict(Counter(str(item.decor_type) for item in scene.decor if str(item.decor_id).startswith("equipment_")))
 
         prompt_defaults = required_group_defaults(
@@ -281,7 +281,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_playground_equipment",
-                "evidence_hint_playground_equipment",
+                "annotation_hint_playground_equipment",
                 "json_example_playground_equipment",
                 "json_example_answer_only_playground_equipment",
             ],
@@ -293,7 +293,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_playground_equipment"]).format(equipment_name=str(sample.equipment_name)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_playground_equipment"]).format(equipment_name=str(sample.equipment_name)),
+            "annotation_hint": str(prompt_defaults["annotation_hint_playground_equipment"]).format(equipment_name=str(sample.equipment_name)),
             "json_example": str(prompt_defaults["json_example_playground_equipment"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_playground_equipment"]),
         }
@@ -306,8 +306,8 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -374,13 +374,13 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
                 "target_equipment_type": str(sample.equipment_type),
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

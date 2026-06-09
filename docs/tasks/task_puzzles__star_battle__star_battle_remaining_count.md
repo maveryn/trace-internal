@@ -13,6 +13,6 @@
 3. Grid size: `6x6..9x9`
 4. Answer support: `1..6`
 5. Answer type: `integer`
-6. Evidence type: `bbox_set`
-7. Evidence target: marked row, column, or region followed by every legal cell in that scope
+6. Annotation type: `bbox_set`
+7. Annotation target: marked row, column, or region followed by every legal cell in that scope
 8. Scene variants: `star_battle_classic|star_battle_pastel|star_battle_blueprint`

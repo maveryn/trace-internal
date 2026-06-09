@@ -11,15 +11,15 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `condition_path_endpoint_label`
 3. `answer_gt.type`: `string`
-4. `evidence_gt.type`: `keyed_bbox_map`
+4. `annotation_gt.type`: `keyed_bbox_map`
 5. Scene contract:
    - the diagram has ordinary process arrows and labeled decision arrows,
    - the prompt gives the decision labels to follow,
    - unlabeled arrows connect ordinary process steps between decisions,
    - the target answer is the exact visible step label after the final requested decision choice.
 
-## 3) Evidence + trace contract
-1. Evidence is compact keyed path support: `start_step` binds the starting step box, `first_decision_label` and `second_decision_label` bind the two used decision-arrow label boxes, `intermediate_step` binds the step reached after the first choice, and `endpoint_step` binds the final answer step box.
+## 3) Annotation + trace contract
+1. Annotation is compact keyed path support: `start_step` binds the starting step box, `first_decision_label` and `second_decision_label` bind the two used decision-arrow label boxes, `intermediate_step` binds the step reached after the first choice, and `endpoint_step` binds the final answer step box.
 2. `execution_trace.query.condition_labels` records the visible decision labels used by the prompt.
 3. `execution_trace.query.path_node_labels` records the symbolic path for audit.
 

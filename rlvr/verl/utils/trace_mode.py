@@ -4,24 +4,24 @@ from pathlib import Path
 
 
 TRACE_OUTPUT_MODE_ANSWER = "answer"
-TRACE_OUTPUT_MODE_ANSWER_AND_EVIDENCE = "answer_and_evidence"
+TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION = "answer_and_annotation"
 DEFAULT_TRACE_OUTPUT_MODE = TRACE_OUTPUT_MODE_ANSWER
 
 _TRACE_OUTPUT_MODE_ALIASES = {
     "answer": TRACE_OUTPUT_MODE_ANSWER,
     "answer_only": TRACE_OUTPUT_MODE_ANSWER,
-    "evidence": TRACE_OUTPUT_MODE_ANSWER_AND_EVIDENCE,
-    "answer_and_evidence": TRACE_OUTPUT_MODE_ANSWER_AND_EVIDENCE,
+    "annotation": TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION,
+    "answer_and_annotation": TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION,
 }
 
 _TRACE_PROMPT_KEY_BY_OUTPUT_MODE = {
     TRACE_OUTPUT_MODE_ANSWER: "prompt_answer",
-    TRACE_OUTPUT_MODE_ANSWER_AND_EVIDENCE: "prompt_answer_and_evidence",
+    TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION: "prompt_answer_and_annotation",
 }
 
 _TRACE_SYSTEM_PROMPT_BY_OUTPUT_MODE = {
     TRACE_OUTPUT_MODE_ANSWER: "trace_vero_json_system_prompt_answer.txt",
-    TRACE_OUTPUT_MODE_ANSWER_AND_EVIDENCE: "trace_vero_json_system_prompt_answer_and_evidence.txt",
+    TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION: "trace_vero_json_system_prompt_answer_and_annotation.txt",
 }
 
 
@@ -32,8 +32,8 @@ def normalize_trace_output_mode(trace_output_mode: str | None) -> str:
     normalized_mode = _TRACE_OUTPUT_MODE_ALIASES.get(raw_mode)
     if normalized_mode is None:
         raise ValueError(
-            "TRACE output mode must be one of {'answer', 'answer_and_evidence'}; "
-            "legacy alias 'answer_only' and shorthand alias 'evidence' are also accepted. "
+            "TRACE output mode must be one of {'answer', 'answer_and_annotation'}; "
+            "legacy alias 'answer_only' and shorthand alias 'annotation' are also accepted. "
             f"got {trace_output_mode!r}"
         )
     return normalized_mode

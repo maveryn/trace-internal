@@ -212,7 +212,7 @@ rendering:
       canvas_height: 900
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_spreadsheet: a spreadsheet-style table with one Name column, several numeric columns, full grid lines,
       and a shaded header row
@@ -228,27 +228,27 @@ prompt:
     charts_table_column_summary_base:
       task_key: summary_value_query
       answer_hint: set "answer" to the exact integer summary value
-      evidence_hint_column_sum: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the supporting
+      annotation_hint_column_sum: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the supporting
         queried-column region
-      evidence_hint_column_mean: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the supporting
+      annotation_hint_column_mean: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the supporting
         queried-column region
-      evidence_hint_column_median: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the
+      annotation_hint_column_median: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the
         supporting queried-column region
-      json_example_column_sum: '{"evidence":[[260,180,372,520]],"answer":84}'
-      json_example_column_mean: '{"evidence":[[260,180,372,520]],"answer":14}'
-      json_example_column_median: '{"evidence":[[260,180,372,520]],"answer":13}'
+      json_example_column_sum: '{"annotation":[[260,180,372,520]],"answer":84}'
+      json_example_column_mean: '{"annotation":[[260,180,372,520]],"answer":14}'
+      json_example_column_median: '{"annotation":[[260,180,372,520]],"answer":13}'
       json_example_answer_only_column_sum: '{"answer":84}'
       json_example_answer_only_column_mean: '{"answer":14}'
       json_example_answer_only_column_median: '{"answer":13}'
     charts_table_filtered_column_summary_base:
       task_key: filtered_subset_value_query
       answer_hint: set "answer" to the exact integer filtered summary value
-      evidence_hint_filtered_column_sum: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the filter and target
+      annotation_hint_filtered_column_sum: set "annotation" to an array containing [x0, y0, x1, y1] boxes for the filter and target
         cells used from every selected row
-      evidence_hint_filtered_column_mean: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the filter and
+      annotation_hint_filtered_column_mean: set "annotation" to an array containing [x0, y0, x1, y1] boxes for the filter and
         target cells used from every selected row
-      json_example_filtered_column_sum: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":27}'
-      json_example_filtered_column_mean: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":14}'
+      json_example_filtered_column_sum: '{"annotation":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":27}'
+      json_example_filtered_column_mean: '{"annotation":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":14}'
       json_example_answer_only_filtered_column_sum: '{"answer":27}'
       json_example_answer_only_filtered_column_mean: '{"answer":14}'
 visual:

@@ -9,10 +9,11 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.spatial.height_extremum import SUPPORTED_QUERY_IDS, TASK_ID
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
-def test_height_extremum_answer_and_evidence(query_id: str) -> None:
+def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -40,15 +41,47 @@ def test_height_extremum_answer_and_evidence(query_id: str) -> None:
     assert len(context_specs) == 4
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
-        output.trace_payload["render_map"]["point_bboxes_px"][expected_label]
-    ]
+    answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == (
+        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    )
+    assert_option_panel_matches_candidates(
+        output,
+        point_specs,
+        answer_label=expected_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
     assert trace["height_order_low_to_high"] == sorted_labels
     assert trace["solver_trace"]["height_order_low_to_high"] == sorted_labels
     assert trace["solver_trace"]["unique_height_extremum_answer"] is True
     assert float(trace["solver_trace"]["height_margin"]) >= 0.18
-    assert output.image.size == (1180, 900)
+
+
+def test_height_extremum_answer_color_and_shape_vary_across_seeds() -> None:
+    task = create_task(TASK_ID)
+    answer_colors = set()
+    answer_shapes = set()
+    for seed in range(20260600, 20260608):
+        output = task.generate(
+            seed,
+            params={
+                "query_id": "highest_above_floor",
+                "scene_variant": "floor_grid_room",
+                "point_count": 5,
+                "context_object_count": 4,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        answer_spec = next(spec for spec in trace["point_specs"] if str(spec["point_label"]) == str(trace["answer_label"]))
+        answer_colors.add(str(answer_spec["option_color_name"]))
+        answer_shapes.add(str(answer_spec["shape_type"]))
+
+    assert len(answer_colors) >= 3
+    assert len(answer_shapes) >= 4
 
 
 def test_height_extremum_task_registered_in_three_d_taxonomy() -> None:

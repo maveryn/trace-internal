@@ -12,7 +12,7 @@
 3. Public `scene_id`: `voxel_cube`
 4. Supported query parameter: `view_direction=top|front|right`
 5. `answer_gt.type`: `string`
-6. `evidence_gt.type`: `bbox_set`
+6. `annotation_gt.type`: `bbox_set`
 7. Scene contract:
    - the scene shows one isometric cube stack and labeled projection-grid options,
    - `Front view` means looking at the left vertical face of the drawn stack,
@@ -26,8 +26,8 @@
 4. Internal prompt variant key: `projection_match_label`
 5. Prompt-facing answers are option letters.
 
-## 4) Evidence + Trace Contract
-1. Evidence contains one bbox for the selected projection option panel.
+## 4) Annotation + Trace Contract
+1. Annotation contains one bbox for the selected projection option panel.
 2. `execution_trace.internal_query_id` records the selected view query.
 3. Stack footprint/heights, visible counts for `top|front|right`, candidate projection cells, and the correct option label are recorded.
-4. Prompt-facing evidence is projected from the selected option panel, not inferred from pixels.
+4. Prompt-facing annotation is projected from the selected option panel, not inferred from pixels.

@@ -15,6 +15,7 @@ from trace.tasks.illustrations.counterfactual.visible_part_count import (
     CLOVER_VARIANT,
     FORK_VARIANT,
     GLOVE_VARIANT,
+    OBJECT_TYPE_BY_QUERY_ID,
     QUADRUPED_VARIANT,
     SNOWFLAKE_VARIANT,
     STAR_VARIANT,
@@ -54,13 +55,20 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(answer)
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == int(answer)
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(answer)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
         assert trace["execution_trace"]["counted_part_kind"] == part_kind
         assert trace["execution_trace"]["canonical_bias_answer"] == canonical
         assert trace["execution_trace"]["counterfactual_delta"] == answer - canonical
         assert trace["execution_trace"]["counterfactual_edit_type"] == "visible_part_count_changed"
+        object_record = trace["scene_ir"]["entities"]["object"]["object_record"]
+        assert object_record["object_id"] == "object_0"
+        assert object_record["object_type"] == OBJECT_TYPE_BY_QUERY_ID[variant]
+        assert object_record["visual_attributes"]["renderer_style"] == "vector"
+        assert object_record["semantic_attributes"]["visible_part_count"] == answer
+        assert object_record["semantic_attributes"]["counted_part_kind"] == part_kind
+        assert len(object_record["parts"]) == answer
         colors = trace["render_spec"]["style"]["colors_rgb"]
         assert "primary" in colors
         assert "accent" in colors
@@ -75,7 +83,7 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
         background_style = trace["render_spec"]["style"]["background_style"]
         assert background_style["style_id"] in {style["style_id"] for style in BACKGROUND_STYLES}
         assert trace["render_spec"]["style"]["object_center_px"] != [480.0, 360.0]
-        for box in out.evidence_gt.value:
+        for box in out.annotation_gt.value:
             x0, y0, x1, y1 = [float(value) for value in box]
             assert 0 <= x0 < x1 <= out.image.width
             assert 0 <= y0 < y1 <= out.image.height

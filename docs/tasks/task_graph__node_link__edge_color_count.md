@@ -13,7 +13,7 @@
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported target colors: shared TRACE named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
 5. `answer_gt.type`: `integer`
-6. `evidence_gt.type`: `point_pair_set`
+6. `annotation_gt.type`: `point_pair_set`
 7. Scene contract:
    - one single-panel labeled node-link graph,
    - simple unweighted graph only,
@@ -30,20 +30,20 @@
 1. Bundle: `graph_counting_v0`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `edge_color_count_query`
-4. Modes: `answer_only`, `answer_and_evidence`
+4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+evidence JSON shape: `{"evidence":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
+6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`, for example `green [#37B94B]`.
-8. Prompt-facing evidence uses pixel-space endpoint-center pairs for every matching edge; directed edge pairs are ordered source-to-target.
+8. Prompt-facing annotation uses pixel-space endpoint-center pairs for every matching edge; directed edge pairs are ordered source-to-target.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the unordered `point_pair_set` of endpoint-center pairs for all edges whose semantic stroke color matches the queried color.
-2. `answer_gt.value == len(evidence_gt.value)` by construction, including zero-answer cases where evidence is an empty array.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the unordered `point_pair_set` of endpoint-center pairs for all edges whose semantic stroke color matches the queried color.
+2. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-answer cases where annotation is an empty array.
 3. `execution_trace.target_color_name` records the queried color name.
 4. `execution_trace.edge_color_names_by_label_pair` records every rendered edge's semantic color.
 5. `execution_trace.matching_edges` records the symbolic witness edge-label pairs in deterministic order.
 6. `scene_ir.entities` stores node labels, degrees, in-degrees, out-degrees, neighbors/successors/predecessors, edge labels, edge colors, edge segments, and `is_target_color_edge`.
-7. `projected_evidence` includes `point_pair_set` and pixel endpoint pairs.
+7. `projected_annotation` includes `point_pair_set` and pixel endpoint pairs.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
@@ -53,7 +53,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same rendered edge-color assignment.
+2. Answers and annotation come from the same rendered edge-color assignment.
 3. Generation assigns exactly the requested number of edges to the queried color, and all other edges receive non-target colors.
 4. No semantic auto-relaxation: failures do not weaken the graph, directionality, color, or count contract.
 

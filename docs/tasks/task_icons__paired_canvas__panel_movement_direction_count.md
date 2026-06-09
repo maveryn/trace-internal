@@ -12,8 +12,8 @@
 2. Branch metadata: `query_id`
 3. Query id: `moved_left_count|moved_right_count|moved_up_count|moved_down_count`.
 4. Answer type: `answer_gt.type = integer`.
-5. Evidence type: `evidence_gt.type = bbox_set` over every counted Right-panel destination icon.
-   `projected_evidence` mirrors this as typed bbox-set evidence with
+5. Annotation type: `annotation_gt.type = bbox_set` over every counted Right-panel destination icon.
+   `projected_annotation` mirrors this as typed bbox-set annotation with
    `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 6. Unique-answer policy: target pairs move in the queried direction; distractor pairs move in other cardinal directions with a configured minimum displacement.
 
@@ -21,11 +21,11 @@
 1. `prompt_bundle_id`: `icons_relation_v0`
 2. `scene_key`: `paired_canvas_relation`
 3. `task_key`: `relation_query`
-4. Answer+evidence JSON shape: `{"evidence":[[620,156,684,220],[834,338,902,406]],"answer":2}`
+4. Answer+annotation JSON shape: `{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}`
 5. Prompt wording specifies the active movement direction.
 
 ## 4) Determinism + constraints
 1. The movement direction for each pair is recorded in trace metadata.
-2. Evidence is computed from the Right-panel destination icons for target pairs.
+2. Annotation is computed from the Right-panel destination icons for target pairs.
 3. Generation fails rather than relaxing movement-direction, correspondence, or placement constraints.
 4. Render metadata records panel-title text legibility.

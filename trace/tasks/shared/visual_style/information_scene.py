@@ -16,6 +16,7 @@ from ..text_legibility import (
     text_legibility_summary,
 )
 from .metadata import color_separation_metadata
+from .request import VisualStyleRequest, visual_style_request_metadata
 
 
 Color = Tuple[int, int, int]
@@ -442,6 +443,45 @@ def resolve_information_scene_style(
     return style, metadata
 
 
+def resolve_information_scene_style_from_request(
+    request: VisualStyleRequest,
+    *,
+    treatments: Sequence[str] | str | None = None,
+    treatment_weights: Mapping[str, float] | None = None,
+    palettes: Sequence[str] | str | None = None,
+    palette_weights: Mapping[str, float] | None = None,
+    chrome_modes: Sequence[str] | str | None = None,
+    chrome_mode_weights: Mapping[str, float] | None = None,
+    min_protected_rgb_distance: float = 42.0,
+) -> tuple[InformationSceneStyle, dict[str, Any]]:
+    """Resolve structured-information style from the shared request contract."""
+
+    if str(request.style_family) != "information_scene":
+        raise ValueError(f"expected information_scene request, got {request.style_family!r}")
+    if palettes is None and not bool(request.allow_colored_surface):
+        palettes = (
+            "neutral_report",
+            "publication_gray",
+            "monochrome_news",
+            "high_contrast_light",
+        )
+    style, metadata = resolve_information_scene_style(
+        instance_seed=int(request.instance_seed),
+        namespace=f"{request.domain}.{request.task_group}.{request.scene_id}.information_scene_style",
+        treatments=treatments,
+        treatment_weights=treatment_weights,
+        palettes=palettes,
+        palette_weights=palette_weights,
+        chrome_modes=chrome_modes,
+        chrome_mode_weights=chrome_mode_weights,
+        allow_dark=bool(request.allow_dark),
+        protected_colors=request.protected_colors,
+        min_protected_rgb_distance=float(min_protected_rgb_distance),
+    )
+    metadata["style_request"] = visual_style_request_metadata(request)
+    return style, metadata
+
+
 def information_scene_style_metadata(style: InformationSceneStyle) -> dict[str, Any]:
     """Serialize a structured-information style into trace-ready metadata."""
 
@@ -690,4 +730,5 @@ __all__ = [
     "information_scene_style_metadata",
     "make_information_scene_background",
     "resolve_information_scene_style",
+    "resolve_information_scene_style_from_request",
 ]

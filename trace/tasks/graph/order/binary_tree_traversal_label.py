@@ -20,7 +20,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
     SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS,
-    projected_binary_tree_bbox_evidence,
+    projected_binary_tree_bbox_annotation,
     render_binary_tree_scene,
     sample_binary_tree_for_traversal_query,
     traversal_labels_for_query,
@@ -209,7 +209,7 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     return (
         json.dumps(
             {
-                "evidence": [[156, 124, 204, 172], [250, 250, 298, 298], [470, 430, 520, 480]],
+                "annotation": [[156, 124, 204, 172], [250, 250, 298, 298], [470, 430, 520, 480]],
                 "answer": "M",
             },
             separators=(",", ":"),
@@ -277,13 +277,14 @@ class GraphOrderBinaryTreeTraversalLabelTask:
         if int(query.traversal_position) > len(traversal_labels):
             raise ValueError("sampled binary tree is smaller than requested traversal position")
         answer_value = str(traversal_labels[int(query.traversal_position) - 1])
-        evidence_labels = tuple(str(label) for label in traversal_labels[: int(query.traversal_position)])
+        annotation_labels = tuple(str(label) for label in traversal_labels[: int(query.traversal_position)])
 
         rendered_scene = render_binary_tree_scene(
             sample=sample,
             render_params=render_params,
             scene_variant=str(query.scene_variant),
             scene_title="Binary Tree",
+            layout_seed=int(instance_seed),
             base_image=image,
         )
         image, post_noise_meta = apply_post_image_noise(
@@ -292,14 +293,14 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_projection = projected_binary_tree_bbox_evidence(rendered_scene, evidence_labels)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_sequence"]]
+        annotation_projection = projected_binary_tree_bbox_annotation(rendered_scene, annotation_labels)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_sequence"]]
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_sequence", value=list(annotation_bboxes))
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -307,13 +308,13 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "traversal_position": str(query.traversal_position),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -337,7 +338,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
                     "center_px": list(node.center_xy),
                     "bbox_xyxy": list(node.bbox_xyxy),
                     "is_answer_node": bool(str(node.label) == str(answer_value)),
-                    "is_in_evidence_prefix": bool(str(node.label) in set(evidence_labels)),
+                    "is_in_annotation_prefix": bool(str(node.label) in set(annotation_labels)),
                 }
             )
         edge_entities = [
@@ -348,6 +349,8 @@ class GraphOrderBinaryTreeTraversalLabelTask:
                 "child_label": str(edge.child_label),
                 "child_side": str(edge.child_side),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "connector_path_px": [list(point) for point in edge.connector_path_px],
+                "connector_style_variant": str(edge.connector_style_variant),
             }
             for edge in rendered_scene.edges
         ]
@@ -407,6 +410,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "scene_variant": str(rendered_scene.scene_variant),
+                    "connector_style_variant": str(rendered_scene.connector_style_variant),
                     "node_color_name": str(query.node_color_name),
                     "theme_tone": str(render_params.theme_tone),
                     "panel_style_variant": str(render_params.panel_style_variant),
@@ -436,8 +440,9 @@ class GraphOrderBinaryTreeTraversalLabelTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
+                "connector_style_variant": str(rendered_scene.connector_style_variant),
                 "answer": str(answer_value),
-                "evidence_labels": list(evidence_labels),
+                "annotation_labels": list(annotation_labels),
                 "traversal_position": int(query.traversal_position),
                 "node_count": int(sample.node_count),
                 "max_depth": int(sample.max_depth),
@@ -445,21 +450,21 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             },
             "witness_symbolic": {
                 "type": "node_label_sequence",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "query_id": str(query.query_id),
                 "answer_label": str(answer_value),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_sequence",
-                "bbox_sequence": list(evidence_bboxes),
-                "pixel_bbox_sequence": list(evidence_bboxes),
-                "pixel_point_sequence": list(evidence_projection["pixel_point_sequence"]),
+                "bbox_sequence": list(annotation_bboxes),
+                "pixel_bbox_sequence": list(annotation_bboxes),
+                "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

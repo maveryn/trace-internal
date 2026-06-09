@@ -39,12 +39,12 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             query_years = [str(year) for year in execution["query_years"]]
             query_cells = [dict(cell) for cell in execution["query_cells"]]
             supporting_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
             assert str(out.query_id) == str(query_id)
             assert out.answer_gt.type == "integer"
-            assert out.evidence_gt.type == "bbox_set"
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "bbox_set"
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert str(render["font_assets"]["table_font_family"]).strip()
@@ -61,9 +61,9 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             )
             assert [int(year) for year in query_years] == sorted(int(year) for year in query_years)
             assert 4 <= len(query_years) <= 5
-            assert len(evidence_bboxes) == len(query_cells) == len(supporting_cell_ids)
-            assert trace["projected_evidence"]["type"] == "bbox_set"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert len(annotation_bboxes) == len(query_cells) == len(supporting_cell_ids)
+            assert trace["projected_annotation"]["type"] == "bbox_set"
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
 
             row_a = str(execution["query_row_label_a"])
             row_b = str(execution["query_row_label_b"])
@@ -99,12 +99,12 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
                 [float(value) for value in trace["render_map"]["cell_bboxes_px"][str(cell_id)]]
                 for cell_id in supporting_cell_ids
             ]
-            assert evidence_bboxes == expected_bboxes
+            assert annotation_bboxes == expected_bboxes
 
 
 def test_table_temporal_prompt_examples_match_selected_variants() -> None:
     task = ChartsTableTemporalValueTaskBase()
-    evidence = [
+    annotation = [
         [260, 180, 320, 220],
         [322, 180, 382, 220],
         [384, 180, 444, 220],
@@ -114,19 +114,19 @@ def test_table_temporal_prompt_examples_match_selected_variants() -> None:
     ]
     expected = {
         "absolute_difference_between_rows_over_year_interval": (
-            {"evidence": evidence, "answer": 7},
+            {"annotation": annotation, "answer": 7},
             {"answer": 7},
         ),
         "sum_absolute_differences_between_rows_over_year_interval": (
-            {"evidence": evidence, "answer": 17},
+            {"annotation": annotation, "answer": 17},
             {"answer": 17},
         ),
     }
-    for index, (query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=19040):
+    for index, (query_id, (expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=19040):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -137,7 +137,7 @@ def test_table_temporal_value_task_is_deterministic() -> None:
     out_b = task.generate(19080, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

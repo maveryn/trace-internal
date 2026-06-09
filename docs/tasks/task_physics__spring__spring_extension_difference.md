@@ -3,25 +3,51 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `spring`
-- Task group: `mechanics`
-- Query id: `extension_difference`
-- Answer type: `integer`
-- Evidence type: unordered `bbox_set`
+- Implementation task group: `mechanics`
+- Implementation source: `trace/tasks/physics/mechanics/spring_extension.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__spring__spring_extension_difference` -> `task_physics__spring__spring_extension_difference`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Contract
-The image shows two identical springs with visible, value-labeled extension markers. The task asks for the absolute difference between the two shown extensions. The calibrated public mix uses extension-difference answers `{2,4,8,10,12}` and scale factor `2` so this query is not dominated by visually trivial small-difference cases.
+## Task Contract
+Computes the absolute difference between two visible spring-extension markers.
 
-Evidence is the pair of shown extension-marker bounding boxes. Scene variants affect card layout and texture only; they do not change the difference contract.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Evidence is projected after the final whole-diagram layout offset, so each bbox uses rendered pixel coordinates.
+## Query Branches
 
-## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query id key: `extension_difference`.
+| Query id | Program schema |
+| --- | --- |
+| `extension_difference` | `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference; query_branch=extension_difference` |
 
-Outputs `query_id="extension_difference"`. The trace records both measurements, the query-specific scale-factor support, answer support, evidence entity ids, technical diagram style, font family, whole-diagram layout placement, and post-render noise metadata.
+## Program Metadata
+- Program signatures: `physics.extension_difference_value`
+- Base program contract: `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `extension_a`: semantic_role; allowed `first_visible_extension_marker`; source `program_schema_concrete`
+  - `extension_b`: semantic_role; allowed `second_visible_extension_marker`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `extension_difference`
 
-## Rendering
-The renderer uses shared `technical_diagram_style` for the outer sheet, card/ruler palette, frame, and post-render noise. It samples one readout font family per diagram and applies whole-diagram layout placement before computing evidence.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
 
-## Determinism
-Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized spring layout.
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set | unordered`
+- Annotation is an unordered set of final-image pixel boxes over the minimal queried visual witnesses.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/spring/task_physics__spring__spring_extension_difference/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

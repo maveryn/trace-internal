@@ -50,7 +50,7 @@ def test_graph_counting_isolated_node_count_after_node_removal_directed_contract
     assert out.scene_id == "node_link"
     assert out.query_id == "isolated_node_count_after_node_removal"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_isolated_node_count_after_node_removal"
     assert execution["query_id"] == "isolated_node_count_after_node_removal"
@@ -63,7 +63,7 @@ def test_graph_counting_isolated_node_count_after_node_removal_directed_contract
     matching_labels = [str(label) for label in execution["matching_labels"]]
     assert f'"{removed_label}"' in str(out.prompt)
     assert removed_label not in execution["post_removal_degrees_by_label"]
-    assert int(out.answer_gt.value) == len(matching_labels) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["labels"] == matching_labels
     assert trace["witness_symbolic"]["removed_node_label"] == removed_label
 
@@ -80,10 +80,10 @@ def test_graph_counting_isolated_node_count_after_node_removal_directed_contract
     assert sum(1 for node in node_entities if bool(node["is_post_removal_isolated"])) == 3
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_isolated_node_count_after_node_removal_zero_answer() -> None:
@@ -101,7 +101,7 @@ def test_graph_counting_isolated_node_count_after_node_removal_zero_answer() -> 
     execution = out.trace_payload["execution_trace"]
 
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["target_count"] == 0
     assert execution["matching_labels"] == []
     assert all(int(degree) > 0 for degree in execution["post_removal_degrees_by_label"].values())
@@ -116,11 +116,11 @@ def test_graph_counting_isolated_node_count_after_node_removal_prompt_examples_m
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_counting_isolated_node_count_after_node_removal_balanced_sampling_includes_zero() -> None:

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Sequence, Tuple
 
 from .grid_graph import bfs_dist_count
-from .tile_evidence import sort_coords_row_major
+from .tile_annotation import sort_coords_row_major
 
 
 Coord = Tuple[int, int]

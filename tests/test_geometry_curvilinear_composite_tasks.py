@@ -6,39 +6,43 @@ import pytest
 
 from trace.tasks.geometry.measurement.curvilinear_composite import (
     SCENE_ID,
-    GeometryCurvilinearCompositeAreaValueTask,
-    GeometryCurvilinearCompositePerimeterValueTask,
-    GeometryCurvilinearMissingSideFromAreaValueTask,
-    GeometryCurvilinearSectorAngleValueTask,
+    GeometryMissingWidthFromSemicircleCapAreaTask,
+    GeometryMissingWidthFromSemicircleCutoutAreaTask,
+    GeometryRectangleQuarterSectorCutoutAreaTask,
+    GeometryRectangleQuarterSectorCutoutPerimeterTask,
+    GeometryRectangleSemicircleCapAreaTask,
+    GeometryRectangleSemicircleCapPerimeterTask,
+    GeometryRectangleSemicircleCutoutAreaTask,
+    GeometryRectangleSemicircleCutoutPerimeterTask,
+    GeometrySectorAngleFromArcLengthTask,
+    GeometrySectorAngleFromAreaTask,
 )
 
 
 TASK_CLASSES = (
-    GeometryCurvilinearCompositeAreaValueTask,
-    GeometryCurvilinearCompositePerimeterValueTask,
-    GeometryCurvilinearMissingSideFromAreaValueTask,
-    GeometryCurvilinearSectorAngleValueTask,
+    GeometryRectangleSemicircleCapAreaTask,
+    GeometryRectangleSemicircleCutoutAreaTask,
+    GeometryRectangleQuarterSectorCutoutAreaTask,
+    GeometryRectangleSemicircleCapPerimeterTask,
+    GeometryRectangleSemicircleCutoutPerimeterTask,
+    GeometryRectangleQuarterSectorCutoutPerimeterTask,
+    GeometryMissingWidthFromSemicircleCapAreaTask,
+    GeometryMissingWidthFromSemicircleCutoutAreaTask,
+    GeometrySectorAngleFromArcLengthTask,
+    GeometrySectorAngleFromAreaTask,
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryCurvilinearCompositeAreaValueTask: (
-        "rectangle_semicircle_cap_area",
-        "rectangle_semicircle_cutout_area",
-        "rectangle_quarter_sector_cutout_area",
-    ),
-    GeometryCurvilinearCompositePerimeterValueTask: (
-        "rectangle_semicircle_cap_perimeter",
-        "rectangle_semicircle_cutout_perimeter",
-        "rectangle_quarter_sector_cutout_perimeter",
-    ),
-    GeometryCurvilinearMissingSideFromAreaValueTask: (
-        "missing_width_from_semicircle_cap_area",
-        "missing_width_from_semicircle_cutout_area",
-    ),
-    GeometryCurvilinearSectorAngleValueTask: (
-        "sector_angle_from_arc_length",
-        "sector_angle_from_area",
-    ),
+    GeometryRectangleSemicircleCapAreaTask: ("rectangle_semicircle_cap_area",),
+    GeometryRectangleSemicircleCutoutAreaTask: ("rectangle_semicircle_cutout_area",),
+    GeometryRectangleQuarterSectorCutoutAreaTask: ("rectangle_quarter_sector_cutout_area",),
+    GeometryRectangleSemicircleCapPerimeterTask: ("rectangle_semicircle_cap_perimeter",),
+    GeometryRectangleSemicircleCutoutPerimeterTask: ("rectangle_semicircle_cutout_perimeter",),
+    GeometryRectangleQuarterSectorCutoutPerimeterTask: ("rectangle_quarter_sector_cutout_perimeter",),
+    GeometryMissingWidthFromSemicircleCapAreaTask: ("missing_width_from_semicircle_cap_area",),
+    GeometryMissingWidthFromSemicircleCutoutAreaTask: ("missing_width_from_semicircle_cutout_area",),
+    GeometrySectorAngleFromArcLengthTask: ("sector_angle_from_arc_length",),
+    GeometrySectorAngleFromAreaTask: ("sector_angle_from_area",),
 }
 
 
@@ -50,16 +54,16 @@ def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type in {"keyed_bbox_map", "keyed_point_map"}
-    assert 1 <= len(out.evidence_gt.value) <= 3
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type in {"keyed_bbox_map", "keyed_point_map"}
+    assert 1 <= len(out.annotation_gt.value) <= 3
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == out.evidence_gt.type
+    assert trace["projected_annotation"]["type"] == out.annotation_gt.type
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -71,7 +75,7 @@ def test_curvilinear_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
@@ -93,7 +97,7 @@ def test_curvilinear_tasks_support_every_explicit_query(task_cls) -> None:
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_curvilinear_evidence_stays_inside_canvas(task_cls) -> None:
+def test_curvilinear_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(
@@ -102,31 +106,81 @@ def test_curvilinear_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        if out.evidence_gt.type == "keyed_bbox_map":
-            for x0, y0, x1, y1 in out.evidence_gt.value.values():
+        if out.annotation_gt.type == "keyed_bbox_map":
+            for x0, y0, x1, y1 in out.annotation_gt.value.values():
                 assert 0.0 <= x0 < x1 <= float(width)
                 assert 0.0 <= y0 < y1 <= float(height)
                 assert (x1 - x0) > 8.0
                 assert (y1 - y0) > 8.0
         else:
-            assert out.evidence_gt.type == "keyed_point_map"
-            for x, y in out.evidence_gt.value.values():
+            assert out.annotation_gt.type == "keyed_point_map"
+            for x, y in out.annotation_gt.value.values():
                 assert 0.0 <= x <= float(width)
                 assert 0.0 <= y <= float(height)
 
 
 def test_curvilinear_tasks_reject_unknown_query_id() -> None:
-    task = GeometryCurvilinearCompositeAreaValueTask()
+    task = GeometryRectangleSemicircleCapAreaTask()
     with pytest.raises(ValueError):
         task.generate(54031, params={"query_id": "not_a_query"}, max_attempts=20)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_curvilinear_public_evidence_avoids_measurement_label_boxes(task_cls) -> None:
+def test_curvilinear_public_annotation_avoids_measurement_label_boxes(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(54061 + index, params={"query_id": query_id}, max_attempts=20)
-        assert out.trace_payload["projected_evidence"]["type"] == out.evidence_gt.type
-        assert set(out.evidence_gt.value) == set(out.trace_payload["execution_trace"]["evidence_roles"])
-        assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["evidence_roles"])
+        assert out.trace_payload["projected_annotation"]["type"] == out.annotation_gt.type
+        assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
+        assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "support_roles" in out.trace_payload["render_map"]
+
+
+def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:
+    task = GeometryRectangleQuarterSectorCutoutAreaTask()
+    out = task.generate(
+        54091,
+        params={"query_id": "rectangle_quarter_sector_cutout_area"},
+        max_attempts=20,
+    )
+
+    assert "angle_label" not in out.trace_payload["render_map"]["support_roles"]
+
+
+def test_curvilinear_perimeter_omits_derived_boundary_total_labels() -> None:
+    for task_cls in (
+        GeometryRectangleSemicircleCapPerimeterTask,
+        GeometryRectangleSemicircleCutoutPerimeterTask,
+        GeometryRectangleQuarterSectorCutoutPerimeterTask,
+    ):
+        task = task_cls()
+        query_id = QUERY_IDS_BY_TASK[task_cls][0]
+        out = task.generate(
+            54101,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        support_roles = set(out.trace_payload["render_map"]["support_roles"])
+
+        assert "arc_length_label" not in support_roles
+        assert "straight_boundary_length_label" not in support_roles
+
+
+def test_curvilinear_perimeter_prompts_name_curve_type() -> None:
+    expected_terms = {
+        GeometryRectangleSemicircleCapPerimeterTask: ("semicircle",),
+        GeometryRectangleSemicircleCutoutPerimeterTask: ("semicircle",),
+        GeometryRectangleQuarterSectorCutoutPerimeterTask: ("quarter", "circle"),
+    }
+
+    for task_cls, terms in expected_terms.items():
+        task = task_cls()
+        query_id = QUERY_IDS_BY_TASK[task_cls][0]
+        out = task.generate(
+            54111,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        prompt = str(out.prompt).lower()
+
+        assert all(term in prompt for term in terms)

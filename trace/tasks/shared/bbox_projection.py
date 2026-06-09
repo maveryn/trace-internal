@@ -1,4 +1,4 @@
-"""Shared bbox projection helpers for evidence/anchor payloads."""
+"""Shared bbox projection helpers for annotation/anchor payloads."""
 
 from __future__ import annotations
 

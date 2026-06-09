@@ -131,7 +131,7 @@ class _WeightPlacement:
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered lever-balance scene plus prompt-facing evidence metadata."""
+    """Rendered lever-balance scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
     beam_bbox_px: List[float]
@@ -140,8 +140,10 @@ class _RenderedScene:
     placeholder_bbox_px: List[float] | None
     relevant_weight_bboxes: List[List[float]]
     relevant_weight_ids: List[str]
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
+    annotation_bboxes: List[List[float]]
+    annotation_keyed_bbox_set_map: Dict[str, List[List[float]]]
+    annotation_entity_ids: List[str]
+    witness_entity_ids: List[str]
     render_map: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
     max_distance_units: int
@@ -275,8 +277,6 @@ def _resolve_target_answer(
     """Resolve the sampled answer support for one lever-balance query."""
 
     target_params = dict(params)
-    explicit_query = target_params.get("query_id", target_params.get("query_id"))
-    _ = explicit_query
     return resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=target_params,
@@ -688,7 +688,7 @@ def _resolve_lever_layout_placement(
     scene_variant: str,
     placements: Sequence[Tuple[str, int, int | None, bool, bool]],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve whole-diagram placement before rendering and evidence projection."""
+    """Resolve whole-diagram placement before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -964,8 +964,17 @@ def _render_scene(
         if bool(missing):
             placeholder_bbox_px = list(weight_bbox)
 
-    evidence_bboxes = [list(bbox) for bbox in relevant_weight_bboxes]
-    evidence_entity_ids = [str(item) for item in relevant_weight_ids]
+    annotation_bboxes = [list(bbox) for bbox in relevant_weight_bboxes]
+    annotation_keyed_bbox_set_map = {
+        "known_weights": [list(spec.bbox_px) for spec in weight_specs if bool(spec.relevant) and not bool(spec.missing)],
+        "target_weight": [list(spec.bbox_px) for spec in weight_specs if bool(spec.relevant) and bool(spec.missing)],
+    }
+    witness_entity_ids = [str(item) for item in relevant_weight_ids]
+    annotation_entity_ids = (
+        list(annotation_keyed_bbox_set_map.keys())
+        if _is_missing_weight_query(str(query_id))
+        else list(witness_entity_ids)
+    )
 
     render_map = {
         "accent_color_name": str(accent_color_name),
@@ -974,7 +983,9 @@ def _render_scene(
         "fulcrum_bbox_px": list(fulcrum_bbox_px),
         "weight_bboxes_px": {spec.weight_id: list(spec.bbox_px) for spec in weight_specs},
         "relevant_weight_ids": list(relevant_weight_ids),
-        "evidence_entity_ids": list(evidence_entity_ids),
+        "annotation_entity_ids": list(annotation_entity_ids),
+        "witness_entity_ids": list(witness_entity_ids),
+        "annotation_keyed_bbox_set_map_px": dict(annotation_keyed_bbox_set_map),
         "beam_center_px": [round(float(beam_center_x), 3), round(float(beam_center_y), 3)],
         "max_distance_units": int(max_distance_units),
     }
@@ -989,8 +1000,10 @@ def _render_scene(
         placeholder_bbox_px=list(placeholder_bbox_px) if placeholder_bbox_px is not None else None,
         relevant_weight_bboxes=list(relevant_weight_bboxes),
         relevant_weight_ids=list(relevant_weight_ids),
-        evidence_bboxes=list(evidence_bboxes),
-        evidence_entity_ids=list(evidence_entity_ids),
+        annotation_bboxes=list(annotation_bboxes),
+        annotation_keyed_bbox_set_map=dict(annotation_keyed_bbox_set_map),
+        annotation_entity_ids=list(annotation_entity_ids),
+        witness_entity_ids=list(witness_entity_ids),
         render_map=render_map,
         scene_entities=list(scene_entities),
         max_distance_units=int(max_distance_units),
@@ -1107,16 +1120,22 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                     "json_output_contract",
                     "json_output_contract_answer_only",
                     "answer_hint",
-                    "evidence_hint_torque",
-                    "evidence_hint_missing_weight",
+                    "annotation_hint_torque",
+                    "annotation_hint_missing_weight",
                     "object_description_center_fulcrum",
                     "object_description_offset_fulcrum",
                     "object_description_textured_beam",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
+            is_missing_weight_query = _is_missing_weight_query(str(axes.query_id))
+            annotation_value = (
+                dict(rendered_scene.annotation_keyed_bbox_set_map)
+                if is_missing_weight_query
+                else list(rendered_scene.annotation_bboxes)
+            )
             json_example, json_example_answer_only = build_prompt_json_examples(
-                evidence_value=list(rendered_scene.evidence_bboxes[:2] if rendered_scene.evidence_bboxes else [[220, 140, 280, 194]]),
+                annotation_value=annotation_value or [[220, 140, 280, 194]],
                 answer_type="integer",
             )
             prompt_selection = render_task_prompt_variants(
@@ -1126,16 +1145,16 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.public_query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "torque_side": str(axes.torque_side or ""),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(
-                        prompt_defaults["evidence_hint_missing_weight"]
-                        if _is_missing_weight_query(str(axes.query_id))
-                        else prompt_defaults["evidence_hint_torque"]
+                    "annotation_hint": str(
+                        prompt_defaults["annotation_hint_missing_weight"]
+                        if is_missing_weight_query
+                        else prompt_defaults["annotation_hint_torque"]
                     ),
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
@@ -1146,7 +1165,11 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            annotation_gt = (
+                TypedValue(type="keyed_bbox_set_map", value=dict(rendered_scene.annotation_keyed_bbox_set_map))
+                if is_missing_weight_query
+                else TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.annotation_bboxes])
+            )
             complexity = build_physics_lever_balance_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
@@ -1170,7 +1193,8 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                         "accent_color_name": str(axes.accent_color_name),
                         "target_answer": int(axes.target_answer),
                         "relevant_weight_ids": list(rendered_scene.relevant_weight_ids),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                        "witness_entity_ids": list(rendered_scene.witness_entity_ids),
                     },
                 },
                 "query_spec": {
@@ -1248,14 +1272,18 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                         for spec in rendered_scene.weight_specs
                     ],
                     "relevant_weight_ids": list(rendered_scene.relevant_weight_ids),
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                    "witness_entity_ids": list(rendered_scene.witness_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "object_set",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "ids": [str(item) for item in rendered_scene.witness_entity_ids],
                 },
-                "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                "projected_annotation": {
+                    "type": "keyed_bbox_set_map" if is_missing_weight_query else "bbox_set",
+                    "bbox_set": [list(bbox) for bbox in rendered_scene.annotation_bboxes],
+                    "keyed_bbox_set_map": dict(rendered_scene.annotation_keyed_bbox_set_map),
+                    "pixel_keyed_bbox_set_map": dict(rendered_scene.annotation_keyed_bbox_set_map),
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,
@@ -1264,7 +1292,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

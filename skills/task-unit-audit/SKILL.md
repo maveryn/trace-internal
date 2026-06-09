@@ -15,7 +15,7 @@ Use this when reviewing the TRACE task inventory as benchmark units rather than 
 5. The relevant domain skill in `skills/domain-<domain>/`
 
 ## Workflow
-1. Inventory the task's actual scene variants, query ids, and evidence contract.
+1. Inventory the task's actual scene variants, query ids, and annotation contract.
 2. Judge whether it is one uniform visual-grounding family with enough within-task variety.
 3. Assign one outcome:
    - `Keep`
@@ -33,5 +33,5 @@ Report each audited task under:
 - `Scene variety`
 - `Query variety`
 - `Grounding necessity`
-- `Evidence fit`
+- `Annotation fit`
 - `Follow-up`

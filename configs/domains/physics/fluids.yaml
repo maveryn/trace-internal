@@ -22,6 +22,7 @@ generation:
         missing_output_force: 1.0
         missing_input_force: 1.0
         missing_piston_area: 1.0
+        missing_input_area: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
@@ -31,6 +32,53 @@ generation:
       mechanical_advantage_support: [3, 4, 5, 6, 7, 8]
       output_force_support: [12, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 33, 35, 36, 40, 42, 44, 45, 48, 49, 50, 54, 55, 56, 60, 63, 64, 66, 70, 72, 77, 80, 84, 88, 96]
       output_area_support: [6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 35, 36, 40, 42, 45, 48, 49, 54, 56, 63, 64, 72]
+    physics_fluids_graduated_cylinder_family:
+      query_id_weights:
+        single_cylinder_volume_readout: 1.0
+        before_after_displacement_volume: 1.0
+      balanced_query_id_sampling: true
+      balanced_target_answer_sampling: true
+    physics_fluids_buoyancy_density_family:
+      scene_variant_weights:
+        rectangular_tank: 1.0
+        beaker_tank: 1.0
+        wide_tank: 1.0
+      object_shape_weights:
+        block: 1.0
+        rounded_block: 1.0
+        capsule_block: 1.0
+      query_id_weights:
+        floating_object_density_value: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_object_shape_sampling: true
+      balanced_target_answer_sampling: true
+      submerged_fraction_support:
+        - "1/4"
+        - "1/2"
+        - "2/3"
+        - "3/4"
+        - "4/5"
+        - "9/10"
+      liquid_density_tenths_support: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    physics_fluids_manometer_family:
+      query_id_weights:
+        u_tube_pressure_difference: 1.0
+      balanced_target_answer_sampling: true
+      balanced_height_sampling: true
+      balanced_kpa_per_cm_sampling: true
+      height_cm_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      kpa_per_cm_support: [1, 2, 3, 4, 5]
+    physics_fluids_fluid_flow_family:
+      query_id_weights:
+        continuity_missing_speed: 1.0
+      orientation_weights:
+        horizontal_pipe: 1.0
+        vertical_pipe: 1.0
+      balanced_orientation_sampling: true
+      balanced_missing_station_sampling: true
+      balanced_target_answer_sampling: true
+      area_cm2_support: [2, 3, 4, 5, 6, 8, 9, 10, 12]
+      speed_m_s_support: [2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24]
 
 rendering:
   shared:
@@ -79,6 +127,38 @@ rendering:
     layout_jitter_y_px_max: 24
   task_overrides:
     task_physics__hydraulic__hydraulic_missing_value: {}
+    physics_fluids_graduated_cylinder_family:
+      canvas_width: 1040
+      canvas_height: 720
+    physics_fluids_buoyancy_density_family:
+      canvas_width: 1120
+      canvas_height: 720
+      tank_left_px: 172
+      tank_top_px: 160
+      tank_width_px: 700
+      tank_height_px: 410
+      waterline_y_px: 346
+      object_center_x_px: 520
+      object_width_px: 118
+      object_part_height_px: 44
+    physics_fluids_manometer_family:
+      canvas_width: 1120
+      canvas_height: 720
+      px_per_cm: 17
+      tube_top_px: 188
+      tube_bottom_px: 560
+      tube_width_px: 86
+      tube_gap_px: 290
+      high_level_y_px: 258
+    physics_fluids_fluid_flow_family:
+      canvas_width: 1120
+      canvas_height: 720
+      panel_margin_x_px: 58
+      panel_margin_top_px: 52
+      panel_margin_bottom_px: 58
+      label_font_size_px: 24
+      station_font_size_px: 28
+      title_font_size_px: 28
 
 complexity:
   shared: {}
@@ -89,6 +169,32 @@ complexity:
         pascal_reasoning: 0.48
         ambiguity: 0.14
         output_burden: 0.10
+    physics_fluids_graduated_cylinder_family:
+      criteria_weights:
+        visual_readout: 0.52
+        arithmetic: 0.16
+        ambiguity: 0.14
+        output_burden: 0.18
+    physics_fluids_buoyancy_density_family:
+      criteria_weights:
+        visual_fraction_readout: 0.44
+        buoyancy_rule: 0.30
+        arithmetic: 0.14
+        output_burden: 0.12
+    physics_fluids_manometer_family:
+      criteria_weights:
+        visual_height_readout: 0.36
+        hydrostatic_relation: 0.30
+        arithmetic: 0.16
+        ambiguity: 0.08
+        output_burden: 0.10
+    physics_fluids_fluid_flow_family:
+      criteria_weights:
+        station_readout: 0.34
+        continuity_relation: 0.32
+        arithmetic: 0.14
+        ambiguity: 0.08
+        output_burden: 0.12
 
 prompt:
   shared:
@@ -100,8 +206,35 @@ prompt:
       object_description_wide_bench: a connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
       object_description_compact_frame: a compact connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
       object_description_tall_columns: a tall connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
-      evidence_hint_missing_output_force: set "evidence" to an object with keys "input_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output force
-      evidence_hint_missing_input_force: set "evidence" to an object with keys "output_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing input force
-      evidence_hint_missing_piston_area: set "evidence" to an object with keys "input_force", "output_force", and "input_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output area
+      annotation_hint_missing_output_force: set "annotation" to an object with keys "input_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output force
+      annotation_hint_missing_input_force: set "annotation" to an object with keys "output_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing input force
+      annotation_hint_missing_piston_area: set "annotation" to an object with keys "input_force", "output_force", and "input_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output area
+      annotation_hint_missing_input_area: set "annotation" to an object with keys "input_force", "output_force", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing input area
       answer_hint_force: set "answer" to the requested integer force value in newtons
       answer_hint_area: set "answer" to the requested integer piston area in cm^2
+    physics_fluids_graduated_cylinder_family:
+      scene_key: graduated_cylinder_diagram
+      task_key: graduated_cylinder_query
+      object_description: a graduated-cylinder measurement setup with visible liquid meniscus lines, tick marks, numeric scale labels, and mL units
+      annotation_hint_single_cylinder_volume_readout: set "annotation" to an object mapping meniscus and scale_region to pixel bounding boxes [x0,y0,x1,y1] for the liquid level and nearby readable scale
+      annotation_hint_before_after_displacement_volume: set "annotation" to an object mapping before_meniscus, before_scale_region, after_meniscus, and after_scale_region to pixel bounding boxes [x0,y0,x1,y1]
+      answer_hint_single_cylinder_volume_readout: set "answer" to the integer cylinder volume in mL
+      answer_hint_before_after_displacement_volume: set "answer" to the integer displaced volume in mL
+    physics_fluids_buoyancy_density_family:
+      scene_key: buoyancy_density_diagram
+      task_key: buoyancy_density_query
+      object_description: a buoyancy diagram with a floating object divided into equal parts, a visible liquid surface, and a liquid-density label
+      annotation_hint_floating_object_density_value: set "annotation" to an object mapping floating_object, waterline, fluid_density_label, and submerged_fraction_marker to pixel bounding boxes [x0,y0,x1,y1]
+      answer_hint_floating_object_density_value: set "answer" to the object density in g/cm^3 as a decimal number
+    physics_fluids_manometer_family:
+      scene_key: manometer_diagram
+      task_key: manometer_pressure_difference_query
+      object_description: a U-tube manometer with pressure points A and B, two visible liquid levels, a height-difference marker, and a rho g conversion label
+      annotation_hint_u_tube_pressure_difference: set "annotation" to an object mapping left_pressure_point, right_pressure_point, height_difference, and fluid_density_label to pixel bounding boxes [x0,y0,x1,y1]
+      answer_hint_u_tube_pressure_difference: set "answer" to the integer absolute pressure difference in kPa
+    physics_fluids_fluid_flow_family:
+      scene_key: fluid_flow_diagram
+      task_key: fluid_flow_continuity_speed_query
+      object_description: a steady-flow pipe diagram with station 1 and station 2, visible cross-section area labels, one known speed label, one missing speed label, and a flow arrow
+      annotation_hint_continuity_missing_speed: set "annotation" to an object mapping station_1, station_2, and flow_path to pixel bounding boxes [x0,y0,x1,y1]
+      answer_hint_continuity_missing_speed: set "answer" to the missing integer flow speed in m/s

@@ -310,7 +310,7 @@ def resolve_forced_graph_edit_operation(
 ) -> str | None:
     """Return an explicitly requested edge-edit operation, if present."""
 
-    for key in ("edit_operation", "edge_edit_operation", "query_id", "query_id", "query_id"):
+    for key in ("edit_operation", "edge_edit_operation", "query_id", "query_variant"):
         value = params.get(str(key))
         if value is None:
             continue
@@ -330,7 +330,7 @@ def resolve_forced_graph_query_id(
 ) -> str | None:
     """Resolve an explicitly requested graph query id, if present."""
 
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         query_id = query_id_from_alias(params.get(str(key)))
         if query_id is not None:
             return str(query_id)

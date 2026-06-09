@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `reversi`
-3. Source task group: `reversi`
-4. Query ids: `legal_move_count`, `corner_move_count`
-5. Objective: Count legal destination squares for the current player, optionally restricted to corner destinations.
+2. Task group: `reversi`
+3. Scene id: `reversi`
+4. Public task id: `task_games__reversi__legal_destination_count`
+5. Supported `query_id` values: `corner_move_count`, `legal_move_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(legal_moves(current_player), destination_filter)); scene=reversi; scope=legal_destination_count; query_branch=corner_move_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over legal destination squares being counted.
-3. The sampled destination-count query is recorded as `query_id` and `query_spec.params.query_id`.
-
-## Implementation
-1. This task uses the shared games Reversi-board renderer for its scene id.
-2. Prompt bundle: `games_reversi_v0`
-3. The marked-move flip-count query remains a separate task because it asks about a specific highlighted move rather than destination-set counting.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Board size, current player, visual style, and target-answer support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

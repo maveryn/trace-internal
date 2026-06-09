@@ -1,0 +1,87 @@
+generation:
+  shared:
+    scene_variant_weights:
+      sparse_board: 1.0
+      crowded_board: 1.0
+    query_id_weights:
+      marked_piece_move_count: 1.0
+      marked_piece_capture_count: 1.0
+      white_piece_reaches_target_count: 1.0
+      black_piece_reaches_target_count: 1.0
+    marked_piece_kind_weights:
+      king: 1.0
+      queen: 1.0
+      rook: 1.0
+      bishop: 1.0
+      knight: 1.0
+    marked_piece_color_weights:
+      white: 1.0
+      black: 1.0
+    target_color_weights:
+      white: 1.0
+      black: 1.0
+    style_variant_weights:
+      classic_ring: 1.0
+      slate_ring: 1.0
+      parchment_ring: 1.0
+      emerald_ring: 1.0
+      monochrome_ring: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_id_sampling: true
+    balanced_marked_piece_kind_sampling: true
+    balanced_marked_piece_color_sampling: true
+    balanced_target_color_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    marked_piece_move_count_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    marked_piece_capture_count_support: [0, 1, 2, 3, 4, 5, 6]
+    white_piece_reaches_target_count_support: [0, 1, 2, 3, 4, 5, 6]
+    black_piece_reaches_target_count_support: [0, 1, 2, 3, 4, 5, 6]
+    sparse_min_occupied_count: 8
+    sparse_max_occupied_count: 13
+    crowded_min_occupied_count: 14
+    crowded_max_occupied_count: 22
+rendering:
+  shared:
+    canvas_width: 900
+    canvas_height: 900
+    panel_margin_px: 48
+    max_board_size_px: 700
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    board_frame_width_px: 8
+    cell_outline_width_px: 2
+    piece_font_size_px: 56
+    piece_bbox_fraction: 0.72
+    marker_width_px: 5
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 620
+    canvas_min_height_px: 620
+    canvas_side_padding_px: 150
+    canvas_vertical_padding_px: 150
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      state_reasoning: 0.46
+      ambiguity: 0.14
+      output_burden: 0.10
+prompt:
+  shared:
+    bundle_id: games_circular_chess_v0
+    scene_key: circular_chess_board
+    task_key: circular_chess_query
+    object_description_sparse_board: a circular chess board with four rings, sixteen sectors per ring, and a small set of white and black chess pieces
+    object_description_crowded_board: a circular chess board with four rings, sixteen sectors per ring, and many white and black chess pieces
+    circular_board_rule_text: Sectors wrap around each ring; rings do not wrap inward or outward.
+    piece_rule_text_marked: Use the marked piece's standard chess movement on this circular board.
+    piece_rule_text_mixed: Use standard chess movement on this circular board. Rooks move around rings or across rings, bishops move diagonally between rings and sectors, queens combine rook and bishop movement, knights jump, and kings move one step.
+    landing_rule_text: A piece may land on an empty cell or an opponent piece, but not on a friendly piece. Sliding pieces stop at the first occupied cell in a direction.
+    annotation_hint_marked_piece_move_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every legal destination cell for the marked piece
+    answer_hint_marked_piece_move_count: set "answer" to the number of legal destination cells for the marked piece
+    annotation_hint_marked_piece_capture_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every opponent-occupied destination cell the marked piece can capture
+    answer_hint_marked_piece_capture_count: set "answer" to the number of opponent pieces the marked piece can capture
+    annotation_hint_white_piece_reaches_target_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every White piece that can move to the blue marked target cell
+    answer_hint_white_piece_reaches_target_count: set "answer" to the number of White pieces that can move to the blue marked target cell
+    annotation_hint_black_piece_reaches_target_count: set "annotation" to a JSON array of pixel-space points [x, y] at the centers of every Black piece that can move to the blue marked target cell
+    answer_hint_black_piece_reaches_target_count: set "answer" to the number of Black pieces that can move to the blue marked target cell

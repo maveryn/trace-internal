@@ -20,7 +20,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.text_legibility import draw_text_traced
-from ..shared.common import projected_puzzle_bbox_evidence
+from ..shared.common import projected_puzzle_bbox_annotation
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -28,10 +28,13 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
 CHECKPOINT_SEQUENCE_TASK_ID = "task_puzzles__voxel_ladder__checkpoint_sequence_label"
-CHECKPOINT_REACHABILITY_TASK_ID = "task_puzzles__voxel_ladder__checkpoint_reachability"
+REACHABLE_CHECKPOINT_COUNT_TASK_ID = "task_puzzles__voxel_ladder__reachable_checkpoint_count"
+UNREACHABLE_CHECKPOINT_LABEL_TASK_ID = "task_puzzles__voxel_ladder__unreachable_checkpoint_label"
 SCENE_ID = "voxel_ladder"
 SEQUENCE_QUERY_IDS: Tuple[str, ...] = ("checkpoint_sequence_label",)
 REACHABILITY_QUERY_IDS: Tuple[str, ...] = ("unreachable_checkpoint_label", "reachable_checkpoint_count")
+REACHABLE_CHECKPOINT_COUNT_QUERY_IDS: Tuple[str, ...] = ("reachable_checkpoint_count",)
+UNREACHABLE_CHECKPOINT_LABEL_QUERY_IDS: Tuple[str, ...] = ("unreachable_checkpoint_label",)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "clean_isometric_voxels",
     "worksheet_voxel_maze",
@@ -902,14 +905,14 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "json_output_contract_answer_only",
                 f"object_description_{scene_variant}",
                 f"answer_hint_{query_id}",
-                f"evidence_hint_{query_id}",
+                f"annotation_hint_{query_id}",
                 f"json_example_{query_id}",
                 f"json_example_answer_only_{query_id}",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         answer_hint = str(prompt_defaults_required[f"answer_hint_{query_id}"])
-        evidence_hint = str(prompt_defaults_required[f"evidence_hint_{query_id}"])
+        annotation_hint = str(prompt_defaults_required[f"annotation_hint_{query_id}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -917,13 +920,13 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults_required[f"object_description_{scene_variant}"]),
                 "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
                 "answer_hint": answer_hint,
-                "evidence_hint": evidence_hint,
+                "annotation_hint": annotation_hint,
                 "json_example": str(prompt_defaults_required[f"json_example_{query_id}"]),
                 "json_example_answer_only": str(prompt_defaults_required[f"json_example_answer_only_{query_id}"]),
             },
@@ -931,15 +934,15 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_puzzle_bbox_evidence(rendered.item_bbox_map, dataset.supporting_item_ids)
-        evidence_bboxes = [[round(float(v), 3) for v in bbox] for bbox in evidence_projection["bbox_set"]]
-        if len(evidence_bboxes) != len(dataset.supporting_item_ids):
-            raise ValueError("voxel-ladder evidence projection does not match supporting item ids")
+        annotation_projection = projected_puzzle_bbox_annotation(rendered.item_bbox_map, dataset.supporting_item_ids)
+        annotation_bboxes = [[round(float(v), 3) for v in bbox] for bbox in annotation_projection["bbox_set"]]
+        if len(annotation_bboxes) != len(dataset.supporting_item_ids):
+            raise ValueError("voxel-ladder annotation projection does not match supporting item ids")
         answer_gt = TypedValue(type=str(dataset.answer_type), value=dataset.answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         visual_scan = normalize_int_with_bounds(len(dataset.cubes), [8, 20])
         route_load = normalize_int_with_bounds(len(dataset.route_nodes), [5, 14])
-        evidence_load = min(1.0, len(evidence_bboxes) / 8.0)
+        annotation_load = min(1.0, len(annotation_bboxes) / 8.0)
         complexity_weights = resolve_puzzle_complexity_weights(
             _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
             task_id=str(self.task_id),
@@ -948,7 +951,7 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
             weights=complexity_weights,
             components={
                 "visual_scan": float(visual_scan),
-                "reasoning_load": min(1.0, 0.35 + (0.35 * float(route_load)) + (0.20 * float(evidence_load))),
+                "reasoning_load": min(1.0, 0.35 + (0.35 * float(route_load)) + (0.20 * float(annotation_load))),
                 "scene_variant_load": 0.38 if str(scene_variant) == "game_board_voxel_maze" else 0.30,
             },
         )
@@ -1016,7 +1019,7 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                     "image_id": "img0",
                     "scene_bbox_px": [round(float(v), 3) for v in rendered.scene_bbox_px],
                     "item_bboxes_px": dict(rounded_bboxes),
-                    "evidence_source": "item_bboxes_px",
+                    "annotation_source": "item_bboxes_px",
                 },
                 render_params.unit_size_jitter,
             ),
@@ -1049,25 +1052,25 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "route_ladder_count": int(dataset.route_ladder_count),
                 "answer_value": dataset.answer_value,
                 "supporting_item_ids": list(dataset.supporting_item_ids),
-                "supporting_evidence_source": "item_bboxes_px",
-                "evidence_policy": "bbox_set over route/count support items",
+                "supporting_annotation_source": "item_bboxes_px",
+                "annotation_policy": "bbox_set over route/count support items",
                 "query_id_probabilities": dict(query_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
                 "item_ids": list(dataset.supporting_item_ids),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1092,15 +1095,25 @@ class PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(_PuzzlesTopologyVoxe
 
 
 @register_task
-class PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
-    """Answer checkpoint reachability queries over a voxel-ladder maze."""
+class PuzzlesTopologyVoxelLadderReachableCheckpointCountTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
+    """Count reachable checkpoints in a voxel-ladder maze."""
 
-    task_id = CHECKPOINT_REACHABILITY_TASK_ID
-    supported_query_ids = REACHABILITY_QUERY_IDS
+    task_id = REACHABLE_CHECKPOINT_COUNT_TASK_ID
+    supported_query_ids = REACHABLE_CHECKPOINT_COUNT_QUERY_IDS
+    task_key = "voxel_ladder_checkpoint_reachability_query"
+
+
+@register_task
+class PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
+    """Select an unreachable checkpoint label in a voxel-ladder maze."""
+
+    task_id = UNREACHABLE_CHECKPOINT_LABEL_TASK_ID
+    supported_query_ids = UNREACHABLE_CHECKPOINT_LABEL_QUERY_IDS
     task_key = "voxel_ladder_checkpoint_reachability_query"
 
 
 __all__ = [
-    "PuzzlesTopologyVoxelLadderCheckpointReachabilityTask",
     "PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask",
+    "PuzzlesTopologyVoxelLadderReachableCheckpointCountTask",
+    "PuzzlesTopologyVoxelLadderUnreachableCheckpointLabelTask",
 ]

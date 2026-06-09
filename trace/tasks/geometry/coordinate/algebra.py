@@ -25,6 +25,7 @@ from ..shared.complexity import build_geometry_task_complexity, clamp_unit_inter
 from ..shared.fixed_query_task import select_geometry_query_id
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.noise_defaults import load_geometry_noise_defaults
+from ..shared.option_count import resolve_geometry_option_count
 from ..shared.point_labels import draw_labeled_points
 from ..shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
 from .quadrilateral import (
@@ -45,7 +46,9 @@ GuideSegment = Tuple[str, str, str]
 
 MISSING_ENDPOINT_TASK_ID = "task_geometry__coordinate_plane__missing_endpoint_label"
 SECTION_POINT_TASK_ID = "task_geometry__coordinate_plane__section_point_label"
-TRANSFORMED_POINT_TASK_ID = "task_geometry__coordinate_plane__transformed_point_label"
+REFLECTED_POINT_TASK_ID = "task_geometry__coordinate_plane__reflected_point_label"
+ROTATED_POINT_TASK_ID = "task_geometry__coordinate_plane__rotated_point_label"
+TRANSLATED_POINT_TASK_ID = "task_geometry__coordinate_plane__translated_point_label"
 SCENE_ID = "coordinate_plane"
 
 MISSING_ENDPOINT_QUERY_IDS: Tuple[str, ...] = (
@@ -62,6 +65,15 @@ TRANSFORMED_POINT_QUERY_IDS: Tuple[str, ...] = (
     "reflect_over_vertical_line",
     "reflect_over_horizontal_line",
     "rotate_90_about_marked_center",
+)
+REFLECTED_POINT_QUERY_IDS: Tuple[str, ...] = (
+    "reflect_over_vertical_line",
+    "reflect_over_horizontal_line",
+)
+ROTATED_POINT_QUERY_IDS: Tuple[str, ...] = ("rotate_90_about_marked_center",)
+TRANSLATED_POINT_QUERY_IDS: Tuple[str, ...] = (
+    "translate_point",
+    "translate_by_reference_vector",
 )
 DEFAULT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
@@ -122,6 +134,7 @@ class _RenderedScene:
     background_meta: Dict[str, Any]
     post_noise_meta: Dict[str, Any]
     render_spec_extra: Dict[str, Any]
+    option_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -700,7 +713,14 @@ def _render_scene(
 ) -> _RenderedScene:
     rng = spawn_rng(int(instance_seed), f"{task_id}.render")
     max_abs = _resolve_int_param(params, generation_defaults, "algebra_graph_abs_max", _DEFAULTS.graph_abs_max)
-    candidate_count = max(4, _resolve_int_param(params, generation_defaults, "algebra_candidate_count", _DEFAULTS.candidate_count))
+    candidate_count, option_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=generation_defaults,
+        field_name="algebra_candidate_count",
+        supported_counts=(4, 6),
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+    )
     if int(candidate_count) > len(query.label_pool):
         raise ValueError("algebra_candidate_count cannot exceed candidate label pool length")
     candidate_labels = _candidate_labels_for_query(query, candidate_count=int(candidate_count))
@@ -900,6 +920,7 @@ def _render_scene(
             "scene_scale": int(context.scene_scale),
             **dict(context.graph_layout_metadata),
         },
+        option_count_probabilities=dict(option_count_probabilities),
     )
 
 
@@ -908,7 +929,11 @@ def _build_complexity(*, task_id: str, query_id: str, object_count: int) -> Any:
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
-    is_transform = str(task_id) == TRANSFORMED_POINT_TASK_ID
+    is_transform = str(task_id) in {
+        REFLECTED_POINT_TASK_ID,
+        ROTATED_POINT_TASK_ID,
+        TRANSLATED_POINT_TASK_ID,
+    }
     is_reflection = str(query_id).startswith("reflect")
     return build_geometry_task_complexity(
         weights=weights,
@@ -928,7 +953,7 @@ def _trace_payload(
     rendered: _RenderedScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    evidence_value: List[List[float]],
+    annotation_value: List[List[float]],
 ) -> Dict[str, Any]:
     candidate_trace = {
         str(label): {
@@ -987,6 +1012,7 @@ def _trace_payload(
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
+                "algebra_candidate_count_probabilities": dict(rendered.option_count_probabilities),
                 "target_label_name": str(rendered.problem.target_label_name),
             },
         },
@@ -997,6 +1023,7 @@ def _trace_payload(
             "label_box_bbox_px": list(rendered.label_box_bbox_px) if rendered.label_box_bbox_px else None,
             "post_image_noise": dict(rendered.post_noise_meta),
             "background_style": dict(rendered.background_meta),
+            "algebra_candidate_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "render_map": {
             "coord_space": "pixel",
@@ -1028,6 +1055,7 @@ def _trace_payload(
             "known_points_by_label": dict(known_trace),
             "candidate_points_by_label": dict(candidate_trace),
             "query_id_probabilities": dict(query.query_probabilities),
+            "algebra_candidate_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_algebra_candidate_point",
@@ -1041,10 +1069,10 @@ def _trace_payload(
             },
             "formula": str(rendered.problem.formula),
         },
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "point_set",
-            "point_set": list(evidence_value),
-            "pixel_point_set": list(evidence_value),
+            "point_set": list(annotation_value),
+            "pixel_point_set": list(annotation_value),
             "candidate_points_px_by_label": {
                 str(label): [float(value) for value in point]
                 for label, point in rendered.candidate_points_px_by_label.items()
@@ -1053,7 +1081,7 @@ def _trace_payload(
     }
 
 
-def _candidate_point_evidence(rendered: _RenderedScene, label: str) -> List[List[float]]:
+def _candidate_point_annotation(rendered: _RenderedScene, label: str) -> List[List[float]]:
     point = rendered.candidate_points_px_by_label[str(label)]
     return [[float(point[0]), float(point[1])]]
 
@@ -1092,15 +1120,15 @@ def _generate_output(
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "evidence_hint_candidate_point",
+            "annotation_hint_candidate_point",
             "answer_hint_option_letter",
         ),
         context=f"prompt defaults for {task_id}",
     )
-    evidence_value = _candidate_point_evidence(rendered, str(query.winner_label))
+    annotation_value = _candidate_point_annotation(rendered, str(query.winner_label))
     json_example, json_example_answer_only = resolve_prompt_json_examples(
         prompt_defaults_all,
-        evidence_value=evidence_value,
+        annotation_value=annotation_value,
         answer_type="option_letter",
     )
     prompt_selection = render_task_prompt_variants(
@@ -1110,12 +1138,12 @@ def _generate_output(
         scene_key=str(prompt_defaults.get("scene_key", scene_key)),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(query.query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint_candidate_point"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_candidate_point"]),
             "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -1129,12 +1157,12 @@ def _generate_output(
         rendered=rendered,
         prompt_defaults=prompt_defaults,
         prompt_artifacts=prompt_artifacts,
-        evidence_value=evidence_value,
+        annotation_value=annotation_value,
     )
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-        evidence_gt=TypedValue(type="point_set", value=evidence_value),
+        annotation_gt=TypedValue(type="point_set", value=annotation_value),
         image=rendered.image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -1158,6 +1186,8 @@ class GeometryCoordinateMissingEndpointLabelTask:
     domain = "geometry"
     task_group = "coordinate"
     default_dataset_enabled = True
+    scene_id = SCENE_ID
+    public_scene_id = SCENE_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1178,6 +1208,8 @@ class GeometryCoordinateSectionPointLabelTask:
     domain = "geometry"
     task_group = "coordinate"
     default_dataset_enabled = True
+    scene_id = SCENE_ID
+    public_scene_id = SCENE_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1191,19 +1223,65 @@ class GeometryCoordinateSectionPointLabelTask:
 
 
 @register_task
-class GeometryCoordinateTransformedPointLabelTask:
-    """Choose the candidate image point after a coordinate transformation."""
+class GeometryCoordinateReflectedPointLabelTask:
+    """Choose the candidate image point after a coordinate reflection."""
 
-    task_id = TRANSFORMED_POINT_TASK_ID
+    task_id = REFLECTED_POINT_TASK_ID
     domain = "geometry"
     task_group = "coordinate"
     default_dataset_enabled = True
+    scene_id = SCENE_ID
+    public_scene_id = SCENE_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         return _generate_output(
             task_id=self.task_id,
-            query_ids=TRANSFORMED_POINT_QUERY_IDS,
+            query_ids=REFLECTED_POINT_QUERY_IDS,
+            scene_key="coordinate_algebra_transform_scene",
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+
+
+@register_task
+class GeometryCoordinateRotatedPointLabelTask:
+    """Choose the candidate image point after a 90-degree rotation."""
+
+    task_id = ROTATED_POINT_TASK_ID
+    domain = "geometry"
+    task_group = "coordinate"
+    default_dataset_enabled = True
+    scene_id = SCENE_ID
+    public_scene_id = SCENE_ID
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        del max_attempts
+        return _generate_output(
+            task_id=self.task_id,
+            query_ids=ROTATED_POINT_QUERY_IDS,
+            scene_key="coordinate_algebra_transform_scene",
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+
+
+@register_task
+class GeometryCoordinateTranslatedPointLabelTask:
+    """Choose the candidate image point after a coordinate translation."""
+
+    task_id = TRANSLATED_POINT_TASK_ID
+    domain = "geometry"
+    task_group = "coordinate"
+    default_dataset_enabled = True
+    scene_id = SCENE_ID
+    public_scene_id = SCENE_ID
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        del max_attempts
+        return _generate_output(
+            task_id=self.task_id,
+            query_ids=TRANSLATED_POINT_QUERY_IDS,
             scene_key="coordinate_algebra_transform_scene",
             instance_seed=int(instance_seed),
             params=params,
@@ -1212,6 +1290,8 @@ class GeometryCoordinateTransformedPointLabelTask:
 
 __all__ = [
     "GeometryCoordinateMissingEndpointLabelTask",
+    "GeometryCoordinateReflectedPointLabelTask",
+    "GeometryCoordinateRotatedPointLabelTask",
     "GeometryCoordinateSectionPointLabelTask",
-    "GeometryCoordinateTransformedPointLabelTask",
+    "GeometryCoordinateTranslatedPointLabelTask",
 ]

@@ -15,24 +15,24 @@ from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
-from .review_overlays import render_evidence_overlay
+from .review_overlays import render_annotation_overlay
 
 
 PREVIEW_MAX_SIDE = 384
 
 INSPECTION_EXCEL_HEADERS: tuple[str, ...] = (
     "image",
-    "evidence_image",
+    "annotation_image",
     "task",
     "query_id",
     "scene_id",
     "query_id",
     "prompt_answer",
     "ground_truth_answer",
-    "prompt_answer_and_evidence",
-    "ground_truth_answer_and_evidence",
+    "prompt_answer_and_annotation",
+    "ground_truth_answer_and_annotation",
     "answer_type",
-    "evidence_type",
+    "annotation_type",
     "instance_seed",
     "image_path",
     "data_path",
@@ -171,33 +171,33 @@ def populate_inspection_sheet(
             with PILImage.open(image_path) as source:
                 source_rgb = source.convert("RGB")
                 preview = build_preview_image(source_rgb, max_image_side=max_image_side)
-                evidence_preview = build_preview_image(
-                    render_evidence_overlay(
+                annotation_preview = build_preview_image(
+                    render_annotation_overlay(
                         source_rgb,
-                        evidence_type=str(row.get("overlay_evidence_type", row.get("evidence_type", ""))),
-                        evidence_value=row.get("overlay_evidence_value", row.get("answer_evidence")),
+                        annotation_type=str(row.get("overlay_annotation_type", row.get("annotation_type", ""))),
+                        annotation_value=row.get("overlay_annotation_value", row.get("answer_annotation")),
                     ),
                     max_image_side=max_image_side,
                 )
-                row_height = max(int(preview.height), int(evidence_preview.height))
+                row_height = max(int(preview.height), int(annotation_preview.height))
 
                 preview_buffer = io.BytesIO()
                 preview.save(preview_buffer, format="PNG")
                 preview_buffer.seek(0)
                 image_buffers.append(preview_buffer)
 
-                evidence_buffer = io.BytesIO()
-                evidence_preview.save(evidence_buffer, format="PNG")
-                evidence_buffer.seek(0)
-                image_buffers.append(evidence_buffer)
+                annotation_buffer = io.BytesIO()
+                annotation_preview.save(annotation_buffer, format="PNG")
+                annotation_buffer.seek(0)
+                image_buffers.append(annotation_buffer)
 
             preview_img = XLImage(preview_buffer)
             preview_img.anchor = f"A{row_idx}"
             sheet.add_image(preview_img)
 
-            evidence_img = XLImage(evidence_buffer)
-            evidence_img.anchor = f"B{row_idx}"
-            sheet.add_image(evidence_img)
+            annotation_img = XLImage(annotation_buffer)
+            annotation_img.anchor = f"B{row_idx}"
+            sheet.add_image(annotation_img)
 
             sheet.row_dimensions[row_idx].height = max(60, float(row_height) * 0.75)
         else:
@@ -210,10 +210,10 @@ def populate_inspection_sheet(
             row.get("query_id", ""),
             row.get("prompt_answer", row.get("prompt_answer_only", "")),
             json_cell(row.get("ground_truth_answer", row.get("answer_only"))),
-            row.get("prompt_answer_and_evidence", row.get("prompt", "")),
-            json_cell(row.get("ground_truth_answer_and_evidence", row.get("answer"))),
+            row.get("prompt_answer_and_annotation", row.get("prompt", "")),
+            json_cell(row.get("ground_truth_answer_and_annotation", row.get("answer"))),
             row.get("answer_type", ""),
-            row.get("evidence_type", ""),
+            row.get("annotation_type", ""),
             int(row.get("instance_seed", 0)),
             row.get("image_path", ""),
             row.get("data_path", ""),

@@ -14,7 +14,7 @@ class GraphCountingPipeBridgeCountTask(PipeJunctionGraphTaskBase):
     task_group = "counting"
     query_id = "pipe_bridge_count"
     prompt_question_key = "question_text_bridge_count"
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = "bridge_count_query"
 
 

@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
+from .text import draw_game_text_traced as draw_text_traced
 from .connect_four_common import RED, YELLOW, Coord, board_dimensions, coord_to_cell_id, player_name
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -215,6 +215,7 @@ def render_connect_four_board_scene(
     params: ConnectFourRenderParams,
     marked_square: Coord | None,
     panel_style: GamePanelSceneStyle | None = None,
+    column_labels: Sequence[str] | None = None,
 ) -> RenderedConnectFourScene:
     """Render one visible Connect Four board with an optional marked move square."""
 
@@ -222,6 +223,11 @@ def render_connect_four_board_scene(
     draw = ImageDraw.Draw(image)
     theme = build_games_connect_four_theme(style_variant=str(style_variant))
     rows, columns = board_dimensions(board)
+    visible_column_labels = tuple(str(label) for label in column_labels) if column_labels is not None else tuple()
+    if visible_column_labels and len(visible_column_labels) != int(columns):
+        raise ValueError("column_labels length must match the board column count")
+    label_band_height = max(24, int(round(0.34 * int(params.player_badge_height_px)))) if visible_column_labels else 0
+    label_gap_px = max(6, int(round(0.10 * int(params.player_badge_height_px)))) if visible_column_labels else 0
 
     cell_size = min(
         int(params.max_board_width_px) // int(columns),
@@ -231,6 +237,8 @@ def render_connect_four_board_scene(
             - (2 * int(params.panel_margin_px))
             - int(params.player_badge_height_px)
             - int(params.header_gap_px)
+            - int(label_gap_px)
+            - int(label_band_height)
         )
         // int(rows),
     )
@@ -242,6 +250,8 @@ def render_connect_four_board_scene(
         - (2 * int(params.panel_margin_px))
         - int(params.player_badge_height_px)
         - int(params.header_gap_px)
+        - int(label_gap_px)
+        - int(label_band_height)
     )
     board_top = int(
         params.panel_margin_px
@@ -254,6 +264,12 @@ def render_connect_four_board_scene(
         round(float(board_top), 3),
         round(float(board_left + board_width), 3),
         round(float(board_top + board_height), 3),
+    )
+    column_label_band_bbox = (
+        round(float(board_left), 3),
+        round(float(board_top + board_height + label_gap_px), 3),
+        round(float(board_left + board_width), 3),
+        round(float(board_top + board_height + label_gap_px + label_band_height), 3),
     )
 
     badge_font = load_font(
@@ -279,7 +295,7 @@ def render_connect_four_board_scene(
         min(float(board_bbox[0]), float(badge_bbox[0])),
         min(float(board_bbox[1]), float(badge_bbox[1])),
         max(float(board_bbox[2]), float(badge_bbox[2])),
-        max(float(board_bbox[3]), float(badge_bbox[3])),
+        max(float(board_bbox[3]), float(badge_bbox[3]), float(column_label_band_bbox[3]) if visible_column_labels else float(board_bbox[3])),
     )
     _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
         bbox_px=group_bbox,
@@ -293,6 +309,7 @@ def render_connect_four_board_scene(
     badge_top = float(badge_top + dy)
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
     badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
+    column_label_band_bbox = offset_bbox(column_label_band_bbox, dx=dx, dy=dy)
 
     scene_panel_bbox: Tuple[int, int, int, int] | None = None
     if panel_style is not None:
@@ -301,7 +318,19 @@ def render_connect_four_board_scene(
             max(4, int(round(min(board_bbox[0], badge_bbox[0]))) - panel_pad),
             max(4, int(round(min(board_bbox[1], badge_bbox[1]))) - panel_pad),
             min(int(params.canvas_width) - 4, int(round(max(board_bbox[2], badge_bbox[2]))) + panel_pad),
-            min(int(params.canvas_height) - 4, int(round(max(board_bbox[3], badge_bbox[3]))) + panel_pad),
+            min(
+                int(params.canvas_height) - 4,
+                int(
+                    round(
+                        max(
+                            board_bbox[3],
+                            badge_bbox[3],
+                            column_label_band_bbox[3] if visible_column_labels else board_bbox[3],
+                        )
+                    )
+                )
+                + panel_pad,
+            ),
         )
         draw_panel_scene_chrome(
             draw,
@@ -385,6 +414,8 @@ def render_connect_four_board_scene(
     scene_entities: List[Dict[str, Any]] = []
     cell_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
     disc_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
+    column_label_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
+    column_label_to_col: Dict[str, int] = {}
 
     marked_square_bbox_px: Tuple[float, float, float, float] | None = None
     for row in range(int(rows)):
@@ -442,6 +473,43 @@ def render_connect_four_board_scene(
                 entity["disc_bbox"] = list(disc_bbox_px)
             scene_entities.append(entity)
 
+    if visible_column_labels:
+        label_rgb = (24, 28, 35)
+        label_stroke = (255, 255, 255)
+        for col, label in enumerate(visible_column_labels):
+            label_bbox = (
+                round(float(board_left + (col * cell_size)), 3),
+                round(float(column_label_band_bbox[1]), 3),
+                round(float(board_left + ((col + 1) * cell_size)), 3),
+                round(float(column_label_band_bbox[3]), 3),
+            )
+            font = fit_font_to_box(
+                draw,
+                text=str(label),
+                max_width=max(1.0, float(label_bbox[2] - label_bbox[0])),
+                max_height=max(1.0, float(label_bbox[3] - label_bbox[1])),
+                bold=True,
+                font_family=str(params.font_family) or None,
+                min_size_px=10,
+                max_size_px=max(12, int(round(0.46 * float(cell_size)))),
+                fill_ratio=0.76,
+            )
+            text_bbox = draw.textbbox((0, 0), str(label), font=font, stroke_width=2)
+            text_w = float(text_bbox[2] - text_bbox[0])
+            text_h = float(text_bbox[3] - text_bbox[1])
+            x = float(label_bbox[0] + (0.5 * ((label_bbox[2] - label_bbox[0]) - text_w)) - text_bbox[0])
+            y = float(label_bbox[1] + (0.5 * ((label_bbox[3] - label_bbox[1]) - text_h)) - text_bbox[1])
+            draw.text(
+                (float(x), float(y)),
+                str(label),
+                font=font,
+                fill=label_rgb,
+                stroke_width=2,
+                stroke_fill=label_stroke,
+            )
+            column_label_bboxes_px[str(label)] = label_bbox
+            column_label_to_col[str(label)] = int(col)
+
     return RenderedConnectFourScene(
         image=image,
         cell_specs=tuple(cell_specs),
@@ -451,6 +519,8 @@ def render_connect_four_board_scene(
             "scene_panel_bbox_px": None if scene_panel_bbox is None else [int(value) for value in scene_panel_bbox],
             "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
             "disc_bboxes_px": {str(key): list(value) for key, value in disc_bboxes_px.items()},
+            "column_label_bboxes_px": {str(key): list(value) for key, value in column_label_bboxes_px.items()},
+            "column_label_to_col": {str(key): int(value) for key, value in column_label_to_col.items()},
             "player_badge_bbox_px": list(badge_bbox),
             "marked_square_bbox_px": None if marked_square_bbox_px is None else list(marked_square_bbox_px),
             "rows": int(rows),

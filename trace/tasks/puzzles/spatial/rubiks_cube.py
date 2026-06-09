@@ -17,7 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import (
     build_puzzle_complexity,
     clamp_unit_interval,
@@ -25,9 +25,7 @@ from ..shared.complexity import (
     resolve_puzzle_complexity_weights,
 )
 from ..shared.rubiks_scene import (
-    FACE_COLOR_COUNT_QUERY_IDS,
     MOVE_RESULT_QUERY_IDS,
-    STICKER_COLOR_QUERY_IDS,
     SUPPORTED_RUBIKS_QUERY_IDS,
     SUPPORTED_RUBIKS_SCENE_VARIANTS,
     build_rubiks_dataset,
@@ -41,10 +39,23 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
 INTERNAL_TASK_ID = "puzzles_spatial_rubiks_cube_internal"
-RUBIKS_STICKER_COLOR_LABEL_TASK_ID = "task_puzzles__rubiks_net__rubiks_sticker_color_label"
-RUBIKS_FACE_COLOR_COUNT_LABEL_TASK_ID = "task_puzzles__rubiks_net__rubiks_face_color_count_label"
+STATIC_STICKER_COLOR_TASK_ID = "task_puzzles__rubiks_net__static_sticker_color_label"
+POST_MOVE_STICKER_COLOR_TASK_ID = "task_puzzles__rubiks_net__post_move_sticker_color_label"
+STATIC_FACE_COLOR_COUNT_TASK_ID = "task_puzzles__rubiks_net__static_face_color_count_label"
+POST_MOVE_FACE_COLOR_COUNT_TASK_ID = "task_puzzles__rubiks_net__post_move_face_color_count_label"
 RUBIKS_MOVE_RESULT_LABEL_TASK_ID = "task_puzzles__rubiks_net__rubiks_move_result_label"
 RUBIKS_SCENE_ID = "rubiks_net"
+
+STATIC_STICKER_COLOR_QUERY_IDS: Tuple[str, ...] = ("static_sticker_color_label",)
+POST_MOVE_STICKER_COLOR_QUERY_IDS: Tuple[str, ...] = (
+    "one_move_sticker_color_label",
+    "short_sequence_sticker_color_label",
+)
+STATIC_FACE_COLOR_COUNT_QUERY_IDS: Tuple[str, ...] = ("static_face_color_count_label",)
+POST_MOVE_FACE_COLOR_COUNT_QUERY_IDS: Tuple[str, ...] = (
+    "one_move_face_color_count_label",
+    "short_sequence_face_color_count_label",
+)
 
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_RUBIKS_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_RUBIKS_SCENE_VARIANTS
@@ -104,8 +115,8 @@ def _resolve_query_id(
     """Resolve one internal Rubik query branch for a public task."""
 
     effective_params = dict(params)
-    if effective_params.get("query_id") is None and effective_params.get("query_id") is not None:
-        effective_params["query_id"] = str(effective_params["query_id"])
+    if effective_params.get("query_id") is None and effective_params.get("query_variant") is not None:
+        effective_params["query_id"] = str(effective_params["query_variant"])
     return resolve_puzzle_axis_variant(
         params=effective_params,
         gen_defaults=_GEN_DEFAULTS,
@@ -161,9 +172,9 @@ def _solver_trace_for_trace(solver_trace: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def _query_family(query_id: str) -> str:
-    if str(query_id) in STICKER_COLOR_QUERY_IDS:
+    if str(query_id) in (*STATIC_STICKER_COLOR_QUERY_IDS, *POST_MOVE_STICKER_COLOR_QUERY_IDS):
         return "sticker_color_label"
-    if str(query_id) in FACE_COLOR_COUNT_QUERY_IDS:
+    if str(query_id) in (*STATIC_FACE_COLOR_COUNT_QUERY_IDS, *POST_MOVE_FACE_COLOR_COUNT_QUERY_IDS):
         return "face_color_count_label"
     if str(query_id) in MOVE_RESULT_QUERY_IDS:
         return "move_result_label"
@@ -262,7 +273,7 @@ class _RubiksCubeBaseTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_option_letter",
-                "evidence_hint_option_panel",
+                "annotation_hint_option_panel",
                 "json_example_option_label",
                 "json_example_answer_only_option_label",
             ),
@@ -273,7 +284,7 @@ class _RubiksCubeBaseTask:
             "object_description": str(prompt_defaults[f"object_description_{family}"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint_option_panel"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_option_panel"]),
             "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
             "json_example": str(prompt_defaults["json_example_option_label"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_option_label"]),
@@ -286,24 +297,24 @@ class _RubiksCubeBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_panel_id = f"option_{dataset['answer_option_label']}"
-        option_projection = projected_puzzle_bbox_evidence(
+        option_projection = projected_puzzle_bbox_annotation(
             rendered_scene.option_panel_bbox_map,
             [str(correct_option_panel_id)],
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in option_projection["bbox_set"]
         ]
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=answer_value)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         move_count = len(dataset.get("query_sequence", []))
         option_count = int(dataset["option_count"])
@@ -389,7 +400,7 @@ class _RubiksCubeBaseTask:
                 "candidate_net_bboxes_px": {
                     str(key): list(value) for key, value in rendered_scene.candidate_net_bbox_map.items()
                 },
-                "evidence_source": "option_panel_bboxes_px",
+                "annotation_source": "option_panel_bboxes_px",
             }, render_params.unit_size_jitter or {}),
             "execution_trace": {
                 "scene_id": RUBIKS_SCENE_ID,
@@ -427,20 +438,20 @@ class _RubiksCubeBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -453,19 +464,35 @@ class _RubiksCubeBaseTask:
 
 
 @register_task
-class PuzzlesSpatialRubiksStickerColorLabelTask(_RubiksCubeBaseTask):
-    """Choose the color-swatch option for a queried Rubik sticker."""
+class PuzzlesSpatialRubiksStaticStickerColorLabelTask(_RubiksCubeBaseTask):
+    """Choose the color-swatch option for a queried sticker in the visible state."""
 
-    task_id = RUBIKS_STICKER_COLOR_LABEL_TASK_ID
-    supported_query_ids = STICKER_COLOR_QUERY_IDS
+    task_id = STATIC_STICKER_COLOR_TASK_ID
+    supported_query_ids = STATIC_STICKER_COLOR_QUERY_IDS
 
 
 @register_task
-class PuzzlesSpatialRubiksFaceColorCountLabelTask(_RubiksCubeBaseTask):
-    """Choose the numeric option for a target-color count on one Rubik face."""
+class PuzzlesSpatialRubiksPostMoveStickerColorLabelTask(_RubiksCubeBaseTask):
+    """Choose the color-swatch option for a queried sticker after visible moves."""
 
-    task_id = RUBIKS_FACE_COLOR_COUNT_LABEL_TASK_ID
-    supported_query_ids = FACE_COLOR_COUNT_QUERY_IDS
+    task_id = POST_MOVE_STICKER_COLOR_TASK_ID
+    supported_query_ids = POST_MOVE_STICKER_COLOR_QUERY_IDS
+
+
+@register_task
+class PuzzlesSpatialRubiksStaticFaceColorCountLabelTask(_RubiksCubeBaseTask):
+    """Choose the numeric option for a target-color count on one visible face."""
+
+    task_id = STATIC_FACE_COLOR_COUNT_TASK_ID
+    supported_query_ids = STATIC_FACE_COLOR_COUNT_QUERY_IDS
+
+
+@register_task
+class PuzzlesSpatialRubiksPostMoveFaceColorCountLabelTask(_RubiksCubeBaseTask):
+    """Choose the numeric option for a target-color count after visible moves."""
+
+    task_id = POST_MOVE_FACE_COLOR_COUNT_TASK_ID
+    supported_query_ids = POST_MOVE_FACE_COLOR_COUNT_QUERY_IDS
 
 
 @register_task
@@ -477,7 +504,9 @@ class PuzzlesSpatialRubiksMoveResultLabelTask(_RubiksCubeBaseTask):
 
 
 __all__ = [
-    "PuzzlesSpatialRubiksFaceColorCountLabelTask",
     "PuzzlesSpatialRubiksMoveResultLabelTask",
-    "PuzzlesSpatialRubiksStickerColorLabelTask",
+    "PuzzlesSpatialRubiksPostMoveFaceColorCountLabelTask",
+    "PuzzlesSpatialRubiksPostMoveStickerColorLabelTask",
+    "PuzzlesSpatialRubiksStaticFaceColorCountLabelTask",
+    "PuzzlesSpatialRubiksStaticStickerColorLabelTask",
 ]

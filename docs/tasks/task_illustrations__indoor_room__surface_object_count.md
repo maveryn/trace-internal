@@ -1,48 +1,55 @@
-# task_illustrations__indoor_room__surface_object_count
+# `task_illustrations__indoor_room__surface_object_count`
 
-Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
-calibration pending.
+## Summary
+- Domain: `illustrations`
+- Scene id: `indoor_room`
+- Implementation task group: `counting`
+- Implementation source: `trace/tasks/illustrations/counting/object_type_on_surface_count.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_illustrations__indoor_room__surface_object_count` -> `task_illustrations__indoor_room__surface_object_count`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Identity
-- domain: `illustrations`
-- scene_id: `indoor_room`
-- task_group: `counting`
-- task: `object_type_on_surface_count`
-- module: `trace/tasks/illustrations/counting/object_type_on_surface_count.py`
-- prompt bundle: `prompts/illustrations/counting/illustrations_counting_v0.json`
+## Task Contract
+Counts objects of one type on a named indoor surface.
 
-## Scene And Query
-The task renders an indoor room with furniture surfaces and many small objects
-placed on or away from those surfaces.
+This public task id is a stable contract-v0 unit: one renderer scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-The task records
-`query_id=object_type_on_surface_count`. The query asks how many objects of a
-named type are on a named surface such as a table, shelf, or counter.
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `object_type_on_surface_count` | `count(filter(room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count; query_branch=object_type_on_surface_count` |
+
+## Program Metadata
+- Program signatures: `count.scoped_attribute`
+- Base program contract: `count(filter(room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
+- Parameter axes: `target_attribute`
+- Arguments:
+  - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
+  - `room_objects`: semantic_role; allowed `visible_room_objects`; source `program_schema_concrete`
+  - `target_attribute`: object_attribute; allowed `type`; source `query_id|parameter_axes`
+  - `target_object_type`: semantic_role; allowed `sampled_object_type`; source `program_schema_concrete`
+  - `target_surface`: semantic_role; allowed `sampled_surface`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `object_type_on_surface_count`
 
 ## Answer Contract
-- `answer_gt.type = integer`
-- value is the number of queried object instances on the queried surface
+- Answer schema: `integer_count`
+- Generator `answer_gt.type`: `integer`
+- The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
-## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for each counted object
-- evidence boxes are sorted deterministically by rendered position
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
-## Trace Contract
-- `scene_ir.entities` contains indoor furniture, surfaces, small objects, and
-  decor.
-- `render_map.surface_bboxes_px` stores surface bboxes.
-- `render_map.object_bboxes_px` stores small-object bboxes.
-- `render_map.counted_object_ids`, `witness_symbolic.counted_object_ids`, and
-  `projected_evidence.bbox_set` are derived from the same object/surface
-  records.
+## Prompt And Trace Requirements
+- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
+- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
 
-## Prompt Contract
-- `scene_key = indoor_room_canvas`
-- `task_key = object_type_on_surface_count_task`
-- `query_id = object_type_on_surface_count`
-- scene prompts name the room setting without redundant illustrated-object
-  phrasing
-- prompts ask for named objects on the named surface
-- answer-only and answer+evidence modes both include contract-valid JSON
-  examples
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/illustrations/indoor_room/task_illustrations__indoor_room__surface_object_count/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

@@ -10,7 +10,7 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     cfg = get_task_group_defaults("games", "connect_four")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__connect_four__move_count",
+        task_id="task_games__connect_four__winning_move_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True

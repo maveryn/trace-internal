@@ -1,53 +1,55 @@
-# task_illustrations__construction_site__equipment_zone_count
+# `task_illustrations__construction_site__equipment_zone_count`
 
-Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
-calibration pending.
+## Summary
+- Domain: `illustrations`
+- Scene id: `construction_site`
+- Implementation task group: `counting`
+- Implementation source: `trace/tasks/illustrations/counting/equipment_in_zone_count.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_illustrations__construction_site__equipment_zone_count` -> `task_illustrations__construction_site__equipment_zone_count`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Identity
-- domain: `illustrations`
-- scene_id: `construction_site`
-- task_group: `counting`
-- task: `equipment_in_zone_count`
-- module: `trace/tasks/illustrations/counting/equipment_in_zone_count.py`
-- prompt bundle: `prompts/illustrations/counting/illustrations_counting_v0.json`
+## Task Contract
+Counts visible construction vehicles/equipment assigned to one named construction-zone scope.
 
-## Scene And Query
-The task renders a synthetic construction site with visible labeled zones:
-Excavation Zone, Loading Zone, and Roadwork Zone. Construction equipment items
-are placed by semantic zone before rendering.
+This public task id is a stable contract-v0 unit: one renderer scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Query ids:
+## Query Branches
 
-- `vehicle_in_excavation_zone_count`
-- `vehicle_in_loading_zone_count`
-- `vehicle_in_roadwork_zone_count`
+| Query id | Program schema |
+| --- | --- |
+| `vehicle_in_excavation_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_excavation_zone_count` |
+| `vehicle_in_loading_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_loading_zone_count` |
+| `vehicle_in_roadwork_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_roadwork_zone_count` |
 
-Each variant asks how many construction vehicles or equipment items are in the
-named zone.
+## Program Metadata
+- Program signatures: `count.scoped_attribute`
+- Base program contract: `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `construction_vehicles`: semantic_role; allowed `visible_construction_vehicles`; source `program_schema_concrete`
+  - `target_zone`: semantic_role; allowed `excavation_zone`, `loading_zone`, `roadwork_zone`; source `program_schema_concrete`
+  - `vehicle`: semantic_role; allowed `construction_vehicle_instance`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `vehicle_in_excavation_zone_count`, `vehicle_in_loading_zone_count`, `vehicle_in_roadwork_zone_count`
 
 ## Answer Contract
-- `answer_gt.type = integer`
-- value is the number of rendered equipment items assigned to the queried zone
+- Answer schema: `integer_count`
+- Generator `answer_gt.type`: `integer`
+- The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
-## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox around each counted construction vehicle
-  or equipment item
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
-## Trace Contract
-- `render_map.equipment_bboxes_px` stores final equipment bboxes by equipment
-  id.
-- `execution_trace.equipment_zone_counts` records counts by semantic zone.
-- `render_map.counted_equipment_ids`,
-  `witness_symbolic.counted_equipment_ids`, and
-  `projected_evidence.bbox_set` are derived from the same rendered equipment
-  records.
-- `render_spec.style.layout.zone_label_font` records the single global-pool
-  font family used consistently for all visible construction-zone labels.
+## Prompt And Trace Requirements
+- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
+- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
 
-## Prompt Contract
-- `scene_key = construction_site_canvas`
-- `task_key = equipment_in_zone_count_task`
-- `query_id` is one of the three zone-count branches above
-- answer-only and answer+evidence modes both include contract-valid JSON
-  examples
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/illustrations/construction_site/task_illustrations__construction_site__equipment_zone_count/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

@@ -40,7 +40,7 @@ from ..shared.graph_scene import (
     SUPPORTED_EDGE_ROUTING_VARIANTS,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     RenderedGraphScene,
-    projected_edge_pair_evidence,
+    projected_edge_pair_annotation,
     render_graph_scene,
 )
 from ..shared.fixed_query_task import forced_query_id_params, rewrite_graph_public_task_output
@@ -138,7 +138,7 @@ class _CutResult:
 
 @dataclass(frozen=True)
 class _FlowNetworkSample:
-    """Trace-ready flow network plus query answer/evidence."""
+    """Trace-ready flow network plus query answer/annotation."""
 
     graph_sample: GraphTopologySample
     source_label: str
@@ -148,7 +148,7 @@ class _FlowNetworkSample:
     original_min_cut_edges: Tuple[Tuple[str, str], ...]
     original_min_cut_partition: Tuple[Tuple[str, ...], Tuple[str, ...]]
     answer_value: int
-    evidence_edges: Tuple[Tuple[str, str], ...]
+    annotation_edges: Tuple[Tuple[str, str], ...]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -179,7 +179,7 @@ def _query_id_from_alias(value: Any) -> str | None:
 def _forced_query_id(params: Mapping[str, Any]) -> str | None:
     """Resolve an explicitly requested query id, if present."""
 
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         raw_value = params.get(str(key))
         if raw_value is None:
             continue
@@ -698,10 +698,10 @@ def _sample_flow_network(rng: random.Random, *, query: _ResolvedQuery) -> _FlowN
     original_cut_labels = _label_edges(original_cut.edges)
     if str(query.query_id) == MIN_CUT_EDGE_COUNT_QUERY_ID:
         answer_value = int(len(original_cut_labels))
-        evidence_edges = tuple(original_cut_labels)
+        annotation_edges = tuple(original_cut_labels)
     else:
         answer_value = int(original_flow)
-        evidence_edges = tuple(original_cut_labels)
+        annotation_edges = tuple(original_cut_labels)
 
     original_source_side_labels = tuple(sorted((str(labels[int(node)]) for node in original_cut.source_side), key=graph_label_sort_key))
     original_sink_side_labels = tuple(sorted((str(labels[int(node)]) for node in original_cut.sink_side), key=graph_label_sort_key))
@@ -714,7 +714,7 @@ def _sample_flow_network(rng: random.Random, *, query: _ResolvedQuery) -> _FlowN
         original_min_cut_edges=tuple(original_cut_labels),
         original_min_cut_partition=(tuple(original_source_side_labels), tuple(original_sink_side_labels)),
         answer_value=int(answer_value),
-        evidence_edges=tuple(evidence_edges),
+        annotation_edges=tuple(annotation_edges),
     )
 
 
@@ -729,7 +729,7 @@ def _build_complexity(
 
     node_count = int(query.node_count)
     edge_count = int(flow_sample.graph_sample.edge_count)
-    cut_count = len(flow_sample.evidence_edges)
+    cut_count = len(flow_sample.annotation_edges)
     crossing_norm = normalize_float_with_bounds(float(rendered_scene.crossing_count), (0.0, max(1.0, float(edge_count))))
     capacity_span = max(flow_sample.capacity_by_edge_label.values()) - min(flow_sample.capacity_by_edge_label.values())
     components = {
@@ -871,7 +871,7 @@ class _GraphOptimizationFlowNetworkTask:
                 "json_output_contract_answer_only",
                 "object_description_directed",
                 answer_hint_key,
-                "evidence_hint_minimum_cut_edges",
+                "annotation_hint_minimum_cut_edges",
                 json_example_key,
                 json_example_answer_only_key,
             ),
@@ -884,12 +884,12 @@ class _GraphOptimizationFlowNetworkTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_directed"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_minimum_cut_edges"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_minimum_cut_edges"]),
                 "answer_hint": str(prompt_defaults[answer_hint_key]),
                 "json_example": str(prompt_defaults[json_example_key]),
                 "json_example_answer_only": str(prompt_defaults[json_example_answer_only_key]),
@@ -898,13 +898,13 @@ class _GraphOptimizationFlowNetworkTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_edge_pair_evidence(rendered_scene, flow_sample.evidence_edges)
-        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
-        if len(evidence_point_pairs) != len(flow_sample.evidence_edges):
-            raise RuntimeError("flow min-cut evidence projection is incomplete")
+        annotation_projection = projected_edge_pair_annotation(rendered_scene, flow_sample.annotation_edges)
+        annotation_point_pairs = [[list(point) for point in pair] for pair in annotation_projection["point_pair_set"]]
+        if len(annotation_point_pairs) != len(flow_sample.annotation_edges):
+            raise RuntimeError("flow min-cut annotation projection is incomplete")
         answer_gt = TypedValue(type="integer", value=int(flow_sample.answer_value))
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
-        evidence_edge_set = set(tuple(edge) for edge in flow_sample.evidence_edges)
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        annotation_edge_set = set(tuple(edge) for edge in flow_sample.annotation_edges)
         original_min_cut_set = set(tuple(edge) for edge in flow_sample.original_min_cut_edges)
 
         node_entities = [
@@ -935,7 +935,7 @@ class _GraphOptimizationFlowNetworkTask:
                 "capacity": int(edge.weight) if edge.weight is not None else None,
                 "capacity_label_bbox_xyxy": list(edge.weight_label_bbox_xyxy) if edge.weight_label_bbox_xyxy is not None else None,
                 "is_original_min_cut_edge": bool((str(edge.node_u_label), str(edge.node_v_label)) in original_min_cut_set),
-                "is_evidence_edge": bool((str(edge.node_u_label), str(edge.node_v_label)) in evidence_edge_set),
+                "is_annotation_edge": bool((str(edge.node_u_label), str(edge.node_v_label)) in annotation_edge_set),
             }
             for edge in rendered_scene.edges
         ]
@@ -1056,7 +1056,7 @@ class _GraphOptimizationFlowNetworkTask:
                 "original_min_cut_edge_count": int(len(flow_sample.original_min_cut_edges)),
                 "original_min_cut_edges": [list(edge) for edge in flow_sample.original_min_cut_edges],
                 "original_min_cut_partition": [list(flow_sample.original_min_cut_partition[0]), list(flow_sample.original_min_cut_partition[1])],
-                "evidence_edges": [list(edge) for edge in flow_sample.evidence_edges],
+                "annotation_edges": [list(edge) for edge in flow_sample.annotation_edges],
                 "capacity_by_edge": list(capacities_trace),
                 "successors_by_label": {str(key): list(values) for key, values in flow_sample.graph_sample.successors_by_label.items()},
                 "predecessors_by_label": {str(key): list(values) for key, values in flow_sample.graph_sample.predecessors_by_label.items()},
@@ -1069,17 +1069,17 @@ class _GraphOptimizationFlowNetworkTask:
             },
             "witness_symbolic": {
                 "type": "directed_edge_pair_set",
-                "edges": [list(edge) for edge in flow_sample.evidence_edges],
+                "edges": [list(edge) for edge in flow_sample.annotation_edges],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_pair_set",
-                **dict(evidence_projection),
+                **dict(annotation_projection),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

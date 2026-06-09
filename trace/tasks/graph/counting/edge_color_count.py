@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -31,19 +31,15 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_EDGE_COLOR_COUNT_DIRECTIONS,
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     sample_edge_color_count_graph,
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_edge_pair_evidence,
+    projected_edge_pair_annotation,
     render_graph_scene,
 )
+from ..shared.node_link_axes import resolve_node_link_visual_axes
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import (
     graph_palette_rgb_by_name,
@@ -51,6 +47,7 @@ from ..shared.task_support import (
     resolve_graph_render_params,
     resolve_graph_static_node_color_name,
 )
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
@@ -137,11 +134,18 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for one edge-color query."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(graph_directionality)}:{int(target_count)}:{str(target_color_name)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(graph_directionality),
+            str(target_count),
+            str(target_color_name),
+            str(topology_profile),
+        ),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 
@@ -249,71 +253,23 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for edge-color count")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
+        include_node_color_axis=False,
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
 
     return _ResolvedQuery(
         graph_directionality=str(graph_directionality),
@@ -513,14 +469,14 @@ class GraphCountingEdgeColorCountTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[[180, 220], [310, 180]], [[180, 220], [430, 260]]], answer_value=2)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[[180, 220], [310, 180]], [[180, 220], [430, 260]]], answer_value=2)
         target_color_label = format_named_color_with_hex(
             str(query.target_color_name),
             named_color(str(query.target_color_name)),
@@ -533,13 +489,13 @@ class GraphCountingEdgeColorCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=QUERY_ID,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[object_description_key]),
                 "target_color_label": str(target_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(target_color_label=str(target_color_label)),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(target_color_label=str(target_color_label)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -548,12 +504,12 @@ class GraphCountingEdgeColorCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_edges)))
-        evidence_projection = projected_edge_pair_evidence(rendered_scene, evidence_edges)
-        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
-        target_edge_set = {tuple(edge) for edge in evidence_edges}
+        annotation_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_edges)))
+        annotation_projection = projected_edge_pair_annotation(rendered_scene, annotation_edges)
+        annotation_point_pairs = [[list(point) for point in pair] for pair in annotation_projection["point_pair_set"]]
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        target_edge_set = {tuple(edge) for edge in annotation_edges}
         palette_rgb = graph_palette_rgb_by_name(SUPPORTED_NODE_COLOR_NAMES)
         edge_color_entries = _edge_color_entries(graph_sample.edge_color_names_by_label)
         node_entities = [
@@ -606,7 +562,7 @@ class GraphCountingEdgeColorCountTask:
                     "graph_directionality": str(query.graph_directionality),
                     "target_color_name": str(query.target_color_name),
                     "target_color_label": str(target_color_label),
-                    "matching_edges": [list(edge) for edge in evidence_edges],
+                    "matching_edges": [list(edge) for edge in annotation_edges],
                     "edge_color_names_by_label_pair": list(edge_color_entries),
                     "color_counts_by_name": dict(graph_sample.color_counts_by_name),
                     "target_color_name_probabilities": dict(query.target_color_name_probabilities),
@@ -709,11 +665,11 @@ class GraphCountingEdgeColorCountTask:
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "target_count": int(query.target_count),
-                "answer": int(len(evidence_edges)),
+                "answer": int(len(annotation_edges)),
                 "target_color_name": str(query.target_color_name),
                 "target_color_label": str(target_color_label),
                 "target_color_name_probabilities": dict(query.target_color_name_probabilities),
-                "matching_edges": [list(edge) for edge in evidence_edges],
+                "matching_edges": [list(edge) for edge in annotation_edges],
                 "edge_color_names_by_label_pair": list(edge_color_entries),
                 "color_counts_by_name": dict(graph_sample.color_counts_by_name),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
@@ -735,20 +691,20 @@ class GraphCountingEdgeColorCountTask:
             },
             "witness_symbolic": {
                 "type": "edge_pair_set",
-                "edges": [list(edge) for edge in evidence_edges],
+                "edges": [list(edge) for edge in annotation_edges],
                 "target_color_name": str(query.target_color_name),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_pair_set",
-                "point_pair_set": list(evidence_point_pairs),
-                **dict(evidence_projection),
+                "point_pair_set": list(annotation_point_pairs),
+                **dict(annotation_projection),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

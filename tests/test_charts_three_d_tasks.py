@@ -79,8 +79,8 @@ def test_chart_three_d_base_variants_match_contract(query_id: str) -> None:
     render_map = trace["render_map"]
 
     assert out.query_id == query_id
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "surface_3d_query"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -88,13 +88,13 @@ def test_chart_three_d_base_variants_match_contract(query_id: str) -> None:
     expected = _expected_answer(execution)
     assert out.answer_gt.value == expected
     assert execution["answer"] == expected
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["font_assets"]
     if query_id == "series_trend_label":
-        assert len(trace["projected_evidence"]["point_ids"]) == 2
+        assert len(trace["projected_annotation"]["point_ids"]) == 2
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -102,10 +102,10 @@ def test_chart_three_d_base_variants_match_contract(query_id: str) -> None:
         )
 
     expected_boxes = []
-    expected_boxes.extend(render_map["point_bboxes_px"][point_id] for point_id in trace["projected_evidence"]["point_ids"])
-    expected_boxes.extend(render_map["surface_cell_bboxes_px"][cell_id] for cell_id in trace["projected_evidence"]["surface_cell_ids"])
-    expected_boxes.extend(render_map["panel_bboxes_px"][label] for label in trace["projected_evidence"]["panel_labels"])
-    assert out.evidence_gt.value == expected_boxes
+    expected_boxes.extend(render_map["point_bboxes_px"][point_id] for point_id in trace["projected_annotation"]["point_ids"])
+    expected_boxes.extend(render_map["surface_cell_bboxes_px"][cell_id] for cell_id in trace["projected_annotation"]["surface_cell_ids"])
+    expected_boxes.extend(render_map["panel_bboxes_px"][label] for label in trace["projected_annotation"]["panel_labels"])
+    assert out.annotation_gt.value == expected_boxes
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -132,13 +132,13 @@ def test_chart_three_d_prompt_examples_match_contract() -> None:
     task = ChartsThreeDPanelQueryTask()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=98400):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert "Read this visual" not in out.prompt
         assert "Shown is" not in out.prompt
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
         assert isinstance(answer_only["answer"], int | str)
-        assert isinstance(answer_and_evidence["answer"], str)
+        assert isinstance(answer_and_annotation["answer"], str)
 
 
 def test_chart_three_d_balanced_sampling_covers_queries_and_sizes() -> None:

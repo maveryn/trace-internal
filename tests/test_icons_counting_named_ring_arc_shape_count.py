@@ -9,7 +9,7 @@ from trace.core.seed import hash64
 from trace.tasks import create_task
 
 
-TASK_ID = "task_icons__named_ring__arc_shape_count"
+TASK_ID = "task_icons__named_ring__scoped_attribute_count"
 QUERY_IDS = ("clockwise_arc_shape_count", "counterclockwise_arc_shape_count")
 
 
@@ -66,8 +66,8 @@ def test_icons_counting_named_ring_clockwise_contract_matches_scene() -> None:
     assert out.query_id == "clockwise_arc_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "icons_named_ring_arc_shape_count"
     assert execution["question_format"] == "count_named_shape_icons_strictly_between_ring_markers"
     assert execution["direction"] == "clockwise"
@@ -76,10 +76,10 @@ def test_icons_counting_named_ring_clockwise_contract_matches_scene() -> None:
     assert len(counted_ids) == 3
     assert all(str(entity_by_id[instance_id]["shape_id"]) == "star" for instance_id in counted_ids)
     assert all(int(entity_by_id[instance_id]["ring_index"]) in set(execution["arc_indices"]) for instance_id in counted_ids)
-    assert sorted(out.evidence_gt.value) == sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert "marker_label_stroke_rgb" in style
     assert style["text_legibility"]["required_role_count"] >= 2
@@ -119,7 +119,7 @@ def test_icons_counting_named_ring_counterclockwise_zero_answer_contract_matches
 
     assert out.query_id == "counterclockwise_arc_shape_count"
     assert out.answer_gt.value == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["direction"] == "counterclockwise"
     assert execution["arc_indices"] == expected_arc
     assert _target_count_on_arc(execution) == 0
@@ -138,11 +138,11 @@ def test_icons_counting_named_ring_prompt_example_matches_contract() -> None:
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_counting_named_ring_sampling_distribution() -> None:
@@ -170,7 +170,7 @@ def test_icons_counting_named_ring_sampling_distribution() -> None:
         assert 3 <= int(execution["arc_span_count"]) <= 12
         assert execution["arc_indices"] == expected_arc
         assert _target_count_on_arc(execution) == int(out.answer_gt.value)
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
         query_counts[query_id] += 1
         answer_counts[int(out.answer_gt.value)] += 1
         ring_counts[int(execution["ring_icon_count"])] += 1

@@ -13,16 +13,22 @@ from trace.tasks.pages.counting.filter_count import (
     CONTROL_QUERY_IDS,
     SUPPORTED_QUERY_IDS,
     TABLE_QUERY_IDS,
-    PagesControlBoardControlFilterCountTask,
-    PagesDataTableRowFilterCountTask,
+    PagesControlBoardDisabledControlsInGroupCountTask,
+    PagesControlBoardSelectedEnabledControlsInGroupCountTask,
+    PagesRecordTableEnabledActionForTypeCountTask,
+    PagesRecordTableSelectedRowsWithStatusCountTask,
+    PagesRecordTableValueThresholdInGroupCountTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
 
 
 def test_gui_counting_filter_count_contract_matches_trace() -> None:
     task_cases = (
-        (PagesControlBoardControlFilterCountTask(), CONTROL_QUERY_IDS),
-        (PagesDataTableRowFilterCountTask(), TABLE_QUERY_IDS),
+        (PagesControlBoardDisabledControlsInGroupCountTask(), ("disabled_controls_in_group_count",)),
+        (PagesControlBoardSelectedEnabledControlsInGroupCountTask(), ("selected_enabled_controls_in_group_count",)),
+        (PagesRecordTableEnabledActionForTypeCountTask(), ("enabled_action_for_type_count",)),
+        (PagesRecordTableSelectedRowsWithStatusCountTask(), ("selected_rows_with_status_count",)),
+        (PagesRecordTableValueThresholdInGroupCountTask(), ("value_threshold_in_group_count",)),
     )
     scene_variants = ("office_document", "creative_workspace", "developer_ide", "cad_workspace", "scientific_plotter")
     style_variants = ("standard", "compact", "contrast", "standard", "compact")
@@ -45,14 +51,14 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
             execution = trace["execution_trace"]
 
             assert out.answer_gt.type == "integer"
-            assert out.evidence_gt.type == "bbox_set"
+            assert out.annotation_gt.type == "bbox_set"
             assert str(out.query_id) == str(query_id)
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["source_query_id"]) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variants[index])
             assert str(execution["style_variant"]) == str(style_variants[index])
-            assert int(out.answer_gt.value) == len(out.evidence_gt.value)
-            assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+            assert int(out.answer_gt.value) == len(out.annotation_gt.value)
+            assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
             assert set(execution["query_id_probabilities"].keys()) == set(supported_query_ids)
 
             if query_id in CONTROL_QUERY_IDS:
@@ -60,7 +66,7 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
                 matching_ids = [str(value) for value in execution["matching_control_ids"]]
                 matching_records = [record for record in controls if str(record["control_id"]) in set(matching_ids)]
                 assert trace["scene_ir"]["scene_kind"] == "gui_grouped_control_board"
-                assert out.evidence_gt.value == [record["bbox_px"] for record in matching_records]
+                assert out.annotation_gt.value == [record["bbox_px"] for record in matching_records]
                 target_group = str(execution["target_group_name"])
                 assert all(str(record["group_name"]) == target_group for record in matching_records)
                 if query_id == "disabled_controls_in_group_count":
@@ -72,7 +78,7 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
                 matching_ids = [str(value) for value in execution["matching_row_ids"]]
                 matching_records = [record for record in rows if str(record["row_id"]) in set(matching_ids)]
                 assert trace["scene_ir"]["scene_kind"] == "gui_table_row_filter"
-                assert out.evidence_gt.value == [record["bbox_px"] for record in matching_records]
+                assert out.annotation_gt.value == [record["bbox_px"] for record in matching_records]
                 if query_id == "selected_rows_with_status_count":
                     target_status = str(execution["target_status"])
                     assert all(bool(record["selected"]) and str(record["status_label"]) == target_status for record in matching_records)
@@ -94,22 +100,28 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
                 "output_burden",
             }
             assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-            assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value for coord in (box[0], box[2]))
-            assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value for coord in (box[1], box[3]))
+            assert all(0.0 <= float(coord) <= 1280.0 for box in out.annotation_gt.value for coord in (box[0], box[2]))
+            assert all(0.0 <= float(coord) <= 800.0 for box in out.annotation_gt.value for coord in (box[1], box[3]))
 
 
 def test_gui_counting_filter_count_prompt_examples_match_integer_contract() -> None:
-    task = PagesControlBoardControlFilterCountTask()
+    task = PagesControlBoardDisabledControlsInGroupCountTask()
     out = task.generate(55200, params={"query_id": "disabled_controls_in_group_count"}, max_attempts=20)
-    assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": [[96, 218, 221, 300], [233, 218, 358, 300], [370, 310, 495, 392]],
+    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
+        "annotation": [[96, 218, 221, 300], [233, 218, 358, 300], [370, 310, 495, 392]],
         "answer": 3,
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": 3}
 
 
 def test_gui_counting_filter_count_balanced_sampling_defaults_cover_axes_and_answers() -> None:
-    tasks = (PagesControlBoardControlFilterCountTask(), PagesDataTableRowFilterCountTask())
+    tasks = (
+        PagesControlBoardDisabledControlsInGroupCountTask(),
+        PagesControlBoardSelectedEnabledControlsInGroupCountTask(),
+        PagesRecordTableEnabledActionForTypeCountTask(),
+        PagesRecordTableSelectedRowsWithStatusCountTask(),
+        PagesRecordTableValueThresholdInGroupCountTask(),
+    )
     query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
@@ -153,7 +165,7 @@ def test_gui_counting_filter_count_balanced_sampling_defaults_cover_axes_and_ans
 
 
 def test_gui_counting_filter_count_deterministic() -> None:
-    task = PagesDataTableRowFilterCountTask()
+    task = PagesRecordTableValueThresholdInGroupCountTask()
     params = {
         "query_id": "value_threshold_in_group_count",
         "scene_variant": "cad_workspace",
@@ -163,22 +175,22 @@ def test_gui_counting_filter_count_deterministic() -> None:
     out_a = task.generate(55400, params=params, max_attempts=20)
     out_b = task.generate(55400, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_gui_counting_filter_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_pages__control_board__control_filter_count"
+    output_root = tmp_path / "task_pages__control_board__disabled_controls_in_group_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_pages__control_board__control_filter_count",
+        dataset_name="build_smoke_task_pages__control_board__disabled_controls_in_group_count",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_pages__control_board__control_filter_count",
+                task_id="task_pages__control_board__disabled_controls_in_group_count",
                 count=5,
                 params={},
             )
@@ -195,7 +207,7 @@ def test_gui_counting_filter_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "counting" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_pages__control_board__control_filter_count"]) == 5
+    assert int(build_report["accepted_counts_by_task"]["task_pages__control_board__disabled_controls_in_group_count"]) == 5
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

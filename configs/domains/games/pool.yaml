@@ -3,8 +3,7 @@ generation:
     scene_variant_weights:
       standard_table: 1.0
     query_id_weights:
-      pottable_ball_count: 1.0
-      legal_group_pottable_count: 1.0
+      current_group_ball_count: 1.0
       blocking_ball_count: 1.0
     style_variant_weights:
       classic: 1.0
@@ -22,17 +21,12 @@ generation:
       - 8
       - 9
       - 10
-    pottable_ball_count_support:
+    current_group_ball_count_support:
       - 2
       - 3
       - 4
       - 5
       - 6
-    legal_group_pottable_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
     blocking_ball_count_support:
       - 0
       - 1
@@ -40,7 +34,6 @@ generation:
       - 3
       - 4
     line_clearance: 0.055
-    max_direct_shot_angle_degrees: 45.0
     min_ball_distance: 0.075
 rendering:
   shared:
@@ -67,25 +60,15 @@ prompt:
     scene_key: visible_pool_table
     task_key: pool_table_query
     object_description_standard_table: a pool table with a cue ball, numbered object
-      balls, six pockets, and any marked shot indicators
-    direct_shot_rule_text: A direct shot is possible only when the cue ball,
-      object ball, and pocket form a clear, roughly aligned no-bank path; rail
-      bounces, bank shots, and pockets at a sharp cut angle do not count.
-    legal_group_rule_text: In 8-ball, solids are balls 1 through 7 and stripes
-      are balls 9 through 15. The current player group is shown on the table.
-      The 8 ball does not belong to either group.
-    marked_shot_rule_text: The marked shot lane goes from the cue ball to the
-      marked object ball and then from that ball to the marked pocket.
-    evidence_hint_pottable_ball_count: set "evidence" to one pixel point [x,y]
-      at the center of every directly pottable object ball
-    evidence_hint_legal_group_pottable_count: set "evidence" to one pixel point
-      [x,y] at the center of every directly pottable ball in the current player's
-      group
-    evidence_hint_blocking_ball_count: set "evidence" to one pixel point [x,y]
-      at the center of every ball that blocks the marked shot lane
-    answer_hint_pottable_ball_count: set "answer" to the number of object balls
-      that can be potted by a direct shot
-    answer_hint_legal_group_pottable_count: set "answer" to the number of directly
-      pottable balls in the current player's group
+      balls, and six pockets
+    marked_shot_rule_text: >-
+      The marked shot has two straight segments: cue ball
+      to marked ball, then marked ball to marked pocket.
+    annotation_hint_current_group_ball_count: set "annotation" to one pixel point
+      [x,y] at the center of every visible ball in the current player's group
+    annotation_hint_blocking_ball_count: set "annotation" to one pixel point [x,y]
+      at the center of every ball on either marked shot segment
+    answer_hint_current_group_ball_count: set "answer" to the number of visible
+      balls in the current player's group
     answer_hint_blocking_ball_count: set "answer" to the number of balls blocking
-      the marked shot lane
+      either marked shot segment

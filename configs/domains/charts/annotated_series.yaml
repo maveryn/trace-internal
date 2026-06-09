@@ -139,22 +139,22 @@ prompt:
     bundle_id: charts_annotated_series_v0
     scene_key: annotated_series_chart
     task_key: annotated_series_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_line: a labeled line chart with a visible annotation marking part of the series
-    object_description_bar: a labeled bar chart with a visible annotation marking part of the series
-    object_description_area: a labeled area chart with a visible annotation marking part of the series
-    object_description_dot_plot: a labeled dot plot with a visible annotation marking part of the series
-    object_description_lollipop: a labeled lollipop chart with a visible annotation marking part of the series
+    object_description_line: a labeled line chart with a visible highlight or callout marking part of the series
+    object_description_bar: a labeled bar chart with a visible highlight or callout marking part of the series
+    object_description_area: a labeled area chart with a visible highlight or callout marking part of the series
+    object_description_dot_plot: a labeled dot plot with a visible highlight or callout marking part of the series
+    object_description_lollipop: a labeled lollipop chart with a visible highlight or callout marking part of the series
     answer_hint_label: set "answer" to the exact visible chart label as a string
     answer_hint_count: set "answer" to the count as an integer
     answer_hint_value: set "answer" to the requested absolute change as an integer
-    evidence_hint_event_window_extremum_label: set "evidence" to an array of [x,y] pixel points for the answer mark inside the highlighted window
-    evidence_hint_event_window_threshold_count: set "evidence" to an array of [x,y] pixel points for every matching mark inside the highlighted window
-    evidence_hint_callout_endpoint_change_value: set "evidence" to an object with keys "callout_mark" and "endpoint_mark", each mapped to that mark's [x,y] pixel point
-    json_example_event_window_extremum_label: '{"evidence":[[402,180]],"answer":"H"}'
-    json_example_event_window_threshold_count: '{"evidence":[[302,220],[452,150]],"answer":2}'
-    json_example_callout_endpoint_change_value: '{"evidence":{"callout_mark":[510,180],"endpoint_mark":[130,300]},"answer":24}'
-    json_example_answer_only_event_window_extremum_label: '{"answer":"H"}'
+    annotation_hint_event_window_extremum_label: set "annotation" to an array of [x,y] pixel points for the answer mark in the highlighted region
+    annotation_hint_event_window_threshold_count: set "annotation" to an array of [x,y] pixel points for every matching mark in the highlighted region
+    annotation_hint_callout_endpoint_change_value: set "annotation" to an object with keys "callout_mark" and "endpoint_mark", each mapped to that mark's [x,y] pixel point
+    json_example_event_window_extremum_label: '{"annotation":[[402,180]],"answer":"K4M8"}'
+    json_example_event_window_threshold_count: '{"annotation":[[302,220],[452,150]],"answer":2}'
+    json_example_callout_endpoint_change_value: '{"annotation":{"callout_mark":[510,180],"endpoint_mark":[130,300]},"answer":24}'
+    json_example_answer_only_event_window_extremum_label: '{"answer":"K4M8"}'
     json_example_answer_only_event_window_threshold_count: '{"answer":2}'
     json_example_answer_only_callout_endpoint_change_value: '{"answer":24}'

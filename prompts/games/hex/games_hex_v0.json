@@ -26,19 +26,31 @@
       "blue_goal_text",
       "query_player"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:red_neighbor_count": [
+      "hex_rule_text",
+      "reference_label"
+    ],
+    "query:blue_neighbor_count": [
+      "hex_rule_text",
+      "reference_label"
+    ],
+    "query:empty_neighbor_count": [
+      "hex_rule_text",
+      "reference_label"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -46,12 +58,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -77,6 +89,27 @@
       "{hex_rule_text} {red_goal_text} {blue_goal_text} How many empty cells are needed on a shortest connecting route for {query_player}?",
       "{hex_rule_text} {red_goal_text} {blue_goal_text} Determine the minimum connection gap for {query_player}.",
       "{hex_rule_text} {red_goal_text} {blue_goal_text} Find the smallest number of empty cells that would complete {query_player}'s connection."
+    ],
+    "red_neighbor_count": [
+      "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells contain red stones?",
+      "{hex_rule_text} Count the red-stone neighbors touching cell {reference_label}.",
+      "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are red?",
+      "{hex_rule_text} How many cells adjacent to cell {reference_label} contain red stones?",
+      "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are red?"
+    ],
+    "blue_neighbor_count": [
+      "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells contain blue stones?",
+      "{hex_rule_text} Count the blue-stone neighbors touching cell {reference_label}.",
+      "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are blue?",
+      "{hex_rule_text} How many cells adjacent to cell {reference_label} contain blue stones?",
+      "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are blue?"
+    ],
+    "empty_neighbor_count": [
+      "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells are empty?",
+      "{hex_rule_text} Count the empty neighbors touching cell {reference_label}.",
+      "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are empty?",
+      "{hex_rule_text} How many cells adjacent to cell {reference_label} have no stone?",
+      "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are empty?"
     ]
   },
   "allow_empty_task_templates": true

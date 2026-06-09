@@ -1,4 +1,4 @@
-"""Analytical intersection-property label task with nine mini coordinate panels."""
+"""Analytical intersection-property label task with sampled mini coordinate panels."""
 
 from __future__ import annotations
 
@@ -45,6 +45,7 @@ from ..shared.coordinate_panel_grid import (
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.fixed_query_task import MultiFixedGeometryQueryTaskMixin
 from ..shared.noise_defaults import load_geometry_noise_defaults
+from ..shared.option_count import panel_grid_shape_for_option_count, resolve_geometry_option_count
 
 Point = Tuple[float, float]
 LineSegment = Tuple[Point, Point]
@@ -68,10 +69,7 @@ _POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="analytical
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="analytical")
 _GRID_MIN = -5
 _GRID_MAX = 5
-_PANEL_COLUMNS = 3
-_PANEL_ROWS = 3
-_PANEL_COUNT = 9
-_PANEL_CONFIG = CoordinatePanelConfig(grid_min=_GRID_MIN, grid_max=_GRID_MAX, columns=_PANEL_COLUMNS, rows=_PANEL_ROWS)
+_MAX_PANEL_COUNT = 9
 Color = Tuple[int, int, int]
 _PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
     CoordinatePanelStyle(),
@@ -146,6 +144,7 @@ class _ResolvedQuery:
     winner_label: str
     winner_label_probabilities: Dict[str, float]
     label_pool: Tuple[str, ...]
+    panel_count_probabilities: Dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -160,6 +159,9 @@ class _RenderedScene:
     panel_bboxes: Dict[str, List[int]]
     plot_bboxes: Dict[str, List[int]]
     intersection_point_bboxes: Dict[str, List[List[int]]]
+    panel_columns: int
+    panel_rows: int
+    panel_count_probabilities: Dict[str, float]
     target_quadrant: str
     object_color_meta: Dict[str, Any]
     object_colors: Tuple[Color, ...]
@@ -195,9 +197,16 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
 def _resolve_label_pool(params: Mapping[str, Any]) -> Tuple[str, ...]:
     raw_pool = params.get("candidate_label_pool", group_default(_GEN_DEFAULTS, "candidate_label_pool", DEFAULT_LABEL_POOL))
     label_pool = tuple(str(label).strip().upper() for label in raw_pool)
-    if len(label_pool) != _PANEL_COUNT or len(set(label_pool)) != _PANEL_COUNT:
-        raise ValueError("intersection_property_label requires exactly nine unique candidate labels")
+    if len(label_pool) not in {4, 6, 9} or len(set(label_pool)) != len(label_pool):
+        raise ValueError("intersection_property_label requires four, six, or nine unique candidate labels")
     return label_pool
+
+
+def _visible_panel_labels(label_pool: Sequence[str], *, winner_label: str, panel_count: int) -> Tuple[str, ...]:
+    labels = tuple(str(label) for label in label_pool[: int(panel_count)])
+    if str(winner_label) in set(labels):
+        return labels
+    return tuple([str(winner_label), *[label for label in labels if str(label) != str(winner_label)]])[: int(panel_count)]
 
 
 def _decoupled_winner_label_params(params: Mapping[str, Any]) -> Dict[str, Any]:
@@ -246,18 +255,29 @@ def _resolve_winner_label(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
     label_pool = _resolve_label_pool(params)
+    supported_counts = tuple(count for count in (4, 6, 9) if int(count) <= len(label_pool))
+    panel_count, panel_count_probabilities = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        field_name="panel_count",
+        supported_counts=supported_counts,
+        task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+    )
     winner_label, winner_label_probabilities = _resolve_winner_label(
         params,
         instance_seed=int(instance_seed),
         query_id=str(query_id),
         label_pool=label_pool,
     )
+    visible_labels = _visible_panel_labels(label_pool, winner_label=str(winner_label), panel_count=int(panel_count))
     return _ResolvedQuery(
         query_id=str(query_id),
         query_id_probabilities=dict(query_id_probabilities),
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_label_probabilities),
-        label_pool=tuple(label_pool),
+        label_pool=tuple(visible_labels),
+        panel_count_probabilities=dict(panel_count_probabilities),
     )
 
 
@@ -636,11 +656,12 @@ def _draw_circle(
     *,
     circle: CircleSpec,
     plot_bbox: BBox,
+    config: CoordinatePanelConfig,
     color: Tuple[int, int, int],
     line_width: int,
 ) -> None:
     center, radius = circle
-    center_px = graph_point_to_panel_pixel(center, plot_bbox=plot_bbox, config=_PANEL_CONFIG)
+    center_px = graph_point_to_panel_pixel(center, plot_bbox=plot_bbox, config=config)
     plot_scale = float(plot_bbox[2] - plot_bbox[0]) / float(_GRID_MAX - _GRID_MIN)
     radius_px = float(radius) * float(plot_scale)
     draw.ellipse(
@@ -660,11 +681,12 @@ def _draw_line_segment(
     *,
     segment: LineSegment,
     plot_bbox: BBox,
+    config: CoordinatePanelConfig,
     color: Tuple[int, int, int],
     line_width: int,
 ) -> None:
     pixel_points = [
-        graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=_PANEL_CONFIG)
+        graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=config)
         for point in segment
     ]
     draw.line(pixel_points, fill=color, width=int(line_width), joint="curve")
@@ -677,6 +699,7 @@ def _draw_panel_spec(
     panel: _PanelSpec,
     *,
     plot_bbox: BBox,
+    config: CoordinatePanelConfig,
     line_width: int,
     object_colors: Sequence[Color],
     intersection_color: Color,
@@ -686,6 +709,7 @@ def _draw_panel_spec(
             draw,
             circle=circle,
             plot_bbox=plot_bbox,
+            config=config,
             color=object_colors[int(index) % len(object_colors)],
             line_width=int(line_width),
         )
@@ -695,11 +719,12 @@ def _draw_panel_spec(
             draw,
             segment=segment,
             plot_bbox=plot_bbox,
+            config=config,
             color=object_colors[color_index],
             line_width=int(line_width),
         )
     for point in panel.intersection_points:
-        point_px = graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=_PANEL_CONFIG)
+        point_px = graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=config)
         draw_endpoint(
             draw,
             point_px,
@@ -709,8 +734,8 @@ def _draw_panel_spec(
         )
 
 
-def _point_bbox(point: Point, *, plot_bbox: BBox, canvas_size: Tuple[int, int], radius: int = 7) -> List[int]:
-    point_px = graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=_PANEL_CONFIG)
+def _point_bbox(point: Point, *, plot_bbox: BBox, config: CoordinatePanelConfig, canvas_size: Tuple[int, int], radius: int = 7) -> List[int]:
+    point_px = graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=config)
     width, height = int(canvas_size[0]), int(canvas_size[1])
     return [
         max(0, min(width, int(round(float(point_px[0]) - float(radius))))),
@@ -741,13 +766,20 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
     panel_style, panel_style_meta = _resolve_panel_style(params, instance_seed=int(instance_seed))
     object_colors, object_color_meta = _resolve_object_colors(params, instance_seed=int(instance_seed))
     intersection_color, intersection_color_meta = _resolve_intersection_color(params, instance_seed=int(instance_seed))
-    layout = coordinate_panel_layout(int(canvas_width), int(canvas_height), config=_PANEL_CONFIG)
+    panel_columns, panel_rows = panel_grid_shape_for_option_count(len(query.label_pool))
+    panel_config = CoordinatePanelConfig(
+        grid_min=_GRID_MIN,
+        grid_max=_GRID_MAX,
+        columns=int(panel_columns),
+        rows=int(panel_rows),
+    )
+    layout = coordinate_panel_layout(int(canvas_width), int(canvas_height), config=panel_config)
     panel_bboxes: Dict[str, List[int]] = {}
     plot_bboxes: Dict[str, List[int]] = {}
     intersection_point_bboxes: Dict[str, List[List[int]]] = {}
 
     for index, label in enumerate(query.label_pool):
-        panel_bbox = panel_bbox_for_index(layout, int(index), config=_PANEL_CONFIG)
+        panel_bbox = panel_bbox_for_index(layout, int(index), config=panel_config)
         plot_bbox = plot_bbox_for_panel(panel_bbox)
         panel_bboxes[str(label)] = [int(value) for value in panel_bbox]
         plot_bboxes[str(label)] = [int(value) for value in plot_bbox]
@@ -756,7 +788,7 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
             panel_bbox=panel_bbox,
             plot_bbox=plot_bbox,
             label=str(label),
-            config=_PANEL_CONFIG,
+            config=panel_config,
             style=panel_style,
         )
         panel = panels_by_label[str(label)]
@@ -764,12 +796,13 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
             draw,
             panel,
             plot_bbox=plot_bbox,
+            config=panel_config,
             line_width=int(line_width),
             object_colors=object_colors,
             intersection_color=intersection_color,
         )
         intersection_point_bboxes[str(label)] = [
-            _point_bbox(point, plot_bbox=plot_bbox, canvas_size=(int(canvas_width), int(canvas_height)))
+            _point_bbox(point, plot_bbox=plot_bbox, config=panel_config, canvas_size=(int(canvas_width), int(canvas_height)))
             for point in panel.intersection_points
         ]
 
@@ -790,6 +823,9 @@ def _render_scene(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
         panel_bboxes=dict(panel_bboxes),
         plot_bboxes=dict(plot_bboxes),
         intersection_point_bboxes=dict(intersection_point_bboxes),
+        panel_columns=int(panel_columns),
+        panel_rows=int(panel_rows),
+        panel_count_probabilities=dict(query.panel_count_probabilities),
         target_quadrant=str(target_quadrant),
         object_color_meta=dict(object_color_meta),
         object_colors=tuple(object_colors),
@@ -864,18 +900,18 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_selected_panel_and_intersections",
+                "annotation_hint_selected_panel_and_intersections",
                 "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_value = [
+        annotation_value = [
             list(rendered_scene.panel_bboxes[str(query.winner_label)]),
             *list(rendered_scene.intersection_point_bboxes[str(query.winner_label)]),
         ]
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             _PROMPT_DEFAULTS,
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -885,13 +921,13 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "target_quadrant": str(rendered_scene.target_quadrant),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_selected_panel_and_intersections"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_and_intersections"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -901,7 +937,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(query.winner_label))
-        evidence_gt = TypedValue(type="bbox_set", value=evidence_value)
+        annotation_gt = TypedValue(type="bbox_set", value=annotation_value)
         winner_panel = rendered_scene.panels_by_label[str(query.winner_label)]
         panels_trace = {
             str(label): _panel_trace_payload(rendered_scene.panels_by_label[str(label)])
@@ -940,6 +976,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                     "winner_label": str(query.winner_label),
                     "winner_label_probabilities": dict(query.winner_label_probabilities),
                     "candidate_label_pool": list(query.label_pool),
+                    "panel_count_probabilities": dict(query.panel_count_probabilities),
                     "target_quadrant": str(rendered_scene.target_quadrant),
                 },
             },
@@ -954,9 +991,10 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 "object_color_selection": dict(rendered_scene.object_color_meta),
                 "intersection_color": list(rendered_scene.intersection_color),
                 "intersection_color_selection": dict(rendered_scene.intersection_color_meta),
-                "panel_count": int(_PANEL_COUNT),
-                "panel_columns": int(_PANEL_COLUMNS),
-                "panel_rows": int(_PANEL_ROWS),
+                "panel_count": int(len(query.label_pool)),
+                "panel_count_probabilities": dict(rendered_scene.panel_count_probabilities),
+                "panel_columns": int(rendered_scene.panel_columns),
+                "panel_rows": int(rendered_scene.panel_rows),
                 "graph_unit_bounds": {"x": [int(_GRID_MIN), int(_GRID_MAX)], "y": [int(_GRID_MIN), int(_GRID_MAX)]},
             },
             "render_map": {
@@ -975,6 +1013,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 "target_quadrant": str(rendered_scene.target_quadrant),
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
+                "panel_count_probabilities": dict(query.panel_count_probabilities),
             },
             "witness_symbolic": {
                 "type": "intersection_property_panel_selection",
@@ -984,9 +1023,9 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 "winner_pair": dict(_panel_trace_payload(winner_panel)),
                 "panels_by_label": dict(panels_trace),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_value),
+                "bbox_set": list(annotation_value),
                 "panel_bbox_by_label": dict(rendered_scene.panel_bboxes),
                 "plot_bbox_by_label": dict(rendered_scene.plot_bboxes),
                 "intersection_point_bboxes_by_label": dict(rendered_scene.intersection_point_bboxes),
@@ -996,7 +1035,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=rendered_scene.image,
             image_id="img_0",
             trace_payload=trace_payload,
@@ -1020,4 +1059,5 @@ class GeometryAnalyticalIntersectionPropertyPublicLabelTask(
         "line_circle_two_intersections_label",
         "circle_circle_two_intersections_label",
     )
+    scene_id = "function_panels"
     public_scene_id = "function_panels"

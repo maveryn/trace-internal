@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 from itertools import product
 from typing import Iterable, Mapping, Sequence, Tuple
@@ -24,8 +25,13 @@ SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS: Tuple[str, ...] = (
 SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS: Tuple[str, ...] = (
     "path_result_option_label",
 )
+SUPPORTED_SNAKE_FOOD_PATH_QUERY_IDS: Tuple[str, ...] = (
+    "shortest_food_path_length",
+)
 SUPPORTED_SNAKE_QUERY_IDS: Tuple[str, ...] = (
-    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS + SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS
+    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS
+    + SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS
+    + SUPPORTED_SNAKE_FOOD_PATH_QUERY_IDS
 )
 SUPPORTED_SNAKE_SCENE_VARIANTS: Tuple[str, ...] = ("square_grid",)
 SUPPORTED_SNAKE_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -74,11 +80,12 @@ class SnakeSample:
     single_move: str | None
     planned_moves: Tuple[str, ...]
     safe_directions: Tuple[str, ...]
-    evidence_cell_ids: Tuple[str, ...]
+    annotation_cell_ids: Tuple[str, ...]
     target_outcome: str | None
     observed_event_step: int | None
     construction_mode: str
     result_options: Tuple[Mapping[str, object], ...] = ()
+    shortest_path_coords: Tuple[Coord, ...] = ()
 
 
 def coord_to_cell_id(coord: Coord) -> str:
@@ -211,6 +218,34 @@ def safe_next_directions(state: SnakeState) -> Tuple[str, ...]:
     return tuple(safe)
 
 
+def shortest_static_path_to_food(state: SnakeState) -> Tuple[Coord, ...] | None:
+    """Return one shortest path from head to food, treating current body/walls as fixed blockers.
+
+    The returned path excludes the head cell and includes the food cell, so its
+    length equals the number of moves.
+    """
+
+    size = int(state.board_size)
+    head = (int(state.head[0]), int(state.head[1]))
+    food = (int(state.food[0]), int(state.food[1]))
+    blocked = {(int(row), int(col)) for row, col in state.body}
+    blocked.update((int(row), int(col)) for row, col in state.obstacles)
+    if food in blocked:
+        return None
+    queue: deque[Tuple[Coord, Tuple[Coord, ...]]] = deque([(head, tuple())])
+    visited = {head}
+    while queue:
+        coord, path = queue.popleft()
+        if coord == food:
+            return tuple(path)
+        for candidate in neighbor_coords(coord, size=size):
+            if candidate in visited or candidate in blocked:
+                continue
+            visited.add(candidate)
+            queue.append((candidate, tuple(path) + (candidate,)))
+    return None
+
+
 def candidate_move_sequences(length: int) -> Tuple[Tuple[str, ...], ...]:
     """Return all cardinal move sequences of one length."""
 
@@ -259,8 +294,8 @@ def validate_snake_sample(sample: SnakeSample) -> None:
     validate_snake_state(sample.state)
     query = str(sample.query_id)
     known_cell_ids = {coord_to_cell_id(coord) for coord in all_coords(sample.state.board_size)}
-    if not set(sample.evidence_cell_ids) <= known_cell_ids:
-        raise ValueError("snake evidence references unknown cells")
+    if not set(sample.annotation_cell_ids) <= known_cell_ids:
+        raise ValueError("snake annotation references unknown cells")
 
     if query == "safe_direction_count":
         expected_dirs = safe_next_directions(sample.state)
@@ -269,13 +304,13 @@ def validate_snake_sample(sample: SnakeSample) -> None:
             raise ValueError("snake safe-direction count answer mismatch")
         if tuple(sample.safe_directions) != expected_dirs:
             raise ValueError("snake safe-direction list mismatch")
-        if tuple(sample.evidence_cell_ids) != expected_ids:
-            raise ValueError("snake safe-direction evidence mismatch")
+        if tuple(sample.annotation_cell_ids) != expected_ids:
+            raise ValueError("snake safe-direction annotation mismatch")
     elif query == "path_result_option_label":
         if not sample.planned_moves:
             raise ValueError("planned Snake query requires planned moves")
         simulation = simulate_snake_moves(sample.state, sample.planned_moves)
-        expected_ids = _planned_move_evidence_ids(sample.state, simulation)
+        expected_ids = _planned_move_annotation_ids(sample.state, simulation)
         if not sample.result_options:
             raise ValueError("path_result_option_label requires visible options")
         labels = [str(option.get("label")) for option in sample.result_options]
@@ -307,14 +342,25 @@ def validate_snake_sample(sample: SnakeSample) -> None:
                 raise ValueError("snake path-result point answer coordinate mismatch")
         else:
             raise ValueError("snake path-result target outcome must be point or game_over")
-        if tuple(sample.evidence_cell_ids) != expected_ids:
-            raise ValueError("snake planned-move evidence mismatch")
+        if tuple(sample.annotation_cell_ids) != expected_ids:
+            raise ValueError("snake planned-move annotation mismatch")
+    elif query == "shortest_food_path_length":
+        shortest_path = shortest_static_path_to_food(sample.state)
+        if not shortest_path:
+            raise ValueError("snake shortest-food-path task requires reachable food")
+        expected_ids = tuple(coord_to_cell_id(coord) for coord in shortest_path)
+        if int(sample.answer) != len(shortest_path):
+            raise ValueError("snake shortest-food-path answer mismatch")
+        if tuple(sample.shortest_path_coords) != tuple(shortest_path):
+            raise ValueError("snake shortest-food-path trace mismatch")
+        if tuple(sample.annotation_cell_ids) != expected_ids:
+            raise ValueError("snake shortest-food-path annotation mismatch")
     else:
         raise ValueError(f"unsupported snake query_id: {sample.query_id}")
 
 
-def _planned_move_evidence_ids(state: SnakeState, simulation: SnakeSimulation) -> Tuple[str, ...]:
-    """Return evidence cell ids for one planned move simulation."""
+def _planned_move_annotation_ids(state: SnakeState, simulation: SnakeSimulation) -> Tuple[str, ...]:
+    """Return annotation cell ids for one planned move simulation."""
 
     coords = tuple(dict.fromkeys(simulation.traversed_coords))
     if coords:
@@ -364,6 +410,7 @@ __all__ = [
     "safe_next_directions",
     "simulate_snake_moves",
     "sorted_coords",
+    "shortest_static_path_to_food",
     "step_coord",
     "validate_snake_sample",
     "validate_snake_state",

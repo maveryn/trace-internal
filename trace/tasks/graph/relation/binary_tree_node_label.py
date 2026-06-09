@@ -27,7 +27,7 @@ from ...shared.prompt_variants import (
 from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
     BinaryTreeSample,
-    projected_binary_tree_bbox_evidence,
+    projected_binary_tree_bbox_annotation,
     render_binary_tree_scene,
     sample_binary_tree_for_traversal_query,
 )
@@ -36,6 +36,7 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_graph_complexity_weights,
 )
+from ..shared.fixed_query_task import FixedGraphQueryTaskMixin, MergedGraphQueryTaskMixin
 from ..shared.graph_scene import SUPPORTED_NODE_SHAPE_VARIANTS
 from ..shared.graph_sampling import SUPPORTED_NODE_LINK_LABEL_VARIANTS
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
@@ -49,8 +50,10 @@ from ..shared.visual_defaults import (
     load_graph_noise_defaults,
 )
 
-TASK_ID = "task_graph__binary_tree__node_relation_label"
+TASK_ID = "graph_binary_tree_node_relation_label_source"
 SCENE_ID = "binary_tree"
+BINARY_TREE_LOCAL_RELATIVE_NODE_LABEL_TASK_ID = "task_graph__binary_tree__local_relative_node_label"
+BINARY_TREE_LOWEST_COMMON_ANCESTOR_LABEL_TASK_ID = "task_graph__binary_tree__lowest_common_ancestor_label"
 
 SUPPORTED_BINARY_TREE_RELATION_QUERY_IDS: Tuple[str, ...] = (
     "parent_label",
@@ -59,8 +62,14 @@ SUPPORTED_BINARY_TREE_RELATION_QUERY_IDS: Tuple[str, ...] = (
     "sibling_label",
     "lowest_common_ancestor_label",
 )
+LOCAL_RELATIVE_NODE_QUERY_IDS: Tuple[str, ...] = (
+    "parent_label",
+    "left_child_label",
+    "right_child_label",
+    "sibling_label",
+)
 
-BINARY_TREE_RELATION_EVIDENCE_ROLES: Dict[str, Tuple[str, ...]] = {
+BINARY_TREE_RELATION_ANNOTATION_ROLES: Dict[str, Tuple[str, ...]] = {
     "parent_label": ("child", "parent"),
     "left_child_label": ("parent", "left_child"),
     "right_child_label": ("parent", "right_child"),
@@ -127,7 +136,7 @@ class _RelationSelection:
 
     query_labels: Tuple[str, ...]
     answer_label: str
-    evidence_labels: Tuple[str, ...]
+    annotation_labels: Tuple[str, ...]
     query_node_ids: Tuple[str, ...]
     answer_node_id: str
 
@@ -259,7 +268,7 @@ def _choose_relation(
         return _RelationSelection(
             query_labels=(str(node.label),),
             answer_label=str(answer.label),
-            evidence_labels=(str(node.label), str(answer.label)),
+            annotation_labels=(str(node.label), str(answer.label)),
             query_node_ids=(str(node.node_id),),
             answer_node_id=str(answer.node_id),
         )
@@ -273,7 +282,7 @@ def _choose_relation(
         return _RelationSelection(
             query_labels=(str(node.label),),
             answer_label=str(answer.label),
-            evidence_labels=(str(node.label), str(answer.label)),
+            annotation_labels=(str(node.label), str(answer.label)),
             query_node_ids=(str(node.node_id),),
             answer_node_id=str(answer.node_id),
         )
@@ -287,7 +296,7 @@ def _choose_relation(
         return _RelationSelection(
             query_labels=(str(node.label),),
             answer_label=str(answer.label),
-            evidence_labels=(str(node.label), str(answer.label)),
+            annotation_labels=(str(node.label), str(answer.label)),
             query_node_ids=(str(node.node_id),),
             answer_node_id=str(answer.node_id),
         )
@@ -311,7 +320,7 @@ def _choose_relation(
         return _RelationSelection(
             query_labels=(str(node.label),),
             answer_label=str(answer.label),
-            evidence_labels=(str(node.label), str(answer.label)),
+            annotation_labels=(str(node.label), str(answer.label)),
             query_node_ids=(str(node.node_id),),
             answer_node_id=str(answer.node_id),
         )
@@ -334,7 +343,7 @@ def _choose_relation(
     return _RelationSelection(
         query_labels=(str(node_a.label), str(node_b.label)),
         answer_label=str(answer.label),
-        evidence_labels=(str(node_a.label), str(node_b.label), str(answer.label)),
+        annotation_labels=(str(node_a.label), str(node_b.label), str(answer.label)),
         query_node_ids=(str(node_a.node_id), str(node_b.node_id)),
         answer_node_id=str(answer.node_id),
     )
@@ -390,17 +399,17 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         [470, 430, 520, 480],
         [250, 250, 298, 298],
     )
-    evidence = {
+    annotation = {
         str(role): list(box)
         for role, box in zip(
-            BINARY_TREE_RELATION_EVIDENCE_ROLES[str(query_id)],
+            BINARY_TREE_RELATION_ANNOTATION_ROLES[str(query_id)],
             example_boxes,
         )
     }
     return (
         json.dumps(
             {
-                "evidence": evidence,
+                "annotation": annotation,
                 "answer": "M",
             },
             separators=(",", ":"),
@@ -432,7 +441,6 @@ def _build_complexity(*, sample: BinaryTreeSample, query_id: str) -> Any:
     )
 
 
-@register_task
 class GraphRelationBinaryTreeNodeLabelTask:
     """Return labels for parent, child, sibling, and LCA binary-tree relations."""
 
@@ -471,6 +479,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             render_params=render_params,
             scene_variant=str(query.scene_variant),
             scene_title="Binary Tree",
+            layout_seed=int(instance_seed),
             base_image=image,
         )
         image, post_noise_meta = apply_post_image_noise(
@@ -479,37 +488,37 @@ class GraphRelationBinaryTreeNodeLabelTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_roles = BINARY_TREE_RELATION_EVIDENCE_ROLES[str(query.query_id)]
-        evidence_projection = projected_binary_tree_bbox_evidence(
-            rendered_scene, relation.evidence_labels
+        annotation_roles = BINARY_TREE_RELATION_ANNOTATION_ROLES[str(query.query_id)]
+        annotation_projection = projected_binary_tree_bbox_annotation(
+            rendered_scene, relation.annotation_labels
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
-        if len(evidence_roles) != len(evidence_bboxes):
+        if len(annotation_roles) != len(annotation_bboxes):
             raise ValueError(
-                "binary-tree relation evidence role count does not match projected evidence"
+                "binary-tree relation annotation role count does not match projected annotation"
             )
-        evidence_keyed_bboxes = {
-            str(role): list(bbox) for role, bbox in zip(evidence_roles, evidence_bboxes)
+        annotation_keyed_bboxes = {
+            str(role): list(bbox) for role, bbox in zip(annotation_roles, annotation_bboxes)
         }
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(role): list(point)
             for role, point in zip(
-                evidence_roles, evidence_projection["pixel_point_set"]
+                annotation_roles, annotation_projection["pixel_point_set"]
             )
         }
-        evidence_role_to_label = {
+        annotation_role_to_label = {
             str(role): str(label)
-            for role, label in zip(evidence_roles, relation.evidence_labels)
+            for role, label in zip(annotation_roles, relation.annotation_labels)
         }
-        evidence_roles_by_label: Dict[str, List[str]] = {}
-        for role, label in evidence_role_to_label.items():
-            evidence_roles_by_label.setdefault(str(label), []).append(str(role))
+        annotation_roles_by_label: Dict[str, List[str]] = {}
+        for role, label in annotation_role_to_label.items():
+            annotation_roles_by_label.setdefault(str(label), []).append(str(role))
         answer_gt = TypedValue(type="string", value=str(relation.answer_label))
-        evidence_gt = TypedValue(
-            type="keyed_bbox_map", value=dict(evidence_keyed_bboxes)
+        annotation_gt = TypedValue(
+            type="keyed_bbox_map", value=dict(annotation_keyed_bboxes)
         )
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
@@ -533,7 +542,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             "json_output_contract_answer_only": str(
                 prompt_defaults["json_output_contract_answer_only"]
             ),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{query.query_id}"]),
+            "annotation_hint": str(prompt_defaults[f"annotation_hint_{query.query_id}"]),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -545,7 +554,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=slots,
             instance_seed=int(instance_seed),
         )
@@ -577,11 +586,11 @@ class GraphRelationBinaryTreeNodeLabelTask:
                     "is_answer_node": bool(
                         str(sample_node.node_id) == str(relation.answer_node_id)
                     ),
-                    "is_evidence_node": bool(
-                        str(node.label) in set(relation.evidence_labels)
+                    "is_annotation_node": bool(
+                        str(node.label) in set(relation.annotation_labels)
                     ),
-                    "evidence_roles": list(
-                        evidence_roles_by_label.get(str(node.label), [])
+                    "annotation_roles": list(
+                        annotation_roles_by_label.get(str(node.label), [])
                     ),
                 }
             )
@@ -593,6 +602,8 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "child_label": str(edge.child_label),
                 "child_side": str(edge.child_side),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "connector_path_px": [list(point) for point in edge.connector_path_px],
+                "connector_style_variant": str(edge.connector_style_variant),
             }
             for edge in rendered_scene.edges
         ]
@@ -609,7 +620,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
                     "query_labels": list(relation.query_labels),
                     "answer_label": str(relation.answer_label),
                     "answer_node_id": str(relation.answer_node_id),
-                    "evidence_role_to_label": dict(evidence_role_to_label),
+                    "annotation_role_to_label": dict(annotation_role_to_label),
                     "preorder_labels": list(sample.preorder_labels),
                     "inorder_labels": list(sample.inorder_labels),
                     "postorder_labels": list(sample.postorder_labels),
@@ -678,6 +689,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "scene_variant": str(rendered_scene.scene_variant),
+                    "connector_style_variant": str(rendered_scene.connector_style_variant),
                     "node_color_name": str(query.node_color_name),
                     "theme_tone": str(render_params.theme_tone),
                     "panel_style_variant": str(render_params.panel_style_variant),
@@ -714,9 +726,9 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "answer": str(relation.answer_label),
                 "answer_label": str(relation.answer_label),
                 "answer_node_id": str(relation.answer_node_id),
-                "evidence_roles": list(evidence_roles),
-                "evidence_role_to_label": dict(evidence_role_to_label),
-                "evidence_labels": list(relation.evidence_labels),
+                "annotation_roles": list(annotation_roles),
+                "annotation_role_to_label": dict(annotation_role_to_label),
+                "annotation_labels": list(relation.annotation_labels),
                 "node_count": int(sample.node_count),
                 "max_depth": int(sample.max_depth),
                 "label_variant": str(sample.label_variant),
@@ -726,17 +738,17 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "query_id": str(query.query_id),
                 "query_labels": list(relation.query_labels),
                 "answer_label": str(relation.answer_label),
-                "evidence_role_to_label": dict(evidence_role_to_label),
+                "annotation_role_to_label": dict(annotation_role_to_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
-                "bbox_sequence": list(evidence_bboxes),
-                "pixel_bbox_sequence": list(evidence_bboxes),
-                "pixel_point_sequence": list(evidence_projection["pixel_point_set"]),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
+                "bbox_sequence": list(annotation_bboxes),
+                "pixel_bbox_sequence": list(annotation_bboxes),
+                "pixel_point_sequence": list(annotation_projection["pixel_point_set"]),
             },
         }
         if str(relation.answer_label) not in rendered_by_label:
@@ -744,7 +756,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -756,4 +768,29 @@ class GraphRelationBinaryTreeNodeLabelTask:
         )
 
 
-__all__ = ["GraphRelationBinaryTreeNodeLabelTask"]
+@register_task
+class GraphRelationBinaryTreeLocalRelativeNodeLabelTask(MergedGraphQueryTaskMixin):
+    """Return the local relative node label for a parent, child, or sibling relation."""
+
+    task_id = BINARY_TREE_LOCAL_RELATIVE_NODE_LABEL_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    source_task_cls = GraphRelationBinaryTreeNodeLabelTask
+    supported_query_ids = LOCAL_RELATIVE_NODE_QUERY_IDS
+
+
+@register_task
+class GraphRelationBinaryTreeLowestCommonAncestorLabelTask(FixedGraphQueryTaskMixin):
+    """Return the lowest common ancestor label for two binary-tree nodes."""
+
+    task_id = BINARY_TREE_LOWEST_COMMON_ANCESTOR_LABEL_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = "lowest_common_ancestor_label"
+    source_task_cls = GraphRelationBinaryTreeNodeLabelTask
+
+
+__all__ = [
+    "GraphRelationBinaryTreeLocalRelativeNodeLabelTask",
+    "GraphRelationBinaryTreeLowestCommonAncestorLabelTask",
+]

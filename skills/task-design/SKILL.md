@@ -1,6 +1,6 @@
 ---
 name: task-design
-description: Use when designing or reshaping a TRACE task contract, choosing answer and evidence types, deciding task versus query_id placement, or planning sampling and balancing before implementation.
+description: Use when designing or reshaping a TRACE task contract, choosing answer and annotation types, deciding task versus query_id placement, or planning sampling and balancing before implementation.
 ---
 
 # Task Design
@@ -24,7 +24,7 @@ If the task needs a new or revised difficulty policy, also open:
 3. Freeze the public contract before coding:
    - scene and query structure,
    - answer type,
-   - evidence type,
+   - annotation type,
    - uniqueness/rejection constraints,
    - trace payload additions.
 4. Decide whether answer support depends on layout or board size.
@@ -41,8 +41,8 @@ If the task needs a new or revised difficulty policy, also open:
    - domain/workflow docs if the new task changes reusable policy.
 
 ## Design checks
-- Answer and evidence must come from the same execution path.
-- Evidence should be as direct as possible; do not invent a weaker proxy if a canonical witness exists.
+- Answer and annotation must come from the same execution path.
+- Annotation should be as direct as possible; do not invent a weaker proxy if a canonical witness exists.
 - Prefer reusing an existing task group unless the reasoning style is materially different.
 - Keep prompt-facing contracts minimal; richer partitions and diagnostics can live in trace.
 

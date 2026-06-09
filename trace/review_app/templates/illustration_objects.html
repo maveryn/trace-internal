@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="illustration-object-intro" id="illustration-object-top">
+  <div class="illustration-object-summary">
+    <a class="metric metric-link" href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote)) }}">
+      <span data-illustration-review-count="shown">{{ illustration_object_review.summary.total }}</span><label>shown</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote) ~ '&decision=approve') }}">
+      <span data-illustration-review-count="approve">{{ illustration_object_review.summary.approve }}</span><label>approved</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote) ~ '&decision=improve') }}">
+      <span data-illustration-review-count="improve">{{ illustration_object_review.summary.improve }}</span><label>improve</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote) ~ '&decision=remove') }}">
+      <span data-illustration-review-count="remove">{{ illustration_object_review.summary.remove }}</span><label>remove</label>
+    </a>
+    <a class="metric metric-link" href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote) ~ '&decision=unreviewed') }}">
+      <span data-illustration-review-count="unreviewed">{{ illustration_object_review.summary.unreviewed }}</span><label>unreviewed</label>
+    </a>
+  </div>
+  <p class="muted">
+    Decisions are saved in the review SQLite DB and keyed to renderer-specific illustration object ids.
+  </p>
+</section>
+
+<nav class="resource-tabbar illustration-object-tabbar" aria-label="Illustration object renderer styles" data-illustration-object-tabs>
+  {% for tab in illustration_object_review.renderer_tabs %}
+    <a
+      class="resource-tab {% if tab.active %}active{% endif %}"
+      href="{{ app_path('/illustrations/objects?renderer=' ~ (tab.renderer_style|urlquote) ~ '&category=all' ~ ('&decision=' ~ (illustration_object_review.selected_decision|urlquote) if illustration_object_review.selected_decision else '')) }}"
+      data-tooltip="{{ tab.label }} · {{ tab.count }} object preview(s)"
+      aria-label="{{ tab.label }}, {{ tab.count }} object preview(s)"
+    >
+      <span>{{ tab.label }}</span>
+      <small>{{ tab.count }}</small>
+    </a>
+  {% endfor %}
+</nav>
+
+<nav class="resource-tabbar illustration-object-tabbar secondary" aria-label="Illustration object categories" data-illustration-object-tabs>
+  {% for tab in illustration_object_review.category_tabs %}
+    <a
+      class="resource-tab {% if tab.active %}active{% endif %}"
+      href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (tab.category|urlquote) ~ ('&decision=' ~ (illustration_object_review.selected_decision|urlquote) if illustration_object_review.selected_decision else '')) }}"
+      data-tooltip="{{ tab.label }} · {{ tab.count }} object preview(s)"
+      aria-label="{{ tab.label }}, {{ tab.count }} object preview(s)"
+    >
+      <span>{{ tab.label }}</span>
+      <small>{{ tab.count }}</small>
+    </a>
+  {% endfor %}
+</nav>
+
+<nav class="resource-tabbar illustration-object-tabbar secondary" aria-label="Illustration object review decisions" data-illustration-object-tabs>
+  {% for tab in illustration_object_review.decision_tabs %}
+    <a
+      class="resource-tab {% if tab.active %}active{% endif %}"
+      href="{{ app_path('/illustrations/objects?renderer=' ~ (illustration_object_review.selected_renderer|urlquote) ~ '&category=' ~ (illustration_object_review.selected_category|urlquote) ~ ('&decision=' ~ (tab.id|urlquote) if tab.id else '')) }}"
+      data-tooltip="{{ tab.label }} · {{ tab.count }} object preview(s)"
+      aria-label="{{ tab.label }}, {{ tab.count }} object preview(s)"
+    >
+      <span>{{ tab.label }}</span>
+      <small>{{ tab.count }}</small>
+    </a>
+  {% endfor %}
+</nav>
+
+<section class="illustration-object-grid" data-selected-decision-filter="{{ illustration_object_review.selected_decision }}">
+  {% for entry in illustration_object_review.entries %}
+    {% set item = entry.item %}
+    {% set review = entry.review %}
+    <article class="illustration-object-card decision-{{ entry.decision }}" id="{{ entry.anchor_id }}" data-illustration-object-card data-decision="{{ entry.decision }}">
+      <div class="illustration-object-preview">
+        <a href="{{ app_path(entry.preview_path) }}" target="_blank" rel="noopener noreferrer">
+          <img src="{{ app_path(entry.preview_path) }}" alt="{{ item.display_label }} preview" loading="lazy">
+        </a>
+      </div>
+      <div class="illustration-object-card-body">
+        <header>
+          <div>
+            <h2>{{ item.display_label }}</h2>
+            <p class="muted">{{ item.renderer_label }} · {{ item.category_label }}</p>
+          </div>
+          <span class="illustration-object-status {{ entry.decision }}" data-illustration-object-status>{{ entry.status_label }}</span>
+        </header>
+
+        <dl class="illustration-object-meta">
+          <div><dt>Item</dt><dd>{{ item.item_id }}</dd></div>
+          <div><dt>Type</dt><dd>{{ item.object_type }}</dd></div>
+          <div><dt>Source</dt><dd>{{ item.source }}</dd></div>
+          {% if item.variant_label %}
+            <div><dt>Variant</dt><dd>{{ item.variant_label }}</dd></div>
+          {% endif %}
+          {% if item.renderer_id %}
+            <div><dt>Renderer</dt><dd>{{ item.renderer_id }}</dd></div>
+          {% endif %}
+          {% if item.renderer_variant_id %}
+            <div><dt>Render variant</dt><dd>{{ item.renderer_variant_id }}</dd></div>
+          {% endif %}
+        </dl>
+
+        <form class="illustration-object-review-form" action="{{ app_path('/illustrations/objects/reviews/' ~ (item.item_id|urlquote)) }}" method="post" data-illustration-review-form>
+          <input type="hidden" name="next" value="{{ entry.next_path }}">
+          <div class="illustration-object-decision-row" role="radiogroup" aria-label="Review decision for {{ item.display_label }}">
+            {% for decision in illustration_object_review.decisions %}
+              <label class="{% if review.decision == decision.id %}selected{% endif %}">
+                <input type="radio" name="decision" value="{{ decision.id }}" {% if review.decision == decision.id %}checked{% endif %}>
+                <span>{{ decision.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <textarea name="notes" rows="2" placeholder="Note">{{ review.notes }}</textarea>
+          <div class="illustration-object-review-actions">
+            <input type="text" name="updated_by" value="{{ review.updated_by }}" placeholder="Reviewer">
+            <button type="submit">Save</button>
+          </div>
+          <p class="muted" data-illustration-review-saved {% if not review.updated_at %}hidden{% endif %}>Last saved {{ review.updated_at }}</p>
+        </form>
+      </div>
+    </article>
+  {% else %}
+    <div class="empty-panel">
+      <p class="muted">No illustration objects match this renderer, category, and review filter.</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

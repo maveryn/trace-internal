@@ -2,7 +2,7 @@
 
 Use this checklist when upgrading puzzle and game scenes with repeated boards,
 cells, tiles, stickers, voxels, or similar units. The goal is more visual
-variety without changing task semantics, evidence contracts, or verifier
+variety without changing task semantics, annotation contracts, or verifier
 payloads.
 
 ## Scope
@@ -21,7 +21,7 @@ Do not use a broad global decorative layer. Prefer scene-specific style packs
 that understand the scene geometry.
 
 Cell-backed boards are the `puzzles/cell_board` scene. Their implementation,
-configs, and prompt bundles live under the puzzles domain paths.
+configs, and prompt bundles live under the `puzzles` domain paths.
 
 ## Preflight Rules
 
@@ -29,11 +29,11 @@ configs, and prompt bundles live under the puzzles domain paths.
   requires a semantics change.
 - Keep answer distributions, solver logic, verifier contracts, and task
   semantics unchanged.
-- Project public evidence after the final unit size, layout placement, and
+- Project public annotation after the final unit size, layout placement, and
   canvas size are sampled.
 - Keep effective visible unit size `>= 28px`. Aim for a `2x` min-to-max
   unit-size span first, but `2x` is a target rather than a hard rule; use a
-  narrower documented range when readability, fit, or evidence integrity would
+  narrower documented range when readability, fit, or annotation integrity would
   otherwise suffer.
 - Random placement must stay inside safe bounds. If the board or panel fills
   the canvas, record the zero-slack case instead of adding artificial movement.
@@ -76,7 +76,7 @@ configs, and prompt bundles live under the puzzles domain paths.
   in render metadata.
 - Do not add a broad domain-level renderer pass that blindly recolors or moves
   repeated-unit scenes. A style that is safe for one scene can break semantic
-  contrast, evidence projection, or readability in another.
+  contrast, annotation projection, or readability in another.
 - Scene-level style sampling must be recorded in render metadata and must not
   correlate with query type, answer value, correct option, or difficulty bucket
   unless explicitly intended and documented.
@@ -90,7 +90,7 @@ configs, and prompt bundles live under the puzzles domain paths.
 - Enforce effective visible unit size `>= 28px` after jitter/scale. For
   non-square or projected units, use the smaller visible dimension.
 - Try to keep the min-to-max unit-size range at least `2x`. If that crowds the
-  scene or hurts readability/evidence integrity, use the largest safe range and
+  scene or hurts readability/annotation integrity, use the largest safe range and
   document the reason.
 - Record the effective unit-size metadata in `render_spec`, such as
   `unit_size_jitter`, `voxel_scale`, or a scene-specific equivalent.
@@ -106,7 +106,7 @@ configs, and prompt bundles live under the puzzles domain paths.
 - If the scene nearly fills the canvas and the valid offset range is zero,
   record that explicitly in layout metadata; this is acceptable.
 - Do not translate/crop rendered pixels after drawing unless every entity bbox,
-  evidence bbox, and trace coordinate is transformed identically.
+  annotation bbox, and trace coordinate is transformed identically.
 - Record `layout_jitter` with final panel/board origin, available offset range,
   content size, and canvas size.
 
@@ -115,19 +115,19 @@ configs, and prompt bundles live under the puzzles domain paths.
 - Avoid small boards floating in a large fixed canvas.
 - Let canvas size follow the resolved content footprint plus bounded slack.
 - Keep enough slack for visible placement variation when feasible.
-- Preserve readable margins, option labels, coordinate labels, and evidence
+- Preserve readable margins, option labels, coordinate labels, and annotation
   boxes.
 - Watch image-token/prompt-token pressure for large boards and option-heavy
   scenes.
 
-### 4. Evidence Integrity
+### 4. Annotation Integrity
 
-- Evidence and answer must come from the same final layout coordinates.
-- All evidence-bearing bboxes must stay inside the final canvas.
-- Decorative chrome must not be included as evidence unless the task explicitly
+- Annotation and answer must come from the same final layout coordinates.
+- All annotation-bearing bboxes must stay inside the final canvas.
+- Decorative chrome must not be included as annotation unless the task explicitly
   asks about it.
 - Style, placement, palette, and layout choices must not create alternative
-  valid answers or hide required evidence.
+  valid answers or hide required annotation.
 
 ### 5. Style Packs
 
@@ -183,7 +183,7 @@ For each scene:
      documented
    - board/panel origin varies when there is slack
    - canvas follows content size
-   - evidence bboxes remain inside the canvas
+   - annotation bboxes remain inside the canvas
    - style variants are visible but non-semantic
 5. Regenerate the scene review artifacts and inspect them in the browser app.
 6. Do not run solve-rate jobs unless explicitly requested.
@@ -194,10 +194,10 @@ The puzzle coverage plan notes that benchmark puzzle images often look like
 contest workbook panels, game UI screens, labeled option sheets, or scanned
 puzzle pages. It also warns that puzzle geometry is sensitive: style wrappers
 must not alter grid coordinates, option geometry, maze topology, cube geometry,
-fold/overlay coordinates, word-grid cells, or evidence semantics.
+fold/overlay coordinates, word-grid cells, or annotation semantics.
 
 The games coverage plan notes that benchmark game images often include game-like
 UI framing, answer options, coordinate labels, state panels, rule cards, score
 strips, move-history boxes, and HUD elements. Add these only when they do not
-alter board geometry, evidence bboxes, rule semantics, or visible
+alter board geometry, annotation bboxes, rule semantics, or visible
 cell/piece readability.

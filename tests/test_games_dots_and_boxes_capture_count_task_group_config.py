@@ -17,6 +17,8 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
         "three_sided_box_count": 1.0,
         "capture_move_count": 1.0,
         "highlighted_candidate_capture_count": 1.0,
+        "player_a_owned_box_count": 1.0,
+        "player_b_owned_box_count": 1.0,
     }
     assert generation["capture_move_query_id_weights"] == {
         "capture_move_count": 1.0,
@@ -33,6 +35,7 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
     assert generation["three_sided_box_count_support"] == [0, 1, 2, 3, 4, 5]
     assert generation["capture_move_count_support"] == [0, 1, 2, 3, 4, 5]
     assert generation["highlighted_candidate_capture_count_support"] == [0, 1, 2, 3, 4, 5]
+    assert generation["owned_box_count_support"] == [0, 1, 2, 3, 4, 5, 6, 7, 8]
     assert generation["box_rows_support"] == [3, 4]
     assert generation["box_cols_support"] == [3, 4]
     assert generation["candidate_edge_count_support"] == [5, 6, 7, 8]
@@ -50,5 +53,7 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
     assert str(prompt["task_key"]) == "dots_and_boxes_capture_query"
     assert str(prompt["object_description_single_board"]) == "a dots-and-boxes grid with some edges already drawn"
     assert "answer_hint_capture_move_count" in prompt
-    assert "evidence_hint_highlighted_candidate_capture_count" in prompt
+    assert "annotation_hint_highlighted_candidate_capture_count" in prompt
+    assert "answer_hint_player_a_owned_box_count" in prompt
+    assert "annotation_hint_player_b_owned_box_count" in prompt
     assert "some questions" not in str(prompt["object_description_single_board"])

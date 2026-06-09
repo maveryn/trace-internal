@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .dots_boxes_common import DotsAndBoxesBoardState, DotsAndBoxesBoxInstance, DotsAndBoxesEdgeInstance
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -190,6 +190,21 @@ def _edge_bbox(
     )
 
 
+def _edge_point_pair(
+    edge: DotsAndBoxesEdgeInstance,
+    *,
+    dot_xy: Mapping[Tuple[int, int], Tuple[float, float]],
+) -> List[List[float]]:
+    """Return the two rendered endpoint pixels for one edge."""
+
+    start_xy = dot_xy[(int(edge.dot_start[0]), int(edge.dot_start[1]))]
+    end_xy = dot_xy[(int(edge.dot_end[0]), int(edge.dot_end[1]))]
+    return [
+        [round(float(start_xy[0]), 3), round(float(start_xy[1]), 3)],
+        [round(float(end_xy[0]), 3), round(float(end_xy[1]), 3)],
+    ]
+
+
 def render_dots_and_boxes_scene(
     *,
     board_state: DotsAndBoxesBoardState,
@@ -303,10 +318,10 @@ def render_dots_and_boxes_scene(
     box_specs: List[RenderedDotsAndBoxesBoxSpec] = []
     box_by_id = {str(box.box_id): box for box in board_state.boxes}
     for box in board_state.boxes:
-        left = float(dot_xy[(int(box.row_index), int(box.column_index))][0] + (0.18 * cell_size))
-        top = float(dot_xy[(int(box.row_index), int(box.column_index))][1] + (0.18 * cell_size))
-        right = float(dot_xy[(int(box.row_index), int(box.column_index) + 1)][0] - (0.18 * cell_size))
-        bottom = float(dot_xy[(int(box.row_index) + 1, int(box.column_index))][1] - (0.18 * cell_size))
+        left = float(dot_xy[(int(box.row_index), int(box.column_index))][0])
+        top = float(dot_xy[(int(box.row_index), int(box.column_index))][1])
+        right = float(dot_xy[(int(box.row_index), int(box.column_index) + 1)][0])
+        bottom = float(dot_xy[(int(box.row_index) + 1, int(box.column_index))][1])
         bbox = (
             round(left, 3),
             round(top, 3),
@@ -323,7 +338,65 @@ def render_dots_and_boxes_scene(
             )
         )
 
+    owner_fill_rgba = {
+        "A": (48, 112, 214, 132),
+        "B": (220, 126, 42, 132),
+    }
+    owner_preferred_text_rgb = {
+        "A": (14, 31, 62),
+        "B": (68, 37, 10),
+    }
+    owner_font = load_font(
+        max(18, int(round(float(cell_size) * 0.28))),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
+    owner_overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    owner_draw = ImageDraw.Draw(owner_overlay)
+    for box in board_state.boxes:
+        owner = str(getattr(box, "owner", "") or "")
+        if owner not in owner_fill_rgba:
+            continue
+        left, top, right, bottom = [float(value) for value in box_bboxes_px[str(box.box_id)]]
+        inset = max(8.0, float(cell_size) * 0.11)
+        fill_rgba = tuple(int(value) for value in owner_fill_rgba[str(owner)])
+        owner_draw.rounded_rectangle(
+            [left + inset, top + inset, right - inset, bottom - inset],
+            radius=max(4, int(round(float(cell_size) * 0.12))),
+            fill=fill_rgba,
+        )
+    image.alpha_composite(owner_overlay)
+    draw = ImageDraw.Draw(image)
+    for box in board_state.boxes:
+        owner = str(getattr(box, "owner", "") or "")
+        if owner not in owner_fill_rgba:
+            continue
+        left, top, right, bottom = [float(value) for value in box_bboxes_px[str(box.box_id)]]
+        text_bbox = draw.textbbox((0, 0), owner, font=owner_font, stroke_width=1)
+        text_width = float(text_bbox[2] - text_bbox[0])
+        text_height = float(text_bbox[3] - text_bbox[1])
+        text_xy = (
+            float(left + ((right - left - text_width) / 2.0)),
+            float(top + ((bottom - top - text_height) / 2.0)),
+        )
+        fill_rgb = tuple(int(value) for value in owner_preferred_text_rgb[str(owner)])
+        surface_rgb = tuple(int(value) for value in owner_fill_rgba[str(owner)][:3])
+        draw_text_traced(
+            draw,
+            text_xy,
+            owner,
+            font=owner_font,
+            fill=fill_rgb,
+            stroke_width=1,
+            stroke_fill=(255, 255, 255),
+            role="board_mark",
+            required=True,
+            surface_rgbs=[surface_rgb],
+            preferred_rgbs=[fill_rgb],
+        )
+
     edge_bboxes_px: Dict[str, List[float]] = {}
+    edge_point_pairs_px: Dict[str, List[List[float]]] = {}
     for edge in board_state.edges:
         edge_bboxes_px[str(edge.edge_id)] = list(
             _edge_bbox(
@@ -332,6 +405,7 @@ def render_dots_and_boxes_scene(
                 pad_px=float(max(theme.edge_width_px, theme.highlight_width_px) + 8),
             )
         )
+        edge_point_pairs_px[str(edge.edge_id)] = _edge_point_pair(edge, dot_xy=dot_xy)
         if not bool(edge.is_drawn) and not bool(edge.is_highlighted):
             continue
         start_xy = dot_xy[(int(edge.dot_start[0]), int(edge.dot_start[1]))]
@@ -378,6 +452,7 @@ def render_dots_and_boxes_scene(
                 "bbox": [float(value) for value in box_spec.bbox_px],
                 "row_index": int(box.row_index),
                 "column_index": int(box.column_index),
+                "owner": str(getattr(box, "owner", "") or ""),
             }
         )
     highlighted_edge_ids = tuple(
@@ -404,6 +479,12 @@ def render_dots_and_boxes_scene(
             "board_bbox_px": [float(value) for value in board_bbox],
             "box_bboxes_px": box_bboxes_px,
             "edge_bboxes_px": edge_bboxes_px,
+            "edge_point_pairs_px": edge_point_pairs_px,
+            "box_owner_by_id": {
+                str(box.box_id): str(getattr(box, "owner", "") or "")
+                for box in board_state.boxes
+                if str(getattr(box, "owner", "") or "")
+            },
             "highlighted_edge_id": str(board_state.highlighted_edge_id),
             "highlighted_edge_ids": [str(edge_id) for edge_id in highlighted_edge_ids],
             "layout_jitter": dict(layout_jitter),

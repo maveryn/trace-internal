@@ -133,6 +133,7 @@ class GeometryMeasurementAngleValueTask(FixedGeometryQueryTaskMixin, GeometryMea
 
     task_id = "task_geometry__graph_paper__angle_value"
     fixed_query_id = "angle"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("angle",)
 
@@ -143,6 +144,7 @@ class GeometryMeasurementPolygonAreaValueTask(FixedGeometryQueryTaskMixin, Geome
 
     task_id = "task_geometry__graph_paper__polygon_area_value"
     fixed_query_id = "area"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle", "quadrilateral")
 
@@ -153,6 +155,7 @@ class GeometryMeasurementEllipseAreaValueTask(FixedGeometryQueryTaskMixin, Geome
 
     task_id = "task_geometry__graph_paper__ellipse_area_value"
     fixed_query_id = "area"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("ellipse",)
 
@@ -163,6 +166,7 @@ class GeometryMeasurementPolygonPerimeterValueTask(FixedGeometryQueryTaskMixin, 
 
     task_id = "task_geometry__graph_paper__polygon_perimeter_value"
     fixed_query_id = "perimeter"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle", "quadrilateral")
 
@@ -173,6 +177,7 @@ class GeometryMeasurementCircleCircumferenceValueTask(FixedGeometryQueryTaskMixi
 
     task_id = "task_geometry__graph_paper__circle_circumference_value"
     fixed_query_id = "perimeter"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("circle",)
 
@@ -183,5 +188,6 @@ class GeometryMeasurementLineSlopeValueTask(FixedGeometryQueryTaskMixin, Geometr
 
     task_id = "task_geometry__graph_paper__line_slope_value"
     fixed_query_id = "slope"
+    scene_id = "graph_paper"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("line",)

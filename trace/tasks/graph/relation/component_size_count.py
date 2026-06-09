@@ -10,12 +10,15 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ..shared.fixed_query_task import (
     decoupled_merged_branch_params,
+    FixedGraphQueryTaskMixin,
     rewrite_graph_public_task_output,
     select_merged_graph_query_id,
 )
 
 
-TASK_ID = "task_graph__node_link__component_membership_count"
+COMPONENT_SIZE_AFTER_EDGE_EDIT_TASK_ID = "task_graph__node_link__component_size_after_edge_edit"
+LARGEST_COMPONENT_SIZE_TASK_ID = "task_graph__node_link__largest_component_size"
+SAME_COMPONENT_COUNT_TASK_ID = "task_graph__node_link__same_component_count"
 
 _MERGED_QUERY_IDS: Tuple[str, ...] = (
     "same_component_count",
@@ -51,7 +54,7 @@ def _selected_query_from_params(params: Mapping[str, Any], instance_seed: int) -
     return select_merged_graph_query_id(
         params=params,
         instance_seed=int(instance_seed),
-        task_id=TASK_ID,
+        task_id=COMPONENT_SIZE_AFTER_EDGE_EDIT_TASK_ID,
         supported_query_ids=_MERGED_QUERY_IDS,
         aliases=_MERGED_QUERY_ALIASES,
     )
@@ -99,10 +102,32 @@ def _rewrite_largest_component_prompt_bundle(output: TaskOutput) -> TaskOutput:
 
 
 @register_task
-class GraphRelationComponentSizeCountTask:
-    """Count a connected-component size under direct or hypothetical conditions."""
+class GraphRelationSameComponentCountTaskPublic(FixedGraphQueryTaskMixin):
+    """Count nodes in the same connected component as a queried node."""
 
-    task_id = TASK_ID
+    task_id = SAME_COMPONENT_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = "same_component_count"
+    from .same_component_count import GraphRelationSameComponentCountTask as source_task_cls
+
+
+@register_task
+class GraphComparisonLargestComponentSizeTaskPublic(FixedGraphQueryTaskMixin):
+    """Return the size of the unique largest connected component."""
+
+    task_id = LARGEST_COMPONENT_SIZE_TASK_ID
+    domain = "graph"
+    task_group = "comparison"
+    fixed_query_id = "largest_component_size"
+    from ..comparison.largest_component_size import GraphComparisonLargestComponentSizeTask as source_task_cls
+
+
+@register_task
+class GraphRelationComponentSizeAfterEdgeEditTaskPublic:
+    """Count the component containing a queried node after one edge edit."""
+
+    task_id = COMPONENT_SIZE_AFTER_EDGE_EDIT_TASK_ID
     domain = "graph"
     task_group = "relation"
     default_dataset_enabled = True
@@ -111,37 +136,31 @@ class GraphRelationComponentSizeCountTask:
         branch_base_params = decoupled_merged_branch_params(
             params,
             instance_seed=int(instance_seed),
-            task_id=TASK_ID,
-            supported_query_ids=_MERGED_QUERY_IDS,
+            task_id=self.task_id,
+            supported_query_ids=("component_size_after_edge_removal", "component_size_after_edge_addition"),
             aliases=_MERGED_QUERY_ALIASES,
         )
         query_id = _selected_query_from_params(params, int(instance_seed))
-        if str(query_id) == "largest_component_size":
-            from ..comparison.largest_component_size import GraphComparisonLargestComponentSizeTask
-
-            output = GraphComparisonLargestComponentSizeTask().generate(
-                int(instance_seed),
-                params=dict(branch_base_params),
-                max_attempts=int(max_attempts),
+        if str(query_id) not in {"component_size_after_edge_removal", "component_size_after_edge_addition"}:
+            query_id = select_merged_graph_query_id(
+                params=params,
+                instance_seed=int(instance_seed),
+                task_id=self.task_id,
+                supported_query_ids=("component_size_after_edge_removal", "component_size_after_edge_addition"),
+                aliases=_MERGED_QUERY_ALIASES,
             )
-            output = _rewrite_largest_component_prompt_bundle(output)
-        elif str(query_id) == "same_component_count":
-            from .same_component_count import GraphRelationSameComponentCountTask
+        from .component_size_after_edge_edit import GraphRelationComponentSizeAfterEdgeEditTask
 
-            output = GraphRelationSameComponentCountTask().generate(
-                int(instance_seed),
-                params=dict(branch_base_params),
-                max_attempts=int(max_attempts),
-            )
-        else:
-            from .component_size_after_edge_edit import GraphRelationComponentSizeAfterEdgeEditTask
-
-            output = GraphRelationComponentSizeAfterEdgeEditTask().generate(
-                int(instance_seed),
-                params=_edge_edit_params(branch_base_params, str(query_id)),
-                max_attempts=int(max_attempts),
-            )
-        return rewrite_graph_public_task_output(output, task_id=TASK_ID, query_id=output.query_id)
+        output = GraphRelationComponentSizeAfterEdgeEditTask().generate(
+            int(instance_seed),
+            params=_edge_edit_params(branch_base_params, str(query_id)),
+            max_attempts=int(max_attempts),
+        )
+        return rewrite_graph_public_task_output(output, task_id=self.task_id, query_id=output.query_id)
 
 
-__all__ = ["GraphRelationComponentSizeCountTask"]
+__all__ = [
+    "GraphRelationSameComponentCountTaskPublic",
+    "GraphComparisonLargestComponentSizeTaskPublic",
+    "GraphRelationComponentSizeAfterEdgeEditTaskPublic",
+]

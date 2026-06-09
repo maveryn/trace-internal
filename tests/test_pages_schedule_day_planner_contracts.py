@@ -21,7 +21,7 @@ def test_pages_schedule_day_planner_deterministic() -> None:
     out_a = task.generate(22180, params=params, max_attempts=20)
     out_b = task.generate(22180, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()

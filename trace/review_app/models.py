@@ -46,11 +46,11 @@ class SampleRecord:
     image_mtime_ns: int
     prompt: str
     prompt_answer_only: str
-    prompt_answer_and_evidence: str
+    prompt_answer_and_annotation: str
     answer_type: str
     answer_value: Any
-    evidence_type: str
-    evidence_value: Any
+    annotation_type: str
+    annotation_value: Any
 
     @property
     def answer_label(self) -> str:
@@ -97,7 +97,7 @@ class TaskAuditRecord:
     task_id: str
     prompt_pass: bool = False
     image_pass: bool = False
-    evidence_pass: bool = False
+    annotation_pass: bool = False
     distribution_pass: bool = False
     solve_rate_pass: bool = False
     notes: str = ""
@@ -105,24 +105,44 @@ class TaskAuditRecord:
     updated_by: str = ""
 
     @property
-    def manual_pass(self) -> bool:
+    def review_pass(self) -> bool:
+        """Whether the non-solve-rate manual review gates are all checked."""
+
         return (
             self.prompt_pass
             and self.image_pass
-            and self.evidence_pass
+            and self.annotation_pass
             and self.distribution_pass
-            and self.solve_rate_pass
         )
 
     @property
-    def passed_count(self) -> int:
+    def review_count(self) -> int:
         return (
             int(self.prompt_pass)
             + int(self.image_pass)
-            + int(self.evidence_pass)
+            + int(self.annotation_pass)
             + int(self.distribution_pass)
-            + int(self.solve_rate_pass)
         )
+
+    @property
+    def review_total(self) -> int:
+        return 4
+
+    @property
+    def solve_rate_review_pass(self) -> bool:
+        return bool(self.solve_rate_pass)
+
+    @property
+    def manual_pass(self) -> bool:
+        """Backward-compatible name for non-solve-rate review completion."""
+
+        return self.review_pass
+
+    @property
+    def passed_count(self) -> int:
+        """Total checked manual gates, including the separate solve-rate gate."""
+
+        return self.review_count + int(self.solve_rate_pass)
 
     @property
     def total_count(self) -> int:
@@ -140,9 +160,125 @@ class TaskAuditRecord:
             task_id=str(row["task_id"]),
             prompt_pass=bool(int(row["prompt_pass"] or 0)),
             image_pass=bool(int(row["image_pass"] or 0)),
-            evidence_pass=bool(int(row["evidence_pass"] or 0)),
+            annotation_pass=bool(int(row["annotation_pass"] or 0)),
             distribution_pass=bool(int(row["distribution_pass"] or 0)),
             solve_rate_pass=bool(int(row.get("solve_rate_pass", 0) or 0)),
+            notes=str(row["notes"] or ""),
+            updated_at=str(row["updated_at"] or ""),
+            updated_by=str(row["updated_by"] or ""),
+        )
+
+
+@dataclass(frozen=True)
+class TaxonomyDecisionReviewRecord:
+    """Persisted reviewer approval for one taxonomy task-boundary decision."""
+
+    round_id: str
+    domain: str
+    scene_id: str
+    task_id: str
+    approved: bool = False
+    notes: str = ""
+    updated_at: str = ""
+    updated_by: str = ""
+
+    @property
+    def task_key(self) -> str:
+        return ReviewIndex.task_key(self.domain, self.scene_id, self.task_id)
+
+    @classmethod
+    def empty(
+        cls,
+        *,
+        round_id: str,
+        domain: str,
+        scene_id: str,
+        task_id: str,
+    ) -> "TaxonomyDecisionReviewRecord":
+        return cls(round_id=round_id, domain=domain, scene_id=scene_id, task_id=task_id)
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "TaxonomyDecisionReviewRecord":
+        return cls(
+            round_id=str(row["round_id"]),
+            domain=str(row["domain"]),
+            scene_id=str(row["scene_id"]),
+            task_id=str(row["task_id"]),
+            approved=bool(int(row["approved"] or 0)),
+            notes=str(row["notes"] or ""),
+            updated_at=str(row["updated_at"] or ""),
+            updated_by=str(row["updated_by"] or ""),
+        )
+
+
+@dataclass(frozen=True)
+class ThreeDObjectReviewRecord:
+    """Persisted reviewer decision for one canonical three_d object profile."""
+
+    profile_id: str
+    canonical_id: str = ""
+    object_type: str = ""
+    renderer: str = ""
+    source_scene: str = ""
+    decision: str = ""
+    notes: str = ""
+    updated_at: str = ""
+    updated_by: str = ""
+
+    @property
+    def reviewed(self) -> bool:
+        return bool(str(self.decision).strip())
+
+    @classmethod
+    def empty(cls, *, profile_id: str) -> "ThreeDObjectReviewRecord":
+        return cls(profile_id=str(profile_id))
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "ThreeDObjectReviewRecord":
+        return cls(
+            profile_id=str(row["profile_id"]),
+            canonical_id=str(row["canonical_id"] or ""),
+            object_type=str(row["object_type"] or ""),
+            renderer=str(row["renderer"] or ""),
+            source_scene=str(row["source_scene"] or ""),
+            decision=str(row["decision"] or ""),
+            notes=str(row["notes"] or ""),
+            updated_at=str(row["updated_at"] or ""),
+            updated_by=str(row["updated_by"] or ""),
+        )
+
+
+@dataclass(frozen=True)
+class IllustrationObjectReviewRecord:
+    """Persisted reviewer decision for one illustration object renderer preview."""
+
+    item_id: str
+    renderer_style: str = ""
+    category: str = ""
+    object_type: str = ""
+    label: str = ""
+    decision: str = ""
+    notes: str = ""
+    updated_at: str = ""
+    updated_by: str = ""
+
+    @property
+    def reviewed(self) -> bool:
+        return bool(str(self.decision).strip())
+
+    @classmethod
+    def empty(cls, *, item_id: str) -> "IllustrationObjectReviewRecord":
+        return cls(item_id=str(item_id))
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "IllustrationObjectReviewRecord":
+        return cls(
+            item_id=str(row["item_id"]),
+            renderer_style=str(row["renderer_style"] or ""),
+            category=str(row["category"] or ""),
+            object_type=str(row["object_type"] or ""),
+            label=str(row["label"] or ""),
+            decision=str(row["decision"] or ""),
             notes=str(row["notes"] or ""),
             updated_at=str(row["updated_at"] or ""),
             updated_by=str(row["updated_by"] or ""),
@@ -324,3 +460,14 @@ class FeedbackCommentRecord:
             author=str(row["author"]),
             comment=str(row["comment"]),
         )
+
+
+@dataclass(frozen=True)
+class FeedbackThreadEvent:
+    """One chronological event in a reviewer/agent feedback thread."""
+
+    kind: str
+    created_at: str
+    author: str
+    text: str
+    label: str

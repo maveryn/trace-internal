@@ -513,7 +513,7 @@ def _sample_first_pin_hit(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
                     target_path_id=None,
                     target_path_label=None,
                     remaining_pin_ids=tuple(pin.pin_id for pin in pins if bool(pin.standing)),
-                    evidence_entity_ids=(str(target_pin.pin_id),),
+                    annotation_entity_ids=(str(target_pin.pin_id),),
                     construction_mode="verified_first_collision_path",
                     path_visible_fraction=None,
                     path_clearance_px=None if clearance_px is None else float(clearance_px),
@@ -595,7 +595,7 @@ def _sample_spare_path(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
         target_path_id=str(target_path.path_id),
         target_path_label=str(target_path.label),
         remaining_pin_ids=tuple(pin_entity_id(index) for index in group),
-        evidence_entity_ids=(str(target_path.path_id),),
+        annotation_entity_ids=(str(target_path.path_id),),
         construction_mode="unique_path_through_remaining_pins",
         path_visible_fraction=float(rng.uniform(0.42, 0.56)),
         path_clearance_px=None,
@@ -620,12 +620,12 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "spare_path_label":
         answer_value = "4"
-        evidence_value = [[[430, 610], [620, 250]]]
+        annotation_value = [[[430, 610], [620, 250]]]
     else:
         answer_value = "G"
-        evidence_value = [[510, 164, 554, 224]]
+        annotation_value = [[510, 164, 554, 224]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -696,23 +696,23 @@ class GamesBowlingLaneTask:
         if str(axes.query_id) == "spare_path_label":
             if sampled_scene.target_path_id is None:
                 raise RuntimeError("spare_path_label missing target path id")
-            evidence_type = "point_pair_set"
-            evidence_value = [
+            annotation_type = "point_pair_set"
+            annotation_value = [
                 [list(point) for point in rendered_scene.render_map["path_point_pairs_px"][str(sampled_scene.target_path_id)]]
             ]
-            projected_evidence = {
+            projected_annotation = {
                 "type": "point_pair_set",
-                "point_pair_set": [list(pair) for pair in evidence_value],
+                "point_pair_set": [list(pair) for pair in annotation_value],
             }
         else:
-            evidence_type = "bbox_set"
-            evidence_value = [
+            annotation_type = "bbox_set"
+            annotation_value = [
                 list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-                for entity_id in sampled_scene.evidence_entity_ids
+                for entity_id in sampled_scene.annotation_entity_ids
             ]
-            projected_evidence = {
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_value],
+                "bbox_set": [list(bbox) for bbox in annotation_value],
             }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -733,9 +733,9 @@ class GamesBowlingLaneTask:
                 "bowling_motion_rule_text",
                 "spare_path_rule_text",
                 "answer_hint_first_pin_hit_label",
-                "evidence_hint_first_pin_hit_label",
+                "annotation_hint_first_pin_hit_label",
                 "answer_hint_spare_path_label",
-                "evidence_hint_spare_path_label",
+                "annotation_hint_spare_path_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -747,7 +747,7 @@ class GamesBowlingLaneTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "bowling_motion_rule_text": str(prompt_defaults["bowling_motion_rule_text"]),
@@ -755,7 +755,7 @@ class GamesBowlingLaneTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -764,7 +764,7 @@ class GamesBowlingLaneTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         standing_pin_count = sum(1 for pin in sampled_scene.pins if bool(pin.standing))
         text_style_meta = {
             "font_family": str(render_params.font_family),
@@ -777,7 +777,7 @@ class GamesBowlingLaneTask:
             query_id=str(axes.query_id),
             standing_pin_count=int(standing_pin_count),
             path_option_count=len(sampled_scene.path_options),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         pin_trace = [
             {
@@ -810,7 +810,7 @@ class GamesBowlingLaneTask:
                     "style_variant": str(axes.style_variant),
                     "standing_pin_count": int(standing_pin_count),
                     "path_option_count": len(sampled_scene.path_options),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -868,14 +868,14 @@ class GamesBowlingLaneTask:
                 "path_visible_fraction": sampled_scene.path_visible_fraction,
                 "path_clearance_px": sampled_scene.path_clearance_px,
                 "remaining_pin_ids": [str(entity_id) for entity_id in sampled_scene.remaining_pin_ids],
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
-                "type": "point_pair_set" if str(evidence_type) == "point_pair_set" else "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "type": "point_pair_set" if str(annotation_type) == "point_pair_set" else "object_set",
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -883,7 +883,7 @@ class GamesBowlingLaneTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

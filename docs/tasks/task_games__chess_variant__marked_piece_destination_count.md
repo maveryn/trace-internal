@@ -2,22 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `chess_variant`
-3. Source task group: `chess_variant`
-4. Query ids: `marked_piece_move_count`, `marked_piece_capture_count`
-5. Objective: Count marked-token destination squares matching the sampled condition under the visible rule card.
+2. Task group: `chess_variant`
+3. Scene id: `chess_variant`
+4. Public task id: `task_games__chess_variant__marked_piece_destination_count`
+5. Supported `query_id` values: `marked_piece_capture_count`, `marked_piece_move_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(legal_destinations(marked_piece), destination_filter)); scene=chess_variant; scope=marked_piece_destination_count; query_branch=marked_piece_capture_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: `bbox_set` over qualifying destination board cells.
-3. For `marked_piece_capture_count`, evidence is the occupied destination cell, not the tighter opponent-token box.
-4. The sampled condition is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
-
-## Implementation
-1. The scene shows an 8 by 8 chess-like board with W/B tokens and a visible rule card.
-2. Internal rule families include straight range, diagonal range, straight-or-diagonal range, and leaper rules.
-3. Prompt bundle: `games_chess_variant_v0`
-4. Rendering uses the shared games/puzzles panel scene layer plus scene-local token-board palettes, sampled text fonts, unit-size jitter, and dynamic canvas sizing.
-
-## Determinism
-Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

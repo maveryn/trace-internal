@@ -29,7 +29,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
+from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from ...shared.text_rendering import load_font
 from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
@@ -108,7 +108,7 @@ class _Query:
     query_id: str
     answer: int | str
     answer_type: str
-    evidence_item_ids: Tuple[str, ...]
+    annotation_item_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
 
@@ -336,7 +336,7 @@ def _construct_reference_intervals(
     target_indices = set(rng.sample(range(int(category_count)), k=int(answer_count)))
 
     items: List[_IntervalItem] = []
-    evidence_ids: List[str] = []
+    annotation_ids: List[str] = []
     for index in range(int(category_count)):
         item_id = f"i{index}"
         is_target = int(index) in target_indices
@@ -346,7 +346,7 @@ def _construct_reference_intervals(
                 mid = int(reference_value + rng.randint(-3, 3))
                 lower = min(int(reference_value), int(mid - half_width))
                 upper = max(int(reference_value), int(mid + half_width))
-                evidence_ids.append(item_id)
+                annotation_ids.append(item_id)
             elif (index + int(reference_value)) % 2 == 0:
                 upper = int(reference_value) - int(rng.randint(3, 13))
                 width = int(rng.randint(8, 18))
@@ -363,7 +363,7 @@ def _construct_reference_intervals(
                 width = int(rng.randint(8, 18))
                 upper = int(lower) + int(width)
                 mid = int(round((int(lower) + int(upper)) / 2.0))
-                evidence_ids.append(item_id)
+                annotation_ids.append(item_id)
             elif (index + int(reference_value)) % 2 == 0:
                 half_width = int(rng.randint(6, 14))
                 mid = int(reference_value + rng.randint(-2, 2))
@@ -380,7 +380,7 @@ def _construct_reference_intervals(
                 width = int(rng.randint(8, 18))
                 lower = int(upper) - int(width)
                 mid = int(round((int(lower) + int(upper)) / 2.0))
-                evidence_ids.append(item_id)
+                annotation_ids.append(item_id)
             elif (index + int(reference_value)) % 2 == 0:
                 half_width = int(rng.randint(6, 14))
                 mid = int(reference_value + rng.randint(-2, 2))
@@ -405,7 +405,7 @@ def _construct_reference_intervals(
                 color_rgb=tuple(int(v) for v in colors[index]),
             )
         )
-    return tuple(items), int(reference_value), tuple(evidence_ids), {
+    return tuple(items), int(reference_value), tuple(annotation_ids), {
         "answer_count": int(answer_count),
         "answer_count_probabilities": _support_probability_map(range(1, 6)),
     }
@@ -497,7 +497,7 @@ def _construct_dataset(
             instance_seed=int(instance_seed),
             namespace=f"charts.error_interval.answer_count.{query_id}",
         )
-        items, reference_value, evidence_item_ids, extra = _construct_reference_intervals(
+        items, reference_value, annotation_item_ids, extra = _construct_reference_intervals(
             query_id=str(query_id),
             category_count=int(category_count),
             answer_count=int(answer_count),
@@ -510,7 +510,7 @@ def _construct_dataset(
             query_id=str(query_id),
             answer=int(answer_count),
             answer_type="integer",
-            evidence_item_ids=tuple(evidence_item_ids),
+            annotation_item_ids=tuple(annotation_item_ids),
             params={
                 "reference_value": int(reference_value),
                 "answer_count_probabilities": dict(answer_count_probs),
@@ -518,7 +518,7 @@ def _construct_dataset(
             },
         )
     else:
-        items, evidence_item_ids, answer_label, extra = _construct_relation_intervals(
+        items, annotation_item_ids, answer_label, extra = _construct_relation_intervals(
             query_id=str(query_id),
             category_count=int(category_count),
             labels=labels,
@@ -530,7 +530,7 @@ def _construct_dataset(
             query_id=str(query_id),
             answer=str(answer_label),
             answer_type="string",
-            evidence_item_ids=tuple(evidence_item_ids),
+            annotation_item_ids=tuple(annotation_item_ids),
             params=dict(extra),
         )
         reference_value = None
@@ -547,8 +547,17 @@ def _construct_dataset(
     )
 
 
-def _render_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), group_default(_RENDER_DEFAULTS, str(key), int(fallback))))
+def _render_int(params: Mapping[str, Any], key: str, fallback: int, *, instance_seed: int | None = None) -> int:
+    return int(
+        resolve_render_int(
+            params,
+            _RENDER_DEFAULTS,
+            str(key),
+            int(fallback),
+            instance_seed=instance_seed,
+            namespace=TASK_ID,
+        )
+    )
 
 
 def _render_float(params: Mapping[str, Any], key: str, fallback: float) -> float:
@@ -556,6 +565,9 @@ def _render_float(params: Mapping[str, Any], key: str, fallback: float) -> float
 
 
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
+    def rint(key: str, fallback: int) -> int:
+        return _render_int(params, str(key), int(fallback), instance_seed=int(instance_seed))
+
     outer_margin = _render_int(params, "outer_margin_px", 54)
     margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer_margin),
@@ -568,31 +580,31 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         namespace=f"{TASK_ID}.layout",
     )
     return _RenderParams(
-        canvas_width=_render_int(params, "canvas_width", 1320),
-        canvas_height=_render_int(params, "canvas_height", 900),
+        canvas_width=rint("canvas_width", 1320),
+        canvas_height=rint("canvas_height", 900),
         outer_margin_px=int(outer_margin),
         outer_margin_left_px=int(margin_left),
         outer_margin_right_px=int(margin_right),
         outer_margin_top_px=int(margin_top),
         outer_margin_bottom_px=int(margin_bottom),
-        title_band_height_px=_render_int(params, "title_band_height_px", 72),
-        label_band_px=_render_int(params, "label_band_px", 154),
-        plot_padding_px=_render_int(params, "plot_padding_px", 32),
-        panel_corner_radius_px=_render_int(params, "panel_corner_radius_px", 10),
-        panel_outline_width_px=_render_int(params, "panel_outline_width_px", 2),
-        axis_line_width_px=_render_int(params, "axis_line_width_px", 2),
-        grid_line_width_px=_render_int(params, "grid_line_width_px", 1),
-        interval_line_width_px=_render_int(params, "interval_line_width_px", 5),
-        cap_length_px=_render_int(params, "cap_length_px", 20),
-        point_radius_px=_render_int(params, "point_radius_px", 7),
+        title_band_height_px=rint("title_band_height_px", 72),
+        label_band_px=rint("label_band_px", 154),
+        plot_padding_px=rint("plot_padding_px", 32),
+        panel_corner_radius_px=rint("panel_corner_radius_px", 10),
+        panel_outline_width_px=rint("panel_outline_width_px", 2),
+        axis_line_width_px=rint("axis_line_width_px", 2),
+        grid_line_width_px=rint("grid_line_width_px", 1),
+        interval_line_width_px=rint("interval_line_width_px", 5),
+        cap_length_px=rint("cap_length_px", 20),
+        point_radius_px=rint("point_radius_px", 7),
         bar_width_fraction=_render_float(params, "bar_width_fraction", 0.58),
-        title_font_size_px=_render_int(params, "title_font_size_px", 30),
-        label_font_size_px=_render_int(params, "label_font_size_px", 20),
-        tick_font_size_px=_render_int(params, "tick_font_size_px", 17),
-        value_font_size_px=_render_int(params, "value_font_size_px", 15),
-        axis_min=_render_int(params, "axis_min", 0),
-        axis_max=_render_int(params, "axis_max", 100),
-        tick_step=max(1, _render_int(params, "tick_step", 20)),
+        title_font_size_px=rint("title_font_size_px", 30),
+        label_font_size_px=rint("label_font_size_px", 20),
+        tick_font_size_px=rint("tick_font_size_px", 17),
+        value_font_size_px=rint("value_font_size_px", 15),
+        axis_min=rint("axis_min", 0),
+        axis_max=rint("axis_max", 100),
+        tick_step=max(1, rint("tick_step", 20)),
         text_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "text_rgb", [38, 41, 48], instance_seed=int(instance_seed), namespace="charts.error_interval"),
         muted_text_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "muted_text_rgb", [88, 96, 112], instance_seed=int(instance_seed), namespace="charts.error_interval"),
         text_stroke_rgb=resolve_render_rgb(params, _RENDER_DEFAULTS, "text_stroke_rgb", [255, 255, 255], instance_seed=int(instance_seed), namespace="charts.error_interval"),
@@ -1101,7 +1113,7 @@ class ChartsErrorIntervalChartTask:
                 "json_output_contract_answer_only",
                 "answer_hint_count",
                 "answer_hint_label",
-                "evidence_hint",
+                "annotation_hint",
                 "object_description_horizontal_forest",
                 "object_description_vertical_dot_whisker",
                 "object_description_bar_with_error",
@@ -1121,13 +1133,13 @@ class ChartsErrorIntervalChartTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{dataset.scene_variant}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(answer_hint),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "reference_value": "" if dataset.reference_value is None else int(dataset.reference_value),
@@ -1137,23 +1149,23 @@ class ChartsErrorIntervalChartTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_item_ids = [str(value) for value in dataset.query.evidence_item_ids]
-        evidence_bboxes = [list(rendered.interval_bboxes_px[str(item_id)]) for item_id in evidence_item_ids]
+        annotation_item_ids = [str(value) for value in dataset.query.annotation_item_ids]
+        annotation_bboxes = [list(rendered.interval_bboxes_px[str(item_id)]) for item_id in annotation_item_ids]
         answer_gt = TypedValue(type=str(dataset.query.answer_type), value=dataset.query.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         item_by_id = {item.item_id: item for item in dataset.items}
         label_to_interval = {
             item.label: {"lower": int(item.lower), "midpoint": int(item.midpoint), "upper": int(item.upper)}
             for item in dataset.items
         }
-        evidence_labels = [str(item_by_id[item_id].label) for item_id in evidence_item_ids]
+        annotation_labels = [str(item_by_id[item_id].label) for item_id in annotation_item_ids]
         visual_scan = clamp_unit_interval(
             0.65 * normalize_int_with_bounds(len(dataset.items), [6, 10])
             + 0.35 * float(_SCENE_LOADS[str(dataset.scene_variant)])
         )
-        evidence_scan = normalize_int_with_bounds(len(evidence_item_ids), [1, 5])
-        reasoning_load = clamp_unit_interval(float(_QUERY_LOADS[str(query_id)]) + (0.08 * evidence_scan))
+        annotation_scan = normalize_int_with_bounds(len(annotation_item_ids), [1, 5])
+        reasoning_load = clamp_unit_interval(float(_QUERY_LOADS[str(query_id)]) + (0.08 * annotation_scan))
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1183,7 +1195,7 @@ class ChartsErrorIntervalChartTask:
                     "scene_variant": str(dataset.scene_variant),
                     "reference_value": dataset.reference_value,
                     "answer_value": dataset.query.answer,
-                    "evidence_item_ids": list(evidence_item_ids),
+                    "annotation_item_ids": list(annotation_item_ids),
                 },
             },
             "query_spec": {
@@ -1219,20 +1231,20 @@ class ChartsErrorIntervalChartTask:
                 "label_to_interval": dict(label_to_interval),
                 "answer_value": dataset.query.answer,
                 "answer_type": str(dataset.query.answer_type),
-                "evidence_item_ids": list(evidence_item_ids),
-                "evidence_labels": list(evidence_labels),
+                "annotation_item_ids": list(annotation_item_ids),
+                "annotation_labels": list(annotation_labels),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
                 "type": "error_interval_witness",
                 "answer_value": dataset.query.answer,
-                "evidence_item_ids": list(evidence_item_ids),
+                "annotation_item_ids": list(annotation_item_ids),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-                "bbox_map": {str(item_id): list(rendered.interval_bboxes_px[str(item_id)]) for item_id in evidence_item_ids},
-                "item_ids": list(evidence_item_ids),
-                "item_labels": list(evidence_labels),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
+                "bbox_map": {str(item_id): list(rendered.interval_bboxes_px[str(item_id)]) for item_id in annotation_item_ids},
+                "item_ids": list(annotation_item_ids),
+                "item_labels": list(annotation_labels),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1241,7 +1253,7 @@ class ChartsErrorIntervalChartTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1253,12 +1265,24 @@ class ChartsErrorIntervalChartTask:
 
 
 @register_task
-class ChartsErrorIntervalReferenceCountTask(MergedChartQueryVariantTaskMixin, ChartsErrorIntervalChartTask):
-    """Count intervals by relation to a reference value."""
+class ChartsErrorIntervalReferenceContainmentCountTask(MergedChartQueryVariantTaskMixin, ChartsErrorIntervalChartTask):
+    """Count intervals that contain a reference value."""
 
-    task_id = "task_charts__error_interval__reference_relation_count"
+    task_id = "task_charts__error_interval__reference_containment_count"
     default_dataset_enabled = True
-    allowed_query_ids = REFERENCE_COUNT_QUERY_IDS
+    allowed_query_ids = ("contains_reference_count",)
+
+
+@register_task
+class ChartsErrorIntervalReferenceExclusionSideCountTask(MergedChartQueryVariantTaskMixin, ChartsErrorIntervalChartTask):
+    """Count intervals that sit entirely above or below a reference value."""
+
+    task_id = "task_charts__error_interval__reference_exclusion_side_count"
+    default_dataset_enabled = True
+    allowed_query_ids = (
+        "entirely_above_reference_count",
+        "entirely_below_reference_count",
+    )
 
 
 @register_task
@@ -1272,7 +1296,8 @@ class ChartsErrorIntervalRelationLabelTask(MergedChartQueryVariantTaskMixin, Cha
 
 __all__ = [
     "ChartsErrorIntervalChartTask",
-    "ChartsErrorIntervalReferenceCountTask",
+    "ChartsErrorIntervalReferenceContainmentCountTask",
+    "ChartsErrorIntervalReferenceExclusionSideCountTask",
     "ChartsErrorIntervalRelationLabelTask",
     "REFERENCE_COUNT_QUERY_IDS",
     "RELATION_LABEL_QUERY_IDS",

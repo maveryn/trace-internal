@@ -53,17 +53,17 @@ def test_toggle_result_contract() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == RESULT_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
     recomputed = _apply_toggles(execution["start_state"], execution["pressed_cells"])
     assert recomputed == execution["target_state"]
     correct = next(option for option in execution["option_specs"] if option["option_label"] == execution["answer_value"])
     assert correct["state"] == execution["target_state"]
     assert str(out.answer_gt.value) == str(execution["answer_value"])
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_in_image(bbox, out.image.size)
 
 def test_toggle_repair_contract() -> None:
@@ -74,14 +74,14 @@ def test_toggle_repair_contract() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == REPAIR_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
     correct = next(option for option in execution["candidate_switch_specs"] if option["option_label"] == execution["answer_value"])
     recomputed = _toggle_once(execution["start_state"], int(correct["row"]), int(correct["col"]))
     assert recomputed == execution["target_state"]
     assert str(out.answer_gt.value) == str(execution["answer_value"])
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_in_image(bbox, out.image.size)

@@ -69,19 +69,19 @@
       "start_label",
       "end_label"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -89,12 +89,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -130,10 +130,10 @@
     ],
     "interval_rate_value": [
       "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
-      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps between the endpoint labels.",
+      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps from \"{start_label}\" to \"{end_label}\".",
       "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
-      "Find the integer average rate of change across the displayed interval.",
-      "Using the endpoint values and displayed step count, compute the average signed change per step."
+      "Find the integer average rate of change from \"{start_label}\" to \"{end_label}\".",
+      "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the average signed change per step."
     ],
     "first_crosses_above_threshold": [
       "Which label is the first one in displayed order with value greater than {threshold}?",
@@ -182,21 +182,21 @@
       "Compute value at \"{end_label}\" minus value at \"{start_label}\"; keep the sign.",
       "How much did the value change from \"{start_label}\" to \"{end_label}\", using a negative answer for a decrease?",
       "Find the signed endpoint difference from \"{start_label}\" to \"{end_label}\".",
-      "Find the change from the first endpoint to the second endpoint, preserving sign."
+      "Find the change from \"{start_label}\" to \"{end_label}\", preserving sign."
     ],
     "percent_change_between_labels": [
       "What is the integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100 and omit the percent sign.",
       "Compute the percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign.",
       "Using \"{start_label}\" as the base, what is the integer percent change at \"{end_label}\"?",
       "Find 100 times the signed change divided by the value at \"{start_label}\"; omit the percent sign.",
-      "Find the integer percentage change from the first endpoint to the second endpoint."
+      "Find the integer percentage change from \"{start_label}\" to \"{end_label}\"."
     ],
     "average_rate_over_interval": [
       "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
-      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps between the endpoint labels.",
+      "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps from \"{start_label}\" to \"{end_label}\".",
       "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
-      "Find the integer average rate of change across the displayed interval.",
-      "Using the endpoint values and displayed step count, compute the average signed change per step."
+      "Find the integer average rate of change from \"{start_label}\" to \"{end_label}\".",
+      "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the average signed change per step."
     ]
   },
   "allow_empty_task_templates": true

@@ -35,7 +35,7 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
             2026052800 + index,
             params={
                 "query_id": variant,
-                "source_query_key": "mixed_car",
+                "source_query_key": "park_sitting",
                 "current_count": current_count,
                 "edit_count_k": edit_count_k,
             },
@@ -46,9 +46,9 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(expected_answer)
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == int(current_count)
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(current_count)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
         assert trace["execution_trace"]["current_count"] == current_count
         assert trace["execution_trace"]["edit_count_k"] == edit_count_k
         assert trace["execution_trace"]["result_count"] == expected_answer
@@ -67,7 +67,7 @@ def test_illustrations_counterfactual_object_count_after_edit_sampling_distribut
         out = task.generate(2026052900 + index, params={}, max_attempts=120)
         variants[str(out.query_id)] += 1
         answers_by_variant[str(out.query_id)][int(out.answer_gt.value)] += 1
-        assert len(out.evidence_gt.value) == int(out.trace_payload["execution_trace"]["current_count"])
+        assert len(out.annotation_gt.value) == int(out.trace_payload["execution_trace"]["current_count"])
     _assert_hash_balanced_counts(variants, SUPPORTED_QUERY_IDS)
     assert len(answers_by_variant[ADDED_VARIANT]) >= 5
     assert len(answers_by_variant[REMOVED_VARIANT]) >= 5

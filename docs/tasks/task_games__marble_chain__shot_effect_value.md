@@ -4,15 +4,13 @@
 1. Domain: `games`
 2. Task group: `marble_chain`
 3. Scene id: `marble_chain`
-4. Query ids: `pop_count_after_marked_shot`
-5. Objective: compute the numeric pop effect of the marked shot arrow.
-6. Answer type: `integer`.
-7. Evidence type: `point_set` over the centers of existing chain marbles removed by the marked shot; zero-pop shots use an empty point set.
+4. Public task id: `task_games__marble_chain__shot_effect_value`
+5. Supported `query_id` values: `pop_count_after_marked_shot`
+6. Answer schema: `integer_count`
+7. Annotation schema: `point_set`
+8. Program schema: `count(popped_chain_marbles(transform(chain, marked_shot))); scene=marble_chain; scope=shot_effect_value; query_branch=pop_count_after_marked_shot`
 
 ## Generation Notes
-1. The scene shows a Zuma-like board with a central shooter, a shooter marble, and colored marbles on a gray curved or spiral track.
-2. One shot arrow is marked visually.
-3. The single-step rule inserts the shooter marble at the chain gap indicated by the marked arrow, removes the same-color contiguous run containing it if that run has length at least three, and closes the chain once.
-4. `pop_count_after_marked_shot` counts existing chain marbles removed by the marked shot, excluding the shooter marble.
-5. The task does not apply recursive cascade removal.
-6. Rendering varies shared panel treatment, sampled label font, track layout, and five scene-local track styles before projecting evidence.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

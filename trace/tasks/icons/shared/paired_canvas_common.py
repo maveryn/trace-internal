@@ -300,7 +300,7 @@ def choose_query_id(
     task_id: str,
     query_ids: Sequence[str],
     weight_key: str,
-    explicit_keys: Sequence[str] = ("query_id", "query_id", "query_id"),
+    explicit_keys: Sequence[str] = ("query_id", "query_variant"),
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one public query id with balanced sampling when weights are uniform."""
 
@@ -315,7 +315,13 @@ def choose_query_id(
             raise ValueError(f"unsupported query id for {task_id}: {explicit}")
         return str(explicit), {query: (1.0 if query == explicit else 0.0) for query in supported}
 
-    raw_weights = params.get(weight_key, params.get("query_id_weights", gen_defaults.get(weight_key, {query: 1.0 for query in supported})))
+    raw_weights = params.get(
+        weight_key,
+        params.get(
+            "query_id_weights",
+            params.get("query_variant_weights", gen_defaults.get(weight_key, {query: 1.0 for query in supported})),
+        ),
+    )
     if not isinstance(raw_weights, Mapping):
         raise ValueError(f"{weight_key} must be a mapping when provided")
     probabilities = normalize_positive_weights(
@@ -324,7 +330,10 @@ def choose_query_id(
     )
     selected = str(weighted_choice(rng, probabilities, sort_keys=True))
     enabled = bool(params.get("balanced_query_sampling", gen_defaults.get("balanced_query_sampling", True)))
-    overridden = any(key in params and params.get(key) is not None for key in (weight_key, "query_id_weights"))
+    overridden = any(
+        key in params and params.get(key) is not None
+        for key in (weight_key, "query_id_weights", "query_variant_weights")
+    )
     positive_values = [float(value) for value in probabilities.values() if float(value) > 0.0]
     if bool(enabled) and (not overridden) and positive_values and max(positive_values) - min(positive_values) <= 1e-9:
         selection_index = resolve_selection_index(
@@ -474,8 +483,8 @@ def sample_base_attributes(
     return attrs
 
 
-def evidence_from_indices(*, panel_icons: Sequence[Mapping[str, Any]], indices: Sequence[int]) -> List[List[int]]:
-    """Return reading-order bbox evidence from selected panel icon indices."""
+def annotation_from_indices(*, panel_icons: Sequence[Mapping[str, Any]], indices: Sequence[int]) -> List[List[int]]:
+    """Return reading-order bbox annotation from selected panel icon indices."""
 
     selected = []
     for index in indices:
@@ -500,13 +509,13 @@ def build_paired_prompt(
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
             "question_text": str(question_text),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint"]),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(prompt_defaults["json_example"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -525,9 +534,9 @@ def paired_task_output(
     prompt_artifacts: Any,
     prompt_defaults: Mapping[str, Any],
     render_params: Mapping[str, Any],
-    evidence_panel: str,
+    annotation_panel: str,
     answer_value: int,
-    evidence_bboxes: Sequence[Sequence[int]],
+    annotation_bboxes: Sequence[Sequence[int]],
     complexity: Any,
 ) -> TaskOutput:
     """Build one TaskOutput for paired-canvas count tasks."""
@@ -558,7 +567,7 @@ def paired_task_output(
                 "target_count_probabilities": dict(payload.target_count_probabilities),
                 "distractor_count": int(payload.distractor_count),
                 "distractor_count_probabilities": dict(payload.distractor_count_probabilities),
-                "evidence_panel": str(evidence_panel),
+                "annotation_panel": str(annotation_panel),
             },
         },
         "render_spec": {
@@ -590,32 +599,32 @@ def paired_task_output(
             "distractor_count_probabilities": dict(payload.distractor_count_probabilities),
             "matching_right_indices": list(payload.matching_right_indices),
             "matching_left_indices": list(payload.matching_left_indices),
-            "evidence_panel": str(evidence_panel),
+            "annotation_panel": str(annotation_panel),
             **dict(payload.trace_relation),
         },
         "witness_symbolic": {
             "query_id": str(payload.query_id),
             "matching_right_indices": list(payload.matching_right_indices),
             "matching_left_indices": list(payload.matching_left_indices),
-            "evidence_panel": str(evidence_panel),
+            "annotation_panel": str(annotation_panel),
         },
-        "projected_evidence": {
+        "projected_annotation": {
             "type": "bbox_set",
-            "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+            "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             "pixel_point_set": [
                 [
                     round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                     round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
                 ]
-                for bbox in evidence_bboxes
+                for bbox in annotation_bboxes
             ],
         },
     }
     output = TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type="integer", value=int(answer_value)),
-        evidence_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes]),
+        annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes]),
         image=payload.image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -687,7 +696,7 @@ def required_paired_prompt_defaults(prompt_defaults: Mapping[str, Any], *, task_
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "evidence_hint",
+            "annotation_hint",
             "answer_hint",
             "json_example",
             "json_example_answer_only",
@@ -706,7 +715,7 @@ __all__ = [
     "PairedIconSpec",
     "build_paired_prompt",
     "choose_query_id",
-    "evidence_from_indices",
+    "annotation_from_indices",
     "make_icon_spec",
     "paired_complexity",
     "paired_task_output",

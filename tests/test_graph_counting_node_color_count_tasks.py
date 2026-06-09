@@ -52,7 +52,7 @@ def test_graph_counting_node_color_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "node_color_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_node_color_counting"
     assert execution["query_id"] == "node_color_count"
@@ -67,7 +67,7 @@ def test_graph_counting_node_color_count_contract_matches_trace() -> None:
 
     matching_labels = [str(label) for label in execution["matching_labels"]]
     node_colors = {str(key): str(value) for key, value in execution["node_color_names_by_label"].items()}
-    assert int(out.answer_gt.value) == len(matching_labels) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["labels"] == matching_labels
     assert trace["witness_symbolic"]["target_color_name"] == "green"
     assert all(node_colors[str(label)] == "green" for label in matching_labels)
@@ -80,11 +80,11 @@ def test_graph_counting_node_color_count_contract_matches_trace() -> None:
     )
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["semantic_node_color_names_by_label"] == node_colors
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_node_color_count_min_answer_is_supported() -> None:
@@ -103,7 +103,7 @@ def test_graph_counting_node_color_count_min_answer_is_supported() -> None:
     execution = out.trace_payload["execution_trace"]
 
     assert int(out.answer_gt.value) == 3
-    assert len(out.evidence_gt.value) == 3
+    assert len(out.annotation_gt.value) == 3
     assert execution["target_count"] == 3
     assert len(execution["matching_labels"]) == 3
     assert sum(1 for color_name in execution["node_color_names_by_label"].values() if str(color_name) == "cyan") == 3
@@ -118,11 +118,11 @@ def test_graph_counting_node_color_prompt_examples_match_contract() -> None:
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180], [430, 260]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180], [430, 260]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_graph_counting_node_color_balanced_sampling_uses_calibrated_count_range() -> None:

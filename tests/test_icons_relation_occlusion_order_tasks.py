@@ -26,11 +26,11 @@ def test_icons_relation_occlusion_order_contract_matches_scene() -> None:
     assert len(reference_entities) == 1
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert all(len(bbox) == 4 for bbox in out.evidence_gt.value)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert all(len(bbox) == 4 for bbox in out.annotation_gt.value)
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_occlusion_order_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_occlusion_order"
     assert out.query_id == "same_front_to_back_order"
@@ -54,13 +54,13 @@ def test_icons_relation_occlusion_order_contract_matches_scene() -> None:
     assert len({str(entity["label"]) for entity in scene_entities}) == 8
     matching_labels = set(str(value) for value in execution["matching_cell_labels"])
     assert trace["witness_symbolic"]["matching_cell_labels"] == execution["matching_cell_labels"]
-    evidence_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
-    expected_evidence = [
-        evidence_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
+    annotation_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
+    expected_annotation = [
+        annotation_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
     ]
-    assert out.evidence_gt.value == expected_evidence
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.value == expected_annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -93,18 +93,18 @@ def test_icons_relation_occlusion_order_supports_zero_matches() -> None:
     task = IconsRelationOcclusionOrderTask()
     out = task.generate(14711, params={"target_count": 0, "distractor_count": 5}, max_attempts=200)
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
 
 
 def test_icons_relation_occlusion_order_prompt_example_matches_contract() -> None:
     task = IconsRelationOcclusionOrderTask()
     out = task.generate(14712, params={"object_count": 8, "target_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[336, 104, 506, 274], [532, 104, 702, 274], [728, 104, 898, 274]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[336, 104, 506, 274], [532, 104, 702, 274], [728, 104, 898, 274]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_icons_relation_occlusion_order_balanced_sampling_defaults() -> None:

@@ -57,7 +57,7 @@ class RenderedOpticsScene:
     bounce_specs: List[OpticsBounceSpec]
     graph_origin_px: List[float]
     graph_spacing_px: int
-    evidence_entity_ids: List[str]
+    annotation_entity_ids: List[str]
     render_map: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
 
@@ -130,7 +130,7 @@ def render_optics_ray_scene(
     ray_polyline_cells: Sequence[Tuple[int, int]],
     source_point_px: Tuple[float, float],
     exit_point_px: Tuple[float, float],
-    evidence_entity_ids: Sequence[str],
+    annotation_entity_ids: Sequence[str],
     query_id: str,
     diagram_style: Any | None = None,
     font_family: str | None = None,
@@ -444,7 +444,7 @@ def render_optics_ray_scene(
                 + [tuple(float(v) for v in exit_point_px)]
             )
         ],
-        "evidence_entity_ids": [str(item) for item in evidence_entity_ids],
+        "annotation_entity_ids": [str(item) for item in annotation_entity_ids],
     }
     if diagram_style is not None:
         render_map["technical_diagram_frame_mode"] = str(getattr(diagram_style, "frame_mode", "none"))
@@ -455,7 +455,7 @@ def render_optics_ray_scene(
         bounce_specs=list(bounce_specs),
         graph_origin_px=[round(float(graph_origin_px[0]), 3), round(float(graph_origin_px[1]), 3)],
         graph_spacing_px=int(round(cell_size)),
-        evidence_entity_ids=[str(item) for item in evidence_entity_ids],
+        annotation_entity_ids=[str(item) for item in annotation_entity_ids],
         render_map=render_map,
         scene_entities=list(scene_entities),
     )

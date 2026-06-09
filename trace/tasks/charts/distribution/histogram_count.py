@@ -6,7 +6,6 @@ from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,13 +28,14 @@ from ..shared.distribution_chart_common import (
     DistributionChartDefaults,
     LabeledChartDefaults,
     build_histogram_dataset_for_variant,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
-from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
+from ..shared.information_style import prepare_chart_information_scene
+from ..shared.visual_defaults import load_chart_noise_defaults
 
 
 QueryVariant = str
@@ -62,7 +62,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="distribution")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="distribution", apply_prob=0.0)
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
@@ -112,7 +111,7 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
 
 
 def _resolve_interval_relation(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    """Resolve whether interval-mass evidence is inside or outside the queried interval."""
+    """Resolve whether interval-mass annotation is inside or outside the queried interval."""
 
     return resolve_chart_axis_variant(
         params=params,
@@ -227,7 +226,7 @@ class ChartsDistributionHistogramCountTask:
             scene_variant=SCENE_VARIANT,
             mark_count=1,
         )
-        bins, answer_value, evidence_labels, trace_extras = build_histogram_dataset_for_variant(
+        bins, answer_value, annotation_labels, trace_extras = build_histogram_dataset_for_variant(
             query_id=str(histogram_variant),
             params=support_params,
             instance_seed=int(instance_seed),
@@ -243,12 +242,16 @@ class ChartsDistributionHistogramCountTask:
             instance_seed=int(instance_seed),
         )
 
-        background, background_meta = make_background_canvas(
-            canvas_width=int(render_params.canvas_width),
-            canvas_height=int(render_params.canvas_height),
+        render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
             instance_seed=int(instance_seed),
             params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            scene_id="histogram",
+            task_group=self.task_group,
+            render_params=render_params,
+            protected_colors=(
+                tuple(int(value) for value in mark_style["mark_fill_rgb"]),
+                tuple(int(value) for value in mark_style["mark_outline_rgb"]),
+            ),
         )
         chart_font_family = sample_font_family(
             role="readout",
@@ -283,9 +286,9 @@ class ChartsDistributionHistogramCountTask:
                 "answer_hint",
                 "answer_hint_cumulative_rank",
                 "object_description_histogram",
-                "evidence_hint_interval_mass",
-                "evidence_hint_bin_count_between_values",
-                "evidence_hint_rank_item_bin_label",
+                "annotation_hint_interval_mass",
+                "annotation_hint_bin_count_between_values",
+                "annotation_hint_rank_item_bin_label",
                 "json_example_interval_mass",
                 "json_example_bin_count_between_values",
                 "json_example_rank_item_bin_label",
@@ -309,7 +312,7 @@ class ChartsDistributionHistogramCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_histogram"]),
                 "query_interval_label": str(trace_extras.get("query_interval_label", "")),
@@ -320,7 +323,7 @@ class ChartsDistributionHistogramCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults[answer_hint_key]),
                 "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
                 "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
@@ -330,9 +333,9 @@ class ChartsDistributionHistogramCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_projection = projected_mark_evidence(rendered_scene, evidence_labels)
-        evidence_bboxes = [list(bbox) for bbox in evidence_projection["bbox_set"]]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_projection = projected_mark_annotation(rendered_scene, annotation_labels)
+        annotation_bboxes = [list(bbox) for bbox in annotation_projection["bbox_set"]]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -349,7 +352,7 @@ class ChartsDistributionHistogramCountTask:
                 "relations": {
                     "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
-                    "evidence_labels": list(evidence_labels),
+                    "annotation_labels": list(annotation_labels),
                     **(
                         {"interval_relation_probabilities": dict(interval_relation_probabilities)}
                         if interval_relation_probabilities
@@ -393,6 +396,7 @@ class ChartsDistributionHistogramCountTask:
                 "coord_space": "pixel",
                 "scene_variant": SCENE_VARIANT,
                 "background_style": dict(background_meta),
+                "information_scene_style": dict(information_style_meta),
                 "post_image_noise": dict(post_noise_meta),
                 "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
@@ -433,7 +437,7 @@ class ChartsDistributionHistogramCountTask:
                 "query_id": str(query_id),
                 "scene_variant": SCENE_VARIANT,
                 "answer_value": int(answer_value),
-                "evidence_labels": list(evidence_labels),
+                "annotation_labels": list(annotation_labels),
                 "labels": [str(item["label"]) for item in rendered_scene.mark_traces],
                 "bin_counts": [int(item["value"]) for item in rendered_scene.mark_traces],
                 "counts_by_label": dict(counts_by_label),
@@ -468,7 +472,7 @@ class ChartsDistributionHistogramCountTask:
                     not in {
                         "labels",
                         "bin_counts",
-                        "evidence_labels",
+                        "annotation_labels",
                         "bin_count",
                         "bin_count_range",
                         "bin_width",
@@ -483,11 +487,11 @@ class ChartsDistributionHistogramCountTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "value": list(evidence_labels),
+                "value": list(annotation_labels),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-                **dict(evidence_projection),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
+                **dict(annotation_projection),
             },
         }
 
@@ -508,7 +512,7 @@ class ChartsDistributionHistogramCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -520,14 +524,25 @@ class ChartsDistributionHistogramCountTask:
 
 
 @register_task
-class ChartsDistributionHistogramIntervalValueTask(
+class ChartsDistributionHistogramIntervalMassTask(
     MergedChartQueryVariantTaskMixin,
     ChartsDistributionHistogramCountTask,
 ):
-    """Return one sampled integer value over a histogram interval."""
+    """Return the total histogram mass over a value interval."""
 
-    task_id = "task_charts__histogram__interval_value"
-    allowed_query_ids = ("interval_mass", "bin_count_between_values")
+    task_id = "task_charts__histogram__interval_mass"
+    allowed_query_ids = ("interval_mass",)
+
+
+@register_task
+class ChartsDistributionHistogramBinCountBetweenValuesTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionHistogramCountTask,
+):
+    """Return the number of bins whose x-axis values fall inside an interval."""
+
+    task_id = "task_charts__histogram__bin_count_between_values"
+    allowed_query_ids = ("bin_count_between_values",)
 
 
 @register_task
@@ -544,7 +559,8 @@ class ChartsDistributionHistogramCumulativeRankLabelTask(
 
 
 __all__ = [
+    "ChartsDistributionHistogramBinCountBetweenValuesTask",
     "ChartsDistributionHistogramCumulativeRankLabelTask",
     "ChartsDistributionHistogramCountTask",
-    "ChartsDistributionHistogramIntervalValueTask",
+    "ChartsDistributionHistogramIntervalMassTask",
 ]

@@ -7,8 +7,30 @@ from typing import Dict, Iterable, Sequence, Tuple
 
 
 Coord = Tuple[int, int]
-SUPPORTED_BATTLESHIP_QUERY_IDS: Tuple[str, ...] = ("sunk_ship_count", "partial_ship_count")
+SUPPORTED_BATTLESHIP_SHIP_STATUS_QUERY_IDS: Tuple[str, ...] = (
+    "sunk_ship_count",
+    "partial_ship_count",
+)
+SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS: Tuple[str, ...] = (
+    "named_ship_hit_cell_count",
+    "named_ship_unhit_cell_count",
+)
+SUPPORTED_BATTLESHIP_LAST_CELL_QUERY_IDS: Tuple[str, ...] = (
+    "last_ship_cell_label",
+)
+SUPPORTED_BATTLESHIP_QUERY_IDS: Tuple[str, ...] = (
+    *SUPPORTED_BATTLESHIP_SHIP_STATUS_QUERY_IDS,
+    *SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS,
+    *SUPPORTED_BATTLESHIP_LAST_CELL_QUERY_IDS,
+)
 SUPPORTED_BATTLESHIP_SCENE_VARIANTS: Tuple[str, ...] = ("standard_fleet",)
+SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS: Tuple[str, ...] = (
+    "line5",
+    "line4",
+    "line3",
+    "square4",
+    "elbow3",
+)
 
 
 @dataclass(frozen=True)
@@ -33,22 +55,38 @@ class BattleshipShipPlacement:
 
 
 @dataclass(frozen=True)
+class BattleshipCandidateOption:
+    """One labeled candidate cell in a Battleship option-label task."""
+
+    label: str
+    coord: Coord
+    is_answer: bool
+
+
+@dataclass(frozen=True)
 class BattleshipSample:
     """Generated Battleship tracking-grid state."""
 
     board_size: int
     query_id: str
     scene_variant: str
-    answer: int
+    answer: int | str
     ship_placements: Tuple[BattleshipShipPlacement, ...]
     hit_coords: Tuple[Coord, ...]
     miss_coords: Tuple[Coord, ...]
-    evidence_coords: Tuple[Coord, ...]
+    annotation_coords: Tuple[Coord, ...]
+    annotation_ship_ids: Tuple[str, ...]
     target_answer: int
     sunk_ship_count: int
     partial_ship_count: int
     untouched_ship_count: int
     construction_mode: str
+    target_ship_id: str = ""
+    target_ship_display_name: str = ""
+    target_ship_shape_id: str = ""
+    target_cell_status: str = ""
+    target_missing_coord: Coord | None = None
+    candidate_options: Tuple[BattleshipCandidateOption, ...] = tuple()
 
 
 FLEET_SHAPES: Tuple[FleetShapeSpec, ...] = (
@@ -66,11 +104,6 @@ FLEET_SHAPES: Tuple[FleetShapeSpec, ...] = (
         shape_id="line3",
         display_name="Line 3",
         offsets=((0, 0), (0, 1), (0, 2)),
-    ),
-    FleetShapeSpec(
-        shape_id="line2",
-        display_name="Line 2",
-        offsets=((0, 0), (0, 1)),
     ),
     FleetShapeSpec(
         shape_id="square4",
@@ -201,27 +234,109 @@ def validate_battleship_sample(sample: BattleshipSample) -> None:
         raise ValueError("Battleship untouched_ship_count does not equal untouched ships")
     if str(sample.query_id) == "sunk_ship_count":
         expected_answer = int(sample.sunk_ship_count)
-        expected_evidence = {coord for ship in sunk_ships for coord in ship.coords}
+        expected_annotation_coords = {coord for ship in sunk_ships for coord in ship.hit_coords}
+        expected_annotation_ship_ids = {str(ship.ship_id) for ship in sunk_ships}
     elif str(sample.query_id) == "partial_ship_count":
         expected_answer = int(sample.partial_ship_count)
-        expected_evidence = {coord for ship in partial_ships for coord in ship.coords}
+        expected_annotation_coords = {coord for ship in partial_ships for coord in ship.hit_coords}
+        expected_annotation_ship_ids = {str(ship.ship_id) for ship in partial_ships}
+    elif str(sample.query_id) in SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS:
+        target_ships = [ship for ship in sample.ship_placements if str(ship.ship_id) == str(sample.target_ship_id)]
+        if len(target_ships) != 1:
+            raise ValueError("Battleship cell-status query must name one target ship")
+        target_ship = target_ships[0]
+        if str(sample.target_ship_display_name) != str(target_ship.display_name):
+            raise ValueError("Battleship target ship display name must match placement")
+        if str(sample.target_ship_shape_id) != str(target_ship.shape_id):
+            raise ValueError("Battleship target ship shape id must match placement")
+        hit_set_for_ship = set(target_ship.hit_coords)
+        if str(sample.query_id) == "named_ship_hit_cell_count":
+            expected_annotation_coords = set(target_ship.hit_coords)
+            expected_answer = len(expected_annotation_coords)
+            expected_status = "hit"
+        else:
+            expected_annotation_coords = set(target_ship.coords) - hit_set_for_ship
+            expected_answer = len(expected_annotation_coords)
+            expected_status = "unhit"
+        expected_annotation_ship_ids = {str(target_ship.ship_id)}
+        if str(sample.target_cell_status) != str(expected_status):
+            raise ValueError("Battleship target cell status must match active query")
+    elif str(sample.query_id) in SUPPORTED_BATTLESHIP_LAST_CELL_QUERY_IDS:
+        target_ships = [ship for ship in sample.ship_placements if str(ship.ship_id) == str(sample.target_ship_id)]
+        if len(target_ships) != 1:
+            raise ValueError("Battleship last-cell query must name one target ship")
+        target_ship = target_ships[0]
+        if str(sample.target_ship_display_name) != str(target_ship.display_name):
+            raise ValueError("Battleship target ship display name must match placement")
+        if str(sample.target_ship_shape_id) != str(target_ship.shape_id):
+            raise ValueError("Battleship target ship shape id must match placement")
+        if sample.target_missing_coord is None:
+            raise ValueError("Battleship last-cell query must record one target missing coord")
+        missing_coord = (int(sample.target_missing_coord[0]), int(sample.target_missing_coord[1]))
+        target_coords = set(target_ship.coords)
+        if missing_coord not in target_coords:
+            raise ValueError("Battleship missing coord must belong to target ship")
+        if set(target_ship.hit_coords) != target_coords - {missing_coord}:
+            raise ValueError("Battleship last-cell target must have exactly one unhit cell")
+        for ship in sample.ship_placements:
+            if str(ship.ship_id) != str(target_ship.ship_id) and not bool(ship.is_sunk):
+                raise ValueError("Battleship last-cell query requires every non-target ship to be sunk")
+        if len(sample.candidate_options) not in {4, 5, 6}:
+            raise ValueError("Battleship last-cell query requires 4, 5, or 6 candidate options")
+        labels = [str(option.label) for option in sample.candidate_options]
+        expected_labels = ["A", "B", "C", "D", "E", "F"][: len(labels)]
+        if labels != expected_labels:
+            raise ValueError("Battleship last-cell candidate labels must be ordered A-prefix labels")
+        candidate_coords = [(int(option.coord[0]), int(option.coord[1])) for option in sample.candidate_options]
+        if len(candidate_coords) != len(set(candidate_coords)):
+            raise ValueError("Battleship last-cell candidate coords must be unique")
+        answer_options = [option for option in sample.candidate_options if bool(option.is_answer)]
+        if len(answer_options) != 1:
+            raise ValueError("Battleship last-cell query must have exactly one answer option")
+        answer_option = answer_options[0]
+        if str(sample.answer) != str(answer_option.label):
+            raise ValueError("Battleship last-cell answer must be the answer option label")
+        if (int(answer_option.coord[0]), int(answer_option.coord[1])) != missing_coord:
+            raise ValueError("Battleship last-cell answer option must mark the missing coord")
+        target_hits = set(target_ship.hit_coords)
+        valid_candidate_labels = []
+        for option in sample.candidate_options:
+            completed = target_hits | {(int(option.coord[0]), int(option.coord[1]))}
+            if str(target_ship.shape_id) in matching_fleet_shape_ids(tuple(completed)):
+                valid_candidate_labels.append(str(option.label))
+        if valid_candidate_labels != [str(answer_option.label)]:
+            raise ValueError("Battleship last-cell candidate set must have exactly one shape-valid answer")
+        expected_answer = str(answer_option.label)
+        expected_annotation_coords = {missing_coord}
+        expected_annotation_ship_ids = {str(target_ship.ship_id)}
     else:
         raise ValueError(f"unsupported Battleship query_id: {sample.query_id}")
-    if int(sample.answer) != int(expected_answer):
+    if str(sample.query_id) in SUPPORTED_BATTLESHIP_LAST_CELL_QUERY_IDS:
+        if str(sample.answer) != str(expected_answer):
+            raise ValueError("Battleship answer does not match active query label")
+    elif int(sample.answer) != int(expected_answer):
         raise ValueError("Battleship answer does not match active query count")
-    evidence_set = set(sample.evidence_coords)
-    if evidence_set != expected_evidence:
-        raise ValueError("Battleship evidence coordinates do not match active query ships")
+    annotation_set = set(sample.annotation_coords)
+    if annotation_set != expected_annotation_coords:
+        raise ValueError("Battleship annotation coordinates do not match active query ships")
+    annotation_ship_ids = set(str(ship_id) for ship_id in sample.annotation_ship_ids)
+    if annotation_ship_ids != expected_annotation_ship_ids:
+        raise ValueError("Battleship annotation ship ids do not match active query ships")
 
 
 __all__ = [
     "BattleshipSample",
+    "BattleshipCandidateOption",
     "BattleshipShipPlacement",
     "Coord",
     "FLEET_SHAPES",
     "FleetShapeSpec",
+    "SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS",
+    "SUPPORTED_BATTLESHIP_LAST_CELL_QUERY_IDS",
     "SUPPORTED_BATTLESHIP_QUERY_IDS",
     "SUPPORTED_BATTLESHIP_SCENE_VARIANTS",
+    "SUPPORTED_BATTLESHIP_SHIP_STATUS_QUERY_IDS",
+    "SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS",
     "all_coords",
     "coord_to_cell_id",
     "fleet_orientation_lookup",

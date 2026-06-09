@@ -36,13 +36,17 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "single_row",
     "two_row",
 )
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
-    "matching_end_count",
+PROPERTY_QUERY_IDS: Tuple[str, ...] = (
     "higher_sum_than_reference_count",
     "sum_to_target_count",
     "double_count",
 )
-TWO_STEP_QUERY_ID = "two_step_extension_label"
+CHAIN_PLAY_QUERY_IDS: Tuple[str, ...] = (
+    "matching_end_count",
+    "second_play_candidate_count",
+    "extendable_first_play_count",
+)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = PROPERTY_QUERY_IDS + CHAIN_PLAY_QUERY_IDS
 OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEFGHIJKL")
 PIP_VALUES: Tuple[int, ...] = tuple(range(7))
 CANONICAL_DOMINOES: Tuple[Tuple[int, int], ...] = tuple(
@@ -60,7 +64,8 @@ class _TaskDefaults:
     higher_sum_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     sum_to_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     double_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    two_step_extension_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    second_play_candidate_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    extendable_first_play_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     single_row_candidate_count_support: Tuple[int, ...] = (7, 8, 9)
     two_row_candidate_count_support: Tuple[int, ...] = (10, 11, 12)
     sum_target_total_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -107,7 +112,7 @@ class _SampledDominoScene:
 
     chain_tiles: Tuple[DominoTileInstance, ...]
     candidate_tiles: Tuple[DominoTileInstance, ...]
-    evidence_tile_ids: Tuple[str, ...]
+    annotation_tile_ids: Tuple[str, ...]
     answer_value: int | str
     reference_tile_id: str | None
     open_end_value: int | None
@@ -174,8 +179,8 @@ def _resolve_query_id(
     """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -218,7 +223,8 @@ def _target_support_key(query_id: str) -> str:
         "higher_sum_than_reference_count": "higher_sum_target_answer_support",
         "sum_to_target_count": "sum_to_target_answer_support",
         "double_count": "double_target_answer_support",
-        TWO_STEP_QUERY_ID: "two_step_extension_target_answer_support",
+        "second_play_candidate_count": "second_play_candidate_target_answer_support",
+        "extendable_first_play_count": "extendable_first_play_target_answer_support",
     }[str(query_id)]
 
 
@@ -230,7 +236,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(
         params.get(
@@ -386,8 +392,10 @@ def _feasible_candidate_count_support(
     feasible: List[int] = []
     for raw_value in raw_support:
         candidate_count = int(raw_value)
-        if str(query_id) == TWO_STEP_QUERY_ID:
-            minimum = max(2, int(target_answer) + 1)
+        if str(query_id) == "second_play_candidate_count":
+            minimum = max(7, int(target_answer) + 1)
+        elif str(query_id) == "extendable_first_play_count":
+            minimum = max(7, int(target_answer) * 2)
         else:
             minimum = max(7, int(target_answer))
         if str(query_id) == "sum_to_target_count" and int(target_answer) == 0:
@@ -605,12 +613,41 @@ def _random_orientation(rng, *, tile: Tuple[int, int]) -> Tuple[int, int]:
     return (int(right_value), int(left_value))
 
 
+def _can_connect(tile: Tuple[int, int], open_end: int) -> bool:
+    """Return whether one canonical tile can connect to the given open end."""
+
+    return int(open_end) in {int(tile[0]), int(tile[1])}
+
+
+def _new_open_end(tile: Tuple[int, int], open_end: int) -> int:
+    """Return the new open-end value after playing `tile` on `open_end`."""
+
+    if not _can_connect(tile, int(open_end)):
+        raise ValueError("tile does not connect to open end")
+    if int(tile[0]) == int(tile[1]):
+        return int(open_end)
+    return int(tile[1]) if int(tile[0]) == int(open_end) else int(tile[0])
+
+
+def _tile_id_for_canonical(
+    candidate_instances: Sequence[DominoTileInstance],
+    canonical_tile: Tuple[int, int],
+) -> str | None:
+    """Return the rendered candidate id for one canonical domino tile."""
+
+    target = _canonical_tile(int(canonical_tile[0]), int(canonical_tile[1]))
+    for tile in candidate_instances:
+        if _canonical_tile(int(tile.left_value), int(tile.right_value)) == target:
+            return str(tile.tile_id)
+    return None
+
+
 def _build_scene_instances(
     *,
     rng,
     oriented_chain: Sequence[Tuple[int, int]],
     candidate_tiles: Sequence[Tuple[int, int]],
-    evidence_tiles: Sequence[Tuple[int, int]],
+    annotation_tiles: Sequence[Tuple[int, int]],
     reference_role: str | None,
     highlight_open_end: bool,
     shuffle_candidates: bool = True,
@@ -618,10 +655,10 @@ def _build_scene_instances(
 ) -> Tuple[Tuple[DominoTileInstance, ...], Tuple[DominoTileInstance, ...], Tuple[str, ...], str | None]:
     """Build rendered chain/candidate instances and witness ids from canonical tiles."""
 
-    evidence_canonicals = {_canonical_tile(int(tile[0]), int(tile[1])) for tile in evidence_tiles}
+    annotation_canonicals = {_canonical_tile(int(tile[0]), int(tile[1])) for tile in annotation_tiles}
     chain_instances: List[DominoTileInstance] = []
     candidate_instances: List[DominoTileInstance] = []
-    evidence_tile_ids: List[str] = []
+    annotation_tile_ids: List[str] = []
     reference_tile_id: str | None = None
 
     for index, oriented_tile in enumerate(oriented_chain, start=1):
@@ -652,13 +689,13 @@ def _build_scene_instances(
                 option_label=OPTION_LABELS[index - 1] if bool(label_candidates) else None,
             )
         )
-        if _canonical_tile(int(canonical_tile[0]), int(canonical_tile[1])) in evidence_canonicals:
-            evidence_tile_ids.append(str(tile_id))
+        if _canonical_tile(int(canonical_tile[0]), int(canonical_tile[1])) in annotation_canonicals:
+            annotation_tile_ids.append(str(tile_id))
 
     return (
         tuple(chain_instances),
         tuple(candidate_instances),
-        tuple(evidence_tile_ids),
+        tuple(annotation_tile_ids),
         None if reference_tile_id is None else str(reference_tile_id),
     )
 
@@ -685,21 +722,21 @@ def _sample_matching_end_scene(rng, *, candidate_count: int, target_answer: int)
             continue
         if int(len(nonmatching_pool)) < int(candidate_count - target_answer):
             continue
-        evidence_tiles = list(rng.sample(matching_pool, int(target_answer)))
+        annotation_tiles = list(rng.sample(matching_pool, int(target_answer)))
         filler_tiles = list(rng.sample(nonmatching_pool, int(candidate_count - target_answer)))
-        selected_candidates = evidence_tiles + filler_tiles
-        chain_instances, candidate_instances, evidence_tile_ids, reference_tile_id = _build_scene_instances(
+        selected_candidates = annotation_tiles + filler_tiles
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
             rng=rng,
             oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
-            evidence_tiles=evidence_tiles,
+            annotation_tiles=annotation_tiles,
             reference_role="reference_end",
             highlight_open_end=True,
         )
         return _SampledDominoScene(
             chain_tiles=chain_instances,
             candidate_tiles=candidate_instances,
-            evidence_tile_ids=evidence_tile_ids,
+            annotation_tile_ids=annotation_tile_ids,
             answer_value=int(target_answer),
             reference_tile_id=reference_tile_id,
             open_end_value=int(open_end_value),
@@ -755,21 +792,21 @@ def _sample_higher_sum_scene(rng, *, candidate_count: int, target_answer: int) -
             continue
         if int(len(not_higher_pool)) < int(candidate_count - target_answer):
             continue
-        evidence_tiles = list(rng.sample(higher_pool, int(target_answer)))
+        annotation_tiles = list(rng.sample(higher_pool, int(target_answer)))
         filler_tiles = list(rng.sample(not_higher_pool, int(candidate_count - target_answer)))
-        selected_candidates = evidence_tiles + filler_tiles
-        chain_instances, candidate_instances, evidence_tile_ids, reference_tile_id = _build_scene_instances(
+        selected_candidates = annotation_tiles + filler_tiles
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
             rng=rng,
             oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
-            evidence_tiles=evidence_tiles,
+            annotation_tiles=annotation_tiles,
             reference_role="reference_sum",
             highlight_open_end=False,
         )
         return _SampledDominoScene(
             chain_tiles=chain_instances,
             candidate_tiles=candidate_instances,
-            evidence_tile_ids=evidence_tile_ids,
+            annotation_tile_ids=annotation_tile_ids,
             answer_value=int(target_answer),
             reference_tile_id=reference_tile_id,
             open_end_value=None,
@@ -845,25 +882,25 @@ def _sample_sum_to_target_scene(
 
         exact_pool = [tile for tile in candidate_pool if _tile_sum(tile) == int(target_total)]
         non_target_pool = [tile for tile in candidate_pool if _tile_sum(tile) != int(target_total)]
-        evidence_tiles = (
+        annotation_tiles = (
             []
             if int(target_answer) == 0
             else list(rng.sample(exact_pool, int(target_answer)))
         )
         filler_tiles = list(rng.sample(non_target_pool, int(candidate_count - target_answer)))
-        selected_candidates = list(evidence_tiles) + filler_tiles
-        chain_instances, candidate_instances, evidence_tile_ids, reference_tile_id = _build_scene_instances(
+        selected_candidates = list(annotation_tiles) + filler_tiles
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
             rng=rng,
             oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
-            evidence_tiles=evidence_tiles,
+            annotation_tiles=annotation_tiles,
             reference_role=None,
             highlight_open_end=False,
         )
         return _SampledDominoScene(
             chain_tiles=chain_instances,
             candidate_tiles=candidate_instances,
-            evidence_tile_ids=evidence_tile_ids,
+            annotation_tile_ids=annotation_tile_ids,
             answer_value=int(target_answer),
             reference_tile_id=reference_tile_id,
             open_end_value=None,
@@ -912,21 +949,21 @@ def _sample_double_scene(rng, *, candidate_count: int, target_answer: int) -> _S
             continue
         if int(len(non_double_pool)) < int(candidate_count - target_answer):
             continue
-        evidence_tiles = list(rng.sample(double_pool, int(target_answer)))
+        annotation_tiles = list(rng.sample(double_pool, int(target_answer)))
         filler_tiles = list(rng.sample(non_double_pool, int(candidate_count - target_answer)))
-        selected_candidates = evidence_tiles + filler_tiles
-        chain_instances, candidate_instances, evidence_tile_ids, reference_tile_id = _build_scene_instances(
+        selected_candidates = annotation_tiles + filler_tiles
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
             rng=rng,
             oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
-            evidence_tiles=evidence_tiles,
+            annotation_tiles=annotation_tiles,
             reference_role=None,
             highlight_open_end=False,
         )
         return _SampledDominoScene(
             chain_tiles=chain_instances,
             candidate_tiles=candidate_instances,
-            evidence_tile_ids=evidence_tile_ids,
+            annotation_tile_ids=annotation_tile_ids,
             answer_value=int(target_answer),
             reference_tile_id=reference_tile_id,
             open_end_value=None,
@@ -960,12 +997,9 @@ def _sample_double_scene(rng, *, candidate_count: int, target_answer: int) -> _S
     raise ValueError("unable to sample double-count domino scene")
 
 
-def _sample_two_step_extension_scene(rng, *, candidate_count: int, target_answer: int) -> _SampledDominoScene:
-    """Sample one scene with a unique labeled second domino in a two-step chain extension."""
+def _sample_second_play_candidate_scene(rng, *, candidate_count: int, target_answer: int) -> _SampledDominoScene:
+    """Sample a scene with one first play and exactly `target_answer` possible second plays."""
 
-    target_label_index = int(target_answer)
-    if not 0 <= int(target_label_index) < min(int(candidate_count), len(OPTION_LABELS)):
-        raise ValueError("two_step_extension target answer must be a visible label index")
     for _ in range(360):
         open_end_value = int(PIP_VALUES[int(rng.randrange(len(PIP_VALUES)))])
         bridge_options = [value for value in PIP_VALUES if int(value) != int(open_end_value)]
@@ -977,12 +1011,7 @@ def _sample_two_step_extension_scene(rng, *, candidate_count: int, target_answer
         if not connector_options:
             continue
         connector_value = int(connector_options[int(rng.randrange(len(connector_options)))])
-        answer_outer_options = [value for value in PIP_VALUES if int(value) != int(open_end_value)]
-        answer_outer = int(answer_outer_options[int(rng.randrange(len(answer_outer_options)))])
         first_tile = _canonical_tile(int(open_end_value), int(bridge_value))
-        answer_tile = _canonical_tile(int(bridge_value), int(answer_outer))
-        if answer_tile == first_tile:
-            continue
         try:
             oriented_chain = _sample_chain_with_end(
                 rng,
@@ -992,51 +1021,49 @@ def _sample_two_step_extension_scene(rng, *, candidate_count: int, target_answer
         except ValueError:
             continue
         candidate_pool = set(_candidate_pool_for_chain(oriented_chain))
-        if first_tile not in candidate_pool or answer_tile not in candidate_pool:
+        if first_tile not in candidate_pool:
             continue
+        second_pool = [
+            tile for tile in candidate_pool
+            if tile != first_tile
+            and int(bridge_value) in {int(tile[0]), int(tile[1])}
+            and int(open_end_value) not in {int(tile[0]), int(tile[1])}
+        ]
         filler_pool = [
             tile for tile in candidate_pool
-            if tile not in {first_tile, answer_tile}
-            and int(open_end_value) not in {int(tile[0]), int(tile[1])}
+            if tile != first_tile
             and int(bridge_value) not in {int(tile[0]), int(tile[1])}
+            and int(open_end_value) not in {int(tile[0]), int(tile[1])}
         ]
-        if len(filler_pool) < int(candidate_count) - 2:
+        if int(len(second_pool)) < int(target_answer):
             continue
-        first_index_options = [index for index in range(int(candidate_count)) if int(index) != int(target_label_index)]
-        first_index = int(first_index_options[int(rng.randrange(len(first_index_options)))])
-        filler_tiles = list(rng.sample(filler_pool, int(candidate_count) - 2))
-        ordered_candidates: List[Tuple[int, int] | None] = [None for _ in range(int(candidate_count))]
-        ordered_candidates[int(first_index)] = first_tile
-        ordered_candidates[int(target_label_index)] = answer_tile
-        filler_iter = iter(filler_tiles)
-        for index, value in enumerate(ordered_candidates):
-            if value is None:
-                ordered_candidates[int(index)] = next(filler_iter)
-        selected_candidates = [tile for tile in ordered_candidates if tile is not None]
-
-        chain_instances, candidate_instances, evidence_tile_ids, reference_tile_id = _build_scene_instances(
+        if int(len(filler_pool)) < int(candidate_count - target_answer - 1):
+            continue
+        annotation_tiles = list(rng.sample(second_pool, int(target_answer)))
+        filler_tiles = list(rng.sample(filler_pool, int(candidate_count - target_answer - 1)))
+        selected_candidates = [first_tile] + annotation_tiles + filler_tiles
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
             rng=rng,
             oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
-            evidence_tiles=(first_tile, answer_tile),
+            annotation_tiles=annotation_tiles,
             reference_role="reference_end",
             highlight_open_end=True,
-            shuffle_candidates=False,
-            label_candidates=True,
+            shuffle_candidates=True,
+            label_candidates=False,
         )
-        first_step_tile_id = f"candidate_{int(first_index) + 1:02d}"
-        second_step_tile_id = f"candidate_{int(target_label_index) + 1:02d}"
+        first_step_tile_id = _tile_id_for_canonical(candidate_instances, first_tile)
         return _SampledDominoScene(
             chain_tiles=chain_instances,
             candidate_tiles=candidate_instances,
-            evidence_tile_ids=evidence_tile_ids,
-            answer_value=str(OPTION_LABELS[int(target_label_index)]),
+            annotation_tile_ids=annotation_tile_ids,
+            answer_value=int(target_answer),
             reference_tile_id=reference_tile_id,
             open_end_value=int(open_end_value),
             reference_sum=int(oriented_chain[-1][0] + oriented_chain[-1][1]),
             target_total=None,
-            first_step_tile_id=str(first_step_tile_id),
-            second_step_tile_id=str(second_step_tile_id),
+            first_step_tile_id=first_step_tile_id,
+            second_step_tile_id=None,
             bridge_value=int(bridge_value),
             chain_tile_specs=tuple(
                 {
@@ -1056,13 +1083,126 @@ def _sample_two_step_extension_scene(rng, *, candidate_count: int, target_answer
                     "right_value": int(tile.right_value),
                     "role": str(tile.role),
                     "option_label": None if tile.option_label is None else str(tile.option_label),
-                    "is_first_step": bool(str(tile.tile_id) == str(first_step_tile_id)),
-                    "is_answer": bool(str(tile.tile_id) == str(second_step_tile_id)),
+                    "is_unique_first_play": bool(str(tile.tile_id) == str(first_step_tile_id)),
+                    "is_second_play_candidate": bool(str(tile.tile_id) in set(annotation_tile_ids)),
                 }
                 for tile in candidate_instances
             ),
         )
-    raise ValueError("unable to sample two-step extension domino scene")
+    raise ValueError("unable to sample second-play candidate domino scene")
+
+
+def _sample_extendable_first_play_scene(rng, *, candidate_count: int, target_answer: int) -> _SampledDominoScene:
+    """Sample a scene with exactly `target_answer` first plays that allow a next play."""
+
+    target_count = int(target_answer)
+    for _ in range(420):
+        open_end_value = int(PIP_VALUES[int(rng.randrange(len(PIP_VALUES)))])
+        bridge_values = [int(value) for value in PIP_VALUES if int(value) != int(open_end_value)]
+        if int(target_count) > int(len(bridge_values)):
+            continue
+        target_bridges = list(rng.sample(bridge_values, int(target_count)))
+        remaining_bridges = [value for value in bridge_values if int(value) not in set(target_bridges)]
+        max_dead_count = max(0, min(len(remaining_bridges) - 1, int(candidate_count) - (2 * int(target_count))))
+        dead_count = 0 if max_dead_count <= 0 else int(rng.randrange(max_dead_count + 1))
+        dead_bridges = list(rng.sample(remaining_bridges, int(dead_count))) if int(dead_count) > 0 else []
+        connector_options = [
+            value for value in PIP_VALUES
+            if int(value) not in {int(open_end_value), *[int(v) for v in target_bridges], *[int(v) for v in dead_bridges]}
+        ]
+        if not connector_options:
+            continue
+        connector_value = int(connector_options[int(rng.randrange(len(connector_options)))])
+        try:
+            oriented_chain = _sample_chain_with_end(
+                rng,
+                end_tile=(int(connector_value), int(open_end_value)),
+                avoid_prefix_values=(int(open_end_value), *target_bridges, *dead_bridges),
+            )
+        except ValueError:
+            continue
+        candidate_pool = set(_candidate_pool_for_chain(oriented_chain))
+        annotation_tiles = [_canonical_tile(int(open_end_value), int(bridge)) for bridge in target_bridges]
+        support_tiles = [_canonical_tile(int(bridge), int(bridge)) for bridge in target_bridges]
+        dead_first_tiles = [_canonical_tile(int(open_end_value), int(bridge)) for bridge in dead_bridges]
+        required_tiles = list(annotation_tiles) + list(support_tiles) + list(dead_first_tiles)
+        if any(tile not in candidate_pool for tile in required_tiles):
+            continue
+        required_set = set(required_tiles)
+        dead_value_set = {int(value) for value in dead_bridges}
+        filler_pool = [
+            tile for tile in candidate_pool
+            if tile not in required_set
+            and int(open_end_value) not in {int(tile[0]), int(tile[1])}
+            and not ({int(tile[0]), int(tile[1])} & dead_value_set)
+        ]
+        filler_count = int(candidate_count) - int(len(required_tiles))
+        if int(filler_count) < 0 or int(len(filler_pool)) < int(filler_count):
+            continue
+        filler_tiles = list(rng.sample(filler_pool, int(filler_count)))
+        selected_candidates = required_tiles + filler_tiles
+
+        exact_extendable: List[Tuple[int, int]] = []
+        selected_set = [_canonical_tile(int(tile[0]), int(tile[1])) for tile in selected_candidates]
+        for tile in selected_set:
+            if not _can_connect(tile, int(open_end_value)):
+                continue
+            next_open = _new_open_end(tile, int(open_end_value))
+            has_followup = any(
+                other != tile and _can_connect(other, int(next_open))
+                for other in selected_set
+            )
+            if bool(has_followup):
+                exact_extendable.append(tile)
+        if {_canonical_tile(*tile) for tile in exact_extendable} != {_canonical_tile(*tile) for tile in annotation_tiles}:
+            continue
+
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = _build_scene_instances(
+            rng=rng,
+            oriented_chain=oriented_chain,
+            candidate_tiles=selected_candidates,
+            annotation_tiles=annotation_tiles,
+            reference_role="reference_end",
+            highlight_open_end=True,
+            shuffle_candidates=True,
+            label_candidates=False,
+        )
+        return _SampledDominoScene(
+            chain_tiles=chain_instances,
+            candidate_tiles=candidate_instances,
+            annotation_tile_ids=annotation_tile_ids,
+            answer_value=int(target_answer),
+            reference_tile_id=reference_tile_id,
+            open_end_value=int(open_end_value),
+            reference_sum=int(oriented_chain[-1][0] + oriented_chain[-1][1]),
+            target_total=None,
+            first_step_tile_id=None,
+            second_step_tile_id=None,
+            bridge_value=None,
+            chain_tile_specs=tuple(
+                {
+                    "tile_id": str(tile.tile_id),
+                    "left_value": int(tile.left_value),
+                    "right_value": int(tile.right_value),
+                    "role": str(tile.role),
+                    "is_reference": bool(tile.is_reference),
+                    "option_label": None if tile.option_label is None else str(tile.option_label),
+                }
+                for tile in chain_instances
+            ),
+            candidate_tile_specs=tuple(
+                {
+                    "tile_id": str(tile.tile_id),
+                    "left_value": int(tile.left_value),
+                    "right_value": int(tile.right_value),
+                    "role": str(tile.role),
+                    "option_label": None if tile.option_label is None else str(tile.option_label),
+                    "is_extendable_first_play": bool(str(tile.tile_id) in set(annotation_tile_ids)),
+                }
+                for tile in candidate_instances
+            ),
+        )
+    raise ValueError("unable to sample extendable first-play domino scene")
 
 
 def _sample_scene(
@@ -1092,8 +1232,14 @@ def _sample_scene(
             target_answer=int(axes.target_answer),
             params=params,
         )
-    if str(axes.query_id) == TWO_STEP_QUERY_ID:
-        return _sample_two_step_extension_scene(
+    if str(axes.query_id) == "second_play_candidate_count":
+        return _sample_second_play_candidate_scene(
+            rng,
+            candidate_count=int(axes.candidate_count),
+            target_answer=int(axes.target_answer),
+        )
+    if str(axes.query_id) == "extendable_first_play_count":
+        return _sample_extendable_first_play_scene(
             rng,
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
@@ -1109,8 +1255,8 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active domino query semantics."""
 
     if str(query_id) == "matching_end_count":
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [248, 318, 386, 394],
                 [408, 318, 546, 394],
             ],
@@ -1118,8 +1264,8 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 2}
     elif str(query_id) == "higher_sum_than_reference_count":
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [248, 318, 386, 394],
                 [408, 318, 546, 394],
                 [568, 318, 706, 394],
@@ -1128,8 +1274,8 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 3}
     elif str(query_id) == "sum_to_target_count":
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [248, 318, 386, 394],
                 [408, 318, 546, 394],
                 [568, 318, 706, 394],
@@ -1137,18 +1283,27 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
             "answer": 3,
         }
         answer_only = {"answer": 3}
-    elif str(query_id) == TWO_STEP_QUERY_ID:
-        answer_and_evidence = {
-            "evidence": {
-                "first_step_domino": [248, 318, 386, 394],
-                "second_step_domino": [408, 318, 546, 394],
-            },
-            "answer": "B",
+    elif str(query_id) == "second_play_candidate_count":
+        answer_and_annotation = {
+            "annotation": [
+                [408, 318, 546, 394],
+                [568, 318, 706, 394],
+            ],
+            "answer": 2,
         }
-        answer_only = {"answer": "B"}
+        answer_only = {"answer": 2}
+    elif str(query_id) == "extendable_first_play_count":
+        answer_and_annotation = {
+            "annotation": [
+                [248, 318, 386, 394],
+                [568, 318, 706, 394],
+            ],
+            "answer": 2,
+        }
+        answer_only = {"answer": 2}
     else:
-        answer_and_evidence = {
-            "evidence": [
+        answer_and_annotation = {
+            "annotation": [
                 [248, 318, 386, 394],
                 [408, 318, 546, 394],
             ],
@@ -1156,7 +1311,7 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         }
         answer_only = {"answer": 2}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1293,18 +1448,10 @@ class GamesDominoesChainCountTask:
         if sampled_scene is None or rendered_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["domino_bboxes_px"][str(tile_id)])
-            for tile_id in sampled_scene.evidence_tile_ids
+            for tile_id in sampled_scene.annotation_tile_ids
         ]
-        keyed_evidence_bboxes: Dict[str, List[float]] | None = None
-        if str(axes.query_id) == TWO_STEP_QUERY_ID:
-            if sampled_scene.first_step_tile_id is None or sampled_scene.second_step_tile_id is None:
-                raise RuntimeError("two-step domino scene missing role-bound evidence ids")
-            keyed_evidence_bboxes = {
-                "first_step_domino": list(rendered_scene.render_map["domino_bboxes_px"][str(sampled_scene.first_step_tile_id)]),
-                "second_step_domino": list(rendered_scene.render_map["domino_bboxes_px"][str(sampled_scene.second_step_tile_id)]),
-            }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1325,17 +1472,20 @@ class GamesDominoesChainCountTask:
                 "connection_rule_text",
                 "pip_sum_rule_text",
                 "double_rule_text",
-                "two_step_rule_text",
+                "second_play_rule_text",
+                "extendable_first_play_rule_text",
                 "answer_hint_matching_end_count",
                 "answer_hint_higher_sum_than_reference_count",
                 "answer_hint_sum_to_target_count",
                 "answer_hint_double_count",
-                "answer_hint_two_step_extension_label",
-                "evidence_hint_matching_end_count",
-                "evidence_hint_higher_sum_than_reference_count",
-                "evidence_hint_sum_to_target_count",
-                "evidence_hint_double_count",
-                "evidence_hint_two_step_extension_label",
+                "answer_hint_second_play_candidate_count",
+                "answer_hint_extendable_first_play_count",
+                "annotation_hint_matching_end_count",
+                "annotation_hint_higher_sum_than_reference_count",
+                "annotation_hint_sum_to_target_count",
+                "annotation_hint_double_count",
+                "annotation_hint_second_play_candidate_count",
+                "annotation_hint_extendable_first_play_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -1345,13 +1495,14 @@ class GamesDominoesChainCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+            "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "connection_rule_text": str(prompt_defaults["connection_rule_text"]),
             "pip_sum_rule_text": str(prompt_defaults["pip_sum_rule_text"]),
             "double_rule_text": str(prompt_defaults["double_rule_text"]),
-            "two_step_rule_text": str(prompt_defaults["two_step_rule_text"]),
+            "second_play_rule_text": str(prompt_defaults["second_play_rule_text"]),
+            "extendable_first_play_rule_text": str(prompt_defaults["extendable_first_play_rule_text"]),
             "target_total_text": "" if sampled_scene.target_total is None else str(sampled_scene.target_total),
         }
         prompt_selection = render_task_prompt_variants(
@@ -1361,22 +1512,14 @@ class GamesDominoesChainCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_gt = (
-            TypedValue(type="string", value=str(sampled_scene.answer_value))
-            if str(axes.query_id) == TWO_STEP_QUERY_ID
-            else TypedValue(type="integer", value=int(sampled_scene.answer_value))
-        )
-        evidence_gt = (
-            TypedValue(type="keyed_bbox_map", value=dict(keyed_evidence_bboxes or {}))
-            if str(axes.query_id) == TWO_STEP_QUERY_ID
-            else TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        )
+        answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer_value))
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -1388,7 +1531,7 @@ class GamesDominoesChainCountTask:
             query_id=str(axes.query_id),
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
-            evidence_count=len(sampled_scene.evidence_tile_ids),
+            annotation_count=len(sampled_scene.annotation_tile_ids),
         )
 
         execution_trace = {
@@ -1409,7 +1552,7 @@ class GamesDominoesChainCountTask:
             "bridge_value": None if sampled_scene.bridge_value is None else int(sampled_scene.bridge_value),
             "chain_tile_specs": [dict(spec) for spec in sampled_scene.chain_tile_specs],
             "candidate_tile_specs": [dict(spec) for spec in sampled_scene.candidate_tile_specs],
-            "evidence_entity_ids": [str(tile_id) for tile_id in sampled_scene.evidence_tile_ids],
+            "annotation_entity_ids": [str(tile_id) for tile_id in sampled_scene.annotation_tile_ids],
         }
         trace_payload = {
             "scene_ir": {
@@ -1423,7 +1566,7 @@ class GamesDominoesChainCountTask:
                     "target_answer": sampled_scene.answer_value,
                     "target_answer_index": int(axes.target_answer),
                     "reference_tile_id": None if sampled_scene.reference_tile_id is None else str(sampled_scene.reference_tile_id),
-                    "evidence_entity_ids": [str(tile_id) for tile_id in sampled_scene.evidence_tile_ids],
+                    "annotation_entity_ids": [str(tile_id) for tile_id in sampled_scene.annotation_tile_ids],
                 },
             },
             "query_spec": {
@@ -1461,29 +1604,13 @@ class GamesDominoesChainCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": execution_trace,
             "witness_symbolic": {
-                "type": "object_map" if str(axes.query_id) == TWO_STEP_QUERY_ID else "object_set",
-                "ids": {
-                    "first_step_domino": None if sampled_scene.first_step_tile_id is None else str(sampled_scene.first_step_tile_id),
-                    "second_step_domino": None if sampled_scene.second_step_tile_id is None else str(sampled_scene.second_step_tile_id),
-                }
-                if str(axes.query_id) == TWO_STEP_QUERY_ID
-                else [str(tile_id) for tile_id in sampled_scene.evidence_tile_ids],
+                "type": "object_set",
+                "ids": [str(tile_id) for tile_id in sampled_scene.annotation_tile_ids],
             },
-            "projected_evidence": {
-                **(
-                    {
-                        "type": "keyed_bbox_map",
-                        "keyed_bbox_map": dict(keyed_evidence_bboxes or {}),
-                        "pixel_keyed_bbox_map": dict(keyed_evidence_bboxes or {}),
-                        "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                    }
-                    if str(axes.query_id) == TWO_STEP_QUERY_ID
-                    else {
-                        "type": "bbox_set",
-                        "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                        "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                    }
-                )
+            "projected_annotation": {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1492,7 +1619,7 @@ class GamesDominoesChainCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1509,32 +1636,58 @@ class GamesDominoesChainCountTask:
 
 
 @register_task
-class GamesDominoesPropertyCountTask(GamesDominoesChainCountTask):
-    """Count loose dominoes satisfying one sampled property query."""
+class GamesDominoesDoubleCountTask(GamesDominoesChainCountTask):
+    """Count loose dominoes that are doubles."""
 
-    task_id = "task_games__dominoes__property_count"
+    task_id = "task_games__dominoes__double_count"
+    supported_query_ids = ("double_count",)
 
 
 @register_task
-class GamesDominoesTwoStepExtensionLabelTask(GamesDominoesChainCountTask):
-    """Choose the labeled loose domino that works as the second step in a chain extension."""
+class GamesDominoesSumToTargetCountTask(GamesDominoesChainCountTask):
+    """Count loose dominoes with a sampled target pip sum."""
 
-    task_id = "task_games__dominoes__two_step_extension_label"
-    supported_query_ids = (TWO_STEP_QUERY_ID,)
+    task_id = "task_games__dominoes__sum_to_target_count"
+    supported_query_ids = ("sum_to_target_count",)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        forced_params = dict(params)
-        forced_params["query_id"] = TWO_STEP_QUERY_ID
-        target_answer = forced_params.get("target_answer")
-        if isinstance(target_answer, str) and len(target_answer) == 1 and target_answer.isalpha():
-            forced_params["target_answer"] = ord(target_answer.upper()) - ord("A")
-        forced_params.setdefault("two_step_extension_target_answer_support", [0, 1, 2, 3, 4])
-        forced_params.setdefault("single_row_candidate_count_support", [5, 6])
-        forced_params.setdefault("two_row_candidate_count_support", [5, 6])
-        return super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
+
+@register_task
+class GamesDominoesHigherSumThanReferenceCountTask(GamesDominoesChainCountTask):
+    """Count loose dominoes whose pip sum is higher than the reference tile."""
+
+    task_id = "task_games__dominoes__higher_sum_than_reference_count"
+    supported_query_ids = ("higher_sum_than_reference_count",)
+
+
+@register_task
+class GamesDominoesMatchingEndCountTask(GamesDominoesChainCountTask):
+    """Count loose dominoes that match the open reference end."""
+
+    task_id = "task_games__dominoes__matching_end_count"
+    supported_query_ids = ("matching_end_count",)
+
+
+@register_task
+class GamesDominoesSecondPlayCandidateCountTask(GamesDominoesChainCountTask):
+    """Count loose dominoes playable after the forced first play."""
+
+    task_id = "task_games__dominoes__second_play_candidate_count"
+    supported_query_ids = ("second_play_candidate_count",)
+
+
+@register_task
+class GamesDominoesExtendableFirstPlayCountTask(GamesDominoesChainCountTask):
+    """Count first-play dominoes that leave at least one second play."""
+
+    task_id = "task_games__dominoes__extendable_first_play_count"
+    supported_query_ids = ("extendable_first_play_count",)
 
 
 __all__ = [
-    "GamesDominoesPropertyCountTask",
-    "GamesDominoesTwoStepExtensionLabelTask",
+    "GamesDominoesDoubleCountTask",
+    "GamesDominoesExtendableFirstPlayCountTask",
+    "GamesDominoesHigherSumThanReferenceCountTask",
+    "GamesDominoesMatchingEndCountTask",
+    "GamesDominoesSecondPlayCandidateCountTask",
+    "GamesDominoesSumToTargetCountTask",
 ]

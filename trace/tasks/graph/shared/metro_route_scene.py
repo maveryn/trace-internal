@@ -756,11 +756,11 @@ def sample_metro_transfer_network(
     )
 
 
-def projected_metro_station_point_evidence(
+def projected_metro_station_point_annotation(
     rendered_scene: RenderedMetroRouteScene,
     labels: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project ordered station labels into pixel point/bbox evidence."""
+    """Project ordered station labels into pixel point/bbox annotation."""
 
     station_by_label = {str(station.label): station for station in rendered_scene.stations}
     point_map: Dict[str, list[float]] = {}
@@ -1152,7 +1152,7 @@ __all__ = [
     "SUPPORTED_METRO_LABEL_VARIANTS",
     "feasible_metro_answer_counts",
     "feasible_metro_transfer_counts",
-    "projected_metro_station_point_evidence",
+    "projected_metro_station_point_annotation",
     "render_metro_scene",
     "sample_metro_query_network",
     "sample_metro_transfer_network",

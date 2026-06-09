@@ -10,12 +10,62 @@ from ..base import TaskOutput
 
 
 _UNSET = object()
+QUERY_ID_PARAM_KEYS: tuple[str, str] = ("query_id", "query_variant")
+QUERY_ID_WEIGHT_KEYS: tuple[str, str] = ("query_id_weights", "query_variant_weights")
+
+
+def explicit_query_id_param(params: Mapping[str, Any], *, allow_default: bool = False) -> str | None:
+    """Return the requested query id from canonical or legacy param names.
+
+    `query_variant` is kept as an input-only legacy alias. Generated metadata
+    should continue to use only `query_id`.
+    """
+
+    selected: str | None = None
+    selected_key: str | None = None
+    for key in QUERY_ID_PARAM_KEYS:
+        value = params.get(str(key))
+        if value is None:
+            continue
+        text = str(value)
+        if text == "default" and not bool(allow_default):
+            continue
+        if selected is not None and text != selected:
+            raise ValueError(f"{selected_key} conflicts with {key}")
+        selected = text
+        selected_key = str(key)
+    return selected
+
+
+def has_explicit_query_id_param(params: Mapping[str, Any], *, allow_default: bool = False) -> bool:
+    """Return whether params explicitly pin a query id or legacy variant."""
+
+    return explicit_query_id_param(params, allow_default=bool(allow_default)) is not None
+
+
+def normalize_query_id_params(params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalize legacy query-id aliases onto canonical `query_id` params."""
+
+    normalized = dict(params)
+    selected = explicit_query_id_param(normalized)
+    if selected is not None:
+        normalized["query_id"] = str(selected)
+    normalized.pop("query_variant", None)
+
+    canonical_weights = normalized.get("query_id_weights")
+    legacy_weights = normalized.get("query_variant_weights")
+    if canonical_weights is not None and legacy_weights is not None and canonical_weights != legacy_weights:
+        raise ValueError("query_id_weights conflicts with query_variant_weights")
+    if canonical_weights is None and legacy_weights is not None:
+        normalized["query_id_weights"] = legacy_weights
+    normalized.pop("query_variant_weights", None)
+    return normalized
 
 
 def force_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
     """Return params that force one internal query branch."""
 
-    forced = dict(params)
+    forced = normalize_query_id_params(params)
     requested_query_id = forced.get("query_id")
     if requested_query_id is not None and str(requested_query_id) != str(query_id):
         raise ValueError(
@@ -225,7 +275,12 @@ def rewrite_public_query_output(
 
 
 __all__ = [
+    "QUERY_ID_PARAM_KEYS",
+    "QUERY_ID_WEIGHT_KEYS",
+    "explicit_query_id_param",
     "force_query_id_params",
+    "has_explicit_query_id_param",
+    "normalize_query_id_params",
     "normalize_probability_map",
     "probability_map",
     "rewrite_public_query_output",

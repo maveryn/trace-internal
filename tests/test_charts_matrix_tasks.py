@@ -85,10 +85,10 @@ def _expected_answer(execution: dict, query_params: dict) -> int | str:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-def _expected_evidence_bboxes(trace: dict) -> list[list[float]]:
+def _expected_annotation_bboxes(trace: dict) -> list[list[float]]:
     render_map = trace["render_map"]
     execution = trace["execution_trace"]
-    return [render_map["cell_bboxes_px"][str(cell_id)] for cell_id in execution["evidence_cell_ids"]]
+    return [render_map["cell_bboxes_px"][str(cell_id)] for cell_id in execution["annotation_cell_ids"]]
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
@@ -106,8 +106,8 @@ def test_chart_matrix_variants_match_contract(query_id: str) -> None:
 
     assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
-    assert out.evidence_gt.type == "bbox_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "matrix_cell_query"
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 6 <= int(execution["row_count"]) <= 12
@@ -122,16 +122,16 @@ def test_chart_matrix_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution, query_params)
     assert out.answer_gt.value == expected_answer
     assert execution["answer_value"] == expected_answer
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert out.evidence_gt.value == _expected_evidence_bboxes(trace)
-    assert trace["projected_evidence"]["cell_ids"] == execution["evidence_cell_ids"]
-    assert "header_keys" not in trace["projected_evidence"]
-    assert execution["evidence_cell_ids"]
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == _expected_annotation_bboxes(trace)
+    assert trace["projected_annotation"]["cell_ids"] == execution["annotation_cell_ids"]
+    assert "header_keys" not in trace["projected_annotation"]
+    assert execution["annotation_cell_ids"]
     assert execution["support_header_keys"]
     if query_id == "threshold_cell_count":
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
-    for bbox in out.evidence_gt.value:
+    for bbox in out.annotation_gt.value:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),
@@ -163,11 +163,11 @@ def test_chart_matrix_prompt_examples_match_contract() -> None:
 
     for index, (query_id, answer) in enumerate(expected.items(), start=90100):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=30)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence["answer"] == answer
+        assert answer_and_annotation["answer"] == answer
         assert answer_only == {"answer": answer}
-        assert isinstance(answer_and_evidence["evidence"], list)
+        assert isinstance(answer_and_annotation["annotation"], list)
 
 
 def test_chart_matrix_balanced_sampling_covers_variants_and_scenes() -> None:
@@ -211,6 +211,6 @@ def test_chart_matrix_is_deterministic() -> None:
     out_b = task.generate(90300, params=params, max_attempts=30)
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()

@@ -1,0 +1,80 @@
+{
+  "bundle_id": "geometry_circle_pair_tangents_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "common_tangent_length_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "center_distance_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:circle_pair_tangents_scene": [
+      "object_description"
+    ],
+    "query:external_common_tangent_length": [],
+    "query:external_common_tangent_center_distance": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"answer\" field: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "circle_pair_tangents_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This geometry diagram shows {object_description}.",
+      "The image shows {object_description}.",
+      "The labeled diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "external_common_tangent_length": [
+      "What is the length of tangent segment T1T2?",
+      "Find the length of the common tangent segment T1T2.",
+      "Using the labeled radii and center distance, determine T1T2.",
+      "The segment from T1 to T2 is marked with ?. What is its length?",
+      "What is the value of the tangent length T1T2?"
+    ],
+    "external_common_tangent_center_distance": [
+      "What is the distance O1O2 between the two circle centers?",
+      "Find the center-to-center distance O1O2.",
+      "Using the labeled radii and tangent segment, determine O1O2.",
+      "The segment from O1 to O2 is marked with ?. What is its length?",
+      "What is the value of the center distance O1O2?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

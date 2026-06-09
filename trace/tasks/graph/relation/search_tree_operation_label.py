@@ -21,7 +21,7 @@ from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
     BinaryTreeNode,
     BinaryTreeSample,
-    projected_binary_tree_bbox_evidence,
+    projected_binary_tree_bbox_annotation,
     render_binary_tree_scene,
 )
 from ..shared.complexity import build_graph_complexity, normalize_int_with_bounds, resolve_graph_complexity_weights
@@ -106,7 +106,7 @@ class _OperationSelection:
 
     target_key: int | None
     answer_label: str
-    evidence_labels: Tuple[str, ...]
+    annotation_labels: Tuple[str, ...]
     query_node_ids: Tuple[str, ...]
     answer_node_id: str
     operation_kind: str
@@ -439,7 +439,7 @@ def _sample_operation(
         return sample, _OperationSelection(
             target_key=None,
             answer_label=str(child_label),
-            evidence_labels=(str(parent_label), str(child_label)),
+            annotation_labels=(str(parent_label), str(child_label)),
             query_node_ids=(str(parent_id), str(child_id)),
             answer_node_id=str(child_id),
             operation_kind="min_heap_property_violation",
@@ -465,16 +465,30 @@ def _sample_operation(
     return sample, _OperationSelection(
         target_key=int(target_key),
         answer_label=str(labels_by_id[str(answer_node_id)]),
-        evidence_labels=tuple(str(labels_by_id[str(node_id)]) for node_id in path_ids),
+        annotation_labels=tuple(str(labels_by_id[str(node_id)]) for node_id in path_ids),
         query_node_ids=tuple(str(node_id) for node_id in path_ids),
         answer_node_id=str(answer_node_id),
         operation_kind=str(query.query_id),
     )
 
 
-def _build_prompt_json_examples() -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    if str(query_id) == "heap_property_violation_label":
+        return (
+            json.dumps(
+                {
+                    "annotation": {
+                        "parent": [156, 124, 204, 172],
+                        "child": [250, 250, 298, 298],
+                    },
+                    "answer": "42",
+                },
+                separators=(",", ":"),
+            ),
+            json.dumps({"answer": "42"}, separators=(",", ":")),
+        )
     return (
-        json.dumps({"evidence": [[156, 124, 204, 172], [250, 250, 298, 298]], "answer": "42"}, separators=(",", ":")),
+        json.dumps({"annotation": [[156, 124, 204, 172], [250, 250, 298, 298]], "answer": "42"}, separators=(",", ":")),
         json.dumps({"answer": "42"}, separators=(",", ":")),
     )
 
@@ -488,7 +502,7 @@ def _build_complexity(
 ) -> Any:
     node_norm = normalize_int_with_bounds(int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max))
     depth_norm = normalize_int_with_bounds(int(sample.max_depth), (2, _DEFAULTS.max_depth))
-    path_norm = normalize_int_with_bounds(len(operation.evidence_labels), (2, _DEFAULTS.max_depth + 1))
+    path_norm = normalize_int_with_bounds(len(operation.annotation_labels), (2, _DEFAULTS.max_depth + 1))
     operation_load = 0.58 if str(query_id) == "heap_property_violation_label" else 0.72
     return build_graph_complexity(
         weights=complexity_weights,
@@ -552,6 +566,7 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
             render_params=render_params,
             scene_variant=str(query.scene_variant),
             scene_title=scene_title,
+            layout_seed=int(instance_seed),
             base_image=image,
         )
         image, post_noise_meta = apply_post_image_noise(
@@ -560,20 +575,36 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_projection = projected_binary_tree_bbox_evidence(rendered_scene, operation.evidence_labels)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_sequence"]]
+        annotation_projection = projected_binary_tree_bbox_annotation(rendered_scene, operation.annotation_labels)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_sequence"]]
         answer_gt = TypedValue(type="string", value=str(operation.answer_label))
-        evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
+        is_heap_violation = str(query.query_id) == "heap_property_violation_label"
+        annotation_role_to_label: Dict[str, str] = {}
+        annotation_keyed_bboxes: Dict[str, List[float]] = {}
+        if bool(is_heap_violation):
+            if len(operation.annotation_labels) != 2 or len(annotation_bboxes) != 2:
+                raise ValueError("heap-property violation annotation must contain parent and child nodes")
+            annotation_role_to_label = {
+                "parent": str(operation.annotation_labels[0]),
+                "child": str(operation.annotation_labels[1]),
+            }
+            annotation_keyed_bboxes = {
+                "parent": list(annotation_bboxes[0]),
+                "child": list(annotation_bboxes[1]),
+            }
+            annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
+        else:
+            annotation_gt = TypedValue(type="bbox_sequence", value=list(annotation_bboxes))
 
         prompt_defaults = dict(self._prompt_defaults)
-        json_example, json_example_answer_only = _build_prompt_json_examples()
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(query.query_id))
         target_key = "" if operation.target_key is None else str(operation.target_key)
         object_description_key = "object_description_heap" if str(query.query_id) == "heap_property_violation_label" else "object_description_bst"
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
-        evidence_hint = (
-            str(prompt_defaults[evidence_hint_key])
-            if evidence_hint_key in prompt_defaults
-            else str(prompt_defaults["evidence_hint"])
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
+        annotation_hint = (
+            str(prompt_defaults[annotation_hint_key])
+            if annotation_hint_key in prompt_defaults
+            else str(prompt_defaults["annotation_hint"])
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -582,13 +613,13 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults.get(object_description_key, prompt_defaults["object_description"])),
                 "target_key": str(target_key),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -625,6 +656,8 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
                 "child_label": str(edge.child_label),
                 "child_side": str(edge.child_side),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "connector_path_px": [list(point) for point in edge.connector_path_px],
+                "connector_style_variant": str(edge.connector_style_variant),
             }
             for edge in rendered_scene.edges
         ]
@@ -641,7 +674,8 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
                     "target_key": int(operation.target_key) if operation.target_key is not None else None,
                     "answer_label": str(operation.answer_label),
                     "answer_node_id": str(operation.answer_node_id),
-                    "evidence_labels": list(operation.evidence_labels),
+                    "annotation_labels": list(operation.annotation_labels),
+                    "annotation_role_to_label": dict(annotation_role_to_label),
                     "preorder_labels": list(sample.preorder_labels),
                     "inorder_labels": list(sample.inorder_labels),
                     "postorder_labels": list(sample.postorder_labels),
@@ -683,6 +717,7 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "scene_variant": str(rendered_scene.scene_variant),
+                    "connector_style_variant": str(rendered_scene.connector_style_variant),
                     "scene_title": str(scene_title),
                     "node_color_name": str(query.node_color_name),
                     "theme_tone": str(render_params.theme_tone),
@@ -717,7 +752,8 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
                 "answer": str(operation.answer_label),
                 "answer_label": str(operation.answer_label),
                 "answer_node_id": str(operation.answer_node_id),
-                "evidence_labels": list(operation.evidence_labels),
+                "annotation_labels": list(operation.annotation_labels),
+                "annotation_role_to_label": dict(annotation_role_to_label),
                 "node_count": int(sample.node_count),
                 "max_depth": int(sample.max_depth),
                 "label_variant": str(sample.label_variant),
@@ -727,19 +763,30 @@ class _GraphRelationSearchTreeOperationLabelBaseTask:
                 "query_id": str(query.query_id),
                 "target_key": int(operation.target_key) if operation.target_key is not None else None,
                 "answer_label": str(operation.answer_label),
-                "evidence_labels": list(operation.evidence_labels),
+                "annotation_labels": list(operation.annotation_labels),
+                "annotation_role_to_label": dict(annotation_role_to_label),
             },
-            "projected_evidence": {
-                "type": "bbox_sequence",
-                "bbox_sequence": list(evidence_bboxes),
-                "pixel_bbox_sequence": list(evidence_bboxes),
-                "pixel_point_sequence": list(evidence_projection["pixel_point_sequence"]),
-            },
+            "projected_annotation": (
+                {
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                    "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                    "pixel_bbox_map": dict(annotation_keyed_bboxes),
+                    "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
+                }
+                if bool(is_heap_violation)
+                else {
+                    "type": "bbox_sequence",
+                    "bbox_sequence": list(annotation_bboxes),
+                    "pixel_bbox_sequence": list(annotation_bboxes),
+                    "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
+                }
+            ),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -172,6 +172,8 @@ class RenderedChartScene:
     value_axis_window_enabled: bool = False
     guide_line_style: str = "none"
     guide_lines: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)
+    legend_bbox_px: Tuple[float, ...] = ()
+    legend_item_bboxes_px: Dict[str, Tuple[float, ...]] = field(default_factory=dict)
 
 
 __all__ = [

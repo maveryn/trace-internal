@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug) }}">taxonomy</a>
+  <span>tree</span>
+</nav>
+
+<section class="summary-grid">
+  <div class="metric"><span>{{ taxonomy.proposed_units|length }}</span><label>proposed task units</label></div>
+  <div class="metric"><span>{{ taxonomy.summary.get('base_program_contracts', 'n/a') }}</span><label>base program contracts</label></div>
+  <div class="metric"><span>{{ taxonomy.domain_summaries|length }}</span><label>domains</label></div>
+  <div class="metric"><span>{{ taxonomy.summary.get('split_tasks', taxonomy.split_task_count) }}</span><label>split source tasks</label></div>
+  <div class="metric"><span>{{ taxonomy.query_count }}</span><label>query rows</label></div>
+</section>
+
+<section class="table-panel compact taxonomy-tree-panel">
+  <div class="taxonomy-toolbar">
+    <div class="query-tabs taxonomy-domain-tabs">
+      <a class="pill {% if not selected_taxonomy_domain %}active{% endif %}" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/tree') }}">all</a>
+      {% for domain_name, summary in taxonomy.domain_summaries.items() %}
+        <a class="pill {% if selected_taxonomy_domain == domain_name %}active{% endif %}" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug ~ '/tree?domain=' ~ domain_name) }}">
+          {{ domain_name }} <span>{{ summary.get('proposed_tasks', summary.get('proposed', 0)) }}</span>
+        </a>
+      {% endfor %}
+    </div>
+    <a class="button-link" href="{{ app_path('/taxonomy/' ~ taxonomy_round_slug) }}">Back to current→updated mapping</a>
+  </div>
+
+  <div class="taxonomy-tree">
+    {% for domain_node in taxonomy_tree %}
+      <details class="taxonomy-tree-domain" {% if selected_taxonomy_domain or taxonomy_tree|length == 1 %}open{% endif %}>
+        <summary>
+          <strong>{{ domain_node.domain }}</strong>
+          <span class="badge">{{ domain_node.unit_count }} task units</span>
+        </summary>
+        {% for root_node in domain_node.roots %}
+          <details class="taxonomy-tree-root" open>
+            <summary>
+              <span>{{ root_node.root }}</span>
+              <span class="badge">{{ root_node.unit_count }}</span>
+            </summary>
+            {% for family_node in root_node.families %}
+              <details class="taxonomy-tree-family" open>
+                <summary>
+                  <span>{{ family_node.family }}</span>
+                  <span class="badge">{{ family_node.unit_count }}</span>
+                </summary>
+                <div class="taxonomy-tree-unit-list">
+                  {% for unit in family_node.units %}
+                    {% set detail_task = unit.source_task_ids[0] if unit.source_task_ids else '' %}
+                    {% set detail_path = '/taxonomy/' ~ taxonomy_round_slug ~ '/domains/' ~ unit.domain ~ '/scenes/' ~ unit.scene_id ~ '/tasks/' ~ detail_task %}
+                    {% set preview_uid = unit.sample_uids[0] if unit.sample_uids else '' %}
+                    {% set sample = taxonomy_samples_by_uid.get(preview_uid) if preview_uid else none %}
+                    <article class="taxonomy-tree-unit">
+                      <div>
+                        <a href="{{ app_path(detail_path) }}"><strong>{{ unit.proposed_task_id }}</strong></a>
+                        <div class="muted">{{ unit.scene_id }} · {{ unit.query_count }} query row{% if unit.query_count != 1 %}s{% endif %}</div>
+                        <div class="taxonomy-tree-meta">
+                          {% if unit.program_signature_id %}<span class="badge">program: {{ unit.program_signature_id }}</span>{% endif %}
+                          <span class="badge">answer: {{ unit.answer_types|join('|') or 'n/a' }}</span>
+                          <span class="badge">annotation: {{ unit.annotation_types|join('|') or 'n/a' }}</span>
+                        </div>
+                        {% if unit.base_program_contract %}<div class="muted">base: {{ unit.base_program_contract }}</div>{% endif %}
+                        {% if unit.program_schema and unit.program_schema != unit.base_program_contract %}<div class="muted">{{ unit.program_schema }}</div>{% endif %}
+                        <div class="muted">source: {{ unit.source_task_ids|join(', ') }}</div>
+                        <div class="muted">queries: {{ unit.query_ids|join(', ') }}</div>
+                      </div>
+                      {% if sample and sample.image_exists %}
+                        <a class="taxonomy-preview-thumb" href="{{ app_path(detail_path) }}">
+                          <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+                          <span>{{ sample.query_id }}</span>
+                        </a>
+                      {% endif %}
+                    </article>
+                  {% endfor %}
+                </div>
+              </details>
+            {% endfor %}
+          </details>
+        {% endfor %}
+      </details>
+    {% else %}
+      <p class="muted">No taxonomy units match this filter.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

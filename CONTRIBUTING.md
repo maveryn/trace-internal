@@ -39,6 +39,13 @@ pip install -r requirements.txt
 PYTHONPATH=. pytest -q
 ```
 
+Run RLVR-local reward tests with both the repo root and `rlvr/` root on the
+import path:
+
+```bash
+cd rlvr && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=..:. pytest tests/test_trace_reward.py tests/test_trace_validation.py -q
+```
+
 2. If task logic/prompt/render changed, regenerate task samples:
 
 ```bash
@@ -54,7 +61,7 @@ PYTHONPATH=. python scripts/build_dataset.py --config configs/examples/minimal_b
 ## Commit checklist
 - [ ] Changes are deterministic for fixed seeds.
 - [ ] Task enforces unique-answer-by-construction.
-- [ ] Typed `answer_gt` and `evidence_gt` are emitted correctly.
+- [ ] Typed `answer_gt` and `annotation_gt` are emitted correctly.
 - [ ] Prompt bundle and prompt-variant metadata are wired correctly.
 - [ ] Tests pass locally.
 - [ ] Samples regenerated for changed tasks (when applicable).

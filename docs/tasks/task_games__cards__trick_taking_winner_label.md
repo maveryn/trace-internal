@@ -2,22 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `cards`
-3. Source task group: `cards`
-4. Query id: `trick_taking_winner_label`
-5. Objective: Choose the player whose played card wins the trick using led-suit and optional trump rules.
+2. Task group: `cards`
+3. Scene id: `cards`
+4. Public task id: `task_games__cards__trick_taking_winner_label`
+5. Supported `query_id` values: `trick_taking_winner_label`
+6. Answer schema: `string_label`
+7. Annotation schema: `bbox_set`
+8. Program schema: `label(arg_extreme(played_cards, metric=trick_order_metric(card, lead_suit, trump_suit), direction=winning)); scene=cards; scope=trick_taking_winner_label`
 
-## Answer and Evidence
-1. Answer type: `string`; the answer is the compact option letter only, such as `A` or `C`, not the full rendered label `Player A`.
-2. Evidence type: bbox_set over the single winning played card.
-3. The execution trace records both `winning_label` for the full rendered label and `winning_option` for the public answer.
-4. `trick_taking_winner_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games card renderer with the `trick_row` scene variant.
-2. The leftmost card is the led card. Generation samples 4..6 played cards, an optional trump suit, and enforces a unique winning player.
-3. Prompt bundle: `games_cards_v0`
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Trump rule, style, and visual jitter remain explicit recorded params.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

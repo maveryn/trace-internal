@@ -20,7 +20,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS,
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
-    projected_binary_tree_bbox_evidence,
+    projected_binary_tree_bbox_annotation,
     render_binary_tree_scene,
     sample_binary_tree_for_count_query,
     target_labels_for_count_query,
@@ -30,6 +30,7 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_graph_complexity_weights,
 )
+from ..shared.fixed_query_task import FixedGraphQueryTaskMixin, MergedGraphQueryTaskMixin
 from ..shared.graph_scene import SUPPORTED_NODE_SHAPE_VARIANTS
 from ..shared.graph_sampling import SUPPORTED_NODE_LINK_LABEL_VARIANTS
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
@@ -37,8 +38,16 @@ from ..shared.task_support import resolve_graph_named_variant, resolve_graph_ren
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__binary_tree__node_property_count"
+TASK_ID = "graph_binary_tree_node_property_count_source"
 SCENE_ID = "binary_tree"
+BINARY_TREE_CHILD_STRUCTURE_NODE_COUNT_TASK_ID = "task_graph__binary_tree__child_structure_node_count"
+BINARY_TREE_DEPTH_LEVEL_NODE_COUNT_TASK_ID = "task_graph__binary_tree__depth_level_node_count"
+CHILD_STRUCTURE_QUERY_IDS: Tuple[str, ...] = (
+    "internal_node_count",
+    "leaf_node_count",
+    "single_child_node_count",
+    "two_child_node_count",
+)
 
 
 @dataclass(frozen=True)
@@ -262,7 +271,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
     return (
-        json.dumps({"evidence": [[156, 124, 204, 172], [470, 430, 520, 480]], "answer": 2}, separators=(",", ":")),
+        json.dumps({"annotation": [[156, 124, 204, 172], [470, 430, 520, 480]], "answer": 2}, separators=(",", ":")),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 
@@ -282,7 +291,6 @@ def _build_complexity(*, sample, query: _ResolvedQuery) -> Any:
     )
 
 
-@register_task
 class GraphCountingBinaryTreeNodeCountTask:
     """Count binary-tree nodes satisfying a structural predicate."""
 
@@ -326,6 +334,7 @@ class GraphCountingBinaryTreeNodeCountTask:
             render_params=render_params,
             scene_variant=str(query.scene_variant),
             scene_title="Binary Tree",
+            layout_seed=int(instance_seed),
             base_image=image,
         )
         image, post_noise_meta = apply_post_image_noise(
@@ -341,15 +350,15 @@ class GraphCountingBinaryTreeNodeCountTask:
         )
         if len(target_labels) != int(query.target_count):
             raise ValueError("binary-tree count sample does not match requested target count")
-        evidence_projection = projected_binary_tree_bbox_evidence(rendered_scene, target_labels)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_binary_tree_bbox_annotation(rendered_scene, target_labels)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_gt = TypedValue(type="integer", value=int(len(target_labels)))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
         depth_text = str(query.target_depth) if query.target_depth is not None else ""
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -357,13 +366,13 @@ class GraphCountingBinaryTreeNodeCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "target_depth": depth_text,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(target_depth=depth_text),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(target_depth=depth_text),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -399,6 +408,8 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "child_label": str(edge.child_label),
                 "child_side": str(edge.child_side),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "connector_path_px": [list(point) for point in edge.connector_path_px],
+                "connector_style_variant": str(edge.connector_style_variant),
             }
             for edge in rendered_scene.edges
         ]
@@ -460,6 +471,7 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "scene_variant": str(rendered_scene.scene_variant),
+                    "connector_style_variant": str(rendered_scene.connector_style_variant),
                     "node_color_name": str(query.node_color_name),
                     "theme_tone": str(render_params.theme_tone),
                     "panel_style_variant": str(render_params.panel_style_variant),
@@ -489,6 +501,7 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
+                "connector_style_variant": str(rendered_scene.connector_style_variant),
                 "answer": int(len(target_labels)),
                 "target_labels": list(target_labels),
                 "target_depth": int(query.target_depth) if query.target_depth is not None else None,
@@ -501,17 +514,17 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "labels": list(target_labels),
                 "query_id": str(query.query_id),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "pixel_point_set": list(evidence_projection["pixel_point_set"]),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "pixel_point_set": list(annotation_projection["pixel_point_set"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -523,4 +536,29 @@ class GraphCountingBinaryTreeNodeCountTask:
         )
 
 
-__all__ = ["GraphCountingBinaryTreeNodeCountTask"]
+@register_task
+class GraphCountingBinaryTreeChildStructureNodeCountTask(MergedGraphQueryTaskMixin):
+    """Count binary-tree nodes matching a child-structure predicate."""
+
+    task_id = BINARY_TREE_CHILD_STRUCTURE_NODE_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "counting"
+    source_task_cls = GraphCountingBinaryTreeNodeCountTask
+    supported_query_ids = CHILD_STRUCTURE_QUERY_IDS
+
+
+@register_task
+class GraphCountingBinaryTreeDepthLevelNodeCountTask(FixedGraphQueryTaskMixin):
+    """Count binary-tree nodes at one depth level."""
+
+    task_id = BINARY_TREE_DEPTH_LEVEL_NODE_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "counting"
+    fixed_query_id = "depth_level_node_count"
+    source_task_cls = GraphCountingBinaryTreeNodeCountTask
+
+
+__all__ = [
+    "GraphCountingBinaryTreeChildStructureNodeCountTask",
+    "GraphCountingBinaryTreeDepthLevelNodeCountTask",
+]

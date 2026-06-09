@@ -1,4 +1,4 @@
-"""Count named-shape icons closer to one of two labeled references."""
+"""Count named-shape icons closer to one of two prompt-named references."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import math
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
@@ -20,28 +20,24 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.named_colors import available_named_colors, named_color
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
-from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import bbox_set_evidence
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace, sort_bboxes_reading_order
-from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
     bbox_center_float,
     bbox_from_center_dimensions,
     bbox_inside,
     boxes_overlap,
-    label_bbox_for_icon,
     render_planned_named_icon_sprite,
     resolve_named_icon_fill_style_probabilities,
     resolve_named_icon_fill_style_support,
     resolve_named_icon_int_bounds,
     rotation_for_named_shape,
     uniform_string_probability_map,
-    union_bbox,
 )
 from ..shared.procedural_named_icons import (
     DEFAULT_PROCEDURAL_NAMED_ICON_FILL_STYLE_WEIGHTS,
@@ -110,12 +106,6 @@ class _TaskDefaults:
     reference_axis_degrees: Tuple[int, ...] = (0, 35, 90, 145)
     distance_margin_px: int = 42
     icon_collision_gap_px: int = 8
-    reference_label_font_size_px: int = 24
-    reference_label_padding_px: int = 5
-    reference_label_gap_px: int = 4
-    reference_label_color_rgb: Tuple[int, int, int] = (52, 60, 77)
-    reference_label_background_rgb: Tuple[int, int, int] = (255, 255, 255)
-    reference_label_border_rgb: Tuple[int, int, int] = (172, 183, 204)
 
 
 @dataclass(frozen=True)
@@ -162,6 +152,8 @@ class _SampleSpec:
     queried_reference_label: str
     target_shape_id: str
     target_shape_name: str
+    reference_a_shape_name: str
+    reference_b_shape_name: str
     target_answer: int
     target_icon_count: int
     closer_count_by_reference: Dict[str, int]
@@ -422,6 +414,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         queried_reference_label=str(queried_reference_label),
         target_shape_id=str(target_shape_id),
         target_shape_name=procedural_named_icon_display_name(str(target_shape_id)),
+        reference_a_shape_name=procedural_named_icon_display_name(str(reference_a_shape)),
+        reference_b_shape_name=procedural_named_icon_display_name(str(reference_b_shape)),
         target_answer=int(target_answer),
         target_icon_count=int(target_icon_count),
         closer_count_by_reference={
@@ -451,43 +445,8 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
     for key in (
         "distance_margin_px",
         "icon_collision_gap_px",
-        "reference_label_font_size_px",
-        "reference_label_padding_px",
-        "reference_label_gap_px",
     ):
         render_params[key] = int(params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key))))
-    for key in ("reference_label_color_rgb", "reference_label_background_rgb", "reference_label_border_rgb"):
-        render_params[key] = resolve_icon_rgb_param(
-            params=params,
-            render_defaults=_RENDER_DEFAULTS,
-            key=key,
-            fallback=getattr(_DEFAULTS, key),
-            instance_seed=int(instance_seed),
-        )
-    reference_label_style = resolve_readable_text_style(
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:reference_label_text",
-        role="named_field_reference_label_text",
-        surface_rgbs=(
-            tuple(int(value) for value in render_params["reference_label_background_rgb"]),
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
-        ),
-        preferred_rgbs=(tuple(int(value) for value in render_params["reference_label_color_rgb"]),),
-    )
-    render_params["reference_label_color_rgb"] = tuple(int(value) for value in reference_label_style.fill_rgb)
-    render_params["reference_label_stroke_rgb"] = tuple(
-        int(value) for value in render_params["reference_label_background_rgb"]
-    )
-    reference_label_record = reference_label_style.metadata()
-    reference_label_record["stroke_rgb"] = list(render_params["reference_label_stroke_rgb"])
-    previous_legibility = render_params.get("text_legibility")
-    previous_records = []
-    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
-        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
-    render_params["text_legibility"] = text_legibility_summary_from_records(
-        [*previous_records, reference_label_record]
-    )
     return render_params
 
 
@@ -513,46 +472,6 @@ def _axis_radius(center: Tuple[float, float], axis: Tuple[float, float], content
         return min(positives) if positives else 0.0
 
     return float(min(forward_limit(1.0), forward_limit(-1.0)))
-
-
-def _draw_reference_label(
-    *,
-    image: Image.Image,
-    icon_bbox: BBox,
-    label: str,
-    content_bbox: BBox,
-    label_font,
-    render_params: Mapping[str, Any],
-) -> BBox:
-    label_bbox = label_bbox_for_icon(
-        icon_bbox=tuple(int(value) for value in icon_bbox),
-        label=str(label),
-        content_bbox=tuple(int(value) for value in content_bbox),
-        font=label_font,
-        padding_px=int(render_params["reference_label_padding_px"]),
-        gap_px=int(render_params["reference_label_gap_px"]),
-    )
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle(
-        label_bbox,
-        radius=max(4, int(round(0.28 * float(label_bbox[3] - label_bbox[1])))),
-        fill=tuple(int(value) for value in render_params["reference_label_background_rgb"]) + (238,),
-        outline=tuple(int(value) for value in render_params["reference_label_border_rgb"]) + (255,),
-        width=1,
-    )
-    draw_text_centered(
-        draw,
-        text=str(label),
-        center=bbox_center_float(label_bbox),
-        font=label_font,
-        fill=tuple(int(value) for value in render_params["reference_label_color_rgb"]),
-        stroke_fill=tuple(
-            int(value)
-            for value in render_params.get("reference_label_stroke_rgb", render_params["reference_label_background_rgb"])
-        ),
-        stroke_width=1,
-    )
-    return tuple(int(value) for value in label_bbox)
 
 
 def _serialize_icon(icon: _RenderedIcon) -> Dict[str, Any]:
@@ -595,7 +514,6 @@ def _render_scene(
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
     )
     content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
-    label_font = load_font(int(render_params["reference_label_font_size_px"]), bold=True)
     plans = tuple(sample.plans)
     sprites = [render_planned_named_icon_sprite(plan) for plan in plans]
     axes = tuple(int(value) for value in sample.reference_axis_probabilities)
@@ -635,20 +553,11 @@ def _render_scene(
                 plan = plans[int(index)]
                 sprite = sprites[int(index)]
                 bbox = bbox_from_center_dimensions(ref_centers[str(label)], width=int(sprite.size[0]), height=int(sprite.size[1]))
-                label_bbox = label_bbox_for_icon(
-                    icon_bbox=bbox,
-                    label=str(label),
-                    content_bbox=content_bbox,
-                    font=label_font,
-                    padding_px=int(render_params["reference_label_padding_px"]),
-                    gap_px=int(render_params["reference_label_gap_px"]),
-                )
-                occupancy_bbox = union_bbox(bbox, label_bbox)
-                if not bbox_inside(occupancy_bbox, content_bbox):
-                    raise ValueError("reference label outside content")
-                if any(boxes_overlap(occupancy_bbox, other, gap_px=collision_gap) for other in occupancy):
+                if not bbox_inside(bbox, content_bbox):
+                    raise ValueError("reference outside content")
+                if any(boxes_overlap(bbox, other, gap_px=collision_gap) for other in occupancy):
                     raise ValueError("reference overlap")
-                occupancy.append(occupancy_bbox)
+                occupancy.append(bbox)
                 reference_centers_actual[str(label)] = bbox_center_float(bbox)
                 rendered.append(
                     _RenderedIcon(
@@ -668,7 +577,7 @@ def _render_scene(
                         distance_to_reference_b_px=None,
                         closer_reference_label="",
                         counted=False,
-                        label_bbox_xyxy=tuple(int(value) for value in label_bbox),
+                        label_bbox_xyxy=None,
                         noise_edits=tuple(serialize_icon_noise_edits(plan.noise_edits)),
                         noise_seed=plan.noise_seed,
                     )
@@ -741,16 +650,6 @@ def _render_scene(
             )
             for record, sprite in zip(rendered, sprites):
                 image.alpha_composite(sprite, (int(record.bbox_xyxy[0]), int(record.bbox_xyxy[1])))
-            for record in rendered:
-                if str(record.role) == "reference":
-                    _draw_reference_label(
-                        image=image,
-                        icon_bbox=tuple(int(value) for value in record.bbox_xyxy),
-                        label=str(record.label),
-                        content_bbox=content_bbox,
-                        label_font=label_font,
-                        render_params=render_params,
-                    )
             return _ScenePayload(
                 image=image.convert("RGB"),
                 icons=tuple(rendered),
@@ -794,7 +693,7 @@ def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any], axis_d
 
 @register_task
 class IconsCountingNamedShapeCloserToReferenceCountTask:
-    """Count target-shape icons closer to reference A or B."""
+    """Count target-shape icons closer to one of two prompt-named references."""
 
     task_id = TASK_ID
     domain = "icons"
@@ -842,7 +741,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 question_key,
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -855,13 +754,17 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults[question_key]).format(target_shape_name=str(sample.target_shape_name)),
+                "question_text": str(prompt_defaults[question_key]).format(
+                    target_shape_name=str(sample.target_shape_name),
+                    reference_a_shape_name=str(sample.reference_a_shape_name),
+                    reference_b_shape_name=str(sample.reference_b_shape_name),
+                ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(target_shape_name=str(sample.target_shape_name)),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(target_shape_name=str(sample.target_shape_name)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -870,8 +773,8 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = sort_bboxes_reading_order(tuple(icon.bbox_xyxy for icon in counted_icons))
-        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
+        annotation_bboxes = sort_bboxes_reading_order(tuple(icon.bbox_xyxy for icon in counted_icons))
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
         counted_instance_ids = tuple(str(icon.instance_id) for icon in counted_icons)
         reference_by_label = {str(icon.label): icon for icon in reference_icons}
         closer_counts = Counter(str(icon.closer_reference_label) for icon in target_icons)
@@ -889,6 +792,8 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                     "counting_rule": "target_shape_icons_closer_to_queried_reference",
                     "target_shape_id": str(sample.target_shape_id),
                     "target_shape_name": str(sample.target_shape_name),
+                    "reference_a_shape_name": str(sample.reference_a_shape_name),
+                    "reference_b_shape_name": str(sample.reference_b_shape_name),
                     "queried_reference_label": str(sample.queried_reference_label),
                     "closer_count_by_reference": dict(closer_count_by_reference),
                     "target_answer": int(sample.target_answer),
@@ -943,17 +848,6 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                     **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=sample.sampled_palette_rgb),
                     "reference_axis_degrees": int(scene.reference_axis_degrees),
                     "distance_margin_px": int(render_params["distance_margin_px"]),
-                    "reference_label_font_size_px": int(render_params["reference_label_font_size_px"]),
-                    "reference_label_color_rgb": [int(value) for value in render_params["reference_label_color_rgb"]],
-                    "reference_label_stroke_rgb": [
-                        int(value) for value in render_params["reference_label_stroke_rgb"]
-                    ],
-                    "reference_label_background_rgb": [
-                        int(value) for value in render_params["reference_label_background_rgb"]
-                    ],
-                    "reference_label_border_rgb": [
-                        int(value) for value in render_params["reference_label_border_rgb"]
-                    ],
                     "semantic_color_palette": [
                         {
                             "name": str(name),
@@ -977,9 +871,11 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_closer_to_reference_field",
                 "query_id": str(sample.query_id),
-                "question_format": "count_named_shape_icons_closer_to_labeled_reference",
+                "question_format": "count_named_shape_icons_closer_to_named_reference",
                 "target_shape_id": str(sample.target_shape_id),
                 "target_shape_name": str(sample.target_shape_name),
+                "reference_a_shape_name": str(sample.reference_a_shape_name),
+                "reference_b_shape_name": str(sample.reference_b_shape_name),
                 "queried_reference_label": str(sample.queried_reference_label),
                 "target_answer": int(sample.target_answer),
                 "target_icon_count": int(sample.target_icon_count),
@@ -991,21 +887,23 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             "witness_symbolic": {
                 "target_shape_id": str(sample.target_shape_id),
                 "target_shape_name": str(sample.target_shape_name),
+                "reference_a_shape_name": str(sample.reference_a_shape_name),
+                "reference_b_shape_name": str(sample.reference_b_shape_name),
                 "queried_reference_label": str(sample.queried_reference_label),
                 "answer": int(sample.target_answer),
                 "counted_instance_ids": list(counted_instance_ids),
                 "closer_count_by_reference": dict(closer_count_by_reference),
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

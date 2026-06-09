@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `chess`
-3. Source task group: `chess`
-4. Query id: `player_capture_piece_count`
-5. Objective: Count the opponent pieces that the named side can capture in one move.
+2. Task group: `chess`
+3. Scene id: `chess`
+4. Public task id: `task_games__chess__player_capture_piece_count`
+5. Supported `query_id` values: `player_capture_piece_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(legal_moves(current_player), move_type=capture)); scene=chess; scope=player_capture_piece_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set containing the capturable opponent-piece boxes.
-3. `player_capture_piece_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games Chess-board renderer for its scene id.
-2. Prompt bundle: `games_chess_v0`
-3. Generation uses standard piece movement, excluding castling, en passant, and promotion cases; each capturable opponent piece is counted once even if multiple pieces attack it.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Scene density, visual style, player color, and target-answer support remain explicit params inside the task.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

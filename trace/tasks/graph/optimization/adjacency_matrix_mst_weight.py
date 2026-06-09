@@ -154,7 +154,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
     return (
-        json.dumps({"evidence": [[278, 182, 328, 232], [328, 282, 378, 332], [378, 332, 428, 382]], "answer": 12}, separators=(",", ":")),
+        json.dumps({"annotation": [[278, 182, 328, 232], [328, 282, 378, 332], [378, 332, 428, 382]], "answer": 12}, separators=(",", ":")),
         json.dumps({"answer": 12}, separators=(",", ":")),
     )
 
@@ -241,9 +241,9 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_bboxes, evidence_cell_edges = _mst_cell_bboxes(sample, rendered)
+        annotation_bboxes, annotation_cell_edges = _mst_cell_bboxes(sample, rendered)
         answer_gt = TypedValue(type="integer", value=int(sample.mst_weight))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
@@ -254,12 +254,12 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -356,24 +356,24 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
                 "edge_count": int(len(sample.edges)),
                 "extra_edge_count": int(query.extra_edge_count),
                 "minimum_spanning_tree_edges": [list(edge) for edge in sample.mst_edges],
-                "evidence_cell_edges": [list(edge) for edge in evidence_cell_edges],
+                "annotation_cell_edges": [list(edge) for edge in annotation_cell_edges],
                 "label_variant": str(labels.label_variant),
             },
             "witness_symbolic": {
                 "type": "weighted_matrix_cell_set",
-                "edges": [list(edge) for edge in evidence_cell_edges],
+                "edges": [list(edge) for edge in annotation_cell_edges],
                 "mst_weight": int(sample.mst_weight),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

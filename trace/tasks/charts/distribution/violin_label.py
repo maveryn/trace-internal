@@ -28,7 +28,7 @@ from ..shared.distribution_chart_common import (
     DistributionChartDefaults,
     LabeledChartDefaults,
     build_density_dataset_for_variant,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -108,7 +108,7 @@ class ChartsDistributionViolinLabelTask:
             scene_variant=SCENE_VARIANT,
             mark_count=1,
         )
-        violins, answer_label, evidence_values, trace_extras = build_density_dataset_for_variant(
+        violins, answer_label, annotation_values, trace_extras = build_density_dataset_for_variant(
             query_id=str(query_id),
             params=params,
             instance_seed=int(instance_seed),
@@ -159,7 +159,7 @@ class ChartsDistributionViolinLabelTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_violin",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -172,12 +172,12 @@ class ChartsDistributionViolinLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_violin"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -187,9 +187,9 @@ class ChartsDistributionViolinLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(answer_label))
-        evidence_projection = projected_mark_evidence(rendered_scene, [str(answer_label)])
-        evidence_bboxes = [list(bbox) for bbox in evidence_projection["bbox_set"]]
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_projection = projected_mark_annotation(rendered_scene, [str(answer_label)])
+        annotation_bboxes = [list(bbox) for bbox in annotation_projection["bbox_set"]]
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -215,8 +215,8 @@ class ChartsDistributionViolinLabelTask:
                     "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
                     "answer_label": str(answer_label),
-                    "evidence_label": str(answer_label),
-                    "evidence_values": [int(value) for value in evidence_values],
+                    "annotation_label": str(answer_label),
+                    "annotation_values": [int(value) for value in annotation_values],
                     "generation_profile": str(trace_extras.get("generation_profile", "")),
                 },
             },
@@ -234,7 +234,7 @@ class ChartsDistributionViolinLabelTask:
                     "category_count_range": list(trace_extras["category_count_range"]),
                     "value_range": list(trace_extras["value_range"]),
                     "answer_label": str(answer_label),
-                    "evidence_values": [int(value) for value in evidence_values],
+                    "annotation_values": [int(value) for value in annotation_values],
                     "generation_profile": str(trace_extras.get("generation_profile", "")),
                     **{
                         str(key): value
@@ -246,7 +246,7 @@ class ChartsDistributionViolinLabelTask:
                             "category_count_range",
                             "value_range",
                             "answer_label",
-                            "evidence_values",
+                            "annotation_values",
                             "support_by_label",
                             "generation_profile",
                         }
@@ -303,8 +303,8 @@ class ChartsDistributionViolinLabelTask:
                 "query_id": str(query_id),
                 "scene_variant": SCENE_VARIANT,
                 "answer_label": str(answer_label),
-                "evidence_label": str(answer_label),
-                "evidence_values": [int(value) for value in evidence_values],
+                "annotation_label": str(answer_label),
+                "annotation_values": [int(value) for value in annotation_values],
                 "labels": [str(mark["label"]) for mark in rendered_scene.mark_traces],
                 "mode_values_by_label": dict(mode_values_by_label),
                 "support_span_by_label": dict(support_span_by_label),
@@ -327,7 +327,7 @@ class ChartsDistributionViolinLabelTask:
                         "category_count_range",
                         "value_range",
                         "answer_label",
-                        "evidence_values",
+                        "annotation_values",
                         "support_by_label",
                     }
                 },
@@ -336,9 +336,9 @@ class ChartsDistributionViolinLabelTask:
                 "type": "object_set",
                 "value": [str(answer_label)],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
             },
         }
 
@@ -356,7 +356,7 @@ class ChartsDistributionViolinLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -369,23 +369,49 @@ class ChartsDistributionViolinLabelTask:
 
 
 @register_task
-class ChartsDistributionViolinDistributionFeatureLabelTask(
+class ChartsDistributionViolinModeExtremumLabelTask(
     MergedChartQueryVariantTaskMixin,
     ChartsDistributionViolinLabelTask,
 ):
-    """Return the label with a requested violin distribution feature."""
+    """Return the violin label with the highest or lowest mode location."""
 
-    task_id = "task_charts__violin__distribution_feature_label"
+    task_id = "task_charts__violin__mode_extremum_label"
     allowed_query_ids = (
         "highest_mode",
         "lowest_mode",
+    )
+
+
+@register_task
+class ChartsDistributionViolinSupportWidthExtremumLabelTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionViolinLabelTask,
+):
+    """Return the violin label with the widest or narrowest support."""
+
+    task_id = "task_charts__violin__support_width_extremum_label"
+    allowed_query_ids = (
         "widest_support",
         "narrowest_support",
+    )
+
+
+@register_task
+class ChartsDistributionViolinModalityLabelTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionViolinLabelTask,
+):
+    """Return a violin label matching the requested modality feature."""
+
+    task_id = "task_charts__violin__modality_label"
+    allowed_query_ids = (
         "bimodal_label",
     )
 
 
 __all__ = [
-    "ChartsDistributionViolinDistributionFeatureLabelTask",
     "ChartsDistributionViolinLabelTask",
+    "ChartsDistributionViolinModalityLabelTask",
+    "ChartsDistributionViolinModeExtremumLabelTask",
+    "ChartsDistributionViolinSupportWidthExtremumLabelTask",
 ]

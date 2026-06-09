@@ -16,6 +16,7 @@ from trace.tasks.three_d.street.lane_ahead_object import (
     SUPPORTED_TRAVEL_MODES,
     TASK_ID,
 )
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,7 @@ from trace.tasks.three_d.street.lane_ahead_object import (
         ("transit_intersection", "t_missing_west", "toward_intersection"),
     ],
 )
-def test_street_lane_ahead_answer_evidence_and_geometry(
+def test_street_lane_ahead_answer_annotation_and_geometry(
     scene_variant: str,
     intersection_layout: str,
     travel_mode: str,
@@ -67,8 +68,15 @@ def test_street_lane_ahead_answer_evidence_and_geometry(
     assert output.query_id == "ahead_along_lane"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1088),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert ahead_labels == [answer_label]
     assert trace["ahead_along_lane_candidate_labels"] == [answer_label]
@@ -96,7 +104,6 @@ def test_street_lane_ahead_answer_evidence_and_geometry(
     assert str(REFERENCE_OBJECT_TYPE) not in {
         str(spec["object_type"]) for spec in candidates
     }
-    assert output.image.size == (1180, 920)
     assert "red-boxed object" in output.prompt
     assert "arrow" in output.prompt
     assert "{answer_hint}" not in output.prompt

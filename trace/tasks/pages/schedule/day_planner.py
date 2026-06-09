@@ -40,7 +40,8 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 
 
 TASK_ID = "pages_schedule_day_planner_base"
-REFERENCE_INTERVAL_COUNT_TASK_ID = "task_pages__schedule__reference_interval_count"
+OVERLAP_COUNT_TASK_ID = "task_pages__schedule__overlap_count"
+LONGER_THAN_REFERENCE_COUNT_TASK_ID = "task_pages__schedule__longer_than_reference_count"
 MAXIMUM_NON_OVERLAPPING_TASK_ID = "task_pages__schedule__maximum_non_overlapping_count"
 PUBLIC_SCENE_ID = "schedule"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
@@ -879,7 +880,7 @@ class _PagesScheduleDayPlannerBase:
       default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
 
-    evidence_bboxes = [
+    annotation_bboxes = [
       [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
       for event_id in query.answer_event_ids
     ]
@@ -887,10 +888,10 @@ class _PagesScheduleDayPlannerBase:
     rendered_events_by_id = {str(event.event_id): event for event in query.rendered_events}
 
     answer_hint_key = f"answer_hint_{query.query_id}"
-    evidence_hint_key = (
-      "evidence_hint_maximum_non_overlapping_count"
+    annotation_hint_key = (
+      "annotation_hint_maximum_non_overlapping_count"
       if str(query.query_id) == "maximum_non_overlapping_count"
-      else "evidence_hint_satisfying_event_blocks"
+      else "annotation_hint_satisfying_event_blocks"
     )
     object_description_key = f"object_description_{query.query_id}"
     json_example_key = f"json_example_{query.query_id}"
@@ -905,7 +906,7 @@ class _PagesScheduleDayPlannerBase:
         "json_output_contract_answer_only",
         object_description_key,
         answer_hint_key,
-        evidence_hint_key,
+        annotation_hint_key,
         json_example_key,
         json_example_answer_only_key,
       ),
@@ -918,7 +919,7 @@ class _PagesScheduleDayPlannerBase:
       "object_description": str(object_description),
       "json_output_contract": str(prompt_defaults["json_output_contract"]),
       "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-      "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+      "annotation_hint": str(prompt_defaults[annotation_hint_key]),
       "answer_hint": str(prompt_defaults[answer_hint_key]),
       "json_example": str(prompt_defaults[json_example_key]),
       "json_example_answer_only": str(prompt_defaults[json_example_answer_only_key]),
@@ -930,14 +931,14 @@ class _PagesScheduleDayPlannerBase:
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
       query_key=str(query.query_id),
-      answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+      answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
     answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-    evidence_gt = TypedValue(type="bbox_set", value=[list(box) for box in evidence_bboxes])
+    annotation_gt = TypedValue(type="bbox_set", value=[list(box) for box in annotation_bboxes])
 
     query_params: Dict[str, Any] = {
       "query_id": str(query.query_id),
@@ -1069,10 +1070,10 @@ class _PagesScheduleDayPlannerBase:
       },
       "witness_symbolic": {
         "type": "bbox_set",
-        "value": [list(box) for box in evidence_bboxes],
+        "value": [list(box) for box in annotation_bboxes],
       },
-      "projected_evidence": {
-        "bbox_set": [list(box) for box in evidence_bboxes],
+      "projected_annotation": {
+        "bbox_set": [list(box) for box in annotation_bboxes],
       },
     }
 
@@ -1148,7 +1149,7 @@ class _PagesScheduleDayPlannerBase:
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
       answer_gt=answer_gt,
-      evidence_gt=evidence_gt,
+      annotation_gt=annotation_gt,
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
@@ -1179,35 +1180,19 @@ class _FixedScheduleTask(_PagesScheduleDayPlannerBase):
 
 
 @register_task
-class PagesScheduleReferenceIntervalCountTask(_PagesScheduleDayPlannerBase):
-  """Count schedule events satisfying a relation to one highlighted reference event."""
+class PagesScheduleOverlapCountTask(_FixedScheduleTask):
+  """Count events that overlap the highlighted reference event."""
 
-  task_id = REFERENCE_INTERVAL_COUNT_TASK_ID
+  task_id = OVERLAP_COUNT_TASK_ID
+  fixed_query_id = "overlap_count"
 
-  def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-    scoped_params = dict(params)
-    explicit_query_id = scoped_params.get("query_id")
-    if explicit_query_id is not None and str(explicit_query_id) != "default":
-      if str(explicit_query_id) not in set(REFERENCE_INTERVAL_QUERY_IDS):
-        raise ValueError(f"query_id={explicit_query_id!r} is not valid for {self.task_id}")
-    else:
-      scoped_params.pop("query_id", None)
-      scoped_params["query_id_weights"] = {str(query_id): 1.0 for query_id in REFERENCE_INTERVAL_QUERY_IDS}
-    output = super().generate(
-      int(instance_seed),
-      params=scoped_params,
-      max_attempts=int(max_attempts),
-    )
-    probabilities = {}
-    execution = output.trace_payload.get("execution_trace") if isinstance(output.trace_payload, dict) else None
-    if isinstance(execution, dict) and isinstance(execution.get("query_id_probabilities"), dict):
-      probabilities = {str(key): float(value) for key, value in execution["query_id_probabilities"].items()}
-    return rewrite_time_artifact_query_output(
-      output,
-      query_id=str(output.query_id),
-      scene_id=PUBLIC_SCENE_ID,
-      query_probabilities=probabilities or {str(output.query_id): 1.0},
-    )
+
+@register_task
+class PagesScheduleLongerThanReferenceCountTask(_FixedScheduleTask):
+  """Count events longer than the highlighted reference event."""
+
+  task_id = LONGER_THAN_REFERENCE_COUNT_TASK_ID
+  fixed_query_id = "longer_than_reference_count"
 
 
 @register_task
@@ -1219,7 +1204,8 @@ class PagesScheduleMaximumNonOverlappingCountTask(_FixedScheduleTask):
 
 
 __all__ = [
-  "PagesScheduleReferenceIntervalCountTask",
+  "PagesScheduleLongerThanReferenceCountTask",
   "PagesScheduleMaximumNonOverlappingCountTask",
+  "PagesScheduleOverlapCountTask",
   "REFERENCE_INTERVAL_QUERY_IDS",
 ]

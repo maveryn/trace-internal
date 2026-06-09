@@ -782,7 +782,7 @@ class GeometryCountingTriangleTask:
                 "question_text_right_triangle",
                 "question_text_acute_triangle",
                 "question_text_obtuse_triangle",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -796,13 +796,13 @@ class GeometryCountingTriangleTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -811,7 +811,7 @@ class GeometryCountingTriangleTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(type="label_set", value=list(scene_payload.matching_labels))
+        annotation_gt = TypedValue(type="label_set", value=list(scene_payload.matching_labels))
         class_by_label = {
             str(obj.polygon.label): {
                 "side_kind": str(obj.side_kind),
@@ -894,14 +894,14 @@ class GeometryCountingTriangleTask:
                 "counting_class": str(_variant_class_label(str(query_id))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "labels": list(scene_payload.matching_labels),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -49,7 +49,7 @@ from .shared.rectangular_board import (
     resolve_rectangular_board_layout,
 )
 from .shared.tile_colors import named_tile_color
-from .shared.tile_evidence import coordinate_path_evidence_artifacts
+from .shared.tile_annotation import coordinate_path_annotation_artifacts
 from .shared.tile_scene import build_tile_cell_entities
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
@@ -136,7 +136,7 @@ def _build_fill_colors_by_coord(
 
 
 class TileShortestPathTask:
-    """Return shortest-path length with coordinate-grounded path evidence."""
+    """Return shortest-path length with coordinate-grounded path annotation."""
 
     task_id = "cell_board_shortest_path_internal"
     domain = "puzzles"
@@ -293,11 +293,11 @@ class TileShortestPathTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        evidence_artifacts = coordinate_path_evidence_artifacts(
+        annotation_artifacts = coordinate_path_annotation_artifacts(
             coords=path,
             bbox_map=bbox_map,
         )
-        path_ids = list(evidence_artifacts["private_witness"]["ids"])
+        path_ids = list(annotation_artifacts["private_witness"]["ids"])
 
         all_prompt_defaults = dict(_PROMPT_DEFAULTS if isinstance(_PROMPT_DEFAULTS, dict) else {})
         prompt_defaults = required_group_defaults(
@@ -309,7 +309,7 @@ class TileShortestPathTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -318,7 +318,7 @@ class TileShortestPathTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             all_prompt_defaults,
-            evidence_value=[[120, 120], [168, 120], [168, 168], [216, 168]],
+            annotation_value=[[120, 120], [168, 120], [168, 168], [216, 168]],
             answer_type="integer",
         )
         obstacle_color_label = format_named_color_with_hex("black", _OBSTACLE_RGB)
@@ -330,7 +330,7 @@ class TileShortestPathTask:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(rows),
                 "cols": int(cols),
@@ -339,7 +339,7 @@ class TileShortestPathTask:
                 "goal_color": str(goal_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -414,7 +414,7 @@ class TileShortestPathTask:
                         "goal": cell_id(goal),
                     },
                     {
-                        "out": "evidence",
+                        "out": "annotation",
                         "op": "project_coords",
                         "in": "path",
                         "source_coord_space": "tile_grid",
@@ -462,8 +462,8 @@ class TileShortestPathTask:
                 "path_cell_count": len(path_ids),
                 "answer_value": int(shortest_len),
             },
-            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "witness_symbolic": dict(annotation_artifacts["witness_symbolic"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
 
         blocked_ratio = sum(sum(1 for value in row if value) for row in blocked) / float(rows * cols)
@@ -492,9 +492,9 @@ class TileShortestPathTask:
         return TaskOutput(
             prompt=prompt,
             answer_gt=TypedValue(type="integer", value=int(shortest_len)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=list(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=image,
             image_id="img0",

@@ -13,6 +13,15 @@ from trace.tasks.physics.electrostatics.field_map import (
 )
 
 
+def _bbox_overlaps(left, right) -> bool:
+    return not (
+        float(left[2]) <= float(right[0])
+        or float(left[0]) >= float(right[2])
+        or float(left[3]) <= float(right[1])
+        or float(left[1]) >= float(right[3])
+    )
+
+
 def test_physics_electrostatics_field_direction_choice_contract() -> None:
     out = PhysicsElectrostaticsFieldDirectionChoiceTask().generate(
         81001,
@@ -34,13 +43,13 @@ def test_physics_electrostatics_field_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "C"
 
-    assert out.evidence_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "keyed_point_map"
 
-    assert len(out.evidence_gt.value) == 4
+    assert len(out.annotation_gt.value) == 4
 
-    assert set(out.evidence_gt.value) == {"Q1", "Q2", "Q3", "P"}
+    assert set(out.annotation_gt.value) == {"Q1", "Q2", "Q3", "P"}
 
-    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
+    assert all(len(point) == 2 for point in out.annotation_gt.value.values())
 
     assert out.scene_id == "electrostatic_field"
 
@@ -55,25 +64,25 @@ def test_physics_electrostatics_field_direction_choice_contract() -> None:
 
     assert scenario["option_directions"]["C"] == "northwest"
 
-    assert execution["evidence_entity_ids"] == [
+    assert execution["annotation_entity_ids"] == [
         "charge_main",
         "charge_cancel_a",
         "charge_cancel_b",
         "query_point",
     ]
 
-    assert execution["evidence_key_by_entity_id"] == {
+    assert execution["annotation_key_by_entity_id"] == {
         "charge_main": "Q1",
         "charge_cancel_a": "Q2",
         "charge_cancel_b": "Q3",
         "query_point": "P",
     }
 
-    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+    assert trace["projected_annotation"]["type"] == "keyed_point_map"
 
-    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
 
-    assert trace["render_map"]["evidence_keyed_points_px"] == out.evidence_gt.value
+    assert trace["render_map"]["annotation_keyed_points_px"] == out.annotation_gt.value
 
     assert trace["render_spec"]["technical_diagram_style"]["kind"] == "technical_diagram_style"
 
@@ -137,13 +146,13 @@ def test_physics_electrostatics_zero_field_point_label_contract() -> None:
 
     assert out.query_id == "zero_field_point_label"
 
-    assert out.evidence_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "keyed_point_map"
 
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
 
-    assert set(out.evidence_gt.value) == {"Q1", "Q2"}
+    assert set(out.annotation_gt.value) == {"Q1", "Q2"}
 
-    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
+    assert all(len(point) == 2 for point in out.annotation_gt.value.values())
 
     assert scenario["correct_option_letter"] == "E"
 
@@ -159,14 +168,34 @@ def test_physics_electrostatics_zero_field_point_label_contract() -> None:
 
     assert abs(field_y) < 1e-9
 
-    expected_evidence_ids = [str(charge["charge_id"]) for charge in scenario["charges"]]
+    expected_annotation_ids = [str(charge["charge_id"]) for charge in scenario["charges"]]
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == expected_evidence_ids
+    assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == expected_annotation_ids
 
-    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
-        expected_evidence_ids[0]: "Q1",
-        expected_evidence_ids[1]: "Q2",
+    assert out.trace_payload["execution_trace"]["annotation_key_by_entity_id"] == {
+        expected_annotation_ids[0]: "Q1",
+        expected_annotation_ids[1]: "Q2",
     }
+
+
+def test_physics_electrostatics_zero_field_candidate_labels_avoid_charge_labels() -> None:
+    out = PhysicsElectrostaticsZeroFieldPointLabelTask().generate(
+        7304052978720082,
+        params={
+            "scene_variant": "dense_grid",
+            "correct_option_letter": "E",
+            "accent_color_name": "yellow",
+            "post_image_noise": {"enabled": False},
+        },
+        max_attempts=30,
+    )
+    render_map = out.trace_payload["render_map"]
+
+    assert set(render_map["candidate_label_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
+    assert len(render_map["charge_label_bboxes_px"]) == 2
+    for candidate_bbox in render_map["candidate_label_bboxes_px"].values():
+        for charge_label_bbox in render_map["charge_label_bboxes_px"]:
+            assert not _bbox_overlaps(candidate_bbox, charge_label_bbox)
 
 
 def test_physics_electrostatics_potential_value_contract() -> None:
@@ -189,13 +218,13 @@ def test_physics_electrostatics_potential_value_contract() -> None:
 
     assert out.query_id == "potential_value"
 
-    assert out.evidence_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "keyed_point_map"
 
-    assert len(out.evidence_gt.value) == 4
+    assert len(out.annotation_gt.value) == 4
 
-    assert set(out.evidence_gt.value) == {"Q1", "Q2", "Q3", "P"}
+    assert set(out.annotation_gt.value) == {"Q1", "Q2", "Q3", "P"}
 
-    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
+    assert all(len(point) == 2 for point in out.annotation_gt.value.values())
 
     assert [charge["potential_contribution"] for charge in scenario["charges"]] == [1, 2, 1]
 
@@ -205,20 +234,20 @@ def test_physics_electrostatics_potential_value_contract() -> None:
 
     assert scenario["potential_value"] == 4
 
-    expected_evidence_ids = [str(charge["charge_id"]) for charge in scenario["charges"]] + [
+    expected_annotation_ids = [str(charge["charge_id"]) for charge in scenario["charges"]] + [
         "query_point",
     ]
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == expected_evidence_ids
+    assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == expected_annotation_ids
 
-    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
-        expected_evidence_ids[0]: "Q1",
-        expected_evidence_ids[1]: "Q2",
-        expected_evidence_ids[2]: "Q3",
+    assert out.trace_payload["execution_trace"]["annotation_key_by_entity_id"] == {
+        expected_annotation_ids[0]: "Q1",
+        expected_annotation_ids[1]: "Q2",
+        expected_annotation_ids[2]: "Q3",
         "query_point": "P",
     }
 
-    assert out.trace_payload["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+    assert out.trace_payload["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
 
 
 def test_physics_electrostatics_tasks_are_deterministic() -> None:
@@ -234,7 +263,7 @@ def test_physics_electrostatics_tasks_are_deterministic() -> None:
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
 
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
 
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
 

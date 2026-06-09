@@ -32,8 +32,8 @@ from .pipe_junction_scene import (
     PipeJunctionNetworkSample,
     RenderedPipeJunctionScene,
     feasible_pipe_node_counts,
-    projected_pipe_edge_pair_evidence,
-    projected_pipe_node_point_evidence,
+    projected_pipe_edge_pair_annotation,
+    projected_pipe_node_point_annotation,
     render_pipe_network_scene,
     sample_pipe_bridge_network,
     sample_pipe_exact_distance_network,
@@ -137,7 +137,7 @@ class PipeJunctionGraphTaskBase:
     task_id = ""
     query_id = ""
     prompt_question_key = ""
-    prompt_evidence_key = "evidence_hint"
+    prompt_annotation_key = "annotation_hint"
     prompt_task_key_fallback = ""
     scene_title = "Pipe Junction Board"
     _fallback_defaults = PipeJunctionTaskDefaults()
@@ -353,16 +353,16 @@ class PipeJunctionGraphTaskBase:
 
     def _build_prompt_json_examples(self) -> Tuple[str, str]:
         if self.query_id == "pipe_bridge_count":
-            evidence = [[[180, 220], [310, 220]], [[310, 220], [430, 300]]]
+            annotation = [[[180, 220], [310, 220]], [[310, 220], [430, 300]]]
             answer = 2
         elif self.query_id == "pipe_shortest_path_length":
-            evidence = [[180, 220], [310, 220], [430, 300]]
+            annotation = [[180, 220], [310, 220], [430, 300]]
             answer = 2
         else:
-            evidence = [[180, 220], [310, 220], [430, 300]]
+            annotation = [[180, 220], [310, 220], [430, 300]]
             answer = 3
         return (
-            json.dumps({"evidence": evidence, "answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+            json.dumps({"annotation": annotation, "answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
             json.dumps({"answer": answer}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         )
 
@@ -374,30 +374,30 @@ class PipeJunctionGraphTaskBase:
             "query_distance": int(pipe_sample.query_distance),
         }
 
-    def _evidence_and_answer(self, pipe_sample: PipeJunctionNetworkSample, rendered_scene: RenderedPipeJunctionScene) -> tuple[TypedValue, TypedValue, Dict[str, Any], Dict[str, Any]]:
+    def _annotation_and_answer(self, pipe_sample: PipeJunctionNetworkSample, rendered_scene: RenderedPipeJunctionScene) -> tuple[TypedValue, TypedValue, Dict[str, Any], Dict[str, Any]]:
         if self.query_id == "pipe_shortest_path_length":
-            evidence_labels = tuple(str(label) for label in pipe_sample.target_labels)
-            projection = projected_pipe_node_point_evidence(rendered_scene, evidence_labels)
-            evidence = [list(point) for point in projection["pixel_point_sequence"]]
+            annotation_labels = tuple(str(label) for label in pipe_sample.target_labels)
+            projection = projected_pipe_node_point_annotation(rendered_scene, annotation_labels)
+            annotation = [list(point) for point in projection["pixel_point_sequence"]]
             return (
                 TypedValue(type="integer", value=int(pipe_sample.target_shortest_path_length)),
-                TypedValue(type="point_sequence", value=list(evidence)),
-                {"type": "node_label_sequence", "labels": list(evidence_labels)},
+                TypedValue(type="point_sequence", value=list(annotation)),
+                {"type": "node_label_sequence", "labels": list(annotation_labels)},
                 {"type": "point_sequence", **dict(projection)},
             )
         if self.query_id == "pipe_bridge_count":
-            evidence_edges = tuple((str(left), str(right)) for left, right in pipe_sample.target_edges)
-            projection = projected_pipe_edge_pair_evidence(rendered_scene, evidence_edges)
-            evidence = [[list(point) for point in pair] for pair in projection["point_pair_set"]]
+            annotation_edges = tuple((str(left), str(right)) for left, right in pipe_sample.target_edges)
+            projection = projected_pipe_edge_pair_annotation(rendered_scene, annotation_edges)
+            annotation = [[list(point) for point in pair] for pair in projection["point_pair_set"]]
             return (
                 TypedValue(type="integer", value=int(pipe_sample.target_bridge_count)),
-                TypedValue(type="point_pair_set", value=list(evidence)),
-                {"type": "edge_pair_set", "edges": [list(edge) for edge in evidence_edges]},
+                TypedValue(type="point_pair_set", value=list(annotation)),
+                {"type": "edge_pair_set", "edges": [list(edge) for edge in annotation_edges]},
                 {"type": "point_pair_set", **dict(projection)},
             )
-        evidence_labels = tuple(str(label) for label in pipe_sample.target_labels)
-        projection = projected_pipe_node_point_evidence(rendered_scene, evidence_labels)
-        evidence = [list(point) for point in projection["pixel_point_set"]]
+        annotation_labels = tuple(str(label) for label in pipe_sample.target_labels)
+        projection = projected_pipe_node_point_annotation(rendered_scene, annotation_labels)
+        annotation = [list(point) for point in projection["pixel_point_set"]]
         answer_value = (
             int(pipe_sample.target_reachable_count)
             if self.query_id == "pipe_reachable_junction_count"
@@ -405,8 +405,8 @@ class PipeJunctionGraphTaskBase:
         )
         return (
             TypedValue(type="integer", value=int(answer_value)),
-            TypedValue(type="point_set", value=list(evidence)),
-            {"type": "node_label_set", "labels": list(evidence_labels)},
+            TypedValue(type="point_set", value=list(annotation)),
+            {"type": "node_label_set", "labels": list(annotation_labels)},
             {"type": "point_set", **dict(projection)},
         )
 
@@ -461,7 +461,7 @@ class PipeJunctionGraphTaskBase:
         background_meta: Mapping[str, Any],
         post_noise_meta: Mapping[str, Any],
         witness_symbolic: Mapping[str, Any],
-        projected_evidence: Mapping[str, Any],
+        projected_annotation: Mapping[str, Any],
     ) -> Dict[str, Any]:
         target_node_set = {str(label) for label in pipe_sample.target_labels}
         target_edge_set = {tuple(edge) for edge in pipe_sample.target_edges}
@@ -627,7 +627,7 @@ class PipeJunctionGraphTaskBase:
                 "node_color_name": str(query.node_color_name),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
         }
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -675,7 +675,7 @@ class PipeJunctionGraphTaskBase:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                self.prompt_evidence_key,
+                self.prompt_annotation_key,
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -684,7 +684,7 @@ class PipeJunctionGraphTaskBase:
         )
         prompt_json_example, prompt_json_example_answer_only = self._build_prompt_json_examples()
         question_slots = self._question_slots(pipe_sample)
-        evidence_hint = str(prompt_defaults_required[self.prompt_evidence_key]).format(**question_slots)
+        annotation_hint = str(prompt_defaults_required[self.prompt_annotation_key]).format(**question_slots)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -692,13 +692,13 @@ class PipeJunctionGraphTaskBase:
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required.get("task_key") or self.prompt_task_key_fallback),
             query_key=str(self.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults_required["object_description"]),
                 **dict(question_slots),
                 "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults_required["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -706,7 +706,7 @@ class PipeJunctionGraphTaskBase:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        answer_gt, evidence_gt, witness_symbolic, projected_evidence = self._evidence_and_answer(pipe_sample, rendered_scene)
+        answer_gt, annotation_gt, witness_symbolic, projected_annotation = self._annotation_and_answer(pipe_sample, rendered_scene)
         complexity = self._build_complexity(
             query=query,
             pipe_sample=pipe_sample,
@@ -723,12 +723,12 @@ class PipeJunctionGraphTaskBase:
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
             witness_symbolic=witness_symbolic,
-            projected_evidence=projected_evidence,
+            projected_annotation=projected_annotation,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

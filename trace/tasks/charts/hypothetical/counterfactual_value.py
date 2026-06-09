@@ -28,7 +28,7 @@ from ..shared.labeled_chart_common import (
     balanced_choice_from_values,
     build_chart_mark_specs,
     choose_mark_count,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -86,7 +86,7 @@ class _CounterfactualDataset:
     labels: Tuple[str, ...]
     values: Tuple[int, ...]
     answer_value: int
-    evidence_labels: Tuple[str, ...]
+    annotation_labels: Tuple[str, ...]
     trace_extras: Dict[str, Any]
 
 
@@ -341,7 +341,7 @@ def _build_remaining_mean_after_removal(
         labels=tuple(labels),
         values=_values_from_label_map(labels, values_by_label),
         answer_value=int(answer_value),
-        evidence_labels=tuple(sorted_labels(retained_labels)),
+        annotation_labels=tuple(sorted_labels(retained_labels)),
         trace_extras={
             "removed_labels": list(sorted_labels(removed_labels)),
             "retained_labels": list(sorted_labels(retained_labels)),
@@ -437,7 +437,7 @@ def _build_target_share_after_removal(
         labels=tuple(labels),
         values=_values_from_label_map(labels, values_by_label),
         answer_value=int(answer_value),
-        evidence_labels=tuple(sorted_labels(retained_labels)),
+        annotation_labels=tuple(sorted_labels(retained_labels)),
         trace_extras={
             "removed_labels": list(sorted_labels(removed_labels)),
             "retained_labels": list(sorted_labels(retained_labels)),
@@ -525,7 +525,7 @@ def _build_baseline_from_aggregate_percent_change(
         labels=tuple(labels),
         values=_values_from_label_map(labels, values_by_label),
         answer_value=int(answer_value),
-        evidence_labels=tuple(sorted_labels(aggregate_labels)),
+        annotation_labels=tuple(sorted_labels(aggregate_labels)),
         trace_extras={
             "aggregate_labels": list(sorted_labels(aggregate_labels)),
             "aggregate_count": int(aggregate_count),
@@ -579,7 +579,7 @@ def _build_counterfactual_dataset(
         labels=tuple(dataset.labels),
         values=tuple(int(value) for value in dataset.values),
         answer_value=int(dataset.answer_value),
-        evidence_labels=tuple(sorted_labels(dataset.evidence_labels)),
+        annotation_labels=tuple(sorted_labels(dataset.annotation_labels)),
         trace_extras={
             "value_min": int(value_min),
             "value_max": int(value_max),
@@ -604,10 +604,12 @@ class ChartsHypotheticalCounterfactualValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
+        axis_params = dict(params)
+        axis_params.setdefault("_sample_cursor", int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(axis_params, instance_seed=int(instance_seed))
+        scene_variant, scene_variant_probabilities = _resolve_scene_variant(axis_params, instance_seed=int(instance_seed))
         support_params = _support_params_for_query_id_cycle(
-            params,
+            axis_params,
             query_id_probabilities=query_id_probabilities,
         )
         dataset = _build_counterfactual_dataset(
@@ -675,14 +677,14 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "answer_hint",
             )
             + tuple(f"object_description_{scene_variant}" for scene_variant in SUPPORTED_SCENE_VARIANTS)
-            + tuple(f"evidence_hint_{query_id}" for query_id in SUPPORTED_QUERY_IDS)
+            + tuple(f"annotation_hint_{query_id}" for query_id in SUPPORTED_QUERY_IDS)
             + tuple(f"json_example_{query_id}" for query_id in SUPPORTED_QUERY_IDS)
             + tuple(f"json_example_answer_only_{query_id}" for query_id in SUPPORTED_QUERY_IDS),
             context=f"prompt defaults for {self.task_id}",
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -693,7 +695,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "removed_labels_text": _format_labels(extras.get("removed_labels", [])),
@@ -703,7 +705,7 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "percent_value": str(extras.get("percent_value", "")),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -715,9 +717,9 @@ class ChartsHypotheticalCounterfactualValueTask:
         answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
         label_centers = {str(mark["label"]): list(mark["label_center_px"]) for mark in rendered_scene.mark_traces}
         values_by_label = {str(label): int(value) for label, value in zip(dataset.labels, dataset.values)}
-        evidence_projection = projected_mark_evidence(rendered_scene, dataset.evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=evidence_points)
+        annotation_projection = projected_mark_annotation(rendered_scene, dataset.annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=annotation_points)
 
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
@@ -726,7 +728,7 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "relations": {
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "evidence_labels": list(dataset.evidence_labels),
+                    "annotation_labels": list(dataset.annotation_labels),
                     "counterfactual_operation": str(extras["counterfactual_operation"]),
                 },
             },
@@ -800,7 +802,7 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(dataset.answer_value),
-                "evidence_labels": list(dataset.evidence_labels),
+                "annotation_labels": list(dataset.annotation_labels),
                 "labels": [str(label) for label in dataset.labels],
                 "values": [int(value) for value in dataset.values],
                 "values_by_label": dict(values_by_label),
@@ -821,13 +823,13 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "type": "counterfactual_chart_calculation",
                 "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
-                "evidence_labels": list(dataset.evidence_labels),
+                "annotation_labels": list(dataset.annotation_labels),
                 "calculation": dict(extras),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
@@ -842,7 +844,7 @@ class ChartsHypotheticalCounterfactualValueTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -855,17 +857,41 @@ class ChartsHypotheticalCounterfactualValueTask:
 
 
 @register_task
-class ChartsHypotheticalCounterfactualValuePublicTask(
+class ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask(
     MergedChartQueryVariantTaskMixin,
     ChartsHypotheticalCounterfactualValueTask,
 ):
-    """Compute one sampled counterfactual value from a labeled chart."""
+    """Compute a baseline from an aggregate percent-change statement."""
 
-    task_id = "task_charts__single_series__counterfactual_value"
-    allowed_query_ids = SUPPORTED_QUERY_IDS
+    task_id = "task_charts__single_series__baseline_from_aggregate_percent_change"
+    allowed_query_ids = ("baseline_from_aggregate_percent_change",)
+
+
+@register_task
+class ChartsHypotheticalRemainingMeanAfterRemovalPublicTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsHypotheticalCounterfactualValueTask,
+):
+    """Compute the remaining mean after removing one labeled value."""
+
+    task_id = "task_charts__single_series__remaining_mean_after_removal"
+    allowed_query_ids = ("remaining_mean_after_removal",)
+
+
+@register_task
+class ChartsHypotheticalTargetShareAfterRemovalPublicTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsHypotheticalCounterfactualValueTask,
+):
+    """Compute a target share after removing one labeled value."""
+
+    task_id = "task_charts__single_series__target_share_after_removal"
+    allowed_query_ids = ("target_share_after_removal",)
 
 
 __all__ = [
+    "ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask",
     "ChartsHypotheticalCounterfactualValueTask",
-    "ChartsHypotheticalCounterfactualValuePublicTask",
+    "ChartsHypotheticalRemainingMeanAfterRemovalPublicTask",
+    "ChartsHypotheticalTargetShareAfterRemovalPublicTask",
 ]

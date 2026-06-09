@@ -24,8 +24,8 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import (
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
-    projected_puzzle_keyed_bbox_evidence,
+    projected_puzzle_bbox_annotation,
+    projected_puzzle_keyed_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds
@@ -877,7 +877,7 @@ def _build_prompt(
         "json_output_contract_answer_only",
         f"object_description_{scene_variant}",
         f"answer_hint_{query_id}",
-        f"evidence_hint_{query_id}",
+        f"annotation_hint_{query_id}",
         f"json_example_{query_id}",
         f"json_example_answer_only_{query_id}",
     )
@@ -887,7 +887,7 @@ def _build_prompt(
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
         "answer_hint": str(prompt_values[f"answer_hint_{query_id}"]),
-        "evidence_hint": str(prompt_values[f"evidence_hint_{query_id}"]),
+        "annotation_hint": str(prompt_values[f"annotation_hint_{query_id}"]),
         "json_example": str(prompt_values[f"json_example_{query_id}"]),
         "json_example_answer_only": str(prompt_values[f"json_example_answer_only_{query_id}"]),
     }
@@ -898,7 +898,7 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(task_key),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -931,43 +931,43 @@ class _PuzzlesLogicMatchstickBaseTask:
         background_meta: Mapping[str, Any],
         post_noise_meta: Mapping[str, Any],
         font_meta: Mapping[str, Any],
-        evidence_type: str,
-        evidence_value: Any,
-        evidence_role_item_ids: Mapping[str, str] | None = None,
+        annotation_type: str,
+        annotation_value: Any,
+        annotation_role_item_ids: Mapping[str, str] | None = None,
         answer_value: str,
         option_count: int,
     ) -> Dict[str, Any]:
-        role_item_ids = {str(key): str(value) for key, value in dict(evidence_role_item_ids or {}).items()}
-        if str(evidence_type) == "keyed_bbox_map":
-            evidence_payload = {
+        role_item_ids = {str(key): str(value) for key, value in dict(annotation_role_item_ids or {}).items()}
+        if str(annotation_type) == "keyed_bbox_map":
+            annotation_payload = {
                 str(key): [round(float(value), 3) for value in bbox]
-                for key, bbox in dict(evidence_value).items()
+                for key, bbox in dict(annotation_value).items()
             }
             witness_symbolic = {
                 "type": "keyed_bbox_map",
-                "value": dict(evidence_payload),
+                "value": dict(annotation_payload),
             }
-            projected_evidence = {
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_payload),
-                "pixel_keyed_bbox_map": dict(evidence_payload),
-                "value": dict(evidence_payload),
+                "keyed_bbox_map": dict(annotation_payload),
+                "pixel_keyed_bbox_map": dict(annotation_payload),
+                "value": dict(annotation_payload),
             }
-            evidence_source = "keyed_item_bboxes_px"
+            annotation_source = "keyed_item_bboxes_px"
             supporting_item_ids = list(role_item_ids.values())
         else:
-            evidence_payload = [[round(float(value), 3) for value in bbox] for bbox in list(evidence_value)]
+            annotation_payload = [[round(float(value), 3) for value in bbox] for bbox in list(annotation_value)]
             witness_symbolic = {
                 "type": "bbox_set",
-                "value": [list(bbox) for bbox in evidence_payload],
+                "value": [list(bbox) for bbox in annotation_payload],
             }
-            projected_evidence = {
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_payload],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_payload],
-                "value": [list(bbox) for bbox in evidence_payload],
+                "bbox_set": [list(bbox) for bbox in annotation_payload],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_payload],
+                "value": [list(bbox) for bbox in annotation_payload],
             }
-            evidence_source = "item_bboxes_px"
+            annotation_source = "item_bboxes_px"
             supporting_item_ids = [f"option_{answer_value}"]
         params = {
             "query_id": str(query_id),
@@ -1022,17 +1022,17 @@ class _PuzzlesLogicMatchstickBaseTask:
                     str(key): [round(float(v), 3) for v in value]
                     for key, value in rendered_scene.item_bbox_map.items()
                 },
-                "evidence_source": str(evidence_source),
+                "annotation_source": str(annotation_source),
             },
             "execution_trace": {
                 **dict(params),
                 "question_format": str(query_id),
                 "answer_value": str(answer_value),
                 "supporting_item_ids": [str(item_id) for item_id in supporting_item_ids],
-                "evidence_role_item_ids": dict(role_item_ids),
+                "annotation_role_item_ids": dict(role_item_ids),
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
         }
 
 
@@ -1112,17 +1112,17 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             instance_seed=int(instance_seed),
             task_key=str(self.task_key),
         )
-        evidence_role_item_ids = {
+        annotation_role_item_ids = {
             "source_number": "source_panel",
             "selected_option": f"option_{dataset.answer_label}",
         }
-        evidence_projection = projected_puzzle_keyed_bbox_evidence(rendered_scene.item_bbox_map, evidence_role_item_ids)
-        evidence_bboxes = {
+        annotation_projection = projected_puzzle_keyed_bbox_annotation(rendered_scene.item_bbox_map, annotation_role_item_ids)
+        annotation_bboxes = {
             str(key): [round(float(value), 3) for value in bbox]
-            for key, bbox in evidence_projection["keyed_bbox_map"].items()
+            for key, bbox in annotation_projection["keyed_bbox_map"].items()
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         trace_payload = self._common_trace(
             query_id=str(query_id),
             scene_variant=str(dataset.scene_variant),
@@ -1133,9 +1133,9 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
             font_meta=font_meta,
-            evidence_type="keyed_bbox_map",
-            evidence_value=evidence_bboxes,
-            evidence_role_item_ids=evidence_role_item_ids,
+            annotation_type="keyed_bbox_map",
+            annotation_value=annotation_bboxes,
+            annotation_role_item_ids=annotation_role_item_ids,
             answer_value=str(dataset.answer_label),
             option_count=int(dataset.option_count),
         )
@@ -1171,7 +1171,7 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1259,10 +1259,10 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             instance_seed=int(instance_seed),
             task_key=str(self.task_key),
         )
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, [f"option_{dataset.answer_label}"])
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.item_bbox_map, [f"option_{dataset.answer_label}"])
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         trace_payload = self._common_trace(
             query_id=str(query_id),
             scene_variant=str(dataset.scene_variant),
@@ -1273,8 +1273,8 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
             font_meta=font_meta,
-            evidence_type="bbox_set",
-            evidence_value=evidence_bboxes,
+            annotation_type="bbox_set",
+            annotation_value=annotation_bboxes,
             answer_value=str(dataset.answer_label),
             option_count=int(dataset.option_count),
         )
@@ -1318,7 +1318,7 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

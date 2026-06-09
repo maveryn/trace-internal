@@ -11,6 +11,8 @@ SUPPORTED_DOTS_AND_BOXES_QUERY_IDS: Tuple[str, ...] = (
     "three_sided_box_count",
     "capture_move_count",
     "highlighted_candidate_capture_count",
+    "player_a_owned_box_count",
+    "player_b_owned_box_count",
 )
 
 
@@ -34,6 +36,7 @@ class DotsAndBoxesBoxInstance:
     row_index: int
     column_index: int
     edge_ids: Tuple[str, str, str, str]
+    owner: str = ""
 
 
 @dataclass(frozen=True)
@@ -554,6 +557,7 @@ def _make_board_state_from_drawn_edges(
     counted_edge_ids: Sequence[str],
     candidate_edge_ids: Sequence[str],
     target_answer: int,
+    box_owner_by_id: Mapping[str, str] | None = None,
 ) -> DotsAndBoxesBoardState:
     """Build a board state from a sampled static edge set."""
 
@@ -575,6 +579,7 @@ def _make_board_state_from_drawn_edges(
         )
 
     boxes: List[DotsAndBoxesBoxInstance] = []
+    owners = {str(key): str(value) for key, value in dict(box_owner_by_id or {}).items()}
     for box_id in sorted(box_edges):
         row_index, column_index = _box_coord_from_id(box_id)
         boxes.append(
@@ -583,6 +588,7 @@ def _make_board_state_from_drawn_edges(
                 row_index=int(row_index),
                 column_index=int(column_index),
                 edge_ids=tuple(str(edge_id) for edge_id in box_edges[box_id]),
+                owner=str(owners.get(str(box_id), "")),
             )
         )
 
@@ -623,6 +629,77 @@ def build_dots_and_boxes_count_board_state(
     query = str(query_id)
     if target < 0:
         raise ValueError("dots-and-boxes count targets must be non-negative")
+
+    if query in {"player_a_owned_box_count", "player_b_owned_box_count"}:
+        target_owner = "A" if query == "player_a_owned_box_count" else "B"
+        other_owner = "B" if target_owner == "A" else "A"
+        box_ids = tuple(sorted(box_edges))
+        if target > len(box_ids):
+            raise ValueError("target_answer cannot exceed the number of boxes")
+        for _ in range(8192):
+            shuffled = list(box_ids)
+            rng.shuffle(shuffled)
+            target_box_ids = tuple(sorted(shuffled[:target]))
+            remaining_box_ids = tuple(str(box_id) for box_id in shuffled[target:])
+            if remaining_box_ids:
+                if target == 0:
+                    other_count = 1 + int(rng.randrange(min(4, len(remaining_box_ids))))
+                else:
+                    other_count = int(rng.randrange(min(4, len(remaining_box_ids)) + 1))
+            else:
+                other_count = 0
+            other_box_ids = tuple(sorted(remaining_box_ids[:other_count]))
+            owner_by_id = {str(box_id): str(target_owner) for box_id in target_box_ids}
+            owner_by_id.update({str(box_id): str(other_owner) for box_id in other_box_ids})
+            drawn_edge_ids: set[str] = set()
+            for box_id in sorted(owner_by_id):
+                drawn_edge_ids.update(str(edge_id) for edge_id in box_edges[str(box_id)])
+            completed = set(
+                _completed_box_ids(
+                    drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+                    box_edges=box_edges,
+                )
+            )
+            if not completed.issubset(set(owner_by_id)):
+                continue
+
+            extra_edges = [str(edge_id) for edge_id in all_edge_ids if str(edge_id) not in drawn_edge_ids]
+            rng.shuffle(extra_edges)
+            for edge_id in extra_edges:
+                if float(rng.random()) > 0.35:
+                    continue
+                candidate = set(drawn_edge_ids)
+                candidate.add(str(edge_id))
+                completed_if_added = set(
+                    _completed_box_ids(
+                        drawn_edge_ids=tuple(sorted(candidate)),
+                        box_edges=box_edges,
+                    )
+                )
+                if completed_if_added.issubset(set(owner_by_id)):
+                    drawn_edge_ids = candidate
+
+            counted_box_ids = tuple(
+                str(box_id)
+                for box_id, owner in sorted(owner_by_id.items())
+                if str(owner) == str(target_owner)
+            )
+            if len(counted_box_ids) != target:
+                continue
+            return _make_board_state_from_drawn_edges(
+                box_rows=int(box_rows),
+                box_cols=int(box_cols),
+                edge_specs=edge_specs,
+                box_edges=box_edges,
+                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+                highlighted_edge_ids=(),
+                counted_box_ids=counted_box_ids,
+                counted_edge_ids=(),
+                candidate_edge_ids=(),
+                target_answer=int(target),
+                box_owner_by_id=owner_by_id,
+            )
+        raise RuntimeError(f"failed to build a dots-and-boxes owned-box board for {query} target {target}")
 
     for _ in range(8192):
         drawn_edge_ids = _sample_open_drawn_edges(rng=rng, all_edge_ids=all_edge_ids, box_edges=box_edges)
@@ -702,8 +779,8 @@ def build_dots_and_boxes_count_board_state(
     raise RuntimeError(f"failed to build a dots-and-boxes board for {query} target {target}")
 
 
-def evidence_box_ids(board_state: DotsAndBoxesBoardState) -> Tuple[str, ...]:
-    """Return the prompt-facing evidence box ids for one dots-and-boxes task."""
+def annotation_box_ids(board_state: DotsAndBoxesBoardState) -> Tuple[str, ...]:
+    """Return the prompt-facing annotation box ids for one dots-and-boxes task."""
 
     return tuple(str(box_id) for box_id in board_state.captured_box_ids)
 
@@ -718,7 +795,7 @@ __all__ = [
     "box_drawn_side_counts",
     "build_dots_and_boxes_board_state",
     "build_dots_and_boxes_count_board_state",
-    "evidence_box_ids",
+    "annotation_box_ids",
     "immediate_capture_edge_ids",
     "simulate_forced_capture_turn",
 ]

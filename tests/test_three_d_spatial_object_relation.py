@@ -1,4 +1,4 @@
-"""Tests for the synthetic lettered 3D object relation task."""
+"""Tests for the synthetic 3D object relation option task."""
 
 from __future__ import annotations
 
@@ -9,13 +9,14 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.spatial.object_relation import SUPPORTED_QUERY_IDS
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 TASK_ID = "task_three_d__object_scene__object_relation_label"
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
-def test_object_relation_answer_and_evidence(query_id: str) -> None:
+def test_object_relation_answer_and_annotation(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
@@ -46,15 +47,21 @@ def test_object_relation_answer_and_evidence(query_id: str) -> None:
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert not any(spec["is_answer_candidate"] for spec in context_specs)
     assert reference_spec["nameable_for_prompt"]
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [
-        output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]]
-    ]
-    assert output.image.size == (1180, 900)
+    answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == (
+        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    )
+    assert_option_panel_matches_candidates(
+        output,
+        point_specs,
+        answer_label=expected_labels[0],
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1068),
+    )
     assert any(entity["entity_id"] == "open_floor_stage" for entity in output.trace_payload["scene_ir"]["entities"])
     assert not any(entity["entity_id"] == "room_shell" for entity in output.trace_payload["scene_ir"]["entities"])
 
-    answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
     if query_id == "on_top_of_prop":
         assert float(answer_spec["base_xyz"][2]) > float(reference_spec["base_xyz"][2]) + 0.85 * float(reference_spec["dimensions_xyz"][2])
     elif query_id == "under_prop":

@@ -1,6 +1,0 @@
-task: task_puzzles__voxel_cube__cube_painted_face_count
-
-params:
-  painted_query: exterior_face_total
-  scene_variant: stack_card
-  cube_color_name: blue

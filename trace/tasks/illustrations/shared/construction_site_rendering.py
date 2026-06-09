@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
@@ -12,9 +12,11 @@ from ...shared.text_rendering import load_font
 from ...shared.text_legibility import draw_text_traced
 from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
 from .object_library import BBox, RGB, STYLE_IDS
-from .object_registry import make_object_record
-from .person_rendering import draw_person_hair_back, draw_person_hair_front, sample_person_gender
+from .object_rendering import IllustrationObjectSpec, RenderContext, make_vector_scene_object_record, render_illustration_object, render_vector_scene_object
+from .object_variants import RENDERER_STYLE_VECTOR
+from .person_rendering import sample_person_gender
 from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
+from .style_registry import style_outline_params
 
 
 CONSTRUCTION_SETTING_IDS: Tuple[str, ...] = variant_ids_with_tag("construction_setting")
@@ -91,6 +93,7 @@ class ConstructionWorker:
     gender_id: str
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -104,6 +107,7 @@ class ConstructionMaterial:
     style_id: str
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -118,6 +122,7 @@ class ConstructionEquipment:
     style_id: str
     role: str
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -202,13 +207,8 @@ def _choose_weighted(rng, weights: Mapping[str, float], support: Sequence[str]) 
 
 
 def _style_outline(style_id: str) -> Tuple[RGB, int, bool]:
-    if str(style_id) == "paper_cutout":
-        return (244, 241, 226), 4, True
-    if str(style_id) == "outlined_cartoon":
-        return (33, 37, 46), 3, False
-    if str(style_id) == "soft_shadow":
-        return (74, 78, 87), 2, True
-    return (74, 78, 87), 1, False
+    outline, width, shadow = style_outline_params(str(style_id))
+    return tuple(outline or (74, 78, 87)), int(width), bool(shadow)
 
 
 def _rect(
@@ -523,122 +523,6 @@ def _place_box(
     return best_box
 
 
-def _draw_worker(draw: ImageDraw.ImageDraw, worker: ConstructionWorker, *, scale: int) -> None:
-    x0, y0, x1, y1 = worker.bbox_xyxy
-    w = x1 - x0
-    h = y1 - y0
-    outline, outline_w, shadow = _style_outline(worker.style_id)
-    if shadow:
-        _ellipse(draw, (x0 + w * 0.12, y1 - h * 0.08, x1 - w * 0.08, y1 + h * 0.02), fill=(158, 146, 124), outline=None, width=1, scale=scale)
-    skin = (178, 126, 83)
-    shirt = (84, 118, 154)
-    pants = (68, 83, 104)
-    hat = CONSTRUCTION_COLOR_RGB.get(str(worker.hard_hat_color), (238, 194, 64))
-    vest = CONSTRUCTION_COLOR_RGB.get(str(worker.vest_color), (232, 126, 54))
-    head = (x0 + w * 0.33, y0 + h * 0.13, x0 + w * 0.67, y0 + h * 0.43)
-    draw_person_hair_back(draw, head_bbox=head, gender_id=str(worker.gender_id), scale=scale, outline=outline)
-    _ellipse(draw, head, fill=skin, outline=outline, width=outline_w, scale=scale)
-    draw_person_hair_front(draw, head_bbox=head, gender_id=str(worker.gender_id), scale=scale, outline=outline)
-    _rect(draw, (x0 + w * 0.25, y0 + h * 0.09, x0 + w * 0.75, y0 + h * 0.25), fill=hat, outline=outline, width=outline_w, scale=scale, radius=8)
-    _rect(draw, (x0 + w * 0.20, y0 + h * 0.22, x0 + w * 0.80, y0 + h * 0.28), fill=hat, outline=outline, width=outline_w, scale=scale, radius=4)
-    torso = (x0 + w * 0.24, y0 + h * 0.42, x0 + w * 0.76, y0 + h * 0.72)
-    _rect(draw, torso, fill=shirt, outline=outline, width=outline_w, scale=scale, radius=7)
-    _poly(draw, [(x0 + w * 0.26, y0 + h * 0.43), (x0 + w * 0.43, y0 + h * 0.43), (x0 + w * 0.56, y0 + h * 0.72), (x0 + w * 0.38, y0 + h * 0.72)], fill=vest, outline=None, width=1, scale=scale)
-    _poly(draw, [(x0 + w * 0.57, y0 + h * 0.43), (x0 + w * 0.74, y0 + h * 0.43), (x0 + w * 0.62, y0 + h * 0.72), (x0 + w * 0.46, y0 + h * 0.72)], fill=vest, outline=None, width=1, scale=scale)
-    _line(draw, [(x0 + w * 0.23, y0 + h * 0.48), (x0 + w * 0.10, y0 + h * 0.66)], fill=skin, width=5, scale=scale)
-    _line(draw, [(x0 + w * 0.77, y0 + h * 0.48), (x0 + w * 0.90, y0 + h * 0.66)], fill=skin, width=5, scale=scale)
-    _line(draw, [(x0 + w * 0.41, y0 + h * 0.72), (x0 + w * 0.34, y1 - h * 0.06)], fill=pants, width=7, scale=scale)
-    _line(draw, [(x0 + w * 0.59, y0 + h * 0.72), (x0 + w * 0.68, y1 - h * 0.06)], fill=pants, width=7, scale=scale)
-    if worker.tool_type:
-        if str(worker.tool_type) == "shovel":
-            _line(draw, [(x0 + w * 0.84, y0 + h * 0.55), (x0 + w * 1.03, y1 - h * 0.04)], fill=(82, 68, 49), width=3, scale=scale)
-            _ellipse(draw, (x0 + w * 0.96, y1 - h * 0.09, x0 + w * 1.10, y1 + h * 0.02), fill=(101, 105, 108), outline=outline, width=1, scale=scale)
-        elif str(worker.tool_type) == "hammer":
-            _line(draw, [(x0 + w * 0.82, y0 + h * 0.58), (x0 + w * 0.98, y0 + h * 0.76)], fill=(86, 65, 44), width=4, scale=scale)
-            _rect(draw, (x0 + w * 0.91, y0 + h * 0.51, x0 + w * 1.08, y0 + h * 0.59), fill=(107, 112, 118), outline=outline, width=1, scale=scale, radius=2)
-        else:
-            _line(draw, [(x0 + w * 0.80, y0 + h * 0.58), (x0 + w * 1.04, y0 + h * 0.70)], fill=(97, 101, 106), width=4, scale=scale)
-            _ellipse(draw, (x0 + w * 0.98, y0 + h * 0.66, x0 + w * 1.10, y0 + h * 0.78), fill=(97, 101, 106), outline=outline, width=1, scale=scale)
-
-
-def _draw_material(draw: ImageDraw.ImageDraw, material: ConstructionMaterial, *, scale: int) -> None:
-    x0, y0, x1, y1 = material.bbox_xyxy
-    w = x1 - x0
-    h = y1 - y0
-    outline, outline_w, shadow = _style_outline(material.style_id)
-    if shadow:
-        _ellipse(draw, (x0 + 4.0, y1 - 10.0, x1 + 8.0, y1 + 8.0), fill=(150, 139, 119), outline=None, width=1, scale=scale)
-    kind = str(material.material_type)
-    if kind == "brick_stack":
-        rows = 4
-        cols = 5
-        brick = (179, 83, 58)
-        for row in range(rows):
-            for col in range(cols):
-                bx0 = x0 + w * (0.05 + col * 0.18 + (0.08 if row % 2 else 0.0))
-                by0 = y0 + h * (0.12 + row * 0.19)
-                _rect(draw, (bx0, by0, bx0 + w * 0.16, by0 + h * 0.16), fill=brick, outline=outline, width=1, scale=scale, radius=2)
-    elif kind == "pipe_bundle":
-        pipe = (104, 125, 133)
-        for row in range(3):
-            for col in range(4):
-                cx = x0 + w * (0.18 + col * 0.19 + (0.08 if row % 2 else 0.0))
-                cy = y0 + h * (0.25 + row * 0.20)
-                r = min(w, h) * 0.09
-                _ellipse(draw, (cx - r, cy - r, cx + r, cy + r), fill=(202, 209, 211), outline=pipe, width=2, scale=scale)
-    elif kind == "lumber_stack":
-        for row in range(5):
-            by0 = y0 + h * (0.14 + row * 0.15)
-            _rect(draw, (x0 + w * 0.06, by0, x1 - w * 0.06, by0 + h * 0.10), fill=(177, 123, 68), outline=outline, width=1, scale=scale, radius=3)
-            _line(draw, [(x0 + w * 0.12, by0 + h * 0.05), (x1 - w * 0.12, by0 + h * 0.05)], fill=(132, 88, 45), width=1, scale=scale)
-    else:
-        for row in range(3):
-            for col in range(3):
-                bx0 = x0 + w * (0.10 + col * 0.28 + (0.06 if row % 2 else 0.0))
-                by0 = y0 + h * (0.14 + row * 0.23)
-                _rect(draw, (bx0, by0, bx0 + w * 0.23, by0 + h * 0.17), fill=(217, 207, 181), outline=outline, width=outline_w, scale=scale, radius=8)
-
-
-def _draw_equipment(draw: ImageDraw.ImageDraw, equipment: ConstructionEquipment, *, scale: int) -> None:
-    x0, y0, x1, y1 = equipment.bbox_xyxy
-    w = x1 - x0
-    h = y1 - y0
-    outline, outline_w, shadow = _style_outline(equipment.style_id)
-    yellow = (229, 169, 48)
-    orange = (218, 119, 48)
-    bluegray = (87, 107, 124)
-    tire = (45, 49, 55)
-    if shadow:
-        _ellipse(draw, (x0 + w * 0.04, y1 - h * 0.10, x1 - w * 0.02, y1 + h * 0.03), fill=(137, 128, 111), outline=None, width=1, scale=scale)
-    kind = str(equipment.equipment_type)
-    if kind == "excavator":
-        _rect(draw, (x0 + w * 0.06, y0 + h * 0.70, x0 + w * 0.72, y0 + h * 0.90), fill=(57, 61, 65), outline=outline, width=outline_w, scale=scale, radius=12)
-        _rect(draw, (x0 + w * 0.18, y0 + h * 0.42, x0 + w * 0.56, y0 + h * 0.72), fill=yellow, outline=outline, width=outline_w, scale=scale, radius=8)
-        _rect(draw, (x0 + w * 0.36, y0 + h * 0.28, x0 + w * 0.62, y0 + h * 0.58), fill=(91, 134, 157), outline=outline, width=outline_w, scale=scale, radius=6)
-        _line(draw, [(x0 + w * 0.56, y0 + h * 0.45), (x0 + w * 0.82, y0 + h * 0.25), (x0 + w * 0.94, y0 + h * 0.60)], fill=yellow, width=10, scale=scale)
-        _poly(draw, [(x0 + w * 0.88, y0 + h * 0.60), (x0 + w * 1.02, y0 + h * 0.62), (x0 + w * 0.92, y0 + h * 0.77)], fill=(83, 77, 65), outline=outline, width=outline_w, scale=scale)
-    elif kind == "dump_truck":
-        _rect(draw, (x0 + w * 0.08, y0 + h * 0.44, x0 + w * 0.58, y0 + h * 0.72), fill=orange, outline=outline, width=outline_w, scale=scale, radius=6)
-        _poly(draw, [(x0 + w * 0.58, y0 + h * 0.38), (x0 + w * 0.84, y0 + h * 0.42), (x0 + w * 0.88, y0 + h * 0.72), (x0 + w * 0.58, y0 + h * 0.72)], fill=yellow, outline=outline, width=outline_w, scale=scale)
-        _rect(draw, (x0 + w * 0.66, y0 + h * 0.46, x0 + w * 0.80, y0 + h * 0.60), fill=(112, 154, 173), outline=outline, width=1, scale=scale, radius=3)
-        for cx in (x0 + w * 0.24, x0 + w * 0.70):
-            _ellipse(draw, (cx - w * 0.07, y0 + h * 0.66, cx + w * 0.07, y0 + h * 0.84), fill=tire, outline=outline, width=outline_w, scale=scale)
-    elif kind == "cement_mixer":
-        _rect(draw, (x0 + w * 0.10, y0 + h * 0.56, x0 + w * 0.88, y0 + h * 0.74), fill=bluegray, outline=outline, width=outline_w, scale=scale, radius=8)
-        _ellipse(draw, (x0 + w * 0.26, y0 + h * 0.28, x0 + w * 0.66, y0 + h * 0.68), fill=(217, 213, 196), outline=outline, width=outline_w, scale=scale)
-        _line(draw, [(x0 + w * 0.34, y0 + h * 0.36), (x0 + w * 0.60, y0 + h * 0.60)], fill=(152, 147, 132), width=4, scale=scale)
-        _rect(draw, (x0 + w * 0.66, y0 + h * 0.38, x0 + w * 0.88, y0 + h * 0.62), fill=yellow, outline=outline, width=outline_w, scale=scale, radius=5)
-        for cx in (x0 + w * 0.28, x0 + w * 0.74):
-            _ellipse(draw, (cx - w * 0.07, y0 + h * 0.66, cx + w * 0.07, y0 + h * 0.84), fill=tire, outline=outline, width=outline_w, scale=scale)
-    else:
-        _rect(draw, (x0 + w * 0.18, y0 + h * 0.46, x0 + w * 0.62, y0 + h * 0.72), fill=yellow, outline=outline, width=outline_w, scale=scale, radius=6)
-        _rect(draw, (x0 + w * 0.32, y0 + h * 0.22, x0 + w * 0.58, y0 + h * 0.50), fill=(111, 152, 170), outline=outline, width=outline_w, scale=scale, radius=4)
-        _line(draw, [(x0 + w * 0.72, y0 + h * 0.18), (x0 + w * 0.72, y0 + h * 0.80)], fill=(59, 63, 68), width=5, scale=scale)
-        _line(draw, [(x0 + w * 0.72, y0 + h * 0.78), (x0 + w * 0.98, y0 + h * 0.78)], fill=(59, 63, 68), width=4, scale=scale)
-        for cx in (x0 + w * 0.28, x0 + w * 0.56):
-            _ellipse(draw, (cx - w * 0.06, y0 + h * 0.67, cx + w * 0.06, y0 + h * 0.83), fill=tire, outline=outline, width=outline_w, scale=scale)
-
-
 def render_construction_site_scene(
     *,
     rng,
@@ -697,8 +581,28 @@ def render_construction_site_scene(
             attributes=dict(spec.attributes),
         )
         materials.append(material)
+    rendered_material_records: Dict[str, Mapping[str, Any]] = {}
     for material in sorted(materials, key=lambda item: (float(item.bbox_xyxy[1]), float(item.bbox_xyxy[0]))):
-        _draw_material(draw, material, scale=scale)
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=str(material.material_id),
+            object_type="construction_material",
+            bbox_xyxy=material.bbox_xyxy,
+            renderer_id="construction_material",
+            renderer_variant_id=str(material.material_type),
+            semantic_attributes={
+                "material_type": str(material.material_type),
+                "material_label": str(material.material_label),
+                **dict(material.attributes),
+            },
+            visual_attributes={"style_id": str(material.style_id)},
+            role=str(material.role),
+            source_entity_type="construction_material",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
+        rendered_material_records[str(material.material_id)] = rendered.object_record
+    materials = [replace(material, object_record=rendered_material_records.get(str(material.material_id))) for material in materials]
 
     equipment_items: List[ConstructionEquipment] = []
     for index, spec in enumerate(equipment_specs):
@@ -718,8 +622,29 @@ def render_construction_site_scene(
             attributes=dict(spec.attributes),
         )
         equipment_items.append(equipment)
+    rendered_equipment_records: Dict[str, Mapping[str, Any]] = {}
     for equipment in sorted(equipment_items, key=lambda item: (float(item.bbox_xyxy[1]), float(item.bbox_xyxy[0]))):
-        _draw_equipment(draw, equipment, scale=scale)
+        rendered = render_vector_scene_object(
+            draw,
+            object_id=str(equipment.equipment_id),
+            object_type="construction_equipment",
+            bbox_xyxy=equipment.bbox_xyxy,
+            renderer_id="construction_equipment",
+            renderer_variant_id=str(equipment.equipment_type),
+            semantic_attributes={
+                "equipment_type": str(equipment.equipment_type),
+                "equipment_label": str(equipment.equipment_label),
+                "zone_id": str(equipment.zone_id),
+                **dict(equipment.attributes),
+            },
+            visual_attributes={"style_id": str(equipment.style_id)},
+            role=str(equipment.role),
+            source_entity_type="construction_equipment",
+            render_scale=scale,
+            style_id=str(style_id),
+        )
+        rendered_equipment_records[str(equipment.equipment_id)] = rendered.object_record
+    equipment_items = [replace(equipment, object_record=rendered_equipment_records.get(str(equipment.equipment_id))) for equipment in equipment_items]
 
     workers: List[ConstructionWorker] = []
     for index, spec in enumerate(worker_specs):
@@ -739,8 +664,44 @@ def render_construction_site_scene(
             attributes=dict(spec.attributes),
         )
         workers.append(worker)
+    rendered_worker_records: Dict[str, Mapping[str, Any]] = {}
     for worker in sorted(workers, key=lambda item: (float(item.bbox_xyxy[1]), float(item.bbox_xyxy[0]))):
-        _draw_worker(draw, worker, scale=scale)
+        hat_rgb = CONSTRUCTION_COLOR_RGB.get(str(worker.hard_hat_color), (238, 194, 64))
+        vest_rgb = CONSTRUCTION_COLOR_RGB.get(str(worker.vest_color), (232, 126, 54))
+        rendered = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=str(worker.worker_id),
+                object_type="worker",
+                bbox_xyxy=worker.bbox_xyxy,
+                renderer_id="construction_worker",
+                renderer_variant_id="standing",
+                semantic_attributes={
+                    "hard_hat_color": str(worker.hard_hat_color),
+                    "vest_color": str(worker.vest_color),
+                    "tool_type": str(worker.tool_type) if worker.tool_type else None,
+                    **dict(worker.attributes),
+                },
+                visual_attributes={
+                    "primary_color_rgb": [84, 118, 154],
+                    "accent_color_rgb": [int(v) for v in vest_rgb],
+                    "skin_color_rgb": [178, 126, 83],
+                    "hard_hat_color_rgb": [int(v) for v in hat_rgb],
+                    "vest_color_rgb": [int(v) for v in vest_rgb],
+                    "style_id": str(worker.style_id),
+                    "gender_id": str(worker.gender_id),
+                },
+                role=str(worker.role),
+                source_entity_type="construction_worker",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=scale,
+                style_id=str(style_id),
+            ),
+        )
+        rendered_worker_records[str(worker.worker_id)] = rendered.object_record
+    workers = [replace(worker, object_record=rendered_worker_records.get(str(worker.worker_id))) for worker in workers]
 
     if scale != 1:
         image = image.resize((width, height), Image.Resampling.LANCZOS)
@@ -804,14 +765,16 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
         }
         if isinstance(zone_label_font, Mapping):
             zone_visual_attributes["label_font"] = _safe_json(zone_label_font)
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(zone.zone_id),
             object_type="zone",
             bbox_xyxy=zone.bbox_xyxy,
             semantic_attributes={"zone_id": str(zone.zone_id), "label": str(zone.label)},
             visual_attributes=zone_visual_attributes,
             source_entity_type="construction_zone",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "id": str(zone.zone_id),
@@ -823,20 +786,26 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
             }
         )
     for worker in scene.workers:
-        object_record = make_object_record(
-            object_id=str(worker.worker_id),
-            object_type="worker",
-            bbox_xyxy=worker.bbox_xyxy,
-            semantic_attributes={
-                "hard_hat_color": str(worker.hard_hat_color),
-                "vest_color": str(worker.vest_color),
-                "tool_type": str(worker.tool_type) if worker.tool_type else None,
-                **dict(worker.attributes),
-            },
-            visual_attributes={"style_id": str(worker.style_id), "gender_id": str(worker.gender_id)},
-            role=str(worker.role),
-            source_entity_type="construction_worker",
-        ).as_dict()
+        object_record = (
+            dict(worker.object_record)
+            if worker.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(worker.worker_id),
+                object_type="worker",
+                bbox_xyxy=worker.bbox_xyxy,
+                semantic_attributes={
+                    "hard_hat_color": str(worker.hard_hat_color),
+                    "vest_color": str(worker.vest_color),
+                    "tool_type": str(worker.tool_type) if worker.tool_type else None,
+                    **dict(worker.attributes),
+                },
+                visual_attributes={"style_id": str(worker.style_id), "gender_id": str(worker.gender_id)},
+                role=str(worker.role),
+                source_entity_type="construction_worker",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "id": str(worker.worker_id),
@@ -852,19 +821,25 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
             }
         )
     for material in scene.materials:
-        object_record = make_object_record(
-            object_id=str(material.material_id),
-            object_type="construction_material",
-            bbox_xyxy=material.bbox_xyxy,
-            semantic_attributes={
-                "material_type": str(material.material_type),
-                "material_label": str(material.material_label),
-                **dict(material.attributes),
-            },
-            visual_attributes={"style_id": str(material.style_id)},
-            role=str(material.role),
-            source_entity_type="construction_material",
-        ).as_dict()
+        object_record = (
+            dict(material.object_record)
+            if material.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(material.material_id),
+                object_type="construction_material",
+                bbox_xyxy=material.bbox_xyxy,
+                semantic_attributes={
+                    "material_type": str(material.material_type),
+                    "material_label": str(material.material_label),
+                    **dict(material.attributes),
+                },
+                visual_attributes={"style_id": str(material.style_id)},
+                role=str(material.role),
+                source_entity_type="construction_material",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "id": str(material.material_id),
@@ -878,20 +853,26 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
             }
         )
     for equipment in scene.equipment:
-        object_record = make_object_record(
-            object_id=str(equipment.equipment_id),
-            object_type="construction_equipment",
-            bbox_xyxy=equipment.bbox_xyxy,
-            semantic_attributes={
-                "equipment_type": str(equipment.equipment_type),
-                "equipment_label": str(equipment.equipment_label),
-                "zone_id": str(equipment.zone_id),
-                **dict(equipment.attributes),
-            },
-            visual_attributes={"style_id": str(equipment.style_id)},
-            role=str(equipment.role),
-            source_entity_type="construction_equipment",
-        ).as_dict()
+        object_record = (
+            dict(equipment.object_record)
+            if equipment.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(equipment.equipment_id),
+                object_type="construction_equipment",
+                bbox_xyxy=equipment.bbox_xyxy,
+                semantic_attributes={
+                    "equipment_type": str(equipment.equipment_type),
+                    "equipment_label": str(equipment.equipment_label),
+                    "zone_id": str(equipment.zone_id),
+                    **dict(equipment.attributes),
+                },
+                visual_attributes={"style_id": str(equipment.style_id)},
+                role=str(equipment.role),
+                source_entity_type="construction_equipment",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "id": str(equipment.equipment_id),
@@ -906,13 +887,15 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
             }
         )
     for item in scene.decor:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(item.decor_id),
             object_type="decor",
             bbox_xyxy=item.bbox_xyxy,
             semantic_attributes={"decor_type": str(item.decor_type), **dict(item.attributes)},
             source_entity_type="construction_decor",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "id": str(item.decor_id),

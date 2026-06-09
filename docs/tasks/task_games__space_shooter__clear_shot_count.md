@@ -2,21 +2,15 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene id: `space_shooter`
-3. Source task group: `space_shooter`
-4. Query id: `clear_shot_count`
-5. Objective: Count enemy ships with no enemy ship, shield, or asteroid below them in the same lane.
+2. Task group: `space_shooter`
+3. Scene id: `space_shooter`
+4. Public task id: `task_games__space_shooter__clear_shot_count`
+5. Supported `query_id` values: `clear_shot_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(enemy_targets, shot_line_blocked(target)=False)); scene=space_shooter; scope=clear_shot_count`
 
-## Answer and Evidence
-1. Answer type: `integer`
-2. Evidence type: bbox_set over the counted enemy ships.
-3. `clear_shot_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
-
-## Implementation
-1. This task uses the shared games Space-shooter playfield renderer.
-2. Prompt bundle: `games_space_shooter_v0`
-3. Enemy shots do not block the clear-shot count; only lower enemy ships, shields, and asteroids block the lane. The current sampler keeps the clear-shot scene sparse enough that the visible obstruction is normally a shield or asteroid below the candidate enemy.
-
-## Determinism
-1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Lane count, target answer, and visual style remain explicit params inside the task; the clear-shot scene derives the visible enemy count from the lane construction.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

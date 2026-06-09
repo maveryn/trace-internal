@@ -49,13 +49,13 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "point_pair_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_bridge_counting"
     assert execution["question_format"] == "count_bridge_edges"
     assert execution["graph_directionality"] == "undirected"
     assert len(node_entities) == 9
     assert len(edge_entities) == int(execution["edge_count"])
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -73,18 +73,18 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
             int(pair[1]) if str(pair[1]).isdigit() else str(pair[1]),
         ),
     )
-    evidence_point_pairs = list(out.evidence_gt.value)
-    assert int(out.answer_gt.value) == len(bridge_edges) == len(evidence_point_pairs)
+    annotation_point_pairs = list(out.annotation_gt.value)
+    assert int(out.answer_gt.value) == len(bridge_edges) == len(annotation_point_pairs)
     assert int(execution["target_count"]) == len(bridge_edges)
     assert bridge_edges == [tuple(str(value) for value in edge) for edge in execution["matching_edges"]]
     assert trace["witness_symbolic"]["type"] == "edge_pair_set"
     assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in bridge_edges]
-    assert "edge_set" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["type"] == "point_pair_set"
-    assert trace["projected_evidence"]["point_pair_set"] == evidence_point_pairs
-    assert sum(1 for edge in edge_entities if bool(edge["is_bridge"])) == len(evidence_point_pairs)
+    assert "edge_set" not in trace["projected_annotation"]
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == annotation_point_pairs
+    assert sum(1 for edge in edge_entities if bool(edge["is_bridge"])) == len(annotation_point_pairs)
     width, height = trace["render_spec"]["canvas_size"]
-    for pair in evidence_point_pairs:
+    for pair in annotation_point_pairs:
         assert len(pair) == 2
         for point in pair:
             assert 0 <= float(point[0]) <= float(width)
@@ -103,9 +103,9 @@ def test_graph_counting_bridge_count_prompt_examples_follow_label_variant() -> N
         params={"label_variant": "numbers", "node_count": 9, "target_count": 2},
         max_attempts=80,
     )
-    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
-    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    expected_example = {"evidence": [[[180, 220], [310, 180]], [[310, 180], [430, 260]]], "answer": 2}
+    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_annotation"])
+    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_annotation"])
+    expected_example = {"annotation": [[[180, 220], [310, 180]], [[310, 180], [430, 260]]], "answer": 2}
     assert letters_example == expected_example
     assert numbers_example == expected_example
 

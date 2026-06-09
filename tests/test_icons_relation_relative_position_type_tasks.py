@@ -77,15 +77,15 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     anchor_entities = [entity for entity in scene_entities if str(entity.get("role")) == "anchor"]
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert out.annotation_gt.value == sorted(out.annotation_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert len(trace["projected_annotation"]["pixel_point_set"]) == len(out.annotation_gt.value)
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_anchor_relation_type"
     assert execution["question_format"] == "count_matching_scene_icons_by_reference_and_anchor_relation"
     assert out.query_id == "right_of_anchor"
@@ -148,19 +148,19 @@ def test_icons_relation_relative_position_type_supports_zero_matches() -> None:
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
 
 
 def test_icons_relation_relative_position_type_prompt_example_matches_contract() -> None:
     task = IconsRelationRelativePositionTypeTask()
     out = task.generate(14612, params={"target_count": 2, "distractor_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 2
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 2
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_relation_relative_position_type_balanced_sampling_defaults() -> None:

@@ -31,7 +31,7 @@ from ..shared.angle_geometry import (
 from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.polygon_geometry import alphabetic_labels
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import (
@@ -98,10 +98,6 @@ def _measurement_complexity_components(*, source_kind: str, angle_degrees: float
         "measurement_precision": min(1.0, 0.34 + (0.42 * canonical_distance) + intersection_bonus),
         "ambiguity": min(1.0, 0.22 + (0.38 * right_angle_centering) + (0.12 * canonical_distance)),
     }
-
-def _angle_question_text(*, label_a: str, label_v: str, label_b: str) -> str:
-    """Return canonical angle-measure question text for one label triplet."""
-    return f"What is the measure of angle {str(label_a)}{str(label_v)}{str(label_b)} in degrees?"
 
 def _resolve_source_kind(
     rng,
@@ -487,7 +483,7 @@ def _build_primitive_scene(
         "scene_variant": "primitive_angle",
         "source_kind": "primitive_angle",
         "raw_angle_degrees": float(sample.raw_angle_degrees),
-        "question_text": _angle_question_text(label_a=label_a, label_v=label_v, label_b=label_b),
+        "angle_label": f"{label_a}{label_v}{label_b}",
         "object_description": "a labeled angle",
         "entity": {
             "entity_id": "angle_1",
@@ -513,7 +509,7 @@ def _build_primitive_scene(
             ],
             "coord_space": "pixel",
         },
-        "evidence_points": [
+        "annotation_points": [
             (float(sample.point_a[0]), float(sample.point_a[1])),
             (float(sample.vertex[0]), float(sample.vertex[1])),
             (float(sample.point_b[0]), float(sample.point_b[1])),
@@ -661,7 +657,7 @@ def _build_intersection_scene(
             "scene_variant": "intersection_angle",
             "source_kind": _INTERSECTION_SOURCE_KIND,
             "raw_angle_degrees": float(raw_angle),
-            "question_text": _angle_question_text(label_a=label_a, label_v=label_v, label_b=label_b),
+            "angle_label": f"{label_a}{label_v}{label_b}",
             "object_description": "two intersecting line segments",
             "entity": {
                 "entity_id": "intersection_1",
@@ -699,7 +695,7 @@ def _build_intersection_scene(
                 ],
                 "coord_space": "pixel",
             },
-            "evidence_points": [
+            "annotation_points": [
                 (float(point_a[0]), float(point_a[1])),
                 (float(vertex[0]), float(vertex[1])),
                 (float(point_b[0]), float(point_b[1])),
@@ -1010,33 +1006,33 @@ class GeometryAngleMeasure2DTask:
                 continue
         if scene_payload is None or context is None or image is None or background_meta is None or shape_style is None:
             raise RuntimeError("failed to generate source_geometry_measurement_angle instance") from last_error
-        question_text = str(scene_payload["question_text"])
-        evidence_points = scene_payload.get("evidence_points", [])
-        if not isinstance(evidence_points, list) or len(evidence_points) != 3:
-            raise RuntimeError("angle evidence points must include [ray_endpoint_a, vertex, ray_endpoint_b]")
+        angle_label = str(scene_payload["angle_label"])
+        annotation_points = scene_payload.get("annotation_points", [])
+        if not isinstance(annotation_points, list) or len(annotation_points) != 3:
+            raise RuntimeError("angle annotation points must include [ray_endpoint_a, vertex, ray_endpoint_b]")
         target_labels = [str(label) for label in scene_payload.get("target_labels", [])]
         if len(target_labels) != 3:
-            raise RuntimeError("angle evidence labels must include exactly three labels")
-        evidence_points_by_label = {
-            str(target_labels[0]): evidence_points[0],
-            str(target_labels[1]): evidence_points[1],
-            str(target_labels[2]): evidence_points[2],
+            raise RuntimeError("angle annotation labels must include exactly three labels")
+        annotation_points_by_label = {
+            str(target_labels[0]): annotation_points[0],
+            str(target_labels[1]): annotation_points[1],
+            str(target_labels[2]): annotation_points[2],
         }
-        evidence = graph_point_set_evidence_artifacts(
-            points_by_label=evidence_points_by_label,
+        annotation = graph_point_set_annotation_artifacts(
+            points_by_label=annotation_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
             witness_type="angle_triplet",
             ordered_labels=list(target_labels),
         )
-        evidence_value = evidence.get("evidence_value", [])
+        annotation_value = annotation.get("annotation_value", [])
         if (
-            not isinstance(evidence_value, list)
-            or len(evidence_value) != 3
-            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
+            not isinstance(annotation_value, list)
+            or len(annotation_value) != 3
+            or any(not isinstance(point, list) or len(point) != 2 for point in annotation_value)
+            or any(not isinstance(coord, (int, float)) for point in annotation_value for coord in point)
         ):
-            raise RuntimeError("angle triplet evidence must include three pixel points")
+            raise RuntimeError("angle triplet annotation must include three pixel points")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -1052,7 +1048,7 @@ class GeometryAngleMeasure2DTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -1064,7 +1060,7 @@ class GeometryAngleMeasure2DTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
-        evidence_hint = str(prompt_defaults["evidence_hint"])
+        annotation_hint = str(prompt_defaults["annotation_hint"])
         answer_hint = str(prompt_defaults["answer_hint"])
         json_example = str(prompt_defaults["json_example"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
@@ -1074,13 +1070,13 @@ class GeometryAngleMeasure2DTask:
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(scene_payload["object_description"]),
-                "question_text": str(question_text),
+                "angle_label": str(angle_label),
                 "json_output_contract": str(json_output_contract),
                 "json_output_contract_answer_only": str(json_output_contract_answer_only),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1158,14 +1154,14 @@ class GeometryAngleMeasure2DTask:
                 "raw_angle_degrees": float(raw_angle_degrees),
                 "angle_degrees": int(answer_value),
                 "target_labels": list(scene_payload["target_labels"]),
-                "required_evidence_labels": list(target_labels),
+                "required_annotation_labels": list(target_labels),
                 "question_format": "numeric_open",
                 "feasible_target_angles": [int(value) for value in target_candidates_for_source],
                 "feasible_answer_values": [int(value) for value in target_candidates_for_source],
                 "query_id_probabilities": {str(key): float(value) for key, value in sorted(query_id_probabilities.items())},
             },
-            "witness_symbolic": dict(evidence["witness_symbolic"]),
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "witness_symbolic": dict(annotation["witness_symbolic"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
         complexity_components = _measurement_complexity_components(
             source_kind=source_kind_value,
@@ -1179,13 +1175,13 @@ class GeometryAngleMeasure2DTask:
             ambiguity=float(complexity_components["ambiguity"]),
             output_burden=geometry_measurement_output_burden(
                 answer_format="integer",
-                evidence_point_count=3,
+                annotation_point_count=3,
             ),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(type=str(evidence["evidence_type"]), value=evidence["evidence_value"]),
+            annotation_gt=TypedValue(type=str(annotation["annotation_type"]), value=annotation["annotation_value"]),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -43,6 +43,15 @@
       "gap_extremum_phrase",
       "unanswerable_instruction"
     ],
+    "query:shared_label_rank_gap_extremum": [
+      "first_rank_gap_panel_name",
+      "second_rank_gap_panel_name",
+      "rank_direction_phrase",
+      "gap_extremum_phrase"
+    ],
+    "query:statement_option_selection_label": [
+      "requested_truth_phrase"
+    ],
     "query:top_k_overlap_count": [
       "first_topk_panel_name",
       "second_topk_panel_name",
@@ -52,19 +61,19 @@
       "condition_category_label",
       "panel_condition_phrase"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -72,12 +81,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -125,6 +134,20 @@
       "For every shared category, compute the absolute gap between \"{first_gap_panel_name}\" and \"{second_gap_panel_name}\". Which category is {gap_extremum_phrase}? {unanswerable_instruction}",
       "Which category label has the {gap_extremum_phrase} difference when its \"{first_gap_panel_name}\" value is compared with its \"{second_gap_panel_name}\" value? {unanswerable_instruction}"
     ],
+    "shared_label_rank_gap_extremum": [
+      "Rank the shared category labels by {rank_direction_phrase} value in \"{first_rank_gap_panel_name}\" and in \"{second_rank_gap_panel_name}\". Which category has the {gap_extremum_phrase} absolute difference between its two rank positions?",
+      "Compare category ranks between \"{first_rank_gap_panel_name}\" and \"{second_rank_gap_panel_name}\" using {rank_direction_phrase} values. Which category has the {gap_extremum_phrase} rank-position gap?",
+      "For every shared category, find its {rank_direction_phrase} rank in \"{first_rank_gap_panel_name}\" and \"{second_rank_gap_panel_name}\". Which label has the {gap_extremum_phrase} absolute rank difference?",
+      "Using \"{first_rank_gap_panel_name}\" and \"{second_rank_gap_panel_name}\", rank categories by {rank_direction_phrase} value in each panel. Which category's rank changes the {gap_extremum_phrase} amount?",
+      "Which shared category label has the {gap_extremum_phrase} gap between its {rank_direction_phrase} rank in \"{first_rank_gap_panel_name}\" and its {rank_direction_phrase} rank in \"{second_rank_gap_panel_name}\"?"
+    ],
+    "statement_option_selection_label": [
+      "Which displayed statement option is {requested_truth_phrase}?",
+      "Select the option letter for the statement that is {requested_truth_phrase}.",
+      "From the statement options shown in the image, which one is {requested_truth_phrase}?",
+      "Which option contains the {requested_truth_phrase} statement?",
+      "Choose the displayed statement option that is {requested_truth_phrase}."
+    ],
     "top_k_overlap_count": [
       "In \"{first_topk_panel_name}\", find the {top_k_phrase} categories. In \"{second_topk_panel_name}\", make the matching ranked list. How many category labels appear in both sets?",
       "Compare the {top_k_phrase} category set from \"{first_topk_panel_name}\" with the same-ranked set from \"{second_topk_panel_name}\". What is the overlap count?",
@@ -134,7 +157,7 @@
     ],
     "category_panel_condition_count": [
       "For category \"{condition_category_label}\", how many dashboard panels show a value {panel_condition_phrase}?",
-      "Look at category \"{condition_category_label}\" across all panels. Count the panels where its value is {panel_condition_phrase}.",
+      "For category \"{condition_category_label}\" across all panels, count the panels where its value is {panel_condition_phrase}.",
       "Using the shared category label \"{condition_category_label}\", how many panels satisfy the condition that its value is {panel_condition_phrase}?",
       "Across the dashboard, count panels in which category \"{condition_category_label}\" has a value {panel_condition_phrase}.",
       "What is the number of panels where \"{condition_category_label}\" meets the value condition {panel_condition_phrase}?"

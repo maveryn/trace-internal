@@ -38,6 +38,7 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "missing_output_force",
     "missing_input_force",
     "missing_piston_area",
+    "missing_input_area",
 )
 
 
@@ -171,20 +172,21 @@ class _SceneSpec:
     middle_mechanical_advantage: int
     shown_input_force_value: int | None
     shown_output_force_value: int | None
+    shown_input_area_value: int | None
     shown_output_area_value: int | None
     target_answer: int
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered hydraulic scene plus prompt-facing evidence metadata."""
+    """Rendered hydraulic scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
-    evidence_bbox_map: Dict[str, List[float]]
-    evidence_entity_ids: List[str]
-    evidence_key_by_entity_id: Dict[str, str]
+    annotation_bboxes: List[List[float]]
+    annotation_bbox_map: Dict[str, List[float]]
+    annotation_entity_ids: List[str]
+    annotation_key_by_entity_id: Dict[str, str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -216,6 +218,8 @@ def _target_support_key(query_id: str) -> str:
         return "output_force_support"
     if str(query_id) == "missing_input_force":
         return "input_force_support"
+    if str(query_id) == "missing_input_area":
+        return "input_area_support"
     return "output_area_support"
 
 
@@ -226,6 +230,8 @@ def _target_fallback_support(query_id: str) -> Tuple[int, ...]:
         return _DEFAULTS.output_force_support
     if str(query_id) == "missing_input_force":
         return _DEFAULTS.input_force_support
+    if str(query_id) == "missing_input_area":
+        return _DEFAULTS.input_area_support
     return _DEFAULTS.output_area_support
 
 
@@ -403,6 +409,7 @@ def _sample_scene_spec(
         output_area = int(input_area * ratio)
         shown_input_force = int(input_force)
         shown_output_force = None
+        shown_input_area = int(input_area)
         shown_output_area = int(output_area)
     elif query_id == "missing_input_force":
         compatible_ratios = [
@@ -427,8 +434,9 @@ def _sample_scene_spec(
         output_area = int(input_area * ratio)
         shown_input_force = None
         shown_output_force = int(output_force)
+        shown_input_area = int(input_area)
         shown_output_area = int(output_area)
-    else:
+    elif query_id == "missing_piston_area":
         compatible_ratios = [
             int(ratio)
             for ratio in ratio_support
@@ -451,7 +459,33 @@ def _sample_scene_spec(
         output_force = int(input_force * ratio)
         shown_input_force = int(input_force)
         shown_output_force = int(output_force)
+        shown_input_area = int(input_area)
         shown_output_area = None
+    else:
+        compatible_ratios = [
+            int(ratio)
+            for ratio in ratio_support
+            if int(ratio) > 0 and int(target) * int(ratio) in output_area_set
+        ]
+        ratio, _ratio_probs = _choose_mechanical_advantage(
+            rng,
+            instance_seed=int(instance_seed),
+            params=params,
+            compatible=compatible_ratios,
+        )
+        input_area = int(target)
+        output_area = int(target * ratio)
+        compatible_input_forces = [
+            int(force)
+            for force in input_force_support
+            if int(force) * int(ratio) in output_force_set
+        ]
+        input_force = _choose_from_sequence(rng, compatible_input_forces)
+        output_force = int(input_force * ratio)
+        shown_input_force = int(input_force)
+        shown_output_force = int(output_force)
+        shown_input_area = None
+        shown_output_area = int(output_area)
 
     output_ratio = int(ratio)
     middle_ratio_candidates = [
@@ -480,20 +514,21 @@ def _sample_scene_spec(
         middle_mechanical_advantage=int(middle_ratio),
         shown_input_force_value=shown_input_force,
         shown_output_force_value=shown_output_force,
+        shown_input_area_value=shown_input_area,
         shown_output_area_value=shown_output_area,
         target_answer=int(target),
-        evidence_entity_ids=_evidence_entity_ids_for_query(str(query_id)),
+        annotation_entity_ids=_annotation_entity_ids_for_query(str(query_id)),
     )
 
 
-def _evidence_entity_ids_for_query(query_id: str) -> Tuple[str, ...]:
+def _annotation_entity_ids_for_query(query_id: str) -> Tuple[str, ...]:
     """Return the minimal prompt-facing label witnesses for one hydraulic query."""
 
-    return tuple(_evidence_entity_key_map_for_query(str(query_id)).keys())
+    return tuple(_annotation_entity_key_map_for_query(str(query_id)).keys())
 
 
-def _evidence_entity_key_map_for_query(query_id: str) -> Dict[str, str]:
-    """Return query-specific semantic evidence keys by rendered entity id."""
+def _annotation_entity_key_map_for_query(query_id: str) -> Dict[str, str]:
+    """Return query-specific semantic annotation keys by rendered entity id."""
 
     if str(query_id) == "missing_output_force":
         return {
@@ -505,6 +540,12 @@ def _evidence_entity_key_map_for_query(query_id: str) -> Dict[str, str]:
         return {
             "right_force_label": "output_force",
             "left_area_label": "input_area",
+            "right_area_label": "output_area",
+        }
+    if str(query_id) == "missing_input_area":
+        return {
+            "left_force_label": "input_force",
+            "right_force_label": "output_force",
             "right_area_label": "output_area",
         }
     return {
@@ -696,7 +737,7 @@ def _resolve_hydraulic_layout_placement(
     canvas_height: int,
     scene_spec: _SceneSpec,
 ) -> Tuple[Dict[str, int], Dict[str, Any]]:
-    """Resolve whole-diagram placement before rendering and evidence projection."""
+    """Resolve whole-diagram placement before rendering and annotation projection."""
 
     content_bbox = _hydraulic_content_bbox(render_defaults=render_defaults, scene_spec=scene_spec)
     content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
@@ -966,15 +1007,22 @@ def _render_scene(
     )
 
     area_font = load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=str(font_family))
+    left_area_missing = scene_spec.shown_input_area_value is None
     left_area_bbox = _draw_text_tag(
         draw,
-        text=f"A = {int(scene_spec.input_area_value)} cm^2",
+        text="A = ? cm^2" if left_area_missing else f"A = {int(scene_spec.shown_input_area_value)} cm^2",
         center=(float(left_center_x), float(chamber_bottom + 44.0)),
         font=area_font,
         padding_px=int(render_defaults["label_padding_px"]),
-        fill_rgb=tuple(int(value) for value in theme.label_fill_rgb),
-        outline_rgb=tuple(int(value) for value in theme.label_outline_rgb),
-        text_rgb=tuple(int(value) for value in theme.label_text_rgb),
+        fill_rgb=tuple(int(value) for value in theme.missing_fill_rgb)
+        if left_area_missing
+        else tuple(int(value) for value in theme.label_fill_rgb),
+        outline_rgb=tuple(int(value) for value in theme.missing_outline_rgb)
+        if left_area_missing
+        else tuple(int(value) for value in theme.label_outline_rgb),
+        text_rgb=tuple(int(value) for value in theme.missing_text_rgb)
+        if left_area_missing
+        else tuple(int(value) for value in theme.label_text_rgb),
         stroke_width_px=int(render_defaults["label_stroke_width_px"]),
     )
     middle_area_bbox = _draw_text_tag(
@@ -1052,7 +1100,13 @@ def _render_scene(
                 "unit": "N",
             }
         elif entity["entity_id"] == "left_area_label":
-            entity["meta"] = {"shown_value": int(scene_spec.input_area_value), "true_value": int(scene_spec.input_area_value), "unit": "cm^2"}
+            entity["meta"] = {
+                "shown_value": None
+                if scene_spec.shown_input_area_value is None
+                else int(scene_spec.shown_input_area_value),
+                "true_value": int(scene_spec.input_area_value),
+                "unit": "cm^2",
+            }
         elif entity["entity_id"] == "middle_area_label":
             entity["meta"] = {
                 "shown_value": int(scene_spec.middle_area_value),
@@ -1068,14 +1122,14 @@ def _render_scene(
                 "unit": "cm^2",
             }
 
-    evidence_key_by_entity_id = _evidence_entity_key_map_for_query(str(scene_spec.query_id))
-    evidence_bboxes: List[List[float]] = []
-    evidence_bbox_map: Dict[str, List[float]] = {}
-    for entity_id in scene_spec.evidence_entity_ids:
-        evidence_key = str(evidence_key_by_entity_id[str(entity_id)])
+    annotation_key_by_entity_id = _annotation_entity_key_map_for_query(str(scene_spec.query_id))
+    annotation_bboxes: List[List[float]] = []
+    annotation_bbox_map: Dict[str, List[float]] = {}
+    for entity_id in scene_spec.annotation_entity_ids:
+        annotation_key = str(annotation_key_by_entity_id[str(entity_id)])
         bbox = list(entity_bboxes[str(entity_id)])
-        evidence_bboxes.append(list(bbox))
-        evidence_bbox_map[evidence_key] = list(bbox)
+        annotation_bboxes.append(list(bbox))
+        annotation_bbox_map[annotation_key] = list(bbox)
     render_map = {
         "accent_color_name": str(accent_color_name),
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
@@ -1095,21 +1149,27 @@ def _render_scene(
         "input_area_value": int(scene_spec.input_area_value),
         "middle_area_value": int(scene_spec.middle_area_value),
         "output_area_value": int(scene_spec.output_area_value),
+        "shown_input_area_value": None
+        if scene_spec.shown_input_area_value is None
+        else int(scene_spec.shown_input_area_value),
+        "shown_output_area_value": None
+        if scene_spec.shown_output_area_value is None
+        else int(scene_spec.shown_output_area_value),
         "mechanical_advantage": int(scene_spec.mechanical_advantage),
         "middle_mechanical_advantage": int(scene_spec.middle_mechanical_advantage),
-        "evidence_entity_ids": [str(entity_id) for entity_id in scene_spec.evidence_entity_ids],
-        "evidence_key_by_entity_id": dict(evidence_key_by_entity_id),
-        "evidence_keyed_bboxes_px": {str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
-        "evidence_bboxes_px": [list(bbox) for bbox in evidence_bboxes],
+        "annotation_entity_ids": [str(entity_id) for entity_id in scene_spec.annotation_entity_ids],
+        "annotation_key_by_entity_id": dict(annotation_key_by_entity_id),
+        "annotation_keyed_bboxes_px": {str(key): list(bbox) for key, bbox in annotation_bbox_map.items()},
+        "annotation_bboxes_px": [list(bbox) for bbox in annotation_bboxes],
         "canvas_width": int(canvas_width),
         "canvas_height": int(canvas_height),
     }
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_bbox_map={str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
-        evidence_entity_ids=[str(entity_id) for entity_id in scene_spec.evidence_entity_ids],
-        evidence_key_by_entity_id={str(key): str(value) for key, value in evidence_key_by_entity_id.items()},
+        annotation_bboxes=[list(bbox) for bbox in annotation_bboxes],
+        annotation_bbox_map={str(key): list(bbox) for key, bbox in annotation_bbox_map.items()},
+        annotation_entity_ids=[str(entity_id) for entity_id in scene_spec.annotation_entity_ids],
+        annotation_key_by_entity_id={str(key): str(value) for key, value in annotation_key_by_entity_id.items()},
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -1119,24 +1179,30 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return stable prompt JSON examples for hydraulic queries."""
 
     if str(query_id) == "missing_input_force":
-        evidence = {
+        annotation = {
             "output_force": [834, 70, 946, 118],
             "input_area": [170, 520, 294, 562],
             "output_area": [822, 520, 958, 562],
         }
+    elif str(query_id) == "missing_input_area":
+        annotation = {
+            "input_force": [174, 70, 286, 118],
+            "output_force": [834, 70, 946, 118],
+            "output_area": [822, 520, 958, 562],
+        }
     elif str(query_id) == "missing_piston_area":
-        evidence = {
+        annotation = {
             "input_force": [174, 70, 286, 118],
             "output_force": [834, 70, 946, 118],
             "input_area": [170, 520, 294, 562],
         }
     else:
-        evidence = {
+        annotation = {
             "input_force": [174, 70, 286, 118],
             "input_area": [170, 520, 294, 562],
             "output_area": [822, 520, 958, 562],
         }
-    return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
+    return build_prompt_json_examples(annotation_value=annotation, answer_type="integer")
 
 
 @register_task
@@ -1240,18 +1306,19 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "object_description_wide_bench",
                     "object_description_compact_frame",
                     "object_description_tall_columns",
-                    "evidence_hint_missing_output_force",
-                    "evidence_hint_missing_input_force",
-                    "evidence_hint_missing_piston_area",
+                    "annotation_hint_missing_output_force",
+                    "annotation_hint_missing_input_force",
+                    "annotation_hint_missing_piston_area",
+                    "annotation_hint_missing_input_area",
                     "answer_hint_force",
                     "answer_hint_area",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"])
+            annotation_hint = str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"])
             answer_hint = (
                 str(prompt_defaults["answer_hint_area"])
-                if str(axes.query_id) == "missing_piston_area"
+                if str(axes.query_id) in {"missing_piston_area", "missing_input_area"}
                 else str(prompt_defaults["answer_hint_force"])
             )
             json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
@@ -1262,12 +1329,12 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(evidence_hint),
+                    "annotation_hint": str(annotation_hint),
                     "answer_hint": str(answer_hint),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
@@ -1277,9 +1344,9 @@ class PhysicsFluidsHydraulicMissingValueTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(
+            annotation_gt = TypedValue(
                 type="keyed_bbox_map",
-                value={str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                value={str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()},
             )
             complexity = build_physics_hydraulic_piston_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1288,7 +1355,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 query_id=str(axes.query_id),
                 mechanical_advantage=int(scene_spec.mechanical_advantage),
                 target_answer=int(axes.target_answer),
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                annotation_count=len(rendered_scene.annotation_bboxes),
             )
             trace_payload = {
                 "scene_ir": {
@@ -1307,8 +1374,8 @@ class PhysicsFluidsHydraulicMissingValueTask:
                         "mechanical_advantage": int(scene_spec.mechanical_advantage),
                         "middle_mechanical_advantage": int(scene_spec.middle_mechanical_advantage),
                         "target_answer": int(axes.target_answer),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                        "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                        "annotation_key_by_entity_id": dict(rendered_scene.annotation_key_by_entity_id),
                     },
                 },
                 "query_spec": {
@@ -1369,6 +1436,9 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "shown_output_force_value": None
                     if scene_spec.shown_output_force_value is None
                     else int(scene_spec.shown_output_force_value),
+                    "shown_input_area_value": None
+                    if scene_spec.shown_input_area_value is None
+                    else int(scene_spec.shown_input_area_value),
                     "shown_output_area_value": None
                     if scene_spec.shown_output_area_value is None
                     else int(scene_spec.shown_output_area_value),
@@ -1383,19 +1453,19 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     ),
                     "output_force_support": list(_support(params, "output_force_support", _DEFAULTS.output_force_support)),
                     "output_area_support": list(_support(params, "output_area_support", _DEFAULTS.output_area_support)),
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                    "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                    "annotation_key_by_entity_id": dict(rendered_scene.annotation_key_by_entity_id),
                 },
                 "witness_symbolic": {
                     "type": "object_key_map",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
-                    "keys": dict(rendered_scene.evidence_key_by_entity_id),
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
+                    "keys": dict(rendered_scene.annotation_key_by_entity_id),
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "keyed_bbox_map",
-                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()},
                     "pixel_keyed_bbox_map": {
-                        str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()
+                        str(key): list(bbox) for key, bbox in rendered_scene.annotation_bbox_map.items()
                     },
                 },
                 "background": background_meta,
@@ -1405,7 +1475,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

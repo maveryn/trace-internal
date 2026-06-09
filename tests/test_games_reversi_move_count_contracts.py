@@ -10,13 +10,14 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.reversi.move_count import GamesReversiMoveCountTask
-from trace.tasks.games.shared.reversi_common import corner_coords
+from trace.tasks.games.shared.reversi_common import BLACK, WHITE, corner_coords, frontier_disc_coords
 from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
+from trace.tasks.registry import create_task
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count", "expected_evidence_type"),
+    ("params", "expected_answer", "expected_annotation_count", "expected_annotation_type"),
     (
         (
             {
@@ -53,8 +54,8 @@ from tests.helpers import read_jsonl
 def test_games_reversi_move_count_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
-    expected_evidence_count: int,
-    expected_evidence_type: str,
+    expected_annotation_count: int,
+    expected_annotation_type: str,
 ) -> None:
     out = GamesReversiMoveCountTask().generate(28001, params=params, max_attempts=32)
     trace = out.trace_payload
@@ -62,16 +63,16 @@ def test_games_reversi_move_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == str(expected_evidence_type)
-    assert len(out.evidence_gt.value) == int(expected_evidence_count)
+    assert out.annotation_gt.type == str(expected_annotation_type)
+    assert len(out.annotation_gt.value) == int(expected_annotation_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_evidence"][str(expected_evidence_type)] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
-    assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
+    assert trace["projected_annotation"][str(expected_annotation_type)] == out.annotation_gt.value
+    assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
+    assert all(str(entity_id).startswith("cell_r") for entity_id in execution["annotation_entity_ids"])
 
 
-def test_games_reversi_move_count_corner_evidence_stays_on_corner_squares() -> None:
+def test_games_reversi_move_count_corner_annotation_stays_on_corner_squares() -> None:
     out = GamesReversiMoveCountTask().generate(
         28011,
         params={
@@ -83,13 +84,13 @@ def test_games_reversi_move_count_corner_evidence_stays_on_corner_squares() -> N
     )
     execution = out.trace_payload["execution_trace"]
     corners = {tuple(coord) for coord in corner_coords(8)}
-    evidence_coords = {tuple(coord) for coord in execution["evidence_coords"]}
+    annotation_coords = {tuple(coord) for coord in execution["annotation_coords"]}
 
-    assert len(evidence_coords) == 2
-    assert evidence_coords.issubset(corners)
+    assert len(annotation_coords) == 2
+    assert annotation_coords.issubset(corners)
 
 
-def test_games_reversi_move_count_flip_query_marks_move_and_keeps_evidence_on_flipped_discs() -> None:
+def test_games_reversi_move_count_flip_query_marks_move_and_keeps_annotation_on_flipped_discs() -> None:
     out = GamesReversiMoveCountTask().generate(
         28021,
         params={
@@ -105,10 +106,45 @@ def test_games_reversi_move_count_flip_query_marks_move_and_keeps_evidence_on_fl
     assert execution["marked_move"] is not None
     assert execution["marked_move_cell_id"] is not None
     assert trace["render_map"]["marked_square_bbox_px"] is not None
-    assert execution["marked_move_cell_id"] not in set(execution["evidence_entity_ids"])
+    assert execution["marked_move_cell_id"] not in set(execution["annotation_entity_ids"])
     assert len(execution["marked_move_flip_coords"]) == 4
-    assert out.evidence_gt.type == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+
+
+@pytest.mark.parametrize(
+    ("query_id", "player_value"),
+    (
+        ("black_frontier_disc_count", BLACK),
+        ("white_frontier_disc_count", WHITE),
+    ),
+)
+def test_games_reversi_frontier_disc_count_matches_visible_board(query_id: str, player_value: int) -> None:
+    out = create_task("task_games__reversi__frontier_disc_count").generate(
+        28041,
+        params={
+            "scene_variant": "classic_board",
+            "query_id": query_id,
+            "target_answer": 5,
+        },
+        max_attempts=64,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    board = tuple(tuple(int(cell) for cell in row) for row in execution["board_rows"])
+    expected_coords = frontier_disc_coords(board, int(player_value))
+    expected_entity_ids = [f"cell_r{int(row)}_c{int(col)}" for row, col in expected_coords]
+
+    assert out.scene_id == "reversi"
+    assert out.query_id == query_id
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == 5 == len(expected_coords)
+    assert out.annotation_gt.type == "point_set"
+    assert execution["annotation_entity_ids"] == expected_entity_ids
+    assert execution["frontier_disc_coords"] == [[int(row), int(col)] for row, col in expected_coords]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    for entity_id, point in zip(expected_entity_ids, out.annotation_gt.value):
+        assert trace["render_map"]["disc_points_px"][entity_id] == point
 
 
 def test_games_reversi_move_count_query_cycle_covers_answer_scene_and_style_support() -> None:
@@ -168,7 +204,7 @@ def test_games_reversi_move_count_is_deterministic() -> None:
     out_a = task.generate(28031, params=params, max_attempts=32)
     out_b = task.generate(28031, params=params, max_attempts=32)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -190,6 +226,8 @@ def test_games_reversi_move_count_prompt_bundle_requires_rule_text_for_query_spe
         "marked_move_rule_text",
         "flip_rule_text",
     ]
+    assert required["query:black_frontier_disc_count"] == ["frontier_rule_text"]
+    assert required["query:white_frontier_disc_count"] == ["frontier_rule_text"]
 
 
 def test_games_reversi_move_count_build_smoke(tmp_path: Path) -> None:

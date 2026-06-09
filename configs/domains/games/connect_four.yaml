@@ -25,6 +25,10 @@ generation:
     balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
+    balanced_winning_move_label_threat_kind_sampling: true
+    winning_move_label_threat_kind_weights:
+      vertical_threat: 1.0
+      horizontal_threat: 1.0
     winning_move_count_support:
     - 0
     - 1
@@ -90,11 +94,16 @@ prompt:
     safety_rule_text: For each non-full column, imagine dropping the current player's
       disc into its lowest empty square. A safe drop is one where the opponent then
       has no immediate winning drop on their next single move.
-    evidence_hint_winning_move_count: set "evidence" to a JSON array of bounding boxes
+    annotation_hint_winning_move_count: set "annotation" to a JSON array of bounding boxes
       [x0, y0, x1, y1] for every immediate-winning landing square
-    evidence_hint_safe_move_count: set "evidence" to a JSON array of bounding boxes
+    annotation_hint_winning_move_column_label: set "annotation" to a JSON array containing
+      the bounding box [x0, y0, x1, y1] for the landing square in the selected winning
+      column
+    annotation_hint_safe_move_count: set "annotation" to a JSON array of bounding boxes
       [x0, y0, x1, y1] for every safe legal landing square
     answer_hint_winning_move_count: set "answer" to the number of legal drop columns
       that win immediately
+    answer_hint_winning_move_column_label: set "answer" to the selected column label
+      as a capital letter shown below the board
     answer_hint_safe_move_count: set "answer" to the number of legal drop columns
       that are safe

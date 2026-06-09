@@ -9,7 +9,7 @@ from trace.core.seed import hash64
 from trace.tasks import create_task
 
 
-TASK_ID = "task_icons__named_grid__row_column_shape_count"
+TASK_ID = "task_icons__named_grid__scoped_attribute_count"
 QUERY_IDS = ("row_shape_count", "column_shape_count")
 
 
@@ -50,8 +50,8 @@ def test_icons_counting_named_grid_row_contract_matches_scene() -> None:
     assert out.query_id == "row_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 4
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 4
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 4
     assert trace["scene_ir"]["scene_kind"] == "icons_named_grid_row_column_shape_count"
     assert execution["question_format"] == "count_named_shape_in_grid_row_or_column"
     assert int(execution["grid_rows"]) == 4
@@ -67,10 +67,10 @@ def test_icons_counting_named_grid_row_contract_matches_scene() -> None:
     assert len(entities) == 20
     assert all(str(entity_by_id[instance_id]["shape_id"]) == "star" for instance_id in counted_ids)
     assert all(int(entity_by_id[instance_id]["row_number"]) == 3 for instance_id in counted_ids)
-    assert sorted(out.evidence_gt.value) == sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert "axis_label_stroke_rgb" in style
     assert style["text_legibility"]["required_role_count"] >= 2
@@ -103,7 +103,7 @@ def test_icons_counting_named_grid_column_contract_matches_scene() -> None:
 
     assert out.query_id == "column_shape_count"
     assert out.answer_gt.value == 5
-    assert len(out.evidence_gt.value) == 5
+    assert len(out.annotation_gt.value) == 5
     assert str(execution["queried_axis"]) == "column"
     assert int(execution["queried_number"]) == 2
     assert _count_target_in_line(
@@ -126,12 +126,12 @@ def test_icons_counting_named_grid_prompt_example_matches_contract() -> None:
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert len(answer_and_evidence["evidence"]) == 3
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert len(answer_and_annotation["annotation"]) == 3
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_icons_counting_named_grid_sampling_distribution() -> None:
@@ -158,7 +158,7 @@ def test_icons_counting_named_grid_sampling_distribution() -> None:
             line_index=int(line_index),
             target_shape_id=target_shape_id,
         ) == int(out.answer_gt.value)
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
         assert 4 <= int(execution["grid_rows"]) <= 6
         assert 4 <= int(execution["grid_cols"]) <= 6
         query_counts[query_id] += 1

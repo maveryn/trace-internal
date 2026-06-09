@@ -8,26 +8,30 @@ import pytest
 
 from trace.tasks.geometry.measurement.circle_square_tangent_packing import (
     SCENE_ID,
-    GeometryTangentPackingLengthValueTask,
-    GeometryTangentPackingShadedAreaValueTask,
+    GeometryCircleInSquareGapAreaTask,
+    GeometryCircleInSquareRadiusFromGapAreaTask,
+    GeometrySquareInCircleGapAreaTask,
+    GeometrySquareInCircleSideFromGapAreaTask,
+    GeometryTwoCirclesInRectangleGapAreaTask,
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask,
 )
 
 TASK_CLASSES = (
-    GeometryTangentPackingLengthValueTask,
-    GeometryTangentPackingShadedAreaValueTask,
+    GeometryCircleInSquareRadiusFromGapAreaTask,
+    GeometrySquareInCircleSideFromGapAreaTask,
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask,
+    GeometryCircleInSquareGapAreaTask,
+    GeometrySquareInCircleGapAreaTask,
+    GeometryTwoCirclesInRectangleGapAreaTask,
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryTangentPackingLengthValueTask: (
-        "circle_in_square_radius_from_gap_area",
-        "square_in_circle_side_from_gap_area",
-        "two_circles_in_rectangle_radius_from_gap_area",
-    ),
-    GeometryTangentPackingShadedAreaValueTask: (
-        "circle_in_square_gap_area",
-        "square_in_circle_gap_area",
-        "two_circles_in_rectangle_gap_area",
-    ),
+    GeometryCircleInSquareRadiusFromGapAreaTask: ("circle_in_square_radius_from_gap_area",),
+    GeometrySquareInCircleSideFromGapAreaTask: ("square_in_circle_side_from_gap_area",),
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: ("two_circles_in_rectangle_radius_from_gap_area",),
+    GeometryCircleInSquareGapAreaTask: ("circle_in_square_gap_area",),
+    GeometrySquareInCircleGapAreaTask: ("square_in_circle_gap_area",),
+    GeometryTwoCirclesInRectangleGapAreaTask: ("two_circles_in_rectangle_gap_area",),
 }
 
 
@@ -41,22 +45,20 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(65001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id in QUERY_IDS_BY_TASK[task_cls]
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
-    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 3
+    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["scene_ir"]["scene_id"] == SCENE_ID
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
 
     radius = int(trace["execution_trace"]["radius"])
     square_side = int(trace["execution_trace"]["square_side"])
@@ -105,7 +107,7 @@ def test_tangent_packing_tasks_are_deterministic(task_cls) -> None:
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt == out_b.answer_gt
-    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.annotation_gt == out_b.annotation_gt
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
@@ -142,7 +144,7 @@ def test_tangent_packing_tasks_sample_all_query_ids(task_cls) -> None:
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_tangent_packing_evidence_stays_inside_canvas(task_cls) -> None:
+def test_tangent_packing_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(
@@ -151,7 +153,7 @@ def test_tangent_packing_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value:
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

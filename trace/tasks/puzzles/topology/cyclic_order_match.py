@@ -30,7 +30,7 @@ from ..shared.bead_loop_common import (
     resolve_cyclic_order_token_render_style,
 )
 from ..shared.bead_loop_scene import render_puzzle_bead_loop_scene
-from ..shared.common import projected_puzzle_bbox_evidence
+from ..shared.common import projected_puzzle_bbox_annotation
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -203,14 +203,14 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
                 "object_description_charm_card_grid",
                 "object_description_route_loop_diagram",
                 "object_description_token_ring_outline",
-                "evidence_hint_cyclic_order_equivalent_label",
+                "annotation_hint_cyclic_order_equivalent_label",
                 "json_example_cyclic_order_equivalent_label",
                 "json_example_answer_only_cyclic_order_equivalent_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         token_render_style_instruction = {
@@ -228,12 +228,12 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -244,13 +244,13 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         valid_option_choice_ids = [str(value) for value in dataset["valid_option_choice_ids"]]
-        evidence_projection = projected_puzzle_bbox_evidence(
+        annotation_projection = projected_puzzle_bbox_annotation(
             rendered_scene.option_choice_bbox_map,
             list(valid_option_choice_ids),
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         if str(query_id) == "cyclic_order_equivalent_label":
             answer_value = str(dataset["answer_option_label"])
@@ -258,7 +258,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
         else:
             answer_value = int(dataset["valid_option_count"])
             answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         visual_scan = max(
             float(normalize_int_with_bounds(int(dataset["option_count"]), list(dataset["option_count_range"]))),
@@ -387,11 +387,11 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
 
@@ -405,7 +405,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

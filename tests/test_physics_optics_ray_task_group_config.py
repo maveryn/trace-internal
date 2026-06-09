@@ -71,4 +71,4 @@ def test_physics_optics_ray_defaults_expose_scene_query_and_answer_support() -> 
 
     assert "five diagonal mirrors" in str(prompt["object_description_five_mirror"])
 
-    assert "image pixel points" in str(prompt["evidence_hint_bounce_count"])
+    assert "image pixel points" in str(prompt["annotation_hint_bounce_count"])

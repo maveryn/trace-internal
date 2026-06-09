@@ -2,13 +2,6 @@
   "bundle_id": "illustrations_visual_v0",
   "schema_version": "v0",
   "task_templates": {
-    "object_difference_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "jigsaw_piece_order_task": [
       "",
       "",
@@ -29,17 +22,9 @@
       "",
       "",
       ""
-    ],
-    "odd_scene_label_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
-    "scene:illustration_difference_pair": [],
     "scene:illustration_jigsaw_board": [
       "piece_count",
       "row_count",
@@ -54,14 +39,6 @@
     "scene:illustration_missing_patch_options": [
       "option_labels"
     ],
-    "scene:illustration_odd_scene_options": [
-      "option_count",
-      "option_labels"
-    ],
-    "query:added_object_count": [],
-    "query:removed_object_count": [],
-    "query:changed_color_object_count": [],
-    "query:moved_object_count": [],
     "query:jigsaw_piece_order": [
       "empty_cell_order"
     ],
@@ -69,23 +46,19 @@
     "query:plain_patch_label": [],
     "query:transformed_patch_label": [],
     "query:irregular_cutout_patch_label": [],
-    "query:odd_scene_label": [
-      "same_scene_count",
-      "count_phrase"
-    ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -93,22 +66,15 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
-    "illustration_difference_pair": [
-      "The image shows two illustration panels labeled Scene A and Scene B.",
-      "The picture contains Scene A and Scene B, two versions of an illustrated scene.",
-      "Two synthetic illustration panels are shown side by side as Scene A and Scene B.",
-      "The canvas shows a before-and-after illustration pair labeled Scene A and Scene B.",
-      "The image shows two labeled illustration scenes, Scene A and Scene B."
-    ],
     "illustration_jigsaw_board": [
       "The image shows a {row_count} by {col_count} reconstruction board with the {anchored_cell} fixed and {piece_count} shuffled labeled pieces below.",
       "The canvas contains a {row_count} by {col_count} picture board with the {anchored_cell} already filled and {piece_count} remaining labeled pieces.",
@@ -129,44 +95,9 @@
       "The canvas contains a source illustration with a missing patch and choices {option_labels}.",
       "The top source image has one missing region, with patch options {option_labels} underneath.",
       "The image asks which labeled option from {option_labels} completes the missing patch in the source picture."
-    ],
-    "illustration_odd_scene_options": [
-      "The image shows {option_count} labeled illustration panels: {option_labels}.",
-      "The canvas contains {option_count} option panels labeled {option_labels}.",
-      "{option_count} synthetic illustration scenes are shown as labeled options {option_labels}.",
-      "The image shows labeled scene panels {option_labels}.",
-      "The canvas shows {option_count} labeled illustration options: {option_labels}."
     ]
   },
   "query_templates": {
-    "added_object_count": [
-      "How many objects were added in Scene B?",
-      "Count the objects that appear in Scene B but not in Scene A.",
-      "What is the number of added objects in Scene B?",
-      "How many new objects are present in Scene B?",
-      "Find every object added to Scene B. What is the count?"
-    ],
-    "removed_object_count": [
-      "How many objects from Scene A are missing in Scene B?",
-      "Count the objects that were removed from Scene A.",
-      "What is the number of objects present in Scene A but absent from Scene B?",
-      "How many objects disappeared between Scene A and Scene B?",
-      "Find every object removed from Scene A. What is the count?"
-    ],
-    "changed_color_object_count": [
-      "How many objects changed color between Scene A and Scene B?",
-      "Count the objects whose color is different in Scene B.",
-      "What is the number of objects with changed color?",
-      "How many matching objects have a different color in Scene B?",
-      "Find every object that changed color. What is the count?"
-    ],
-    "moved_object_count": [
-      "How many objects moved to a new position in Scene B?",
-      "Count the objects that changed location between Scene A and Scene B.",
-      "What is the number of moved objects?",
-      "How many matching objects are in a different position in Scene B?",
-      "Find every object that moved. What is the count?"
-    ],
     "jigsaw_piece_order": [
       "List the piece labels for the empty cells in this order: {empty_cell_order}.",
       "Which labeled pieces fill the remaining cells, reading {empty_cell_order}?",
@@ -201,13 +132,6 @@
       "What option label fits the axis-aligned missing patch?",
       "Find the option that matches the blacked-out rectangular region.",
       "Which labeled option should fill the axis-aligned missing region?"
-    ],
-    "odd_scene_label": [
-      "{same_scene_count} panels contain the same number of {count_phrase}; one panel contains a different number. Which panel is the odd one out?",
-      "Compare the number of {count_phrase} in each panel. Which labeled panel has a different count from the other {same_scene_count} panels?",
-      "Choose the single option whose count of {count_phrase} differs from the common count.",
-      "Find the panel with a different number of {count_phrase} than the other {same_scene_count} panels.",
-      "What is the label of the panel whose {count_phrase} count does not match the others?"
     ]
   },
   "allow_empty_task_templates": true

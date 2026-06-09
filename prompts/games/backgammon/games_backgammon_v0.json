@@ -23,19 +23,23 @@
     "query:blocked_destination_count": [
       "backgammon_rule_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:black_single_checker_point_count": [],
+    "query:white_single_checker_point_count": [],
+    "query:black_two_or_more_checker_point_count": [],
+    "query:white_two_or_more_checker_point_count": [],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -43,12 +47,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -81,6 +85,34 @@
       "{backgammon_rule_text} How many distinct possible active-player destinations cannot be used because they are blocked?",
       "{backgammon_rule_text} Count the blocked destination points among the active player's single-die destination candidates.",
       "For the active player's single-die moves, how many distinct destination points have two or more opposing checkers? {backgammon_rule_text}"
+    ],
+    "black_single_checker_point_count": [
+      "How many numbered points contain exactly one black checker?",
+      "Count the numbered points with exactly one black checker.",
+      "What is the number of points that have a single black checker?",
+      "How many board points show one black checker and no other checker on that point?",
+      "Count all numbered points occupied by exactly one black checker."
+    ],
+    "white_single_checker_point_count": [
+      "How many numbered points contain exactly one white checker?",
+      "Count the numbered points with exactly one white checker.",
+      "What is the number of points that have a single white checker?",
+      "How many board points show one white checker and no other checker on that point?",
+      "Count all numbered points occupied by exactly one white checker."
+    ],
+    "black_two_or_more_checker_point_count": [
+      "How many numbered points contain two or more black checkers?",
+      "Count the numbered points with at least two black checkers.",
+      "What is the number of points that have two or more black checkers?",
+      "How many board points show a stack of at least two black checkers?",
+      "Count all numbered points occupied by two or more black checkers."
+    ],
+    "white_two_or_more_checker_point_count": [
+      "How many numbered points contain two or more white checkers?",
+      "Count the numbered points with at least two white checkers.",
+      "What is the number of points that have two or more white checkers?",
+      "How many board points show a stack of at least two white checkers?",
+      "Count all numbered points occupied by two or more white checkers."
     ]
   },
   "allow_empty_task_templates": true

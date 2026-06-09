@@ -9,7 +9,8 @@ from trace.tasks.puzzles.shared.assembly_common import can_tile_polyomino_with_p
 from trace.tasks.puzzles.shared.shape_complement_common import shape_complement_d4_signature
 from trace.tasks.puzzles.shared.spatial_blocks_common import total_cubes_from_height_rows
 from trace.tasks.puzzles.spatial.polyomino_arrangement_label import (
-    PuzzlesSpatialPolyominoMissingRegionPieceLabelTask,
+    PuzzlesSpatialPolyominoMarkedRegionPieceLabelTask,
+    PuzzlesSpatialPolyominoRectangleComplementPieceTask,
 )
 from trace.tasks.puzzles.spatial.transform_result_label import (
     PuzzlesSpatialOverlayResultLabelTask,
@@ -84,18 +85,15 @@ def test_puzzle_spatial_overlay_result_label_contract_matches_winning_option_cho
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         render_map = trace["render_map"]
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == "overlay_result"
-        assert str(trace["query_spec"]["query_id"]) == "default"
         assert str(trace["query_spec"]["query_id"]) == "overlay_result"
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == "overlay_result"
         assert str(execution["internal_query_id"]) == "overlay_union_same_grid"
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(evidence_bboxes) == 1
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(annotation_bboxes) == 1
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert str(render["mark_style"]["shape"]) in {"circle", "square", "diamond", "rounded_square"}
@@ -108,14 +106,14 @@ def test_puzzle_spatial_overlay_result_label_contract_matches_winning_option_cho
         assert 2 <= int(execution["left_mark_count"]) <= 5
         assert 2 <= int(execution["right_mark_count"]) <= 5
         assert 1 <= int(execution["overlap_count"]) <= 2
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
         assert str(out.answer_gt.value) == str(execution["answer_option_label"])
 
         expected_bbox = [
             float(value)
             for value in render_map["option_choice_bboxes_px"][str(execution["correct_option_choice_id"])]
         ]
-        assert evidence_bboxes[0] == expected_bbox
+        assert annotation_bboxes[0] == expected_bbox
         assert [str(item) for item in execution["supporting_option_choice_ids"]] == [
             str(execution["correct_option_choice_id"])
         ]
@@ -160,9 +158,9 @@ def test_puzzle_spatial_overlay_result_label_contract_matches_winning_option_cho
 def test_puzzle_spatial_overlay_prompt_examples_match_selected_variant() -> None:
     task = PuzzlesSpatialOverlayResultLabelTask()
     out = task.generate(25990, params={}, max_attempts=10)
-    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {"evidence": [[521, 384, 679, 542]], "answer": "B"}
+    assert answer_and_annotation == {"annotation": [[521, 384, 679, 542]], "answer": "B"}
     assert answer_only == {"answer": "B"}
 
 
@@ -173,7 +171,7 @@ def test_puzzle_spatial_overlay_result_label_task_is_deterministic() -> None:
     out_b = task.generate(26010, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -213,19 +211,16 @@ def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice
             render = trace["render_spec"]
             render_map = trace["render_map"]
             solver = execution["solver_trace"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == "paper_fold_result"
-            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "paper_fold_result"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "paper_fold_result"
             assert str(execution["internal_query_id"]) == f"{fold_axis}_fold_result"
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(evidence_bboxes) == 1
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "bbox_set"
+            assert len(annotation_bboxes) == 1
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert int(render["antialias_supersample_scale"]) == 2
@@ -235,14 +230,14 @@ def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice
             assert 3 <= int(execution["mark_count"]) <= 5
             assert str(execution["question_format"]) == "fold_result_mcq"
             assert str(execution["view_family"]) == "paper_fold_result_mcq"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
             assert str(out.answer_gt.value) == str(execution["answer_option_label"])
 
             expected_bbox = [
                 float(value)
                 for value in render_map["option_choice_bboxes_px"][str(execution["correct_option_choice_id"])]
             ]
-            assert evidence_bboxes[0] == expected_bbox
+            assert annotation_bboxes[0] == expected_bbox
             assert len(render_map["reference_paper_bbox_px"]) == 4
             reference_paper_bbox = [float(value) for value in render_map["reference_paper_bbox_px"]]
             arrow_entities = [
@@ -286,9 +281,9 @@ def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice
 def test_puzzle_spatial_prompt_examples_match_selected_variants() -> None:
     task = PuzzlesSpatialPaperFoldResultLabelTask()
     out = task.generate(26090, params={}, max_attempts=10)
-    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {"evidence": [[206, 388, 324, 613]], "answer": "A"}
+    assert answer_and_annotation == {"annotation": [[206, 388, 324, 613]], "answer": "A"}
     assert answer_only == {"answer": "A"}
 
 
@@ -299,7 +294,7 @@ def test_puzzle_spatial_fold_result_label_task_is_deterministic() -> None:
     out_b = task.generate(26140, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -370,21 +365,18 @@ def test_puzzle_spatial_fold_result_label_fold_cut_variants_match_winning_option
             render = trace["render_spec"]
             render_map = trace["render_map"]
             solver = execution["solver_trace"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == "paper_fold_cut_result"
-            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "paper_fold_cut_result"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "paper_fold_cut_result"
             if fold_axis is not None:
                 assert str(execution["internal_query_id"]) == f"single_{fold_axis}_fold_cut_result"
             else:
                 assert str(execution["internal_query_id"]) == "double_fold_cut_result"
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(evidence_bboxes) == 1
+            assert out.annotation_gt.type == "bbox_set"
+            assert len(annotation_bboxes) == 1
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert int(render["antialias_supersample_scale"]) == 2
@@ -396,14 +388,14 @@ def test_puzzle_spatial_fold_result_label_fold_cut_variants_match_winning_option
             assert 1 <= int(execution["cut_count"]) <= 2
             assert str(execution["question_format"]) == "fold_cut_unfolded_result_mcq"
             assert str(execution["view_family"]) == "paper_fold_cut_result_mcq"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
             assert str(out.answer_gt.value) == str(execution["answer_option_label"])
 
             expected_bbox = [
                 float(value)
                 for value in render_map["option_choice_bboxes_px"][str(execution["correct_option_choice_id"])]
             ]
-            assert evidence_bboxes[0] == expected_bbox
+            assert annotation_bboxes[0] == expected_bbox
             assert len(render_map["reference_paper_bbox_px"]) == 4
             assert len(render_map["folded_packet_bbox_px"]) == 4
             assert [str(item) for item in execution["supporting_option_choice_ids"]] == [
@@ -458,9 +450,9 @@ def test_puzzle_spatial_fold_result_label_fold_cut_variants_match_winning_option
 def test_puzzle_spatial_fold_cut_prompt_examples_match_selected_variants() -> None:
     task = PuzzlesSpatialPaperFoldCutResultLabelTask()
     out = task.generate(26520, params={}, max_attempts=10)
-    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {"evidence": [[134, 420, 312, 598]], "answer": "A"}
+    assert answer_and_annotation == {"annotation": [[134, 420, 312, 598]], "answer": "A"}
     assert answer_only == {"answer": "A"}
 
 
@@ -471,7 +463,7 @@ def test_puzzle_spatial_fold_result_label_fold_cut_variant_is_deterministic() ->
     out_b = task.generate(26580, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -492,23 +484,23 @@ def test_assembly_tiling_helper_accepts_rotation_only_match() -> None:
     assert can_tile_polyomino_with_pieces(target, pieces)
 
 
-def test_puzzle_spatial_polyomino_arrangement_variants_have_option_evidence() -> None:
+def test_puzzle_spatial_polyomino_arrangement_variants_have_option_annotation() -> None:
     cases = (
         (
-            PuzzlesSpatialPolyominoMissingRegionPieceLabelTask(),
+            PuzzlesSpatialPolyominoMarkedRegionPieceLabelTask(),
             "marked_region_piece_label",
             2,
             {"query_id": "marked_region_piece_label"},
         ),
         (
-            PuzzlesSpatialPolyominoMissingRegionPieceLabelTask(),
+            PuzzlesSpatialPolyominoRectangleComplementPieceTask(),
             "rectangle_complement_piece",
             2,
             {"query_id": "rectangle_complement_piece"},
         ),
     )
 
-    for index, (task, query_id, evidence_count, extra_params) in enumerate(cases):
+    for index, (task, query_id, annotation_count, extra_params) in enumerate(cases):
         out = task.generate(
             27150 + index,
             params={"scene_variant": "polyomino_card", **extra_params},
@@ -517,21 +509,19 @@ def test_puzzle_spatial_polyomino_arrangement_variants_have_option_evidence() ->
         execution = out.trace_payload["execution_trace"]
         item_bboxes = out.trace_payload["render_map"]["item_bboxes_px"]
 
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["internal_query_id"]) == str(query_id)
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == int(evidence_count)
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(annotation_count)
         assert str(execution["correct_option_panel_id"]) in item_bboxes
         assert str(out.answer_gt.value) == str(execution["answer_option_label"])
-        assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_option_panel() -> None:
-    task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
+    task = PuzzlesSpatialPolyominoRectangleComplementPieceTask()
     matching_policies = (
         "exact_orientation",
         "rotation_reflection_allowed",
@@ -555,18 +545,15 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
             payload = execution["variant_payload"]
             render = trace["render_spec"]
             render_map = trace["render_map"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == "rectangle_complement_piece"
-            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "rectangle_complement_piece"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "rectangle_complement_piece"
             assert str(execution["internal_query_id"]) == "rectangle_complement_piece"
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(evidence_bboxes) == 2
+            assert out.annotation_gt.type == "bbox_set"
+            assert len(annotation_bboxes) == 2
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -576,7 +563,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
             assert str(payload["matching_policy_parameter"]) == str(matching_policy)
             assert str(execution["question_format"]) == "polyomino_rectangle_complement_piece"
             assert str(execution["view_family"]) == "polyomino_rectangle_complement_piece_option_puzzle"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
             assert str(out.answer_gt.value) == str(execution["answer_option_label"])
 
             expected_bbox = [
@@ -584,9 +571,9 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
                 for value in render_map["item_bboxes_px"][str(execution["correct_option_panel_id"])]
             ]
             marked_bbox = [float(value) for value in render_map["item_bboxes_px"]["marked_region"]]
-            assert evidence_bboxes[0] == expected_bbox
-            assert evidence_bboxes[1] == marked_bbox
-            assert [str(item) for item in execution["evidence_item_ids"]] == [
+            assert annotation_bboxes[0] == expected_bbox
+            assert annotation_bboxes[1] == marked_bbox
+            assert [str(item) for item in execution["annotation_item_ids"]] == [
                 str(execution["correct_option_panel_id"]),
                 "marked_region",
             ]
@@ -632,21 +619,21 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
 
 
 def test_puzzle_spatial_polyomino_rectangle_complement_prompt_examples_match_selected_policy() -> None:
-    task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
+    task = PuzzlesSpatialPolyominoRectangleComplementPieceTask()
     out = task.generate(
         27320,
         params={"query_id": "rectangle_complement_piece", "matching_policy": "rotation_reflection_allowed"},
         max_attempts=10,
     )
-    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {"evidence": [[416, 604, 592, 808], [580, 218, 618, 256]], "answer": "C"}
+    assert answer_and_annotation == {"annotation": [[416, 604, 592, 808], [580, 218, 618, 256]], "answer": "C"}
     assert answer_only == {"answer": "C"}
     assert "Rotation and reflection are allowed" in out.prompt
 
 
 def test_puzzle_spatial_polyomino_rectangle_complement_balanced_sampling_covers_letters_per_policy() -> None:
-    task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
+    task = PuzzlesSpatialPolyominoRectangleComplementPieceTask()
     observed_by_policy = {
         "exact_orientation": set(),
         "rotation_reflection_allowed": set(),
@@ -665,7 +652,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_balanced_sampling_covers_
 
 
 def test_puzzle_spatial_polyomino_rectangle_complement_task_is_deterministic() -> None:
-    task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
+    task = PuzzlesSpatialPolyominoRectangleComplementPieceTask()
     params = {
         "query_id": "rectangle_complement_piece",
         "matching_policy": "rotation_reflection_allowed",
@@ -675,7 +662,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_task_is_deterministic() -
     out_b = task.generate(27480, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

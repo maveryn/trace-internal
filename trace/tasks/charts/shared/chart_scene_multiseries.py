@@ -436,6 +436,7 @@ def render_multiseries_chart_scene(
     legend_text_gap = float(max(16, int(render_params.label_font_size_px * 0.8)))
     legend_frame_fill = tuple(int(value) for value in render_params.plot_fill_rgb)
     legend_meta_by_series: Dict[str, Dict[str, List[float]]] = {}
+    legend_boxes: List[Tuple[float, float, float, float]] = []
     for index, (_, series_label) in enumerate(series_list):
         sample_record = next(record for record in mark_records if str(record["series_label"]) == str(series_label))
         fill_rgb = tuple(int(channel) for channel in sample_record["fill_rgb"])
@@ -494,6 +495,20 @@ def render_multiseries_chart_scene(
             stroke_fill=render_params.text_stroke_rgb,
             stroke_width=int(render_params.label_stroke_width_px),
         )
+        label_bbox = _text_bbox(
+            draw,
+            text=str(series_label),
+            center=label_center,
+            font=label_font,
+        )
+        row_bbox = _union_bboxes((legend_frame_bbox, label_bbox))
+        legend_meta = {
+            "legend_swatch_bbox_px": [round(float(value), 3) for value in legend_frame_bbox],
+            "legend_label_bbox_px": [round(float(value), 3) for value in label_bbox],
+            "legend_row_bbox_px": [round(float(value), 3) for value in row_bbox],
+        }
+        legend_meta_by_series[str(series_label)] = legend_meta
+        legend_boxes.append(tuple(float(value) for value in row_bbox))
 
     category_group_bboxes = {}
     for _, category_label in categories:
@@ -513,6 +528,7 @@ def render_multiseries_chart_scene(
         category_center = list(category_label_meta[category_label]["center"])
         category_bbox = list(category_label_meta[category_label]["bbox"])
         category_group_bbox = list(category_group_bboxes[category_label])
+        legend_meta = legend_meta_by_series.get(str(record["series_label"]), {})
         mark_trace = {
             "entity_id": f"mark_{category_label}_{str(record['series_label'])}",
             "category_label": str(category_label),
@@ -527,6 +543,7 @@ def render_multiseries_chart_scene(
             "category_group_bbox_px": list(category_group_bbox),
             "mark_fill_rgb": list(record["fill_rgb"]),
             "mark_outline_rgb": list(record["outline_rgb"]),
+            **{str(key): list(value) for key, value in legend_meta.items()},
         }
         mark_traces.append(mark_trace)
         entities.append(
@@ -566,6 +583,15 @@ def render_multiseries_chart_scene(
         value_axis_window_enabled=bool(value_axis_window_enabled),
         guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
         guide_lines=tuple(dict(item) for item in guide_lines),
+        legend_bbox_px=(
+            tuple(round(float(value), 3) for value in _union_bboxes(legend_boxes))
+            if legend_boxes
+            else ()
+        ),
+        legend_item_bboxes_px={
+            str(series_label): tuple(float(value) for value in legend_meta["legend_row_bbox_px"])
+            for series_label, legend_meta in legend_meta_by_series.items()
+        },
     )
 
 

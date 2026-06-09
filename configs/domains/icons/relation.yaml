@@ -24,16 +24,6 @@ generation:
         mirror_diagonal_main: 1.0
         mirror_diagonal_anti: 1.0
         mirror_both_axes: 1.0
-    task_icons__mirror_grid__reflection_match_label:
-      object_count_min: 6
-      object_count_max: 6
-      pool_manifest: non_symmetry.txt
-      shuffle_scene_labels: true
-      reflection_query_weights:
-        vertical_reflection_match: 1.0
-        horizontal_reflection_match: 1.0
-        diagonal_main_reflection_match: 1.0
-        diagonal_anti_reflection_match: 1.0
     task_icons__icon_cutout__partial_match_label:
       object_count_min: 6
       object_count_max: 6
@@ -231,23 +221,14 @@ rendering:
       canvas_width: 1104
       canvas_height: 640
       reference_panel_width_px: 296
+      palette_size_min: 4
+      palette_size_max: 7
       symmetric_icon_count_choices: [2, 4, 6]
       both_axes_icon_count_choices: [4]
       nonsymmetric_icon_count_choices: [2, 4, 6]
       patch_inner_margin_px: 8
       patch_min_gap_px: 6
       patch_sampling_attempts: 160
-    task_icons__mirror_grid__reflection_match_label:
-      canvas_width: 1104
-      canvas_height: 640
-      reference_panel_width_px: 296
-      symmetric_icon_count_choices: [2, 4, 6]
-      both_axes_icon_count_choices: [4]
-      nonsymmetric_icon_count_choices: [2, 3]
-      wrong_axis_distractor_count: 1
-      patch_inner_margin_px: 8
-      patch_min_gap_px: 6
-      patch_sampling_attempts: 180
     task_icons__icon_cutout__partial_match_label:
       canvas_width: 1104
       canvas_height: 640
@@ -364,57 +345,46 @@ prompt:
   task_overrides:
     task_icons__mirror_grid__mirror_symmetry_count:
       scene_key: reference_grid_mirror_symmetry_relation
-      object_description: a Reference cell on the left and a labeled Scene grid on the right
+      object_description: a Reference cell beside a labeled Scene grid
       question_text: How many labeled Scene cells have the same mirror symmetry as the Reference cell? The symmetry may be vertical, horizontal, either diagonal, or both vertical and horizontal.
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every matching Scene cell
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every matching Scene cell
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[360,120,560,320],[590,120,790,320]],"answer":2}'
+      json_example: '{"annotation":[[360,120,560,320],[590,120,790,320]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons__mirror_grid__reflection_match_label:
-      scene_key: reference_grid_mirror_symmetry_relation
-      object_description: a Reference cell on the left and a labeled Scene grid on the right
-      question_text_vertical_reflection_match: Which labeled Scene cell is the left-right mirror reflection of the Reference cell across a vertical axis?
-      question_text_horizontal_reflection_match: Which labeled Scene cell is the top-bottom mirror reflection of the Reference cell across a horizontal axis?
-      question_text_diagonal_main_reflection_match: Which labeled Scene cell is the mirror reflection of the Reference cell across the diagonal from top left to bottom right?
-      question_text_diagonal_anti_reflection_match: Which labeled Scene cell is the mirror reflection of the Reference cell across the diagonal from top right to bottom left?
-      evidence_hint: set "evidence" to a JSON object with keys "reference_cell" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
-      answer_hint: set "answer" to the matching Scene label as a string
-      json_example: '{"evidence":{"reference_cell":[72,132,252,312],"selected_option":[360,120,560,320]},"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_icons__icon_cutout__partial_match_label:
       scene_key: icon_cutout_relation
-      object_description: a partial icon fragment on the left and six labeled full-icon options on the right
+      object_description: a partial icon fragment beside six labeled full-icon options
       question_text_partial_icon_match_label: Which labeled full icon does the partial fragment come from?
-      evidence_hint: set "evidence" to a JSON object with keys "source_fragment" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      annotation_hint: set "annotation" to a JSON object with keys "source_fragment" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
       answer_hint: set "answer" to the selected option letter as a string
-      json_example: '{"evidence":{"source_fragment":[84,168,248,332],"selected_option":[492,112,662,282]},"answer":"C"}'
+      json_example: '{"annotation":{"source_fragment":[84,168,248,332],"selected_option":[492,112,662,282]},"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_icons__two_anchor__between_anchors_count:
       scene_key: scene_two_anchor_relation
-      object_description: a Scene panel with two icons marked A and B
+      object_description: a panel with two icons marked A and B
       question_text_vertical_strip: How many other icons have centers in the vertical strip between A and B?
       question_text_horizontal_strip: How many other icons have centers in the horizontal strip between A and B?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted icons other than A and B
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted icons other than A and B
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[312,180,372,240],[540,286,612,358]],"answer":2}'
+      json_example: '{"annotation":[[312,180,372,240],[540,286,612,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__overlap_grid__occlusion_order_count:
       scene_key: reference_grid_occlusion_relation
-      object_description: a Reference cell on the left and a labeled Scene grid on the right
+      object_description: a Reference cell beside a labeled Scene grid
       question_text: How many labeled Scene cells match the Reference front-to-back order? Front-to-back order means which icon is on top.
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'
+      json_example: '{"annotation":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     task_icons__reference_canvas__anchor_position_count:
-      object_description: a Reference icon on the left and a Scene panel on the right with one icon marked Anchor
+      object_description: a Reference icon beside a Scene panel with one icon marked Anchor
       question_text_left: How many Scene icons match the Reference type and are to the left of the Anchor?
       question_text_right: How many Scene icons match the Reference type and are to the right of the Anchor?
       question_text_above: How many Scene icons match the Reference type and are above the Anchor?
       question_text_below: How many Scene icons match the Reference type and are below the Anchor?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted Scene icons
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted Scene icons
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[438,162,498,222],[602,302,670,370]],"answer":2}'
+      json_example: '{"annotation":[[438,162,498,222],[602,302,670,370]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__paired_canvas__panel_movement_direction_count:
       scene_key: paired_canvas_relation
@@ -423,42 +393,42 @@ prompt:
       question_text_moved_right_count: How many icons moved right from the Left panel to the Right panel?
       question_text_moved_up_count: How many icons moved up from the Left panel to the Right panel?
       question_text_moved_down_count: How many icons moved down from the Left panel to the Right panel?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted Right-panel icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted Right-panel icon
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[620,156,684,220],[834,338,902,406]],"answer":2}'
+      json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__named_field__reference_distance_rank_label:
       scene_key: named_reference_distance_relation
-      object_description: one panel with one uniquely identifiable named reference icon, six letter-labeled candidate icons, and unlabeled distractor icons
+      object_description: a panel with one named reference icon, six option icons labeled A-F, and other icons
       question_text_closest_to_named_reference_label: Which labeled icon is closest to the {reference_description}?
       question_text_second_closest_to_named_reference_label: Which labeled icon is second closest to the {reference_description}?
       question_text_farthest_from_named_reference_label: Which labeled icon is farthest from the {reference_description}?
-      evidence_hint: set "evidence" to a JSON object with keys "reference_icon" and "selected_candidate", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      annotation_hint: set "annotation" to a JSON object with keys "reference_icon" and "selected_candidate", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
       answer_hint: set "answer" to the selected option letter as a string
-      json_example: '{"evidence":{"reference_icon":[172,238,244,310],"selected_candidate":[612,184,676,248]},"answer":"D"}'
+      json_example: '{"annotation":{"reference_icon":[172,238,244,310],"selected_candidate":[612,184,676,248]},"answer":"D"}'
       json_example_answer_only: '{"answer":"D"}'
     task_icons__named_path__path_neighbor_label:
       scene_key: named_path_relation
-      object_description: one panel with a single continuous path from START to END, named icons placed on path stops, exactly six letter-labeled option icons, and unlabeled distractor icons
+      object_description: a START-to-END icon path with six option icons labeled A-F and other icons
       question_text_after_first_shape_label: Which labeled icon comes immediately after the first "{target_shape_name}" icon along the path from START to END?
       question_text_before_first_shape_label: Which labeled icon comes immediately before the first "{target_shape_name}" icon along the path from START to END?
       question_text_after_last_shape_label: Which labeled icon comes immediately after the last "{target_shape_name}" icon along the path from START to END?
       question_text_before_last_shape_label: Which labeled icon comes immediately before the last "{target_shape_name}" icon along the path from START to END?
       question_text_after_second_shape_label: Which labeled icon comes immediately after the second "{target_shape_name}" icon along the path from START to END?
       question_text_before_second_shape_label: Which labeled icon comes immediately before the second "{target_shape_name}" icon along the path from START to END?
-      evidence_hint: set "evidence" to a JSON object with keys "queried_icon" and "selected_neighbor", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      annotation_hint: set "annotation" to a JSON object with keys "queried_icon" and "selected_neighbor"; values are [x0, y0, x1, y1] pixel boxes for the two witnessed icons
       answer_hint: set "answer" to the selected option letter as a string
-      json_example: '{"evidence":{"queried_icon":[218,314,274,370],"selected_neighbor":[548,248,604,304]},"answer":"E"}'
+      json_example: '{"annotation":{"queried_icon":[218,314,274,370],"selected_neighbor":[548,248,604,304]},"answer":"E"}'
       json_example_answer_only: '{"answer":"E"}'
     task_icons__paired_canvas__original_attribute_label:
       scene_key: paired_named_original_relation
-      object_description: two open icon panels labeled Original and Right; the Right panel contains six letter-labeled tracked icons plus unlabeled distractor icons
-      question_text_original_shape_label: Which labeled icon in the Right panel was originally a {target_description} in the Original panel?
-      question_text_original_color_shape_label: Which labeled icon in the Right panel was originally a {target_description} in the Original panel?
-      question_text_original_fill_shape_label: Which labeled icon in the Right panel was originally a {target_description} in the Original panel?
-      evidence_hint: set "evidence" to a JSON object with keys "original_icon" and "right_icon", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      object_description: two icon panels labeled Original and Right; the Right panel contains six option icons labeled A-F and other icons
+      question_text_original_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
+      question_text_original_color_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
+      question_text_original_fill_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
+      annotation_hint: set "annotation" to a JSON object with keys "original_icon" and "right_icon"; values are [x0, y0, x1, y1] pixel boxes for the matched icons
       answer_hint: set "answer" to the selected Right-panel option letter as a string
-      json_example: '{"evidence":{"original_icon":[168,210,224,266],"right_icon":[716,214,772,270]},"answer":"C"}'
+      json_example: '{"annotation":{"original_icon":[168,210,224,266],"right_icon":[716,214,772,270]},"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
 
 complexity:

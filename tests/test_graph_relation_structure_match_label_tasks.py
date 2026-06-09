@@ -14,8 +14,11 @@ def _has_antiparallel_edges(edges: list[list[str]]) -> bool:
 def test_graph_options_directed_samples_avoid_overlapped_reverse_arrows() -> None:
     """Directed option graphs should not draw opposite arrows on the same segment."""
 
-    task = create_task("task_graph__graph_options__structure_match_label")
-    for query_id in ("same_structure_label", "contained_subgraph_label"):
+    tasks = {
+        "same_structure_label": create_task("task_graph__graph_options__same_structure_label"),
+        "contained_subgraph_label": create_task("task_graph__graph_options__contained_subgraph_label"),
+    }
+    for query_id, task in tasks.items():
         for index in range(20):
             out = task.generate(
                 int(hash64(19244, f"graph_options_directed_no_antiparallel:{query_id}", index)),

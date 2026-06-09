@@ -28,11 +28,12 @@ def test_quadrilateral_completion_has_unique_candidate_answer(query_id: str) -> 
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "point_set"
-    assert out.evidence_gt.value == [candidates["C"]["point_px"]]
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == [candidates["C"]["point_px"]]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert len(execution["known_points_graph"]) == 3
-    assert len(candidates) == 6
+    assert 4 <= len(candidates) <= 6
+    assert "C" in candidates
 
     target_kind = execution["target_kind"]
     matching_labels = [
@@ -56,9 +57,9 @@ def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [panels["D"]["panel_bbox"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.value == [panels["D"]["panel_bbox"]]
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert len(panels) == 6
     assert all(len(panel["points_graph"]) == 4 for panel in panels.values())
 
@@ -86,6 +87,6 @@ def test_quadrilateral_coordinate_tasks_are_deterministic(task_id: str, params: 
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()

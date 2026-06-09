@@ -23,7 +23,7 @@ from trace.tasks.shared.text_legibility import (
     resolve_readable_text_style,
     traced_text_records_summary,
 )
-from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.shared.text_rendering import load_font, symbol_safe_font_for_text, text_needs_symbol_safe_font
 from trace.tasks.shared.visual_style.information_scene import resolve_information_scene_style
 from trace.tasks.shared.visual_style.panel import resolve_panel_scene_style
 from trace.tasks.shared.visual_style.technical_diagram import resolve_technical_diagram_style
@@ -177,6 +177,16 @@ def test_global_text_collection_records_compatibility_draw() -> None:
     assert summary["source"] == "automatic_drawn_text_collector"
     assert summary["drawn_text_record_count"] == 1
     assert summary["failure_count"] == 0
+
+
+def test_symbol_safe_font_fallback_is_used_for_math_readout_tokens() -> None:
+    sampled_font = load_font(24, bold=True, font_family="yanone_kaffeesatz")
+    symbol_font = symbol_safe_font_for_text("∠ABC=?", sampled_font)
+
+    assert text_needs_symbol_safe_font("∠ABC=?") is True
+    assert text_needs_symbol_safe_font("ABC=?") is False
+    assert str(getattr(symbol_font, "path", "")) != str(getattr(sampled_font, "path", ""))
+    assert "vollkorn" in str(getattr(symbol_font, "path", "")).casefold()
 
 
 def test_role_metadata_audit_flags_missing_role_and_required(tmp_path: Path) -> None:

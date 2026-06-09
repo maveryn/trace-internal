@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -28,8 +28,6 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_COMPONENT_EDGE_EDIT_MODES,
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_component_size_after_edge_edit,
@@ -38,13 +36,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import (
     format_graph_prompt_label,
     graph_query_probabilities_from_alias_map,
@@ -166,11 +162,17 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(edit_operation)}:{int(target_component_size)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(edit_operation),
+            str(target_component_size),
+            str(topology_profile),
+        ),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -289,84 +291,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for component-size-after-edge-edit")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     query_probabilities = graph_query_probabilities_from_alias_map(edit_operation_probabilities, QUERY_ID_BY_OPERATION)
     return _ResolvedQuery(
@@ -518,15 +460,15 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_component_size_after_edge_removal",
-                "evidence_hint_component_size_after_edge_addition",
+                "annotation_hint_component_size_after_edge_removal",
+                "annotation_hint_component_size_after_edge_addition",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
         prompt_query_label = format_graph_prompt_label(
             str(graph_sample.query_label),
             label_variant=str(query.label_variant),
@@ -539,7 +481,7 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
             str(graph_sample.edit_edge[1]),
             label_variant=str(query.label_variant),
         )
-        evidence_hint_key = f"evidence_hint_{query.prompt_query_key}"
+        annotation_hint_key = f"annotation_hint_{query.prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -547,7 +489,7 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.prompt_query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "query_label": str(prompt_query_label),
@@ -555,7 +497,7 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                 "edit_label_b": str(prompt_edit_label_b),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(
                     query_label=str(prompt_query_label),
                     edit_label_a=str(prompt_edit_label_a),
                     edit_label_b=str(prompt_edit_label_b),
@@ -568,12 +510,12 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
-        target_label_set = {str(label) for label in evidence_labels}
+        annotation_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels)))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
+        target_label_set = {str(label) for label in annotation_labels}
         edit_edge = tuple(str(label) for label in graph_sample.edit_edge)
         edge_label_set = {
             canonicalize_graph_edge_label(str(edge.node_u_label), str(edge.node_v_label), directed=False)
@@ -632,7 +574,7 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                     "edit_edge": list(edit_edge),
                     "edit_edge_visible_in_rendered_graph": bool(edit_edge_visible),
                     "query_label": str(graph_sample.query_label),
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "pre_edit_components_by_label": [list(component) for component in graph_sample.pre_edit_components_by_label],
                     "post_edit_components_by_label": [list(component) for component in graph_sample.post_edit_components_by_label],
                     "pre_edit_adjacency_by_label": {str(key): list(values) for key, values in graph_sample.pre_edit_adjacency_by_label.items()},
@@ -729,9 +671,9 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "target_component_size": int(query.target_component_size),
-                "answer": int(len(evidence_labels)),
+                "answer": int(len(annotation_labels)),
                 "query_label": str(graph_sample.query_label),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 "pre_edit_components_by_label": [list(component) for component in graph_sample.pre_edit_components_by_label],
                 "post_edit_components_by_label": [list(component) for component in graph_sample.post_edit_components_by_label],
                 "pre_edit_adjacency_by_label": {str(key): list(values) for key, values in graph_sample.pre_edit_adjacency_by_label.items()},
@@ -751,22 +693,22 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "query_label": str(graph_sample.query_label),
                 "edit_edge": list(edit_edge),
                 "edit_operation": str(query.edit_operation),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

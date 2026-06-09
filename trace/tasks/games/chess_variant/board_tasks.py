@@ -19,11 +19,12 @@ from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
-from ...shared.text_legibility import draw_text_traced
+from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
+from ..shared.text import draw_game_text_traced
 from ..shared.chess_common import (
     BLACK,
     BOARD_SIZE,
+    NON_KING_PIECE_KINDS,
     WHITE,
     Board,
     ChessPiece,
@@ -37,7 +38,9 @@ from ..shared.chess_common import (
     occupied_piece_count,
     opponent,
     piece_to_entity_id,
+    sample_material_piece,
     serialize_board,
+    validate_square_chess_material,
 )
 from ..shared.complexity import build_games_chess_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
@@ -50,6 +53,7 @@ from ..shared.scene_style import (
     make_panel_scene_background,
     resolve_game_panel_scene_style,
 )
+from ..shared.chess_scene import draw_chess_piece_symbol
 from ..shared.style import build_games_chess_theme
 from ..shared.visual_defaults import load_games_noise_defaults
 
@@ -58,9 +62,17 @@ TASK_ID = "games_chess_variant_board_base"
 TASK_GROUP = "chess_variant"
 SCENE_ID = "chess_variant"
 
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+SUPPORTED_MARKED_PIECE_QUERY_IDS: Tuple[str, ...] = (
     "marked_piece_move_count",
     "marked_piece_capture_count",
+)
+SUPPORTED_TARGET_SQUARE_QUERY_IDS: Tuple[str, ...] = (
+    "white_piece_reaches_target_count",
+    "black_piece_reaches_target_count",
+)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+    *SUPPORTED_MARKED_PIECE_QUERY_IDS,
+    *SUPPORTED_TARGET_SQUARE_QUERY_IDS,
 )
 SUPPORTED_RULE_FAMILIES: Tuple[str, ...] = (
     "straight_range",
@@ -79,6 +91,8 @@ class _TaskDefaults:
 
     marked_piece_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     marked_piece_capture_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    white_piece_reaches_target_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    black_piece_reaches_target_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     range_k_support: Tuple[int, ...] = (2, 3, 4)
     queen_range_k_support: Tuple[int, ...] = (1, 2, 3)
     sparse_min_occupied_count: int = 7
@@ -97,7 +111,7 @@ class _TaskDefaults:
     piece_inset_fraction: float = 0.18
     marked_square_outline_width_px: int = 7
     rule_badge_font_size_px: int = 22
-    token_label_font_size_px: int = 20
+    piece_font_size_px: int = 78
     dynamic_canvas_size_enabled: bool = True
     canvas_min_width_px: int = 560
     canvas_min_height_px: int = 560
@@ -140,23 +154,26 @@ class _RenderParams:
     piece_inset_fraction: float
     marked_square_outline_width_px: int
     rule_badge_font_size_px: int
-    token_label_font_size_px: int
+    piece_font_size_px: int
     layout_jitter_meta: Dict[str, Any]
     font_family: str = ""
 
 
 @dataclass(frozen=True)
 class _Evaluation:
-    """Evaluation for one marked piece under a visible movement rule."""
+    """Evaluation for one query under a visible movement rule."""
 
     answer: int
     legal_destinations: Tuple[Coord, ...]
     capture_coords: Tuple[Coord, ...]
-    evidence_coords: Tuple[Coord, ...]
-    evidence_entity_ids: Tuple[str, ...]
-    evidence_kind: str
+    annotation_coords: Tuple[Coord, ...]
+    annotation_entity_ids: Tuple[str, ...]
+    annotation_kind: str
     marked_coord: Coord
-    marked_piece: ChessPiece
+    marked_piece: ChessPiece | None
+    marker_role: str = "marked_piece"
+    target_coord: Coord | None = None
+    target_color: str = ""
 
 
 @dataclass(frozen=True)
@@ -182,6 +199,8 @@ def _target_support_key(query_id: str) -> str:
     return {
         "marked_piece_move_count": "marked_piece_move_count_support",
         "marked_piece_capture_count": "marked_piece_capture_count_support",
+        "white_piece_reaches_target_count": "white_piece_reaches_target_count_support",
+        "black_piece_reaches_target_count": "black_piece_reaches_target_count_support",
     }[str(query_id)]
 
 
@@ -210,8 +229,8 @@ def _resolve_named_axis(
 
 def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     alias_params = dict(params)
-    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
-        alias_params["query_id"] = alias_params["query_id"]
+    if alias_params.get("query_id") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_id"] = alias_params["query_variant"]
     return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
@@ -437,7 +456,18 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         piece_inset_fraction=float(params.get("piece_inset_fraction", group_default(_RENDER_DEFAULTS, "piece_inset_fraction", _DEFAULTS.piece_inset_fraction))),
         marked_square_outline_width_px=scale_games_px(params.get("marked_square_outline_width_px", group_default(_RENDER_DEFAULTS, "marked_square_outline_width_px", _DEFAULTS.marked_square_outline_width_px)), unit_scale, min_px=4),
         rule_badge_font_size_px=scale_games_px(params.get("rule_badge_font_size_px", group_default(_RENDER_DEFAULTS, "rule_badge_font_size_px", _DEFAULTS.rule_badge_font_size_px)), unit_scale, min_px=16),
-        token_label_font_size_px=scale_games_px(params.get("token_label_font_size_px", group_default(_RENDER_DEFAULTS, "token_label_font_size_px", _DEFAULTS.token_label_font_size_px)), unit_scale, min_px=14),
+        piece_font_size_px=scale_games_px(
+            params.get(
+                "piece_font_size_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "piece_font_size_px",
+                    group_default(_RENDER_DEFAULTS, "token_label_font_size_px", _DEFAULTS.piece_font_size_px),
+                ),
+            ),
+            unit_scale,
+            min_px=32,
+        ),
         layout_jitter_meta=layout_jitter,
         font_family=str(font_family),
     )
@@ -495,9 +525,84 @@ def _all_empty_board_destinations(rule_family: str, range_k: int, origin: Coord)
     return tuple(sorted(out))
 
 
+def _reacher_color_for_query(query_id: str) -> str:
+    """Return the source-piece color requested by a target-square query."""
+
+    return {
+        "white_piece_reaches_target_count": WHITE,
+        "black_piece_reaches_target_count": BLACK,
+    }[str(query_id)]
+
+
+def _destinations_for_piece_under_rule(
+    board: Board,
+    *,
+    source_coord: Coord,
+    rule_family: str,
+    range_k: int,
+) -> Tuple[Tuple[Coord, ...], Tuple[Coord, ...]]:
+    """Return legal destinations and capture destinations under the visible variant rule."""
+
+    piece = board[int(source_coord[0])][int(source_coord[1])]
+    if piece is None:
+        return tuple(), tuple()
+    destinations: List[Coord] = []
+    captures: List[Coord] = []
+    if str(rule_family).endswith("_range"):
+        for direction in _directions_for_rule(str(rule_family)):
+            for coord in _ray_coords(source_coord, direction, max_steps=int(range_k)):
+                occupant = board[int(coord[0])][int(coord[1])]
+                if occupant is None:
+                    destinations.append(coord)
+                    continue
+                if str(occupant.color) != str(piece.color):
+                    destinations.append(coord)
+                    captures.append(coord)
+                break
+    else:
+        for coord in _all_empty_board_destinations(str(rule_family), int(range_k), source_coord):
+            occupant = board[int(coord[0])][int(coord[1])]
+            if occupant is None:
+                destinations.append(coord)
+            elif str(occupant.color) != str(piece.color):
+                destinations.append(coord)
+                captures.append(coord)
+    return tuple(sorted(destinations)), tuple(sorted(captures))
+
+
+def _source_rays_for_target(rule_family: str, range_k: int, target_coord: Coord) -> Tuple[Tuple[Coord, ...], ...]:
+    """Return possible source locations grouped so range rules use at most one source per ray."""
+
+    if str(rule_family).endswith("_range"):
+        return tuple(
+            ray
+            for ray in (
+                _ray_coords(target_coord, direction, max_steps=int(range_k))
+                for direction in _directions_for_rule(str(rule_family))
+            )
+            if ray
+        )
+    rays: List[Tuple[Coord, ...]] = []
+    target_row, target_col = int(target_coord[0]), int(target_coord[1])
+    for dr, dc in _leaper_offsets(str(rule_family)):
+        coord = (target_row + int(dr), target_col + int(dc))
+        if in_bounds(*coord):
+            rays.append((coord,))
+    return tuple(sorted(rays))
+
+
 def _max_possible_answer_for_rule(*, query_id: str, rule_family: str, range_k: int) -> int:
     """Return the largest feasible answer for one visible movement rule."""
 
+    if str(query_id) in SUPPORTED_TARGET_SQUARE_QUERY_IDS:
+        max_count = 0
+        for row in range(BOARD_SIZE):
+            for col in range(BOARD_SIZE):
+                max_count = max(
+                    int(max_count),
+                    len(_source_rays_for_target(str(rule_family), int(range_k), (row, col))),
+                )
+        return int(max_count)
     if str(query_id) == "marked_piece_capture_count" and str(rule_family).endswith("_range"):
         max_count = 0
         for row in range(BOARD_SIZE):
@@ -523,65 +628,101 @@ def _evaluate_board(board: Board, *, marked_coord: Coord, rule_family: str, rang
     piece = board[int(marked_coord[0])][int(marked_coord[1])]
     if piece is None:
         raise ValueError("marked square is empty")
-    destinations: List[Coord] = []
-    captures: List[Coord] = []
-    if str(rule_family).endswith("_range"):
-        for direction in _directions_for_rule(str(rule_family)):
-            for coord in _ray_coords(marked_coord, direction, max_steps=int(range_k)):
-                occupant = board[int(coord[0])][int(coord[1])]
-                if occupant is None:
-                    destinations.append(coord)
-                    continue
-                if str(occupant.color) != str(piece.color):
-                    destinations.append(coord)
-                    captures.append(coord)
-                break
-    else:
-        for coord in _all_empty_board_destinations(str(rule_family), int(range_k), marked_coord):
-            occupant = board[int(coord[0])][int(coord[1])]
-            if occupant is None:
-                destinations.append(coord)
-            elif str(occupant.color) != str(piece.color):
-                destinations.append(coord)
-                captures.append(coord)
-    legal_destinations = tuple(sorted(destinations))
-    capture_coords = tuple(sorted(captures))
+    legal_destinations, capture_coords = _destinations_for_piece_under_rule(
+        board,
+        source_coord=marked_coord,
+        rule_family=str(rule_family),
+        range_k=int(range_k),
+    )
     return _Evaluation(
         answer=0,
         legal_destinations=legal_destinations,
         capture_coords=capture_coords,
-        evidence_coords=(),
-        evidence_entity_ids=(),
-        evidence_kind="cell",
+        annotation_coords=(),
+        annotation_entity_ids=(),
+        annotation_kind="cell",
         marked_coord=marked_coord,
         marked_piece=piece,
     )
 
 
-def _with_query_evidence(board: Board, evaluation: _Evaluation, *, query_id: str) -> _Evaluation:
+def _evaluate_target_square_reachers(
+    board: Board,
+    *,
+    target_coord: Coord,
+    query_id: str,
+    rule_family: str,
+    range_k: int,
+) -> _Evaluation:
+    """Evaluate same-side pieces that can legally move to one marked target square."""
+
+    target_color = _reacher_color_for_query(str(query_id))
+    target_occupant = board[int(target_coord[0])][int(target_coord[1])]
+    if target_occupant is not None and str(target_occupant.color) == str(target_color):
+        raise ValueError("target square cannot be occupied by the queried side")
+    annotation_coords: List[Coord] = []
+    for coord in occupied_coords(board):
+        piece = board[int(coord[0])][int(coord[1])]
+        if piece is None or str(piece.color) != str(target_color):
+            continue
+        legal_destinations, _capture_coords = _destinations_for_piece_under_rule(
+            board,
+            source_coord=coord,
+            rule_family=str(rule_family),
+            range_k=int(range_k),
+        )
+        if tuple(target_coord) in set(legal_destinations):
+            annotation_coords.append(tuple(coord))
+    annotation_coords_tuple = tuple(sorted(annotation_coords))
+    return _Evaluation(
+        answer=len(annotation_coords_tuple),
+        legal_destinations=(),
+        capture_coords=(),
+        annotation_coords=annotation_coords_tuple,
+        annotation_entity_ids=tuple(
+            piece_to_entity_id(coord, board[int(coord[0])][int(coord[1])])
+            for coord in annotation_coords_tuple
+            if board[int(coord[0])][int(coord[1])] is not None
+        ),
+        annotation_kind="piece_point",
+        marked_coord=target_coord,
+        marked_piece=None,
+        marker_role="target_square",
+        target_coord=target_coord,
+        target_color=str(target_color),
+    )
+
+
+def _with_query_annotation(board: Board, evaluation: _Evaluation, *, query_id: str) -> _Evaluation:
     if str(query_id) == "marked_piece_move_count":
-        evidence_coords = tuple(evaluation.legal_destinations)
+        annotation_coords = tuple(evaluation.legal_destinations)
         return _Evaluation(
-            answer=len(evidence_coords),
+            answer=len(annotation_coords),
             legal_destinations=tuple(evaluation.legal_destinations),
             capture_coords=tuple(evaluation.capture_coords),
-            evidence_coords=evidence_coords,
-            evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
-            evidence_kind="cell",
+            annotation_coords=annotation_coords,
+            annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
+            annotation_kind="cell",
             marked_coord=evaluation.marked_coord,
             marked_piece=evaluation.marked_piece,
+            marker_role=str(evaluation.marker_role),
+            target_coord=evaluation.target_coord,
+            target_color=str(evaluation.target_color),
         )
     if str(query_id) == "marked_piece_capture_count":
-        evidence_coords = tuple(evaluation.capture_coords)
+        annotation_coords = tuple(evaluation.capture_coords)
         return _Evaluation(
-            answer=len(evidence_coords),
+            answer=len(annotation_coords),
             legal_destinations=tuple(evaluation.legal_destinations),
             capture_coords=tuple(evaluation.capture_coords),
-            evidence_coords=evidence_coords,
-            evidence_entity_ids=tuple(coord_to_cell_id(coord) for coord in evidence_coords),
-            evidence_kind="cell",
+            annotation_coords=annotation_coords,
+            annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
+            annotation_kind="cell",
             marked_coord=evaluation.marked_coord,
             marked_piece=evaluation.marked_piece,
+            marker_role=str(evaluation.marker_role),
+            target_coord=evaluation.target_coord,
+            target_color=str(evaluation.target_color),
         )
     raise ValueError(f"unsupported query id: {query_id}")
 
@@ -595,8 +736,115 @@ def _random_marked_coord(rng, *, rule_family: str, range_k: int, minimum_destina
     raise ValueError("no marked coordinate has enough destinations")
 
 
-def _piece(color: str) -> ChessPiece:
-    return ChessPiece(str(color), "pawn")
+def _place_variant_piece(
+    *,
+    rng,
+    mutable: list[list[ChessPiece | None]],
+    coord: Coord,
+    color: str | None = None,
+    kinds: Sequence[str] = NON_KING_PIECE_KINDS,
+) -> bool:
+    """Place one material-capped chess symbol for a rule-card variant board."""
+
+    row, col = int(coord[0]), int(coord[1])
+    if mutable[row][col] is not None:
+        return False
+    colors = (str(color),) if color is not None else (WHITE, BLACK)
+    piece = sample_material_piece(
+        rng,
+        freeze_board(mutable),
+        colors=colors,
+        kinds=kinds,
+        row=int(row),
+        enforce_standard_pawn_rows=True,
+    )
+    if piece is None:
+        return False
+    mutable[row][col] = piece
+    return True
+
+
+def _evaluate_axes_board(
+    board: Board,
+    *,
+    axes: _ResolvedAxes,
+    marked: Coord | None,
+    target: Coord | None,
+) -> _Evaluation:
+    """Evaluate a board using the active chess-variant query contract."""
+
+    if str(axes.query_id) in SUPPORTED_TARGET_SQUARE_QUERY_IDS:
+        if target is None:
+            raise ValueError("target-square query requires target")
+        return _evaluate_target_square_reachers(
+            board,
+            target_coord=target,
+            query_id=str(axes.query_id),
+            rule_family=str(axes.rule_family),
+            range_k=int(axes.range_k),
+        )
+    if marked is None:
+        raise ValueError("marked-piece query requires marked coordinate")
+    return _with_query_annotation(
+        board,
+        _evaluate_board(
+            board,
+            marked_coord=marked,
+            rule_family=str(axes.rule_family),
+            range_k=int(axes.range_k),
+        ),
+        query_id=str(axes.query_id),
+    )
+
+
+def _add_required_kings_preserving(
+    *,
+    rng,
+    board: Board,
+    axes: _ResolvedAxes,
+    marked: Coord | None,
+    target: Coord | None,
+) -> Board:
+    """Add one king per side without changing the active answer."""
+
+    mutable = [list(row) for row in board]
+    for color in (WHITE, BLACK):
+        if any(piece is not None and str(piece.color) == str(color) and str(piece.kind) == "king" for row in mutable for piece in row):
+            continue
+        candidates = [
+            (row, col)
+            for row in range(BOARD_SIZE)
+            for col in range(BOARD_SIZE)
+            if mutable[row][col] is None and (target is None or (row, col) != tuple(target))
+        ]
+        rng.shuffle(candidates)
+        placed = False
+        for coord in candidates:
+            mutable[int(coord[0])][int(coord[1])] = ChessPiece(str(color), "king")
+            candidate = freeze_board(mutable)
+            if not validate_square_chess_material(
+                candidate,
+                require_both_kings=False,
+                enforce_standard_pawn_rows=True,
+                enforce_non_adjacent_kings=True,
+            ):
+                mutable[int(coord[0])][int(coord[1])] = None
+                continue
+            try:
+                evaluation = _evaluate_axes_board(candidate, axes=axes, marked=marked, target=target)
+            except ValueError:
+                evaluation = None
+            if evaluation is None or int(evaluation.answer) != int(axes.target_answer):
+                mutable[int(coord[0])][int(coord[1])] = None
+                continue
+            placed = True
+            break
+        if not placed:
+            raise ValueError("failed to add required chess-variant kings without changing answer")
+    final = freeze_board(mutable)
+    if not validate_square_chess_material(final):
+        raise ValueError("chess-variant board is not material-plausible")
+    return final
 
 
 def _random_composition_with_caps(rng, *, total: int, caps: Sequence[int]) -> Tuple[int, ...] | None:
@@ -628,7 +876,8 @@ def _construct_move_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]:
     minimum = int(axes.target_answer)
     marked = _random_marked_coord(rng, rule_family=axes.rule_family, range_k=axes.range_k, minimum_destinations=minimum)
     mutable = [list(row) for row in empty_board()]
-    mutable[int(marked[0])][int(marked[1])] = _piece(marked_color)
+    if not _place_variant_piece(rng=rng, mutable=mutable, coord=marked, color=marked_color):
+        raise ValueError("failed to place marked chess-variant piece")
     if str(axes.rule_family).endswith("_range"):
         rays = [_ray_coords(marked, direction, max_steps=int(axes.range_k)) for direction in _directions_for_rule(str(axes.rule_family))]
         caps = [len(ray) for ray in rays]
@@ -639,9 +888,10 @@ def _construct_move_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]:
             for index, coord in enumerate(ray):
                 if index < int(legal_count):
                     if int(rng.randrange(5)) == 0:
-                        mutable[int(coord[0])][int(coord[1])] = _piece(opponent(marked_color))
+                        _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=opponent(marked_color))
                     continue
-                mutable[int(coord[0])][int(coord[1])] = _piece(marked_color)
+                if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=marked_color):
+                    raise ValueError("failed to place chess-variant range blocker")
                 break
     else:
         potentials = list(_all_empty_board_destinations(str(axes.rule_family), int(axes.range_k), marked))
@@ -652,9 +902,10 @@ def _construct_move_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]:
         for coord in potentials:
             if tuple(coord) in legal:
                 if int(rng.randrange(5)) == 0:
-                    mutable[int(coord[0])][int(coord[1])] = _piece(opponent(marked_color))
+                    _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=opponent(marked_color))
             else:
-                mutable[int(coord[0])][int(coord[1])] = _piece(marked_color)
+                if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=marked_color):
+                    raise ValueError("failed to place chess-variant leaper blocker")
     return freeze_board(mutable), marked
 
 
@@ -662,7 +913,8 @@ def _construct_capture_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]
     marked_color = WHITE if int(rng.randrange(2)) == 0 else BLACK
     marked = _random_marked_coord(rng, rule_family=axes.rule_family, range_k=axes.range_k, minimum_destinations=int(axes.target_answer))
     mutable = [list(row) for row in empty_board()]
-    mutable[int(marked[0])][int(marked[1])] = _piece(marked_color)
+    if not _place_variant_piece(rng=rng, mutable=mutable, coord=marked, color=marked_color):
+        raise ValueError("failed to place marked chess-variant piece")
     if str(axes.rule_family).endswith("_range"):
         rays = [_ray_coords(marked, direction, max_steps=int(axes.range_k)) for direction in _directions_for_rule(str(axes.rule_family))]
         available = [ray for ray in rays if ray]
@@ -676,11 +928,13 @@ def _construct_capture_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]
             if tuple(ray[0]) in capture_rays:
                 distance = int(rng.randint(1, len(ray)))
                 target = ray[distance - 1]
-                mutable[int(target[0])][int(target[1])] = _piece(opponent(marked_color))
+                if not _place_variant_piece(rng=rng, mutable=mutable, coord=target, color=opponent(marked_color)):
+                    raise ValueError("failed to place chess-variant capture target")
                 continue
             if int(rng.randrange(2)) == 0:
                 blocker = ray[int(rng.randint(0, len(ray) - 1))]
-                mutable[int(blocker[0])][int(blocker[1])] = _piece(marked_color)
+                if not _place_variant_piece(rng=rng, mutable=mutable, coord=blocker, color=marked_color):
+                    raise ValueError("failed to place chess-variant capture blocker")
     else:
         potentials = list(_all_empty_board_destinations(str(axes.rule_family), int(axes.range_k), marked))
         if len(potentials) < int(axes.target_answer):
@@ -688,8 +942,56 @@ def _construct_capture_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]
         rng.shuffle(potentials)
         captures = set(tuple(coord) for coord in potentials[: int(axes.target_answer)])
         for coord in potentials:
-            mutable[int(coord[0])][int(coord[1])] = _piece(opponent(marked_color) if tuple(coord) in captures else marked_color)
+            piece_color = opponent(marked_color) if tuple(coord) in captures else marked_color
+            if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=piece_color):
+                raise ValueError("failed to place chess-variant leaper capture piece")
     return freeze_board(mutable), marked
+
+
+def _random_target_coord(rng, *, rule_family: str, range_k: int, minimum_sources: int) -> Coord:
+    """Return a target square with enough geometrically possible source rays."""
+
+    coords = [(row, col) for row in range(BOARD_SIZE) for col in range(BOARD_SIZE)]
+    rng.shuffle(coords)
+    for coord in coords:
+        if len(_source_rays_for_target(str(rule_family), int(range_k), coord)) >= int(minimum_sources):
+            return tuple(coord)
+    raise ValueError("no target coordinate has enough source rays")
+
+
+def _construct_reacher_board(*, rng, axes: _ResolvedAxes) -> Tuple[Board, Coord]:
+    """Construct a board with exactly the requested pieces able to reach one target square."""
+
+    target_color = _reacher_color_for_query(str(axes.query_id))
+    target = _random_target_coord(
+        rng,
+        rule_family=str(axes.rule_family),
+        range_k=int(axes.range_k),
+        minimum_sources=int(axes.target_answer),
+    )
+    source_rays = list(_source_rays_for_target(str(axes.rule_family), int(axes.range_k), target))
+    if len(source_rays) < int(axes.target_answer):
+        raise ValueError("not enough source rays for requested target answer")
+    rng.shuffle(source_rays)
+    selected_rays = source_rays[: int(axes.target_answer)]
+    mutable = [list(row) for row in empty_board()]
+    if int(rng.randrange(3)) == 0:
+        _place_variant_piece(rng=rng, mutable=mutable, coord=target, color=opponent(target_color))
+    for ray in selected_rays:
+        source = tuple(rng.choice(list(ray)))
+        if not _place_variant_piece(rng=rng, mutable=mutable, coord=source, color=target_color):
+            raise ValueError("failed to place chess-variant reacher source")
+    board = freeze_board(mutable)
+    evaluation = _evaluate_target_square_reachers(
+        board,
+        target_coord=target,
+        query_id=str(axes.query_id),
+        rule_family=str(axes.rule_family),
+        range_k=int(axes.range_k),
+    )
+    if int(evaluation.answer) != int(axes.target_answer):
+        raise ValueError("constructed reacher board does not match target answer")
+    return board, target
 
 
 def _desired_piece_count(rng, scene_variant: str) -> int:
@@ -708,10 +1010,18 @@ def _add_fillers_preserving(*, rng, board: Board, marked: Coord, axes: _Resolved
         if not empties:
             break
         coord = tuple(rng.choice(empties))
-        color = WHITE if int(rng.randrange(2)) == 0 else BLACK
-        mutable[int(coord[0])][int(coord[1])] = _piece(color)
+        if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord):
+            break
         frozen = freeze_board(mutable)
-        candidate = _with_query_evidence(
+        if not validate_square_chess_material(
+            frozen,
+            require_both_kings=False,
+            enforce_standard_pawn_rows=True,
+            enforce_non_adjacent_kings=True,
+        ):
+            mutable[int(coord[0])][int(coord[1])] = None
+            continue
+        candidate = _with_query_annotation(
             frozen,
             _evaluate_board(frozen, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
             query_id=axes.query_id,
@@ -721,21 +1031,93 @@ def _add_fillers_preserving(*, rng, board: Board, marked: Coord, axes: _Resolved
     return freeze_board(mutable)
 
 
+def _add_fillers_preserving_reachers(*, rng, board: Board, target: Coord, axes: _ResolvedAxes, desired_count: int) -> Board:
+    """Add visual filler pieces without changing a target-square reacher answer."""
+
+    mutable = [list(row) for row in board]
+    target_answer = int(axes.target_answer)
+    attempts = 0
+    while occupied_piece_count(mutable) < int(desired_count) and attempts < 960:
+        attempts += 1
+        empties = [
+            (row, col)
+            for row in range(BOARD_SIZE)
+            for col in range(BOARD_SIZE)
+            if mutable[row][col] is None and (row, col) != tuple(target)
+        ]
+        if not empties:
+            break
+        coord = tuple(rng.choice(empties))
+        if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord):
+            break
+        frozen = freeze_board(mutable)
+        if not validate_square_chess_material(
+            frozen,
+            require_both_kings=False,
+            enforce_standard_pawn_rows=True,
+            enforce_non_adjacent_kings=True,
+        ):
+            mutable[int(coord[0])][int(coord[1])] = None
+            continue
+        try:
+            candidate = _evaluate_target_square_reachers(
+                frozen,
+                target_coord=target,
+                query_id=str(axes.query_id),
+                rule_family=str(axes.rule_family),
+                range_k=int(axes.range_k),
+            )
+        except ValueError:
+            candidate = None
+        if candidate is None or int(candidate.answer) != int(target_answer):
+            mutable[int(coord[0])][int(coord[1])] = None
+    return freeze_board(mutable)
+
+
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> _Sample:
     for _ in range(240):
         try:
-            if str(axes.query_id) == "marked_piece_move_count":
+            if str(axes.query_id) in SUPPORTED_TARGET_SQUARE_QUERY_IDS:
+                board, target = _construct_reacher_board(rng=rng, axes=axes)
+                board = _add_required_kings_preserving(rng=rng, board=board, axes=axes, marked=None, target=target)
+                desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
+                board = _add_fillers_preserving_reachers(
+                    rng=rng,
+                    board=board,
+                    target=target,
+                    axes=axes,
+                    desired_count=desired_count,
+                )
+                evaluation = _evaluate_target_square_reachers(
+                    board,
+                    target_coord=target,
+                    query_id=str(axes.query_id),
+                    rule_family=str(axes.rule_family),
+                    range_k=int(axes.range_k),
+                )
+            elif str(axes.query_id) == "marked_piece_move_count":
                 board, marked = _construct_move_board(rng=rng, axes=axes)
+                board = _add_required_kings_preserving(rng=rng, board=board, axes=axes, marked=marked, target=None)
+                desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
+                board = _add_fillers_preserving(rng=rng, board=board, marked=marked, axes=axes, desired_count=desired_count)
+                evaluation = _with_query_annotation(
+                    board,
+                    _evaluate_board(board, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
+                    query_id=axes.query_id,
+                )
             else:
                 board, marked = _construct_capture_board(rng=rng, axes=axes)
-            desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
-            board = _add_fillers_preserving(rng=rng, board=board, marked=marked, axes=axes, desired_count=desired_count)
-            evaluation = _with_query_evidence(
-                board,
-                _evaluate_board(board, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
-                query_id=axes.query_id,
-            )
+                board = _add_required_kings_preserving(rng=rng, board=board, axes=axes, marked=marked, target=None)
+                desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
+                board = _add_fillers_preserving(rng=rng, board=board, marked=marked, axes=axes, desired_count=desired_count)
+                evaluation = _with_query_annotation(
+                    board,
+                    _evaluate_board(board, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
+                    query_id=axes.query_id,
+                )
             if int(evaluation.answer) != int(axes.target_answer):
+                continue
+            if not validate_square_chess_material(board):
                 continue
             return _Sample(
                 board=board,
@@ -748,7 +1130,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> _Sample:
     raise ValueError("failed to sample requested chess-variant board")
 
 
-def _token_bbox(cell_bbox: Tuple[float, float, float, float], *, inset_fraction: float) -> Tuple[float, float, float, float]:
+def _piece_bbox(cell_bbox: Tuple[float, float, float, float], *, inset_fraction: float) -> Tuple[float, float, float, float]:
     left, top, right, bottom = cell_bbox
     inset = float(max(5.0, float(inset_fraction) * min(right - left, bottom - top)))
     return (round(left + inset, 3), round(top + inset, 3), round(right - inset, 3), round(bottom - inset, 3))
@@ -761,6 +1143,11 @@ def _rule_badge_text(rule_family: str, range_k: int, prompt_defaults: Mapping[st
 
 def _rule_text(rule_family: str, range_k: int, prompt_defaults: Mapping[str, Any]) -> str:
     key = f"rule_text_{str(rule_family)}"
+    return str(prompt_defaults[key]).format(range_k=int(range_k))
+
+
+def _target_rule_text(rule_family: str, range_k: int, prompt_defaults: Mapping[str, Any]) -> str:
+    key = f"target_rule_text_{str(rule_family)}"
     return str(prompt_defaults[key]).format(range_k=int(range_k))
 
 
@@ -854,7 +1241,7 @@ def _render_scene(
     )
     text_bbox = draw.textbbox((0, 0), str(badge_text), font=badge_font, stroke_width=1)
     text_rgb = tuple(theme.badge_text_rgb)
-    draw_text_traced(draw,
+    draw_game_text_traced(draw,
         (
             float(badge_bbox[0] + ((badge_bbox[2] - badge_bbox[0]) - (text_bbox[2] - text_bbox[0])) / 2.0),
             float(badge_bbox[1] + ((badge_bbox[3] - badge_bbox[1]) - (text_bbox[3] - text_bbox[1])) / 2.0 - text_bbox[1]),
@@ -870,11 +1257,6 @@ def _render_scene(
     cell_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     piece_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     entities: List[Dict[str, Any]] = []
-    label_font = load_font(
-        int(params.token_label_font_size_px),
-        bold=True,
-        font_family=str(params.font_family) or None,
-    )
     for row in range(BOARD_SIZE):
         for col in range(BOARD_SIZE):
             left = float(board_left + (col * cell_size) + inner_inset)
@@ -899,36 +1281,16 @@ def _render_scene(
             entities.append({"id": cell_id, "type": "chess_variant_cell", "row": row, "col": col, "occupant": occupant_text, "bbox_px": list(cell_bbox)})
             if occupant is None:
                 continue
-            token_bbox = _token_bbox(cell_bbox, inset_fraction=float(params.piece_inset_fraction))
-            shadow_offset = max(1, int(round(0.045 * min(token_bbox[2] - token_bbox[0], token_bbox[3] - token_bbox[1]))))
-            draw.ellipse(
-                [token_bbox[0] + shadow_offset, token_bbox[1] + shadow_offset, token_bbox[2] + shadow_offset, token_bbox[3] + shadow_offset],
-                fill=tuple(theme.piece_shadow_rgb) + (int(theme.piece_shadow_alpha),),
+            piece_bbox = _piece_bbox(cell_bbox, inset_fraction=float(params.piece_inset_fraction))
+            draw_chess_piece_symbol(
+                draw,
+                bbox_px=piece_bbox,
+                piece=occupant,
+                theme=theme,
+                font_size_px=int(params.piece_font_size_px),
             )
-            if str(occupant.color) == WHITE:
-                piece_fill = tuple(theme.white_piece_fill_rgb)
-                piece_outline = tuple(theme.white_piece_outline_rgb)
-                label = "W"
-            else:
-                piece_fill = tuple(theme.black_piece_fill_rgb)
-                piece_outline = tuple(theme.black_piece_outline_rgb)
-                label = "B"
-            draw.ellipse(token_bbox, fill=piece_fill, outline=piece_outline, width=max(2, int(round(0.045 * min(token_bbox[2] - token_bbox[0], token_bbox[3] - token_bbox[1])))))
-            label_bbox = draw.textbbox((0, 0), label, font=label_font, stroke_width=1)
-            label_rgb = piece_outline if str(occupant.color) == WHITE else piece_outline
-            draw_text_traced(draw,
-                (
-                    token_bbox[0] + ((token_bbox[2] - token_bbox[0]) - (label_bbox[2] - label_bbox[0])) / 2.0,
-                    token_bbox[1] + ((token_bbox[3] - token_bbox[1]) - (label_bbox[3] - label_bbox[1])) / 2.0 - label_bbox[1],
-                ),
-                label,
-                font=label_font,
-                fill=label_rgb,
-                stroke_width=1,
-                stroke_fill=tuple(resolve_text_stroke_fill(label_rgb)),
-             role="readout", required=False,)
             piece_id = piece_to_entity_id((row, col), occupant)
-            piece_bboxes[piece_id] = token_bbox
+            piece_bboxes[piece_id] = piece_bbox
             entities.append(
                 {
                     "id": piece_id,
@@ -937,7 +1299,7 @@ def _render_scene(
                     "kind": occupant.kind,
                     "row": row,
                     "col": col,
-                    "bbox_px": list(token_bbox),
+                    "bbox_px": list(piece_bbox),
                 }
             )
     return image, {
@@ -951,10 +1313,19 @@ def _render_scene(
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "font_family": str(params.font_family),
         "board_size": int(BOARD_SIZE),
+        "piece_rendering": "filled_chess_glyph",
     }, tuple(entities)
 
 
-def _draw_marked_outline(image: Image.Image, render_map: Mapping[str, Any], marked_coord: Coord, axes: _ResolvedAxes, params: _RenderParams) -> None:
+def _draw_marked_outline(
+    image: Image.Image,
+    render_map: Mapping[str, Any],
+    marked_coord: Coord,
+    axes: _ResolvedAxes,
+    params: _RenderParams,
+    *,
+    outline_rgb: Tuple[int, int, int] = (220, 38, 38),
+) -> None:
     draw = ImageDraw.Draw(image)
     del axes
     cell_id = coord_to_cell_id(marked_coord)
@@ -966,16 +1337,23 @@ def _draw_marked_outline(image: Image.Image, render_map: Mapping[str, Any], mark
     )
     draw.rectangle(
         [float(bbox[0]) + inset, float(bbox[1]) + inset, float(bbox[2]) - inset, float(bbox[3]) - inset],
-        outline=(43, 101, 204),
+        outline=tuple(int(v) for v in outline_rgb),
         width=int(params.marked_square_outline_width_px),
     )
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    if str(query_id) in SUPPORTED_TARGET_SQUARE_QUERY_IDS:
+        answer_value = 3
+        annotation_value = [[180, 245], [310, 375], [440, 505]]
+        return (
+            json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+            json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        )
     answer_value = 4 if str(query_id) == "marked_piece_move_count" else 2
-    evidence_value = [[140, 220, 210, 290], [210, 220, 280, 290]]
+    annotation_value = [[140, 220, 210, 290], [210, 220, 280, 290]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -1012,18 +1390,31 @@ class GamesChessVariantBoardTask:
                 "object_description_sparse_board",
                 "object_description_crowded_board",
                 "marked_piece_rule_text",
+                "target_square_rule_text",
                 "landing_rule_text",
+                "target_landing_rule_text",
                 "slider_block_rule_text",
                 "leaper_block_rule_text",
+                "target_slider_block_rule_text",
+                "target_leaper_block_rule_text",
                 "answer_hint_marked_piece_move_count",
                 "answer_hint_marked_piece_capture_count",
-                "evidence_hint_marked_piece_move_count",
-                "evidence_hint_marked_piece_capture_count",
+                "answer_hint_white_piece_reaches_target_count",
+                "answer_hint_black_piece_reaches_target_count",
+                "annotation_hint_marked_piece_move_count",
+                "annotation_hint_marked_piece_capture_count",
+                "annotation_hint_white_piece_reaches_target_count",
+                "annotation_hint_black_piece_reaches_target_count",
                 "rule_text_straight_range",
                 "rule_text_diagonal_range",
                 "rule_text_straight_or_diagonal_range",
                 "rule_text_leaper_2_1",
                 "rule_text_leaper_3_1",
+                "target_rule_text_straight_range",
+                "target_rule_text_diagonal_range",
+                "target_rule_text_straight_or_diagonal_range",
+                "target_rule_text_leaper_2_1",
+                "target_rule_text_leaper_3_1",
                 "rule_badge_straight_range",
                 "rule_badge_diagonal_range",
                 "rule_badge_straight_or_diagonal_range",
@@ -1032,8 +1423,17 @@ class GamesChessVariantBoardTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        rule_text = _rule_text(axes.rule_family, axes.range_k, prompt_defaults)
-        block_rule_text = str(prompt_defaults["leaper_block_rule_text"] if str(axes.rule_family).startswith("leaper") else prompt_defaults["slider_block_rule_text"])
+        is_target_square_query = str(axes.query_id) in SUPPORTED_TARGET_SQUARE_QUERY_IDS
+        if bool(is_target_square_query):
+            rule_text = _target_rule_text(axes.rule_family, axes.range_k, prompt_defaults)
+            block_rule_text = str(
+                prompt_defaults["target_leaper_block_rule_text"]
+                if str(axes.rule_family).startswith("leaper")
+                else prompt_defaults["target_slider_block_rule_text"]
+            )
+        else:
+            rule_text = _rule_text(axes.rule_family, axes.range_k, prompt_defaults)
+            block_rule_text = str(prompt_defaults["leaper_block_rule_text"] if str(axes.rule_family).startswith("leaper") else prompt_defaults["slider_block_rule_text"])
         badge_text = _rule_badge_text(axes.rule_family, axes.range_k, prompt_defaults)
 
         allowed_panel_treatments_raw = params.get(
@@ -1072,11 +1472,27 @@ class GamesChessVariantBoardTask:
             badge_text=badge_text,
             panel_style=panel_style,
         )
-        _draw_marked_outline(rendered_image, render_map, sample.evaluation.marked_coord, axes, render_params)
-        if sample.evaluation.evidence_kind == "cell":
-            evidence_bboxes = [list(render_map["cell_bboxes_px"][entity_id]) for entity_id in sample.evaluation.evidence_entity_ids]
+        _draw_marked_outline(
+            rendered_image,
+            render_map,
+            sample.evaluation.marked_coord,
+            axes,
+            render_params,
+            outline_rgb=(35, 95, 220) if bool(is_target_square_query) else (220, 38, 38),
+        )
+        annotation_points: list[list[float]] = []
+        if sample.evaluation.annotation_kind == "cell":
+            annotation_bboxes = [list(render_map["cell_bboxes_px"][entity_id]) for entity_id in sample.evaluation.annotation_entity_ids]
+        elif sample.evaluation.annotation_kind == "piece_point":
+            annotation_bboxes = []
+            for entity_id in sample.evaluation.annotation_entity_ids:
+                bbox = render_map["piece_bboxes_px"][str(entity_id)]
+                annotation_points.append([
+                    round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+                    round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+                ])
         else:
-            evidence_bboxes = [list(render_map["piece_bboxes_px"][entity_id]) for entity_id in sample.evaluation.evidence_entity_ids]
+            annotation_bboxes = [list(render_map["piece_bboxes_px"][entity_id]) for entity_id in sample.evaluation.annotation_entity_ids]
         image, post_noise_meta = apply_post_image_noise(
             rendered_image,
             instance_seed=int(instance_seed),
@@ -1086,7 +1502,7 @@ class GamesChessVariantBoardTask:
 
         json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1094,19 +1510,26 @@ class GamesChessVariantBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(answer_hint),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "rule_text": str(rule_text),
                 "marked_piece_rule_text": str(prompt_defaults["marked_piece_rule_text"]),
+                "target_square_rule_text": str(prompt_defaults["target_square_rule_text"]),
                 "landing_rule_text": str(prompt_defaults["landing_rule_text"]),
+                "target_landing_rule_text": str(prompt_defaults["target_landing_rule_text"]),
                 "block_rule_text": str(block_rule_text),
+                "target_color_name": (
+                    color_name(_reacher_color_for_query(str(axes.query_id)))
+                    if bool(is_target_square_query)
+                    else ""
+                ),
             },
             instance_seed=int(instance_seed),
         )
@@ -1118,15 +1541,38 @@ class GamesChessVariantBoardTask:
             query_id=str(axes.query_id),
             occupied_count=int(sample.occupied_count),
             target_answer=int(sample.evaluation.answer),
-            evidence_count=len(sample.evaluation.evidence_entity_ids),
+            annotation_count=len(sample.evaluation.annotation_entity_ids),
         )
         answer_gt = TypedValue(type="integer", value=int(sample.evaluation.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = (
+            TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+            if bool(is_target_square_query)
+            else TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        )
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
         }
         marked_piece = sample.evaluation.marked_piece
+        marked_piece_payload = (
+            None
+            if marked_piece is None
+            else {"color": str(marked_piece.color), "kind": str(marked_piece.kind)}
+        )
+        target_coord_payload = (
+            None
+            if sample.evaluation.target_coord is None
+            else [int(sample.evaluation.target_coord[0]), int(sample.evaluation.target_coord[1])]
+        )
+        projected_annotation = (
+            {
+                "type": "point_set",
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
+            }
+            if bool(is_target_square_query)
+            else {"bbox_set": [list(bbox) for bbox in annotation_bboxes]}
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"games_chess_variant_board_{str(axes.scene_variant)}",
@@ -1140,7 +1586,14 @@ class GamesChessVariantBoardTask:
                     "board_size": int(BOARD_SIZE),
                     "target_answer": int(sample.evaluation.answer),
                     "marked_cell_id": coord_to_cell_id(sample.evaluation.marked_coord),
-                    "evidence_entity_ids": [str(v) for v in sample.evaluation.evidence_entity_ids],
+                    "marker_role": str(sample.evaluation.marker_role),
+                    "target_cell_id": (
+                        ""
+                        if sample.evaluation.target_coord is None
+                        else coord_to_cell_id(sample.evaluation.target_coord)
+                    ),
+                    "target_color": str(sample.evaluation.target_color),
+                    "annotation_entity_ids": [str(v) for v in sample.evaluation.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1163,6 +1616,8 @@ class GamesChessVariantBoardTask:
                     "target_answer": int(sample.evaluation.answer),
                     "target_answer_support": [int(v) for v in axes.target_answer_support],
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
+                    "marker_role": str(sample.evaluation.marker_role),
+                    "target_color": str(sample.evaluation.target_color),
                 },
             },
             "render_spec": {
@@ -1189,15 +1644,19 @@ class GamesChessVariantBoardTask:
                 "construction_mode": str(sample.construction_mode),
                 "occupied_count": int(sample.occupied_count),
                 "marked_coord": [int(sample.evaluation.marked_coord[0]), int(sample.evaluation.marked_coord[1])],
-                "marked_piece": {"color": marked_piece.color, "kind": marked_piece.kind},
+                "marked_piece": marked_piece_payload,
+                "marker_role": str(sample.evaluation.marker_role),
+                "target_coord": target_coord_payload,
+                "target_color": str(sample.evaluation.target_color),
+                "target_color_name": color_name(sample.evaluation.target_color) if sample.evaluation.target_color else "",
                 "legal_destination_coords": [[int(r), int(c)] for r, c in sample.evaluation.legal_destinations],
                 "capture_coords": [[int(r), int(c)] for r, c in sample.evaluation.capture_coords],
-                "evidence_kind": str(sample.evaluation.evidence_kind),
-                "evidence_coords": [[int(r), int(c)] for r, c in sample.evaluation.evidence_coords],
-                "evidence_entity_ids": [str(v) for v in sample.evaluation.evidence_entity_ids],
+                "annotation_kind": str(sample.evaluation.annotation_kind),
+                "annotation_coords": [[int(r), int(c)] for r, c in sample.evaluation.annotation_coords],
+                "annotation_entity_ids": [str(v) for v in sample.evaluation.annotation_entity_ids],
             },
-            "witness_symbolic": {"type": "object_set", "ids": [str(v) for v in sample.evaluation.evidence_entity_ids]},
-            "projected_evidence": {"bbox_set": [list(bbox) for bbox in evidence_bboxes]},
+            "witness_symbolic": {"type": "object_set", "ids": [str(v) for v in sample.evaluation.annotation_entity_ids]},
+            "projected_annotation": projected_annotation,
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -1205,7 +1664,7 @@ class GamesChessVariantBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1227,7 +1686,19 @@ class GamesChessVariantMarkedPieceDestinationCountTask(QuerySubsetTaskMixin, Gam
     )
 
 
+@register_task
+class GamesChessVariantTargetSquareReacherCountTask(QuerySubsetTaskMixin, GamesChessVariantBoardTask):
+    """Count same-side source pieces that can reach one marked target square."""
+
+    task_id = "task_games__chess_variant__target_square_reacher_count"
+    supported_query_ids = (
+        "white_piece_reaches_target_count",
+        "black_piece_reaches_target_count",
+    )
+
+
 __all__ = [
     "GamesChessVariantBoardTask",
     "GamesChessVariantMarkedPieceDestinationCountTask",
+    "GamesChessVariantTargetSquareReacherCountTask",
 ]

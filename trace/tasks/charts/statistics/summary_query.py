@@ -29,13 +29,17 @@ from ..shared.labeled_chart_common import (
     build_chart_mark_specs,
     build_summary_statistics_dataset_for_variant,
     is_pie_like_scene_variant,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
 from ..shared.information_style import prepare_chart_information_scene
+from ..shared.sampling_defaults import (
+    decouple_sample_cursor_for_axis_lengths,
+    public_task_param_overrides,
+)
 from ..shared.visual_defaults import (
     chart_font_asset_metadata,
     load_chart_background_defaults,
@@ -94,25 +98,6 @@ _SCENE_VARIANT_LOADS: Dict[str, float] = {
 }
 
 
-def _public_task_param_overrides(task_id: str) -> Dict[str, Any]:
-    """Return task-id-specific generation/rendering params for public wrappers."""
-
-    overrides: Dict[str, Any] = {}
-    if not isinstance(_TASK_GROUP_DEFAULTS, Mapping):
-        return overrides
-    for section in ("generation", "rendering"):
-        section_cfg = _TASK_GROUP_DEFAULTS.get(section)
-        if not isinstance(section_cfg, Mapping):
-            continue
-        task_overrides = section_cfg.get("task_overrides")
-        if not isinstance(task_overrides, Mapping):
-            continue
-        task_values = task_overrides.get(str(task_id))
-        if isinstance(task_values, Mapping):
-            overrides.update(dict(task_values))
-    return overrides
-
-
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic chart statistic variant."""
 
@@ -161,21 +146,6 @@ def _resolve_statistic_kind(params: Mapping[str, Any], *, instance_seed: int) ->
     )
 
 
-def _support_sampling_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Decorrelate statistic support sampling from balanced public/query axes."""
-
-    support_params = dict(params)
-    if "_sample_cursor" not in support_params:
-        return support_params
-    divisor = 1
-    if "query_id" not in support_params and "query_id_weights" not in support_params:
-        divisor *= max(1, len(_SUPPORTED_QUERY_IDS))
-    if "statistic_kind" not in support_params and "statistic_kind_weights" not in support_params:
-        divisor *= max(1, len(_SUPPORTED_STATISTIC_KINDS))
-    support_params["_sample_cursor"] = int(support_params["_sample_cursor"]) // max(1, divisor)
-    return support_params
-
-
 def _ordinal(value: int) -> str:
     """Return a compact English ordinal for prompt slots."""
 
@@ -208,7 +178,7 @@ class ChartsStatisticsSummaryQueryTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         public_overrides = (
-            _public_task_param_overrides(str(self.task_id))
+            public_task_param_overrides(_TASK_GROUP_DEFAULTS, str(self.task_id))
             if str(self.task_id) != str(TASK_ID)
             else {}
         )
@@ -223,8 +193,15 @@ class ChartsStatisticsSummaryQueryTask:
             instance_seed=int(instance_seed),
         )
         answer_is_label = str(query_id) == "order_statistic_label"
-        support_params = _support_sampling_params(params)
-        values, answer_value, evidence_labels, trace_extras = build_summary_statistics_dataset_for_variant(
+        support_params = decouple_sample_cursor_for_axis_lengths(
+            params,
+            axes=(
+                (len(_SUPPORTED_QUERY_IDS), ("query_id", "query_id_weights")),
+                (len(_SUPPORTED_STATISTIC_KINDS), ("statistic_kind", "statistic_kind_weights")),
+            ),
+            explicit_policy="present",
+        )
+        values, answer_value, annotation_labels, trace_extras = build_summary_statistics_dataset_for_variant(
             statistic_kind=str(statistic_kind),
             scene_variant=str(scene_variant),
             params=support_params,
@@ -236,7 +213,7 @@ class ChartsStatisticsSummaryQueryTask:
         )
 
         labels = [str(label) for label in trace_extras["labels"]]
-        answer_label = str(evidence_labels[0]) if answer_is_label else ""
+        answer_label = str(annotation_labels[0]) if answer_is_label else ""
         mark_style = resolve_chart_mark_colors(
             params,
             render_defaults=_RENDER_DEFAULTS,
@@ -303,12 +280,12 @@ class ChartsStatisticsSummaryQueryTask:
                 "object_description_scatter",
                 "object_description_dot_plot",
                 "object_description_lollipop",
-                "evidence_hint_median",
-                "evidence_hint_nth_highest",
-                "evidence_hint_nth_lowest",
-                "evidence_hint_label_median",
-                "evidence_hint_label_nth_highest",
-                "evidence_hint_label_nth_lowest",
+                "annotation_hint_median",
+                "annotation_hint_nth_highest",
+                "annotation_hint_nth_lowest",
+                "annotation_hint_label_median",
+                "annotation_hint_label_nth_highest",
+                "annotation_hint_label_nth_lowest",
                 "json_example_median",
                 "json_example_nth_highest",
                 "json_example_nth_lowest",
@@ -327,10 +304,10 @@ class ChartsStatisticsSummaryQueryTask:
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
         rank_n = trace_extras.get("rank_n", None)
         rank_n_ordinal = _ordinal(int(rank_n)) if rank_n is not None else ""
-        evidence_key = f"label_{str(statistic_kind)}" if answer_is_label else str(statistic_kind)
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(evidence_key)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(evidence_key)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(evidence_key)}"])
+        annotation_key = f"label_{str(statistic_kind)}" if answer_is_label else str(statistic_kind)
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(annotation_key)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(annotation_key)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(annotation_key)}"])
         task_key = str(prompt_defaults["task_key_label" if answer_is_label else "task_key_value"])
         answer_hint = str(prompt_defaults["answer_hint_label" if answer_is_label else "answer_hint_value"])
 
@@ -341,12 +318,12 @@ class ChartsStatisticsSummaryQueryTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(task_key),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(answer_hint),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -358,27 +335,27 @@ class ChartsStatisticsSummaryQueryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         if answer_is_label:
-            answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-            evidence_projection = projected_mark_evidence(rendered_scene, [str(answer_label)])
-            evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-            evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+            answer_gt = TypedValue(type="string", value=str(answer_label))
+            annotation_projection = projected_mark_annotation(rendered_scene, [str(answer_label)])
+            annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+            annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
             witness_symbolic = {"type": "integer", "value": int(answer_value)}
-            projected_evidence = {
+            projected_annotation = {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             }
             question_format = "label_open"
         else:
             answer_gt = TypedValue(type="integer", value=int(answer_value))
-            evidence_projection = projected_mark_evidence(rendered_scene, evidence_labels)
-            evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-            evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
-            witness_symbolic = {"type": "object_set", "labels": list(evidence_labels)}
-            projected_evidence = {
+            annotation_projection = projected_mark_annotation(rendered_scene, annotation_labels)
+            annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+            annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
+            witness_symbolic = {"type": "object_set", "labels": list(annotation_labels)}
+            projected_annotation = {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             }
             question_format = "numeric_open"
 
@@ -400,7 +377,7 @@ class ChartsStatisticsSummaryQueryTask:
                     "scene_variant": str(scene_variant),
                     "statistic_kind": str(statistic_kind),
                     "answer_value": int(answer_value),
-                    "evidence_labels": list(evidence_labels),
+                    "annotation_labels": list(annotation_labels),
                     **({"answer_label": str(answer_label)} if answer_is_label else {}),
                 },
             },
@@ -469,8 +446,8 @@ class ChartsStatisticsSummaryQueryTask:
                 "scene_variant": str(scene_variant),
                 "statistic_kind": str(statistic_kind),
                 "answer_value": int(answer_value),
-                "evidence_labels": list(evidence_labels),
-                **({"answer_label": str(answer_label), "evidence_value": int(answer_value)} if answer_is_label else {}),
+                "annotation_labels": list(annotation_labels),
+                **({"answer_label": str(answer_label), "annotation_value": int(answer_value)} if answer_is_label else {}),
                 "labels": [str(label) for label in labels],
                 "values": [int(value) for value in values],
                 "values_by_label": dict(values_by_label),
@@ -506,7 +483,7 @@ class ChartsStatisticsSummaryQueryTask:
                 },
             },
             "witness_symbolic": dict(witness_symbolic),
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
         }
 
         complexity = build_chart_complexity(
@@ -526,7 +503,7 @@ class ChartsStatisticsSummaryQueryTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

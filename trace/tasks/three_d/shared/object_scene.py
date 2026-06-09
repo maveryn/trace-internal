@@ -35,156 +35,20 @@ from .camera_projection import (
     vec_norm as _vec_norm,
     vec_sub as _vec_sub,
 )
-from .object_scene_rendering import (
-    _bbox_union,
-    _draw_line,
-    _draw_room,
-    _shade,
-    _tint,
-    _object_vertices,
-    _draw_polyline,
-    _bbox_from_screen_points,
-    _project_face,
-    _face_distance,
-    _draw_box_object,
-    _sub_box_spec,
-    _draw_box_parts_object,
-    _draw_footprint_prism_object,
-    _star_footprint_points,
-    _hexagon_footprint_points,
-    _arrow_footprint_points,
-    _gear_footprint_points,
-    _draw_half_cylinder_object,
-    _draw_pyramid_object,
-    _draw_wedge_object,
-    _upright_profile_world_points,
-    _draw_upright_profile_object,
-    _heart_profile_points,
-    _draw_shield_object,
-    _draw_heart_object,
-    _draw_diamond_object,
-    _draw_sword_object,
-    _draw_key_object,
-    _draw_crown_object,
-    _draw_hourglass_object,
-    _draw_anchor_object,
-    _draw_horseshoe_object,
-    _draw_hammer_object,
-    _draw_bell_object,
-    _draw_trophy_object,
-    _draw_open_book_object,
-    _draw_dumbbell_object,
-    _draw_mushroom_object,
-    _draw_lantern_object,
-    _draw_wrench_object,
-    _oval_profile_points,
-    _draw_padlock_object,
-    _draw_magnifying_glass_object,
-    _draw_candle_object,
-    _draw_scroll_object,
-    _draw_paint_brush_object,
-    _draw_paint_palette_object,
-    _draw_goblet_object,
-    _draw_teapot_object,
-    _draw_watering_can_object,
-    _draw_basket_object,
-    _draw_mail_envelope_object,
-    _draw_camera_object,
-    _draw_compass_object,
-    _draw_flask_object,
-    _draw_test_tube_rack_object,
-    _draw_scroll_map_object,
-    _draw_microphone_object,
-    _draw_stopwatch_object,
-    _upright_screen_points,
-    _draw_apple_object,
-    _draw_carrot_object,
-    _draw_pear_object,
-    _draw_fish_object,
-    _draw_leaf_object,
-    _draw_feather_object,
-    _draw_shoe_object,
-    _draw_glove_object,
-    _draw_hat_object,
-    _draw_helmet_object,
-    _draw_cup_object,
-    _draw_bottle_object,
-    _draw_vase_object,
-    _draw_umbrella_object,
-    _draw_scissors_object,
-    _draw_screwdriver_object,
-    _draw_pencil_object,
-    _draw_spoon_object,
-    _draw_spatula_object,
-    _draw_toothbrush_object,
-    _draw_whistle_object,
-    _draw_flashlight_object,
-    _draw_calculator_object,
-    _draw_phone_object,
-    _draw_light_bulb_object,
-    _draw_suitcase_object,
-    _draw_dice_object,
-    _draw_rocket_object,
-    _draw_kite_object,
-    _draw_paint_can_object,
-    _draw_cactus_object,
-    _draw_pumpkin_object,
-    _draw_acorn_object,
-    _draw_pinecone_object,
-    _draw_seashell_object,
-    _draw_magnet_object,
-    _draw_guitar_object,
-    _draw_drum_object,
-    _draw_shovel_object,
-    _draw_saw_object,
-    _draw_pliers_object,
-    _draw_telescope_object,
-    _draw_ruler_object,
-    _draw_pickaxe_object,
-    _draw_paint_roller_object,
-    _draw_tape_measure_object,
-    _draw_remote_control_object,
-    _draw_plug_object,
-    _draw_wallet_object,
-    _draw_purse_object,
-    _draw_sunglasses_object,
-    _draw_violin_object,
-    _draw_trumpet_object,
-    _draw_donut_object,
-    _draw_pretzel_object,
-    _draw_lollipop_object,
-    _draw_ice_cream_cone_object,
-    _draw_soap_bar_object,
-    _draw_clock_object,
-    _radius_px_for_object,
-    _draw_sphere_object,
-    _draw_cylinder_object,
-    _draw_cone_object,
-    _draw_torus_object,
-    _draw_arch_object,
-    _draw_table_object,
-    _draw_shelf_object,
-    _draw_open_box_object,
-    _draw_refrigerator_object,
-    _draw_washing_machine_object,
-    _draw_vending_machine_object,
-    _draw_trash_bin_object,
-    _draw_bench_object,
-    _draw_piano_object,
-    _draw_locker_object,
-    _draw_cabinet_object,
-    _draw_sofa_object,
-    _draw_barrel_object,
-    _draw_chair_object,
-    _draw_option_label,
-)
+from .object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
+from .scene_schema import ThreeDPlacementSpec
+from .object_scene_rendering import _bbox_union, _draw_line, _draw_option_label, _draw_room
+from .option_panel import append_text_option_panel, empty_option_panel_metadata
 from .object_resources import (
+    OBJECT_SCENE_ID,
     OBJECT_SCENE_CONTEXT_DIMENSIONS,
     OBJECT_SCENE_CONTEXT_SHAPE_TYPES,
     OBJECT_SCENE_NAME_BY_SHAPE_TYPE,
     OBJECT_SCENE_SHAPE_TYPES,
     OBJECT_SCENE_SMALL_DIMENSIONS,
     OBJECT_SCENE_SMALL_SHAPE_TYPES,
+    object_profile_by_id,
+    object_profile_or_none,
 )
 
 SCENE_ID = "object_scene"
@@ -267,6 +131,9 @@ class _RenderParams:
     full_bleed_floor_extent_multiplier: float
 
 
+ObjectSceneRenderParams = _RenderParams
+
+
 @dataclass(frozen=True)
 class _RenderedScene:
     image: Image.Image
@@ -279,8 +146,12 @@ class _RenderedScene:
     context_object_bboxes_px: Dict[str, List[float]]
     context_object_centers_px: Dict[str, List[float]]
     room_bbox_px: List[float]
-    evidence_bboxes: List[List[float]]
-    evidence_entity_ids: List[str]
+    annotation_bboxes: List[List[float]]
+    annotation_entity_ids: List[str]
+    option_panel_bbox_px: List[float]
+    option_choice_bboxes_px: Dict[str, List[float]]
+    option_choices: List[Dict[str, Any]]
+    option_panel_height_px: int
 
 
 
@@ -318,6 +189,16 @@ def _resolve_render_params(params: Mapping[str, Any], *, render_defaults: Mappin
         full_bleed_floor=_bool_value(merged, "full_bleed_floor", False),
         full_bleed_floor_extent_multiplier=_float_value(merged, "full_bleed_floor_extent_multiplier", 3.0),
     )
+
+
+def resolve_object_scene_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+) -> ObjectSceneRenderParams:
+    """Resolve shared object-scene render parameters for scene-family renderers."""
+
+    return _resolve_render_params(params, render_defaults=render_defaults)
 
 
 def _camera_yaw_band_for_instance(instance_seed: int) -> Tuple[float, float]:
@@ -367,6 +248,12 @@ def _object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float
     ] + [(x, y, base_z + height * 0.5)]
 
 
+def object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float, float]]:
+    """Return object bounding reference points in world coordinates."""
+
+    return _object_reference_points(spec)
+
+
 def _object_screen_bbox(spec: Mapping[str, Any], camera: _CameraSpec, frame: _ProjectionFrame, *, pad_px: float = 0.0) -> List[float]:
     points = [_project_xy(point, camera, frame) for point in _object_reference_points(spec)]
     return [
@@ -377,10 +264,28 @@ def _object_screen_bbox(spec: Mapping[str, Any], camera: _CameraSpec, frame: _Pr
     ]
 
 
+def object_screen_bbox(
+    spec: Mapping[str, Any],
+    camera: _CameraSpec,
+    frame: _ProjectionFrame,
+    *,
+    pad_px: float = 0.0,
+) -> List[float]:
+    """Project one object spec to a padded screen-space bounding box."""
+
+    return _object_screen_bbox(spec, camera, frame, pad_px=float(pad_px))
+
+
 def _bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
     width = max(0.0, min(float(a[2]), float(b[2])) - max(float(a[0]), float(b[0])))
     height = max(0.0, min(float(a[3]), float(b[3])) - max(float(a[1]), float(b[1])))
     return float(width * height)
+
+
+def bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
+    """Return the pixel-space intersection area for two bboxes."""
+
+    return _bbox_intersection_area(a, b)
 
 
 def _make_object_spec(
@@ -395,9 +300,16 @@ def _make_object_spec(
 ) -> Dict[str, Any]:
     width, depth, height = (float(value) for value in dimensions_xyz)
     footprint = 0.5 * math.sqrt(float(width) * float(width) + float(depth) * float(depth))
-    object_name = _object_name(str(shape_type))
+    profile_role = "spatial_context_shape" if str(object_role) == "context" else "spatial_small_shape"
+    profile = object_profile_or_none(
+        source_scene=OBJECT_SCENE_ID,
+        role=profile_role,
+        object_type=str(shape_type),
+    )
+    object_name = str(profile.display_name) if profile is not None else _object_name(str(shape_type))
     spec = {
         "object_id": str(object_id),
+        "object_type": str(shape_type),
         "shape_type": str(shape_type),
         "object_name": str(object_name),
         "prompt_name": str(object_name),
@@ -410,6 +322,16 @@ def _make_object_spec(
         "dimensions_xyz": [round(float(width), 4), round(float(depth), 4), round(float(height), 4)],
         "footprint_radius": round(float(footprint), 4),
     }
+    if profile is not None:
+        spec.update(
+            {
+                "profile_id": str(profile.profile_id),
+                "canonical_id": str(profile.canonical_id),
+                "resource_kind": str(profile.resource_kind),
+                "family": str(profile.resource_kind),
+                "renderer_id": str(profile.renderer),
+            }
+        )
     if label is not None:
         spec.update(
             {
@@ -419,6 +341,29 @@ def _make_object_spec(
             }
         )
     return spec
+
+
+def make_object_spec(
+    *,
+    object_id: str,
+    shape_type: str,
+    object_role: str,
+    xy: Tuple[float, float],
+    dimensions_xyz: Tuple[float, float, float],
+    dimension_scale: float,
+    label: str | None = None,
+) -> Dict[str, Any]:
+    """Build a canonical object-scene spec for shared 3D renderers."""
+
+    return _make_object_spec(
+        object_id=str(object_id),
+        shape_type=str(shape_type),
+        object_role=str(object_role),
+        xy=xy,
+        dimensions_xyz=dimensions_xyz,
+        dimension_scale=float(dimension_scale),
+        label=label,
+    )
 
 
 def _sample_scene_object_specs(
@@ -535,8 +480,9 @@ def render_object_scene_3d(
     render_params: _RenderParams,
     draw_candidate_labels: bool = True,
     highlight_object_ids: Sequence[str] = (),
-    evidence_label: str | None = None,
-    compute_single_evidence: bool = True,
+    annotation_label: str | None = None,
+    compute_single_annotation: bool = True,
+    option_choices: Sequence[Mapping[str, Any]] = (),
 ) -> _RenderedScene:
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -575,6 +521,7 @@ def render_object_scene_3d(
     object_centers: Dict[str, List[float]] = {}
     context_object_bboxes: Dict[str, List[float]] = {}
     context_object_centers: Dict[str, List[float]] = {}
+    draw_scene_candidate_labels = bool(draw_candidate_labels) and not bool(option_choices)
     for spec in sorted(all_specs, key=draw_order_key, reverse=True):
         label = str(spec.get("point_label", ""))
         shape_type = str(spec["shape_type"])
@@ -597,159 +544,61 @@ def render_object_scene_3d(
                 salt=f"{scene_variant}.context",
                 variation_strength=0.26,
             )
-        if shape_type == "sphere":
-            shape_bbox = _draw_sphere_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "cylinder":
-            shape_bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "cone":
-            shape_bbox = _draw_cone_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "arrow":
-            shape_bbox = _draw_footprint_prism_object(
-                draw,
-                spec,
-                camera=camera,
-                frame=frame,
-                fill=color,
-                footprint_xy=_arrow_footprint_points(),
+        object_role = (
+            "candidate"
+            if bool(spec.get("is_answer_candidate", False))
+            else "countable"
+            if bool(spec.get("is_countable_object", False))
+            else "context"
+        )
+        object_render_spec = dict(spec)
+        object_render_spec["fill_rgb"] = [int(channel) for channel in color]
+        object_render_spec["scene_variant"] = str(scene_variant)
+        profile = None
+        if str(object_render_spec.get("profile_id", "")):
+            try:
+                profile = object_profile_by_id(str(object_render_spec["profile_id"]))
+            except KeyError:
+                profile = None
+        placement = ThreeDPlacementSpec.from_mapping(
+            object_render_spec,
+            object_type_key="shape_type",
+            role=object_role,
+            source_entity_type="three_d_object_scene_object",
+        )
+        shared_spec = (
+            ThreeDObjectSpec.from_profile_and_placement(
+                profile,
+                placement,
+                object_type_key="shape_type",
+                role=object_role,
+                source_entity_type="three_d_object_scene_object",
             )
-        elif shape_type == "sword":
-            shape_bbox = _draw_sword_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "shield":
-            shape_bbox = _draw_shield_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "diamond":
-            shape_bbox = _draw_diamond_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "heart":
-            shape_bbox = _draw_heart_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "key":
-            shape_bbox = _draw_key_object(
-                draw,
-                spec,
+            if profile is not None
+            else ThreeDObjectSpec.from_placement(
+                placement,
+                object_type_key="shape_type",
+                default_renderer_id="object_scene_shape",
+                role=object_role,
+                source_entity_type="three_d_object_scene_object",
+            )
+        )
+        rendered_object = render_three_d_object(
+            shared_spec,
+            ThreeDRenderContext(
+                draw=draw,
                 camera=camera,
                 frame=frame,
+                render_params=render_params,
+                fill_rgb=color,
+                scene_variant=str(scene_variant),
                 floor_rgb=render_params.floor_rgb,
-            )
-        elif shape_type == "crown":
-            shape_bbox = _draw_crown_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "anchor":
-            shape_bbox = _draw_anchor_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "horseshoe":
-            shape_bbox = _draw_horseshoe_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "hammer":
-            shape_bbox = _draw_hammer_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "gear":
-            shape_bbox = _draw_footprint_prism_object(
-                draw,
-                spec,
-                camera=camera,
-                frame=frame,
-                fill=color,
-                footprint_xy=_gear_footprint_points(),
-            )
-        elif shape_type == "bell":
-            shape_bbox = _draw_bell_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "trophy":
-            shape_bbox = _draw_trophy_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "open_book":
-            shape_bbox = _draw_open_book_object(draw, spec, camera=camera, frame=frame)
-        elif shape_type == "mushroom":
-            shape_bbox = _draw_mushroom_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "lantern":
-            shape_bbox = _draw_lantern_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "candle":
-            shape_bbox = _draw_candle_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "goblet":
-            shape_bbox = _draw_goblet_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "mail_envelope":
-            shape_bbox = _draw_mail_envelope_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "compass":
-            shape_bbox = _draw_compass_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "flask":
-            shape_bbox = _draw_flask_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "clock":
-            shape_bbox = _draw_clock_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "apple":
-            shape_bbox = _draw_apple_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "carrot":
-            shape_bbox = _draw_carrot_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "fish":
-            shape_bbox = _draw_fish_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "leaf":
-            shape_bbox = _draw_leaf_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "glove":
-            shape_bbox = _draw_glove_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "hat":
-            shape_bbox = _draw_hat_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "helmet":
-            shape_bbox = _draw_helmet_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "cup":
-            shape_bbox = _draw_cup_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "bottle":
-            shape_bbox = _draw_bottle_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "umbrella":
-            shape_bbox = _draw_umbrella_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "calculator":
-            shape_bbox = _draw_calculator_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "dice":
-            shape_bbox = _draw_dice_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "kite":
-            shape_bbox = _draw_kite_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "cactus":
-            shape_bbox = _draw_cactus_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "drum":
-            shape_bbox = _draw_drum_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "ruler":
-            shape_bbox = _draw_ruler_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "remote_control":
-            shape_bbox = _draw_remote_control_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "plug":
-            shape_bbox = _draw_plug_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "torus":
-            shape_bbox = _draw_torus_object(draw, spec, camera=camera, frame=frame, fill=color, floor_rgb=render_params.floor_rgb)
-        elif shape_type == "pyramid":
-            shape_bbox = _draw_pyramid_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "wedge":
-            shape_bbox = _draw_wedge_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "star_prism":
-            shape_bbox = _draw_footprint_prism_object(draw, spec, camera=camera, frame=frame, fill=color, footprint_xy=_star_footprint_points())
-        elif shape_type == "hexagonal_prism":
-            shape_bbox = _draw_footprint_prism_object(draw, spec, camera=camera, frame=frame, fill=color, footprint_xy=_hexagon_footprint_points())
-        elif shape_type == "half_cylinder":
-            shape_bbox = _draw_half_cylinder_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "arch":
-            shape_bbox = _draw_arch_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "table":
-            shape_bbox = _draw_table_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "shelf":
-            shape_bbox = _draw_shelf_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "open_box":
-            shape_bbox = _draw_open_box_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "refrigerator":
-            shape_bbox = _draw_refrigerator_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "washing_machine":
-            shape_bbox = _draw_washing_machine_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "vending_machine":
-            shape_bbox = _draw_vending_machine_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "trash_bin":
-            shape_bbox = _draw_trash_bin_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "bench":
-            shape_bbox = _draw_bench_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "piano":
-            shape_bbox = _draw_piano_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "locker":
-            shape_bbox = _draw_locker_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "cabinet":
-            shape_bbox = _draw_cabinet_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "sofa":
-            shape_bbox = _draw_sofa_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "barrel":
-            shape_bbox = _draw_barrel_object(draw, spec, camera=camera, frame=frame, fill=color)
-        elif shape_type == "chair":
-            shape_bbox = _draw_chair_object(draw, spec, camera=camera, frame=frame, fill=color)
-        else:
-            shape_bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=color)
+            ),
+        )
+        shape_bbox = list(rendered_object.bbox_xyxy)
         bbox = list(shape_bbox)
         if bool(spec.get("is_answer_candidate", False)):
-            if bool(draw_candidate_labels):
+            if bool(draw_scene_candidate_labels):
                 label_center = (x, y)
                 if shape_type == "torus":
                     label_center = (x, float(shape_bbox[1]) + 0.34 * (float(shape_bbox[3]) - float(shape_bbox[1])))
@@ -794,6 +643,7 @@ def render_object_scene_3d(
                     "camera_xyz": list(spec["camera_xyz"]),
                     "camera_distance": float(spec["camera_distance"]),
                     "scene_variant": str(scene_variant),
+                    "object_record": dict(rendered_object.object_record),
                 },
             }
         )
@@ -822,12 +672,12 @@ def render_object_scene_3d(
             }
         )
 
-    evidence_bboxes: List[List[float]] = []
-    evidence_entity_ids: List[str] = []
-    if bool(compute_single_evidence):
-        answer_label = str(evidence_label if evidence_label is not None else dataset["answer_label"])
-        evidence_bboxes = [list(point_bboxes[answer_label])]
-        evidence_entity_ids = [str(dataset["answer_point_id"])]
+    annotation_bboxes: List[List[float]] = []
+    annotation_entity_ids: List[str] = []
+    if bool(compute_single_annotation):
+        answer_label = str(annotation_label if annotation_label is not None else dataset["answer_label"])
+        annotation_bboxes = [list(point_bboxes[answer_label])]
+        annotation_entity_ids = [str(dataset["answer_point_id"])]
     all_bboxes = [list(room_bbox)] + [list(bbox) for bbox in object_bboxes.values()]
     scene_bbox = [
         round(float(min(bbox[0] for bbox in all_bboxes)), 3),
@@ -835,6 +685,16 @@ def render_object_scene_3d(
         round(float(max(bbox[2] for bbox in all_bboxes)), 3),
         round(float(max(bbox[3] for bbox in all_bboxes)), 3),
     ]
+    option_metadata = empty_option_panel_metadata()
+    if option_choices:
+        image, option_metadata, option_entities = append_text_option_panel(
+            image,
+            option_choices=option_choices,
+            font_size_px=int(render_params.label_font_size_px),
+            text_rgb=render_params.text_rgb,
+            stroke_rgb=render_params.text_stroke_rgb,
+        )
+        entities.extend(option_entities)
     return _RenderedScene(
         image=image,
         entities=list(entities),
@@ -846,8 +706,12 @@ def render_object_scene_3d(
         context_object_bboxes_px=dict(context_object_bboxes),
         context_object_centers_px=dict(context_object_centers),
         room_bbox_px=list(room_bbox),
-        evidence_bboxes=list(evidence_bboxes),
-        evidence_entity_ids=list(evidence_entity_ids),
+        annotation_bboxes=list(annotation_bboxes),
+        annotation_entity_ids=list(annotation_entity_ids),
+        option_panel_bbox_px=list(option_metadata["option_panel_bbox_px"]),
+        option_choice_bboxes_px={str(key): list(value) for key, value in option_metadata["option_choice_bboxes_px"].items()},
+        option_choices=[dict(choice) for choice in option_metadata["option_choices"]],
+        option_panel_height_px=int(option_metadata["option_panel_height_px"]),
     )
 
 __all__ = [
@@ -857,6 +721,7 @@ __all__ = [
     "NAMEABLE_CONTEXT_SHAPE_TYPES",
     "NAMEABLE_SMALL_OBJECT_SHAPE_TYPES",
     "OBJECT_NAME_BY_SHAPE_TYPE",
+    "ObjectSceneRenderParams",
     "POINT_COLORS",
     "POINT_LABELS",
     "SCENE_ID",
@@ -879,5 +744,10 @@ __all__ = [
     "_resolve_render_params",
     "_sample_scene_object_specs",
     "_sample_shape_dimensions",
+    "bbox_intersection_area",
+    "make_object_spec",
+    "object_reference_points",
+    "object_screen_bbox",
     "render_object_scene_3d",
+    "resolve_object_scene_render_params",
 ]

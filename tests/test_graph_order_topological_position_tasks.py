@@ -39,14 +39,14 @@ def test_graph_order_topological_position_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_sequence"
+    assert out.annotation_gt.type == "point_sequence"
     assert trace["scene_ir"]["scene_kind"] == "graph_topological_position"
     assert execution["question_format"] == "query_topological_position_of_node"
     assert execution["graph_directionality"] == "directed"
     assert int(execution["node_count"]) == 7
     assert len(node_entities) == 7
     assert len(edge_entities) == int(execution["edge_count"])
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert set(out.complexity.complexity_components.keys()) == {
         "topology_reasoning",
         "visual_scan",
@@ -59,22 +59,22 @@ def test_graph_order_topological_position_contract_matches_trace() -> None:
         str(key): tuple(str(value) for value in values)
         for key, values in trace["execution_trace"]["successors_by_label"].items()
     }
-    evidence_labels = tuple(str(label) for label in execution["topological_order_labels"])
-    evidence_path = list(out.evidence_gt.value)
-    verified_order = unique_topological_order_by_adjacency(successors_by_label, node_order=evidence_labels)
+    annotation_labels = tuple(str(label) for label in execution["topological_order_labels"])
+    annotation_path = list(out.annotation_gt.value)
+    verified_order = unique_topological_order_by_adjacency(successors_by_label, node_order=annotation_labels)
     assert verified_order is not None
-    assert tuple(str(label) for label in verified_order) == evidence_labels
-    assert int(out.answer_gt.value) == int(evidence_labels.index(str(execution["query_label"])) + 1)
+    assert tuple(str(label) for label in verified_order) == annotation_labels
+    assert int(out.answer_gt.value) == int(annotation_labels.index(str(execution["query_label"])) + 1)
     assert int(out.answer_gt.value) == int(execution["target_position"])
     assert trace["witness_symbolic"]["type"] == "node_sequence"
-    assert trace["witness_symbolic"]["nodes"] == list(evidence_labels)
-    assert "label_sequence" not in trace["projected_evidence"]
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == evidence_path
-    assert trace["projected_evidence"]["pixel_point_sequence"] == evidence_path
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_path)
+    assert trace["witness_symbolic"]["nodes"] == list(annotation_labels)
+    assert "label_sequence" not in trace["projected_annotation"]
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == annotation_path
+    assert trace["projected_annotation"]["pixel_point_sequence"] == annotation_path
+    assert len(trace["projected_annotation"]["pixel_bbox_set"]) == len(annotation_path)
     width, height = trace["render_spec"]["canvas_size"]
-    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_path)
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in annotation_path)
     assert sum(1 for node in node_entities if bool(node["is_query_node"])) == 1
 
 
@@ -90,9 +90,9 @@ def test_graph_order_topological_position_prompt_examples_follow_label_variant()
         params={"label_variant": "numbers", "node_count": 7, "target_position": 3},
         max_attempts=80,
     )
-    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
-    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    expected_example = {"evidence": [[140, 220], [260, 180], [380, 240], [500, 300], [620, 260]], "answer": 3}
+    letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_annotation"])
+    numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_annotation"])
+    expected_example = {"annotation": [[140, 220], [260, 180], [380, 240], [500, 300], [620, 260]], "answer": 3}
     assert letters_example == expected_example
     assert numbers_example == expected_example
 

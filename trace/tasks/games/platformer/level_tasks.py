@@ -21,7 +21,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.support_sampling import resolve_integer_choice
+from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_platformer_level_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
@@ -47,6 +47,7 @@ from ..shared.visual_defaults import load_games_noise_defaults
 TASK_ID = "games_platformer_level_base"
 _LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
 _HAZARD_KINDS: Tuple[str, ...] = ("spikes", "patrol")
+_BONUS_COLLECTIBLE_KINDS: Tuple[str, ...] = ("gem", "star")
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,12 @@ class _TaskDefaults:
     distractor_collectible_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
     target_platform_label_support: Tuple[str, ...] = _LABELS
     target_collectible_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
+    score_on_arc_coin_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+    score_on_arc_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    score_off_arc_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    score_bonus_value_support: Tuple[int, ...] = (2, 3, 5, 10)
+    jump_visible_after_peak_min: float = 0.08
+    jump_visible_after_peak_max: float = 0.14
     canvas_width: int = 1000
     canvas_height: int = 740
     level_width_px: int = 860
@@ -85,6 +92,10 @@ class _ResolvedAxes:
     distractor_collectible_count: int
     target_platform_label: str | None
     target_collectible_count: int | None
+    score_on_arc_coin_count_support: Tuple[int, ...]
+    score_on_arc_bonus_count_support: Tuple[int, ...]
+    score_off_arc_bonus_count_support: Tuple[int, ...]
+    score_bonus_value_support: Tuple[int, ...]
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -265,6 +276,31 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             namespace_support_permutation=True,
         )
 
+    score_on_arc_coin_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="score_on_arc_coin_count_support",
+        fallback=_DEFAULTS.score_on_arc_coin_count_support,
+    )
+    score_on_arc_bonus_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="score_on_arc_bonus_count_support",
+        fallback=_DEFAULTS.score_on_arc_bonus_count_support,
+    )
+    score_off_arc_bonus_count_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="score_off_arc_bonus_count_support",
+        fallback=_DEFAULTS.score_off_arc_bonus_count_support,
+    )
+    score_bonus_value_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="score_bonus_value_support",
+        fallback=_DEFAULTS.score_bonus_value_support,
+    )
+
     return _ResolvedAxes(
         query_id=str(query_id),
         scene_variant=str(scene_variant),
@@ -274,6 +310,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         distractor_collectible_count=int(distractor_collectible_count),
         target_platform_label=None if target_platform_label is None else str(target_platform_label),
         target_collectible_count=None if target_collectible_count is None else int(target_collectible_count),
+        score_on_arc_coin_count_support=tuple(int(value) for value in score_on_arc_coin_count_support),
+        score_on_arc_bonus_count_support=tuple(int(value) for value in score_on_arc_bonus_count_support),
+        score_off_arc_bonus_count_support=tuple(int(value) for value in score_off_arc_bonus_count_support),
+        score_bonus_value_support=tuple(int(value) for value in score_bonus_value_support),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -615,10 +655,16 @@ def _sample_landing(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
     """Construct a platformer scene where the jump lands on one labeled platform."""
 
     target_label = str(axes.target_platform_label or "A")
+    after_peak_min = float(group_default(_GEN_DEFAULTS, "jump_visible_after_peak_min", _DEFAULTS.jump_visible_after_peak_min))
+    after_peak_max = float(group_default(_GEN_DEFAULTS, "jump_visible_after_peak_max", _DEFAULTS.jump_visible_after_peak_max))
+    after_peak_min = max(0.03, min(0.24, after_peak_min))
+    after_peak_max = max(after_peak_min, min(0.28, after_peak_max))
     for _attempt in range(160):
         player = (float(rng.uniform(0.12, 0.22)), float(rng.uniform(0.76, 0.83)))
         target_top = (float(rng.uniform(0.60, 0.86)), float(rng.uniform(0.44, 0.66)))
         path = _jump_arc(start=player, end=target_top, rng=rng, lift=float(rng.uniform(0.24, 0.34)))
+        peak_index = min(range(len(path)), key=lambda index: float(path[int(index)][1]))
+        peak_fraction = float(peak_index) / float(max(1, len(path) - 1))
         target_center = (float(target_top[0]), float(target_top[1] + 0.032))
 
         labels = [str(target_label)] + [str(label) for label in _LABELS if str(label) != str(target_label)]
@@ -693,14 +739,14 @@ def _sample_landing(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
             player_x_norm=float(player[0]),
             player_y_norm=float(player[1]),
             path_points_norm=tuple(path),
-            visible_path_fraction=float(rng.uniform(0.42, 0.52)),
+            visible_path_fraction=float(min(0.92, peak_fraction + float(rng.uniform(after_peak_min, after_peak_max)))),
             platforms=tuple(platforms),
             hazards=tuple(hazards),
             collectibles=tuple(coins),
             target_platform_id=str(target_platform.platform_id),
             target_platform_label=str(target_platform.label),
             target_collectible_ids=tuple(),
-            evidence_entity_ids=(str(target_platform.platform_id),),
+            annotation_entity_ids=(str(target_platform.platform_id),),
             construction_mode="short_arc_lands_on_labeled_platform",
         )
         validate_platformer_sample(sample)
@@ -789,12 +835,153 @@ def _sample_collectibles(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
             target_platform_id=None,
             target_platform_label=None,
             target_collectible_ids=target_ids,
-            evidence_entity_ids=target_ids,
+            annotation_entity_ids=target_ids,
             construction_mode="full_arc_collectible_count",
         )
         validate_platformer_sample(sample)
         return sample
     raise ValueError("failed to construct Platformer collectible count scene")
+
+
+def _sample_jump_collectible_score(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
+    """Construct a full-arc scene with scored coins and printed-value bonus items."""
+
+    on_arc_coin_count = int(rng.choice(tuple(axes.score_on_arc_coin_count_support)))
+    on_arc_bonus_count = int(rng.choice(tuple(axes.score_on_arc_bonus_count_support)))
+    off_arc_bonus_count = int(rng.choice(tuple(axes.score_off_arc_bonus_count_support)))
+    target_count = int(on_arc_coin_count + on_arc_bonus_count)
+    for _attempt in range(160):
+        player = (float(rng.uniform(0.12, 0.20)), float(rng.uniform(0.76, 0.83)))
+        end = (float(rng.uniform(0.78, 0.90)), float(rng.uniform(0.54, 0.70)))
+        path = _jump_arc(start=player, end=end, rng=rng, lift=float(rng.uniform(0.24, 0.35)))
+        target_kinds = (["coin"] * int(on_arc_coin_count)) + (["bonus"] * int(on_arc_bonus_count))
+        rng.shuffle(target_kinds)
+        t_values = [
+            0.18 + ((0.66 * (idx + 0.5)) / float(target_count))
+            for idx in range(int(target_count))
+        ]
+        target_collectibles: list[PlatformerCollectible] = []
+        answer = 0
+        next_index = 0
+        for target_kind, t in zip(target_kinds, t_values):
+            point = tuple(
+                float(value)
+                for value in path[
+                    max(1, min(len(path) - 2, int(round(float(t) * (len(path) - 1)))))
+                ]
+            )
+            if str(target_kind) == "bonus":
+                score_value = int(rng.choice(tuple(axes.score_bonus_value_support)))
+                kind = str(_BONUS_COLLECTIBLE_KINDS[int(next_index) % len(_BONUS_COLLECTIBLE_KINDS)])
+                radius_norm = 0.028
+                answer += int(score_value)
+            else:
+                score_value = None
+                kind = "coin"
+                radius_norm = 0.022
+                answer += 1
+            target_collectibles.append(
+                PlatformerCollectible(
+                    collectible_id=collectible_entity_id(next_index),
+                    x_norm=float(point[0]),
+                    y_norm=float(point[1]),
+                    radius_norm=float(radius_norm),
+                    on_path=True,
+                    color_index=int(next_index),
+                    kind=str(kind),
+                    score_value=score_value,
+                )
+            )
+            next_index += 1
+
+        occupied_points = [tuple((coin.x_norm, coin.y_norm)) for coin in target_collectibles]
+        off_arc_bonus_collectibles: list[PlatformerCollectible] = []
+        for offset in range(int(off_arc_bonus_count)):
+            maybe = _safe_center(
+                rng=rng,
+                existing=occupied_points,
+                avoid_path=path,
+                avoid_points=(player, end),
+                x_range=(0.18, 0.88),
+                y_range=(0.22, 0.78),
+                min_existing_distance=0.090,
+                min_path_distance=0.095,
+            )
+            if maybe is None:
+                break
+            occupied_points.append(maybe)
+            off_arc_bonus_collectibles.append(
+                PlatformerCollectible(
+                    collectible_id=collectible_entity_id(next_index),
+                    x_norm=float(maybe[0]),
+                    y_norm=float(maybe[1]),
+                    radius_norm=0.028,
+                    on_path=False,
+                    color_index=int(next_index),
+                    kind=str(_BONUS_COLLECTIBLE_KINDS[(int(next_index) + int(offset)) % len(_BONUS_COLLECTIBLE_KINDS)]),
+                    score_value=int(rng.choice(tuple(axes.score_bonus_value_support))),
+                )
+            )
+            next_index += 1
+        if len(off_arc_bonus_collectibles) < 1:
+            continue
+
+        distractors = _decorative_collectibles(
+            rng=rng,
+            start_index=next_index,
+            count=int(axes.distractor_collectible_count),
+            avoid_path=path,
+            avoid_points=(player, end) + tuple(occupied_points),
+            min_existing_distance=0.080,
+        )
+        all_collectibles = tuple(target_collectibles) + tuple(off_arc_bonus_collectibles) + tuple(distractors)
+        collectible_points = tuple((float(coin.x_norm), float(coin.y_norm)) for coin in all_collectibles)
+        platform_target = max(3, int(axes.platform_count) - 1)
+        platforms = _decorative_platforms(
+            rng=rng,
+            count=platform_target,
+            avoid_path=path,
+            avoid_points=(player, end) + tuple(collectible_points),
+        )
+        platform_centers = tuple((float(platform.x_norm), float(platform.y_norm)) for platform in platforms)
+        platform_rects = tuple(
+            (
+                float(platform.x_norm),
+                float(platform.y_norm),
+                float(platform.width_norm),
+                float(platform.height_norm),
+            )
+            for platform in platforms
+        )
+        hazards = _decorative_hazards(
+            rng=rng,
+            count=max(2, int(axes.hazard_count) - 3),
+            avoid_path=path,
+            avoid_points=(player, end) + tuple(collectible_points) + tuple(platform_centers),
+            avoid_rects=platform_rects,
+        )
+        target_ids = tuple(str(coin.collectible_id) for coin in target_collectibles)
+        sample = PlatformerSample(
+            query_id=str(axes.query_id),
+            scene_variant=str(axes.scene_variant),
+            style_variant=str(axes.style_variant),
+            answer=int(answer),
+            player_x_norm=float(player[0]),
+            player_y_norm=float(player[1]),
+            path_points_norm=tuple(path),
+            visible_path_fraction=1.0,
+            platforms=platforms,
+            hazards=tuple(hazards),
+            collectibles=all_collectibles,
+            target_platform_id=None,
+            target_platform_label=None,
+            target_collectible_ids=target_ids,
+            annotation_entity_ids=target_ids,
+            construction_mode="full_arc_collectible_score_sum",
+        )
+        validate_platformer_sample(sample)
+        return sample
+    raise ValueError("failed to construct Platformer collectible score scene")
 
 
 def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
@@ -805,6 +992,8 @@ def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
         return _sample_landing(rng=rng, axes=axes)
     if query == "collectible_count":
         return _sample_collectibles(rng=rng, axes=axes)
+    if query == "jump_collectible_score_value":
+        return _sample_jump_collectible_score(rng=rng, axes=axes)
     raise ValueError(f"unsupported Platformer query_id: {query}")
 
 
@@ -813,12 +1002,15 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "collectible_count":
         answer_value: str | int = 4
-        evidence_value = [[346, 228], [448, 200], [554, 216], [659, 272]]
+        annotation_value = [[346, 228], [448, 200], [554, 216], [659, 272]]
+    elif str(query_id) == "jump_collectible_score_value":
+        answer_value = 13
+        annotation_value = [[346, 228], [448, 200], [554, 216]]
     else:
         answer_value = "D"
-        evidence_value = [[604, 398, 784, 442]]
+        annotation_value = [[604, 398, 784, 442]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -875,13 +1067,13 @@ class GamesPlatformerLevelTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
-        evidence_points = [
+        annotation_points = [
             list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -901,10 +1093,13 @@ class GamesPlatformerLevelTask:
                 "object_description_side_scroller",
                 "platformer_short_arc_rule_text",
                 "platformer_full_arc_rule_text",
+                "platformer_score_rule_text",
                 "answer_hint_jump_landing_label",
-                "evidence_hint_jump_landing_label",
+                "annotation_hint_jump_landing_label",
                 "answer_hint_collectible_count",
-                "evidence_hint_collectible_count",
+                "annotation_hint_collectible_count",
+                "answer_hint_jump_collectible_score_value",
+                "annotation_hint_jump_collectible_score_value",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -916,15 +1111,16 @@ class GamesPlatformerLevelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "platformer_short_arc_rule_text": str(prompt_defaults["platformer_short_arc_rule_text"]),
                 "platformer_full_arc_rule_text": str(prompt_defaults["platformer_full_arc_rule_text"]),
+                "platformer_score_rule_text": str(prompt_defaults["platformer_score_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -932,21 +1128,21 @@ class GamesPlatformerLevelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        if str(axes.query_id) == "collectible_count":
+        if str(axes.query_id) in {"collectible_count", "jump_collectible_score_value"}:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-            evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
-            projected_evidence = {
+            annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
+            projected_annotation = {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             }
         else:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-            projected_evidence = {
+            annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             }
         text_style_meta = {
             "font_family": str(render_params.font_family),
@@ -960,8 +1156,8 @@ class GamesPlatformerLevelTask:
             platform_count=len(sampled_scene.platforms),
             hazard_count=len(sampled_scene.hazards),
             collectible_count=len(sampled_scene.collectibles),
-            target_answer=int(sampled_scene.answer) if str(axes.query_id) == "collectible_count" else len(sampled_scene.evidence_entity_ids),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            target_answer=int(sampled_scene.answer) if str(axes.query_id) in {"collectible_count", "jump_collectible_score_value"} else len(sampled_scene.annotation_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         platform_trace = [
             {
@@ -993,6 +1189,9 @@ class GamesPlatformerLevelTask:
                 "y_norm": float(coin.y_norm),
                 "radius_norm": float(coin.radius_norm),
                 "on_path": bool(coin.on_path),
+                "kind": str(coin.kind),
+                "score_value": int(coin.score_value) if coin.score_value is not None else 1,
+                "display_text": str(int(coin.score_value)) if coin.score_value is not None else "",
             }
             for coin in sampled_scene.collectibles
         ]
@@ -1010,7 +1209,7 @@ class GamesPlatformerLevelTask:
                     "platform_count_axis": int(axes.platform_count),
                     "hazard_count_axis": int(axes.hazard_count),
                     "distractor_collectible_count_axis": int(axes.distractor_collectible_count),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -1039,6 +1238,10 @@ class GamesPlatformerLevelTask:
                     "distractor_collectible_count_probabilities": dict(axes.distractor_collectible_count_probabilities),
                     "target_platform_label_probabilities": None if axes.target_platform_label_probabilities is None else dict(axes.target_platform_label_probabilities),
                     "target_collectible_count_probabilities": None if axes.target_collectible_count_probabilities is None else dict(axes.target_collectible_count_probabilities),
+                    "score_on_arc_coin_count_support": [int(value) for value in axes.score_on_arc_coin_count_support],
+                    "score_on_arc_bonus_count_support": [int(value) for value in axes.score_on_arc_bonus_count_support],
+                    "score_off_arc_bonus_count_support": [int(value) for value in axes.score_off_arc_bonus_count_support],
+                    "score_bonus_value_support": [int(value) for value in axes.score_bonus_value_support],
                     "target_platform_id": sampled_scene.target_platform_id,
                     "target_collectible_ids": list(sampled_scene.target_collectible_ids),
                     "visible_path_fraction": float(sampled_scene.visible_path_fraction),
@@ -1067,14 +1270,14 @@ class GamesPlatformerLevelTask:
                 "target_platform_id": sampled_scene.target_platform_id,
                 "target_platform_label": sampled_scene.target_platform_label,
                 "target_collectible_ids": list(sampled_scene.target_collectible_ids),
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": dict(projected_evidence),
+            "projected_annotation": dict(projected_annotation),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -1082,7 +1285,7 @@ class GamesPlatformerLevelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1109,8 +1312,17 @@ class GamesPlatformerCollectibleCountTask(FixedQueryVariantTaskMixin, GamesPlatf
     fixed_query_id = "collectible_count"
 
 
+@register_task
+class GamesPlatformerJumpCollectibleScoreValueTask(FixedQueryVariantTaskMixin, GamesPlatformerLevelTask):
+    """Sum collectible scores along the shown jump arc."""
+
+    task_id = "task_games__platformer__jump_collectible_score_value"
+    fixed_query_id = "jump_collectible_score_value"
+
+
 __all__ = [
     "GamesPlatformerCollectibleCountTask",
+    "GamesPlatformerJumpCollectibleScoreValueTask",
     "GamesPlatformerJumpLandingLabelTask",
     "GamesPlatformerLevelTask",
 ]

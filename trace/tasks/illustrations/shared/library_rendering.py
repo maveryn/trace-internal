@@ -18,10 +18,15 @@ from .object_library import (
     RGB,
     STYLE_IDS,
     choose_object_colors,
-    draw_illustration_object,
 )
 from .object_catalog import label_map_for_tag, public_name_map_for_tag, variant_ids_with_tag
-from .object_registry import make_object_record
+from .object_rendering import (
+    IllustrationObjectSpec,
+    RenderContext,
+    make_vector_scene_object_record,
+    render_illustration_object,
+)
+from .object_variants import RENDERER_STYLE_VECTOR
 from .person_rendering import sample_person_gender
 
 
@@ -96,6 +101,7 @@ class LibraryDecor:
     decor_type: str
     bbox_xyxy: BBox
     attributes: Mapping[str, Any]
+    object_record: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -450,21 +456,42 @@ def _draw_foreground_decor(draw: ImageDraw.ImageDraw, *, rng, width: int, height
         x0 = float(rng.uniform(36.0, max(38.0, float(width) - w - 36.0)))
         box = (x0, y1 - h, x0 + w, y1)
         primary, accent = choose_object_colors(rng, object_type)
-        rendered = draw_illustration_object(
-            draw,
-            object_id=f"library_decor_obj_{index}",
-            object_type=object_type,
-            bbox_xyxy=box,
-            primary_color_rgb=primary,
-            accent_color_rgb=accent,
-            style_id=str(style_id),
-            render_scale=s,
-            gender_id=sample_person_gender(rng) if object_type in {"person", "pedestrian_with_bag"} else None,
+        visual_attributes: dict[str, Any] = {
+            "primary_color_rgb": primary,
+            "accent_color_rgb": accent,
+            "style_id": str(style_id),
+        }
+        gender_id = sample_person_gender(rng) if object_type in {"person", "pedestrian_with_bag"} else None
+        if gender_id is not None:
+            visual_attributes["gender_id"] = gender_id
+        rendered = render_illustration_object(
+            IllustrationObjectSpec(
+                object_id=f"decor_object_{index}",
+                object_type=object_type,
+                bbox_xyxy=box,
+                semantic_attributes={"decor_type": object_type},
+                visual_attributes=visual_attributes,
+                role="distractor",
+                source_entity_type="library_decor",
+            ),
+            RenderContext(
+                renderer_style=RENDERER_STYLE_VECTOR,
+                draw=draw,
+                render_scale=s,
+            ),
         )
         attributes = {"role": "distractor"}
         if object_type in {"person", "pedestrian_with_bag"}:
-            attributes["gender_id"] = str(rendered.attributes.get("gender_id", "male"))
-        decor.append(LibraryDecor(f"decor_object_{index}", object_type, tuple(float(v) for v in rendered.bbox_xyxy), attributes))
+            attributes["gender_id"] = str(rendered.visual_attributes.get("gender_id", "male"))
+        decor.append(
+            LibraryDecor(
+                f"decor_object_{index}",
+                object_type,
+                tuple(float(v) for v in rendered.bbox_xyxy),
+                attributes,
+                object_record=rendered.object_record,
+            )
+        )
     return tuple(decor)
 
 
@@ -568,7 +595,7 @@ def section_bbox_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
 
 
 def sort_library_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
-    """Return bboxes sorted top-to-bottom then left-to-right for stable evidence."""
+    """Return bboxes sorted top-to-bottom then left-to-right for stable annotation."""
 
     boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
     boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
@@ -580,7 +607,7 @@ def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
 
     entities: List[Dict[str, Any]] = []
     for section in scene.sections:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(section.section_id),
             object_type="library_section",
             bbox_xyxy=section.bbox_xyxy,
@@ -593,7 +620,9 @@ def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
             },
             role=str(section.role),
             source_entity_type="library_section",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(section.section_id),
@@ -609,7 +638,7 @@ def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
             }
         )
     for book in scene.books:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(book.book_id),
             object_type="book",
             bbox_xyxy=book.bbox_xyxy,
@@ -625,7 +654,9 @@ def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
             visual_attributes={"color_rgb": [int(v) for v in book.color_rgb]},
             role=str(book.role),
             source_entity_type="library_book",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(book.book_id),
@@ -645,22 +676,28 @@ def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
         )
     for item in scene.decor:
         decor_attributes = dict(item.attributes)
-        object_record = make_object_record(
-            object_id=str(item.decor_id),
-            object_type=str(item.decor_type),
-            bbox_xyxy=item.bbox_xyxy,
-            semantic_attributes={
-                "decor_type": str(item.decor_type),
-                **{key: value for key, value in decor_attributes.items() if key != "gender_id"},
-            },
-            visual_attributes={
-                key: decor_attributes[key]
-                for key in ("gender_id",)
-                if key in decor_attributes
-            },
-            role=str(decor_attributes.get("role", "distractor")),
-            source_entity_type="library_decor",
-        ).as_dict()
+        object_record = (
+            dict(item.object_record)
+            if item.object_record is not None
+            else make_vector_scene_object_record(
+                object_id=str(item.decor_id),
+                object_type=str(item.decor_type),
+                bbox_xyxy=item.bbox_xyxy,
+                semantic_attributes={
+                    "decor_type": str(item.decor_type),
+                    **{key: value for key, value in decor_attributes.items() if key != "gender_id"},
+                },
+                visual_attributes={
+                    key: decor_attributes[key]
+                    for key in ("gender_id",)
+                    if key in decor_attributes
+                },
+                role=str(decor_attributes.get("role", "distractor")),
+                source_entity_type="library_decor",
+                render_scale=int(scene.render_scale),
+                style_id=str(scene.style_id),
+            )
+        )
         entities.append(
             {
                 "entity_id": str(item.decor_id),

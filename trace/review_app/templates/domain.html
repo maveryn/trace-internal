@@ -2,16 +2,36 @@
 {% block content %}
 <nav class="breadcrumbs"><a href="{{ app_path('/') }}">domains</a><span>{{ domain_record.domain }}</span></nav>
 
+{% set domain_status = status_by_domain.get(domain_record.domain, {}) %}
+{% set domain_feedback = feedback_by_domain.get(domain_record.domain, {}) %}
+<section class="summary-grid">
+  <div class="metric">
+    <span>{{ domain_record.scenes|length }}</span>
+    <label>scenes</label>
+  </div>
+  <div class="metric">
+    <span>{{ domain_status.review_pass|default(0) }}/{{ domain_status.total|default(domain_record.task_count) }}</span>
+    <label>review passed</label>
+  </div>
+  <div class="metric">
+    <span>{{ domain_status.solve_rate_pass|default(0) }}/{{ domain_status.total|default(domain_record.task_count) }}</span>
+    <label>solve rate passed</label>
+  </div>
+  <a class="metric metric-link" href="{{ app_path('/issues?domain=' ~ (domain_record.domain|urlquote)) }}" aria-label="Open issues for {{ domain_record.domain }}">
+    <span>{{ domain_feedback.open|default(0) }}</span>
+    <label>open issues</label>
+  </a>
+</section>
+
 <section class="table-panel">
   <table>
     <thead>
       <tr>
         <th>Preview</th>
         <th>Scene</th>
-        <th>Tasks</th>
-        <th>Status</th>
+        <th>Task Progress</th>
         <th>Samples</th>
-        <th>Feedback</th>
+        <th>Issues</th>
       </tr>
     </thead>
     <tbody>
@@ -30,13 +50,16 @@
             {% endif %}
           </td>
           <td><a href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id) }}">{{ scene.scene_id }}</a></td>
-          <td>{{ scene.task_count }}</td>
-          <td class="status-stack">
-            <span>Manual {{ scene_status.manual_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}</span>
-            <span>Solve {{ scene_status.solve_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}</span>
-            <span class="{% if scene_status.complete|default(0) == scene_status.total|default(scene.task_count) and scene.task_count %}status ok{% else %}status warn{% endif %}">
-              Completed {{ scene_status.complete|default(0) }}/{{ scene_status.total|default(scene.task_count) }}
-            </span>
+          <td class="task-progress-cell">
+            <strong>Tasks: {{ scene.task_count }}</strong>
+            <div class="task-progress-stack">
+              <span class="{% if scene_status.review_pass|default(0) == scene_status.total|default(scene.task_count) and scene.task_count %}status ok{% else %}status warn{% endif %}">
+                Review {{ scene_status.review_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}
+              </span>
+              <span class="{% if scene_status.solve_rate_pass|default(0) == scene_status.total|default(scene.task_count) and scene.task_count %}status ok{% else %}status warn{% endif %}">
+                Solve rate {{ scene_status.solve_rate_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}
+              </span>
+            </div>
           </td>
           <td>{{ scene.sample_count }}</td>
           <td>{{ feedback.open|default(0) }} open / {{ feedback.total|default(0) }} total</td>

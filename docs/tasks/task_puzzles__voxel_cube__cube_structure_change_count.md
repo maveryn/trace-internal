@@ -12,7 +12,7 @@
 3. Supported query parameter: `change_type=missing_to_complete|removed`
 4. Supported `scene_variant` values: `stack_strip`, `stack_card`, `stack_outline`
 5. `answer_gt.type`: `integer`
-6. `evidence_gt.type`: `bbox_set`
+6. `annotation_gt.type`: `bbox_set`
 7. Scene contract:
    - the scene shows two same-view wall-like cube structures with shared scale,
    - no structure contains floating cubes,
@@ -27,8 +27,8 @@
 4. Internal prompt variant key: `missing_to_complete_cuboid_count` or `removed_cube_count`
 5. Prompt-facing answers are exact integer counts.
 
-## 4) Evidence + Trace Contract
-1. Evidence is exactly two bboxes for the left and right structures.
+## 4) Annotation + Trace Contract
+1. Annotation is exactly two bboxes for the left and right structures.
 2. `execution_trace.internal_query_id` records the selected change query.
 3. Height grids, cube coordinate records, missing/removed cube coordinates, cube color, answer support, and supporting structure ids are recorded.
-4. Prompt-facing evidence is projected from structure ids, not inferred from pixels.
+4. Prompt-facing annotation is projected from structure ids, not inferred from pixels.

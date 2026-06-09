@@ -15,6 +15,12 @@ from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.mcq import option_label_for_index
 from ...shared.text_rendering import load_font
 from .drawing import draw_rounded_rect
+from .marking import (
+    SemanticMarkerStyle,
+    draw_semantic_ellipse_marker,
+    draw_semantic_polygon_marker,
+    resolve_semantic_marker_style,
+)
 from .option_layout import centered_option_grid_shape, centered_option_row_counts
 from .option_panels import render_puzzle_option_panel
 
@@ -66,6 +72,7 @@ class TangramRenderParams:
     seam_color_rgb: Tuple[int, int, int]
     text_color_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -333,18 +340,29 @@ def _draw_target_ring(
     draw: ImageDraw.ImageDraw,
     points: Sequence[Tuple[float, float]],
     *,
-    color: Sequence[int],
+    style: SemanticMarkerStyle,
     width: int,
+    extra_metadata: Mapping[str, Any] | None = None,
 ) -> None:
     int_points = [(int(round(x)), int(round(y))) for x, y in points]
-    draw.line(int_points + [int_points[0]], fill=tuple(int(v) for v in color), width=int(width), joint="curve")
+    draw_semantic_polygon_marker(
+        draw,
+        int_points,
+        style=style,
+        width=int(width),
+        marker_kind="tangram_marked_piece_outline",
+        extra_metadata=extra_metadata,
+    )
     cx, cy = _centroid(points)
     radius = max(7, int(width) + 4)
-    draw.ellipse(
+    draw_semantic_ellipse_marker(
+        draw,
         (cx - radius, cy - radius, cx + radius, cy + radius),
-        fill=(255, 255, 255),
-        outline=tuple(int(v) for v in color),
+        style=style,
         width=max(2, int(width // 2)),
+        fill_rgba=(int(style.outer_rgb[0]), int(style.outer_rgb[1]), int(style.outer_rgb[2]), 235),
+        marker_kind="tangram_marked_piece_center",
+        extra_metadata=extra_metadata,
     )
 
 
@@ -707,11 +725,22 @@ def render_tangram_scene(
 
     if query_id == "contact_count":
         for marked_piece_id in target_piece_ids:
+            marker_style = resolve_semantic_marker_style(
+                instance_seed=int(render_params.instance_seed),
+                namespace=f"puzzles.tangram.marked_piece.{marked_piece_id}",
+                role="tangram_marked_piece",
+                surface_rgbs=(
+                    tuple(int(value) for value in piece_fill_map[str(marked_piece_id)]),
+                    tuple(int(value) for value in render_params.assembly_panel_fill_rgb),
+                ),
+                preferred_rgbs=(tuple(int(value) for value in render_params.marked_outline_rgb),),
+            )
             _draw_target_ring(
                 draw,
                 piece_points[str(marked_piece_id)],
-                color=render_params.marked_outline_rgb,
+                style=marker_style,
                 width=int(render_params.highlight_width_px),
+                extra_metadata={"piece_id": str(marked_piece_id)},
             )
 
     option_panel_bbox_map: Dict[str, List[float]] = {}

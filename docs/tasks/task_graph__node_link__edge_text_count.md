@@ -12,7 +12,7 @@
 2. `query_id`: `edge_text_label_count`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. `answer_gt.type`: `integer`
-5. `evidence_gt.type`: `bbox_set`
+5. `annotation_gt.type`: `bbox_set`
 6. Scene contract:
    - one single-panel labeled node-link graph,
    - every edge or arrow has a visible boxed text label,
@@ -29,19 +29,19 @@
 1. Bundle: `graph_counting_v0`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `edge_text_label_count_query`
-4. Modes: `answer_only`, `answer_and_evidence`
+4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+evidence JSON shape: `{"evidence":[[240,190,308,214],[412,238,480,262]],"answer":2}`
-7. Prompt-facing evidence uses pixel-space boxes around every matching visible edge-label text box.
+6. Answer+annotation JSON shape: `{"annotation":[[240,190,308,214],[412,238,480,262]],"answer":2}`
+7. Prompt-facing annotation uses pixel-space boxes around every matching visible edge-label text box.
 
-## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `bbox_set` of all visible edge-label boxes whose text equals the queried label.
-2. `answer_gt.value == len(evidence_gt.value)` by construction.
+## 4) Annotation + trace contract
+1. Prompt-facing annotation is the `bbox_set` of all visible edge-label boxes whose text equals the queried label.
+2. `answer_gt.value == len(annotation_gt.value)` by construction.
 3. `execution_trace.target_edge_label` records the queried visible label.
 4. `execution_trace.edge_attribute_labels_by_label_pair` records every rendered edge label.
 5. `execution_trace.matching_edges` records the symbolic witness edge-label pairs in deterministic order.
 6. `scene_ir.entities` stores node geometry, edge geometry, edge-label bboxes, edge-label values, and `is_target_edge_label`.
-7. `projected_evidence` includes `bbox_set` and `pixel_bbox_set`.
+7. `projected_annotation` includes `bbox_set` and `pixel_bbox_set`.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
@@ -51,7 +51,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized edge-label assignment and rendered bboxes.
+2. Answers and annotation come from the same finalized edge-label assignment and rendered bboxes.
 3. Generation assigns exactly the requested number of edges to the queried label, and all other edges receive non-target labels.
 4. No semantic auto-relaxation: failures do not weaken the graph, directionality, label support, or count contract.
 

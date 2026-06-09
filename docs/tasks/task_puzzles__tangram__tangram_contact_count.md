@@ -11,6 +11,6 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `contact_count`
 3. Answer type: `integer`
-4. Evidence type: `bbox_set`
-5. Evidence targets: marked piece bbox or bboxes followed by bboxes of all unmarked edge-touching pieces; every evidence box is counted
+4. Annotation type: `bbox_set`
+5. Annotation targets: marked piece bbox or bboxes followed by bboxes of all unmarked edge-touching pieces; every annotation box is counted
 6. Scene variants: `tangram_square|tangram_diamond|tangram_tilted`

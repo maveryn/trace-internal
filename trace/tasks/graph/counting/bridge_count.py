@@ -29,8 +29,6 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_BRIDGE_QUERY_IDS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-    SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_bridge_count,
@@ -38,14 +36,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_edge_pair_evidence,
+    projected_edge_pair_annotation,
     render_graph_scene,
 )
+from ..shared.node_link_axes import resolve_node_link_visual_axes
 from ..shared.fixed_query_task import rewrite_graph_query_output
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
@@ -115,11 +110,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the pixel-space edge evidence format."""
+    """Return prompt examples that match the pixel-space edge annotation format."""
 
-    example_evidence = [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
+    example_annotation = [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -200,84 +195,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="topology_profile",
     )
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -430,7 +365,7 @@ class GraphCountingBridgeCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_undirected",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -447,12 +382,12 @@ class GraphCountingBridgeCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key="bridge_count",
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_undirected"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -461,12 +396,12 @@ class GraphCountingBridgeCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_edges)))
-        evidence_projection = projected_edge_pair_evidence(rendered_scene, evidence_edges)
-        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
-        evidence_edge_set = {tuple(edge) for edge in evidence_edges}
+        annotation_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_edges)))
+        annotation_projection = projected_edge_pair_annotation(rendered_scene, annotation_edges)
+        annotation_point_pairs = [[list(point) for point in pair] for pair in annotation_projection["point_pair_set"]]
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        annotation_edge_set = {tuple(edge) for edge in annotation_edges}
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -480,7 +415,7 @@ class GraphCountingBridgeCountTask:
                 "bbox_xyxy": list(node.bbox_xyxy),
                 "bridge_incident_count": sum(
                     1
-                    for edge in evidence_edges
+                    for edge in annotation_edges
                     if str(node.label) in {str(edge[0]), str(edge[1])}
                 ),
             }
@@ -498,7 +433,7 @@ class GraphCountingBridgeCountTask:
                 "control_px": list(edge.control_px) if edge.control_px is not None else None,
                 "is_bridge": bool(
                     canonicalize_graph_edge_label(str(edge.node_u_label), str(edge.node_v_label), directed=False)
-                    in evidence_edge_set
+                    in annotation_edge_set
                 ),
             }
             for edge in rendered_scene.edges
@@ -517,7 +452,7 @@ class GraphCountingBridgeCountTask:
                 "relations": {
                     "counting_rule": "edge_is_bridge",
                     "graph_directionality": "undirected",
-                    "matching_edges": [list(edge) for edge in evidence_edges],
+                    "matching_edges": [list(edge) for edge in annotation_edges],
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
                     "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                     "edge_labels": [list(edge) for edge in graph_sample.edge_labels],
@@ -597,7 +532,7 @@ class GraphCountingBridgeCountTask:
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "target_count": int(query.target_count),
-                "matching_edges": [list(edge) for edge in evidence_edges],
+                "matching_edges": [list(edge) for edge in annotation_edges],
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
                 "topology_profile": str(graph_sample.topology_profile),
@@ -612,11 +547,11 @@ class GraphCountingBridgeCountTask:
             },
             "witness_symbolic": {
                 "type": "edge_pair_set",
-                "edges": [list(edge) for edge in evidence_edges],
+                "edges": [list(edge) for edge in annotation_edges],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_pair_set",
-                **dict(evidence_projection),
+                **dict(annotation_projection),
             },
         }
 
@@ -624,7 +559,7 @@ class GraphCountingBridgeCountTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

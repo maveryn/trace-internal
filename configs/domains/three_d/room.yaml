@@ -1,6 +1,6 @@
 generation:
   task_overrides:
-    task_three_d__room__wall_mounted_object_count:
+    task_three_d__room__multi_attribute_and_count:
       query_id_weights:
         tv_wall_mounted_count: 1.0
         clock_wall_mounted_count: 1.0
@@ -67,7 +67,7 @@ generation:
 
 rendering:
   task_overrides:
-    task_three_d__room__wall_mounted_object_count:
+    task_three_d__room__multi_attribute_and_count:
       canvas_width: 1180
       canvas_height: 900
       scene_margin_left_px: 52
@@ -142,7 +142,7 @@ rendering:
 
 complexity:
   task_overrides:
-    task_three_d__room__wall_mounted_object_count:
+    task_three_d__room__multi_attribute_and_count:
       criteria_weights:
         visual_scan: 0.38
         wall_relation: 0.34
@@ -171,35 +171,35 @@ prompt:
   shared:
     bundle_id: three_d_room_v0
   task_overrides:
-    task_three_d__room__wall_mounted_object_count:
+    task_three_d__room__multi_attribute_and_count:
       scene_key: room
       task_key: wall_mounted_object_count_query
-      object_description: a perspective 3D indoor room with floor, walls, furniture, non-wall objects on furniture or the floor, and objects mounted on the walls
-      evidence_hint: set "evidence" to bounding boxes around only the wall-mounted {target_plural}; use an empty array if there are none
+      object_description: an indoor room shown in perspective, with floor, walls, furniture, non-wall objects on furniture or the floor, and objects mounted on the walls
+      annotation_hint: set "annotation" to bounding boxes around only the wall-mounted {target_plural}; use an empty array if there are none
       answer_hint: set "answer" to the number of wall-mounted {target_plural}
-      json_example: '{"evidence":[[142,118,238,178],[318,126,410,184]],"answer":2}'
+      json_example: '{"annotation":[[142,118,238,178],[318,126,410,184]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_three_d__room__wall_object_camera_distance_label:
       scene_key: room
       task_key: wall_object_camera_distance_query
-      object_description: a perspective 3D indoor room with floor, walls, furniture, unlettered room objects, and lettered wall-mounted objects
-      evidence_hint: set "evidence" to one bounding box around the selected lettered wall-mounted object
-      answer_hint: set "answer" to the selected wall object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective indoor room with floor, walls, furniture, room objects, wall-mounted candidate objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__room__wall_object_same_wall_reference_label:
       scene_key: room
       task_key: wall_object_same_wall_reference_query
-      object_description: a perspective 3D indoor room with floor, walls, furniture, one unlettered reference object on a wall, and lettered wall-mounted objects
-      evidence_hint: set "evidence" to one bounding box around the selected lettered wall-mounted object
-      answer_hint: set "answer" to the selected wall object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective indoor room with floor, walls, furniture, one named reference object on a wall, wall-mounted candidate objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__room__wall_object_side_relation_label:
       scene_key: room
       task_key: wall_object_side_relation_query
-      object_description: a perspective 3D indoor room with floor, walls, furniture, one unlettered TV on a wall, and lettered wall-mounted objects on that same wall
-      evidence_hint: set "evidence" to one bounding box around the selected lettered wall-mounted object
-      answer_hint: set "answer" to the selected wall object letter
-      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      object_description: a perspective indoor room with floor, walls, furniture, one TV on a wall, wall-mounted candidate objects on that same wall, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      answer_hint: set "answer" to the selected option letter
+      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

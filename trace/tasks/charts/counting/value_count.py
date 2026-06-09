@@ -27,7 +27,7 @@ from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     build_chart_mark_specs,
     build_value_count_dataset_for_variant,
-    projected_mark_evidence,
+    projected_mark_annotation,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -216,7 +216,7 @@ class ChartsCountingValueCountTask:
             )
         count_variant = _internal_count_variant(str(query_id), comparison=comparison)
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        values, answer_value, evidence_labels, trace_extras = build_value_count_dataset_for_variant(
+        values, answer_value, annotation_labels, trace_extras = build_value_count_dataset_for_variant(
             count_variant=str(count_variant),
             scene_variant=str(scene_variant),
             params=support_params,
@@ -291,8 +291,8 @@ class ChartsCountingValueCountTask:
                 "object_description_scatter",
                 "object_description_dot_plot",
                 "object_description_lollipop",
-                "evidence_hint_threshold_count",
-                "evidence_hint_in_interval",
+                "annotation_hint_threshold_count",
+                "annotation_hint_in_interval",
                 "json_example_threshold_count",
                 "json_example_in_interval",
                 "json_example_answer_only_threshold_count",
@@ -301,7 +301,7 @@ class ChartsCountingValueCountTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -312,7 +312,7 @@ class ChartsCountingValueCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "threshold": str(trace_extras.get("threshold", "")),
@@ -321,7 +321,7 @@ class ChartsCountingValueCountTask:
                 "interval_max": str(trace_extras.get("interval_max", "")),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -339,9 +339,9 @@ class ChartsCountingValueCountTask:
             str(mark["label"]): int(mark["value"])
             for mark in rendered_scene.mark_traces
         }
-        evidence_projection = projected_mark_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_projection = projected_mark_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
 
         trace_payload = {
             "scene_ir": {
@@ -350,7 +350,7 @@ class ChartsCountingValueCountTask:
                 "relations": {
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "evidence_labels": list(evidence_labels),
+                    "annotation_labels": list(annotation_labels),
                     **({"comparison_probabilities": dict(comparison_probabilities)} if comparison_probabilities else {}),
                     **{
                         str(key): value
@@ -425,7 +425,7 @@ class ChartsCountingValueCountTask:
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(answer_value),
-                "evidence_labels": list(evidence_labels),
+                "annotation_labels": list(annotation_labels),
                 "labels": [str(label) for label in labels],
                 "values": [int(value) for value in values],
                 "values_by_label": dict(values_by_label),
@@ -461,12 +461,12 @@ class ChartsCountingValueCountTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
@@ -484,7 +484,7 @@ class ChartsCountingValueCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -497,14 +497,23 @@ class ChartsCountingValueCountTask:
 
 
 @register_task
-class ChartsCountingValuePredicateCountTask(MergedChartQueryVariantTaskMixin, ChartsCountingValueCountTask):
-    """Count labeled marks satisfying one sampled value predicate."""
+class ChartsCountingThresholdValueCountTask(MergedChartQueryVariantTaskMixin, ChartsCountingValueCountTask):
+    """Count labeled marks satisfying a one-bound threshold predicate."""
 
-    task_id = "task_charts__single_series__value_predicate_count"
-    allowed_query_ids = ("threshold_count", "in_interval")
+    task_id = "task_charts__single_series__threshold_value_count"
+    allowed_query_ids = ("threshold_count",)
+
+
+@register_task
+class ChartsCountingIntervalValueCountTask(MergedChartQueryVariantTaskMixin, ChartsCountingValueCountTask):
+    """Count labeled marks whose values fall inside an interval."""
+
+    task_id = "task_charts__single_series__interval_value_count"
+    allowed_query_ids = ("in_interval",)
 
 
 __all__ = [
-    "ChartsCountingValuePredicateCountTask",
+    "ChartsCountingIntervalValueCountTask",
+    "ChartsCountingThresholdValueCountTask",
     "ChartsCountingValueCountTask",
 ]

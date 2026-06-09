@@ -1,4 +1,4 @@
-"""Games Pool-table tasks for direct-shot geometry queries."""
+"""Games Pool-table tasks for group counting and marked-shot geometry queries."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_pool_table_complexity
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.pool_common import (
     POOL_BALL_NUMBERS,
@@ -30,15 +30,12 @@ from ..shared.pool_common import (
     SUPPORTED_POOL_QUERY_IDS,
     SUPPORTED_POOL_SCENE_VARIANTS,
     PoolBall,
-    PoolPocket,
     PoolSample,
     ball_entity_id,
     ball_group,
     balls_on_segment,
-    DEFAULT_MAX_DIRECT_SHOT_ANGLE_DEGREES,
     object_balls,
     point_distance,
-    pottable_ball_ids,
     sorted_ids,
     validate_pool_sample,
 )
@@ -56,12 +53,10 @@ TASK_ID = "games_pool_table_base"
 class _TaskDefaults:
     """Stable fallback defaults for visible Pool-table scenes."""
 
-    pottable_ball_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
-    legal_group_pottable_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+    current_group_ball_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     blocking_ball_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     object_ball_count_support: Tuple[int, ...] = (7, 8, 9, 10)
     line_clearance: float = 0.055
-    max_direct_shot_angle_degrees: float = DEFAULT_MAX_DIRECT_SHOT_ANGLE_DEGREES
     min_ball_distance: float = 0.075
     canvas_width: int = 1120
     canvas_height: int = 760
@@ -105,8 +100,7 @@ def _target_support_key(query_id: str) -> str:
     """Return the configured answer-support key for one Pool query."""
 
     return {
-        "pottable_ball_count": "pottable_ball_count_support",
-        "legal_group_pottable_count": "legal_group_pottable_count_support",
+        "current_group_ball_count": "current_group_ball_count_support",
         "blocking_ball_count": "blocking_ball_count_support",
     }[str(query_id)]
 
@@ -114,7 +108,7 @@ def _target_support_key(query_id: str) -> str:
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     if not bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True))):
         return False
@@ -274,21 +268,6 @@ def _clearance(params: Mapping[str, Any]) -> float:
     return float(params.get("line_clearance", group_default(_GEN_DEFAULTS, "line_clearance", _DEFAULTS.line_clearance)))
 
 
-def _max_direct_shot_angle_degrees(params: Mapping[str, Any]) -> float:
-    """Return the maximum cue-to-ball / ball-to-pocket angle for direct pots."""
-
-    return float(
-        params.get(
-            "max_direct_shot_angle_degrees",
-            group_default(
-                _GEN_DEFAULTS,
-                "max_direct_shot_angle_degrees",
-                _DEFAULTS.max_direct_shot_angle_degrees,
-            ),
-        )
-    )
-
-
 def _min_ball_distance(params: Mapping[str, Any]) -> float:
     """Return the minimum normalized distance between ball centers."""
 
@@ -339,15 +318,34 @@ def _sample_free_position(rng, balls: Sequence[PoolBall], *, min_distance: float
     raise ValueError("failed to sample non-overlapping pool ball")
 
 
-def _random_layout(*, rng, object_ball_count: int, params: Mapping[str, Any]) -> Tuple[PoolBall, ...]:
-    """Sample a generic pool-ball layout."""
+def _group_display_name(group: str) -> str:
+    """Return prompt-facing pool group text."""
+
+    return "solids" if str(group) == "solid" else "stripes"
+
+
+def _current_group_layout(*, rng, object_ball_count: int, target_answer: int, params: Mapping[str, Any]) -> PoolSample:
+    """Construct a pool layout with a controlled current-group ball count."""
+
+    group = str(params.get("current_player_group", rng.choice(("solid", "stripe"))))
+    if group not in {"solid", "stripe"}:
+        raise ValueError(f"unsupported current_player_group={group!r}")
+    group_numbers = tuple(range(1, 8)) if group == "solid" else tuple(range(9, 16))
+    distractor_numbers = (tuple(range(9, 16)) if group == "solid" else tuple(range(1, 8))) + (8,)
+    if int(target_answer) > len(group_numbers):
+        raise ValueError("pool current-group answer exceeds group size")
+    distractor_count = int(object_ball_count) - int(target_answer)
+    if int(distractor_count) < 0 or int(distractor_count) > len(distractor_numbers):
+        raise ValueError("pool current-group distractor count is infeasible")
+
+    selected_group = list(rng.sample(group_numbers, int(target_answer)))
+    selected_distractors = list(rng.sample(distractor_numbers, int(distractor_count)))
+    selected = selected_group + selected_distractors
+    rng.shuffle(selected)
 
     balls: list[PoolBall] = []
     cue_center = (float(rng.uniform(0.135, 0.235)), float(rng.uniform(0.42, 0.58)))
     _add_ball(balls, number=0, center=cue_center)
-    numbers = list(POOL_BALL_NUMBERS)
-    rng.shuffle(numbers)
-    selected = numbers[: int(object_ball_count)]
     min_distance = _min_ball_distance(params)
     for number in selected:
         _add_ball(
@@ -355,145 +353,26 @@ def _random_layout(*, rng, object_ball_count: int, params: Mapping[str, Any]) ->
             number=int(number),
             center=_sample_free_position(rng, balls, min_distance=float(min_distance)),
         )
-    return tuple(balls)
 
-
-def _sample_direct_lane_position(
-    rng,
-    *,
-    cue_center: Tuple[float, float],
-    pocket: PoolPocket,
-    balls: Sequence[PoolBall],
-    min_distance: float,
-) -> Tuple[float, float]:
-    """Sample one object-ball center on a visually clear cue-to-pocket lane."""
-
-    for _ in range(500):
-        t = float(rng.uniform(0.30, 0.72))
-        offset = float(rng.uniform(-0.012, 0.012))
-        center = _point_on_segment(cue_center, pocket.center, t=t, offset=offset)
-        if _position_available(center, balls, min_distance=float(min_distance)):
-            return center
-    raise ValueError("failed to sample clear pool direct-lane ball")
-
-
-def _exact_pottable_ids(
-    *,
-    balls: Sequence[PoolBall],
-    clearance: float,
-    max_angle_degrees: float,
-) -> Tuple[str, ...]:
-    """Return pottable ids under the shared direct-shot rule."""
-
-    return pottable_ball_ids(
-        balls=balls,
+    annotation_ids = sorted_ids(ball_entity_id(int(number)) for number in selected_group)
+    sample = PoolSample(
+        query_id="current_group_ball_count",
+        scene_variant="standard_table",
+        answer=int(target_answer),
+        balls=tuple(balls),
         pockets=POOL_POCKETS,
         cue_ball_id="cue_ball",
-        clearance=float(clearance),
-        max_angle_degrees=float(max_angle_degrees),
+        marked_ball_id=None,
+        marked_pocket_id=None,
+        current_player_group=str(group),
+        annotation_ball_ids=annotation_ids,
+        annotation_pocket_ids=tuple(),
+        blocking_ball_ids=tuple(),
+        target_answer=int(target_answer),
+        construction_mode=f"current_group_{group}_visible_count",
     )
-
-
-def _clear_pottable_count_layout(
-    *,
-    rng,
-    object_ball_count: int,
-    target_answer: int,
-    params: Mapping[str, Any],
-) -> Tuple[PoolBall, ...]:
-    """Construct clear direct lanes for the target pottable-ball count."""
-
-    if int(target_answer) > len(POOL_POCKETS):
-        raise ValueError("pool pottable answer exceeds available direct-lane anchors")
-
-    min_distance = _min_ball_distance(params)
-    clearance = _clearance(params)
-    max_angle = _max_direct_shot_angle_degrees(params)
-    cue_center = (float(rng.uniform(0.165, 0.220)), float(rng.uniform(0.455, 0.545)))
-    balls: list[PoolBall] = []
-    _add_ball(balls, number=0, center=cue_center)
-
-    numbers = list(POOL_BALL_NUMBERS)
-    rng.shuffle(numbers)
-    selected = numbers[: int(object_ball_count)]
-    target_numbers = selected[: int(target_answer)]
-    target_ids = {ball_entity_id(int(number)) for number in target_numbers}
-
-    pockets = list(POOL_POCKETS)
-    rng.shuffle(pockets)
-    for number, pocket in zip(target_numbers, pockets):
-        for _attempt in range(160):
-            trial = list(balls)
-            _add_ball(
-                trial,
-                number=int(number),
-                center=_sample_direct_lane_position(
-                    rng,
-                    cue_center=cue_center,
-                    pocket=pocket,
-                    balls=trial,
-                    min_distance=float(min_distance),
-                ),
-            )
-            if ball_entity_id(int(number)) in set(
-                _exact_pottable_ids(
-                    balls=trial,
-                    clearance=float(clearance),
-                    max_angle_degrees=float(max_angle),
-                )
-            ):
-                balls = trial
-                break
-        else:
-            raise ValueError("failed to place target pool pottable ball")
-
-    if set(_exact_pottable_ids(balls=balls, clearance=float(clearance), max_angle_degrees=float(max_angle))) != target_ids:
-        raise ValueError("constructed pool targets are not exactly pottable")
-
-    for number in selected[int(target_answer) :]:
-        for _attempt in range(1600):
-            candidate = _sample_free_position(rng, balls, min_distance=float(min_distance))
-            trial = list(balls)
-            _add_ball(trial, number=int(number), center=candidate)
-            if set(_exact_pottable_ids(balls=trial, clearance=float(clearance), max_angle_degrees=float(max_angle))) == target_ids:
-                balls = trial
-                break
-        else:
-            raise ValueError("failed to place non-pottable pool distractor")
-
-    if len(_exact_pottable_ids(balls=balls, clearance=float(clearance), max_angle_degrees=float(max_angle))) != int(target_answer):
-        raise ValueError("constructed pool pottable count did not match target")
-    return tuple(balls)
-
-
-def _legal_group_payload(
-    *,
-    balls: Sequence[PoolBall],
-    pockets: Sequence[PoolPocket],
-    cue_ball_id: str,
-    clearance: float,
-    target_answer: int,
-    max_angle_degrees: float,
-) -> Tuple[str, Tuple[str, ...]]:
-    """Choose a current-player group whose pottable count matches the target."""
-
-    all_pottable = set(
-        pottable_ball_ids(
-            balls=balls,
-            pockets=pockets,
-            cue_ball_id=str(cue_ball_id),
-            clearance=float(clearance),
-            max_angle_degrees=float(max_angle_degrees),
-        )
-    )
-    candidates: list[Tuple[str, Tuple[str, ...]]] = []
-    for group in ("solid", "stripe"):
-        ids = sorted_ids(ball.ball_id for ball in object_balls(balls) if str(ball.group) == group and str(ball.ball_id) in all_pottable)
-        if len(ids) == int(target_answer):
-            candidates.append((group, ids))
-    if not candidates:
-        raise ValueError("no legal pool group matches target answer")
-    return candidates[0]
+    validate_pool_sample(sample)
+    return sample
 
 
 def _point_on_segment(
@@ -604,10 +483,8 @@ def _blocking_layout(*, rng, target_answer: int, params: Mapping[str, Any]) -> P
         marked_ball_id=str(target_id),
         marked_pocket_id=str(pocket.pocket_id),
         current_player_group=None,
-        evidence_ball_ids=actual_blockers,
-        evidence_pocket_ids=tuple(),
-        pottable_ball_ids=tuple(),
-        legal_pottable_ball_ids=tuple(),
+        annotation_ball_ids=actual_blockers,
+        annotation_pocket_ids=tuple(),
         blocking_ball_ids=actual_blockers,
         target_answer=int(target_answer),
         construction_mode="marked_two_segment_shot_with_controlled_blockers",
@@ -622,88 +499,25 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Poo
     if str(axes.query_id) == "blocking_ball_count":
         sample = _blocking_layout(rng=rng, target_answer=int(axes.target_answer), params=params)
         return replace(sample, scene_variant=str(axes.scene_variant))
-
-    query = str(axes.query_id)
-    if query == "pottable_ball_count":
-        balls = _clear_pottable_count_layout(
+    if str(axes.query_id) == "current_group_ball_count":
+        sample = _current_group_layout(
             rng=rng,
             object_ball_count=int(axes.object_ball_count),
             target_answer=int(axes.target_answer),
             params=params,
         )
-    else:
-        balls = _random_layout(rng=rng, object_ball_count=int(axes.object_ball_count), params=params)
-    pockets = POOL_POCKETS
-    clearance = _clearance(params)
-    max_angle = _max_direct_shot_angle_degrees(params)
-    all_pottable = pottable_ball_ids(
-        balls=balls,
-        pockets=pockets,
-        cue_ball_id="cue_ball",
-        clearance=float(clearance),
-        max_angle_degrees=float(max_angle),
-    )
-    if query == "pottable_ball_count":
-        if len(all_pottable) != int(axes.target_answer):
-            raise ValueError("pool pottable count does not match target")
-        sample = PoolSample(
-            query_id=query,
-            scene_variant=str(axes.scene_variant),
-            answer=len(all_pottable),
-            balls=balls,
-            pockets=pockets,
-            cue_ball_id="cue_ball",
-            marked_ball_id=None,
-            marked_pocket_id=None,
-            current_player_group=None,
-            evidence_ball_ids=all_pottable,
-            evidence_pocket_ids=tuple(),
-            pottable_ball_ids=all_pottable,
-            legal_pottable_ball_ids=tuple(),
-            blocking_ball_ids=tuple(),
-            target_answer=int(axes.target_answer),
-            construction_mode="clear_direct_lane_pool_layout_pottable_count",
-        )
-    elif query == "legal_group_pottable_count":
-        group, legal_ids = _legal_group_payload(
-            balls=balls,
-            pockets=pockets,
-            cue_ball_id="cue_ball",
-            clearance=float(clearance),
-            target_answer=int(axes.target_answer),
-            max_angle_degrees=float(max_angle),
-        )
-        sample = PoolSample(
-            query_id=query,
-            scene_variant=str(axes.scene_variant),
-            answer=len(legal_ids),
-            balls=balls,
-            pockets=pockets,
-            cue_ball_id="cue_ball",
-            marked_ball_id=None,
-            marked_pocket_id=None,
-            current_player_group=str(group),
-            evidence_ball_ids=legal_ids,
-            evidence_pocket_ids=tuple(),
-            pottable_ball_ids=all_pottable,
-            legal_pottable_ball_ids=legal_ids,
-            blocking_ball_ids=tuple(),
-            target_answer=int(axes.target_answer),
-            construction_mode="random_pool_layout_current_group_pottable_count",
-        )
-    else:
-        raise ValueError(f"unsupported Pool query_id: {axes.query_id}")
-    validate_pool_sample(sample)
-    return sample
+        return replace(sample, scene_variant=str(axes.scene_variant))
+
+    raise ValueError(f"unsupported Pool query_id: {axes.query_id}")
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Pool JSON output."""
 
     answer_value = 2 if str(query_id) == "blocking_ball_count" else 3
-    evidence_value = [[200, 240], [540, 330]]
+    annotation_value = [[200, 240], [540, 330]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -748,7 +562,7 @@ class GamesPoolTableTask:
         )
         badge_text = ""
         if sampled_scene.current_player_group:
-            badge_text = f"Current player: {str(sampled_scene.current_player_group).upper()}"
+            badge_text = f"Current player: {_group_display_name(str(sampled_scene.current_player_group)).upper()}"
         rendered_scene = render_pool_table_scene(
             balls=sampled_scene.balls,
             pockets=sampled_scene.pockets,
@@ -762,12 +576,12 @@ class GamesPoolTableTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_entity_ids = [*sampled_scene.evidence_ball_ids, *sampled_scene.evidence_pocket_ids]
-        evidence_points = [
+        annotation_entity_ids = [*sampled_scene.annotation_ball_ids, *sampled_scene.annotation_pocket_ids]
+        annotation_points = [
             list(rendered_scene.render_map["ball_points_px"][entity_id])
             if entity_id in rendered_scene.render_map["ball_points_px"]
             else list(rendered_scene.render_map["pocket_points_px"][entity_id])
-            for entity_id in evidence_entity_ids
+            for entity_id in annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -785,22 +599,18 @@ class GamesPoolTableTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_standard_table",
-                "direct_shot_rule_text",
-                "legal_group_rule_text",
                 "marked_shot_rule_text",
-                "answer_hint_pottable_ball_count",
-                "answer_hint_legal_group_pottable_count",
+                "answer_hint_current_group_ball_count",
                 "answer_hint_blocking_ball_count",
-                "evidence_hint_pottable_ball_count",
-                "evidence_hint_legal_group_pottable_count",
-                "evidence_hint_blocking_ball_count",
+                "annotation_hint_current_group_ball_count",
+                "annotation_hint_blocking_ball_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         group_text = ""
         if sampled_scene.current_player_group:
-            group_text = str(sampled_scene.current_player_group)
+            group_text = _group_display_name(str(sampled_scene.current_player_group))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -808,17 +618,15 @@ class GamesPoolTableTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
-                "direct_shot_rule_text": str(prompt_defaults["direct_shot_rule_text"]),
-                "legal_group_rule_text": str(prompt_defaults["legal_group_rule_text"]),
                 "marked_shot_rule_text": str(prompt_defaults["marked_shot_rule_text"]),
                 "current_player_group": str(group_text),
             },
@@ -827,7 +635,7 @@ class GamesPoolTableTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in annotation_points])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -839,7 +647,7 @@ class GamesPoolTableTask:
             query_id=str(axes.query_id),
             object_ball_count=len(object_balls(sampled_scene.balls)),
             target_answer=int(sampled_scene.target_answer),
-            evidence_count=len(evidence_entity_ids),
+            annotation_count=len(annotation_entity_ids),
         )
 
         ball_trace = [
@@ -862,7 +670,7 @@ class GamesPoolTableTask:
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(sampled_scene.target_answer),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -887,7 +695,6 @@ class GamesPoolTableTask:
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
                     "line_clearance": float(_clearance(params)),
-                    "max_direct_shot_angle_degrees": float(_max_direct_shot_angle_degrees(params)),
                 },
             },
             "render_spec": {
@@ -920,22 +727,20 @@ class GamesPoolTableTask:
                 "marked_ball_id": sampled_scene.marked_ball_id,
                 "marked_pocket_id": sampled_scene.marked_pocket_id,
                 "current_player_group": sampled_scene.current_player_group,
-                "pottable_ball_ids": [str(value) for value in sampled_scene.pottable_ball_ids],
-                "legal_pottable_ball_ids": [str(value) for value in sampled_scene.legal_pottable_ball_ids],
                 "blocking_ball_ids": [str(value) for value in sampled_scene.blocking_ball_ids],
-                "evidence_ball_ids": [str(value) for value in sampled_scene.evidence_ball_ids],
-                "evidence_pocket_ids": [str(value) for value in sampled_scene.evidence_pocket_ids],
-                "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                "annotation_ball_ids": [str(value) for value in sampled_scene.annotation_ball_ids],
+                "annotation_pocket_ids": [str(value) for value in sampled_scene.annotation_pocket_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in annotation_entity_ids],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": [list(point) for point in evidence_points],
-                "pixel_point_set": [list(point) for point in evidence_points],
+                "point_set": [list(point) for point in annotation_points],
+                "pixel_point_set": [list(point) for point in annotation_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -944,7 +749,7 @@ class GamesPoolTableTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -956,14 +761,11 @@ class GamesPoolTableTask:
 
 
 @register_task
-class GamesPoolQualifyingPottableCountTask(QuerySubsetTaskMixin, GamesPoolTableTask):
-    """Count pottable balls matching one sampled direct-shot condition."""
+class GamesPoolGroupBallCountTask(FixedQueryVariantTaskMixin, GamesPoolTableTask):
+    """Count visible balls in the current player's pool group."""
 
-    task_id = "task_games__pool__pottable_ball_count"
-    supported_query_ids = (
-        "pottable_ball_count",
-        "legal_group_pottable_count",
-    )
+    task_id = "task_games__pool__group_ball_count"
+    fixed_query_id = "current_group_ball_count"
 
 
 @register_task
@@ -976,6 +778,6 @@ class GamesPoolBlockingBallCountTask(FixedQueryVariantTaskMixin, GamesPoolTableT
 
 __all__ = [
     "GamesPoolBlockingBallCountTask",
-    "GamesPoolQualifyingPottableCountTask",
+    "GamesPoolGroupBallCountTask",
     "GamesPoolTableTask",
 ]

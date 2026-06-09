@@ -39,7 +39,7 @@ from ..shared.object_scene_rendering import (
 )
 from ..shared.object_scene import _object_screen_bbox
 
-from .intersection_rendering_common import *  # noqa: F403
+from ..shared.street_object_rendering_common import *  # noqa: F403
 
 def _world_polygon(
     points: Sequence[Sequence[float]],

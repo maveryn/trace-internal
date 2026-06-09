@@ -46,9 +46,13 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert int(rendering["canvas_height"]) == 760
 
-    assert int(rendering["board_width_px"]) == 790
+    assert int(rendering["board_width_px"]) == 980
 
-    assert int(rendering["half_wavelength_px"]) == 44
+    assert int(rendering["board_height_px"]) == 620
+
+    assert int(rendering["half_wavelength_px"]) == 50
+
+    assert int(rendering["wavefront_width_px"]) == 2
 
     assert bool(rendering["layout_jitter_enabled"]) is True
 
@@ -67,12 +71,12 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert "labeled dashed source-to-P path guides" in str(prompt["object_description_grid_tank_path_difference_value"])
 
-    assert "[x,y]" in str(prompt["evidence_hint_interference_point_choice"])
+    assert "[x,y]" in str(prompt["annotation_hint_interference_point_choice"])
 
-    assert "center of the labeled candidate point" in str(prompt["evidence_hint_interference_point_choice"])
+    assert "center of the labeled candidate point" in str(prompt["annotation_hint_interference_point_choice"])
 
-    assert "mapping S1P and S2P" in str(prompt["evidence_hint_path_difference_value"])
+    assert "mapping S1P and S2P" in str(prompt["annotation_hint_path_difference_value"])
 
-    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["evidence_hint_path_difference_value"])
+    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["annotation_hint_path_difference_value"])
 
     assert "lambda/2 steps" in str(prompt["answer_hint_path_difference_value"])

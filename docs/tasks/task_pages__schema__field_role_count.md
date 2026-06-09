@@ -8,4 +8,4 @@
 ## Contract
 Counts field rows in a named database-schema table. Query branches count either all field rows or only ordinary attribute rows that are not marked `PK` or `FK`.
 
-Evidence is a `bbox_set` over the counted field rows.
+Annotation is a `bbox_set` over the counted field rows.

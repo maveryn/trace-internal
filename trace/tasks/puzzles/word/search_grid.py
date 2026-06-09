@@ -26,7 +26,7 @@ from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
+    projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
@@ -947,7 +947,7 @@ def _build_prompt(
         "json_output_contract_answer_only",
         f"object_description_{scene_variant}",
         f"answer_hint_{query_id}",
-        f"evidence_hint_{query_id}",
+        f"annotation_hint_{query_id}",
         f"json_example_{query_id}",
         f"json_example_answer_only_{query_id}",
     )
@@ -959,7 +959,7 @@ def _build_prompt(
         "word_bank_size": str(len(dataset.word_bank)),
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
-        "evidence_hint": str(prompt_values[f"evidence_hint_{query_id}"]),
+        "annotation_hint": str(prompt_values[f"annotation_hint_{query_id}"]),
         "answer_hint": str(prompt_values[f"answer_hint_{query_id}"]),
         "json_example": str(prompt_values[f"json_example_{query_id}"]),
         "json_example_answer_only": str(prompt_values[f"json_example_answer_only_{query_id}"]),
@@ -971,7 +971,7 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1091,13 +1091,13 @@ class _PuzzlesWordSearchBaseTask:
             prompt_defaults=prompt_defaults,
             instance_seed=int(instance_seed),
         )
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, list(dataset.supporting_item_ids))
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.item_bbox_map, list(dataset.supporting_item_ids))
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
         answer_gt = TypedValue(
             type=str(dataset.answer_type),
             value=int(dataset.answer_value) if str(dataset.answer_type) == "integer" else str(dataset.answer_value),
         )
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         placement_records = [
             {
@@ -1170,7 +1170,7 @@ class _PuzzlesWordSearchBaseTask:
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "cell_bboxes_px": {str(key): list(value) for key, value in rendered_scene.cell_bbox_map.items()},
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
                 "layout_jitter": dict(rendered_scene.layout_jitter),
             }, render_params.unit_size_jitter),
             "execution_trace": {
@@ -1184,10 +1184,10 @@ class _PuzzlesWordSearchBaseTask:
                 "supporting_item_ids": [str(item_id) for item_id in dataset.supporting_item_ids],
                 "question_format": str(dataset.query_id),
             },
-            "witness_symbolic": {"type": "bbox_set", "value": list(evidence_bboxes)},
-            "projected_evidence": {"type": "bbox_set", "bbox_set": list(evidence_bboxes), "value": list(evidence_bboxes)},
+            "witness_symbolic": {"type": "bbox_set", "value": list(annotation_bboxes)},
+            "projected_annotation": {"type": "bbox_set", "bbox_set": list(annotation_bboxes), "value": list(annotation_bboxes)},
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
         }
         visual_scan = normalize_int_with_bounds(int(dataset.rows * dataset.cols), [int(dataset.grid_size_range[0]) ** 2, int(dataset.grid_size_range[1]) ** 2])
         query_load = {
@@ -1207,7 +1207,7 @@ class _PuzzlesWordSearchBaseTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

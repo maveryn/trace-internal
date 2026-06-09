@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -27,8 +27,6 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_SOURCE_SINK_MODES,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_source_sink_count,
@@ -37,13 +35,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import (
     graph_balanced_axis_count,
     graph_query_probabilities_from_alias_map,
@@ -160,7 +156,7 @@ def _forced_source_sink_mode(params: Mapping[str, Any]) -> str | None:
         if mode is None:
             raise ValueError(f"unsupported source_sink_mode: {explicit}")
         return str(mode)
-    for key in ("query_id", "query_id", "query_id"):
+    for key in ("query_id", "query_variant"):
         mode = _mode_from_query_alias(params.get(str(key)))
         if mode is not None:
             return str(mode)
@@ -179,11 +175,13 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for the resolved query support."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(source_sink_mode)}:{int(target_count)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(str(source_sink_mode), int(target_count), str(topology_profile)),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -269,7 +267,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         gen_defaults=_GEN_DEFAULTS,
         probabilities=source_sink_probabilities,
         balance_flag_key="balanced_source_sink_mode_sampling",
-        explicit_keys=("source_sink_mode", "query_id", "query_id", "query_id"),
+        explicit_keys=("source_sink_mode", "query_id", "query_variant"),
         weights_key="source_sink_mode_weights",
     )
 
@@ -305,83 +303,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for source/sink count")
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
-    )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
     )
 
     source_sink_probabilities = {str(key): float(value) for key, value in source_sink_probabilities.items()}
@@ -393,12 +319,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_count=int(node_count),
         target_count=int(target_count),
         topology_profile=str(topology_profile),
-        layout_variant=str(layout_variant),
-        label_variant=str(label_variant),
-        node_shape_variant=str(node_shape_variant),
-        layout_transform_variant=str(layout_transform_variant),
-        edge_routing_variant=str(edge_routing_variant),
-        node_color_name=str(node_color_name),
+        layout_variant=str(visual_axes.layout_variant),
+        label_variant=str(visual_axes.label_variant),
+        node_shape_variant=str(visual_axes.node_shape_variant),
+        layout_transform_variant=str(visual_axes.layout_transform_variant),
+        edge_routing_variant=str(visual_axes.edge_routing_variant),
+        node_color_name=str(visual_axes.node_color_name),
         source_sink_mode_probabilities=dict(source_sink_probabilities),
         query_id_probabilities=dict(query_probabilities),
         node_count_probabilities=dict(
@@ -414,12 +340,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             )
         ),
         topology_profile_probabilities=dict(topology_probabilities),
-        layout_variant_probabilities=dict(layout_probabilities),
-        label_variant_probabilities=dict(label_variant_probabilities),
-        node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
-        layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
-        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
-        node_color_name_probabilities=dict(node_color_name_probabilities),
+        layout_variant_probabilities=dict(visual_axes.layout_variant_probabilities),
+        label_variant_probabilities=dict(visual_axes.label_variant_probabilities),
+        node_shape_variant_probabilities=dict(visual_axes.node_shape_variant_probabilities),
+        layout_transform_variant_probabilities=dict(visual_axes.layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(visual_axes.edge_routing_variant_probabilities),
+        node_color_name_probabilities=dict(visual_axes.node_color_name_probabilities),
     )
 
 
@@ -541,17 +467,17 @@ class GraphCountingSourceSinkCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_directed",
-                "evidence_hint_source_count",
-                "evidence_hint_sink_count",
+                "annotation_hint_source_count",
+                "annotation_hint_sink_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180]], answer_value=2)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[180, 220], [310, 180]], answer_value=2)
         prompt_query_key = "source_count" if str(query.source_sink_mode) == "source" else "sink_count"
-        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
+        annotation_hint_key = f"annotation_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -559,12 +485,12 @@ class GraphCountingSourceSinkCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(prompt_query_key),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_directed"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -573,11 +499,11 @@ class GraphCountingSourceSinkCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels)))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -589,7 +515,7 @@ class GraphCountingSourceSinkCountTask:
                 "neighbors": list(node.neighbors),
                 "successors": list(node.successors),
                 "predecessors": list(node.predecessors),
-                "is_source_sink_node": bool(str(node.label) in set(evidence_labels)),
+                "is_source_sink_node": bool(str(node.label) in set(annotation_labels)),
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
             }
@@ -626,7 +552,7 @@ class GraphCountingSourceSinkCountTask:
                     "source_sink_mode": str(query.source_sink_mode),
                     "degree_mode": str(query.degree_mode),
                     "query_degree": 0,
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "source_sink_mode_probabilities": dict(query.source_sink_mode_probabilities),
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
@@ -729,7 +655,7 @@ class GraphCountingSourceSinkCountTask:
                 "query_degree": 0,
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
                 "out_degrees_by_label": {str(key): int(value) for key, value in graph_sample.out_degrees_by_label.items()},
@@ -751,22 +677,22 @@ class GraphCountingSourceSinkCountTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "source_sink_mode": str(query.source_sink_mode),
                 "degree_mode": str(query.degree_mode),
                 "query_degree": 0,
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

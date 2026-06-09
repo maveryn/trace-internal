@@ -11,7 +11,7 @@
 2. Branch metadata: `query_id`
 3. `query_id`: `between_reference_events_count` or `outside_reference_interval_count`
 4. Answer type: `integer`
-5. Evidence type: `bbox_set` over the event cards that satisfy the interval relation.
+5. Annotation type: `bbox_set` over the event cards that satisfy the interval relation.
 6. Mirror/query knob: `interval_relation=between|outside`
 
 ## Prompt + Trace
@@ -20,4 +20,4 @@
 3. Task key: `timeline_milestone_query`
 4. Internal prompt variant key: `interval_membership_count`
 5. Trace records event order, dates, reference event ids, answer event ids, and event-card bboxes.
-6. Generation is deterministic from `instance_seed`; answers and evidence come from the finalized timeline metadata.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized timeline metadata.

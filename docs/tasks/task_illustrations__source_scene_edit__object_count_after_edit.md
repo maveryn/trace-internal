@@ -1,48 +1,56 @@
-# task_illustrations__source_scene_edit__object_count_after_edit
+# `task_illustrations__source_scene_edit__object_count_after_edit`
 
-Status: reviewed pending solve-rate calibration.
+## Summary
+- Domain: `illustrations`
+- Scene id: `source_scene_edit`
+- Implementation task group: `counterfactual`
+- Implementation source: `trace/tasks/illustrations/counterfactual/object_count_after_edit.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_illustrations__source_scene_edit__object_count_after_edit` -> `task_illustrations__source_scene_edit__object_count_after_edit`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Taxonomy
-- domain: `illustrations`
-- task_group: `counterfactual`
-- scene_id: `source_scene_edit`
-- module: `trace/tasks/illustrations/counterfactual/object_count_after_edit.py`
+## Task Contract
+Applies a specified add/remove edit to a source scene and counts the target objects in the edited state.
 
-## Contract
-The task renders one current illustration source scene with a known current
-count of a named target object. The prompt asks for the resulting count after a
-hypothetical add or remove edit.
+This public task id is a stable contract-v0 unit: one renderer scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Query ids:
-- `after_added_k_objects_count`
-- `after_removed_k_objects_count`
+## Query Branches
 
-The edit count `K` is sampled internally from `1..3`. Source scenes and targets
-are sampled from visually readable whole-object counting tasks, avoiding dense
-book/window-style counts.
+| Query id | Program schema |
+| --- | --- |
+| `after_added_k_objects_count` | `count(filter(apply_scene_edit(scene_objects, edit_operation, edit_count), object_type(object)=target_object_type)); scene=source_scene_edit; scope=object_count_after_edit; query_branch=after_added_k_objects_count` |
+| `after_removed_k_objects_count` | `count(filter(apply_scene_edit(scene_objects, edit_operation, edit_count), object_type(object)=target_object_type)); scene=source_scene_edit; scope=object_count_after_edit; query_branch=after_removed_k_objects_count` |
 
-## Answer And Evidence
-- `answer_gt.type = integer`
-- `evidence_gt.type = bbox_set`
-- evidence contains one pixel-space bbox for every currently visible target
-  object before the hypothetical edit
+## Program Metadata
+- Program signatures: `count.counterfactual`
+- Base program contract: `count(filter(apply_scene_edit(scene_objects, edit_operation, edit_count), object_type(object)=target_object_type)); scene=source_scene_edit; scope=object_count_after_edit`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `edit_count`: semantic_role; allowed `sampled_edit_count`; source `program_schema_concrete`
+  - `edit_operation`: semantic_role; allowed `add_objects`, `remove_objects`; source `program_schema_concrete`
+  - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
+  - `scene_objects`: semantic_role; allowed `visible_scene_objects`; source `program_schema_concrete`
+  - `target_object_type`: semantic_role; allowed `sampled_object_type`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `after_added_k_objects_count`, `after_removed_k_objects_count`
 
-For add variants, the hypothetical new object has no bbox because it is not
-drawn. For remove variants, no specific object is selected for removal, so
-evidence includes all current target objects.
+## Answer Contract
+- Answer schema: `integer_count`
+- Generator `answer_gt.type`: `integer`
+- The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
-## Trace
-The trace stores `current_count`, `edit_count_k`, `edit_operation`,
-`result_count`, source scene metadata, and current target bboxes. The verifier
-source of truth is the source task evidence plus the sampled hypothetical edit,
-not pixels alone.
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
-Prompt JSON examples are generated from the active operation and sampled
-`edit_count_k` so the example arithmetic remains valid for both add and remove
-variants.
+## Prompt And Trace Requirements
+- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
+- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
 
-Fresh v0 review artifacts:
-- `review/task-reviews/illustrations/source_scene_edit/scene_review.xlsx`
-- `review/task-reviews/illustrations/source_scene_edit/task_illustrations__source_scene_edit__object_count_after_edit/task_illustrations__source_scene_edit__object_count_after_edit.xlsx`
-
-Solve-rate calibration remains pending.
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/illustrations/source_scene_edit/task_illustrations__source_scene_edit__object_count_after_edit/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

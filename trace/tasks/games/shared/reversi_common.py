@@ -53,6 +53,31 @@ def corner_coords(board_size: int) -> Tuple[Coord, ...]:
     )
 
 
+def adjacent_coords(board: Sequence[Sequence[int]], coord: Coord) -> Tuple[Coord, ...]:
+    """Return in-bounds adjacent coordinates around one board coordinate."""
+
+    row, col = int(coord[0]), int(coord[1])
+    return tuple(
+        (int(row + d_row), int(col + d_col))
+        for d_row, d_col in _DIRECTIONS
+        if _in_bounds(board, int(row + d_row), int(col + d_col))
+    )
+
+
+def frontier_disc_coords(board: Sequence[Sequence[int]], player: int) -> Tuple[Coord, ...]:
+    """Return queried-player discs adjacent to at least one empty square."""
+
+    current = int(player)
+    coords: List[Coord] = []
+    for row, board_row in enumerate(board):
+        for col, value in enumerate(board_row):
+            if int(value) != int(current):
+                continue
+            if any(int(board[adj_row][adj_col]) == int(EMPTY) for adj_row, adj_col in adjacent_coords(board, (int(row), int(col)))):
+                coords.append((int(row), int(col)))
+    return tuple(sorted(coords))
+
+
 def initial_board(board_size: int) -> Board:
     """Return the canonical Reversi opening board for an even board size."""
 
@@ -152,9 +177,11 @@ __all__ = [
     "Coord",
     "EMPTY",
     "WHITE",
+    "adjacent_coords",
     "apply_move",
     "coord_to_cell_id",
     "corner_coords",
+    "frontier_disc_coords",
     "initial_board",
     "legal_moves_with_flips",
     "opponent",

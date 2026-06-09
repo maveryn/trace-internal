@@ -15,12 +15,17 @@ from .object_library import (
     STYLE_IDS,
     aspect_ratio_for_object,
     choose_object_colors,
-    draw_illustration_object,
     family_for_object,
-    serialize_object,
 )
 from .object_catalog import environment_theme_land_object_types, variant_ids_with_tag
-from .object_registry import make_object_record
+from .object_rendering import (
+    IllustrationObjectSpec,
+    RenderContext,
+    make_vector_scene_object_record,
+    render_illustration_object,
+    serialize_rendered_illustration_object,
+)
+from .object_variants import RENDERER_STYLE_VECTOR
 from .person_rendering import sample_person_gender
 
 
@@ -100,8 +105,6 @@ class RenderedEnvironmentObjectScene:
     render_scale: int
     style_id: str
     layout: Mapping[str, Any]
-
-
 
 
 def _bbox_area(box: BBox) -> float:
@@ -1310,17 +1313,32 @@ def render_environment_object_scene(
     )
     rendered_objects = []
     for placement in placements:
+        visual_attributes: dict[str, Any] = {
+            "primary_color_rgb": placement.primary_color_rgb,
+            "accent_color_rgb": placement.accent_color_rgb,
+            "style_id": placement.style_id,
+        }
+        gender_id = sample_person_gender(rng) if family_for_object(str(placement.object_type)) == "person" else None
+        if gender_id is not None:
+            visual_attributes["gender_id"] = gender_id
         rendered_objects.append(
-            draw_illustration_object(
-                draw,
-                object_id=placement.object_id,
-                object_type=placement.object_type,
-                bbox_xyxy=placement.bbox_xyxy,
-                primary_color_rgb=placement.primary_color_rgb,
-                accent_color_rgb=placement.accent_color_rgb,
-                style_id=placement.style_id,
-                render_scale=scale,
-                gender_id=sample_person_gender(rng) if family_for_object(str(placement.object_type)) == "person" else None,
+            render_illustration_object(
+                IllustrationObjectSpec(
+                    object_id=placement.object_id,
+                    object_type=placement.object_type,
+                    bbox_xyxy=placement.bbox_xyxy,
+                    semantic_attributes={
+                        "zone_id": placement.zone_id,
+                        "relations": dict(placement.relations),
+                    },
+                    visual_attributes=visual_attributes,
+                    source_entity_type="illustration_object",
+                ),
+                RenderContext(
+                    renderer_style=RENDERER_STYLE_VECTOR,
+                    draw=draw,
+                    render_scale=scale,
+                ),
             )
         )
     if scale != 1:
@@ -1345,7 +1363,7 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
 
     entities: List[Dict[str, Any]] = []
     for feature in scene.features:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(feature.feature_id),
             object_type="environment_feature",
             bbox_xyxy=feature.bbox_xyxy,
@@ -1355,7 +1373,9 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
             },
             visual_attributes={"width_px": round(float(feature.width_px), 3)},
             source_entity_type="environment_feature",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(feature.feature_id),
@@ -1369,7 +1389,7 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
             }
         )
     for building in scene.buildings:
-        object_record = make_object_record(
+        object_record = make_vector_scene_object_record(
             object_id=str(building.building_id),
             object_type="building",
             bbox_xyxy=building.bbox_xyxy,
@@ -1380,7 +1400,9 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
                 **dict(building.attributes),
             },
             source_entity_type="environment_building",
-        ).as_dict()
+            render_scale=int(scene.render_scale),
+            style_id=str(scene.style_id),
+        )
         entities.append(
             {
                 "entity_id": str(building.building_id),
@@ -1396,7 +1418,7 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
         )
     placement_map = {placement.object_id: placement for placement in scene.placements}
     for rendered in scene.objects:
-        serialized = serialize_object(rendered)
+        serialized = serialize_rendered_illustration_object(rendered)
         placement = placement_map.get(str(serialized["object_id"]))
         entities.append(
             {

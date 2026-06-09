@@ -173,6 +173,10 @@ def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
     return (int(value[0]), int(value[1]), int(value[2]))
 
 
+def _style_trace(style: Mapping[str, Any]) -> Dict[str, Any]:
+    return {str(key): list(value) if isinstance(value, tuple) else value for key, value in style.items()}
+
+
 def _sample_rotated_grid_style(rng) -> Dict[str, Any]:
     style_id = str(rng.choice(tuple(ROTATED_GRID_STYLES)))
     return {"style_id": style_id, **dict(ROTATED_GRID_STYLES[style_id])}
@@ -272,7 +276,7 @@ class IllustrationsVisualRotatedTileLabelTask:
         source = None
         image: Image.Image | None = None
         tile_bboxes: Dict[str, list[float]] = {}
-        evidence_value: list[list[float]] = []
+        annotation_value: list[list[float]] = []
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(params=params, instance_seed=int(instance_seed))
@@ -311,7 +315,7 @@ class IllustrationsVisualRotatedTileLabelTask:
                     explicit_key="image_cutout_board_tile_label_font_family",
                     weights_key="image_cutout_board_tile_label_font_family_weights",
                 )
-                image, tile_bboxes, evidence_box = _compose_rotated_grid(
+                image, tile_bboxes, annotation_box = _compose_rotated_grid(
                     source_image=source_image,
                     pieces=pieces,
                     sample=sample,
@@ -319,7 +323,7 @@ class IllustrationsVisualRotatedTileLabelTask:
                     grid_style=grid_style,
                     label_font_family=str(tile_label_font["font_family"]),
                 )
-                evidence_value = [list(evidence_box)]
+                annotation_value = [list(annotation_box)]
                 break
             except Exception as exc:  # pragma: no cover
                 last_error = exc
@@ -327,7 +331,7 @@ class IllustrationsVisualRotatedTileLabelTask:
                 source = None
                 image = None
                 tile_bboxes = {}
-                evidence_value = []
+                annotation_value = []
         if sample is None or source is None or image is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
@@ -340,7 +344,7 @@ class IllustrationsVisualRotatedTileLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_rotated_tile_label",
-                "evidence_hint_rotated_tile_label",
+                "annotation_hint_rotated_tile_label",
                 "json_example_rotated_tile_label",
                 "json_example_answer_only_rotated_tile_label",
             ],
@@ -354,7 +358,7 @@ class IllustrationsVisualRotatedTileLabelTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_rotated_tile_label"]).format(option_labels=option_labels),
-            "evidence_hint": str(prompt_defaults["evidence_hint_rotated_tile_label"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_rotated_tile_label"]),
             "json_example": str(prompt_defaults["json_example_rotated_tile_label"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_rotated_tile_label"]),
         }
@@ -367,8 +371,8 @@ class IllustrationsVisualRotatedTileLabelTask:
             query_key=QUERY_ID,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         tile_records = [
@@ -428,7 +432,7 @@ class IllustrationsVisualRotatedTileLabelTask:
                     "source_task_id": str(source.source_task_id),
                     "source_scene_id": str(source.source_scene_id),
                     "grid_shape": [GRID_ROWS, GRID_COLS],
-                    "grid_style": dict(grid_style),
+                    "grid_style": _style_trace(grid_style),
                     "tile_label_font": dict(tile_label_font),
                 },
             },
@@ -452,13 +456,13 @@ class IllustrationsVisualRotatedTileLabelTask:
                 "correct_tile_index": int(sample.correct_index),
                 "rotation_degrees": int(sample.rotation_degrees),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=str(sample.correct_label)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

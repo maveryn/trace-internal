@@ -33,8 +33,8 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
 
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "keyed_bbox_map"
-    assert len(out.evidence_gt.value) == 2
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert len(out.annotation_gt.value) == 2
     assert out.scene_id == "named_field"
     assert out.query_id == "second_closest_to_named_reference_label"
     assert trace["scene_ir"]["scene_kind"] == "icons_named_field_distance_rank"
@@ -57,14 +57,14 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
     assert matching_reference_combo == [reference]
 
     answer_entity = next(entity for entity in candidates if str(entity["label"]) == "D")
-    expected_evidence = {
+    expected_annotation = {
         "reference_icon": reference["bbox_xyxy"],
         "selected_candidate": answer_entity["bbox_xyxy"],
     }
-    assert out.evidence_gt.value == expected_evidence
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert trace["projected_evidence"]["keyed_bbox_map"] == expected_evidence
-    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_evidence
+    assert out.annotation_gt.value == expected_annotation
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == expected_annotation
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == expected_annotation
     assert trace["render_spec"]["style"]["text_legibility"]["required_role_count"] >= 2
     assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
     assert "candidate_label_stroke_rgb" in trace["render_spec"]["style"]
@@ -79,14 +79,14 @@ def test_icons_relation_named_reference_distance_rank_prompt_example_matches_con
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "D"}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == {
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == {
         "reference_icon": [172, 238, 244, 310],
         "selected_candidate": [612, 184, 676, 248],
     }
-    assert answer_and_evidence["answer"] == "D"
+    assert answer_and_annotation["answer"] == "D"
 
 
 def test_icons_relation_named_reference_distance_rank_sampling_smoke() -> None:

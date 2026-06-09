@@ -9,7 +9,6 @@ is formula-region based rather than theorem/constraint based.
 from __future__ import annotations
 
 import math
-import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
@@ -26,11 +25,16 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.prompt_json_example import dump_prompt_json_examples
 from ...shared.text_rendering import load_font
 from ..shared.complexity import (
     build_geometry_measurement_complexity,
     clamp_unit_interval,
     normalize_linear,
+)
+from ..shared.fixed_query_task import (
+    geometry_probability_map as _geometry_probability_map,
+    geometry_selected_probability_map as _selected_probability_map,
 )
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.measurement_rendering import (
@@ -142,39 +146,36 @@ class _RenderedCurvilinearScene:
     answer: float
     query_id: str
     scene_variant: str
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
     reasoning_steps: int
-    evidence_keyed_bboxes: Mapping[str, BBox] | None = None
-    evidence_keyed_points: Mapping[str, Point] | None = None
+    annotation_keyed_bboxes: Mapping[str, BBox] | None = None
+    annotation_keyed_points: Mapping[str, Point] | None = None
 
 
 def _build_prompt_examples(
     *,
-    evidence_type: str,
-    evidence_keys: Sequence[str],
+    annotation_type: str,
+    annotation_keys: Sequence[str],
     answer: float = 42.5,
 ) -> tuple[str, str]:
-    if str(evidence_type) == "keyed_point_map":
-        evidence: Dict[str, list[float]] = {}
-        for idx, key in enumerate(evidence_keys or ("start", "end")):
-            evidence[str(key)] = [120.0 + (48.0 * idx), 180.0 + (26.0 * idx)]
-    elif str(evidence_type) == "keyed_bbox_map":
-        evidence = {}
-        for idx, key in enumerate(evidence_keys or ("target_shape",)):
+    if str(annotation_type) == "keyed_point_map":
+        annotation: Dict[str, list[float]] = {}
+        for idx, key in enumerate(annotation_keys or ("start", "end")):
+            annotation[str(key)] = [120.0 + (48.0 * idx), 180.0 + (26.0 * idx)]
+    elif str(annotation_type) == "keyed_bbox_map":
+        annotation = {}
+        for idx, key in enumerate(annotation_keys or ("target_shape",)):
             x0 = 70.0 + (70.0 * idx)
             y0 = 90.0 + (24.0 * idx)
-            evidence[str(key)] = [x0, y0, x0 + 58.0, y0 + 38.0]
+            annotation[str(key)] = [x0, y0, x0 + 58.0, y0 + 38.0]
     else:
-        evidence = [[70.0, 90.0, 128.0, 128.0]]
+        annotation = [[70.0, 90.0, 128.0, 128.0]]
     answer_value = float(answer)
-    return (
-        json.dumps({"evidence": evidence, "answer": answer_value}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": answer_value}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-    )
+    return dump_prompt_json_examples(annotation=annotation, answer=answer_value, ensure_ascii=False)
 
 
 def _fmt_given(value: float) -> str:
@@ -215,18 +216,6 @@ def _draw_dimension(
 
 def _boundary_width(ctx: _RenderContext) -> int:
     return max(int(ctx.line_width) + 2, 6)
-
-
-def _probability_map(values: Sequence[str]) -> Dict[str, float]:
-    unique = tuple(sorted(set(str(value) for value in values)))
-    if not unique:
-        return {}
-    p = 1.0 / float(len(unique))
-    return {value: float(p) for value in unique}
-
-
-def _selected_probability_map(values: Sequence[int], selected: int | float) -> Dict[str, float]:
-    return {str(value): (1.0 if float(value) == float(selected) else 0.0) for value in values}
 
 
 def _cycle_index(
@@ -275,7 +264,7 @@ def _resolve_problem(
             namespace=f"{task_id}.query_id",
         )
         query_id = str(tuple(supported_queries)[int(query_index) % len(tuple(supported_queries))])
-        query_probabilities = _probability_map(supported_queries)
+        query_probabilities = _geometry_probability_map(supported_queries, sort_unique=True)
 
     index = _cycle_index(
         params=params,
@@ -328,7 +317,11 @@ def _resolve_problem(
                 "straight_boundary_length": _round1((2.0 * float(width_units)) + float(height_units)),
             }
         )
-        support_probabilities = _selected_probability_map(_WIDTH_SUPPORT, width_units)
+        support_probabilities = _selected_probability_map(
+            _WIDTH_SUPPORT,
+            width_units,
+            is_selected=lambda value, selected: float(value) == float(selected),
+        )
     elif query_id in {"rectangle_quarter_sector_cutout_area", "rectangle_quarter_sector_cutout_perimeter"}:
         width_units, height_units, _ = _dimension_values(index)
         radius_units = _RADIUS_SUPPORT[int(index) % len(_RADIUS_SUPPORT)]
@@ -354,7 +347,11 @@ def _resolve_problem(
                 "straight_boundary_length": _round1((2.0 * float(width_units)) + (2.0 * float(height_units)) - (2.0 * float(radius_units))),
             }
         )
-        support_probabilities = _selected_probability_map(_RADIUS_SUPPORT, radius_units)
+        support_probabilities = _selected_probability_map(
+            _RADIUS_SUPPORT,
+            radius_units,
+            is_selected=lambda value, selected: float(value) == float(selected),
+        )
     elif query_id in _SECTOR_ANGLE_QUERIES:
         theta, radius_units = _sector_values(index)
         theta = int(params.get("theta_degrees", theta))
@@ -373,7 +370,11 @@ def _resolve_problem(
                 "sector_area": float(sector_area),
             }
         )
-        support_probabilities = _selected_probability_map(_THETA_SUPPORT, theta)
+        support_probabilities = _selected_probability_map(
+            _THETA_SUPPORT,
+            theta,
+            is_selected=lambda value, selected: float(value) == float(selected),
+        )
     else:
         raise ValueError(f"unsupported curvilinear query_id: {query_id}")
 
@@ -469,33 +470,17 @@ def _render_semicircle_scene(ctx: _RenderContext, problem: _ResolvedProblem, *, 
         width=ctx.width,
         height=ctx.height,
     )
-    evidence_bboxes: list[BBox] = [target_bbox, curved_component_bbox]
-    evidence_roles: list[str] = ["target_shape", "curved_component"]
-    evidence_keyed_bboxes: Dict[str, BBox] | None = {
+    annotation_bboxes: list[BBox] = [target_bbox, curved_component_bbox]
+    annotation_roles: list[str] = ["target_shape", "curved_component"]
+    annotation_keyed_bboxes: Dict[str, BBox] | None = {
         "target_shape": target_bbox,
         "curved_component": curved_component_bbox,
     }
-    evidence_keyed_points: Dict[str, Point] | None = None
+    annotation_keyed_points: Dict[str, Point] | None = None
     if problem.query_id.endswith("_perimeter"):
-        arc_label_x = right + (0.62 * radius_px if not cutout else -0.58 * radius_px)
-        arc_label_y = mid_y + (0.48 * radius_px)
-        arc_bbox = _draw_label(
-            ctx,
-            f"arc={_fmt_given(float(values['arc_length']))}",
-            (arc_label_x, arc_label_y),
-            small=True,
-        )
-        straight_bbox = _draw_label(
-            ctx,
-            f"straight={_fmt_given(float(values['straight_boundary_length']))}",
-            ((left + target_right) / 2.0, top - 42.0),
-            small=True,
-        )
-        support_bboxes.extend([arc_bbox, straight_bbox])
-        support_roles.extend(["arc_length_label", "straight_boundary_length_label"])
-        evidence_bboxes = [target_bbox, curved_component_bbox]
-        evidence_roles = ["target_boundary", "curved_boundary"]
-        evidence_keyed_bboxes = {
+        annotation_bboxes = [target_bbox, curved_component_bbox]
+        annotation_roles = ["target_boundary", "curved_boundary"]
+        annotation_keyed_bboxes = {
             "target_boundary": target_bbox,
             "curved_boundary": curved_component_bbox,
         }
@@ -509,10 +494,10 @@ def _render_semicircle_scene(ctx: _RenderContext, problem: _ResolvedProblem, *, 
         support_bboxes.append(total_bbox)
         support_roles.append("total_area_label")
         unknown_side_bbox = _bbox_from_points(((left, width_dim_y), (right, width_dim_y)), width=ctx.width, height=ctx.height, pad=8.0)
-        evidence_bboxes = [unknown_side_bbox]
-        evidence_roles = ["unknown_side_start", "unknown_side_end"]
-        evidence_keyed_bboxes = None
-        evidence_keyed_points = {
+        annotation_bboxes = [unknown_side_bbox]
+        annotation_roles = ["unknown_side_start", "unknown_side_end"]
+        annotation_keyed_bboxes = None
+        annotation_keyed_points = {
             "unknown_side_start": (left, width_dim_y),
             "unknown_side_end": (right, width_dim_y),
         }
@@ -534,8 +519,8 @@ def _render_semicircle_scene(ctx: _RenderContext, problem: _ResolvedProblem, *, 
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         scene_entities=scene_entities,
         render_map={
             "target_bbox": _bbox_to_list(target_bbox),
@@ -550,8 +535,8 @@ def _render_semicircle_scene(ctx: _RenderContext, problem: _ResolvedProblem, *, 
             **dict(values),
         },
         reasoning_steps=2 if "missing_width" not in problem.query_id else 3,
-        evidence_keyed_bboxes=evidence_keyed_bboxes,
-        evidence_keyed_points=evidence_keyed_points,
+        annotation_keyed_bboxes=annotation_keyed_bboxes,
+        annotation_keyed_points=annotation_keyed_points,
     )
 
 
@@ -599,29 +584,19 @@ def _render_quarter_sector_cutout(ctx: _RenderContext, problem: _ResolvedProblem
     )
     height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), _fmt_measure(height_units), label_offset=(-26.0, 0.0))
     radius_bbox = _draw_dimension(ctx, center, (right - radius_px, top), f"r={_fmt_measure(radius_units)}", label_offset=(0.0, -26.0))
-    angle_bbox = _draw_label(ctx, "90 deg", (right - 48.0, top + 42.0), small=True)
-    support_bboxes = [width_bbox, height_bbox, radius_bbox, angle_bbox]
-    support_roles = ["width_label", "height_label", "radius_label", "angle_label"]
+    support_bboxes = [width_bbox, height_bbox, radius_bbox]
+    support_roles = ["width_label", "height_label", "radius_label"]
     curved_component_bbox = _pad_bbox((right - radius_px, top, right, top + radius_px), 6.0, width=ctx.width, height=ctx.height)
-    evidence_bboxes: list[BBox] = [target_bbox, curved_component_bbox]
-    evidence_roles: list[str] = ["target_shape", "curved_cutout"]
-    evidence_keyed_bboxes: Dict[str, BBox] = {
+    annotation_bboxes: list[BBox] = [target_bbox, curved_component_bbox]
+    annotation_roles: list[str] = ["target_shape", "curved_cutout"]
+    annotation_keyed_bboxes: Dict[str, BBox] = {
         "target_shape": target_bbox,
         "curved_cutout": curved_component_bbox,
     }
     if problem.query_id.endswith("_perimeter"):
-        arc_bbox = _draw_label(ctx, f"arc={_fmt_given(float(values['arc_length']))}", (right - (0.45 * radius_px), top + (0.82 * radius_px)), small=True)
-        straight_bbox = _draw_label(
-            ctx,
-            f"straight={_fmt_given(float(values['straight_boundary_length']))}",
-            (left + 70.0, top - 30.0),
-            small=True,
-        )
-        support_bboxes.extend([arc_bbox, straight_bbox])
-        support_roles.extend(["arc_length_label", "straight_boundary_length_label"])
-        evidence_bboxes = [target_bbox, curved_component_bbox]
-        evidence_roles = ["target_boundary", "curved_boundary"]
-        evidence_keyed_bboxes = {
+        annotation_bboxes = [target_bbox, curved_component_bbox]
+        annotation_roles = ["target_boundary", "curved_boundary"]
+        annotation_keyed_bboxes = {
             "target_boundary": target_bbox,
             "curved_boundary": curved_component_bbox,
         }
@@ -642,8 +617,8 @@ def _render_quarter_sector_cutout(ctx: _RenderContext, problem: _ResolvedProblem
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         scene_entities=scene_entities,
         render_map={
             "target_bbox": _bbox_to_list(target_bbox),
@@ -657,7 +632,7 @@ def _render_quarter_sector_cutout(ctx: _RenderContext, problem: _ResolvedProblem
             **dict(values),
         },
         reasoning_steps=3,
-        evidence_keyed_bboxes=evidence_keyed_bboxes,
+        annotation_keyed_bboxes=annotation_keyed_bboxes,
     )
 
 
@@ -713,8 +688,8 @@ def _render_sector_angle_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         answer=float(problem.answer),
         query_id=str(problem.query_id),
         scene_variant=str(problem.scene_variant),
-        evidence_bboxes=(_bbox_from_points((center, p0, p1), width=ctx.width, height=ctx.height, pad=8.0),),
-        evidence_roles=("center", "ray_start", "ray_end"),
+        annotation_bboxes=(_bbox_from_points((center, p0, p1), width=ctx.width, height=ctx.height, pad=8.0),),
+        annotation_roles=("center", "ray_start", "ray_end"),
         scene_entities=scene_entities,
         render_map={
             "target_bbox": _bbox_to_list(target_bbox),
@@ -728,7 +703,7 @@ def _render_sector_angle_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
             **dict(values),
         },
         reasoning_steps=2,
-        evidence_keyed_points={"center": center, "ray_start": p0, "ray_end": p1},
+        annotation_keyed_points={"center": center, "ray_start": p0, "ray_end": p1},
     )
 
 
@@ -750,6 +725,7 @@ class _CurvilinearCompositeBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "curvilinear_formula"
@@ -823,13 +799,13 @@ class _CurvilinearCompositeBaseTask:
         }.get(str(self.reasoning_kind), 0.70)
         if "quarter_sector" in query_id or "sector_angle" in query_id:
             precision = min(1.0, precision + 0.06)
-        visual_scan = clamp_unit_interval(0.45 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=6) * 0.25)
+        visual_scan = clamp_unit_interval(0.45 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=6) * 0.25)
         ambiguity = 0.48
         if "cutout" in query_id:
             ambiguity += 0.08
         if "missing" in query_id:
             ambiguity += 0.10
-        output_burden = clamp_unit_interval(0.48 + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=6) * 0.20)
+        output_burden = clamp_unit_interval(0.48 + normalize_linear(len(rendered.annotation_bboxes), min_value=2, max_value=6) * 0.20)
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=str(self.task_id),
@@ -886,32 +862,32 @@ class _CurvilinearCompositeBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        if rendered.evidence_keyed_points:
-            evidence_type = "keyed_point_map"
-            evidence_keys = tuple(rendered.evidence_keyed_points.keys())
-        elif rendered.evidence_keyed_bboxes:
-            evidence_type = "keyed_bbox_map"
-            evidence_keys = tuple(rendered.evidence_keyed_bboxes.keys())
+        if rendered.annotation_keyed_points:
+            annotation_type = "keyed_point_map"
+            annotation_keys = tuple(rendered.annotation_keyed_points.keys())
+        elif rendered.annotation_keyed_bboxes:
+            annotation_type = "keyed_bbox_map"
+            annotation_keys = tuple(rendered.annotation_keyed_bboxes.keys())
         else:
-            evidence_type = "bbox_set"
-            evidence_keys = tuple()
-        evidence_key_list = ", ".join(f'"{key}"' for key in evidence_keys)
-        evidence_hint_template = str(prompt_defaults["evidence_hint"])
-        evidence_hint = (
-            evidence_hint_template.format(evidence_keys=evidence_key_list)
-            if "{evidence_keys}" in evidence_hint_template
-            else evidence_hint_template
+            annotation_type = "bbox_set"
+            annotation_keys = tuple()
+        annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
+        annotation_hint_template = str(prompt_defaults["annotation_hint"])
+        annotation_hint = (
+            annotation_hint_template.format(annotation_keys=annotation_key_list)
+            if "{annotation_keys}" in annotation_hint_template
+            else annotation_hint_template
         )
         json_example, json_example_answer_only = _build_prompt_examples(
-            evidence_type=evidence_type,
-            evidence_keys=evidence_keys,
+            annotation_type=annotation_type,
+            annotation_keys=annotation_keys,
             answer=float(rendered.answer),
         )
         prompt_selection = render_task_prompt_variants(
@@ -921,7 +897,7 @@ class _CurvilinearCompositeBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "total_area": _fmt_given(float(problem.params.get("total_area", 0.0))),
@@ -929,7 +905,7 @@ class _CurvilinearCompositeBaseTask:
                 "sector_area": _fmt_given(float(problem.params.get("sector_area", 0.0))),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -938,59 +914,59 @@ class _CurvilinearCompositeBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
-        evidence_keyed_bboxes = {
+        annotation_keyed_bboxes = {
             str(key): _bbox_to_list(bbox)
-            for key, bbox in (rendered.evidence_keyed_bboxes or {}).items()
+            for key, bbox in (rendered.annotation_keyed_bboxes or {}).items()
         }
-        evidence_keyed_points = {
+        annotation_keyed_points = {
             str(key): [round(float(point[0]), 3), round(float(point[1]), 3)]
-            for key, point in (rendered.evidence_keyed_points or {}).items()
+            for key, point in (rendered.annotation_keyed_points or {}).items()
         }
-        if evidence_type == "keyed_point_map":
-            evidence_value: Any = dict(evidence_keyed_points)
-            projected_evidence: Dict[str, Any] = {
+        if annotation_type == "keyed_point_map":
+            annotation_value: Any = dict(annotation_keyed_points)
+            projected_annotation: Dict[str, Any] = {
                 "type": "keyed_point_map",
-                "keyed_point_map": dict(evidence_keyed_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "keyed_point_map": dict(annotation_keyed_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_points),
             }
-            original_evidence_value: Any = dict(evidence_keyed_points)
-        elif evidence_type == "keyed_bbox_map":
-            evidence_value = dict(evidence_keyed_bboxes)
-            evidence_keyed_bbox_points = {
+            original_annotation_value: Any = dict(annotation_keyed_points)
+        elif annotation_type == "keyed_bbox_map":
+            annotation_value = dict(annotation_keyed_bboxes)
+            annotation_keyed_bbox_points = {
                 str(key): [
                     round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                     round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
                 ]
-                for key, bbox in evidence_keyed_bboxes.items()
+                for key, bbox in annotation_keyed_bboxes.items()
             }
-            projected_evidence = {
+            projected_annotation = {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "keyed_point_map": dict(evidence_keyed_bbox_points),
-                "pixel_keyed_point_map": dict(evidence_keyed_bbox_points),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "keyed_point_map": dict(annotation_keyed_bbox_points),
+                "pixel_keyed_point_map": dict(annotation_keyed_bbox_points),
             }
-            original_evidence_value = dict(evidence_keyed_bboxes)
+            original_annotation_value = dict(annotation_keyed_bboxes)
         else:
-            evidence_value = list(evidence_bboxes)
-            projected_evidence = {
+            annotation_value = list(annotation_bboxes)
+            projected_annotation = {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             }
-            original_evidence_value = list(rendered.evidence_roles)
+            original_annotation_value = list(rendered.annotation_roles)
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.scene_variant),
@@ -1008,7 +984,7 @@ class _CurvilinearCompositeBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.scene_variant),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -1038,7 +1014,7 @@ class _CurvilinearCompositeBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": int(rendered.reasoning_steps),
                 **dict(rendered.witness),
             },
@@ -1047,16 +1023,16 @@ class _CurvilinearCompositeBaseTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
-                "source_witness_type": str(evidence_type),
-                "original_evidence_value": original_evidence_value,
+                "source_witness_type": str(annotation_type),
+                "original_annotation_value": original_annotation_value,
                 **dict(rendered.witness),
             },
-            "projected_evidence": projected_evidence,
+            "projected_annotation": projected_annotation,
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1069,44 +1045,104 @@ class _CurvilinearCompositeBaseTask:
 
 
 @register_task
-class GeometryCurvilinearCompositeAreaValueTask(_CurvilinearCompositeBaseTask):
-    """Compute the area of a curvilinear composite region."""
+class GeometryRectangleQuarterSectorCutoutAreaTask(_CurvilinearCompositeBaseTask):
+    """Compute the area of a rectangle with a quarter-sector cutout."""
 
-    task_id = "task_geometry__composite_shape__curvilinear_composite_area_value"
-    supported_queries = _AREA_QUERIES
+    task_id = "task_geometry__composite_shape__rectangle_quarter_sector_cutout_area"
+    supported_queries = ("rectangle_quarter_sector_cutout_area",)
     reasoning_kind = "area"
 
 
 @register_task
-class GeometryCurvilinearCompositePerimeterValueTask(_CurvilinearCompositeBaseTask):
-    """Compute the perimeter of a curvilinear composite boundary."""
+class GeometryRectangleSemicircleCapAreaTask(_CurvilinearCompositeBaseTask):
+    """Compute the area of a rectangle with a semicircle cap."""
 
-    task_id = "task_geometry__composite_shape__curvilinear_composite_perimeter_value"
-    supported_queries = _PERIMETER_QUERIES
+    task_id = "task_geometry__composite_shape__rectangle_semicircle_cap_area"
+    supported_queries = ("rectangle_semicircle_cap_area",)
+    reasoning_kind = "area"
+
+
+@register_task
+class GeometryRectangleSemicircleCutoutAreaTask(_CurvilinearCompositeBaseTask):
+    """Compute the area of a rectangle with a semicircle cutout."""
+
+    task_id = "task_geometry__composite_shape__rectangle_semicircle_cutout_area"
+    supported_queries = ("rectangle_semicircle_cutout_area",)
+    reasoning_kind = "area"
+
+
+@register_task
+class GeometryRectangleQuarterSectorCutoutPerimeterTask(_CurvilinearCompositeBaseTask):
+    """Compute the perimeter of a rectangle with a quarter-sector cutout."""
+
+    task_id = "task_geometry__composite_shape__rectangle_quarter_sector_cutout_perimeter"
+    supported_queries = ("rectangle_quarter_sector_cutout_perimeter",)
     reasoning_kind = "perimeter"
 
 
 @register_task
-class GeometryCurvilinearMissingSideFromAreaValueTask(_CurvilinearCompositeBaseTask):
-    """Infer a missing rectangle width from the total curvilinear area."""
+class GeometryRectangleSemicircleCapPerimeterTask(_CurvilinearCompositeBaseTask):
+    """Compute the perimeter of a rectangle with a semicircle cap."""
 
-    task_id = "task_geometry__composite_shape__curvilinear_missing_side_from_area_value"
-    supported_queries = _MISSING_SIDE_QUERIES
+    task_id = "task_geometry__composite_shape__rectangle_semicircle_cap_perimeter"
+    supported_queries = ("rectangle_semicircle_cap_perimeter",)
+    reasoning_kind = "perimeter"
+
+
+@register_task
+class GeometryRectangleSemicircleCutoutPerimeterTask(_CurvilinearCompositeBaseTask):
+    """Compute the perimeter of a rectangle with a semicircle cutout."""
+
+    task_id = "task_geometry__composite_shape__rectangle_semicircle_cutout_perimeter"
+    supported_queries = ("rectangle_semicircle_cutout_perimeter",)
+    reasoning_kind = "perimeter"
+
+
+@register_task
+class GeometryMissingWidthFromSemicircleCapAreaTask(_CurvilinearCompositeBaseTask):
+    """Infer a missing rectangle width from a semicircle-cap area."""
+
+    task_id = "task_geometry__composite_shape__missing_width_from_semicircle_cap_area"
+    supported_queries = ("missing_width_from_semicircle_cap_area",)
     reasoning_kind = "missing_side"
 
 
 @register_task
-class GeometryCurvilinearSectorAngleValueTask(_CurvilinearCompositeBaseTask):
-    """Infer a sector angle from arc length or sector area."""
+class GeometryMissingWidthFromSemicircleCutoutAreaTask(_CurvilinearCompositeBaseTask):
+    """Infer a missing rectangle width from a semicircle-cutout area."""
 
-    task_id = "task_geometry__composite_shape__curvilinear_sector_angle_value"
-    supported_queries = _SECTOR_ANGLE_QUERIES
+    task_id = "task_geometry__composite_shape__missing_width_from_semicircle_cutout_area"
+    supported_queries = ("missing_width_from_semicircle_cutout_area",)
+    reasoning_kind = "missing_side"
+
+
+@register_task
+class GeometrySectorAngleFromArcLengthTask(_CurvilinearCompositeBaseTask):
+    """Infer a sector angle from arc length."""
+
+    task_id = "task_geometry__composite_shape__sector_angle_from_arc_length"
+    supported_queries = ("sector_angle_from_arc_length",)
+    reasoning_kind = "sector_angle"
+
+
+@register_task
+class GeometrySectorAngleFromAreaTask(_CurvilinearCompositeBaseTask):
+    """Infer a sector angle from sector area."""
+
+    task_id = "task_geometry__composite_shape__sector_angle_from_area"
+    supported_queries = ("sector_angle_from_area",)
     reasoning_kind = "sector_angle"
 
 
 __all__ = [
-    "GeometryCurvilinearCompositeAreaValueTask",
-    "GeometryCurvilinearCompositePerimeterValueTask",
-    "GeometryCurvilinearMissingSideFromAreaValueTask",
-    "GeometryCurvilinearSectorAngleValueTask",
+    "GeometryMissingWidthFromSemicircleCapAreaTask",
+    "GeometryMissingWidthFromSemicircleCutoutAreaTask",
+    "GeometryRectangleQuarterSectorCutoutAreaTask",
+    "GeometryRectangleQuarterSectorCutoutPerimeterTask",
+    "GeometryRectangleSemicircleCapAreaTask",
+    "GeometryRectangleSemicircleCapPerimeterTask",
+    "GeometryRectangleSemicircleCutoutAreaTask",
+    "GeometryRectangleSemicircleCutoutPerimeterTask",
+    "GeometrySectorAngleFromArcLengthTask",
+    "GeometrySectorAngleFromAreaTask",
 ]

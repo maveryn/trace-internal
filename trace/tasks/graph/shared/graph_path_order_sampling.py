@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import random
 from functools import lru_cache
 from typing import Any, Dict, Mapping, Sequence, Tuple
@@ -144,6 +145,212 @@ def _sample_unicyclic_graph(
     if len(cycle_basis) != 1 or len(cycle_basis[0]) != int(cycle_size_int):
         raise ValueError("unicyclic sampler failed to preserve the requested unique cycle")
     return graph
+
+
+def _canonical_cycle_order(cycle: Sequence[int]) -> Tuple[int, ...]:
+    """Return a deterministic cyclic order for one undirected simple cycle."""
+
+    nodes = [int(node) for node in cycle]
+    if len(nodes) > 1 and int(nodes[0]) == int(nodes[-1]):
+        nodes = nodes[:-1]
+    if len(nodes) < 3:
+        return tuple(int(node) for node in nodes)
+    rotations: list[Tuple[int, ...]] = []
+    for ordered in (nodes, list(reversed(nodes))):
+        for index in range(len(ordered)):
+            rotations.append(tuple(int(value) for value in (ordered[index:] + ordered[:index])))
+    return min(rotations)
+
+
+def _is_chordless_cycle(graph: nx.Graph, cycle: Sequence[int]) -> bool:
+    """Return whether ``cycle`` is a chordless cycle in ``graph``."""
+
+    ordered = tuple(int(node) for node in cycle)
+    if len(ordered) < 3 or len(set(ordered)) != len(ordered):
+        return False
+    cycle_edges = {
+        frozenset((int(ordered[index]), int(ordered[(index + 1) % len(ordered)])))
+        for index in range(len(ordered))
+    }
+    for index, source in enumerate(ordered):
+        target = int(ordered[(index + 1) % len(ordered)])
+        if not graph.has_edge(int(source), int(target)):
+            return False
+    for left_index in range(len(ordered)):
+        for right_index in range(left_index + 1, len(ordered)):
+            edge = frozenset((int(ordered[left_index]), int(ordered[right_index])))
+            if edge in cycle_edges:
+                continue
+            if graph.has_edge(int(ordered[left_index]), int(ordered[right_index])):
+                return False
+    return True
+
+
+def _chordless_cycles(graph: nx.Graph) -> Tuple[Tuple[int, ...], ...]:
+    """Return canonical chordless cycles from one undirected graph."""
+
+    seen: set[Tuple[int, ...]] = set()
+    cycles: list[Tuple[int, ...]] = []
+    for cycle in nx.chordless_cycles(graph):
+        canonical = _canonical_cycle_order(tuple(int(node) for node in cycle))
+        if canonical in seen or not _is_chordless_cycle(graph, canonical):
+            continue
+        seen.add(canonical)
+        cycles.append(canonical)
+    cycles.sort(key=lambda item: (-len(item), item))
+    return tuple(cycles)
+
+
+def _hamiltonian_cycles(graph: nx.Graph) -> Tuple[Tuple[int, ...], ...]:
+    """Return canonical Hamiltonian cycles from one small undirected graph."""
+
+    nodes = tuple(sorted(int(node) for node in graph.nodes()))
+    if len(nodes) < 3:
+        return ()
+    anchor = int(nodes[0])
+    seen: set[Tuple[int, ...]] = set()
+    cycles: list[Tuple[int, ...]] = []
+    for suffix in itertools.permutations(nodes[1:]):
+        candidate = (anchor, *tuple(int(node) for node in suffix))
+        if all(graph.has_edge(int(candidate[index]), int(candidate[(index + 1) % len(candidate)])) for index in range(len(candidate))):
+            canonical = _canonical_cycle_order(candidate)
+            if canonical in seen:
+                continue
+            seen.add(canonical)
+            cycles.append(canonical)
+    cycles.sort()
+    return tuple(cycles)
+
+
+def _sample_largest_chordless_cycle_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_cycle_size: int,
+    topology_profile: str,
+) -> Tuple[nx.Graph, Tuple[int, ...], Tuple[Tuple[int, ...], ...], int, int]:
+    """Construct a connected graph whose largest chordless cycle has target size."""
+
+    node_count_int = int(node_count)
+    target_size_int = int(target_cycle_size)
+    feasible_node_support = feasible_node_counts_for_largest_chordless_cycle_size(
+        target_cycle_size=int(target_size_int),
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested largest-chordless-cycle query")
+
+    graph = nx.cycle_graph(int(target_size_int))
+    next_node = int(target_size_int)
+    secondary_edge = (0, 1)
+    if int(target_size_int) == 3:
+        graph.add_node(int(next_node))
+        graph.add_edge(int(secondary_edge[0]), int(next_node))
+        graph.add_edge(int(secondary_edge[1]), int(next_node))
+        next_node += 1
+    else:
+        first_extra = int(next_node)
+        second_extra = int(next_node + 1)
+        graph.add_nodes_from((first_extra, second_extra))
+        graph.add_edge(int(secondary_edge[0]), first_extra)
+        graph.add_edge(first_extra, second_extra)
+        graph.add_edge(second_extra, int(secondary_edge[1]))
+        next_node += 2
+
+    attachment_count = 0
+    while int(next_node) < int(node_count_int):
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph,
+            topology_profile=str(topology_profile),
+        )
+        graph.add_node(int(next_node))
+        graph.add_edge(int(parent), int(next_node))
+        attachment_count += 1
+        next_node += 1
+
+    cycles = _chordless_cycles(graph)
+    if not cycles or len(cycles[0]) != int(target_size_int):
+        raise ValueError("largest-chordless-cycle construction failed before adding distractor edges")
+
+    if str(topology_profile) == "hub_heavy":
+        extra_edge_budget = 3
+    elif str(topology_profile) == "balanced":
+        extra_edge_budget = 2
+    else:
+        extra_edge_budget = 1
+
+    extra_edges_kept = 0
+    non_edges = list(nx.non_edges(graph))
+    rng.shuffle(non_edges)
+    for left, right in non_edges:
+        if int(extra_edges_kept) >= int(extra_edge_budget):
+            break
+        graph.add_edge(int(left), int(right))
+        candidate_cycles = _chordless_cycles(graph)
+        if candidate_cycles and len(candidate_cycles[0]) == int(target_size_int):
+            extra_edges_kept += 1
+            cycles = candidate_cycles
+            continue
+        graph.remove_edge(int(left), int(right))
+
+    cycles = _chordless_cycles(graph)
+    if not cycles or len(cycles[0]) != int(target_size_int):
+        raise ValueError("largest-chordless-cycle sampler failed to preserve target size")
+    cycle_rank = int(rng.randrange(sum(1 for cycle in cycles if len(cycle) == int(target_size_int))))
+    target_cycle = tuple(cycle for cycle in cycles if len(cycle) == int(target_size_int))[int(cycle_rank)]
+    return graph, tuple(int(node) for node in target_cycle), cycles, int(attachment_count), int(extra_edges_kept)
+
+
+def _sample_unique_hamiltonian_cycle_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    topology_profile: str,
+) -> Tuple[nx.Graph, Tuple[int, ...], Tuple[Tuple[int, ...], ...], int]:
+    """Construct a small connected graph with exactly one Hamiltonian cycle."""
+
+    node_count_int = int(node_count)
+    feasible_node_support = feasible_node_counts_for_hamiltonian_cycle_neighbor(
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested Hamiltonian-cycle query")
+
+    graph = nx.cycle_graph(int(node_count_int))
+    cycles = _hamiltonian_cycles(graph)
+    if len(cycles) != 1:
+        raise ValueError("base Hamiltonian-cycle construction failed")
+
+    profile = str(topology_profile)
+    if profile == "hub_heavy":
+        extra_edge_budget = 2
+    elif profile == "balanced":
+        extra_edge_budget = 1
+    else:
+        extra_edge_budget = int(rng.random() < 0.5)
+
+    extra_edges_kept = 0
+    non_edges = list(nx.non_edges(graph))
+    rng.shuffle(non_edges)
+    for left, right in non_edges:
+        if int(extra_edges_kept) >= int(extra_edge_budget):
+            break
+        graph.add_edge(int(left), int(right))
+        candidate_cycles = _hamiltonian_cycles(graph)
+        if len(candidate_cycles) == 1:
+            cycles = candidate_cycles
+            extra_edges_kept += 1
+            continue
+        graph.remove_edge(int(left), int(right))
+
+    cycles = _hamiltonian_cycles(graph)
+    if len(cycles) != 1:
+        raise ValueError("Hamiltonian-cycle sampler failed to preserve uniqueness")
+    return graph, tuple(int(node) for node in cycles[0]), cycles, int(extra_edges_kept)
+
 
 def _sample_unique_shortest_path_graph(
     rng: random.Random,
@@ -600,6 +807,117 @@ def sample_unique_cycle_graph(
         attachment_count=int(node_count) - int(target_cycle_size),
     )
 
+
+def sample_largest_chordless_cycle_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_cycle_size: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphLargestChordlessCycleSample:
+    """Construct one connected graph for largest-chordless-cycle-size queries."""
+
+    graph, target_cycle_nodes, chordless_cycles, attachment_count, extra_edge_count = _sample_largest_chordless_cycle_graph(
+        rng,
+        node_count=int(node_count),
+        target_cycle_size=int(target_cycle_size),
+        topology_profile=str(topology_profile),
+    )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    target_labels = tuple(str(label_by_node[int(node)]) for node in target_cycle_nodes)
+    chordless_cycle_labels = tuple(
+        tuple(str(label_by_node[int(node)]) for node in cycle)
+        for cycle in chordless_cycles
+    )
+    return GraphLargestChordlessCycleSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_cycle_size=int(target_cycle_size),
+        chordless_cycle_sizes=tuple(int(len(cycle)) for cycle in chordless_cycles),
+        chordless_cycle_labels=tuple(tuple(str(label) for label in cycle) for cycle in chordless_cycle_labels),
+        attachment_count=int(attachment_count),
+        extra_edge_count=int(extra_edge_count),
+    )
+
+
+def sample_hamiltonian_cycle_neighbor_graph(
+    rng: random.Random,
+    *,
+    query_id: str,
+    node_count: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphHamiltonianCycleNeighborSample:
+    """Construct one connected graph for Hamiltonian-cycle neighbor queries."""
+
+    graph, cycle_nodes, hamiltonian_cycles, extra_edge_count = _sample_unique_hamiltonian_cycle_graph(
+        rng,
+        node_count=int(node_count),
+        topology_profile=str(topology_profile),
+    )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    cycle_labels = tuple(str(label_by_node[int(node)]) for node in cycle_nodes)
+    query_index = int(rng.randrange(len(cycle_labels)))
+    query_label = str(cycle_labels[int(query_index)])
+    if str(query_id) == "next_in_hamiltonian_cycle_label":
+        answer_label = str(cycle_labels[(int(query_index) + 1) % len(cycle_labels)])
+        relation_mode = "next"
+    elif str(query_id) == "previous_in_hamiltonian_cycle_label":
+        answer_label = str(cycle_labels[(int(query_index) - 1) % len(cycle_labels)])
+        relation_mode = "previous"
+    else:
+        raise ValueError(f"unsupported Hamiltonian-cycle query id: {query_id}")
+
+    return GraphHamiltonianCycleNeighborSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        target_labels=tuple(str(label) for label in cycle_labels),
+        query_label=str(query_label),
+        answer_label=str(answer_label),
+        relation_mode=str(relation_mode),
+        orientation_start_label=str(cycle_labels[0]),
+        orientation_next_label=str(cycle_labels[1]),
+        hamiltonian_cycle_count=int(len(hamiltonian_cycles)),
+        extra_edge_count=int(extra_edge_count),
+    )
+
+
 def sample_shortest_path_length_graph(
     rng: random.Random,
     *,
@@ -786,6 +1104,8 @@ __all__ = [
     '_random_bounded_positive_composition',
     '_random_positive_composition',
     '_random_tree_graph',
+    'sample_hamiltonian_cycle_neighbor_graph',
+    'sample_largest_chordless_cycle_graph',
     'sample_longest_path_length_graph',
     'sample_shortest_path_length_graph',
     'sample_topological_position_graph',

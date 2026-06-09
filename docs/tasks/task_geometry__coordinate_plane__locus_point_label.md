@@ -4,36 +4,24 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query id: `default`
-5. Query id: `circle_region_point`, `annulus_region_point`, `vertical_strip_region_point`, or `half_plane_intersection_region_point`
-6. Answer type: `option_letter`
-7. Evidence type: `point_set`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+5. Query id: `annulus_region_point`, `circle_region_point`, `half_plane_intersection_region_point`, `vertical_strip_region_point`
+6. Answer schema: `option_letter`
+7. Annotation schema: `point_set`
+
+## Program Contract
+- `label(select_point(lettered_candidate_points, predicate=inside_shaded_region, region_rule_family)); scene=coordinate_plane; scope=locus_point_label`
 
 ## Prompt Bundle
-- Bundle id: `geometry_coordinate_locus_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
-- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Choose the single lettered candidate point that lies in the shaded coordinate
-locus region.
-
-The scene draws one coordinate grid with a shaded circle, annulus, vertical
-strip, or intersection of two half-planes. Candidate points are unique lattice
-points. Exactly one candidate satisfies the region membership predicate, and
-all candidate graph coordinates and memberships are retained in metadata.
-
-## Evidence
-Verifier evidence is one final-image pixel point at the center of the selected
-candidate marker. The shaded region specification and candidate membership
-trace are metadata-backed.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
-Generation is deterministic for a fixed seed, params, config, and prompt
-bundle version. Query IDs, candidate labels, marker styles/colors, graph
-frame, prompt bundle IDs, and render choices are recorded in trace metadata.
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/coordinate.yaml`
-- Prompt bundle: `prompts/geometry/coordinate/geometry_coordinate_locus_v0.json`
 - Task module: `trace/tasks/geometry/coordinate/locus_region.py`

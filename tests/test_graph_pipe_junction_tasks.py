@@ -4,7 +4,10 @@ import networkx as nx
 
 from trace.tasks.graph.counting.pipe_bridge_count import GraphCountingPipeBridgeCountTask
 from trace.tasks.graph.path.pipe_shortest_path_length import GraphPathPipeShortestPathLengthTask
-from trace.tasks.graph.relation.junction_path_count import GraphRelationPipeJunctionPathCountTask
+from trace.tasks.graph.relation.junction_path_count import (
+    GraphRelationPipeExactDistanceCountTask,
+    GraphRelationPipeReachableJunctionCountTask,
+)
 
 
 def _open_graph_from_trace(trace_payload: dict) -> nx.Graph:
@@ -28,15 +31,15 @@ def test_pipe_shortest_path_contract() -> None:
     assert out.query_id == "pipe_shortest_path_length"
     assert len(paths) == 1
     assert out.answer_gt.value == len(paths[0]) - 1
-    assert out.evidence_gt.type == "point_sequence"
-    assert len(out.evidence_gt.value) == len(paths[0])
+    assert out.annotation_gt.type == "point_sequence"
+    assert len(out.annotation_gt.value) == len(paths[0])
     assert "blocked pipes" in out.prompt
 
 
 def test_pipe_reachable_count_contract() -> None:
-    out = GraphRelationPipeJunctionPathCountTask().generate(
+    out = GraphRelationPipeReachableJunctionCountTask().generate(
         2026051902,
-        params={"query_id": "pipe_reachable_junction_count"},
+        params={},
         max_attempts=200,
     )
     graph = _open_graph_from_trace(out.trace_payload)
@@ -46,8 +49,8 @@ def test_pipe_reachable_count_contract() -> None:
     assert out.query_id == "pipe_reachable_junction_count"
     assert 1 <= int(out.answer_gt.value) <= 5
     assert out.answer_gt.value == len(reachable)
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == len(reachable)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == len(reachable)
 
 
 def test_pipe_bridge_count_contract() -> None:
@@ -58,14 +61,14 @@ def test_pipe_bridge_count_contract() -> None:
     assert out.query_id == "pipe_bridge_count"
     assert 0 <= int(out.answer_gt.value) <= 5
     assert out.answer_gt.value == bridge_count
-    assert out.evidence_gt.type == "point_pair_set"
-    assert len(out.evidence_gt.value) == bridge_count
+    assert out.annotation_gt.type == "point_pair_set"
+    assert len(out.annotation_gt.value) == bridge_count
 
 
 def test_pipe_exact_distance_count_contract() -> None:
-    out = GraphRelationPipeJunctionPathCountTask().generate(
+    out = GraphRelationPipeExactDistanceCountTask().generate(
         2026051904,
-        params={"query_id": "pipe_exact_distance_count"},
+        params={},
         max_attempts=300,
     )
     graph = _open_graph_from_trace(out.trace_payload)
@@ -77,5 +80,5 @@ def test_pipe_exact_distance_count_contract() -> None:
     assert out.scene_id == "pipe_network"
     assert out.query_id == "pipe_exact_distance_count"
     assert out.answer_gt.value == exact_count
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == exact_count
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == exact_count

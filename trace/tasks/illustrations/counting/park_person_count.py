@@ -17,8 +17,10 @@ from ._park_person_equipment_use_branch import (
 )
 
 
-TASK_ID = "task_illustrations__park_playground__person_count"
 SCENE_ID = "park_playground"
+ACTIVITY_TASK_ID = "task_illustrations__park_playground__activity_person_count"
+AREA_TASK_ID = "task_illustrations__park_playground__area_person_count"
+EQUIPMENT_USE_TASK_ID = "task_illustrations__park_playground__equipment_use_person_count"
 QUERY_IDS: Tuple[str, ...] = (*ACTIVITY_QUERY_IDS, *ZONE_QUERY_IDS, *EQUIPMENT_USAGE_QUERY_IDS)
 
 _BRANCH_BY_QUERY: Dict[str, Type[Task]] = {
@@ -28,39 +30,105 @@ _BRANCH_BY_QUERY: Dict[str, Type[Task]] = {
 }
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
+def _public_generation_defaults(public_task_id: str) -> Mapping[str, Any]:
+    gen_defaults, _render_defaults, _prompt_defaults = split_generation_rendering_prompt_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        task_id=str(public_task_id),
+    )
+    return gen_defaults
 
+
+def _generate_public_person_count(
+    *,
+    public_task_id: str,
+    branch_cls: Type[Task],
+    query_ids: Tuple[str, ...],
+    instance_seed: int,
+    params: Dict[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    query_id, query_probabilities = select_query_id(
+        task_id=str(public_task_id),
+        params=params,
+        defaults=_public_generation_defaults(str(public_task_id)),
+        instance_seed=int(instance_seed),
+        fallback=query_ids,
+    )
+    branch_params = dict(params)
+    branch_params["query_id"] = str(query_id)
+    branch_params["query_id_support"] = [str(value) for value in query_ids]
+    output = branch_cls().generate(int(instance_seed), params=branch_params, max_attempts=int(max_attempts))
+    return rewrite_branch_output(
+        output,
+        public_task_id=str(public_task_id),
+        branch_id=str(branch_cls.branch_id),
+        query_probabilities=query_probabilities,
+    )
 
 @register_task
-class IllustrationsCountingParkPersonCountTask:
-    """Count people by activity, park zone, or equipment use."""
+class IllustrationsCountingParkActivityPersonCountTask:
+    """Count people performing one activity in a park/playground scene."""
 
-    task_id = TASK_ID
+    task_id = ACTIVITY_TASK_ID
     domain = "illustrations"
     task_group = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities = select_query_id(
-            task_id=TASK_ID,
-            params=params,
-            defaults=_GEN_DEFAULTS,
+        return _generate_public_person_count(
+            public_task_id=self.task_id,
+            branch_cls=ParkPersonActivityBranch,
+            query_ids=ACTIVITY_QUERY_IDS,
             instance_seed=int(instance_seed),
-            fallback=QUERY_IDS,
-        )
-        branch_cls = _BRANCH_BY_QUERY[str(query_id)]
-        branch_params = dict(params)
-        branch_params["query_id"] = str(query_id)
-        output = branch_cls().generate(int(instance_seed), params=branch_params, max_attempts=int(max_attempts))
-        return rewrite_branch_output(
-            output,
-            public_task_id=TASK_ID,
-            branch_id=str(branch_cls.branch_id),
-            query_probabilities=query_probabilities,
+            params=params,
+            max_attempts=int(max_attempts),
         )
 
 
-__all__ = ["IllustrationsCountingParkPersonCountTask", "TASK_ID", "SCENE_ID", "QUERY_IDS"]
+@register_task
+class IllustrationsCountingParkAreaPersonCountTask:
+    """Count people in one park/playground area."""
+
+    task_id = AREA_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_person_count(
+            public_task_id=self.task_id,
+            branch_cls=ParkPersonZoneBranch,
+            query_ids=ZONE_QUERY_IDS,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class IllustrationsCountingParkEquipmentUsePersonCountTask:
+    """Count people using one playground equipment type."""
+
+    task_id = EQUIPMENT_USE_TASK_ID
+    domain = "illustrations"
+    task_group = "counting"
+    default_dataset_enabled = True
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _generate_public_person_count(
+            public_task_id=self.task_id,
+            branch_cls=ParkPersonEquipmentUseBranch,
+            query_ids=EQUIPMENT_USAGE_QUERY_IDS,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+
+
+__all__ = [
+    "IllustrationsCountingParkActivityPersonCountTask",
+    "IllustrationsCountingParkAreaPersonCountTask",
+    "IllustrationsCountingParkEquipmentUsePersonCountTask",
+    "SCENE_ID",
+    "QUERY_IDS",
+]

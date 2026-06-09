@@ -106,7 +106,7 @@ visual:
         - 0.04
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     bundle_id: puzzles_cell_board_relation_v0
     scene_key: rectangular_tile_board
@@ -114,7 +114,7 @@ prompt:
     cell_board_min_distance_internal:
       task_key: min_distance_query
       answer_hint: set "answer" to the minimum number of orthogonal steps between the two queried colors as an integer
-      evidence_hint: set "evidence" to the ordered list of image pixel points [x, y] at tile centers for one unique shortest
+      annotation_hint: set "annotation" to the ordered list of image pixel points [x, y] at tile centers for one unique shortest
         path between the closest queried-color tiles, including both endpoints
-      json_example: '{"evidence":[[168,168],[216,168],[264,168],[312,168]],"answer":3}'
+      json_example: '{"annotation":[[168,168],[216,168],[264,168],[312,168]],"answer":3}'
       json_example_answer_only: '{"answer":3}'

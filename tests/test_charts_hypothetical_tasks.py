@@ -75,22 +75,22 @@ def test_chart_hypothetical_variants_match_contract(query_id: str, scene_variant
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["scene_variant"]) == str(scene_variant)
     assert str(render["scene_variant"]) == str(scene_variant)
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
 
     labels = [str(label) for label in execution["labels"]]
-    evidence_labels = [str(label) for label in execution["evidence_labels"]]
-    evidence_points = [list(point) for point in out.evidence_gt.value]
-    assert evidence_labels == sorted(evidence_labels)
-    assert set(evidence_labels).issubset(set(labels))
-    assert trace["projected_evidence"]["point_set"] == evidence_points
-    assert "label_set" not in trace["projected_evidence"]
-    assert len(evidence_points) == len(evidence_labels)
-    assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
-    for x_coord, y_coord in evidence_points:
+    annotation_labels = [str(label) for label in execution["annotation_labels"]]
+    annotation_points = [list(point) for point in out.annotation_gt.value]
+    assert annotation_labels == sorted(annotation_labels)
+    assert set(annotation_labels).issubset(set(labels))
+    assert trace["projected_annotation"]["point_set"] == annotation_points
+    assert "label_set" not in trace["projected_annotation"]
+    assert len(annotation_points) == len(annotation_labels)
+    assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_labels)
+    for x_coord, y_coord in annotation_points:
         assert 0 <= float(x_coord) <= int(render["canvas_width"])
         assert 0 <= float(y_coord) <= int(render["canvas_height"])
     assert int(out.answer_gt.value) == int(execution["answer_value"])
@@ -126,18 +126,18 @@ def test_chart_hypothetical_balances_variants_and_scenes() -> None:
 def test_chart_hypothetical_prompt_examples_match_selected_variant() -> None:
     task = ChartsHypotheticalCounterfactualValueTask()
     expected = {
-        "remaining_mean_after_removal": {"evidence": [[180, 360], [320, 240], [460, 300]], "answer": 18},
-        "target_share_after_removal": {"evidence": [[180, 260], [320, 340], [460, 220]], "answer": 25},
+        "remaining_mean_after_removal": {"annotation": [[180, 360], [320, 240], [460, 300]], "answer": 18},
+        "target_share_after_removal": {"annotation": [[180, 260], [320, 340], [460, 220]], "answer": 25},
         "baseline_from_aggregate_percent_change": {
-            "evidence": [[220, 340], [360, 280], [500, 220]],
+            "annotation": [[220, 340], [360, 280], [500, 220]],
             "answer": 40,
         },
     }
     for index, query_id in enumerate(expected, start=12300):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -159,7 +159,7 @@ def test_chart_hypothetical_task_is_deterministic() -> None:
     out_b = task.generate(12500, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

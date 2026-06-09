@@ -153,7 +153,7 @@ def polygon_center(vertices: Sequence[Point]) -> Point:
 
 
 def ordered_vertex_label_map(vertices: Sequence[Point]) -> Dict[str, Point]:
-    """Build the canonical `vertex_i -> point` map used for prompt-facing evidence."""
+    """Build the canonical `vertex_i -> point` map used for prompt-facing annotation."""
 
     return {
         f"vertex_{int(index) + 1}": (float(point[0]), float(point[1]))

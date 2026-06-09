@@ -37,11 +37,11 @@ def test_graph_counting_source_count_contract_matches_trace() -> None:
         entity for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"
     ]
 
-    assert "task_graph__node_link__degree_predicate_count" in TASK_REGISTRY
+    assert "task_graph__node_link__degree_value_filter_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_source_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_source_sink_counting"
     assert execution["query_id"] == "directed_source_count"
@@ -58,18 +58,18 @@ def test_graph_counting_source_count_contract_matches_trace() -> None:
     in_degrees = {str(key): int(value) for key, value in execution["in_degrees_by_label"].items()}
     matching_labels = [str(label) for label in execution["matching_labels"]]
     assert sorted(label for label, value in in_degrees.items() if int(value) == 0) == sorted(matching_labels)
-    assert int(out.answer_gt.value) == len(matching_labels) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["labels"] == matching_labels
     assert trace["witness_symbolic"]["source_sink_mode"] == "source"
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert sum(1 for node in node_entities if bool(node["is_source_sink_node"])) == len(matching_labels)
     assert all(
         int(node["in_degree"]) == 0
         for node in node_entities
         if bool(node["is_source_sink_node"])
     )
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_sink_count_zero_answer_is_supported() -> None:
@@ -90,7 +90,7 @@ def test_graph_counting_sink_count_zero_answer_is_supported() -> None:
 
     assert out.query_id == "directed_sink_count"
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["source_sink_mode"] == "sink"
     assert execution["degree_mode"] == "out_degree"
     assert execution["query_degree"] == 0
@@ -112,11 +112,11 @@ def test_graph_counting_source_sink_prompt_examples_match_contract() -> None:
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_counting_source_sink_balanced_sampling_includes_zero() -> None:

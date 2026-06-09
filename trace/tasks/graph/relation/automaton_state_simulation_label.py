@@ -42,8 +42,8 @@ from ..shared.graph_sampling import (
 from ..shared.graph_scene import (
     GraphRenderParams,
     RenderedGraphScene,
-    projected_edge_label_bbox_evidence,
-    projected_node_point_evidence,
+    projected_edge_label_bbox_annotation,
+    projected_node_point_annotation,
     render_graph_scene,
 )
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
@@ -127,7 +127,7 @@ class _AutomatonSample:
     query_step_count: int
     answer_label: str
     full_state_path_labels: Tuple[str, ...]
-    evidence_state_labels: Tuple[str, ...]
+    annotation_state_labels: Tuple[str, ...]
     transition_labels_by_edge: Dict[Tuple[str, str], str]
     transition_function: Dict[str, Dict[str, str]]
     used_transition_edges: Tuple[Tuple[str, str], ...]
@@ -145,11 +145,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match ordered state-center evidence."""
+    """Return prompt examples that match ordered state-center annotation."""
 
-    example_evidence = [[150, 250], [310, 190], [480, 230]]
+    example_annotation = [[150, 250], [310, 190], [480, 230]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": "C"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -579,7 +579,7 @@ def _sample_automaton(
         transition_labels_by_edge=transition_labels_by_edge,
     )
     full_path_labels = tuple(str(labels[int(index)]) for index in path)
-    evidence_labels = tuple(str(label) for label in full_path_labels[: int(answer_position) + 1])
+    annotation_labels = tuple(str(label) for label in full_path_labels[: int(answer_position) + 1])
     used_edges = tuple(
         (str(labels[int(source)]), str(labels[int(target)]))
         for source, target in zip(path[:-1], path[1:])
@@ -592,7 +592,7 @@ def _sample_automaton(
         query_step_count=int(answer_position),
         answer_label=str(full_path_labels[int(answer_position)]),
         full_state_path_labels=tuple(str(label) for label in full_path_labels),
-        evidence_state_labels=tuple(str(label) for label in evidence_labels),
+        annotation_state_labels=tuple(str(label) for label in annotation_labels),
         transition_labels_by_edge={(str(left), str(right)): str(symbol) for (left, right), symbol in transition_labels_by_edge.items()},
         transition_function={str(key): {str(symbol): str(target) for symbol, target in value.items()} for key, value in transition_function.items()},
         used_transition_edges=tuple((str(left), str(right)) for left, right in used_edges[: int(answer_position)]),
@@ -686,7 +686,7 @@ def _edge_label_bbox_entries(rendered_scene: RenderedGraphScene, edges: Sequence
     all_by_edge: Dict[str, list[list[int]]] = {}
     occurrence_bboxes: list[list[int]] = []
     for left, right in edges:
-        projection = projected_edge_label_bbox_evidence(rendered_scene, (str(left), str(right)))
+        projection = projected_edge_label_bbox_annotation(rendered_scene, (str(left), str(right)))
         boxes = [[int(round(float(value))) for value in bbox] for bbox in projection.get("bbox_set", [])]
         all_by_edge[f"{str(left)}->{str(right)}"] = list(boxes)
         if boxes:
@@ -823,8 +823,8 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_final_state_label",
-                "evidence_hint_transition_step_state_label",
+                "annotation_hint_final_state_label",
+                "annotation_hint_transition_step_state_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -832,7 +832,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
-        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        annotation_hint_key = f"annotation_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -840,14 +840,14 @@ class GraphRelationAutomatonStateSimulationLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "input_string": str(automaton.input_string),
                 "transition_step_count": str(automaton.query_step_count),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                "annotation_hint": str(prompt_defaults[annotation_hint_key]).format(
                     input_string=str(automaton.input_string),
                     transition_step_count=str(automaton.query_step_count),
                 ),
@@ -859,14 +859,14 @@ class GraphRelationAutomatonStateSimulationLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_node_point_evidence(rendered_scene, automaton.evidence_state_labels)
-        evidence_path = [[int(round(float(point[0]))), int(round(float(point[1])))] for point in evidence_projection["pixel_point_sequence"]]
-        if len(evidence_path) != len(automaton.evidence_state_labels):
-            raise RuntimeError("automaton evidence path projection is incomplete")
+        annotation_projection = projected_node_point_annotation(rendered_scene, automaton.annotation_state_labels)
+        annotation_path = [[int(round(float(point[0]))), int(round(float(point[1])))] for point in annotation_projection["pixel_point_sequence"]]
+        if len(annotation_path) != len(automaton.annotation_state_labels):
+            raise RuntimeError("automaton annotation path projection is incomplete")
         answer_gt = TypedValue(type="string", value=str(automaton.answer_label))
-        evidence_gt = TypedValue(type="point_sequence", value=list(evidence_path))
+        annotation_gt = TypedValue(type="point_sequence", value=list(annotation_path))
         answer_label = str(automaton.answer_label)
-        path_label_set = set(str(label) for label in automaton.evidence_state_labels)
+        path_label_set = set(str(label) for label in automaton.annotation_state_labels)
         edge_usage_counts: Dict[str, int] = {}
         for left, right in automaton.used_transition_edges:
             key = f"{str(left)}->{str(right)}"
@@ -880,8 +880,8 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                 "is_start_state": bool(str(node.label) == str(automaton.start_label)),
                 "is_accepting_state": bool(str(node.label) in set(automaton.accepting_labels)),
                 "is_answer_state": bool(str(node.label) == str(answer_label)),
-                "is_in_evidence_path": bool(str(node.label) in path_label_set),
-                "path_positions": [int(index) for index, label in enumerate(automaton.evidence_state_labels) if str(label) == str(node.label)],
+                "is_in_annotation_path": bool(str(node.label) in path_label_set),
+                "path_positions": [int(index) for index, label in enumerate(automaton.annotation_state_labels) if str(label) == str(node.label)],
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
                 "successors": list(automaton.graph_sample.successors_by_label[str(node.label)]),
@@ -933,7 +933,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                     "answer_state_label": str(automaton.answer_label),
                     "query_step_count": int(automaton.query_step_count),
                     "full_state_path_labels": list(automaton.full_state_path_labels),
-                    "evidence_state_path_labels": list(automaton.evidence_state_labels),
+                    "annotation_state_path_labels": list(automaton.annotation_state_labels),
                     "used_transition_edges": [list(edge) for edge in automaton.used_transition_edges],
                     "transition_function": dict(automaton.transition_function),
                     "transition_labels_by_edge": list(transition_entries),
@@ -1042,7 +1042,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                 "start_state_label": str(automaton.start_label),
                 "accepting_state_labels": list(automaton.accepting_labels),
                 "full_state_path_labels": list(automaton.full_state_path_labels),
-                "evidence_state_path_labels": list(automaton.evidence_state_labels),
+                "annotation_state_path_labels": list(automaton.annotation_state_labels),
                 "used_transition_edges": [list(edge) for edge in automaton.used_transition_edges],
                 "transition_function": dict(automaton.transition_function),
                 "transition_labels_by_edge": list(transition_entries),
@@ -1064,14 +1064,14 @@ class GraphRelationAutomatonStateSimulationLabelTask:
             },
             "witness_symbolic": {
                 "type": "state_path",
-                "state_path_labels": list(automaton.evidence_state_labels),
+                "state_path_labels": list(automaton.annotation_state_labels),
                 "answer_state_label": str(automaton.answer_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_sequence",
-                "point_sequence": list(evidence_path),
-                "pixel_point_sequence": list(evidence_path),
-                "pixel_bbox_set": list(evidence_projection["pixel_bbox_set"]),
+                "point_sequence": list(annotation_path),
+                "pixel_point_sequence": list(annotation_path),
+                "pixel_bbox_set": list(annotation_projection["pixel_bbox_set"]),
                 "used_transition_label_bboxes": list(transition_bbox_entries),
             },
         }
@@ -1079,7 +1079,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

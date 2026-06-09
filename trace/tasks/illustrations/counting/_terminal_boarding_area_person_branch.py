@@ -246,7 +246,7 @@ class TerminalBoardingAreaPersonBranch:
         counted_person_ids = tuple(str(person.person_id) for person in scene.persons if str(person.area_id) == str(sample.area_id))
         if len(counted_person_ids) != int(sample.target_count):
             raise RuntimeError("rendered boarding-area person count did not match sample target")
-        evidence_value = sort_transit_bboxes(transit_person_bbox_map(scene), counted_person_ids)
+        annotation_value = sort_transit_bboxes(transit_person_bbox_map(scene), counted_person_ids)
         area_counts = dict(Counter(str(person.area_id) for person in scene.persons))
 
         prompt_defaults = required_group_defaults(
@@ -258,7 +258,7 @@ class TerminalBoardingAreaPersonBranch:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_person_at_boarding_area",
-                "evidence_hint_person_at_boarding_area",
+                "annotation_hint_person_at_boarding_area",
                 "json_example_person_at_boarding_area",
                 "json_example_answer_only_person_at_boarding_area",
             ],
@@ -270,7 +270,7 @@ class TerminalBoardingAreaPersonBranch:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_person_at_boarding_area"]).format(area_name=str(sample.area_name)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_person_at_boarding_area"]).format(area_name=str(sample.area_name)),
+            "annotation_hint": str(prompt_defaults["annotation_hint_person_at_boarding_area"]).format(area_name=str(sample.area_name)),
             "json_example": str(prompt_defaults["json_example_person_at_boarding_area"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_person_at_boarding_area"]),
         }
@@ -283,8 +283,8 @@ class TerminalBoardingAreaPersonBranch:
             query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -349,13 +349,13 @@ class TerminalBoardingAreaPersonBranch:
                 "target_area_id": str(sample.area_id),
                 "answer": int(sample.target_count),
             },
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

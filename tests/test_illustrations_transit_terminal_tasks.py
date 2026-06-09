@@ -23,7 +23,7 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
 
 
 def test_person_at_boarding_area_count_contract() -> None:
-    out = create_task("task_illustrations__transit_terminal__entity_location_count").generate(
+    out = create_task("task_illustrations__transit_terminal__person_in_boarding_area_count").generate(
         hash64(2026052407, "transit-boarding-area", 0),
         params={"query_id": "person_in_boarding_area_count", "area_id": "area_b", "target_count": 5, "person_count": 18},
         max_attempts=100,
@@ -36,15 +36,15 @@ def test_person_at_boarding_area_count_contract() -> None:
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "person_in_boarding_area_count"
     assert trace["query_spec"]["query_id"] == "person_in_boarding_area_count"
-    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
+    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__person_in_boarding_area_count"
     assert trace["query_spec"]["branch_id"] == "terminal_boarding_area_person"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 5
     assert len(counted_person_ids) == 5
     assert execution["target_area_id"] == "area_b"
-    assert sorted(out.evidence_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     for person in execution["persons"]:
         is_target = person["area_id"] == "area_b"
@@ -76,7 +76,7 @@ def test_person_at_boarding_areaseeded_sampler_covers_answers_and_variants() -> 
 
 
 def test_luggage_in_boarding_area_count_contract() -> None:
-    out = create_task("task_illustrations__transit_terminal__entity_location_count").generate(
+    out = create_task("task_illustrations__transit_terminal__luggage_in_boarding_area_count").generate(
         hash64(2026052407, "transit-luggage-area", 0),
         params={
             "query_id": "luggage_in_boarding_area_count",
@@ -96,16 +96,16 @@ def test_luggage_in_boarding_area_count_contract() -> None:
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "luggage_in_boarding_area_count"
     assert trace["query_spec"]["query_id"] == "luggage_in_boarding_area_count"
-    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
+    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__luggage_in_boarding_area_count"
     assert trace["query_spec"]["branch_id"] == "terminal_boarding_area_luggage"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 4
     assert len(counted_luggage_ids) == 4
     assert execution["target_area_id"] == "area_c"
     assert execution["target_luggage_type"] == "backpack"
-    assert sorted(out.evidence_gt.value) == sorted(luggage_bboxes[luggage_id] for luggage_id in counted_luggage_ids)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(luggage_bboxes[luggage_id] for luggage_id in counted_luggage_ids)
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     for item in execution["luggage"]:
         is_target = item["area_id"] == "area_c" and item["luggage_type"] == "backpack"
@@ -135,7 +135,7 @@ def test_luggage_in_boarding_areaseeded_sampler_covers_answers_and_variants() ->
 
 
 def test_queue_person_count_contract() -> None:
-    out = create_task("task_illustrations__transit_terminal__entity_location_count").generate(
+    out = create_task("task_illustrations__transit_terminal__person_in_queue_count").generate(
         hash64(2026052407, "transit-queue", 0),
         params={
             "query_id": "person_in_queue_count",
@@ -154,15 +154,15 @@ def test_queue_person_count_contract() -> None:
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "person_in_queue_count"
     assert trace["query_spec"]["query_id"] == "person_in_queue_count"
-    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
+    assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__person_in_queue_count"
     assert trace["query_spec"]["branch_id"] == "terminal_queue_person"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 5
     assert len(counted_person_ids) == 5
     assert execution["target_service_point_id"] == "ticket_counter"
-    assert sorted(out.evidence_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     for person in execution["persons"]:
         attrs = person["attributes"]

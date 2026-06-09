@@ -89,7 +89,7 @@ def main() -> None:
                 "prompt": item.get("extra_info", {}).get("prompt"),
                 "ground_truth": item.get("ground_truth"),
                 "answer_gt": item.get("answer_gt"),
-                "evidence_gt": item.get("evidence_gt"),
+                "annotation_gt": item.get("annotation_gt"),
                 "reward_contract": item.get("reward_contract"),
                 "metadata": item.get("metadata"),
                 "trace_ref": item.get("trace_ref"),

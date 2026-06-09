@@ -34,14 +34,14 @@ def test_table_counting_value_count_variants_match_contract() -> None:
             }
             for row_label, row_values in execution["values_by_row"].items()
         }
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
         matching_row_indices = [int(value) for value in execution["matching_row_indices"]]
         expected_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        assert out.evidence_gt.type == "bbox_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert str(render["font_assets"]["table_font_family"]).strip()
@@ -56,9 +56,9 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         )
         assert len(column_headers) == expected_column_count
         assert str(query_column) in set(column_headers)
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
-        assert len(evidence_bboxes) == int(out.answer_gt.value) == len(expected_cell_ids)
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+        assert len(annotation_bboxes) == int(out.answer_gt.value) == len(expected_cell_ids)
 
         if str(query_id) == "categorical_value_count":
             target_category = str(execution["target_category"])
@@ -96,21 +96,21 @@ def test_table_counting_value_count_variants_match_contract() -> None:
             [float(value) for value in trace["render_map"]["cell_bboxes_px"][str(cell_id)]]
             for cell_id in expected_cell_ids
         ]
-        assert evidence_bboxes == expected_bboxes
+        assert annotation_bboxes == expected_bboxes
 
 
 def test_table_counting_prompt_examples_match_selected_variant() -> None:
     task = TablesCountingValueCountTask()
     expected = {
-        "threshold_count": {"evidence": [[260, 180, 372, 236], [260, 236, 372, 292]], "answer": 2},
-        "in_interval": {"evidence": [[260, 180, 372, 236], [260, 236, 372, 292], [260, 292, 372, 348]], "answer": 3},
-        "categorical_value_count": {"evidence": [[260, 180, 372, 236], [260, 292, 372, 348]], "answer": 2},
+        "threshold_count": {"annotation": [[260, 180, 372, 236], [260, 236, 372, 292]], "answer": 2},
+        "in_interval": {"annotation": [[260, 180, 372, 236], [260, 236, 372, 292], [260, 292, 372, 348]], "answer": 3},
+        "categorical_value_count": {"annotation": [[260, 180, 372, 236], [260, 292, 372, 348]], "answer": 2},
     }
     for index, query_id in enumerate(expected, start=18230):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_id]
+        assert answer_and_annotation == expected[query_id]
         assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
@@ -121,7 +121,7 @@ def test_table_counting_value_count_task_is_deterministic() -> None:
     out_b = task.generate(18260, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -152,14 +152,14 @@ def test_table_counting_visual_style_axes_preserve_projected_bboxes() -> None:
     assert style["inner_rule_style"] == "dashed"
     assert style["numeric_alignment"] == "right"
     assert render["table_bbox_px"] == [80.0, 70.0, 895.0, 840.0]
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
     expected_bboxes = [
         [float(value) for value in trace["render_map"]["cell_bboxes_px"][str(cell_id)]]
         for cell_id in trace["execution_trace"]["supporting_cell_ids"]
     ]
-    assert out.evidence_gt.value == expected_bboxes
+    assert out.annotation_gt.value == expected_bboxes
 
 
 def test_table_counting_target_count_sampling_decouples_from_query_id_sampling() -> None:

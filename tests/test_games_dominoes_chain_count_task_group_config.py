@@ -10,7 +10,7 @@ def test_games_dominoes_chain_count_defaults_expose_scene_query_and_candidate_ax
     cfg = get_task_group_defaults("games", "dominoes")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__dominoes__property_count",
+        task_id="task_games__dominoes__double_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -24,6 +24,8 @@ def test_games_dominoes_chain_count_defaults_expose_scene_query_and_candidate_ax
         "higher_sum_than_reference_count",
         "sum_to_target_count",
         "double_count",
+        "second_play_candidate_count",
+        "extendable_first_play_count",
     }
     assert set(generation["style_variant_weights"].keys()) == {
         "classic",
@@ -37,7 +39,8 @@ def test_games_dominoes_chain_count_defaults_expose_scene_query_and_candidate_ax
     assert list(generation["higher_sum_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["sum_to_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["double_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
-    assert list(generation["two_step_extension_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
+    assert list(generation["second_play_candidate_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
+    assert list(generation["extendable_first_play_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["single_row_candidate_count_support"]) == [7, 8, 9]
     assert list(generation["two_row_candidate_count_support"]) == [10, 11, 12]
     assert list(generation["sum_target_total_support"]) == [2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -50,6 +53,7 @@ def test_games_dominoes_chain_count_defaults_expose_scene_query_and_candidate_ax
     assert "domino chain" in str(prompt["object_description_single_row"])
     assert "green table" not in str(prompt["object_description_single_row"])
     assert "green table" not in str(prompt["object_description_two_row"])
-    assert "open right end" in str(prompt["evidence_hint_matching_end_count"])
+    assert "open right end" in str(prompt["annotation_hint_matching_end_count"])
     assert "doubles" in str(prompt["answer_hint_double_count"])
-    assert "second" in str(prompt["answer_hint_two_step_extension_label"]).lower()
+    assert "second" in str(prompt["answer_hint_second_play_candidate_count"]).lower()
+    assert "first" in str(prompt["answer_hint_extendable_first_play_count"]).lower()

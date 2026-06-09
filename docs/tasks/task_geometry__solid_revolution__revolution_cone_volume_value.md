@@ -4,20 +4,20 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `solid_revolution`
-4. Public query id: `default`
+4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `cone_volume_from_right_triangle`
-6. Answer type: `number`
-7. Evidence type: `bbox_set`
+6. Answer schema: `decimal_value_1dp`
+7. Annotation schema: `bbox_set`
+
+## Program Contract
+- `solve_formula(visible_solid_revolution_measurements, unknown_role=volume_measure, formula_schema=cone_volume_from_right_triangle); scene=solid_revolution; scope=revolution_cone_volume_value`
 
 ## Prompt Bundle
-- Bundle id: `geometry_solid_revolution_v0`
-- Prompt modes: `answer_only` and `answer_and_evidence`
+- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Behavior
-Compute the volume of a cone formed by rotating a labeled right triangle 360 degrees about one leg. The visible height and slant-height labels determine the missing radius by the Pythagorean relation before applying the cone-volume formula. Answers are numeric and rounded to one decimal place.
-
-## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around the target `V=?` cue followed by the visible slant-height and height label boxes. Verifier evidence is projected from the same generated scene metadata used to compute the answer.
+## Annotation
+Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

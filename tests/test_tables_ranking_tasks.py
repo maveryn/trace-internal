@@ -37,22 +37,22 @@ def test_table_ranking_label_variants_match_contract() -> None:
             for row_label, row_values in execution["values_by_row"].items()
         }
         query_column = str(execution["query_column"])
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
 
         assert str(out.query_id) == "kth_rank_in_column"
         assert out.answer_gt.type == "string"
-        assert out.evidence_gt.type == "bbox_set"
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.annotation_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert str(render["font_assets"]["table_font_family"]).strip()
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
-        assert len(evidence_bboxes) == 1
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
-        assert evidence_bboxes[0] == [
+        assert len(annotation_bboxes) == 1
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+        assert annotation_bboxes[0] == [
             float(value) for value in trace["render_map"]["column_region_bboxes_px"][query_column]
         ]
 
@@ -76,16 +76,16 @@ def test_table_ranking_label_variants_match_contract() -> None:
 
 def test_table_ranking_label_prompt_examples_match_selected_variant() -> None:
     task = TablesRankingLabelTask()
-    expected = {"evidence": [[260, 180, 372, 520]], "answer": "Ava"}
+    expected = {"annotation": [[260, 180, 372, 520]], "answer": "Ava"}
     for index, rank_direction in enumerate(("highest", "lowest"), start=18640):
         out = task.generate(
             index,
             params={"query_id": "kth_rank_in_column", "rank_direction": rank_direction},
             max_attempts=10,
         )
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected
+        assert answer_and_annotation == expected
         assert answer_only == {"answer": expected["answer"]}
 
 
@@ -96,7 +96,7 @@ def test_table_ranking_label_task_is_deterministic() -> None:
     out_b = task.generate(18670, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

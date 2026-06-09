@@ -45,8 +45,8 @@ def test_icons_relation_named_path_neighbor_contract_matches_scene() -> None:
     assert out.query_id == "after_second_shape_label"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
-    assert out.evidence_gt.type == "keyed_bbox_map"
-    assert len(out.evidence_gt.value) == 2
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "icons_named_path_neighbor"
     assert execution["question_format"] == "select_labeled_neighbor_of_named_icon_along_start_to_end_path"
 
@@ -76,14 +76,14 @@ def test_icons_relation_named_path_neighbor_contract_matches_scene() -> None:
     assert str(answer_entity["label"]) == "E"
     assert str(answer_entity["shape_id"]) != str(execution["target_shape_id"])
 
-    expected_evidence = {
+    expected_annotation = {
         "queried_icon": query_entity["bbox_xyxy"],
         "selected_neighbor": answer_entity["bbox_xyxy"],
     }
-    assert out.evidence_gt.value == expected_evidence
-    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert trace["projected_evidence"]["keyed_bbox_map"] == expected_evidence
-    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_evidence
+    assert out.annotation_gt.value == expected_annotation
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == expected_annotation
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == expected_annotation
     style = trace["render_spec"]["style"]
     assert "candidate_label_stroke_rgb" in style
     assert "endpoint_label_stroke_rgb" in style
@@ -141,14 +141,14 @@ def test_icons_relation_named_path_neighbor_prompt_example_matches_contract() ->
     )
     assert '"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "E"}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == {
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == {
         "queried_icon": [218, 314, 274, 370],
         "selected_neighbor": [548, 248, 604, 304],
     }
-    assert answer_and_evidence["answer"] == "E"
+    assert answer_and_annotation["answer"] == "E"
 
 
 def test_icons_relation_named_path_neighbor_sampling_smoke() -> None:

@@ -3,58 +3,57 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `hydraulic`
-- Task group: `fluids`
-- Task id: `task_physics__hydraulic__hydraulic_missing_value`
-- Query id: `missing_output_force|missing_input_force|missing_piston_area`
-- Answer type: `integer`
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `fluids`
+- Implementation source: `trace/tasks/physics/fluids/hydraulic_missing_value.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__hydraulic__hydraulic_missing_value` -> `task_physics__hydraulic__hydraulic_missing_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Visual Scaffold
-- The image shows one connected three-piston hydraulic system.
-- The setup includes:
-  - an input fluid chamber with a piston,
-  - a middle reference fluid chamber with a piston,
-  - an output fluid chamber with a piston,
-  - a connecting fluid pipe,
-  - piston area labels,
-  - downward force arrows,
-  - one red `?` label on the missing force or output-area quantity.
-- Active `scene_variant` values:
-  - `wide_bench`
-  - `compact_frame`
-  - `tall_columns`
+## Task Contract
+Solves a missing force or piston area in a connected hydraulic piston diagram using Pascal law.
 
-## Query IDs
-- `missing_output_force`
-  - input force, the middle reference piston, and all piston areas are shown; the output force is marked `?`
-- `missing_input_force`
-  - output force, the middle reference piston, and all piston areas are shown; the input force is marked `?`
-- `missing_piston_area`
-  - input force, output force, the middle reference piston, and input area are shown; the output piston area is marked `?`
-- Outputs put the concrete branch in `query_id`.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-## Reasoning Contract
-- The hydraulic system is ideal and uses Pascal's law across all connected pistons:
-  `F_input / A_input = F_middle / A_middle = F_output / A_output`.
-- The generator constructs integer-valued scenes from an integer mechanical-advantage ratio: `A_output = A_input * mechanical_advantage` and `F_output = F_input * mechanical_advantage`.
-- The middle reference piston is also an integer-ratio piston at the same pressure, and its ratio is different from the output ratio when a compatible value exists.
-- The final answer is unique by construction for each query branch.
+## Query Branches
 
-## Evidence Contract
-- Prompt-facing evidence is a `keyed_bbox_map` over only the known force/area labels needed to compute the missing value.
-- `missing_output_force` uses keys `input_force`, `input_area`, and `output_area`.
-- `missing_input_force` uses keys `output_force`, `input_area`, and `output_area`.
-- `missing_piston_area` uses keys `input_force`, `output_force`, and `input_area`.
-- The red `?` target label and middle reference labels remain visible cues but are not prompt-facing evidence for the current query branches.
+| Query id | Program schema |
+| --- | --- |
+| `missing_input_area` | `solve_pascal_law(input_force, input_area, output_force, output_area, unknown_slot); scene=hydraulic; scope=hydraulic_missing_value; query_branch=missing_input_area` |
+| `missing_input_force` | `solve_pascal_law(input_force, input_area, output_force, output_area, unknown_slot); scene=hydraulic; scope=hydraulic_missing_value; query_branch=missing_input_force` |
+| `missing_output_force` | `solve_pascal_law(input_force, input_area, output_force, output_area, unknown_slot); scene=hydraulic; scope=hydraulic_missing_value; query_branch=missing_output_force` |
+| `missing_piston_area` | `solve_pascal_law(input_force, input_area, output_force, output_area, unknown_slot); scene=hydraulic; scope=hydraulic_missing_value; query_branch=missing_piston_area` |
 
-## Sampling Notes
-- Input-force support is `4..12`.
-- Input-area support is `2..9`.
-- Mechanical-advantage support is `3..8`, excluding trivial doubling cases in the calibrated public mix.
-- Output-force and output-area answer supports are filtered to constructively feasible integer products.
-- Under the seeded task sampler, scene, query, and answer-support cycles are decoupled so the scene/query cross-product is covered.
+## Program Metadata
+- Program signatures: `physics.pascal_law_solve`
+- Base program contract: `solve_pascal_law(input_force, input_area, output_force, output_area, unknown_slot); scene=hydraulic; scope=hydraulic_missing_value`
+- Parameter axes: `unknown_slot`
+- Arguments:
+  - `input_area`: semantic_role; allowed `visible_input_piston_area`; source `program_schema_concrete`
+  - `input_force`: semantic_role; allowed `visible_or_unknown_input_force`; source `program_schema_concrete`
+  - `output_area`: semantic_role; allowed `visible_or_unknown_output_piston_area`; source `program_schema_concrete`
+  - `output_force`: semantic_role; allowed `visible_or_unknown_output_force`; source `program_schema_concrete`
+  - `unknown_slot`: semantic_role; allowed `input_area`, `input_force`, `output_area`, `output_force`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `missing_input_area`, `missing_input_force`, `missing_output_force`, `missing_piston_area`
 
-## Prompt Policy
-- Prompt text should identify the system as a connected three-piston hydraulic piston diagram.
-- Prompt text should ask only for an integer force or area value.
-- Prompt-facing evidence should stay on the minimal known force and area labels, keyed by semantic role.
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
+
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/hydraulic/task_physics__hydraulic__hydraulic_missing_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

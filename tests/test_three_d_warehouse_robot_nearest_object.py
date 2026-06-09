@@ -8,7 +8,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.warehouse.robot_forward_path import SCENE_ID, SUPPORTED_ROBOT_DESIGNS
+from trace.tasks.three_d.warehouse.warehouse_scene_common import SCENE_ID, SUPPORTED_ROBOT_DESIGNS
 from trace.tasks.three_d.warehouse.robot_nearest_object import (
     MIN_NEAREST_OBJECT_MARGIN,
     MIN_NEAREST_ROBOT_MARGIN,
@@ -16,6 +16,7 @@ from trace.tasks.three_d.warehouse.robot_nearest_object import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,7 @@ from trace.tasks.three_d.warehouse.robot_nearest_object import (
         ("packing_floor", "west"),
     ],
 )
-def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
+def test_warehouse_robot_nearest_object_answer_annotation_and_geometry(
     scene_variant: str,
     aisle_heading: str,
 ) -> None:
@@ -61,8 +62,15 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
     assert output.query_id == "closest_robot_to_reference"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1088),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert nearest_labels == [answer_label]
     assert trace["nearest_robot_candidate_labels"] == [answer_label]
@@ -97,10 +105,9 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
     ]
     assert len(robot_entities) == 5
     assert len(reference_entities) == 1
-    assert output.image.size == (1180, 920)
     assert "red sphere" in output.prompt
     assert "gripper" not in output.prompt
-    assert "lettered robot" in output.prompt or "robot letter" in output.prompt
+    assert "candidate robots" in output.prompt or "option" in output.prompt
     assert "{answer_hint}" not in output.prompt
 
 
@@ -112,7 +119,7 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
         ("packing_floor", "north"),
     ],
 )
-def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
+def test_warehouse_object_nearest_robot_answer_annotation_and_geometry(
     scene_variant: str,
     aisle_heading: str,
 ) -> None:
@@ -147,8 +154,15 @@ def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
     assert output.query_id == "closest_object_to_robot"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1088),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert nearest_labels == [answer_label]
     assert trace["nearest_object_candidate_labels"] == [answer_label]
@@ -176,10 +190,15 @@ def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
         if str(entity["entity_type"]) == "three_d_warehouse_reference_robot"
     ]
     assert len(candidate_entities) == 5
+    answer_entity = next(entity for entity in candidate_entities if str(entity["entity_id"]) == str(answer_spec["object_id"]))
+    answer_record = answer_entity["attrs"]["object_record"]
+    assert answer_record["object_id"] == str(answer_spec["object_id"])
+    assert answer_record["object_type"] == str(answer_spec["object_type"])
+    assert answer_record["visual_attributes"]["renderer_id"] == "warehouse_object"
+    assert answer_record["visual_attributes"]["renderer_style"] == "projected_3d"
     assert len(reference_entities) == 1
-    assert output.image.size == (1180, 920)
     assert "robot" in output.prompt
-    assert "lettered warehouse object" in output.prompt or "object letter" in output.prompt
+    assert "candidate warehouse objects" in output.prompt or "option" in output.prompt
     assert "gripper" not in output.prompt
     assert "red sphere" not in output.prompt
     assert "{answer_hint}" not in output.prompt

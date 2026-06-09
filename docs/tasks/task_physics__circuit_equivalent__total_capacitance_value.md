@@ -1,14 +1,53 @@
 # `task_physics__circuit_equivalent__total_capacitance_value`
 
+## Summary
 - Domain: `physics`
-- Task group: `circuits`
 - Scene id: `circuit_equivalent`
-- Query id: `total_capacitance`
-- Answer type: integer
-- Evidence type: `keyed_bbox_map`
+- Implementation task group: `circuits`
+- Implementation source: `trace/tasks/physics/circuits/equivalent_resistance.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_physics__circuit_equivalent__total_capacitance_value` -> `task_physics__circuit_equivalent__total_capacitance_value`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-Technical circuit diagram with labeled parallel-plate capacitors between terminals `A` and `B`. Every generated diagram contains at least one capacitor in series with one or two parallel capacitor blocks.
+## Task Contract
+Computes equivalent capacitance for a visible mixed series-parallel capacitor network between terminals A and B.
 
-Evidence maps each visible capacitor label, such as `C1` or `C2`, to the bounding box around that capacitor symbol and its value label. Wires and terminal labels are not separate evidence.
+This public task id is a stable contract-v0 unit: one physics scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Prompt bundle: `physics_circuits_v0`; scene key: `equivalent_circuit_diagram`; task key: `equivalent_component_query`; query key: `total_capacitance`.
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `total_capacitance` | `equivalent_capacitance(components=capacitor_components_between_terminals, topology=series_parallel_network); scene=circuit_equivalent; scope=total_capacitance_value; query_branch=total_capacitance` |
+
+## Program Metadata
+- Program signatures: `physics.equivalent_circuit_value`
+- Base program contract: `equivalent_capacitance(components=capacitor_components_between_terminals, topology=series_parallel_network); scene=circuit_equivalent; scope=total_capacitance_value`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `capacitor_components_between_terminals`: semantic_role; allowed `visible_capacitors_between_A_B`; source `program_schema_concrete`
+  - `series_parallel_network`: semantic_role; allowed `mixed_series_parallel_topology`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `total_capacitance`
+
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
+
+## Annotation Contract
+- Annotation schema: `keyed_bbox_map`
+- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/physics/circuit_equivalent/task_physics__circuit_equivalent__total_capacitance_value/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

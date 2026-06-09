@@ -129,6 +129,18 @@ rendering:
       canvas_height: 660
       node_radius_min_px: 20
       node_radius_max_px: 26
+      context_text_probability: 0.25
+      context_text_max_elements: 1
+      context_block_probability: 0.10
+      context_block_max_elements: 1
+      context_block_position_weights:
+        bottom: 1.0
+        left: 0.5
+        right: 0.5
+      context_block_clutter_level_weights:
+        low: 1.0
+        medium: 0.5
+        high: 0.0
 
 complexity:
   shared:
@@ -143,32 +155,32 @@ prompt:
     bundle_id: graph_order_v0
     scene_key: single_graph_order
     task_key: topological_position_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description: a labeled directed acyclic graph
     question_text_topological_position: What is the position of node {query_label} in the unique topological order, counting from 1?
-    evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at node centers in the unique topological order from first to last
+    annotation_hint: set "annotation" to an ordered array of [x,y] pixel points at node centers in the unique topological order from first to last
     answer_hint: set "answer" to the 1-based position of node {query_label} in that order as an integer
-    json_example: '{"evidence":[[140,220],[260,180],[380,240],[500,300],[620,260]],"answer":3}'
+    json_example: '{"annotation":[[140,220],[260,180],[380,240],[500,300],[620,260]],"answer":3}'
     json_example_answer_only: '{"answer":3}'
   task_overrides:
     task_graph__adjacency__traversal_kth_label:
       scene_key: adjacency_representation_order
       task_key: adjacency_traversal_label_query
       object_description: a directed graph shown as an adjacency list
-      evidence_hint_bfs_kth_visit_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by breadth-first search from the source row through the answer row
-      evidence_hint_dfs_kth_visit_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by depth-first search from the source row through the answer row
+      annotation_hint_bfs_kth_visit_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by breadth-first search from the source row through the answer row
+      annotation_hint_dfs_kth_visit_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by depth-first search from the source row through the answer row
       answer_hint: set "answer" to the node label at the requested visit position as a string
-      json_example: '{"evidence":[[70,126,158,158],[70,174,158,206],[70,222,158,254]],"answer":"M"}'
+      json_example: '{"annotation":[[70,126,158,158],[70,174,158,206],[70,222,158,254]],"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'
     task_graph__binary_tree__traversal_kth_label:
       scene_key: binary_tree_order
       task_key: binary_tree_traversal_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
-      evidence_hint_preorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the preorder traversal nodes from the first visited node through the answer node
-      evidence_hint_inorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the inorder traversal nodes from the first visited node through the answer node
-      evidence_hint_postorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the postorder traversal nodes from the first visited node through the answer node
-      evidence_hint_level_order_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the level-order traversal nodes from the first visited node through the answer node
+      annotation_hint_preorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the preorder traversal nodes from the first visited node through the answer node
+      annotation_hint_inorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the inorder traversal nodes from the first visited node through the answer node
+      annotation_hint_postorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the postorder traversal nodes from the first visited node through the answer node
+      annotation_hint_level_order_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the level-order traversal nodes from the first visited node through the answer node
       answer_hint: set "answer" to the node label at the requested traversal position as a string
-      json_example: '{"evidence":[[156,124,204,172],[250,250,298,298],[470,430,520,480]],"answer":"M"}'
+      json_example: '{"annotation":[[156,124,204,172],[250,250,298,298],[470,430,520,480]],"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'

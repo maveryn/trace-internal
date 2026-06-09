@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -29,24 +29,19 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_EDGE_ATTRIBUTE_LABEL_DIRECTIONS,
-    SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     sample_edge_text_label_count_graph,
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_edge_label_bbox_evidence,
+    projected_edge_label_bbox_annotation,
     render_graph_scene,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.node_link_axes import resolve_node_link_visual_axes
+from ..shared.task_scaffolding import graph_hashed_axis_selection_index
 from ..shared.task_support import (
     graph_edge_label_entries,
     graph_uniform_label_probability_map,
-    resolve_graph_balanced_node_color_name,
     resolve_graph_edge_label_support_from_params,
     resolve_graph_named_variant,
     resolve_graph_render_params,
@@ -136,11 +131,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match edge-label bbox evidence."""
+    """Return prompt examples that match edge-label bbox annotation."""
 
-    example_evidence = [[240, 190, 308, 214], [412, 238, 480, 262]]
+    example_annotation = [[240, 190, 308, 214], [412, 238, 480, 262]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -157,11 +152,18 @@ def _node_count_selection_index(
 ) -> int:
     """Return an independent node-count index for one edge-text-label query."""
 
-    namespace = (
-        f"{TASK_ID}:node_count:"
-        f"{str(graph_directionality)}:{int(target_count)}:{str(target_edge_label)}:{str(topology_profile)}"
+    return graph_hashed_axis_selection_index(
+        int(instance_seed),
+        task_id=TASK_ID,
+        axis_name="node_count",
+        selection_index=int(selection_index),
+        axis_values=(
+            str(graph_directionality),
+            str(target_count),
+            str(target_edge_label),
+            str(topology_profile),
+        ),
     )
-    return int(hash64(int(instance_seed), namespace, int(selection_index)))
 
 
 
@@ -277,78 +279,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         )
         node_count = int(feasible_node_support[int(node_index % len(feasible_node_support))])
 
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_variant",
-    )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    node_color_name, node_color_name_probabilities = resolve_graph_balanced_node_color_name(
+    visual_axes = resolve_node_link_visual_axes(
         int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         task_id=TASK_ID,
-        supported=SUPPORTED_NODE_COLOR_NAMES,
     )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         graph_directionality=str(graph_directionality),
@@ -399,12 +347,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 
 def _project_edge_label_bboxes(rendered_scene: Any, edges: Sequence[Tuple[str, str]]) -> Dict[str, Any]:
-    """Project multiple rendered edge-label boxes into one evidence payload."""
+    """Project multiple rendered edge-label boxes into one annotation payload."""
 
     bbox_set = []
     pixel_bbox_set = []
     for edge in edges:
-        projection = projected_edge_label_bbox_evidence(rendered_scene, edge)
+        projection = projected_edge_label_bbox_annotation(rendered_scene, edge)
         bboxes = projection.get("bbox_set", [])
         if not bboxes:
             raise ValueError("target edge label bbox was not rendered")
@@ -487,7 +435,7 @@ class GraphCountingEdgeTextLabelCountTask:
         image = None
         background_meta = {}
         post_noise_meta = {}
-        evidence_projection = None
+        annotation_projection = None
         for attempt in range(max(1, int(max_attempts))):
             try:
                 graph_sample = sample_edge_text_label_count_graph(
@@ -521,7 +469,7 @@ class GraphCountingEdgeTextLabelCountTask:
                     edge_text_labels_by_label=graph_sample.edge_attribute_labels_by_label,
                     edge_text_label_font_size_px=max(13, int(render_params.label_font_size_px) - 4),
                 )
-                evidence_projection = _project_edge_label_bboxes(rendered_scene, graph_sample.target_edges)
+                annotation_projection = _project_edge_label_bboxes(rendered_scene, graph_sample.target_edges)
                 image, post_noise_meta = apply_post_image_noise(
                     rendered_scene.image,
                     instance_seed=int(instance_seed),
@@ -534,7 +482,7 @@ class GraphCountingEdgeTextLabelCountTask:
                 continue
         else:
             raise RuntimeError("failed to generate graph edge-text-label count instance") from last_error
-        if graph_sample is None or rendered_scene is None or image is None or evidence_projection is None:
+        if graph_sample is None or rendered_scene is None or image is None or annotation_projection is None:
             raise RuntimeError("failed to generate graph edge-text-label count instance")
 
         prompt_defaults = required_group_defaults(
@@ -547,7 +495,7 @@ class GraphCountingEdgeTextLabelCountTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -563,13 +511,13 @@ class GraphCountingEdgeTextLabelCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=QUERY_ID,
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[object_description_key]),
                 "target_edge_label": str(query.target_edge_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(target_edge_label=str(query.target_edge_label)),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(target_edge_label=str(query.target_edge_label)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -578,11 +526,11 @@ class GraphCountingEdgeTextLabelCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
-        evidence_bboxes = [[int(round(float(value))) for value in bbox] for bbox in evidence_projection["bbox_set"]]
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_edges)))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
-        target_edge_set = {tuple(edge) for edge in evidence_edges}
+        annotation_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
+        annotation_bboxes = [[int(round(float(value))) for value in bbox] for bbox in annotation_projection["bbox_set"]]
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_edges)))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        target_edge_set = {tuple(edge) for edge in annotation_edges}
         edge_label_entries = graph_edge_label_entries(graph_sample.edge_attribute_labels_by_label)
         node_entities = [
             {
@@ -632,7 +580,7 @@ class GraphCountingEdgeTextLabelCountTask:
                     "counting_rule": "edges_whose_visible_text_label_matches_target_label",
                     "graph_directionality": str(query.graph_directionality),
                     "target_edge_label": str(query.target_edge_label),
-                    "matching_edges": [list(edge) for edge in evidence_edges],
+                    "matching_edges": [list(edge) for edge in annotation_edges],
                     "edge_label_support": list(query.edge_label_support),
                     "edge_label_source_kind": str(query.edge_label_source_kind),
                     "edge_label_bucket": str(query.edge_label_bucket),
@@ -744,10 +692,10 @@ class GraphCountingEdgeTextLabelCountTask:
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "target_count": int(query.target_count),
-                "answer": int(len(evidence_edges)),
+                "answer": int(len(annotation_edges)),
                 "target_edge_label": str(query.target_edge_label),
                 "target_edge_label_probabilities": dict(query.target_edge_label_probabilities),
-                "matching_edges": [list(edge) for edge in evidence_edges],
+                "matching_edges": [list(edge) for edge in annotation_edges],
                 "edge_label_support": list(query.edge_label_support),
                 "edge_label_source_kind": str(query.edge_label_source_kind),
                 "edge_label_bucket": str(query.edge_label_bucket),
@@ -775,20 +723,20 @@ class GraphCountingEdgeTextLabelCountTask:
             },
             "witness_symbolic": {
                 "type": "edge_set",
-                "edges": [list(edge) for edge in evidence_edges],
+                "edges": [list(edge) for edge in annotation_edges],
                 "target_edge_label": str(query.target_edge_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

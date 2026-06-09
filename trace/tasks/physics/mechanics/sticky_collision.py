@@ -54,12 +54,12 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "compact_table": SUPPORTED_QUERY_IDS,
     "gridded_table": SUPPORTED_QUERY_IDS,
 }
-EVIDENCE_ENTITY_KEY_BY_ID: Dict[str, str] = {
+ANNOTATION_ENTITY_KEY_BY_ID: Dict[str, str] = {
     "horizontal_puck": "A",
     "vertical_puck": "B",
     "stuck_pucks": "A+B",
 }
-EVIDENCE_ENTITY_IDS: Tuple[str, ...] = tuple(EVIDENCE_ENTITY_KEY_BY_ID.keys())
+ANNOTATION_ENTITY_IDS: Tuple[str, ...] = tuple(ANNOTATION_ENTITY_KEY_BY_ID.keys())
 
 
 @dataclass(frozen=True)
@@ -148,17 +148,17 @@ class _SceneSpec:
     option_angles_degrees: Dict[str, float]
     direction_label: str
     target_answer: int | str
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered sticky-collision scene plus prompt-facing evidence metadata."""
+    """Rendered sticky-collision scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_points: List[List[float]]
-    evidence_point_map: Dict[str, List[float]]
-    evidence_entity_ids: List[str]
+    annotation_points: List[List[float]]
+    annotation_point_map: Dict[str, List[float]]
+    annotation_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -619,7 +619,7 @@ def _sample_scene_spec(
         option_angles_degrees=dict(option_angles),
         direction_label=str(_direction_label(correct_angle)),
         target_answer=target_answer,
-        evidence_entity_ids=tuple(EVIDENCE_ENTITY_IDS),
+        annotation_entity_ids=tuple(ANNOTATION_ENTITY_IDS),
     )
 
 
@@ -1223,14 +1223,14 @@ def _render_scene(
         for entity in scene_entities
         if entity.get("point_px") is not None
     }
-    evidence_points = [
+    annotation_points = [
         list(entity_point_map[entity_id])
-        for entity_id in scene_spec.evidence_entity_ids
+        for entity_id in scene_spec.annotation_entity_ids
         if str(entity_id) in entity_point_map
     ]
-    evidence_point_map = {
-        EVIDENCE_ENTITY_KEY_BY_ID[str(entity_id)]: list(entity_point_map[str(entity_id)])
-        for entity_id in scene_spec.evidence_entity_ids
+    annotation_point_map = {
+        ANNOTATION_ENTITY_KEY_BY_ID[str(entity_id)]: list(entity_point_map[str(entity_id)])
+        for entity_id in scene_spec.annotation_entity_ids
         if str(entity_id) in entity_point_map
     }
     render_map = {
@@ -1253,17 +1253,17 @@ def _render_scene(
         "option_bboxes_px": {str(letter): list(bbox) for letter, bbox in option_bboxes.items()},
         "option_angles_degrees": dict(scene_spec.option_angles_degrees),
         "correct_option_letter": str(scene_spec.correct_option_letter),
-        "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
-        "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
+        "annotation_entity_ids": list(scene_spec.annotation_entity_ids),
+        "annotation_key_by_entity_id": dict(ANNOTATION_ENTITY_KEY_BY_ID),
         "entity_points_px": {str(key): list(value) for key, value in entity_point_map.items()},
-        "evidence_points_px": [list(point) for point in evidence_points],
-        "evidence_keyed_points_px": {str(key): list(value) for key, value in evidence_point_map.items()},
+        "annotation_points_px": [list(point) for point in annotation_points],
+        "annotation_keyed_points_px": {str(key): list(value) for key, value in annotation_point_map.items()},
     }
     return _RenderedScene(
         image=image,
-        evidence_points=[list(point) for point in evidence_points],
-        evidence_point_map={str(key): list(value) for key, value in evidence_point_map.items()},
-        evidence_entity_ids=list(scene_spec.evidence_entity_ids),
+        annotation_points=[list(point) for point in annotation_points],
+        annotation_point_map={str(key): list(value) for key, value in annotation_point_map.items()},
+        annotation_entity_ids=list(scene_spec.annotation_entity_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -1277,7 +1277,7 @@ def _resolve_collision_layout_placement(
     canvas_width: int,
     canvas_height: int,
 ) -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve a whole-diagram offset before rendering and evidence projection."""
+    """Resolve a whole-diagram offset before rendering and annotation projection."""
 
     content_left = min(float(render_defaults["table_left_px"]), float(render_defaults["option_cell_left_px"]))
     content_top = min(float(render_defaults["table_top_px"]), float(render_defaults["option_panel_top_px"]))
@@ -1358,7 +1358,7 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "direction_choice":
         return build_prompt_json_examples(
-            evidence_value={
+            annotation_value={
                 "A": [170, 304],
                 "B": [436, 152],
                 "A+B": [436, 304],
@@ -1366,7 +1366,7 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
             answer_type="option_letter",
         )
     return build_prompt_json_examples(
-        evidence_value={
+        annotation_value={
             "A": [170, 304],
             "B": [436, 152],
             "A+B": [436, 304],
@@ -1496,8 +1496,8 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "object_description_gridded_table",
                     "answer_hint_direction_choice",
                     "answer_hint_component",
-                    "evidence_hint_direction_choice",
-                    "evidence_hint_velocity_component",
+                    "annotation_hint_direction_choice",
+                    "annotation_hint_velocity_component",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1517,7 +1517,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1525,7 +1525,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "answer_hint": str(prompt_defaults[answer_hint_key]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                     "component_axis": str(component_axis_label),
                     "positive_direction": str(positive_direction),
                     "negative_direction": str(negative_direction),
@@ -1543,9 +1543,9 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             else:
                 answer_value = int(scene_spec.scenario.final_vy)
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(
+            annotation_gt = TypedValue(
                 type="keyed_point_map",
-                value={str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()},
+                value={str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()},
             )
             complexity = build_physics_sticky_collision_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1555,7 +1555,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 component_abs_sum=int(abs(scene_spec.scenario.final_vx) + abs(scene_spec.scenario.final_vy)),
                 total_mass=int(scene_spec.scenario.total_mass),
                 option_count=len(OPTION_LETTERS),
-                evidence_count=len(rendered_scene.evidence_point_map),
+                annotation_count=len(rendered_scene.annotation_point_map),
             )
             scenario_payload = {
                 "horizontal_mass": int(scene_spec.scenario.horizontal_mass),
@@ -1588,8 +1588,8 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                         "target_answer": answer_value,
                         "answer_type": str(answer_type),
                         "scenario": dict(scenario_payload),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                        "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                        "annotation_key_by_entity_id": dict(ANNOTATION_ENTITY_KEY_BY_ID),
                     },
                 },
                 "query_spec": {
@@ -1659,21 +1659,21 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "final_vy": int(scene_spec.scenario.final_vy),
                     "correct_option_letter": str(scene_spec.correct_option_letter),
                     "direction_label": str(scene_spec.direction_label),
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                    "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                    "annotation_key_by_entity_id": dict(ANNOTATION_ENTITY_KEY_BY_ID),
                 },
                 "witness_symbolic": {
                     "type": "object_key_map",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
-                    "keys": dict(EVIDENCE_ENTITY_KEY_BY_ID),
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
+                    "keys": dict(ANNOTATION_ENTITY_KEY_BY_ID),
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "keyed_point_map",
                     "keyed_point_map": {
-                        str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()
+                        str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()
                     },
                     "pixel_keyed_point_map": {
-                        str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()
+                        str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()
                     },
                 },
                 "background": background_meta,
@@ -1683,7 +1683,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

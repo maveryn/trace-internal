@@ -239,7 +239,7 @@ class IllustrationsCountingBuildingWindowCountTask:
         _serialized_objects, object_bboxes, part_bboxes = serialize_environment_objects(scene)
         window_bbox_map = {item_id: bbox for item_id, bbox in window_items}
         counted_window_ids = tuple(item_id for item_id, _bbox in window_items)
-        evidence_value = sort_bboxes_by_ids(window_bbox_map, counted_window_ids)
+        annotation_value = sort_bboxes_by_ids(window_bbox_map, counted_window_ids)
         answer = int(len(counted_window_ids))
         window_phrase = WINDOW_MODE_NAMES[str(query.window_mode)]
         prompt_defaults = required_group_defaults(
@@ -251,7 +251,7 @@ class IllustrationsCountingBuildingWindowCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_building_window",
-                "evidence_hint_building_window",
+                "annotation_hint_building_window",
                 "json_example_building_window",
                 "json_example_answer_only_building_window",
             ],
@@ -265,7 +265,7 @@ class IllustrationsCountingBuildingWindowCountTask:
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_building_window"]).format(window_phrase=str(window_phrase)),
-            "evidence_hint": str(prompt_defaults["evidence_hint_building_window"]).format(window_phrase=str(window_phrase)),
+            "annotation_hint": str(prompt_defaults["annotation_hint_building_window"]).format(window_phrase=str(window_phrase)),
             "json_example": str(prompt_defaults["json_example_building_window"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_building_window"]),
         }
@@ -278,8 +278,8 @@ class IllustrationsCountingBuildingWindowCountTask:
             query_key=QUERY_ID,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         trace_payload = {
@@ -341,13 +341,13 @@ class IllustrationsCountingBuildingWindowCountTask:
                 "counted_window_ids": list(counted_window_ids),
             },
             "witness_symbolic": {"counted_window_ids": list(counted_window_ids), "window_mode": str(query.window_mode), "answer": int(answer)},
-            "projected_evidence": {"bbox_set": list(evidence_value)},
+            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

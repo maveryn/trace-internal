@@ -22,6 +22,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.backgammon_common import (
+    BACKGAMMON_POINT_STATE_QUERY_IDS,
     BACKGAMMON_QUERY_IDS,
     BACKGAMMON_STYLE_VARIANTS,
     PLAYER_BLACK,
@@ -33,9 +34,11 @@ from ..shared.backgammon_common import (
     destination_for_player,
     empty_points,
     opponent_for_player,
+    point_matches_state_query,
     point_entity_id,
     stack_at,
     target_destinations_for_query,
+    target_points_for_state_query,
     validate_backgammon_sample,
 )
 from ..shared.backgammon_scene import BackgammonRenderParams, render_backgammon_scene
@@ -59,6 +62,7 @@ class _TaskDefaults:
     legal_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     hit_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     blocked_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    point_state_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     canvas_width: int = 1000
     canvas_height: int = 720
     board_width_px: int = 900
@@ -142,7 +146,7 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -180,6 +184,8 @@ def _support_key_for_query(query_id: str) -> Tuple[str, Tuple[int, ...]]:
         return "hit_count_support", tuple(_DEFAULTS.hit_count_support)
     if query == "blocked_destination_count":
         return "blocked_count_support", tuple(_DEFAULTS.blocked_count_support)
+    if query in BACKGAMMON_POINT_STATE_QUERY_IDS:
+        return "point_state_count_support", tuple(_DEFAULTS.point_state_count_support)
     raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
@@ -417,8 +423,8 @@ def _target_state_for_query(rng: Any, *, query_id: str, is_target: bool, active_
     raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
-def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
-    """Construct one exact-answer Backgammon position."""
+def _sample_destination_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
+    """Construct one exact-answer Backgammon destination-count position."""
 
     query = str(axes.query_id)
     active_player = str(axes.active_player)
@@ -476,10 +482,101 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
             outcome=outcome,
             style_variant=str(axes.style_variant),
             target_answer=int(target_answer),
+            target_points=tuple(int(point) for point in target_destinations),
         )
         validate_backgammon_sample(sample)
         return sample
     raise ValueError(f"could not construct Backgammon sample for {query} answer {target_answer}")
+
+
+def _target_state_for_point_state_query(rng: Any, *, query_id: str) -> BackgammonPoint:
+    """Return a stack state that satisfies one point-state query."""
+
+    query = str(query_id)
+    if query == "black_single_checker_point_count":
+        return BackgammonPoint(owner=PLAYER_BLACK, count=1)
+    if query == "white_single_checker_point_count":
+        return BackgammonPoint(owner=PLAYER_WHITE, count=1)
+    if query == "black_two_or_more_checker_point_count":
+        return BackgammonPoint(owner=PLAYER_BLACK, count=int(rng.randint(2, 4)))
+    if query == "white_two_or_more_checker_point_count":
+        return BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(2, 4)))
+    raise ValueError(f"unsupported Backgammon point-state query_id: {query}")
+
+
+def _non_target_state_for_point_state_query(rng: Any, *, query_id: str) -> BackgammonPoint:
+    """Return a random visible stack state that does not satisfy one point-state query."""
+
+    candidates = [
+        BackgammonPoint(owner=None, count=0),
+        BackgammonPoint(owner=PLAYER_BLACK, count=1),
+        BackgammonPoint(owner=PLAYER_BLACK, count=2),
+        BackgammonPoint(owner=PLAYER_BLACK, count=3),
+        BackgammonPoint(owner=PLAYER_BLACK, count=4),
+        BackgammonPoint(owner=PLAYER_WHITE, count=1),
+        BackgammonPoint(owner=PLAYER_WHITE, count=2),
+        BackgammonPoint(owner=PLAYER_WHITE, count=3),
+        BackgammonPoint(owner=PLAYER_WHITE, count=4),
+    ]
+    non_matching = [
+        candidate
+        for candidate in candidates
+        if not point_matches_state_query(candidate, query_id=str(query_id))
+    ]
+    selected = rng.choice(non_matching)
+    return BackgammonPoint(owner=selected.owner, count=int(selected.count))
+
+
+def _sample_point_state_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
+    """Construct one exact-answer Backgammon point-state count position."""
+
+    query = str(axes.query_id)
+    active_player = str(axes.active_player)
+    target_answer = int(axes.target_answer)
+    for _inner_attempt in range(500):
+        dice = _choose_dice(rng)
+        target_points = tuple(sorted(rng.sample(list(POINT_IDS), int(target_answer))))
+        target_set = {int(point) for point in target_points}
+        points = empty_points()
+        for point in target_points:
+            points[int(point)] = _target_state_for_point_state_query(rng, query_id=query)
+
+        min_occupied = max(int(target_answer), 8)
+        max_occupied = min(20, max(min_occupied, int(target_answer) + 12))
+        occupied_count = int(rng.randint(int(min_occupied), int(max_occupied)))
+        distractor_count = max(0, int(occupied_count) - int(target_answer))
+        available_points = [int(point) for point in POINT_IDS if int(point) not in target_set]
+        rng.shuffle(available_points)
+        for point in available_points[:distractor_count]:
+            points[int(point)] = _non_target_state_for_point_state_query(rng, query_id=query)
+
+        expected_points = target_points_for_state_query(points, query_id=query)
+        if tuple(expected_points) != tuple(target_points):
+            continue
+        outcome = compute_single_die_destinations(points, dice=dice, active_player=active_player)
+        sample = BackgammonSample(
+            points=dict(points),
+            dice=(int(dice[0]), int(dice[1])),
+            active_player=active_player,
+            query_id=query,
+            answer=int(target_answer),
+            target_destinations=(),
+            outcome=outcome,
+            style_variant=str(axes.style_variant),
+            target_answer=int(target_answer),
+            target_points=tuple(int(point) for point in target_points),
+        )
+        validate_backgammon_sample(sample)
+        return sample
+    raise ValueError(f"could not construct Backgammon point-state sample for {query} answer {target_answer}")
+
+
+def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
+    """Construct one exact-answer Backgammon position."""
+
+    if str(axes.query_id) in BACKGAMMON_POINT_STATE_QUERY_IDS:
+        return _sample_point_state_scene(rng, axes=axes)
+    return _sample_destination_scene(rng, axes=axes)
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
@@ -487,15 +584,18 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "hit_move_count":
         answer_value = 2
-        evidence_value = [[410, 104, 475, 316], [608, 104, 673, 316]]
+        annotation_value = [[410, 104, 475, 316], [608, 104, 673, 316]]
     elif str(query_id) == "blocked_destination_count":
         answer_value = 3
-        evidence_value = [[276, 400, 341, 612], [342, 400, 407, 612], [608, 400, 673, 612]]
+        annotation_value = [[276, 400, 341, 612], [342, 400, 407, 612], [608, 400, 673, 612]]
+    elif str(query_id) in BACKGAMMON_POINT_STATE_QUERY_IDS:
+        answer_value = 3
+        annotation_value = [[144, 104, 209, 316], [342, 104, 407, 316], [608, 400, 673, 612]]
     else:
         answer_value = 3
-        evidence_value = [[144, 104, 209, 316], [210, 104, 275, 316], [608, 104, 673, 316]]
+        annotation_value = [[144, 104, 209, 316], [210, 104, 275, 316], [608, 104, 673, 316]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -563,10 +663,11 @@ class GamesBackgammonBoardTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_entity_ids = [point_entity_id(point) for point in sampled_scene.target_destinations]
-        evidence_bboxes = [
+        target_points = tuple(int(point) for point in (sampled_scene.target_points or sampled_scene.target_destinations))
+        annotation_entity_ids = [point_entity_id(point) for point in target_points]
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in evidence_entity_ids
+            for entity_id in annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -586,11 +687,19 @@ class GamesBackgammonBoardTask:
                 "object_description_standard_board",
                 "backgammon_rule_text",
                 "answer_hint_legal_move_count",
-                "evidence_hint_legal_move_count",
+                "annotation_hint_legal_move_count",
                 "answer_hint_hit_move_count",
-                "evidence_hint_hit_move_count",
+                "annotation_hint_hit_move_count",
                 "answer_hint_blocked_destination_count",
-                "evidence_hint_blocked_destination_count",
+                "annotation_hint_blocked_destination_count",
+                "answer_hint_black_single_checker_point_count",
+                "annotation_hint_black_single_checker_point_count",
+                "answer_hint_white_single_checker_point_count",
+                "annotation_hint_white_single_checker_point_count",
+                "answer_hint_black_two_or_more_checker_point_count",
+                "annotation_hint_black_two_or_more_checker_point_count",
+                "answer_hint_white_two_or_more_checker_point_count",
+                "annotation_hint_white_two_or_more_checker_point_count",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -602,14 +711,14 @@ class GamesBackgammonBoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "backgammon_rule_text": str(prompt_defaults["backgammon_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -618,7 +727,7 @@ class GamesBackgammonBoardTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         active_source_count = sum(
             1
             for point in POINT_IDS
@@ -637,7 +746,7 @@ class GamesBackgammonBoardTask:
             occupied_point_count=int(occupied_count),
             black_source_count=int(active_source_count),
             target_answer=int(sampled_scene.answer),
-            evidence_count=len(evidence_entity_ids),
+            annotation_count=len(annotation_entity_ids),
         )
         point_trace = [
             {
@@ -659,7 +768,8 @@ class GamesBackgammonBoardTask:
                     "active_player": str(sampled_scene.active_player),
                     "dice": [int(value) for value in sampled_scene.dice],
                     "target_destinations": [int(point) for point in sampled_scene.target_destinations],
-                    "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                    "target_points": [int(point) for point in target_points],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -708,15 +818,18 @@ class GamesBackgammonBoardTask:
                     "blocked_destinations": [int(point) for point in sampled_scene.outcome.blocked_destinations],
                 },
                 "target_destinations": [int(point) for point in sampled_scene.target_destinations],
-                "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
-                "construction_mode": "exact_destination_count",
+                "target_points": [int(point) for point in target_points],
+                "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
+                "construction_mode": "exact_point_state_count"
+                if str(axes.query_id) in BACKGAMMON_POINT_STATE_QUERY_IDS
+                else "exact_destination_count",
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -725,7 +838,7 @@ class GamesBackgammonBoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -737,18 +850,40 @@ class GamesBackgammonBoardTask:
 
 
 @register_task
-class GamesBackgammonDestinationCountTask(QuerySubsetTaskMixin, GamesBackgammonBoardTask):
-    """Count Backgammon destination points matching one sampled query condition."""
+class GamesBackgammonLegalMoveCountTask(QuerySubsetTaskMixin, GamesBackgammonBoardTask):
+    """Count Backgammon legal or hit destination points."""
 
-    task_id = "task_games__backgammon__destination_count"
+    task_id = "task_games__backgammon__legal_move_count"
     supported_query_ids = (
         "legal_move_count",
         "hit_move_count",
-        "blocked_destination_count",
+    )
+
+
+@register_task
+class GamesBackgammonBlockedDestinationCountTask(QuerySubsetTaskMixin, GamesBackgammonBoardTask):
+    """Count Backgammon blocked destination points."""
+
+    task_id = "task_games__backgammon__blocked_destination_count"
+    supported_query_ids = ("blocked_destination_count",)
+
+
+@register_task
+class GamesBackgammonPointStateCountTask(QuerySubsetTaskMixin, GamesBackgammonBoardTask):
+    """Count numbered Backgammon points by checker color and stack state."""
+
+    task_id = "task_games__backgammon__point_state_count"
+    supported_query_ids = (
+        "black_single_checker_point_count",
+        "white_single_checker_point_count",
+        "black_two_or_more_checker_point_count",
+        "white_two_or_more_checker_point_count",
     )
 
 
 __all__ = [
+    "GamesBackgammonBlockedDestinationCountTask",
     "GamesBackgammonBoardTask",
-    "GamesBackgammonDestinationCountTask",
+    "GamesBackgammonLegalMoveCountTask",
+    "GamesBackgammonPointStateCountTask",
 ]

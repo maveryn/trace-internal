@@ -1,6 +1,6 @@
 ---
 name: domain-charts
-description: Use when designing, implementing, or reviewing TRACE chart-domain tasks, especially for scene_variant usage, chart-family fit, evidence contracts, and chart-specific readability/balancing rules.
+description: Use when designing, implementing, or reviewing TRACE chart-domain tasks, especially for scene_variant usage, chart-family fit, annotation contracts, and chart-specific readability/balancing rules.
 ---
 
 # Charts Domain
@@ -36,7 +36,7 @@ Use this whenever the task lives under `domain=charts`.
 - Distribution-family chart helpers belong under `trace/tasks/charts/shared/distribution_chart_common.py`.
 
 ## Practical review checklist
-- Use `docs/domains/CHART_TASK_SETUP.md` for active chart contracts, scene/query fit, evidence expectations, and table-specific rules.
+- Use `docs/domains/CHART_TASK_SETUP.md` for active chart contracts, scene/query fit, annotation expectations, and table-specific rules.
 - Use `docs/workflows/INFORMATION_SCENE_RENDERING_UPGRADE.md` for chart visual audits, style/background/palette/context rules, and scene-review handoff.
 - Use `docs/workflows/SHARED_FONT_ASSETS.md` and `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md` for text/font/context implementation details.
 

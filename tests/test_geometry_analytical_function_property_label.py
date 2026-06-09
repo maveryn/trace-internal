@@ -70,14 +70,16 @@ def test_geometry_analytical_function_property_label_contract(query_id: str) -> 
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["template_id"] == "geometry_analytical_function_property_v0"
     assert out.image.size == (1024, 720)
 
     relations = out.trace_payload["execution_trace"]["relations_by_label"]
-    assert set(relations.keys()) == {"A", "B", "C", "D", "E", "F"}
+    assert 4 <= len(relations) <= 6
+    assert "C" in relations
+    assert set(relations).issubset({"A", "B", "C", "D", "E", "F"})
     assert _matching_labels(query_id, relations, "C") == ["C"]
 
 

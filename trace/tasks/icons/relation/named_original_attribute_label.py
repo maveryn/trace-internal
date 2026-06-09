@@ -21,7 +21,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.text_rendering import draw_text_centered, load_font
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import keyed_bbox_map_evidence
+from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     BBox,
@@ -499,11 +499,12 @@ def _descriptor_text(
     target_color: _NamedColorEntry | None,
     target_fill_style_label: str,
 ) -> str:
+    quoted_shape = f'"{target_shape_name}"'
     if str(query_id) == "original_color_shape_label" and target_color is not None:
-        return f"{target_color.label} {target_shape_name}"
+        return f"{target_color.label} {quoted_shape}"
     if str(query_id) == "original_fill_shape_label":
-        return f"{target_fill_style_label} {target_shape_name}"
-    return str(target_shape_name)
+        return f"{target_fill_style_label} {quoted_shape}"
+    return str(quoted_shape)
 
 
 def _sample_pairs(
@@ -1082,7 +1083,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 f"question_text_{scene_payload.query_id}",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -1098,13 +1099,13 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -1117,7 +1118,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
         right_by_pair = {str(icon.pair_id): icon for icon in scene_payload.right_icons}
         answer_original = original_by_pair[str(scene_payload.answer_pair_id)]
         answer_right = right_by_pair[str(scene_payload.answer_pair_id)]
-        evidence_artifacts = keyed_bbox_map_evidence(
+        annotation_artifacts = keyed_bbox_map_annotation(
             {
                 "original_icon": answer_original.bbox_xyxy,
                 "right_icon": answer_right.bbox_xyxy,
@@ -1232,13 +1233,13 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 "target_description": str(scene_payload.target_description),
                 "answer_label": str(scene_payload.answer_label),
                 "answer_pair_id": str(scene_payload.answer_pair_id),
-                "evidence_roles": {
+                "annotation_roles": {
                     "original_icon": str(answer_original.instance_id),
                     "right_icon": str(answer_right.instance_id),
                 },
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
                 "items": [
                     {"role": "original_icon", "instance_id": str(answer_original.instance_id), "bbox_xyxy": list(answer_original.bbox_xyxy)},
                     {"role": "right_icon", "instance_id": str(answer_right.instance_id), "bbox_xyxy": list(answer_right.bbox_xyxy)},
@@ -1249,9 +1250,9 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=TypedValue(type="option_letter", value=str(scene_payload.answer_label)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=dict(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=dict(annotation_artifacts["annotation_value"]),
             ),
             image=image,
             image_id="img0",

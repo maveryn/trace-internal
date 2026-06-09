@@ -20,7 +20,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.text_rendering import temporary_default_font_family
-from ..shared.common import decouple_axis_sampling, projected_puzzle_keyed_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import decouple_axis_sampling, projected_puzzle_keyed_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin, forced_puzzle_query_params, rewrite_fixed_puzzle_query_output
 from ..shared.logic_common import (
@@ -112,7 +112,7 @@ def _font_trace_record(font_family: str) -> Dict[str, Any]:
 def _round_keyed_bbox_map(projected: Mapping[str, Any]) -> Dict[str, list[float]]:
     keyed = projected.get("keyed_bbox_map", {})
     if not isinstance(keyed, Mapping):
-        raise ValueError("logic-grid keyed evidence projection missing keyed_bbox_map")
+        raise ValueError("logic-grid keyed annotation projection missing keyed_bbox_map")
     return {
         str(role): [round(float(value), 3) for value in bbox]
         for role, bbox in keyed.items()
@@ -334,9 +334,9 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "object_description_logic_strip",
                 "object_description_logic_card",
                 "object_description_logic_outline",
-                "evidence_hint_axis_uniqueness",
-                "evidence_hint_row_and_column_uniqueness",
-                "evidence_hint_king_non_touch",
+                "annotation_hint_axis_uniqueness",
+                "annotation_hint_row_and_column_uniqueness",
+                "annotation_hint_king_non_touch",
                 "json_example_axis_uniqueness",
                 "json_example_row_and_column_uniqueness",
                 "json_example_king_non_touch",
@@ -347,7 +347,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        annotation_hint = str(prompt_defaults[f"annotation_hint_{str(query_id)}"])
         json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
@@ -358,13 +358,13 @@ class _PuzzlesLogicGridCompletionBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "uniqueness_axis": str(uniqueness_axis or ""),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
+                "annotation_hint": str(annotation_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -374,31 +374,31 @@ class _PuzzlesLogicGridCompletionBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_panel_id = str(dataset["correct_option_panel_id"])
-        evidence_bbox_map = {
+        annotation_bbox_map = {
             "source_grid": list(rendered_scene.board_bbox_px),
             **{
                 str(option_id): list(bbox)
                 for option_id, bbox in rendered_scene.option_panel_bbox_map.items()
             },
         }
-        evidence_role_item_ids = {
+        annotation_role_item_ids = {
             "source_grid": "source_grid",
             "selected_option": str(correct_option_panel_id),
         }
-        evidence_projection = projected_puzzle_keyed_bbox_evidence(
-            evidence_bbox_map,
-            evidence_role_item_ids,
+        annotation_projection = projected_puzzle_keyed_bbox_annotation(
+            annotation_bbox_map,
+            annotation_role_item_ids,
         )
-        evidence_bboxes = _round_keyed_bbox_map(evidence_projection)
-        evidence_projection = {
+        annotation_bboxes = _round_keyed_bbox_map(annotation_projection)
+        annotation_projection = {
             "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(evidence_bboxes),
-            "pixel_keyed_bbox_map": dict(evidence_bboxes),
-            "value": dict(evidence_bboxes),
+            "keyed_bbox_map": dict(annotation_bboxes),
+            "pixel_keyed_bbox_map": dict(annotation_bboxes),
+            "value": dict(annotation_bboxes),
         }
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
 
         trace_payload = {
             "scene_ir": {
@@ -467,7 +467,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
                         for key, value in rendered_scene.option_panel_bbox_map.items()
                     },
                 },
-                "evidence_source": "keyed_source_grid_and_option_bboxes_px",
+                "annotation_source": "keyed_source_grid_and_option_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 "query_id": str(query_id),
@@ -495,14 +495,14 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "uniqueness_axis_probabilities": dict(uniqueness_axis_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_option_panel_ids": [str(correct_option_panel_id)],
-                "evidence_role_item_ids": dict(evidence_role_item_ids),
+                "annotation_role_item_ids": dict(annotation_role_item_ids),
                 "question_format": "logic_grid_mcq",
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "value": dict(evidence_bboxes),
+                "value": dict(annotation_bboxes),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
         }
         if str(internal_query_id) == "king_non_touch":
             trace_payload["query_spec"]["params"]["query_neighbor_count"] = int(len(dataset["neighbor_coords"]))
@@ -540,7 +540,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -587,7 +587,7 @@ class PuzzlesLogicGridUniquenessCompletionLabelTask(_PuzzlesLogicGridCompletionB
         return rewritten.__class__(
             prompt=rewritten.prompt,
             answer_gt=rewritten.answer_gt,
-            evidence_gt=rewritten.evidence_gt,
+            annotation_gt=rewritten.annotation_gt,
             image=rewritten.image,
             image_id=rewritten.image_id,
             trace_payload=trace_payload,

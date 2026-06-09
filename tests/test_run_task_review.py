@@ -33,16 +33,16 @@ class _DummyVariantTask:
         return TaskOutput(
             prompt=f"prompt for {query_id}",
             answer_gt=TypedValue(type="integer", value=1),
-            evidence_gt=TypedValue(type="bbox_set", value=[[8, 8, 24, 24]]),
+            annotation_gt=TypedValue(type="bbox_set", value=[[8, 8, 24, 24]]),
             image=image,
             image_id=f"img_{instance_seed}",
-            trace_payload={"projected_evidence": {}},
+            trace_payload={"projected_annotation": {}},
             complexity=TaskComplexity(complexity_score=1.0, complexity_components={}),
             task_versions={},
             query_id=query_id,
             prompt_variants={
                 "answer_only": '{"answer":1}',
-                "answer_and_evidence": '{"evidence":[[8,8,24,24]],"answer":1}',
+                "answer_and_annotation": '{"annotation":[[8,8,24,24]],"answer":1}',
             },
         )
 
@@ -128,7 +128,7 @@ def test_task_review_distribution_collector_records_axes_and_replay_params() -> 
     output = TaskOutput(
         prompt="prompt",
         answer_gt=TypedValue(type="integer", value=7),
-        evidence_gt=TypedValue(type="point_set", value=[[10, 10]]),
+        annotation_gt=TypedValue(type="point_set", value=[[10, 10]]),
         image=Image.new("RGB", (32, 32), color=(255, 255, 255)),
         image_id="img",
         trace_payload={
@@ -162,3 +162,24 @@ def test_task_review_distribution_collector_records_axes_and_replay_params() -> 
     }
     assert row["sampling_axes"]["query_id"]["expected_probabilities"] == {"alpha": 0.5, "beta": 0.5}
     assert row["generation_params"] == {"scene_variant": "bar", "query_id": "internal_branch"}
+
+
+def test_task_review_distribution_allows_declared_small_categorical_support() -> None:
+    rows = []
+    for label, count in (("one_to_one", 33), ("one_to_many", 34), ("optional_many", 33)):
+        rows.extend(
+            {
+                "answer_type": "string",
+                "answer_value": label,
+                "answer_support": ["one_to_many", "optional_many", "one_to_one"],
+            }
+            for _ in range(count)
+        )
+
+    report = task_review_distribution.evaluate_rows(rows)
+
+    assert report["checks"]["min_unique_answers"]["threshold"] == 3
+    assert report["checks"]["min_unique_answers"]["pass"] is True
+    assert report["checks"]["max_answer_frequency"]["threshold"] > (1.0 / 3.0)
+    assert report["checks"]["max_answer_frequency"]["pass"] is True
+    assert report["pass"] is True

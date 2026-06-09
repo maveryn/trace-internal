@@ -734,12 +734,12 @@ def _draw_professional_scene(image: Image.Image, *, query: _ResolvedQuery, rende
     )
 
 
-def _evidence_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str]:
+def _annotation_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str]:
     target = next(control for control in query.controls if str(control.control_id) == str(query.target_control_id))
     return (f"guide_{int(target.action_index)}", f"context_{int(target.context_index)}", f"header_{int(target.action_index)}")
 
 
-def _evidence_roles(query: _ResolvedQuery) -> Tuple[str, str, str, str]:
+def _annotation_roles(query: _ResolvedQuery) -> Tuple[str, str, str, str]:
     spec = query.variant_spec
     return (
         str(spec.guide_kind),
@@ -750,9 +750,9 @@ def _evidence_roles(query: _ResolvedQuery) -> Tuple[str, str, str, str]:
 
 
 def _prompt_json_examples(query: _ResolvedQuery) -> Tuple[str, str]:
-    guide_role, context_role, header_role, target_role = _evidence_roles(query)
-    answer_and_evidence = {
-        "evidence": {
+    guide_role, context_role, header_role, target_role = _annotation_roles(query)
+    answer_and_annotation = {
+        "annotation": {
             guide_role: [520, 130, 690, 196],
             context_role: [72, 260, 300, 344],
             header_role: [520, 212, 690, 252],
@@ -762,7 +762,7 @@ def _prompt_json_examples(query: _ResolvedQuery) -> Tuple[str, str]:
     }
     answer_only = {"answer": "G"}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -826,29 +826,29 @@ class ProfessionalGuiRelationTaskBase:
         )
 
         target_record = next(record for record in rendered.control_records if str(record["control_id"]) == str(query.target_control_id))
-        evidence_support_ids = _evidence_support_ids(query)
-        guide_role, context_role, header_role, target_role = _evidence_roles(query)
+        annotation_support_ids = _annotation_support_ids(query)
+        guide_role, context_role, header_role, target_role = _annotation_roles(query)
         support_records = [dict(record) for record in rendered.support_records]
-        evidence_support_records = [
+        annotation_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
-            for support_id in evidence_support_ids
+            for support_id in annotation_support_ids
         ]
-        evidence_bbox_map: Dict[str, List[float]] = {
-            str(guide_role): list(evidence_support_records[0]["bbox_px"]),
-            str(context_role): list(evidence_support_records[1]["bbox_px"]),
-            str(header_role): list(evidence_support_records[2]["bbox_px"]),
+        annotation_bbox_map: Dict[str, List[float]] = {
+            str(guide_role): list(annotation_support_records[0]["bbox_px"]),
+            str(context_role): list(annotation_support_records[1]["bbox_px"]),
+            str(header_role): list(annotation_support_records[2]["bbox_px"]),
             str(target_role): list(target_record["bbox_px"]),
         }
-        evidence_role_support_ids: Dict[str, str] = {
-            str(guide_role): str(evidence_support_ids[0]),
-            str(context_role): str(evidence_support_ids[1]),
-            str(header_role): str(evidence_support_ids[2]),
+        annotation_role_support_ids: Dict[str, str] = {
+            str(guide_role): str(annotation_support_ids[0]),
+            str(context_role): str(annotation_support_ids[1]),
+            str(header_role): str(annotation_support_ids[2]),
             str(target_role): str(query.target_control_id),
         }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
 
-        evidence_hint_key = f"evidence_hint_{str(query.query_id)}"
+        annotation_hint_key = f"annotation_hint_{str(query.query_id)}"
         prompt_defaults_required = required_group_defaults(
             prompt_defaults,
             (
@@ -858,7 +858,7 @@ class ProfessionalGuiRelationTaskBase:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                evidence_hint_key,
+                annotation_hint_key,
                 "answer_hint",
             ),
             context=f"prompt defaults for {task_id}",
@@ -871,7 +871,7 @@ class ProfessionalGuiRelationTaskBase:
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults_required["object_description"]),
                 "instruction_text": str(query.instruction_text),
@@ -881,7 +881,7 @@ class ProfessionalGuiRelationTaskBase:
                 "code_label": str(query.code_label),
                 "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults_required[evidence_hint_key]),
+                "annotation_hint": str(prompt_defaults_required[annotation_hint_key]),
                 "answer_hint": str(prompt_defaults_required["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -922,8 +922,8 @@ class ProfessionalGuiRelationTaskBase:
                     "code_label": str(query.code_label),
                     "instruction_text": str(query.instruction_text),
                     "context_count": int(query.context_count),
-                    "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -951,7 +951,7 @@ class ProfessionalGuiRelationTaskBase:
                     "context_count": int(query.context_count),
                     "context_count_range": [int(value) for value in query.context_count_range],
                     "action_count": int(len({int(control.action_index) for control in query.controls})),
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -984,8 +984,8 @@ class ProfessionalGuiRelationTaskBase:
                 "candidate_label_badge_bboxes_by_id": dict(rendered.badge_bboxes_by_id),
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -999,9 +999,9 @@ class ProfessionalGuiRelationTaskBase:
                 "code_label": str(query.code_label),
                 "instruction_text": str(query.instruction_text),
                 "guide_order": [int(value) for value in query.guide_order],
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
-                "evidence_support_records": [dict(record) for record in evidence_support_records],
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
+                "annotation_support_records": [dict(record) for record in annotation_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
                 "support_records": list(support_records),
@@ -1016,22 +1016,22 @@ class ProfessionalGuiRelationTaskBase:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": dict(evidence_bbox_map),
+                "value": dict(annotation_bbox_map),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
             },
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

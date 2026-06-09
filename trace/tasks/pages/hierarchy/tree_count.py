@@ -18,7 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.diagram.common import projected_diagram_bbox_evidence, projected_diagram_bbox_sequence_evidence
+from ..shared.diagram.common import projected_diagram_bbox_annotation, projected_diagram_bbox_sequence_annotation
 from ..shared.diagram.complexity import (
     build_diagrams_complexity,
     clamp_unit_interval,
@@ -40,9 +40,11 @@ from ..shared.public_query_task import rewrite_pages_query_output
 
 
 TASK_ID = "pages_hierarchy_tree_count_base"
-SUBTREE_NODE_COUNT_TASK_ID = "task_pages__hierarchy__subtree_node_count"
+SUBTREE_DESCENDANT_COUNT_TASK_ID = "task_pages__hierarchy__subtree_descendant_count"
+SUBTREE_LEAF_COUNT_TASK_ID = "task_pages__hierarchy__subtree_leaf_count"
 PATH_LENGTH_COUNT_TASK_ID = "task_pages__hierarchy__path_length_count"
-SUBTREE_NODE_QUERY_IDS: Tuple[str, ...] = ("subtree_descendant_count", "subtree_leaf_count")
+SUBTREE_DESCENDANT_QUERY_IDS: Tuple[str, ...] = ("subtree_descendant_count",)
+SUBTREE_LEAF_QUERY_IDS: Tuple[str, ...] = ("subtree_leaf_count",)
 PATH_LENGTH_QUERY_IDS: Tuple[str, ...] = ("path_length_between_two_nodes",)
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS
@@ -87,11 +89,11 @@ def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
             4,
         ),
     }
-    evidence_bbox, answer_value = examples[str(query_id)]
-    answer_and_evidence = {"evidence": evidence_bbox, "answer": int(answer_value)}
+    annotation_bbox, answer_value = examples[str(query_id)]
+    answer_and_annotation = {"annotation": annotation_bbox, "answer": int(answer_value)}
     answer_only = {"answer": int(answer_value)}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -184,9 +186,9 @@ class _PagesHierarchyTreeCountBase:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "evidence_hint_subtree_descendant_count",
-                "evidence_hint_subtree_leaf_count",
-                "evidence_hint_path_length_between_two_nodes",
+                "annotation_hint_subtree_descendant_count",
+                "annotation_hint_subtree_leaf_count",
+                "annotation_hint_path_length_between_two_nodes",
                 "object_description_rooted_tree",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -199,13 +201,13 @@ class _PagesHierarchyTreeCountBase:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_rooted_tree"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -214,34 +216,34 @@ class _PagesHierarchyTreeCountBase:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_node_bbox_ids = [str(bbox_id) for bbox_id in dataset["evidence_node_bbox_ids"]]
-        evidence_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
-        if str(evidence_type) == "bbox_sequence":
-            evidence_projection = projected_diagram_bbox_sequence_evidence(rendered_scene.node_bbox_map, evidence_node_bbox_ids)
-            evidence_bboxes = [
+        annotation_node_bbox_ids = [str(bbox_id) for bbox_id in dataset["annotation_node_bbox_ids"]]
+        annotation_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
+        if str(annotation_type) == "bbox_sequence":
+            annotation_projection = projected_diagram_bbox_sequence_annotation(rendered_scene.node_bbox_map, annotation_node_bbox_ids)
+            annotation_bboxes = [
                 [round(float(value), 3) for value in bbox]
-                for bbox in evidence_projection["bbox_sequence"]
+                for bbox in annotation_projection["bbox_sequence"]
             ]
         else:
-            evidence_projection = projected_diagram_bbox_evidence(rendered_scene.node_bbox_map, evidence_node_bbox_ids)
-            evidence_bboxes = [
+            annotation_projection = projected_diagram_bbox_annotation(rendered_scene.node_bbox_map, annotation_node_bbox_ids)
+            annotation_bboxes = [
                 [round(float(value), 3) for value in bbox]
-                for bbox in evidence_projection["bbox_set"]
+                for bbox in annotation_projection["bbox_set"]
             ]
         answer_value = int(dataset["answer_count"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type=str(evidence_type), value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type=str(annotation_type), value=list(annotation_bboxes))
 
         node_scan = normalize_int_with_bounds(int(dataset["tree_node_count"]), [16, 30])
         depth_scan = normalize_int_with_bounds(int(dataset["tree_depth"]), [4, 8])
         answer_scan = normalize_int_with_bounds(int(answer_value), [2, 18])
-        evidence_scan = normalize_int_with_bounds(len(evidence_node_bbox_ids), [2, 19])
+        annotation_scan = normalize_int_with_bounds(len(annotation_node_bbox_ids), [2, 19])
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + (0.10 * float(node_scan))
             + (0.16 * float(depth_scan))
             + (0.14 * float(answer_scan))
-            + (0.10 * float(evidence_scan))
+            + (0.10 * float(annotation_scan))
         )
         complexity = build_diagrams_complexity(
             weights=_COMPLEXITY_WEIGHTS,
@@ -252,7 +254,7 @@ class _PagesHierarchyTreeCountBase:
             },
         )
 
-        witness_type = "ordered_id_path" if str(evidence_type) == "bbox_sequence" else "id_set"
+        witness_type = "ordered_id_path" if str(annotation_type) == "bbox_sequence" else "id_set"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"diagram_hierarchy_{str(scene_variant)}",
@@ -262,7 +264,7 @@ class _PagesHierarchyTreeCountBase:
                     "scene_variant": str(scene_variant),
                     "root_node_id": str(dataset["root_node_id"]),
                     "query_node_ids": [str(node_id) for node_id in dataset["query_node_ids"]],
-                    "evidence_node_ids": [str(node_id) for node_id in dataset["evidence_node_ids"]],
+                    "annotation_node_ids": [str(node_id) for node_id in dataset["annotation_node_ids"]],
                     "view_family": str(dataset["view_family"]),
                 },
             },
@@ -324,9 +326,9 @@ class _PagesHierarchyTreeCountBase:
                 "query_depths": [int(depth) for depth in dataset["query_depths"]],
                 "query_relationship": str(dataset["query_relationship"]),
                 "answer_count": int(answer_value),
-                "evidence_node_ids": [str(node_id) for node_id in dataset["evidence_node_ids"]],
-                "evidence_node_bbox_ids": [str(bbox_id) for bbox_id in evidence_node_bbox_ids],
-                "evidence_semantics": str(dataset["evidence_semantics"]),
+                "annotation_node_ids": [str(node_id) for node_id in dataset["annotation_node_ids"]],
+                "annotation_node_bbox_ids": [str(bbox_id) for bbox_id in annotation_node_bbox_ids],
+                "annotation_semantics": str(dataset["annotation_semantics"]),
                 "descendant_node_ids": [str(node_id) for node_id in dataset["descendant_node_ids"]],
                 "descendant_count": int(dataset["descendant_count"]),
                 "leaf_descendant_node_ids": [str(node_id) for node_id in dataset["leaf_descendant_node_ids"]],
@@ -337,13 +339,13 @@ class _PagesHierarchyTreeCountBase:
                 "path_lca_node_id": str(dataset["path_lca_node_id"]),
                 "path_lca_node_label": str(dataset["path_lca_node_label"]),
                 "path_lca_depth": int(dataset["path_lca_depth"]),
-                "supporting_node_bbox_ids": [str(bbox_id) for bbox_id in evidence_node_bbox_ids],
+                "supporting_node_bbox_ids": [str(bbox_id) for bbox_id in annotation_node_bbox_ids],
             },
             "witness_symbolic": {
                 "type": str(witness_type),
-                "ids": [str(node_id) for node_id in dataset["evidence_node_ids"]],
+                "ids": [str(node_id) for node_id in dataset["annotation_node_ids"]],
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_annotation": dict(annotation_projection),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -352,7 +354,7 @@ class _PagesHierarchyTreeCountBase:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -369,11 +371,19 @@ class _PagesHierarchyTreeCountBase:
 
 
 @register_task
-class PagesHierarchySubtreeNodeCountTask(_PagesHierarchyTreeCountBase):
-    """Count descendant or leaf nodes in one rooted-tree subtree."""
+class PagesHierarchySubtreeDescendantCountTask(_PagesHierarchyTreeCountBase):
+    """Count descendant nodes in one rooted-tree subtree."""
 
-    task_id = SUBTREE_NODE_COUNT_TASK_ID
-    allowed_query_ids = SUBTREE_NODE_QUERY_IDS
+    task_id = SUBTREE_DESCENDANT_COUNT_TASK_ID
+    allowed_query_ids = SUBTREE_DESCENDANT_QUERY_IDS
+
+
+@register_task
+class PagesHierarchySubtreeLeafCountTask(_PagesHierarchyTreeCountBase):
+    """Count leaf nodes in one rooted-tree subtree."""
+
+    task_id = SUBTREE_LEAF_COUNT_TASK_ID
+    allowed_query_ids = SUBTREE_LEAF_QUERY_IDS
 
 
 @register_task
@@ -386,9 +396,12 @@ class PagesHierarchyPathLengthCountTask(_PagesHierarchyTreeCountBase):
 
 __all__ = [
     "PATH_LENGTH_COUNT_TASK_ID",
-    "SUBTREE_NODE_COUNT_TASK_ID",
+    "SUBTREE_DESCENDANT_COUNT_TASK_ID",
+    "SUBTREE_LEAF_COUNT_TASK_ID",
     "PATH_LENGTH_QUERY_IDS",
-    "SUBTREE_NODE_QUERY_IDS",
+    "SUBTREE_DESCENDANT_QUERY_IDS",
+    "SUBTREE_LEAF_QUERY_IDS",
     "PagesHierarchyPathLengthCountTask",
-    "PagesHierarchySubtreeNodeCountTask",
+    "PagesHierarchySubtreeDescendantCountTask",
+    "PagesHierarchySubtreeLeafCountTask",
 ]

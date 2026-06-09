@@ -27,6 +27,7 @@ from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
+from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_STYLE_VARIANTS,
@@ -39,7 +40,7 @@ from .gui_relation_common import (
 )
 
 
-TASK_ID = "task_pages__web_action__web_action_target_label"
+TASK_ID = "pages_web_action_target_source"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "click_target_label",
     "type_field_label",
@@ -1534,8 +1535,8 @@ def _render_web_scene(
     )
 
 
-def _evidence_roles_for_query(query_id: str) -> Tuple[str, str, str, str]:
-    """Return prompt-facing evidence role names for one web-action query."""
+def _annotation_roles_for_query(query_id: str) -> Tuple[str, str, str, str]:
+    """Return prompt-facing annotation role names for one web-action query."""
 
     if str(query_id) == "click_target_label":
         return ("instruction_banner", "action_key_guide", "item_card", "target_button")
@@ -1545,9 +1546,9 @@ def _evidence_roles_for_query(query_id: str) -> Tuple[str, str, str, str]:
 
 
 def _prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
-    instruction_role, guide_role, context_role, target_role = _evidence_roles_for_query(str(query_id))
-    answer_and_evidence = {
-        "evidence": {
+    instruction_role, guide_role, context_role, target_role = _annotation_roles_for_query(str(query_id))
+    answer_and_annotation = {
+        "annotation": {
             str(instruction_role): [80, 150, 1200, 210],
             str(guide_role): [210, 222, 430, 278],
             str(context_role): [92, 310, 590, 430],
@@ -1557,7 +1558,7 @@ def _prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     }
     answer_only = {"answer": "G"}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1597,7 +1598,6 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     )
 
 
-@register_task
 class PagesRelationWebActionTargetLabelTask:
     """Identify the labeled web control matching a visible action instruction."""
 
@@ -1626,26 +1626,26 @@ class PagesRelationWebActionTargetLabelTask:
         )
 
         target_bbox = list(rendered.control_bboxes_by_id[str(query.target_control_id)])
-        evidence_support_ids = (
+        annotation_support_ids = (
             str(query.instruction_support_id),
             str(query.guide_support_id),
             str(query.context_support_id),
         )
-        instruction_role, guide_role, context_role, target_role = _evidence_roles_for_query(str(query.query_id))
-        evidence_bbox_map: Dict[str, List[float]] = {
+        instruction_role, guide_role, context_role, target_role = _annotation_roles_for_query(str(query.query_id))
+        annotation_bbox_map: Dict[str, List[float]] = {
             str(instruction_role): list(rendered.support_bboxes_by_id[str(query.instruction_support_id)]),
             str(guide_role): list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
             str(context_role): list(rendered.support_bboxes_by_id[str(query.context_support_id)]),
             str(target_role): list(target_bbox),
         }
-        evidence_role_support_ids: Dict[str, str] = {
+        annotation_role_support_ids: Dict[str, str] = {
             str(instruction_role): str(query.instruction_support_id),
             str(guide_role): str(query.guide_support_id),
             str(context_role): str(query.context_support_id),
             str(target_role): str(query.target_control_id),
         }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1656,7 +1656,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                f"evidence_hint_{str(query.query_id)}",
+                f"annotation_hint_{str(query.query_id)}",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -1669,7 +1669,7 @@ class PagesRelationWebActionTargetLabelTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "instruction_text": str(query.instruction_text),
@@ -1677,7 +1677,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "action_label": str(query.action_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query.query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1689,9 +1689,9 @@ class PagesRelationWebActionTargetLabelTask:
         control_records = [dict(record) for record in rendered.control_records]
         support_records = [dict(record) for record in rendered.support_records]
         target_record = next(record for record in control_records if str(record["control_id"]) == str(query.target_control_id))
-        evidence_support_records = [
+        annotation_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
-            for support_id in evidence_support_ids
+            for support_id in annotation_support_ids
         ]
         trace_payload = {
             "scene_ir": {
@@ -1736,8 +1736,8 @@ class PagesRelationWebActionTargetLabelTask:
                     "guide_entries": [asdict(entry) for entry in query.guide_entries],
                     "context_support_id": str(query.context_support_id),
                     "context_support_kind": str(query.context_support_kind),
-                    "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1770,7 +1770,7 @@ class PagesRelationWebActionTargetLabelTask:
                     "context_support_id": str(query.context_support_id),
                     "context_support_kind": str(query.context_support_kind),
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "evidence_role_support_ids": dict(evidence_role_support_ids),
+                    "annotation_role_support_ids": dict(annotation_role_support_ids),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -1804,8 +1804,8 @@ class PagesRelationWebActionTargetLabelTask:
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
                 "guide_entries": [asdict(entry) for entry in query.guide_entries],
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1827,9 +1827,9 @@ class PagesRelationWebActionTargetLabelTask:
                 "guide_entries": [asdict(entry) for entry in query.guide_entries],
                 "context_support_id": str(query.context_support_id),
                 "context_support_kind": str(query.context_support_kind),
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
-                "evidence_support_records": [dict(record) for record in evidence_support_records],
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
+                "annotation_support_records": [dict(record) for record in annotation_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
                 "support_records": list(support_records),
@@ -1841,22 +1841,22 @@ class PagesRelationWebActionTargetLabelTask:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "evidence_support_ids": [str(value) for value in evidence_support_ids],
-                "evidence_role_support_ids": dict(evidence_role_support_ids),
+                "annotation_support_ids": [str(value) for value in annotation_support_ids],
+                "annotation_role_support_ids": dict(annotation_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": dict(evidence_bbox_map),
+                "value": dict(annotation_bbox_map),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_bbox_map),
-                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+                "keyed_bbox_map": dict(annotation_bbox_map),
+                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
             },
         }
 
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1873,4 +1873,46 @@ class PagesRelationWebActionTargetLabelTask:
         )
 
 
-__all__ = ["PagesRelationWebActionTargetLabelTask", "SUPPORTED_QUERY_IDS"]
+@register_task
+class PagesWebActionClickTargetLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the clickable target described by a web-page action cue."""
+
+    task_id = "task_pages__web_action__click_target_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "web_action"
+    fixed_query_id = "click_target_label"
+    source_task_cls = PagesRelationWebActionTargetLabelTask
+
+
+@register_task
+class PagesWebActionTypeFieldLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the input field described by a web-page action cue."""
+
+    task_id = "task_pages__web_action__type_field_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "web_action"
+    fixed_query_id = "type_field_label"
+    source_task_cls = PagesRelationWebActionTargetLabelTask
+
+
+@register_task
+class PagesWebActionSelectOptionLabelTask(FixedPagesQueryTaskMixin):
+    """Identify the selectable option described by a web-page action cue."""
+
+    task_id = "task_pages__web_action__select_option_label"
+    domain = "pages"
+    task_group = "relation"
+    public_scene_id = "web_action"
+    fixed_query_id = "select_option_label"
+    source_task_cls = PagesRelationWebActionTargetLabelTask
+
+
+__all__ = [
+    "PagesRelationWebActionTargetLabelTask",
+    "PagesWebActionClickTargetLabelTask",
+    "PagesWebActionSelectOptionLabelTask",
+    "PagesWebActionTypeFieldLabelTask",
+    "SUPPORTED_QUERY_IDS",
+]

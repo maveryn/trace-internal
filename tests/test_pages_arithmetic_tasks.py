@@ -41,14 +41,14 @@ def test_pages_arithmetic_section_expression_value_contract_matches_trace() -> N
             trace = out.trace_payload
             execution = trace["execution_trace"]
             render_map = trace["render_map"]
-            evidence_bboxes = {
+            annotation_bboxes = {
                 str(key): [float(value) for value in bbox]
-                for key, bbox in dict(out.evidence_gt.value).items()
+                for key, bbox in dict(out.annotation_gt.value).items()
             }
 
             assert out.answer_gt.type == "string"
-            assert out.evidence_gt.type == "keyed_bbox_map"
-            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert out.annotation_gt.type == "keyed_bbox_map"
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(out.query_id) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["query_id"]) == str(query_id)
@@ -56,18 +56,18 @@ def test_pages_arithmetic_section_expression_value_contract_matches_trace() -> N
             assert str(execution["internal_query_id"]) == str(query_id)
             assert str(execution["question_format"]) == "document_section_expression_value"
             assert str(execution["view_family"]) == "structured_document"
-            assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-            assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-            assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+            assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+            assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
             assert str(out.answer_gt.value) == str(execution["result_value"])
-            assert len(evidence_bboxes) == len(execution["operand_value_bbox_ids"])
+            assert len(annotation_bboxes) == len(execution["operand_value_bbox_ids"])
 
             role_to_bbox_id = trace["witness_symbolic"]["operand_role_to_bbox_id"]
             expected_bboxes = {
                 str(role): [float(value) for value in render_map["field_value_bboxes_px"][str(bbox_id)]]
                 for role, bbox_id in role_to_bbox_id.items()
             }
-            assert evidence_bboxes == expected_bboxes
+            assert annotation_bboxes == expected_bboxes
 
             visible_values = [str(spec["field_value"]) for spec in execution["field_specs"]]
             assert str(execution["result_value"]) not in set(visible_values)
@@ -102,7 +102,7 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
     expected = {
         "sum_two_amounts_in_section": (
             {
-                "evidence": {
+                "annotation": {
                     "first_operand": [150, 260, 364, 294],
                     "second_operand": [150, 320, 364, 354],
                 },
@@ -112,7 +112,7 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
         ),
         "difference_two_amounts_in_section": (
             {
-                "evidence": {
+                "annotation": {
                     "first_operand": [150, 260, 364, 294],
                     "second_operand": [150, 320, 364, 354],
                 },
@@ -122,7 +122,7 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
         ),
         "sum_minus_amount_in_section": (
             {
-                "evidence": {
+                "annotation": {
                     "first_operand": [150, 260, 364, 294],
                     "second_operand": [150, 320, 364, 354],
                     "third_operand": [150, 380, 364, 414],
@@ -133,11 +133,11 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
         ),
     }
 
-    for index, (query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=38240):
+    for index, (query_id, (expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=38240):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
 
@@ -148,7 +148,7 @@ def test_pages_arithmetic_section_expression_value_is_deterministic() -> None:
     out_b = task.generate(38320, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

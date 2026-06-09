@@ -5,17 +5,64 @@ from __future__ import annotations
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.tetris.board_tasks import (
+    GamesTetrisDropCollisionTimeValueTask,
     GamesTetrisDropResultLabelTask,
+    GamesTetrisEdgeOccupiedRowCellCountTask,
     GamesTetrisLineClearCountTask,
+    GamesTetrisRowOccupancyStatusCountTask,
     _Placement,
     _best_clear_outcomes,
+    _drop_collision,
     _evaluate_outcome,
     _freeze,
+    _is_supported_stack_board,
+    _piece_cells,
 )
 
 
 def _board_from_execution(execution: dict) -> tuple[tuple[str, ...], ...]:
     return _freeze(execution["board_rows"])
+
+
+def _assert_supported_stack_execution(execution: dict) -> None:
+    board = _board_from_execution(execution)
+    assert _is_supported_stack_board(board)
+    generation = execution.get("board_generation")
+    assert isinstance(generation, dict)
+    assert generation.get("mode") == "natural_supported_stack"
+
+
+def _placement_from_execution(raw: dict) -> _Placement:
+    return _Placement(
+        piece=str(raw["piece"]),
+        orientation_index=int(raw["orientation_index"]),
+        col=int(raw["col"]),
+        top=int(raw["top"]),
+    )
+
+
+def _qualifying_row_indices(board: tuple[tuple[str, ...], ...], *, query_id: str) -> tuple[int, ...]:
+    if str(query_id) == "full_row_count":
+        return tuple(
+            int(row_index)
+            for row_index, row in enumerate(board)
+            if all(str(cell) != "." for cell in row)
+        )
+    if str(query_id) == "one_gap_row_count":
+        return tuple(
+            int(row_index)
+            for row_index, row in enumerate(board)
+            if sum(1 for cell in row if str(cell) == ".") == 1
+        )
+    raise AssertionError(f"unsupported test query_id: {query_id}")
+
+
+def _edge_occupied_row_index(board: tuple[tuple[str, ...], ...], *, edge: str) -> int:
+    rows = range(len(board)) if str(edge) == "top" else range(len(board) - 1, -1, -1)
+    for row in rows:
+        if any(str(cell) != "." for cell in board[int(row)]):
+            return int(row)
+    raise AssertionError("test board has no occupied row")
 
 
 def test_games_tetris_line_clear_contract_and_rule_match() -> None:
@@ -36,15 +83,16 @@ def test_games_tetris_line_clear_contract_and_rule_match() -> None:
     board = _board_from_execution(execution)
     outcome = _evaluate_outcome(board, placement)
     best_clear, _best_outcomes = _best_clear_outcomes(board, piece=str(execution["piece"]))
+    _assert_supported_stack_execution(execution)
 
     assert out.scene_id == "tetris"
     assert out.query_id == "max_clear_with_next_piece"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_bbox_map"
     assert int(out.answer_gt.value) == int(outcome.clear_count) == int(best_clear) == 4
-    assert set(out.evidence_gt.value) == {"board", "next_piece"}
-    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
-    assert set(out.trace_payload["projected_evidence"]["keyed_bbox_map"]) == {"board", "next_piece"}
+    assert set(out.annotation_gt.value) == {"board", "next_piece"}
+    assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert set(out.trace_payload["projected_annotation"]["keyed_bbox_map"]) == {"board", "next_piece"}
     render_spec = out.trace_payload["render_spec"]
     assert render_spec["tetris_board_style"]["style_variant"]
     assert render_spec["text_style"]["font_family"]
@@ -60,6 +108,7 @@ def test_games_tetris_drop_result_contract() -> None:
     answer = str(out.answer_gt.value)
     options = {str(option["label"]): option for option in execution["options"]}
     falling = execution["falling_placement"]
+    _assert_supported_stack_execution(execution)
 
     assert out.scene_id == "tetris"
     assert out.query_id == "single_clear_result"
@@ -70,11 +119,155 @@ def test_games_tetris_drop_result_contract() -> None:
     assert falling is not None
     assert int(falling["top"]) == 0
     assert all(option["placement"] is None for option in execution["options"])
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 1
-    assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+
+
+def test_games_tetris_row_occupancy_status_contract_and_rule_match() -> None:
+    cases = (
+        ("full_row_count", 3),
+        ("one_gap_row_count", 4),
+    )
+    for query_id, target_row_count in cases:
+        out = GamesTetrisRowOccupancyStatusCountTask().generate(
+            26052441 + int(target_row_count),
+            params={
+                "query_id": str(query_id),
+                "target_row_count": int(target_row_count),
+                "board_rows": 12,
+                "board_cols": 8,
+            },
+            max_attempts=64,
+        )
+        execution = out.trace_payload["execution_trace"]
+        board = _board_from_execution(execution)
+        _assert_supported_stack_execution(execution)
+        qualifying_rows = _qualifying_row_indices(board, query_id=str(query_id))
+        expected_entity_ids = tuple(f"main_row_{int(row)}" for row in qualifying_rows)
+        expected_bboxes = [
+            [float(v) for v in out.trace_payload["render_map"]["row_bboxes_px"][str(entity_id)]]
+            for entity_id in expected_entity_ids
+        ]
+
+        assert out.scene_id == "tetris"
+        assert out.query_id == str(query_id)
+        assert out.answer_gt.type == "integer"
+        assert int(out.answer_gt.value) == len(qualifying_rows) == int(target_row_count)
+        assert execution["target_row_count"] == int(target_row_count)
+        assert tuple(execution["qualifying_rows"]) == qualifying_rows
+        assert tuple(execution["annotation_entity_ids"]) == expected_entity_ids
+        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.value == expected_bboxes
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == expected_bboxes
+
+
+def test_games_tetris_drop_collision_time_contract_and_rule_match() -> None:
+    cases = (
+        ("no_shift_collision_time", 0, 1, 26052461),
+        ("left_shift_collision_time", 3, 2, 26052471),
+        ("right_shift_collision_time", 5, 2, 26052481),
+    )
+    for query_id, target_drop_steps, shift_magnitude, seed in cases:
+        out = GamesTetrisDropCollisionTimeValueTask().generate(
+            int(seed),
+            params={
+                "query_id": str(query_id),
+                "target_drop_steps": int(target_drop_steps),
+                "shift_magnitude": int(shift_magnitude),
+                "board_rows": 14,
+                "board_cols": 9,
+            },
+            max_attempts=128,
+        )
+        execution = out.trace_payload["execution_trace"]
+        board = _board_from_execution(execution)
+        _assert_supported_stack_execution(execution)
+        falling = _placement_from_execution(execution["falling_placement"])
+        collision = _drop_collision(board, falling, shift_delta=int(execution["shift_delta"]))
+        assert collision is not None
+
+        assert out.scene_id == "tetris"
+        assert out.query_id == str(query_id)
+        assert out.answer_gt.type == "integer"
+        assert int(out.answer_gt.value) == int(collision.drop_steps) == int(target_drop_steps)
+        assert execution["target_drop_steps"] == int(target_drop_steps)
+        assert execution["drop_steps"] == int(target_drop_steps)
+        assert execution["collision_kind"] == "locked_block"
+        assert execution["shifted_placement"] == {
+            "piece": collision.shifted_placement.piece,
+            "orientation_index": int(collision.shifted_placement.orientation_index),
+            "col": int(collision.shifted_placement.col),
+            "top": int(collision.shifted_placement.top),
+            "cells": [[int(r), int(c)] for r, c in _piece_cells(collision.shifted_placement)],
+        }
+        assert out.annotation_gt.type == "keyed_bbox_set_map"
+        assert set(out.annotation_gt.value) == {"start_piece", "stop_witness"}
+        expected_annotation = {
+            key: [
+                [float(v) for v in out.trace_payload["render_map"]["cell_bboxes_px"][str(entity_id)]]
+                for entity_id in entity_ids
+            ]
+            for key, entity_ids in execution["annotation_entity_id_map"].items()
+        }
+        assert out.annotation_gt.value == expected_annotation
+        assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_set_map"
+        assert out.trace_payload["projected_annotation"]["keyed_bbox_set_map"] == expected_annotation
+
+
+def test_games_tetris_edge_occupied_row_cell_count_contract_and_rule_match() -> None:
+    cases = (
+        ("top_occupied_row_filled_cell_count", 3, 26052501),
+        ("top_occupied_row_empty_cell_count", 4, 26052511),
+        ("bottom_occupied_row_filled_cell_count", 5, 26052521),
+        ("bottom_occupied_row_empty_cell_count", 2, 26052531),
+    )
+    for query_id, target_cell_count, seed in cases:
+        out = GamesTetrisEdgeOccupiedRowCellCountTask().generate(
+            int(seed),
+            params={
+                "query_id": str(query_id),
+                "target_cell_count": int(target_cell_count),
+                "board_rows": 12,
+                "board_cols": 8,
+            },
+            max_attempts=64,
+        )
+        execution = out.trace_payload["execution_trace"]
+        board = _board_from_execution(execution)
+        _assert_supported_stack_execution(execution)
+        edge = "top" if str(query_id).startswith("top_") else "bottom"
+        status = "filled" if "_filled_" in str(query_id) else "empty"
+        row_index = _edge_occupied_row_index(board, edge=str(edge))
+        expected_entity_ids = tuple(
+            f"main_cell_{int(row_index)}_{int(col)}"
+            for col, cell in enumerate(board[int(row_index)])
+            if (status == "filled" and str(cell) != ".") or (status == "empty" and str(cell) == ".")
+        )
+        expected_bboxes = [
+            [float(v) for v in out.trace_payload["render_map"]["cell_bboxes_px"][str(entity_id)]]
+            for entity_id in expected_entity_ids
+        ]
+
+        assert out.scene_id == "tetris"
+        assert out.query_id == str(query_id)
+        assert out.answer_gt.type == "integer"
+        assert int(out.answer_gt.value) == len(expected_entity_ids) == int(target_cell_count)
+        assert execution["target_cell_count"] == int(target_cell_count)
+        assert execution["edge_row_selector"] == str(edge)
+        assert execution["counted_cell_status"] == str(status)
+        assert execution["selected_row_index"] == int(row_index)
+        assert tuple(execution["annotation_entity_ids"]) == expected_entity_ids
+        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.value == expected_bboxes
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == expected_bboxes
 
 
 def test_games_tetris_taxonomy() -> None:
     assert resolve_task_taxonomy("task_games__tetris__line_clear_count").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__drop_result_label").scene_id == "tetris"
+    assert resolve_task_taxonomy("task_games__tetris__row_occupancy_status_count").scene_id == "tetris"
+    assert resolve_task_taxonomy("task_games__tetris__drop_collision_time_value").scene_id == "tetris"
+    assert resolve_task_taxonomy("task_games__tetris__edge_occupied_row_cell_count").scene_id == "tetris"

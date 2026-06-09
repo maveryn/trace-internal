@@ -152,7 +152,7 @@ class _ResolvedQuery:
     target_group_index: int
     reference_label: str
     answer_value: int
-    evidence_control_ids: Tuple[str, ...]
+    annotation_control_ids: Tuple[str, ...]
     state_count_support: Tuple[int, ...]
     candidate_label_pool: Tuple[str, ...]
     query_id_probabilities: Dict[str, float]
@@ -746,7 +746,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
     controls: List[_ControlSpec] = []
     label_index = 0
-    evidence_ids: List[str] = []
+    annotation_ids: List[str] = []
     reference_label = ""
     for group_index, group_name in enumerate(group_names):
         for order_in_group in range(int(group_sizes[int(group_index)])):
@@ -757,10 +757,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             is_reference = False
             if str(query_id) == "disabled_controls_in_group_count":
                 if int(group_index) == int(target_group_index) and bool(disabled):
-                    evidence_ids.append(str(control_id))
+                    annotation_ids.append(str(control_id))
             elif str(query_id) == "selected_enabled_controls_in_group_count":
                 if int(group_index) == int(target_group_index) and bool(selected) and not bool(disabled):
-                    evidence_ids.append(str(control_id))
+                    annotation_ids.append(str(control_id))
 
             controls.append(
                 _ControlSpec(
@@ -778,10 +778,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             )
             label_index += 1
 
-    if len(evidence_ids) != int(answer_value):
+    if len(annotation_ids) != int(answer_value):
         raise RuntimeError(
-            f"GUI counting evidence cardinality does not match answer for {query_id}: "
-            f"{len(evidence_ids)} != {answer_value}"
+            f"GUI counting annotation cardinality does not match answer for {query_id}: "
+            f"{len(annotation_ids)} != {answer_value}"
         )
 
     return _ResolvedQuery(
@@ -794,7 +794,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         target_group_index=int(target_group_index),
         reference_label=str(reference_label),
         answer_value=int(answer_value),
-        evidence_control_ids=tuple(str(value) for value in evidence_ids),
+        annotation_control_ids=tuple(str(value) for value in annotation_ids),
         state_count_support=tuple(int(value) for value in answer_support),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
         query_id_probabilities=dict(query_id_probabilities),
@@ -1077,10 +1077,10 @@ def _render_gui_count_scene(
 
 
 def _prompt_json_examples() -> Tuple[str, str]:
-    answer_and_evidence = {"evidence": [[96, 218, 221, 300], [233, 218, 358, 300], [370, 310, 495, 392]], "answer": 3}
+    answer_and_annotation = {"annotation": [[96, 218, 221, 300], [233, 218, 358, 300], [370, 310, 495, 392]], "answer": 3}
     answer_only = {"answer": 3}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1096,7 +1096,7 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     else:
         state_filtering = 0.72
         grouping = 0.56
-    output_burden = min(1.0, float(len(query.evidence_control_ids)) / 8.0)
+    output_burden = min(1.0, float(len(query.annotation_control_ids)) / 8.0)
     components = {
         "visual_scan": _clamp_unit(scan),
         "state_filtering": _clamp_unit(state_filtering + (0.06 * output_burden)),
@@ -1148,12 +1148,12 @@ class GuiCountingControlFilterCountTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered.control_bboxes_by_id[str(control_id)])
-            for control_id in query.evidence_control_ids
+            for control_id in query.annotation_control_ids
         ]
         answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         prompt_defaults_source = dict(_PROMPT_DEFAULTS)
         prompt_defaults_override = params.get("_prompt_defaults_override")
@@ -1168,7 +1168,7 @@ class GuiCountingControlFilterCountTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -1181,14 +1181,14 @@ class GuiCountingControlFilterCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "group_name": str(query.target_group_name),
                 "reference_label": str(query.reference_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1216,7 +1216,7 @@ class GuiCountingControlFilterCountTask:
         matched_records = [
             dict(record)
             for record in control_records
-            if str(record["control_id"]) in set(str(value) for value in query.evidence_control_ids)
+            if str(record["control_id"]) in set(str(value) for value in query.annotation_control_ids)
         ]
         trace_payload = {
             "scene_ir": {
@@ -1250,7 +1250,7 @@ class GuiCountingControlFilterCountTask:
                     "target_group_index": int(query.target_group_index),
                     "reference_label": str(query.reference_label),
                     "answer_value": int(query.answer_value),
-                    "evidence_control_ids": [str(value) for value in query.evidence_control_ids],
+                    "annotation_control_ids": [str(value) for value in query.annotation_control_ids],
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1304,7 +1304,7 @@ class GuiCountingControlFilterCountTask:
                 "group_bboxes_by_name": dict(rendered.group_bboxes_by_name),
                 "control_bboxes_by_id": dict(rendered.control_bboxes_by_id),
                 "candidate_label_badge_bboxes_by_id": dict(rendered.badge_bboxes_by_id),
-                "evidence_control_ids": [str(value) for value in query.evidence_control_ids],
+                "annotation_control_ids": [str(value) for value in query.annotation_control_ids],
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1316,7 +1316,7 @@ class GuiCountingControlFilterCountTask:
                 "reference_label": str(query.reference_label),
                 "group_records": list(group_records),
                 "controls": list(control_records),
-                "matching_control_ids": [str(value) for value in query.evidence_control_ids],
+                "matching_control_ids": [str(value) for value in query.annotation_control_ids],
                 "matching_controls": list(matched_records),
                 "total_control_count": int(len(query.controls)),
                 "query_id_probabilities": dict(query.query_id_probabilities),
@@ -1326,18 +1326,18 @@ class GuiCountingControlFilterCountTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "evidence_control_ids": [str(value) for value in query.evidence_control_ids],
-                "value": list(evidence_bboxes),
+                "annotation_control_ids": [str(value) for value in query.annotation_control_ids],
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+            "projected_annotation": {
+                "bbox_set": list(annotation_bboxes),
             },
         }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

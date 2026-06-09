@@ -7,8 +7,9 @@ from typing import Tuple
 
 
 SUPPORTED_CROSSING_QUERY_IDS: Tuple[str, ...] = (
-    "collision_time_value",
     "moving_object_count",
+    "left_moving_object_count",
+    "right_moving_object_count",
 )
 SUPPORTED_CROSSING_SCENE_VARIANTS: Tuple[str, ...] = ("traffic_crossing",)
 SUPPORTED_CROSSING_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -61,7 +62,7 @@ class CrossingSample:
     target_route_label: str | None
     first_collision_tick: int | None
     intersecting_vehicle_ids: Tuple[str, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     target_answer: int | None
     target_label_index: int | None
     construction_mode: str
@@ -141,7 +142,7 @@ def route_first_collision_tick(
 
 
 def validate_crossing_sample(sample: CrossingSample) -> None:
-    """Validate the generated answer/evidence contract."""
+    """Validate the generated answer/annotation contract."""
 
     lane_count = int(sample.lane_count)
     row_count = int(sample.row_count)
@@ -175,40 +176,32 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         for row in range(row_count)
     }
     known_entities = vehicle_ids | start_ids | route_ids | route_cell_ids
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("crossing evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("crossing annotation references unknown entities")
 
     query = str(sample.query_id)
-    if query == "collision_time_value":
-        if sample.first_collision_tick is None:
-            raise ValueError("collision_time_value requires a collision")
-        expected_answer = int(sample.first_collision_tick)
-        marked = next((route for route in sample.route_options if route.label == sample.marked_route_label), None)
-        if marked is None:
-            raise ValueError("collision_time_value requires marked route")
-        row = int(sample.first_collision_tick) - 1
-        colliders = [
-            str(vehicle.vehicle_id)
-            for vehicle in sample.vehicles
-            if int(vehicle.row) == row
-            and vehicle_col_at_tick(vehicle, tick=int(sample.first_collision_tick), lane_count=lane_count)
-            == int(marked.path_cols[row])
-        ]
-        expected_evidence = set(colliders[:1]) | {route_cell_entity_id(marked.label, row)}
-    elif query == "moving_object_count":
+    if query == "moving_object_count":
         marked = next((route for route in sample.route_options if route.label == sample.marked_route_label), None)
         if marked is None:
             raise ValueError("moving_object_count requires marked route")
         expected_hit_ids = route_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
         expected_answer = len(expected_hit_ids)
-        expected_evidence = set(expected_hit_ids)
+        expected_annotation = set(expected_hit_ids)
+    elif query in {"left_moving_object_count", "right_moving_object_count"}:
+        target_direction = -1 if query == "left_moving_object_count" else 1
+        expected_annotation = {
+            str(vehicle.vehicle_id)
+            for vehicle in sample.vehicles
+            if int(vehicle.direction) == int(target_direction)
+        }
+        expected_answer = len(expected_annotation)
     else:
         raise ValueError(f"unsupported crossing query_id: {query}")
 
     if sample.answer != expected_answer:
         raise ValueError("crossing answer does not match active query")
-    if set(sample.evidence_entity_ids) != set(expected_evidence):
-        raise ValueError("crossing evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != set(expected_annotation):
+        raise ValueError("crossing annotation ids do not match active query")
 
 
 __all__ = [

@@ -25,19 +25,19 @@
       "scoring_rule_text",
       "target_threshold_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -45,12 +45,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -64,11 +64,11 @@
   },
   "query_templates": {
     "total_score": [
-      "{scoring_rule_text} The image shows five score options labeled A through E. Which option letter gives the total score of all marked darts?",
-      "Add the scores of all marked darts, then choose the matching option letter from the image. {scoring_rule_text}",
-      "{scoring_rule_text} Determine the combined score for every marked dart and use the matching option letter shown in the image.",
-      "Using the dartboard scoring rule, which visible option letter gives the total score of the marked darts? {scoring_rule_text}",
-      "Score each marked dart, add the scores together, and use the matching option letter shown in the image. {scoring_rule_text}"
+      "{scoring_rule_text} The image shows one marked dart and five score options labeled A through E. Which option letter gives that dart's score?",
+      "Find the score of the marked dart, then choose the matching option letter from the image. {scoring_rule_text}",
+      "{scoring_rule_text} Determine the score of the single marked dart and use the matching option letter shown in the image.",
+      "Using the dartboard scoring rule, which visible option letter gives the score of the marked dart? {scoring_rule_text}",
+      "Score the marked dart and use the matching option letter shown in the image. {scoring_rule_text}"
     ],
     "ring_count": [
       "{ring_rule_text} How many marked darts are in the yellow-highlighted {target_ring_text}? Use 0 if none are there.",

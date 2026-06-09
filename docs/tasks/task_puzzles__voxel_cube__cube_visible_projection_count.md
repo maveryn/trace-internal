@@ -12,7 +12,7 @@
 3. Supported query parameter: `view_direction=top|front|right`
 4. Supported `scene_variant`: `cube_stack`
 5. `answer_gt.type`: `integer`
-6. `evidence_gt.type`: `bbox_set`
+6. `annotation_gt.type`: `bbox_set`
 7. Scene contract:
    - the scene shows an isometric cube stack on the left and one blank orthographic query grid on the right,
    - `Front view` means looking at the left vertical face of the drawn stack,
@@ -26,8 +26,8 @@
 4. Internal prompt variant key: `visible_cube_count`
 5. Prompt-facing answers are exact integer counts.
 
-## 4) Evidence + Trace Contract
-1. Evidence contains one bbox for each query-grid cell that should be filled.
+## 4) Annotation + Trace Contract
+1. Annotation contains one bbox for each query-grid cell that should be filled.
 2. `execution_trace.internal_query_id` records the selected view query.
 3. Stack footprint/heights, visible counts for `top|front|right`, projection-cell coordinates, and query-panel geometry are recorded.
-4. Prompt-facing evidence is projected from projection cells, not inferred from pixels.
+4. Prompt-facing annotation is projected from projection cells, not inferred from pixels.

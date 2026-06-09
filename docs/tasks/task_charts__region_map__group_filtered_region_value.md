@@ -5,15 +5,25 @@
 2. Scene id: `region_map`
 3. Source implementation domain/group: `charts/map`
 4. Query id: `group_filtered_region_value`
-5. Answer type: integer total value.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.map.choropleth_region_label.ChartsMapGroupFilteredRegionValueTask`
 2. Prompt lookup domain/group: `charts/map`
-3. This task fixes the scene to a world-country geographic region map.
-4. Generation is deterministic for the same seed, params, and task versions.
-5. Answers and evidence are verifier-backed by trace metadata, not image pixels.
+3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
+4. Answers and annotation are produced from the same metadata execution trace.
 
-## Evidence
-1. Evidence type: `bbox_set`.
-2. Boxes mark the visible geographic regions included in the sum.
+## Annotation Contract
+1. Answer schema: `integer_value`.
+2. Annotation schema: `bbox_set`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `group_filtered_region_value` | `numeric.aggregate_sum` | `integer_value` | `bbox_set` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

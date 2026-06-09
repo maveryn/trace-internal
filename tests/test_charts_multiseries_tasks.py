@@ -7,6 +7,8 @@ import json
 from trace.tasks.charts.multiseries.comparison_query import (
     ChartsMultiseriesCategoryTotalExtremumLabelTask,
     ChartsMultiseriesComparisonQueryTask,
+    ChartsMultiseriesPairEqualityLabelTask,
+    ChartsMultiseriesSeriesRankAtCategoryLabelTask,
 )
 
 
@@ -30,16 +32,16 @@ def _assert_normalized_complexity(out: object) -> None:
     )
 
 
-def _evidence_point_values(out: object) -> list[list[float]]:
-    return [list(point) for point in out.evidence_gt.value.values()]
+def _annotation_point_values(out: object) -> list[list[float]]:
+    return [list(point) for point in out.annotation_gt.value.values()]
 
 
-def _assert_keyed_point_evidence(out: object) -> None:
-    projected = out.trace_payload["projected_evidence"]
-    assert out.evidence_gt.type == "keyed_point_map"
+def _assert_keyed_point_annotation(out: object) -> None:
+    projected = out.trace_payload["projected_annotation"]
+    assert out.annotation_gt.type == "keyed_point_map"
     assert projected["type"] == "keyed_point_map"
-    assert projected["keyed_point_map"] == out.evidence_gt.value
-    assert projected["pixel_keyed_point_map"] == out.evidence_gt.value
+    assert projected["keyed_point_map"] == out.annotation_gt.value
+    assert projected["pixel_keyed_point_map"] == out.annotation_gt.value
 
 
 def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
@@ -63,8 +65,8 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
         category_labels = [str(label) for label in execution["category_labels"]]
         series_labels = [str(label) for label in execution["series_labels"]]
         query_pair = [str(label) for label in execution["queried_series_labels"]]
-        evidence_labels = [str(label) for label in execution["evidence_labels"]]
-        evidence_points = _evidence_point_values(out)
+        annotation_labels = [str(label) for label in execution["annotation_labels"]]
+        annotation_points = _annotation_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -75,8 +77,8 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        _assert_keyed_point_evidence(out)
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        _assert_keyed_point_annotation(out)
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
@@ -90,12 +92,12 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
         assert all(2 <= len(str(label)) <= 4 for label in series_labels)
         assert len(query_pair) == 2
         assert set(query_pair).issubset(set(series_labels))
-        assert evidence_labels == sorted(evidence_labels)
-        assert int(out.answer_gt.value) == len(evidence_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert len(evidence_points) == 2 * len(evidence_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == 2 * len(evidence_labels)
-        for x_coord, y_coord in evidence_points:
+        assert annotation_labels == sorted(annotation_labels)
+        assert int(out.answer_gt.value) == len(annotation_labels)
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert len(annotation_points) == 2 * len(annotation_labels)
+        assert len(trace["projected_annotation"]["bbox_set"]) == 2 * len(annotation_labels)
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"]) * int(execution["series_count"])
@@ -110,9 +112,112 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
             left_value = int(values_by_category[str(category_label)][str(left_series)])
             right_value = int(values_by_category[str(category_label)][str(right_series)])
             if str(comparison) == "greater_than":
-                assert (left_value > right_value) is (str(category_label) in set(evidence_labels))
+                assert (left_value > right_value) is (str(category_label) in set(annotation_labels))
             else:
-                assert (left_value < right_value) is (str(category_label) in set(evidence_labels))
+                assert (left_value < right_value) is (str(category_label) in set(annotation_labels))
+
+
+def test_chart_multiseries_pair_equality_label_matches_contract() -> None:
+    task = ChartsMultiseriesPairEqualityLabelTask()
+    for seed in range(11060, 11068):
+        out = task.generate(seed, params={}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+        answer_label = str(out.answer_gt.value)
+        left_series, right_series = [str(label) for label in execution["queried_series_labels"]]
+        values_by_category = {
+            str(category_label): {
+                str(series_label): int(value)
+                for series_label, value in series_values.items()
+            }
+            for category_label, series_values in execution["values_by_category"].items()
+        }
+
+        assert out.query_id == "pair_equality_label"
+        assert out.answer_gt.type == "string"
+        assert str(execution["variant_family"]) == "equality"
+        assert str(execution["internal_query_id"]) == "pair_equality_label"
+        assert str(execution["answer_type"]) == "string"
+        _assert_keyed_point_annotation(out)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert 6 <= int(execution["category_count"]) <= 12
+        assert 3 <= int(execution["series_count"]) <= 5
+        assert answer_label in set(str(label) for label in execution["category_labels"])
+        assert set(out.annotation_gt.value.keys()) == {
+            f"{answer_label}:{left_series}",
+            f"{answer_label}:{right_series}",
+        }
+        equality_labels = [
+            str(category_label)
+            for category_label, is_equal in execution["equality_by_category"].items()
+            if bool(is_equal)
+        ]
+        assert equality_labels == [answer_label]
+        for category_label, series_values in values_by_category.items():
+            pair_equal = int(series_values[left_series]) == int(series_values[right_series])
+            assert pair_equal is (str(category_label) == answer_label)
+        assert f'"{left_series}"' in str(out.prompt)
+        assert f'"{right_series}"' in str(out.prompt)
+
+
+def test_chart_multiseries_series_rank_at_category_label_matches_contract() -> None:
+    task = ChartsMultiseriesSeriesRankAtCategoryLabelTask()
+    cases = (
+        ("grouped_bar", "largest"),
+        ("grouped_horizontal_bar", "smallest"),
+        ("multi_line", "largest"),
+        ("grouped_lollipop", "smallest"),
+    )
+    for seed, (scene_variant, extremum_direction) in enumerate(cases, start=11080):
+        out = task.generate(
+            seed,
+            params={
+                "scene_variant": scene_variant,
+                "extremum_direction": extremum_direction,
+            },
+            max_attempts=10,
+        )
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+        target_category = str(execution["target_category_label"])
+        answer_series = str(out.answer_gt.value)
+        series_labels = [str(label) for label in execution["series_labels"]]
+        values_by_series = {
+            str(label): int(value)
+            for label, value in execution["values_by_series_at_target_category"].items()
+        }
+
+        assert out.query_id == "series_rank_at_category_label"
+        assert out.answer_gt.type == "string"
+        assert str(execution["variant_family"]) == "series_rank"
+        assert str(execution["internal_query_id"]) == "series_rank_at_category_label"
+        assert str(execution["answer_type"]) == "string"
+        assert answer_series in set(series_labels)
+        assert target_category in set(str(label) for label in execution["category_labels"])
+        assert 6 <= int(execution["category_count"]) <= 12
+        assert 3 <= int(execution["series_count"]) <= 5
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert f'"{target_category}"' in str(out.prompt)
+        _assert_keyed_point_annotation(out)
+        assert set(out.annotation_gt.value.keys()) == {
+            f"{target_category}:{series_label}"
+            for series_label in series_labels
+        }
+        assert len(set(values_by_series.values())) == len(series_labels)
+
+        ranked_series = sorted(
+            values_by_series,
+            key=lambda label: (values_by_series[str(label)], str(label)),
+            reverse=str(extremum_direction) == "largest",
+        )
+        answer_rank = int(execution["answer_rank"])
+        assert 1 <= answer_rank <= 3
+        assert answer_series == str(ranked_series[int(answer_rank) - 1])
+        assert int(execution["answer_score"]) == int(values_by_series[str(answer_series)])
+        assert execution["ranked_series_labels"] == ranked_series
+        _assert_normalized_complexity(out)
 
 
 def test_chart_multiseries_prompts_match_scene_variant_wording() -> None:
@@ -139,7 +244,7 @@ def test_chart_multiseries_prompts_match_scene_variant_wording() -> None:
     assert "vertical axis" in prompts["grouped_lollipop"]
 
 
-def test_chart_multiseries_grouped_horizontal_bar_evidence_uses_value_endpoint() -> None:
+def test_chart_multiseries_grouped_horizontal_bar_annotation_uses_value_endpoint() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     out = task.generate(
         11035,
@@ -154,7 +259,7 @@ def test_chart_multiseries_grouped_horizontal_bar_evidence_uses_value_endpoint()
         f"{str(entity['attrs']['category_label'])}:{str(entity['attrs']['series_label'])}": entity["attrs"]
         for entity in out.trace_payload["scene_ir"]["entities"]
     }
-    for key, point in out.trace_payload["projected_evidence"]["pixel_point_map"].items():
+    for key, point in out.trace_payload["projected_annotation"]["pixel_point_map"].items():
         bbox = [float(value) for value in entities_by_key[str(key)]["mark_bbox_px"]]
         point_x, point_y = [float(value) for value in point]
         assert abs(float(point_x) - float(bbox[2])) <= 1e-6
@@ -164,7 +269,7 @@ def test_chart_multiseries_grouped_horizontal_bar_evidence_uses_value_endpoint()
 def test_chart_multiseries_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "evidence": {
+        "annotation": {
             "Q:Orly": [180, 260],
             "Q:Vega": [180, 190],
             "M:Orly": [360, 320],
@@ -180,9 +285,9 @@ def test_chart_multiseries_prompt_examples_match_selected_variant() -> None:
             params={"query_id": "series_comparison_count", "comparison": comparison},
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected
+        assert answer_and_annotation == expected
         assert answer_only == {"answer": expected["answer"]}
 
 
@@ -197,7 +302,7 @@ def test_chart_multiseries_task_is_deterministic() -> None:
     out_b = task.generate(11050, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -278,8 +383,8 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         series_labels = [str(label) for label in execution["series_labels"]]
         query_pair = [str(label) for label in execution["queried_series_labels"]]
         answer_label = str(out.answer_gt.value)
-        evidence_values = [int(value) for value in execution["evidence_values"]]
-        evidence_points = _evidence_point_values(out)
+        annotation_values = [int(value) for value in execution["annotation_values"]]
+        annotation_points = _annotation_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -290,11 +395,11 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert str(execution["internal_query_id"]).startswith("ranked_")
-        assert out.answer_gt.type == "option_letter"
-        _assert_keyed_point_evidence(out)
-        assert len(evidence_values) == 3
-        assert len(evidence_points) == 2
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.answer_gt.type == "string"
+        _assert_keyed_point_annotation(out)
+        assert len(annotation_values) == 3
+        assert len(annotation_points) == 2
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
@@ -305,10 +410,10 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         assert len(query_pair) == 2
         assert set(query_pair).issubset(set(series_labels))
         assert answer_label in set(category_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert "integer_list" not in trace["projected_evidence"]
-        assert len(trace["projected_evidence"]["bbox_set"]) == 2
-        for x_coord, y_coord in evidence_points:
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert "integer_list" not in trace["projected_annotation"]
+        assert len(trace["projected_annotation"]["bbox_set"]) == 2
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"]) * int(execution["series_count"])
@@ -348,21 +453,21 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         assert 1 <= answer_rank <= 3
         assert answer_label == ranked_labels[int(answer_rank) - 1]
         assert int(execution["answer_score"]) == int(derived_values[str(answer_label)])
-        assert evidence_values[0] == int(values_by_category[str(answer_label)][str(left_series)])
-        assert evidence_values[1] == int(values_by_category[str(answer_label)][str(right_series)])
-        assert evidence_values[2] == int(derived_values[str(answer_label)])
+        assert annotation_values[0] == int(values_by_category[str(answer_label)][str(left_series)])
+        assert annotation_values[1] == int(values_by_category[str(answer_label)][str(right_series)])
+        assert annotation_values[2] == int(derived_values[str(answer_label)])
 
 
 def test_chart_multiseries_extremum_delta_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
         "directional_change": {
-            "evidence": {"Q:Orly": [260, 320], "Q:Vega": [260, 180]},
-            "answer": "Q",
+            "annotation": {"K4M8:Orly": [260, 320], "K4M8:Vega": [260, 180]},
+            "answer": "K4M8",
         },
         "absolute_gap": {
-            "evidence": {"M:Orly": [260, 340], "M:Vega": [260, 160]},
-            "answer": "M",
+            "annotation": {"M7P2:Orly": [260, 340], "M7P2:Vega": [260, 160]},
+            "answer": "M7P2",
         },
     }
     params_by_measure = {
@@ -379,9 +484,9 @@ def test_chart_multiseries_extremum_delta_prompt_examples_match_selected_variant
             },
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[change_measure]
+        assert answer_and_annotation == expected[change_measure]
         assert answer_only == {"answer": expected[change_measure]["answer"]}
 
 
@@ -390,7 +495,7 @@ def test_chart_multiseries_extremum_delta_balanced_axes_are_decoupled() -> None:
     observed = set()
     query_id_counts = {}
     scene_query_id_counts = {}
-    for index in range(120):
+    for index in range(160):
         out = task.generate(11200 + index, params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
         query_id = str(execution["query_id"])
@@ -403,13 +508,15 @@ def test_chart_multiseries_extremum_delta_balanced_axes_are_decoupled() -> None:
         "category_total_extremum_label",
         "conditional_gap_aggregate_value",
         "conditional_gap_extremum_value",
+        "pair_equality_label",
         "ranked_change_extremum",
         "ranked_ratio_extremum",
         "series_comparison_count",
+        "series_rank_at_category_label",
     }
-    assert len(observed) == 24
-    assert all(10 <= count <= 35 for count in query_id_counts.values())
-    assert all(20 <= count <= 40 for count in scene_query_id_counts.values())
+    assert len(observed) == 32
+    assert all(12 <= count <= 45 for count in query_id_counts.values())
+    assert all(30 <= count <= 50 for count in scene_query_id_counts.values())
 
 
 def test_chart_multiseries_extremum_delta_task_is_deterministic() -> None:
@@ -424,7 +531,7 @@ def test_chart_multiseries_extremum_delta_task_is_deterministic() -> None:
     out_b = task.generate(11150, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -452,8 +559,8 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         category_labels = [str(label) for label in execution["category_labels"]]
         series_labels = [str(label) for label in execution["series_labels"]]
         answer_label = str(out.answer_gt.value)
-        evidence_values = [int(value) for value in execution["evidence_values"]]
-        evidence_points = _evidence_point_values(out)
+        annotation_values = [int(value) for value in execution["annotation_values"]]
+        annotation_points = _annotation_point_values(out)
         values_by_category = {
             str(category_label): {
                 str(series_label): int(value)
@@ -463,10 +570,10 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         }
 
         assert str(out.query_id) == str(query_id)
-        assert out.answer_gt.type == "option_letter"
-        _assert_keyed_point_evidence(out)
-        assert len(evidence_values) == 3
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert out.answer_gt.type == "string"
+        _assert_keyed_point_annotation(out)
+        assert len(annotation_values) == 3
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
@@ -475,17 +582,17 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         assert len(category_labels) == int(execution["category_count"])
         assert len(series_labels) == int(execution["series_count"])
         assert answer_label in set(category_labels)
-        assert trace["projected_evidence"]["point_set"] == evidence_points
-        assert "integer_list" not in trace["projected_evidence"]
+        assert trace["projected_annotation"]["point_set"] == annotation_points
+        assert "integer_list" not in trace["projected_annotation"]
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"]) * int(execution["series_count"])
-        for x_coord, y_coord in evidence_points:
+        for x_coord, y_coord in annotation_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
         assert set(trace["render_map"]["category_label_centers_px"].keys()) == set(category_labels)
 
         is_share_variant = str(execution["ratio_measure"]) == "series_share"
-        assert len(evidence_points) == (len(series_labels) if is_share_variant else 2)
-        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_points)
+        assert len(annotation_points) == (len(series_labels) if is_share_variant else 2)
+        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_points)
         derived_values = {}
         if is_share_variant:
             target_series = str(execution["target_series_label"])
@@ -530,29 +637,29 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         assert 1 <= answer_rank <= 3
         assert answer_label == ranked_labels[int(answer_rank) - 1]
         assert int(execution["answer_score_percent"]) == int(derived_values[str(answer_label)])
-        assert evidence_values[0] == int(
+        assert annotation_values[0] == int(
             values_by_category[str(answer_label)][
                 str(execution["target_series_label"] if is_share_variant else execution["numerator_series_label"])
             ]
         )
-        assert evidence_values[1] == int(execution["denominator_values_by_category"][str(answer_label)])
-        assert evidence_values[2] == int(derived_values[str(answer_label)])
+        assert annotation_values[1] == int(execution["denominator_values_by_category"][str(answer_label)])
+        assert annotation_values[2] == int(derived_values[str(answer_label)])
 
 
 def test_chart_multiseries_extremum_ratio_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
         "series_share": {
-            "evidence": {
-                "Q:Orly": [300, 240],
-                "Q:Vega": [300, 320],
-                "Q:Tana": [300, 400],
+            "annotation": {
+                "K4M8:Orly": [300, 240],
+                "K4M8:Vega": [300, 320],
+                "K4M8:Tana": [300, 400],
             },
-            "answer": "Q",
+            "answer": "K4M8",
         },
         "pair_ratio": {
-            "evidence": {"M:Orly": [300, 180], "M:Vega": [300, 300]},
-            "answer": "M",
+            "annotation": {"M7P2:Orly": [300, 180], "M7P2:Vega": [300, 300]},
+            "answer": "M7P2",
         },
     }
     for index, ratio_measure in enumerate(expected, start=11240):
@@ -561,9 +668,9 @@ def test_chart_multiseries_extremum_ratio_prompt_examples_match_selected_variant
             params={"query_id": "ranked_ratio_extremum", "ratio_measure": ratio_measure, "extremum_direction": "largest"},
             max_attempts=10,
         )
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[ratio_measure]
+        assert answer_and_annotation == expected[ratio_measure]
         assert answer_only == {"answer": expected[ratio_measure]["answer"]}
 
 
@@ -572,7 +679,7 @@ def test_chart_multiseries_extremum_ratio_balanced_axes_are_decoupled() -> None:
     observed = set()
     query_id_counts = {}
     scene_query_id_counts = {}
-    for index in range(120):
+    for index in range(160):
         out = task.generate(11300 + index, params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
         query_id = str(execution["query_id"])
@@ -585,13 +692,15 @@ def test_chart_multiseries_extremum_ratio_balanced_axes_are_decoupled() -> None:
         "category_total_extremum_label",
         "conditional_gap_aggregate_value",
         "conditional_gap_extremum_value",
+        "pair_equality_label",
         "ranked_change_extremum",
         "ranked_ratio_extremum",
         "series_comparison_count",
+        "series_rank_at_category_label",
     }
-    assert len(observed) == 24
-    assert all(10 <= count <= 35 for count in query_id_counts.values())
-    assert all(20 <= count <= 40 for count in scene_query_id_counts.values())
+    assert len(observed) == 32
+    assert all(12 <= count <= 45 for count in query_id_counts.values())
+    assert all(30 <= count <= 50 for count in scene_query_id_counts.values())
 
 
 def test_chart_multiseries_extremum_ratio_task_is_deterministic() -> None:
@@ -606,7 +715,7 @@ def test_chart_multiseries_extremum_ratio_task_is_deterministic() -> None:
     out_b = task.generate(11250, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -651,14 +760,14 @@ def test_chart_multiseries_category_total_extremum_matches_contract() -> None:
         answer_label = str(ranked[int(execution["answer_rank"]) - 1])
 
         assert out.query_id == "category_total_extremum_label"
-        assert out.answer_gt.type == "option_letter"
+        assert out.answer_gt.type == "string"
         assert out.answer_gt.value == answer_label
         assert int(execution["answer_score"]) == int(totals_by_category[str(answer_label)])
         assert execution["category_totals_by_category"] == totals_by_category
         assert 6 <= int(execution["category_count"]) <= 10
         assert 3 <= int(execution["series_count"]) <= 5
-        _assert_keyed_point_evidence(out)
-        assert len(out.evidence_gt.value) == int(execution["series_count"])
+        _assert_keyed_point_annotation(out)
+        assert len(out.annotation_gt.value) == int(execution["series_count"])
         assert str(render["scene_variant"]) == str(scene_variant)
         _assert_normalized_complexity(out)
 
@@ -701,8 +810,8 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
 
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
-        _assert_keyed_point_evidence(out)
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        _assert_keyed_point_annotation(out)
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
@@ -715,9 +824,9 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
         assert set(execution["condition_series_labels"]).isdisjoint(set(execution["target_series_labels"]))
         assert set(filtered_labels).issubset(set(category_labels))
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"]) * int(execution["series_count"])
-        assert trace["projected_evidence"]["point_set"] == _evidence_point_values(out)
-        assert len(out.evidence_gt.value) == 4 * len(filtered_labels)
-        assert len(trace["projected_evidence"]["bbox_set"]) == 4 * len(filtered_labels)
+        assert trace["projected_annotation"]["point_set"] == _annotation_point_values(out)
+        assert len(out.annotation_gt.value) == 4 * len(filtered_labels)
+        assert len(trace["projected_annotation"]["bbox_set"]) == 4 * len(filtered_labels)
         for series_label in (condition_left, condition_right, target_left, target_right):
             assert f'"{series_label}"' in str(out.prompt)
 
@@ -760,7 +869,7 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
 def test_chart_multiseries_conditional_gap_prompt_examples_match_selected_variant() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     expected = {
-        "evidence": {
+        "annotation": {
             "Q:Orly": [160, 310],
             "Q:Vega": [160, 250],
             "Q:Tana": [160, 190],
@@ -780,9 +889,9 @@ def test_chart_multiseries_conditional_gap_prompt_examples_match_selected_varian
         start=11340,
     ):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected
+        assert answer_and_annotation == expected
         assert answer_only == {"answer": expected["answer"]}
 
 
@@ -836,7 +945,7 @@ def test_chart_multiseries_conditional_gap_task_is_deterministic() -> None:
     out_b = task.generate(11450, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt

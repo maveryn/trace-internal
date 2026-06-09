@@ -30,8 +30,15 @@ RLVR training/export/validation docs live under:
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.
 - `DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
+- `ANNOTATION_CONTRACT_MIGRATION.md` — repo-wide breaking migration runbook
+  for replacing the public `annotation` contract with `annotation`.
+- `TAXONOMY_V0_DOMAIN_MIGRATION.md` — strict per-domain migration workflow for
+  applying the approved contract-v0 taxonomy with no compatibility aliases or
+  stale public task ids.
 - `TASK_REVIEW_WEB_APP.md` — browser app workflow for inspecting active
-  task-review sidecars and collecting sample-level reviewer feedback.
+  task-review sidecars and collecting sample-level reviewer issues.
+- `BENCHMARK_REVIEW_WEB_APP.md` — separate browser app workflow for inspecting
+  external benchmark model responses by benchmark and correctness status.
 - `TASK_UNIT_AUDIT.md` — rubric for auditing whether a task is the right unit for uniform task-level sampling.
 - `VALIDATION_ERROR_CODES.md` — validation error taxonomy.
 

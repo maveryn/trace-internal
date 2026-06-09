@@ -8,11 +8,13 @@ from trace.tasks import create_task
 from trace.tasks.geometry.coordinate.algebra import (
     MISSING_ENDPOINT_QUERY_IDS,
     MISSING_ENDPOINT_TASK_ID,
+    REFLECTED_POINT_TASK_ID,
+    ROTATED_POINT_TASK_ID,
     SCENE_ID,
     SECTION_POINT_QUERY_IDS,
     SECTION_POINT_TASK_ID,
+    TRANSLATED_POINT_TASK_ID,
     TRANSFORMED_POINT_QUERY_IDS,
-    TRANSFORMED_POINT_TASK_ID,
 )
 
 
@@ -28,9 +30,9 @@ def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "point_set"
-    assert out.evidence_gt.value == [candidates["C"]["point_px"]]
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == [candidates["C"]["point_px"]]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["C"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -55,9 +57,9 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "point_set"
-    assert out.evidence_gt.value == [candidates["D"]["point_px"]]
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == [candidates["D"]["point_px"]]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["D"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -75,7 +77,13 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
 
 @pytest.mark.parametrize("query_id", TRANSFORMED_POINT_QUERY_IDS)
 def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> None:
-    task = create_task(TRANSFORMED_POINT_TASK_ID)
+    if query_id.startswith("reflect"):
+        task_id = REFLECTED_POINT_TASK_ID
+    elif query_id.startswith("rotate"):
+        task_id = ROTATED_POINT_TASK_ID
+    else:
+        task_id = TRANSLATED_POINT_TASK_ID
+    task = create_task(task_id)
     out = task.generate(77911, params={"query_id": query_id, "winner_label": "E"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -85,11 +93,12 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
-    assert out.evidence_gt.type == "point_set"
-    assert out.evidence_gt.value == [candidates["E"]["point_px"]]
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == [candidates["E"]["point_px"]]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["E"]["point_graph"]
-    assert len(candidates) == 6
+    assert 4 <= len(candidates) <= 6
+    assert "E" in candidates
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
 
     source = execution["known_points_by_label"]["P"]["point_graph"]
@@ -126,7 +135,9 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
     (
         (MISSING_ENDPOINT_TASK_ID, "missing_endpoint_from_midpoint"),
         (SECTION_POINT_TASK_ID, "two_thirds_from_p_to_q"),
-        (TRANSFORMED_POINT_TASK_ID, "reflect_over_vertical_line"),
+        (REFLECTED_POINT_TASK_ID, "reflect_over_vertical_line"),
+        (ROTATED_POINT_TASK_ID, "rotate_90_about_marked_center"),
+        (TRANSLATED_POINT_TASK_ID, "translate_point"),
     ),
 )
 def test_coordinate_algebra_tasks_are_deterministic(task_id: str, query_id: str) -> None:
@@ -137,6 +148,6 @@ def test_coordinate_algebra_tasks_are_deterministic(task_id: str, query_id: str)
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()

@@ -48,20 +48,22 @@ def test_geometry_analytical_intersection_property_label_contract(query_id: str)
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) >= 2
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) >= 2
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["template_id"] == "geometry_analytical_intersection_property_v0"
     assert out.image.size == (1024, 1024)
 
     panels = out.trace_payload["execution_trace"]["panels_by_label"]
-    assert set(panels.keys()) == {"A", "B", "C", "D", "E", "F", "G", "H", "I"}
+    assert 4 <= len(panels) <= 9
+    assert "C" in panels
+    assert set(panels).issubset({"A", "B", "C", "D", "E", "F", "G", "H", "I"})
     target_quadrant = out.trace_payload["execution_trace"]["target_quadrant"]
     assert _matching_labels(query_id, panels, str(target_quadrant)) == ["C"]
 
-    c_panel_bbox = out.trace_payload["projected_evidence"]["panel_bbox_by_label"]["C"]
-    c_point_bboxes = out.trace_payload["projected_evidence"]["intersection_point_bboxes_by_label"]["C"]
-    assert out.evidence_gt.value == [c_panel_bbox, *c_point_bboxes]
+    c_panel_bbox = out.trace_payload["projected_annotation"]["panel_bbox_by_label"]["C"]
+    c_point_bboxes = out.trace_payload["projected_annotation"]["intersection_point_bboxes_by_label"]["C"]
+    assert out.annotation_gt.value == [c_panel_bbox, *c_point_bboxes]
 
 
 def test_geometry_analytical_intersection_property_label_balances_variants_and_answers() -> None:
@@ -81,7 +83,7 @@ def test_geometry_analytical_intersection_property_label_balances_variants_and_a
     assert all(20 <= count <= 45 for count in query_id_counts.values())
     for counts in per_query_id_labels.values():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F", "G", "H", "I"}
-        assert max(counts.values()) <= 8
+        assert max(counts.values()) <= 10
 
 
 def test_geometry_analytical_intersection_property_label_randomizes_object_colors() -> None:

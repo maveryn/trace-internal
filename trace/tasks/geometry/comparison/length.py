@@ -35,7 +35,7 @@ from ...shared.text_rendering import (
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.complexity import build_geometry_comparison_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.length_geometry import integer_length_vectors
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
@@ -98,7 +98,7 @@ class _ScenePayload:
     objects: Tuple[_SegmentObject, ...]
     winner_metrics: ComparisonGapMetrics
     winner_label: str
-    evidence_points_by_label: Dict[str, Point]
+    annotation_points_by_label: Dict[str, Point]
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
@@ -406,7 +406,7 @@ def _sample_scene(
             objects=tuple(objects),
             winner_metrics=metrics,
             winner_label=str(winner.label),
-            evidence_points_by_label={
+            annotation_points_by_label={
                 "endpoint_a": (float(winner.endpoint_a[0]), float(winner.endpoint_a[1])),
                 "endpoint_b": (float(winner.endpoint_b[0]), float(winner.endpoint_b[1])),
             },
@@ -626,21 +626,21 @@ class GeometryComparisonLengthTask:
             or line_width is None
         ):
             raise RuntimeError("failed to generate source_geometry_comparison_length instance") from last_error
-        evidence = graph_point_set_evidence_artifacts(
-            points_by_label=scene_payload.evidence_points_by_label,
+        annotation = graph_point_set_annotation_artifacts(
+            points_by_label=scene_payload.annotation_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
             witness_type="winning_segment_endpoints",
             ordered_labels=("endpoint_a", "endpoint_b"),
         )
-        evidence_value = evidence.get("evidence_value", [])
+        annotation_value = annotation.get("annotation_value", [])
         if (
-            not isinstance(evidence_value, list)
-            or len(evidence_value) != 2
-            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
+            not isinstance(annotation_value, list)
+            or len(annotation_value) != 2
+            or any(not isinstance(point, list) or len(point) != 2 for point in annotation_value)
+            or any(not isinstance(coord, (int, float)) for point in annotation_value for coord in point)
         ):
-            raise RuntimeError("comparison-length evidence must include two pixel points")
+            raise RuntimeError("comparison-length annotation must include two pixel points")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -659,7 +659,7 @@ class GeometryComparisonLengthTask:
                 "object_description",
                 "question_text_largest",
                 "question_text_smallest",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
@@ -667,7 +667,7 @@ class GeometryComparisonLengthTask:
         question_text_key = "question_text_largest" if str(query_type) == "largest" else "question_text_smallest"
         question_text = str(prompt_defaults[str(question_text_key)])
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence_value,
+            annotation_value=annotation_value,
             answer_type="option_letter",
         )
         prompt_selection = render_task_prompt_variants(
@@ -676,13 +676,13 @@ class GeometryComparisonLengthTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -692,7 +692,7 @@ class GeometryComparisonLengthTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         winner_label = str(scene_payload.winner_label)
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
-        evidence_gt = TypedValue(type=str(evidence["evidence_type"]), value=list(evidence_value))
+        annotation_gt = TypedValue(type=str(annotation["annotation_type"]), value=list(annotation_value))
         values_by_label = {
             str(obj.label): int(obj.length_units)
             for obj in scene_payload.objects
@@ -785,14 +785,14 @@ class GeometryComparisonLengthTask:
                 "runner_up_value": float(scene_payload.winner_metrics.runner_up_value),
                 "winner_gap_abs": float(scene_payload.winner_metrics.gap_abs),
                 "winner_gap_normalized": float(scene_payload.winner_metrics.gap_normalized),
-                "required_evidence_labels": ["endpoint_a", "endpoint_b"],
+                "required_annotation_labels": ["endpoint_a", "endpoint_b"],
                 "question_format": "label_choice_no_text_options",
             },
             "witness_symbolic": {
-                **dict(evidence["witness_symbolic"]),
+                **dict(annotation["witness_symbolic"]),
                 "winner_label": str(winner_label),
             },
-            "projected_evidence": dict(evidence["projected_evidence"]),
+            "projected_annotation": dict(annotation["projected_annotation"]),
         }
         complexity = build_geometry_comparison_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -803,12 +803,12 @@ class GeometryComparisonLengthTask:
             gap_normalized=float(scene_payload.winner_metrics.gap_normalized),
             min_normalized_gap=float(_GEN_DEFAULTS["min_normalized_gap"]),
             comparison_kind="length",
-            evidence_point_count=2,
+            annotation_point_count=2,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

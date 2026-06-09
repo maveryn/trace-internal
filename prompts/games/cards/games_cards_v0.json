@@ -27,24 +27,35 @@
     "query:poker_best_hand_label": [
       "poker_rule_text"
     ],
+    "query:poker_draw_card_label": [
+      "poker_rule_text"
+    ],
     "query:trick_taking_winner_label": [
       "rank_order_text",
       "trick_rule_text",
       "trump_text"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:trick_winning_play_label": [
+      "rank_order_text",
+      "trick_rule_text",
+      "trump_text"
+    ],
+    "query:missing_straight_card_label": [
+      "rank_order_text"
+    ],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -52,12 +63,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -112,12 +123,54 @@
       "{poker_rule_text} Identify the option letter for the winning poker hand.",
       "{poker_rule_text} Which option letter labels the five-card hand that outranks all the others?"
     ],
+    "poker_draw_card_label": [
+      "{poker_rule_text} Which candidate card makes the strongest five-card poker hand when added to the top hand?",
+      "{poker_rule_text} Select the candidate card that gives the top hand the best five-card poker result.",
+      "{poker_rule_text} Which option letter completes the top hand as the strongest poker hand?",
+      "{poker_rule_text} Choose the candidate draw card that produces the best five-card poker hand.",
+      "{poker_rule_text} Which labeled candidate card gives the strongest poker completion?"
+    ],
     "trick_taking_winner_label": [
       "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the player who wins the trick?",
       "{rank_order_text} {trick_rule_text} {trump_text} Select the option letter for the winning player.",
       "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the played card that wins?",
       "{rank_order_text} {trick_rule_text} {trump_text} Identify the option letter for the player who takes this trick.",
       "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the player with the winning card?"
+    ],
+    "trick_winning_play_label": [
+      "{rank_order_text} {trick_rule_text} {trump_text} Which candidate card would win the trick if played next?",
+      "{rank_order_text} {trick_rule_text} {trump_text} Select the candidate card that would take the trick.",
+      "{rank_order_text} {trick_rule_text} {trump_text} Which option letter is the winning next play?",
+      "{rank_order_text} {trick_rule_text} {trump_text} Choose the candidate next card that would win.",
+      "{rank_order_text} {trick_rule_text} {trump_text} Which labeled candidate card overtakes the current winning trick card?"
+    ],
+    "missing_flush_card_label": [
+      "Which candidate card completes a flush for the top hand?",
+      "Select the candidate card that makes the top hand a flush.",
+      "Which option letter completes the top hand as a flush?",
+      "Choose the candidate that gives the top hand five cards of one suit.",
+      "Which labeled candidate card finishes the flush?"
+    ],
+    "missing_straight_card_label": [
+      "{rank_order_text} Which candidate card completes a straight for the top hand?",
+      "{rank_order_text} Select the candidate card that makes the top hand a straight.",
+      "{rank_order_text} Which option letter completes the top hand as a straight?",
+      "{rank_order_text} Choose the candidate that gives the top hand five consecutive ranks.",
+      "{rank_order_text} Which labeled candidate card finishes the straight?"
+    ],
+    "missing_full_house_card_label": [
+      "Which candidate card completes a full house for the top hand?",
+      "Select the candidate card that makes the top hand a full house.",
+      "Which option letter completes the top hand as a full house?",
+      "Choose the candidate that gives the top hand three cards of one rank and two cards of another rank.",
+      "Which labeled candidate card finishes the full house?"
+    ],
+    "missing_three_of_kind_card_label": [
+      "Which candidate card completes three of a kind for the top hand?",
+      "Select the candidate card that makes the top hand three of a kind.",
+      "Which option letter completes the top hand as three of a kind?",
+      "Choose the candidate that gives the top hand exactly three cards of one rank.",
+      "Which labeled candidate card finishes three of a kind?"
     ]
   },
   "allow_empty_task_templates": true

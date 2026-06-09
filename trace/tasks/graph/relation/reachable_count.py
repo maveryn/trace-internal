@@ -29,8 +29,6 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-    SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_REACHABLE_QUERY_IDS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_reachable_count,
@@ -39,24 +37,24 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_EDGE_ROUTING_VARIANTS,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_node_point_evidence,
+    projected_node_point_annotation,
     render_graph_scene,
 )
+from ..shared.node_link_axes import resolve_node_link_visual_axes
 from ..shared.fixed_query_task import (
     decoupled_merged_branch_params,
+    FixedGraphQueryTaskMixin,
     rewrite_graph_public_task_output,
     rewrite_graph_query_output,
     select_merged_graph_query_id,
 )
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__node_link__reachable_node_count"
+TASK_ID = "graph_node_link_reachable_node_count_source"
+REACHABLE_COUNT_TASK_ID = "task_graph__node_link__reachable_count"
+REACHABLE_COUNT_AFTER_EDGE_EDIT_TASK_ID = "task_graph__node_link__reachable_count_after_edge_edit"
 
 
 @dataclass(frozen=True)
@@ -228,84 +226,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="topology_profile",
     )
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
-    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
-        edge_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="edge_routing_variant",
-        weights_key="edge_routing_variant_weights",
-        balance_flag_key="balanced_edge_routing_variant_sampling",
-        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="edge_routing_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    edge_routing_variant = visual_axes.edge_routing_variant
+    node_color_name = visual_axes.node_color_name
+    layout_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    edge_routing_variant_probabilities = visual_axes.edge_routing_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -452,14 +390,14 @@ class _GraphRelationReachableCountBaseTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_directed",
-                "evidence_hint_reachable_count",
+                "annotation_hint_reachable_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(annotation_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
         prompt_query_label = format_graph_prompt_label(
             str(graph_sample.query_label),
             label_variant=str(query.label_variant),
@@ -471,13 +409,13 @@ class _GraphRelationReachableCountBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key="reachable_count",
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_directed"]),
                 "query_label": str(prompt_query_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_reachable_count"]).format(
+                "annotation_hint": str(prompt_defaults["annotation_hint_reachable_count"]).format(
                     query_label=str(prompt_query_label)
                 ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
@@ -488,11 +426,11 @@ class _GraphRelationReachableCountBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
-        answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
-        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
-        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
+        annotation_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
+        answer_gt = TypedValue(type="integer", value=int(len(annotation_labels)))
+        annotation_projection = projected_node_point_annotation(rendered_scene, annotation_labels)
+        annotation_points = [list(point) for point in annotation_projection["pixel_point_set"]]
+        annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -505,7 +443,7 @@ class _GraphRelationReachableCountBaseTask:
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
                 "is_query_node": bool(str(node.label) == str(graph_sample.query_label)),
-                "is_reachable": bool(str(node.label) in set(evidence_labels)),
+                "is_reachable": bool(str(node.label) in set(annotation_labels)),
             }
             for node in rendered_scene.nodes
         ]
@@ -528,7 +466,7 @@ class _GraphRelationReachableCountBaseTask:
         }
         dist_start, _ = bfs_dist_count_by_adjacency(successors_by_label, start=str(graph_sample.query_label))
         reachable_labels = tuple(sorted((str(label) for label in dist_start.keys()), key=graph_label_sort_key))
-        if tuple(reachable_labels) != tuple(evidence_labels):
+        if tuple(reachable_labels) != tuple(annotation_labels):
             raise ValueError("reachable-count sampler failed to preserve the requested reachable set")
 
         complexity = _build_complexity(
@@ -546,7 +484,7 @@ class _GraphRelationReachableCountBaseTask:
                     "relation_rule": "reachable_from_query_node_following_arrow_direction_including_query",
                     "graph_directionality": "directed",
                     "query_label": str(graph_sample.query_label),
-                    "matching_labels": list(evidence_labels),
+                    "matching_labels": list(annotation_labels),
                     "unreachable_labels": list(graph_sample.unreachable_labels),
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
@@ -635,7 +573,7 @@ class _GraphRelationReachableCountBaseTask:
                 "edge_count": int(graph_sample.edge_count),
                 "target_reachable_count": int(graph_sample.target_reachable_count),
                 "query_label": str(graph_sample.query_label),
-                "matching_labels": list(evidence_labels),
+                "matching_labels": list(annotation_labels),
                 "unreachable_labels": list(graph_sample.unreachable_labels),
                 "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                 "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
@@ -653,13 +591,13 @@ class _GraphRelationReachableCountBaseTask:
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "labels": list(evidence_labels),
+                "labels": list(annotation_labels),
                 "query_label": str(graph_sample.query_label),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_set",
-                "point_set": list(evidence_points),
-                **dict(evidence_projection),
+                "point_set": list(annotation_points),
+                **dict(annotation_projection),
             },
         }
 
@@ -667,7 +605,7 @@ class _GraphRelationReachableCountBaseTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
@@ -730,29 +668,53 @@ def _reachable_edge_edit_params(params: Mapping[str, Any], query_id: str) -> Dic
 
 
 @register_task
-class GraphRelationReachableCountTask(_GraphRelationReachableCountBaseTask):
-    """Count directed reachability before or after one hypothetical edge edit."""
+class GraphRelationReachableCountTask(FixedGraphQueryTaskMixin):
+    """Count directed-graph nodes reachable from one queried source node."""
+
+    task_id = REACHABLE_COUNT_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    fixed_query_id = "reachable_count"
+    source_task_cls = _GraphRelationReachableCountBaseTask
+
+
+@register_task
+class GraphRelationReachableCountAfterEdgeEditTaskPublic:
+    """Count directed reachability after one hypothetical arrow edit."""
+
+    task_id = REACHABLE_COUNT_AFTER_EDGE_EDIT_TASK_ID
+    domain = "graph"
+    task_group = "relation"
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         branch_base_params = decoupled_merged_branch_params(
             params,
             instance_seed=int(instance_seed),
-            task_id=TASK_ID,
-            supported_query_ids=_MERGED_QUERY_IDS,
+            task_id=self.task_id,
+            supported_query_ids=("reachable_count_after_edge_removal", "reachable_count_after_edge_addition"),
             aliases=_MERGED_QUERY_ALIASES,
         )
         query_id = _selected_reachable_query(params, int(instance_seed))
-        if str(query_id) == "reachable_count":
-            output = super().generate(int(instance_seed), params=dict(branch_base_params), max_attempts=int(max_attempts))
-        else:
-            from .reachable_count_after_edge_edit import GraphRelationReachableCountAfterEdgeEditTask
-
-            output = GraphRelationReachableCountAfterEdgeEditTask().generate(
-                int(instance_seed),
-                params=_reachable_edge_edit_params(branch_base_params, str(query_id)),
-                max_attempts=int(max_attempts),
+        if str(query_id) not in {"reachable_count_after_edge_removal", "reachable_count_after_edge_addition"}:
+            query_id = select_merged_graph_query_id(
+                params=params,
+                instance_seed=int(instance_seed),
+                task_id=self.task_id,
+                supported_query_ids=("reachable_count_after_edge_removal", "reachable_count_after_edge_addition"),
+                aliases=_MERGED_QUERY_ALIASES,
             )
-        return rewrite_graph_public_task_output(output, task_id=TASK_ID, query_id=output.query_id)
+        from .reachable_count_after_edge_edit import GraphRelationReachableCountAfterEdgeEditTask
+
+        output = GraphRelationReachableCountAfterEdgeEditTask().generate(
+            int(instance_seed),
+            params=_reachable_edge_edit_params(branch_base_params, str(query_id)),
+            max_attempts=int(max_attempts),
+        )
+        return rewrite_graph_public_task_output(output, task_id=self.task_id, query_id=output.query_id)
 
 
-__all__ = ["GraphRelationReachableCountTask"]
+__all__ = [
+    "GraphRelationReachableCountTask",
+    "GraphRelationReachableCountAfterEdgeEditTaskPublic",
+]

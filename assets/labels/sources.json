@@ -131,6 +131,13 @@
       "count": 21,
       "description": "Synthetic workflow status category labels for categorical legends and document/page tasks."
     },
+    "panel_titles/technical_topics.txt": {
+      "sources": [
+        "trace_synthetic_categories"
+      ],
+      "count": 280,
+      "description": "Synthetic technical and scientific topic labels for chart panel titles and subplot labels."
+    },
     "occupations/occupations_bls_oews.txt": {
       "sources": [
         "bls_occupations_oews"

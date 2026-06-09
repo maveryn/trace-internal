@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ app_path('/benchmarks/' ~ sample.benchmark) }}">{{ sample.display }}</a>
+  <span>/ sample {{ sample.doc_id }}</span>
+</nav>
+
+<section class="sample-detail">
+  <div class="detail-image">
+    {% if sample.image_exists %}
+      <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+    {% else %}
+      <div class="missing-image">No image</div>
+    {% endif %}
+  </div>
+  <div class="detail-side">
+    <div class="status-line large">
+      <span class="status-pill {{ sample.status }}">{{ sample.status }}</span>
+      <span>score {{ sample.score|score }}</span>
+      {% if sample.metric_name %}<span>{{ sample.metric_name }}</span>{% endif %}
+    </div>
+    <dl class="detail-list">
+      <dt>Benchmark</dt>
+      <dd>{{ sample.display }}</dd>
+      <dt>Task</dt>
+      <dd>{{ sample.task_name }}</dd>
+      {% if sample.category %}
+      <dt>Category</dt>
+      <dd>{{ sample.category }}</dd>
+      {% endif %}
+      <dt>Doc id</dt>
+      <dd>{{ sample.doc_id }}</dd>
+      <dt>Ground truth</dt>
+      <dd>{{ sample.target_label }}</dd>
+      <dt>Extracted answer</dt>
+      <dd>{{ sample.extracted_answer }}</dd>
+      <dt>Source file</dt>
+      <dd>{{ sample.source_file }}:{{ sample.source_line + 1 }}</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="two-column">
+  <article class="panel">
+    <h2>Prompt</h2>
+    <pre>{{ sample.prompt }}</pre>
+  </article>
+  <article class="panel">
+    <h2>Model Response</h2>
+    <pre>{{ sample.model_response }}</pre>
+  </article>
+</section>
+
+<section class="two-column">
+  <article class="panel">
+    <h2>Metric Payload</h2>
+    <pre>{{ sample.metric_payload|pretty_json }}</pre>
+  </article>
+  <article class="panel">
+    <h2>Raw Row</h2>
+    <pre>{{ payload|pretty_json }}</pre>
+  </article>
+</section>
+{% endblock %}

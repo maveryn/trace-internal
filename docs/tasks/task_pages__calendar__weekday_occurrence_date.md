@@ -11,7 +11,7 @@
 2. Branch metadata: `query_id`
 3. `query_id`: `date_of_weekday_occurrence`
 4. Answer type: `integer`
-5. Evidence type: `bbox_set` containing the target date-cell bbox.
+5. Annotation type: `bbox_set` containing the target date-cell bbox.
 6. Query knobs: weekday name and occurrence ordinal.
 
 ## Prompt + Trace
@@ -20,4 +20,4 @@
 3. Task key: `calendar_month_query`
 4. Internal prompt variant key: `date_of_weekday_occurrence`
 5. Trace records the month/year, weekday/ordinal query, answer date, and date-cell bboxes.
-6. Generation is deterministic from `instance_seed`; answers and evidence come from the finalized calendar metadata.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized calendar metadata.

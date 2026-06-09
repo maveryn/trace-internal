@@ -15,6 +15,7 @@ from trace.tasks.three_d.street.same_road_arm_reference import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
 @pytest.mark.parametrize(
@@ -25,7 +26,7 @@ from trace.tasks.three_d.street.same_road_arm_reference import (
         ("transit_intersection", "t_missing_west"),
     ],
 )
-def test_street_same_road_arm_reference_answer_evidence_and_geometry(
+def test_street_same_road_arm_reference_answer_annotation_and_geometry(
     scene_variant: str,
     intersection_layout: str,
 ) -> None:
@@ -64,8 +65,15 @@ def test_street_same_road_arm_reference_answer_evidence_and_geometry(
     assert output.query_id == "same_road_arm_as_reference"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.evidence_gt.type == "bbox_set"
-    assert output.evidence_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [expected_bbox]
+    assert_option_panel_matches_candidates(
+        output,
+        candidates,
+        answer_label=answer_label,
+        answer_object_id=str(answer_spec["object_id"]),
+        expected_image_size=(1180, 1088),
+    )
     assert trace["target_object_ids"] == [str(answer_spec["object_id"])]
     assert same_arm_labels == [answer_label]
     assert trace["same_road_arm_candidate_labels"] == [answer_label]
@@ -93,7 +101,6 @@ def test_street_same_road_arm_reference_answer_evidence_and_geometry(
     assert str(trace["missing_road_arm"]) not in set(
         trace["candidate_road_arm_by_label"].values()
     )
-    assert output.image.size == (1180, 920)
     assert "red-boxed object" in output.prompt
     assert "{reference_object_name}" not in output.prompt
     assert "{answer_hint}" not in output.prompt

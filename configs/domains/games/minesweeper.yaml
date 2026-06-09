@@ -6,6 +6,8 @@ generation:
     query_id_weights:
       forced_mine_count: 1.0
       forced_safe_count: 1.0
+      remaining_mine_count: 1.0
+      reveal_outcome_label: 1.0
       satisfied_clue_count: 1.0
     style_variant_weights:
       classic: 1.0
@@ -19,6 +21,7 @@ generation:
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true
     balanced_target_answer_sampling: true
+    balanced_reveal_outcome_option_count_sampling: true
     board_size_support:
     - 4
     - 5
@@ -28,6 +31,11 @@ generation:
     forced_cell_board_size_support:
     - 4
     - 5
+    reveal_outcome_board_size_support:
+    - 5
+    - 6
+    - 7
+    - 8
     forced_mine_count_support:
     - 1
     - 2
@@ -40,6 +48,26 @@ generation:
     - 3
     - 4
     - 5
+    remaining_mine_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    reveal_outcome_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    reveal_outcome_option_count_support:
+    - 4
+    - 6
     satisfied_clue_count_support:
     - 1
     - 2
@@ -79,15 +107,25 @@ prompt:
       a number already has that many adjacent flags, its other hidden neighbors
       are safe. If the number still needs exactly all remaining hidden neighbors,
       those hidden neighbors are mines.
-    evidence_hint_forced_mine_count: set "evidence" to bounding boxes [x0, y0,
+    annotation_hint_forced_mine_count: set "annotation" to bounding boxes [x0, y0,
       x1, y1] for the hidden cells forced to be mines
     answer_hint_forced_mine_count: set "answer" to the count of hidden cells that
       must be mines
-    evidence_hint_forced_safe_count: set "evidence" to bounding boxes [x0, y0,
+    annotation_hint_forced_safe_count: set "annotation" to bounding boxes [x0, y0,
       x1, y1] for the hidden cells forced to be safe
     answer_hint_forced_safe_count: set "answer" to the count of hidden cells that
       must be safe
-    evidence_hint_satisfied_clue_count: set "evidence" to bounding boxes [x0,
+    annotation_hint_remaining_mine_count: set "annotation" to a JSON array containing
+      one bounding box [x0, y0, x1, y1] for the marked opened number cell
+    answer_hint_remaining_mine_count: set "answer" to the number of additional
+      mines that must be adjacent to the marked opened number cell
+    annotation_hint_reveal_outcome_label: set "annotation" to a JSON object with keys
+      "target_cell", "supporting_clues", and "supporting_flags"; each key maps to
+      an array of bounding boxes [x0, y0, x1, y1] for the marked hidden cell and
+      the visible cells used to infer the reveal result
+    answer_hint_reveal_outcome_label: set "answer" to the single option letter shown
+      beside the reveal result
+    annotation_hint_satisfied_clue_count: set "annotation" to bounding boxes [x0,
       y0, x1, y1] for the opened number cells whose clue equals the count of adjacent
       flags
     answer_hint_satisfied_clue_count: set "answer" to the count of opened number

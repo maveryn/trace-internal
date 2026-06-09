@@ -11,7 +11,7 @@ def test_games_backgammon_defaults_present() -> None:
     cfg = get_task_group_defaults("games", "backgammon")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__backgammon__destination_count",
+        task_id="task_games__backgammon__legal_move_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -35,4 +35,4 @@ def test_games_backgammon_defaults_present() -> None:
     assert str(prompt["bundle_id"]) == "games_backgammon_v0"
     assert "active-player point" in str(prompt["backgammon_rule_text"])
     assert "Count each distinct destination number once" in str(prompt["backgammon_rule_text"])
-    assert "bounding boxes" in str(prompt["evidence_hint_legal_move_count"])
+    assert "bounding boxes" in str(prompt["annotation_hint_legal_move_count"])

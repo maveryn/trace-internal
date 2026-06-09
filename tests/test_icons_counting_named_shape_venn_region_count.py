@@ -9,7 +9,7 @@ from trace.tasks import create_task
 from trace.tasks.icons.counting.named_shape_venn_region_count import QUERY_IDS, TARGET_ATTRIBUTE_MODES
 
 
-TASK_ID = "task_icons__venn_field__venn_region_shape_count"
+TASK_ID = "task_icons__venn_field__scoped_attribute_count"
 
 
 def _counted_categories(query_id: str) -> set[str]:
@@ -75,8 +75,8 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             assert out.query_id == query_id
             assert out.answer_gt.type == "integer"
             assert out.answer_gt.value == 2
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(out.evidence_gt.value) == 2
+            assert out.annotation_gt.type == "bbox_set"
+            assert len(out.annotation_gt.value) == 2
             assert len(counted_entities) == 2
             assert trace["scene_ir"]["scene_kind"] == "icons_named_shape_venn_region_field"
             assert trace["query_spec"]["template_id"] == "icons_counting_v0"
@@ -84,10 +84,10 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             assert set(trace["render_map"]["counted_instance_ids"]) == {
                 str(entity["instance_id"]) for entity in counted_entities
             }
-            assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
-            assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-            assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
-            assert len(trace["projected_evidence"]["pixel_point_set"]) == 2
+            assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
+            assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+            assert len(trace["projected_annotation"]["pixel_point_set"]) == 2
             assert '"bell"' in out.prompt
             if mode == "color_shape":
                 assert "red [#E63232]" in out.prompt
@@ -115,7 +115,7 @@ def test_icons_counting_named_shape_venn_sampling_distribution() -> None:
 
         assert 8 <= int(execution["object_count"]) <= 16
         assert 1 <= int(out.answer_gt.value) <= 5
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
         assert set(execution["counted_venn_categories"]) == _counted_categories(str(execution["query_id"]))
 
     assert set(query_counts) == set(QUERY_IDS)

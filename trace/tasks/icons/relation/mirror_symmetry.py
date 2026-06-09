@@ -19,7 +19,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
-from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
+from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -39,7 +39,7 @@ from ..shared.icon_task_rendering import (
     resolve_icon_cell_render_params,
     sample_icon_instance_noise,
 )
-from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
@@ -89,8 +89,8 @@ class _TaskDefaults:
     cell_label_font_size_px: int = 22
     pool_manifest: str = "non_symmetry.txt"
     rotation_candidates_degrees: Tuple[int, ...] = (0, 90, 180, 270)
-    palette_size_min: int = 8
-    palette_size_max: int = 12
+    palette_size_min: int = 4
+    palette_size_max: int = 7
     color_channel_min: int = 24
     color_channel_max: int = 220
     min_color_distance: float = 40.0
@@ -452,6 +452,38 @@ def _random_position_within_patch(
     return int(rng.randint(int(x_min), int(x_max))), int(rng.randint(int(y_min), int(y_max)))
 
 
+def _sample_nonoverlapping_position(
+    rng,
+    *,
+    width: int,
+    height: int,
+    sprite_w: int,
+    sprite_h: int,
+    inner_margin_px: int,
+    min_gap_px: int,
+    rects_xywh: Sequence[Tuple[int, int, int, int]],
+    attempts: int,
+) -> Tuple[int, int] | None:
+    """Sample a top-left position that does not collide with existing patch rects."""
+
+    for _ in range(max(1, int(attempts))):
+        position = _random_position_within_patch(
+            rng,
+            width=int(width),
+            height=int(height),
+            sprite_w=int(sprite_w),
+            sprite_h=int(sprite_h),
+            inner_margin_px=int(inner_margin_px),
+        )
+        if position is None:
+            return None
+        rect_xywh = (int(position[0]), int(position[1]), int(sprite_w), int(sprite_h))
+        if any(_rects_intersect(rect_xywh, other, pad=int(min_gap_px)) for other in rects_xywh):
+            continue
+        return int(position[0]), int(position[1])
+    return None
+
+
 def _sample_symmetric_seed_position(
     rng,
     *,
@@ -505,6 +537,51 @@ def _sample_symmetric_seed_position(
     return int(rng.randint(int(x_min), int(x_max))), int(rng.randint(int(y_min), int(y_max)))
 
 
+def _sample_nonoverlapping_symmetric_seed_position(
+    rng,
+    *,
+    width: int,
+    height: int,
+    sprite_w: int,
+    sprite_h: int,
+    variant: str,
+    inner_margin_px: int,
+    min_gap_px: int,
+    rects_xywh: Sequence[Tuple[int, int, int, int]],
+    attempts: int,
+) -> Tuple[int, int] | None:
+    """Sample one mirrored-pair seed position that fits with existing rects."""
+
+    for _ in range(max(1, int(attempts))):
+        position = _sample_symmetric_seed_position(
+            rng,
+            width=int(width),
+            height=int(height),
+            sprite_w=int(sprite_w),
+            sprite_h=int(sprite_h),
+            variant=str(variant),
+            inner_margin_px=int(inner_margin_px),
+            min_gap_px=int(min_gap_px),
+        )
+        if position is None:
+            continue
+        rect_xywh = (int(position[0]), int(position[1]), int(sprite_w), int(sprite_h))
+        mirrored_rect_xywh = _mirrored_rect(
+            rect_xywh,
+            width=int(width),
+            height=int(height),
+            variant=str(variant),
+        )
+        if _rects_intersect(rect_xywh, mirrored_rect_xywh, pad=int(min_gap_px)):
+            continue
+        if any(_rects_intersect(rect_xywh, other, pad=int(min_gap_px)) for other in rects_xywh):
+            continue
+        if any(_rects_intersect(mirrored_rect_xywh, other, pad=int(min_gap_px)) for other in rects_xywh):
+            continue
+        return int(position[0]), int(position[1])
+    return None
+
+
 def _mirrored_rect(rect_xywh: Tuple[int, int, int, int], *, width: int, height: int, variant: str) -> Tuple[int, int, int, int]:
     """Return one mirrored `xywh` rect within a patch."""
 
@@ -540,6 +617,62 @@ def _flip_both_axes_rect(
         int(sprite_w),
         int(sprite_h),
     )
+
+
+def _sample_nonoverlapping_both_axes_seed_position(
+    rng,
+    *,
+    width: int,
+    height: int,
+    sprite_w: int,
+    sprite_h: int,
+    inner_margin_px: int,
+    min_gap_px: int,
+    rects_xywh: Sequence[Tuple[int, int, int, int]],
+    attempts: int,
+) -> Tuple[int, int] | None:
+    """Sample a base position whose four both-axis reflections are collision-free."""
+
+    margin = int(inner_margin_px)
+    gap = int(min_gap_px)
+    x_min = int(margin)
+    x_max = int((int(width) - (2 * int(sprite_w)) - int(gap)) // 2)
+    y_min = int(margin)
+    y_max = int((int(height) - (2 * int(sprite_h)) - int(gap)) // 2)
+    if x_min > x_max or y_min > y_max:
+        return None
+
+    for _ in range(max(1, int(attempts))):
+        x = int(rng.randint(int(x_min), int(x_max)))
+        y = int(rng.randint(int(y_min), int(y_max)))
+        base_rect = (int(x), int(y), int(sprite_w), int(sprite_h))
+        orbit_rects = [
+            base_rect,
+            _mirrored_rect(base_rect, width=int(width), height=int(height), variant="mirror_vertical"),
+            _mirrored_rect(base_rect, width=int(width), height=int(height), variant="mirror_horizontal"),
+            _flip_both_axes_rect(base_rect, width=int(width), height=int(height)),
+        ]
+        if len({tuple(int(value) for value in rect) for rect in orbit_rects}) != 4:
+            continue
+        has_collision = any(
+            _rects_intersect(rect, other, pad=int(gap))
+            for rect in orbit_rects
+            for other in rects_xywh
+        )
+        if has_collision:
+            continue
+        has_internal_collision = False
+        for left_index, left_rect in enumerate(orbit_rects):
+            for right_rect in orbit_rects[int(left_index) + 1 :]:
+                if _rects_intersect(left_rect, right_rect, pad=int(gap)):
+                    has_internal_collision = True
+                    break
+            if has_internal_collision:
+                break
+        if has_internal_collision:
+            continue
+        return int(x), int(y)
+    return None
 
 
 def _sprite_record(
@@ -628,7 +761,7 @@ def _render_symmetric_patch(
                 noise_seed=int(noise_seed),
             )
             sprite_w, sprite_h = sprite.size
-            position = _sample_symmetric_seed_position(
+            position = _sample_nonoverlapping_symmetric_seed_position(
                 rng,
                 width=int(patch_width),
                 height=int(patch_height),
@@ -637,6 +770,8 @@ def _render_symmetric_patch(
                 variant=str(symmetry_variant),
                 inner_margin_px=int(inner_margin),
                 min_gap_px=int(min_gap),
+                rects_xywh=tuple(rects_xywh),
+                attempts=max(24, int(max_attempts // 2)),
             )
             if position is None:
                 failed = True
@@ -648,15 +783,6 @@ def _render_symmetric_patch(
                 height=int(patch_height),
                 variant=str(symmetry_variant),
             )
-            if any(_rects_intersect(rect_xywh, other, pad=int(min_gap)) for other in rects_xywh):
-                failed = True
-                break
-            if any(_rects_intersect(mirrored_rect_xywh, other, pad=int(min_gap)) for other in rects_xywh):
-                failed = True
-                break
-            if _rects_intersect(rect_xywh, mirrored_rect_xywh, pad=int(min_gap)):
-                failed = True
-                break
             rects_xywh.extend((tuple(int(value) for value in rect_xywh), tuple(int(value) for value in mirrored_rect_xywh)))
             placements.append(
                 (
@@ -782,13 +908,16 @@ def _render_both_axes_patch(
                 noise_seed=int(noise_seed),
             )
             sprite_w, sprite_h = sprite.size
-            position = _random_position_within_patch(
+            position = _sample_nonoverlapping_both_axes_seed_position(
                 rng,
                 width=int(patch_width),
                 height=int(patch_height),
                 sprite_w=int(sprite_w),
                 sprite_h=int(sprite_h),
                 inner_margin_px=int(inner_margin),
+                min_gap_px=int(min_gap),
+                rects_xywh=tuple(rects_xywh),
+                attempts=max(24, int(max_attempts // 2)),
             )
             if position is None:
                 failed = True
@@ -800,26 +929,6 @@ def _render_both_axes_patch(
                 _mirrored_rect(base_rect, width=int(patch_width), height=int(patch_height), variant="mirror_horizontal"),
                 _flip_both_axes_rect(base_rect, width=int(patch_width), height=int(patch_height)),
             ]
-            if len({tuple(int(value) for value in rect) for rect in orbit_rects}) != 4:
-                failed = True
-                break
-            if any(
-                _rects_intersect(rect, other, pad=int(min_gap))
-                for rect in orbit_rects
-                for other in rects_xywh
-            ):
-                failed = True
-                break
-            for left_index, left_rect in enumerate(orbit_rects):
-                for right_rect in orbit_rects[int(left_index) + 1 :]:
-                    if _rects_intersect(left_rect, right_rect, pad=int(min_gap)):
-                        failed = True
-                        break
-                if failed:
-                    break
-            if failed:
-                break
-
             sprite_variants = [
                 (sprite, "base", None, "none"),
                 (_flip_image(sprite, "mirror_vertical"), "mirrored", int(len(placement_records)), "horizontal_flip"),
@@ -910,21 +1019,21 @@ def _render_nonsymmetric_patch(
                 noise_edits=tuple(noise_edits),
                 noise_seed=int(noise_seed),
             )
-            position = _random_position_within_patch(
+            position = _sample_nonoverlapping_position(
                 rng,
                 width=int(patch_width),
                 height=int(patch_height),
                 sprite_w=int(sprite.size[0]),
                 sprite_h=int(sprite.size[1]),
                 inner_margin_px=int(inner_margin),
+                min_gap_px=int(min_gap),
+                rects_xywh=tuple(rects_xywh),
+                attempts=max(24, int(max_attempts // 2)),
             )
             if position is None:
                 failed = True
                 break
             rect_xywh = (int(position[0]), int(position[1]), int(sprite.size[0]), int(sprite.size[1]))
-            if any(_rects_intersect(rect_xywh, other, pad=int(min_gap)) for other in rects_xywh):
-                failed = True
-                break
             rects_xywh.append(tuple(int(value) for value in rect_xywh))
             x, y, sprite_w, sprite_h = rect_xywh
             patch.alpha_composite(sprite, (int(x), int(y)))
@@ -1050,7 +1159,7 @@ def _sample_scene(
     ):
         raise ValueError("sampled mirror-symmetry palette did not satisfy strict distance constraints")
 
-    labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
+    labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(object_count)])
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
     other_symmetries = [str(value) for value in _SYMMETRY_VARIANTS if str(value) != str(query_id)]
     distractor_variants: List[str] = []
@@ -1293,7 +1402,7 @@ class IconsRelationMirrorSymmetryTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -1306,13 +1415,13 @@ class IconsRelationMirrorSymmetryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -1321,15 +1430,15 @@ class IconsRelationMirrorSymmetryTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_labels = list(scene_payload.matching_labels)
-        evidence_artifacts = matching_scene_cell_bbox_evidence(
+        annotation_labels = list(scene_payload.matching_labels)
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
-            matching_labels=evidence_labels,
+            matching_labels=annotation_labels,
         )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(
-            type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+        annotation_gt = TypedValue(
+            type=str(annotation_artifacts["annotation_type"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -1404,9 +1513,9 @@ class IconsRelationMirrorSymmetryTask:
                 "query_id": str(_PUBLIC_QUERY_ID),
                 "reference_symmetry_id": str(scene_payload.query_id),
                 "mirror_signature": str(scene_payload.query_id),
-                **dict(evidence_artifacts["witness_symbolic"]),
+                **dict(annotation_artifacts["witness_symbolic"]),
             },
-            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
         complexity = build_icons_relation_mirror_symmetry_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1420,7 +1529,7 @@ class IconsRelationMirrorSymmetryTask:
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

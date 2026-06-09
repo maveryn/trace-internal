@@ -55,18 +55,24 @@ generation:
       - Y
       - Z
   task_overrides:
-    task_pages__control_board__control_filter_count:
+    task_pages__control_board__disabled_controls_in_group_count:
       disabled_controls_in_group_count_state_count_support: [2, 3, 4, 5, 6]
-      selected_enabled_controls_in_group_count_state_count_support: [3, 4, 5, 6, 7]
       query_id_weights:
         disabled_controls_in_group_count: 1.0
+    task_pages__control_board__selected_enabled_controls_in_group_count:
+      selected_enabled_controls_in_group_count_state_count_support: [3, 4, 5, 6, 7]
+      query_id_weights:
         selected_enabled_controls_in_group_count: 1.0
-    task_pages__data_table__row_filter_count:
+    task_pages__record_table__enabled_action_for_type_count:
       enabled_action_for_type_count_row_count_support: [9, 10, 11, 12]
       enabled_action_for_type_count_answer_count_support: [2, 3, 4, 5, 6]
       query_id_weights:
-        selected_rows_with_status_count: 1.0
         enabled_action_for_type_count: 1.0
+    task_pages__record_table__selected_rows_with_status_count:
+      query_id_weights:
+        selected_rows_with_status_count: 1.0
+    task_pages__record_table__value_threshold_in_group_count:
+      query_id_weights:
         value_threshold_in_group_count: 1.0
 
 rendering:
@@ -113,17 +119,35 @@ prompt:
   shared:
     bundle_id: pages_counting_v0
   task_overrides:
-    task_pages__control_board__control_filter_count:
+    task_pages__control_board__disabled_controls_in_group_count:
       scene_key: gui_control_board
       task_key: control_filter_count_query
       object_description: grouped labeled controls in a desktop application
-      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for every control counted
+      annotation_hint: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] for every control counted
       answer_hint: set "answer" to the count as an integer value
-    task_pages__data_table__row_filter_count:
+    task_pages__control_board__selected_enabled_controls_in_group_count:
+      scene_key: gui_control_board
+      task_key: control_filter_count_query
+      object_description: grouped labeled controls in a desktop application
+      annotation_hint: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] for every control counted
+      answer_hint: set "answer" to the count as an integer value
+    task_pages__record_table__enabled_action_for_type_count:
       scene_key: gui_table
       task_key: table_row_filter_count_query
-      object_description: a sectioned data table in a desktop application
-      evidence_hint: set "evidence" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
+      object_description: a sectioned record table in a desktop application
+      annotation_hint: set "annotation" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
+      answer_hint: set "answer" to the count as an integer value
+    task_pages__record_table__selected_rows_with_status_count:
+      scene_key: gui_table
+      task_key: table_row_filter_count_query
+      object_description: a sectioned record table in a desktop application
+      annotation_hint: set "annotation" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
+      answer_hint: set "answer" to the count as an integer value
+    task_pages__record_table__value_threshold_in_group_count:
+      scene_key: gui_table
+      task_key: table_row_filter_count_query
+      object_description: a sectioned record table in a desktop application
+      annotation_hint: set "annotation" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
       answer_hint: set "answer" to the count as an integer value
 
 visual:

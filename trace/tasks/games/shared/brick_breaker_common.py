@@ -50,7 +50,7 @@ class BrickBreakerSample:
     target_lane_index: int | None
     target_lane_label: str | None
     ball_start_lane_index: int | None
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 
@@ -73,7 +73,7 @@ def lane_label(lane: int) -> str:
 
 
 def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
-    """Validate that the generated answer and evidence match the active query."""
+    """Validate that the generated answer and annotation match the active query."""
 
     if int(sample.brick_rows) <= 0 or int(sample.brick_cols) <= 0:
         raise ValueError("brick breaker brick grid dimensions must be positive")
@@ -92,8 +92,8 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
             raise ValueError("brick breaker brick col out of range")
 
     known_entities = set(brick_ids) | {lane_entity_id(lane) for lane in range(int(sample.lane_count))}
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("brick breaker evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("brick breaker annotation references unknown entities")
 
     query = str(sample.query_id)
     if query == "next_hit_label":
@@ -104,7 +104,7 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
         if str(sample.target_brick_label) not in set(brick_labels):
             raise ValueError("target brick label must reference a visible brick")
         expected_answer = str(sample.target_brick_label)
-        expected_evidence = {str(sample.target_brick_id)}
+        expected_annotation = {str(sample.target_brick_id)}
     elif query == "hit_row_remaining_count":
         if sample.target_brick_id is None:
             raise ValueError("hit_row_remaining_count requires a target brick")
@@ -116,29 +116,29 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
         if len(remaining_ids) != int(sample.target_row_remaining_count):
             raise ValueError("row remaining id count must match answer")
         if str(sample.target_brick_id) in set(remaining_ids):
-            raise ValueError("row remaining evidence must exclude the brick that is hit")
+            raise ValueError("row remaining annotation must exclude the brick that is hit")
         known_by_id = {str(brick.brick_id): brick for brick in sample.bricks}
         target_row = int(known_by_id[str(sample.target_brick_id)].row)
         for brick_id in remaining_ids:
             if brick_id not in known_by_id:
-                raise ValueError("row remaining evidence references unknown brick")
+                raise ValueError("row remaining annotation references unknown brick")
             if int(known_by_id[brick_id].row) != target_row:
-                raise ValueError("row remaining evidence must stay in the target row")
+                raise ValueError("row remaining annotation must stay in the target row")
         expected_answer = int(sample.target_row_remaining_count)
-        expected_evidence = set(remaining_ids)
+        expected_annotation = set(remaining_ids)
     elif query == "paddle_catch_label":
         if sample.target_lane_index is None or sample.target_lane_label is None:
             raise ValueError("paddle_catch_label requires a target lane")
         if not (0 <= int(sample.target_lane_index) < int(sample.lane_count)):
             raise ValueError("target lane index out of range")
         expected_answer = str(sample.target_lane_label)
-        expected_evidence = {lane_entity_id(int(sample.target_lane_index))}
+        expected_annotation = {lane_entity_id(int(sample.target_lane_index))}
     else:
         raise ValueError(f"unsupported brick breaker query_id: {sample.query_id}")
     if sample.answer != expected_answer:
         raise ValueError("brick breaker answer does not match active query")
-    if set(sample.evidence_entity_ids) != expected_evidence:
-        raise ValueError("brick breaker evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected_annotation:
+        raise ValueError("brick breaker annotation ids do not match active query")
 
 
 __all__ = [

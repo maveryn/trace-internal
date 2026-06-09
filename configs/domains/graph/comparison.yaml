@@ -65,17 +65,28 @@ generation:
         mixed_arc: 1.0
       balanced_label_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
+    task_graph__node_link__largest_component_size:
+      query_id_weights:
+        largest_component_size: 1.0
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 2.0
+      edge_routing_variant_weights:
+        straight: 1.0
+        mixed_arc: 1.0
+      balanced_label_variant_sampling: true
+      balanced_edge_routing_variant_sampling: true
     task_graph__node_link__degree_extremum_value:
-      graph_directionality_weights:
-        undirected: 1.0
-        directed: 1.0
-      degree_mode_weights:
-        in_degree: 1.0
-        out_degree: 1.0
-        total_degree: 1.0
-      extremum_mode_weights:
-        max: 1.0
-        min: 1.0
+      query_id_weights:
+        undirected_max_degree_value: 1.0
+        undirected_min_degree_value: 1.0
+        directed_max_in_degree_value: 1.0
+        directed_min_in_degree_value: 1.0
+        directed_max_out_degree_value: 1.0
+        directed_min_out_degree_value: 1.0
+        directed_max_total_degree_value: 1.0
+        directed_min_total_degree_value: 1.0
       node_count_min: 5
       node_count_max: 10
       directed_node_count_max: 10
@@ -90,9 +101,7 @@ generation:
       edge_routing_variant_weights:
         straight: 1.0
         mixed_arc: 1.0
-      balanced_graph_directionality_sampling: true
-      balanced_degree_mode_sampling: true
-      balanced_extremum_mode_sampling: true
+      balanced_query_id_sampling: true
       balanced_label_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
 
@@ -125,27 +134,27 @@ prompt:
     bundle_id: graph_comparison_v0
     scene_key: single_graph_comparison
     task_key: largest_component_size_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description: a labeled undirected graph
     question_text_largest_component_size: How many nodes are in the largest connected component?
-    evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes in the unique largest connected component
+    annotation_hint: set "annotation" to an array of [x,y] pixel points at the centers of all nodes in the unique largest connected component
     answer_hint: set "answer" to the size of that connected component as an integer
-    json_example: '{"evidence":[[180,220],[310,180],[430,260],[520,340]],"answer":4}'
+    json_example: '{"annotation":[[180,220],[310,180],[430,260],[520,340]],"answer":4}'
     json_example_answer_only: '{"answer":4}'
   task_overrides:
     task_graph__node_link__degree_extremum_value:
       task_key: extreme_degree_value_query
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint_max_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum degree value
-      evidence_hint_min_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum degree value
-      evidence_hint_max_in_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum in-degree value
-      evidence_hint_min_in_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum in-degree value
-      evidence_hint_max_out_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum out-degree value
-      evidence_hint_min_out_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum out-degree value
-      evidence_hint_max_total_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum total degree value
-      evidence_hint_min_total_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum total degree value
-      answer_hint: set "answer" to the queried extreme degree value as an integer
-      json_example: '{"evidence":[[180,220],[310,180]],"answer":3}'
+      annotation_hint_max_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose degree equals the maximum degree value; include every tied node
+      annotation_hint_min_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose degree equals the minimum degree value; include every tied node
+      annotation_hint_max_in_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose in-degree equals the maximum in-degree value; include every tied node
+      annotation_hint_min_in_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose in-degree equals the minimum in-degree value; include every tied node
+      annotation_hint_max_out_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose out-degree equals the maximum out-degree value; include every tied node
+      annotation_hint_min_out_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose out-degree equals the minimum out-degree value; include every tied node
+      annotation_hint_max_total_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose total degree equals the maximum total-degree value; include every tied node
+      annotation_hint_min_total_degree_value: set "annotation" to an array of [x,y] pixel points at the centers of every node whose total degree equals the minimum total-degree value; include every tied node
+      answer_hint: set "answer" to the requested maximum or minimum degree value as an integer
+      json_example: '{"annotation":[[180,220],[310,180]],"answer":3}'
       json_example_answer_only: '{"answer":3}'

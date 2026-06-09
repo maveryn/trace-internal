@@ -10,6 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.space_shooter.playfield_tasks import (
     GamesSpaceShooterClearShotCountTask,
+    GamesSpaceShooterClearShotScoreValueTask,
     GamesSpaceShooterHighestThreatLabelTask,
     GamesSpaceShooterPlayfieldTask,
     GamesSpaceShooterProjectileInterceptCountTask,
@@ -26,6 +27,13 @@ from tests.helpers import read_jsonl
             {"target_answer": 3, "lane_count": 7, "enemy_count": 12, "style_variant": "deep_space"},
             "clear_shot_count",
             3,
+            "integer",
+        ),
+        (
+            GamesSpaceShooterClearShotScoreValueTask,
+            {"target_answer": 3, "lane_count": 7, "enemy_count": 12, "style_variant": "neon"},
+            "clear_shot_score_value",
+            None,
             "integer",
         ),
         (
@@ -65,17 +73,17 @@ def test_games_space_shooter_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     if expected_answer is not None:
         assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == expected_query
     assert out.scene_id == "space_shooter"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["panel_scene_style"]["treatment"]
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["panel_bbox_px"] is not None
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
 def test_games_space_shooter_clear_shot_count_matches_trace() -> None:
@@ -104,7 +112,48 @@ def test_games_space_shooter_clear_shot_count_matches_trace() -> None:
 
     assert int(out.answer_gt.value) == len(execution["clear_enemy_ids"]) == 5
     assert list(execution["clear_enemy_ids"]) == expected_ids
-    assert list(execution["evidence_entity_ids"]) == list(execution["clear_enemy_ids"])
+    assert list(execution["annotation_entity_ids"]) == list(execution["clear_enemy_ids"])
+
+
+def test_games_space_shooter_clear_shot_score_value_matches_trace() -> None:
+    out = GamesSpaceShooterClearShotScoreValueTask().generate(
+        88115,
+        params={"target_answer": 4, "lane_count": 8, "enemy_count": 16},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    blockers = execution["blockers"]
+    enemies = execution["enemies"]
+    clear_ids = []
+    for enemy in enemies:
+        lane = int(enemy["lane"])
+        y_slot = int(enemy["y_slot"])
+        lower_enemy_exists = any(
+            int(other["lane"]) == lane and int(other["y_slot"]) > y_slot
+            for other in enemies
+        )
+        lower_blocker_exists = any(
+            int(blocker["lane"]) == lane and int(blocker["y_slot"]) > y_slot
+            for blocker in blockers
+        )
+        if not lower_enemy_exists and not lower_blocker_exists:
+            clear_ids.append(str(enemy["enemy_id"]))
+
+    enemy_by_id = {str(enemy["enemy_id"]): enemy for enemy in enemies}
+    expected_score = sum(int(enemy_by_id[enemy_id]["score_value"]) for enemy_id in clear_ids)
+    blocked_scored = [
+        enemy
+        for enemy in enemies
+        if str(enemy["enemy_id"]) not in set(clear_ids) and enemy["score_value"] is not None
+    ]
+
+    assert clear_ids == list(execution["clear_enemy_ids"])
+    assert list(execution["annotation_entity_ids"]) == clear_ids
+    assert int(out.answer_gt.value) == expected_score
+    assert len(clear_ids) == 4
+    assert blocked_scored
+    assert all(str(enemy["display_text"]) == str(int(enemy["score_value"])) for enemy in enemies)
+    assert "Clear-shot enemies score their printed value." in out.prompt
 
 
 def test_games_space_shooter_projectile_intercept_count_matches_trace() -> None:
@@ -123,7 +172,7 @@ def test_games_space_shooter_projectile_intercept_count_matches_trace() -> None:
 
     assert int(out.answer_gt.value) == len(aligned) == 4
     assert list(execution["intercept_projectile_ids"]) == aligned
-    assert list(execution["evidence_entity_ids"]) == aligned
+    assert list(execution["annotation_entity_ids"]) == aligned
 
 
 def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() -> None:
@@ -144,7 +193,7 @@ def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() 
     assert str(out.answer_gt.value) == str(target_enemy["label"]) == str(execution["highest_threat_label"])
     assert int(target_enemy["y_slot"]) == 5
     assert all(slot < 5 for slot in other_slots)
-    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert list(execution["annotation_entity_ids"]) == [target_id]
 
 
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
@@ -157,7 +206,7 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
     expected_ids = [f"lane_{int(lane)}" for lane in execution["safe_lane_indices"]]
 
     assert int(out.answer_gt.value) == len(expected_ids) == 3
-    assert list(execution["evidence_entity_ids"]) == expected_ids
+    assert list(execution["annotation_entity_ids"]) == expected_ids
 
 
 def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None:
@@ -183,6 +232,7 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__space_shooter__clear_shot_count", count=1, params={"target_answer": 3}),
+            BuildTaskConfig(task_id="task_games__space_shooter__clear_shot_score_value", count=1, params={"target_answer": 3}),
             BuildTaskConfig(task_id="task_games__space_shooter__projectile_intercept_count", count=1, params={"target_answer": 2}),
             BuildTaskConfig(task_id="task_games__space_shooter__highest_threat_label", count=1, params={}),
             BuildTaskConfig(task_id="task_games__space_shooter__safe_lane_count", count=1, params={"target_answer": 4}),
@@ -193,6 +243,6 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-space-shooter-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 4
+    assert len(rows) == 5
     assert all(row["domain"] == "games" for row in rows)
     assert all(row["task_group"] == "space_shooter" for row in rows)

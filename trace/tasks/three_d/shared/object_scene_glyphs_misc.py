@@ -47,109 +47,6 @@ from .object_scene_primitives import (
 )
 
 
-def _draw_pumpkin_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    bbox = _draw_sphere_object(draw, spec, camera=camera, frame=frame, fill=(215, 112, 48))
-    bboxes = [bbox]
-    for px in (-0.50, -0.24, 0.0, 0.24, 0.50):
-        groove = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px, -0.62), (px * 0.42, 0.64)])
-        draw.line(groove, fill=(143, 73, 38), width=1)
-        bboxes.append(_bbox_from_screen_points(groove))
-    stem = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.08, 0.58), (0.06, 0.98), (0.18, 0.88), (0.04, 0.56)])
-    draw.polygon(stem, fill=(83, 72, 38))
-    return _bbox_union(*bboxes, _bbox_from_screen_points(stem))
-
-
-def _draw_acorn_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    nut_profile = [(-0.52, 0.20), (0.52, 0.20), (0.62, -0.32), (0.18, -0.98), (0.0, -1.08), (-0.18, -0.98), (-0.62, -0.32)]
-    cap_profile = [(-0.70, 0.02), (0.70, 0.02), (0.58, 0.44), (0.22, 0.74), (-0.22, 0.74), (-0.58, 0.44)]
-    nut = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(152, 94, 45), profile_xz=nut_profile, inset_scale=0.0)
-    cap = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=cap_profile)
-    draw.polygon(cap, fill=(91, 67, 42))
-    _draw_polyline(draw, cap, fill=(48, 38, 26), width=2)
-    bboxes = [nut, _bbox_from_screen_points(cap)]
-    for px in (-0.46, -0.18, 0.10, 0.38):
-        hatch = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px - 0.16, 0.12), (px + 0.18, 0.56)])
-        draw.line(hatch, fill=(54, 42, 28), width=1)
-        bboxes.append(_bbox_from_screen_points(hatch))
-    for px in (-0.36, -0.08, 0.20, 0.48):
-        hatch = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px + 0.14, 0.12), (px - 0.16, 0.54)])
-        draw.line(hatch, fill=(112, 86, 54), width=1)
-        bboxes.append(_bbox_from_screen_points(hatch))
-    highlight = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.18, -0.70), (-0.06, -0.18)])
-    draw.line(highlight, fill=(190, 126, 66), width=2)
-    stem = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.06, 0.66), (0.10, 0.94)])
-    draw.line(stem, fill=(68, 50, 30), width=3)
-    bboxes.extend([_bbox_from_screen_points(highlight), _bbox_from_screen_points(stem)])
-    return _bbox_union(*bboxes)
-
-
-def _draw_pinecone_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    profile = [(-0.28, 0.98), (0.28, 0.98), (0.58, 0.38), (0.50, -0.46), (0.18, -0.98), (-0.18, -0.98), (-0.50, -0.46), (-0.58, 0.38)]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(121, 83, 48), profile_xz=profile, inset_scale=0.0)
-    bboxes = [bbox]
-    for pz in (-0.56, -0.24, 0.08, 0.40):
-        row = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.38, pz), (0.0, pz + 0.18), (0.38, pz)])
-        draw.line(row, fill=(76, 52, 34), width=2)
-        bboxes.append(_bbox_from_screen_points(row))
-    return _bbox_union(*bboxes)
-
-
-def _draw_seashell_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    profile = [(-0.92, -0.52), (-0.72, 0.10), (-0.38, 0.58), (0.0, 0.78), (0.38, 0.58), (0.72, 0.10), (0.92, -0.52), (0.42, -0.84), (-0.42, -0.84)]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(222, 188, 145), profile_xz=profile, inset_scale=0.0)
-    bboxes = [bbox]
-    for px in (-0.52, -0.22, 0.0, 0.22, 0.52):
-        rib = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, -0.78), (px, 0.46)])
-        draw.line(rib, fill=(154, 113, 86), width=1)
-        bboxes.append(_bbox_from_screen_points(rib))
-    return _bbox_union(*bboxes)
-
-
-def _draw_magnet_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    profile = [(-0.72, 0.82), (-0.34, 0.82), (-0.34, -0.42), (0.34, -0.42), (0.34, 0.82), (0.72, 0.82), (0.72, -0.72), (-0.72, -0.72)]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(82, 95, 113), profile_xz=profile, inset_scale=0.0)
-    left_tip = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.72, 0.46), (-0.34, 0.46), (-0.34, 0.82), (-0.72, 0.82)])
-    right_tip = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.34, 0.46), (0.72, 0.46), (0.72, 0.82), (0.34, 0.82)])
-    draw.polygon(left_tip, fill=(202, 58, 58))
-    draw.polygon(right_tip, fill=(57, 112, 188))
-    return _bbox_union(bbox, _bbox_from_screen_points(left_tip), _bbox_from_screen_points(right_tip))
-
-
 def _draw_guitar_object(
     draw: ImageDraw.ImageDraw,
     spec: Mapping[str, Any],
@@ -209,41 +106,6 @@ def _draw_drum_object(
         draw.line(stick, fill=(150, 95, 48), width=3)
         bboxes.append(_bbox_from_screen_points(stick))
     return _bbox_union(*bboxes)
-
-
-def _draw_shovel_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.18, 0.0), dimensions_xyz=(width * 0.12, depth * 0.62, height * 0.42))
-    blade = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.34, 0.0), dimensions_xyz=(width * 0.70, depth * 0.34, height * 0.66))
-    return _bbox_union(
-        _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(109, 74, 44)),
-        _draw_upright_profile_object(draw, blade, camera=camera, frame=frame, fill=(132, 144, 154), profile_xz=[(-0.62, 0.42), (0.62, 0.42), (0.46, -0.58), (0.0, -0.94), (-0.46, -0.58)], inset_scale=0.0),
-    )
-
-
-def _draw_saw_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    blade = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.08, 0.0), dimensions_xyz=(width * 0.56, depth * 0.76, height * 0.50))
-    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.42, 0.0), dimensions_xyz=(width * 0.58, depth * 0.22, height * 0.72))
-    blade_poly = _upright_screen_points(blade, camera=camera, frame=frame, profile_xz=[(-0.36, -0.78), (0.36, -0.78), (0.42, 0.70), (0.22, 0.52), (0.06, 0.70), (-0.10, 0.52), (-0.26, 0.70), (-0.42, 0.52)])
-    draw.polygon(blade_poly, fill=(175, 184, 190))
-    _draw_polyline(draw, blade_poly, fill=(70, 80, 88), width=2)
-    handle_bbox = _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(124, 72, 44))
-    return _bbox_union(_bbox_from_screen_points(blade_poly), handle_bbox)
 
 
 def _draw_pliers_object(
@@ -351,7 +213,7 @@ def _draw_paint_roller_object(
     draw.line(wire, fill=(88, 98, 106), width=3)
     return _bbox_union(
         _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(87, 65, 47)),
-        _draw_cylinder_object(draw, roller, camera=camera, frame=frame, fill=(92, 151, 190)),
+        _draw_cylinder_object(draw, roller, camera=camera, frame=frame, fill=_tint(fill, 0.12)),
         _bbox_from_screen_points(wire),
     )
 
@@ -651,15 +513,8 @@ def _draw_clock_object(
 
 
 __all__ = [
-    "_draw_pumpkin_object",
-    "_draw_acorn_object",
-    "_draw_pinecone_object",
-    "_draw_seashell_object",
-    "_draw_magnet_object",
     "_draw_guitar_object",
     "_draw_drum_object",
-    "_draw_shovel_object",
-    "_draw_saw_object",
     "_draw_pliers_object",
     "_draw_telescope_object",
     "_draw_ruler_object",

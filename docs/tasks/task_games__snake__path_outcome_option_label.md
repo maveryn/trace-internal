@@ -4,16 +4,13 @@
 1. Domain: `games`
 2. Task group: `snake`
 3. Scene id: `snake`
-4. Query id: `path_result_option_label`
-5. Prompt bundle: `games_snake_v0`
-6. Evidence type: `bbox_set`
-7. Answer type: `option_letter`
-
-## Query Notes
-1. `path_result_option_label` asks the model to follow a listed sequence of 3 to 5 moves.
-2. The image shows four labeled result options: three marked point cells and one `GAME OVER` card. The answer is the visible option letter.
-3. `GAME OVER` is correct when the snake hits the board edge, its own body, or a gray wall cell before completing the sequence.
-4. Evidence boxes mark the in-board cells traversed by the head until the result. For an off-board hit, evidence uses the visible path cells up to the board edge.
+4. Public task id: `task_games__snake__path_outcome_option_label`
+5. Supported `query_id` values: `path_result_option_label`
+6. Answer schema: `option_letter`
+7. Annotation schema: `bbox_set`
+8. Program schema: `label(select_option(path_options, option_path_result = simulate_path(snake_state, path_option))); scene=snake; scope=path_outcome_option_label; query_branch=path_result_option_label`
 
 ## Generation Notes
-The sampler builds a connected visible snake, places gray wall cells, searches for a move sequence with the target result, and renders the four answer options directly in the image. Game-over targets are sampled at roughly 25% by default.
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

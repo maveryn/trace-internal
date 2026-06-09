@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ...core.prompts import PromptRenderResult, render_prompt_variants
 
 
-PROMPT_OUTPUT_MODES: Tuple[str, str] = ("answer_only", "answer_and_evidence")
+PROMPT_OUTPUT_MODES: Tuple[str, str] = ("answer_only", "answer_and_annotation")
 
 
 @dataclass(frozen=True)
@@ -43,8 +43,8 @@ def render_task_prompt_variants(
     query_key: str | None = None,
     slots: Mapping[str, Any],
     instance_seed: int,
-    answer_or_evidence_keys: Sequence[str] = PROMPT_OUTPUT_MODES,
-    preferred_mode: str = "answer_and_evidence",
+    answer_or_annotation_keys: Sequence[str] = PROMPT_OUTPUT_MODES,
+    preferred_mode: str = "answer_and_annotation",
 ) -> _PromptVariantSelection:
     """Render task prompt variants and choose one active output mode."""
     prompt_results = render_prompt_variants(
@@ -54,7 +54,7 @@ def render_task_prompt_variants(
         scene_key=scene_key,
         task_key=task_key,
         query_key=query_key,
-        answer_or_evidence_keys=answer_or_evidence_keys,
+        answer_or_annotation_keys=answer_or_annotation_keys,
         slots=slots,
         instance_seed=instance_seed,
     )

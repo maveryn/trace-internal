@@ -51,7 +51,7 @@ from ..shared.object_scene import (
 )
 
 
-TASK_ID = "task_three_d__object_scene__counterfactual_attribute_count"
+TASK_ID = "task_three_d__object_scene__counterfactual_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("attribute_count_after_edits",)
 QUERY_ID_ALIASES: Dict[str, str] = {"shape_color_count_after_edits": "attribute_count_after_edits"}
 PREDICATE_KINDS: Tuple[str, ...] = ("color", "object", "color_object")
@@ -709,7 +709,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 
 @register_task
-class ThreeDSpatialCounterfactualAttributeCountTask:
+class ThreeDObjectSceneCounterfactualCountTask:
     """Count a color/object property after textual add/remove edits."""
 
     task_id = TASK_ID
@@ -889,7 +889,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
             dataset=dataset,
             render_params=render_params,
             draw_candidate_labels=False,
-            compute_single_evidence=False,
+            compute_single_annotation=False,
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -898,7 +898,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
             default_config=_NOISE_DEFAULTS,
         )
         target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-        evidence_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+        annotation_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -910,7 +910,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "answer_hint",
-                "evidence_hint",
+                "annotation_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
@@ -923,7 +923,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "target_property_phrase": str(dataset["target_property_phrase"]),
@@ -931,7 +931,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
@@ -941,7 +941,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
 
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
             object_count=int(object_count),
@@ -1058,10 +1058,10 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
                 "initial_target_count": int(dataset["initial_target_count"]),
                 "final_answer_value": int(answer_value),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -1071,7 +1071,7 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1082,4 +1082,4 @@ class ThreeDSpatialCounterfactualAttributeCountTask:
         )
 
 
-__all__ = ["ThreeDSpatialCounterfactualAttributeCountTask"]
+__all__ = ["ThreeDObjectSceneCounterfactualCountTask"]

@@ -6,11 +6,27 @@ generation:
     column_count_max: 12
     calendar_row_count_min: 5
     calendar_row_count_max: 8
+    colorbar_row_count_min: 5
+    colorbar_row_count_max: 7
+    colorbar_column_count_min: 6
+    colorbar_column_count_max: 8
     heat_bin_count: 5
+    colorbar_ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    colorbar_threshold_values: [30, 40, 50, 60, 70]
+    colorbar_interval_min_width: 20
+    colorbar_interval_max_width: 30
+    colorbar_value_margin: 6
+    colorbar_threshold_answer_min: 1
+    colorbar_threshold_answer_max: 16
+    colorbar_interval_answer_min: 1
+    colorbar_interval_answer_max: 14
     query_id_weights:
       axis_condition_extremum_label: 1.0
       axis_cell_extremum_label: 1.0
       condition_run_extremum_label: 1.0
+      colorbar_above_threshold_cell_count: 1.0
+      colorbar_below_threshold_cell_count: 1.0
+      colorbar_interval_cell_count: 1.0
     scene_variant_weights:
       intensity_heatmap: 1.0
       signed_change_heatmap: 1.0
@@ -62,19 +78,27 @@ prompt:
     bundle_id: charts_heatmap_v0
     scene_key: heatmap
     task_key: heatmap_query
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_intensity_heatmap: labeled grid cells where darker colors indicate higher intensity and lighter colors indicate lower intensity
     object_description_signed_change_heatmap: labeled grid cells where blue colors indicate decreases, neutral colors indicate no clear change, and orange-red colors indicate increases
     object_description_calendar_heatmap: a week-by-week calendar grid where darker colors indicate higher activity and lighter colors indicate lower activity
+    object_description_continuous_colorbar_heatmap: labeled grid cells colored by a continuous numeric colorbar scale
     answer_hint_label: set "answer" to the exact visible row or column label as a string
+    answer_hint_count: set "answer" to the requested cell count as an integer
     unanswerable_instruction: If the requested label or color condition is not shown, answer exactly "unanswerable".
-    evidence_hint_axis_condition_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the matching cells in the winning row or column
-    evidence_hint_axis_cell_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the named row or column
-    evidence_hint_condition_run_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the winning consecutive run of cells, from left to right
-    json_example_axis_condition_extremum_label: '{"evidence":[[210,160,270,214],[336,160,396,214],[462,160,522,214]],"answer":"Cedar"}'
-    json_example_axis_cell_extremum_label: '{"evidence":[[390,156,450,210],[390,216,450,270],[390,276,450,330]],"answer":"Orly"}'
-    json_example_condition_run_extremum_label: '{"evidence":[[520,420,580,474],[583,420,643,474],[646,420,706,474]],"answer":"Mesa"}'
+    annotation_hint_axis_condition_extremum_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the matching cells in the winning row or column
+    annotation_hint_axis_cell_extremum_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the named row or column
+    annotation_hint_condition_run_extremum_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the winning consecutive run of cells, from left to right
+    annotation_hint_colorbar_threshold_cell_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for all counted cells, in row-major order
+    annotation_hint_colorbar_interval_cell_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for all counted cells, in row-major order
+    json_example_axis_condition_extremum_label: '{"annotation":[[210,160,270,214],[336,160,396,214],[462,160,522,214]],"answer":"Cedar"}'
+    json_example_axis_cell_extremum_label: '{"annotation":[[390,156,450,210],[390,216,450,270],[390,276,450,330]],"answer":"Orly"}'
+    json_example_condition_run_extremum_label: '{"annotation":[[520,420,580,474],[583,420,643,474],[646,420,706,474]],"answer":"Mesa"}'
+    json_example_colorbar_threshold_cell_count: '{"annotation":[[210,160,270,214],[336,160,396,214],[462,160,522,214]],"answer":3}'
+    json_example_colorbar_interval_cell_count: '{"annotation":[[390,156,450,210],[390,216,450,270]],"answer":2}'
     json_example_answer_only_axis_condition_extremum_label: '{"answer":"Cedar"}'
     json_example_answer_only_axis_cell_extremum_label: '{"answer":"Orly"}'
     json_example_answer_only_condition_run_extremum_label: '{"answer":"Mesa"}'
+    json_example_answer_only_colorbar_threshold_cell_count: '{"answer":3}'
+    json_example_answer_only_colorbar_interval_cell_count: '{"answer":2}'

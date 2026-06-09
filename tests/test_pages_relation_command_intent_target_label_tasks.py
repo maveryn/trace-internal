@@ -34,10 +34,10 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         trace = out.trace_payload
         execution = trace["execution_trace"]
         target = dict(execution["target_control"])
-        evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
+        annotation_supports = [dict(record) for record in execution["annotation_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
@@ -60,41 +60,41 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         assert str(execution["instruction_cue_label"]) in str(execution["instruction_text"])
         assert str(execution["action_label"]).lower() not in str(execution["instruction_text"]).lower()
         assert int(execution["total_control_count"]) == 25
-        evidence_role_support_ids = dict(execution["evidence_role_support_ids"])
-        expected_evidence = {
-            "action_cue_guide": evidence_supports[0]["bbox_px"],
+        annotation_role_support_ids = dict(execution["annotation_role_support_ids"])
+        expected_annotation = {
+            "action_cue_guide": annotation_supports[0]["bbox_px"],
             "object_row": next(
-                record["bbox_px"] for record in evidence_supports if record["support_kind"] == "object_row"
+                record["bbox_px"] for record in annotation_supports if record["support_kind"] == "object_row"
             ),
             "action_code_header": next(
-                record["bbox_px"] for record in evidence_supports if record["support_kind"] == "action_header"
+                record["bbox_px"] for record in annotation_supports if record["support_kind"] == "action_header"
             ),
             "target_command_cell": target["bbox_px"],
         }
         if str(query_id) == "dual_guide_command_label":
-            assert [record["support_kind"] for record in evidence_supports] == [
+            assert [record["support_kind"] for record in annotation_supports] == [
                 "intent_cue_card",
                 "object_cue_card",
                 "object_row",
                 "action_header",
             ]
-            assert str(evidence_supports[1]["object_cue_label"]) == str(execution["object_cue_label"])
-            assert str(evidence_supports[1]["object_label"]) == str(execution["object_label"])
-            expected_evidence["object_cue_guide"] = evidence_supports[1]["bbox_px"]
-            action_support = evidence_supports[3]
+            assert str(annotation_supports[1]["object_cue_label"]) == str(execution["object_cue_label"])
+            assert str(annotation_supports[1]["object_label"]) == str(execution["object_label"])
+            expected_annotation["object_cue_guide"] = annotation_supports[1]["bbox_px"]
+            action_support = annotation_supports[3]
         else:
-            assert [record["support_kind"] for record in evidence_supports] == [
+            assert [record["support_kind"] for record in annotation_supports] == [
                 "intent_cue_card",
                 "object_row",
                 "action_header",
             ]
-            action_support = evidence_supports[2]
-        assert out.evidence_gt.value == expected_evidence
-        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
-        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
-        assert set(evidence_role_support_ids) == set(expected_evidence)
-        assert str(evidence_supports[0]["action_cue_label"]) == str(execution["instruction_cue_label"])
-        assert str(evidence_supports[0]["action_code_label"]) == str(execution["instruction_code_label"])
+            action_support = annotation_supports[2]
+        assert out.annotation_gt.value == expected_annotation
+        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert set(annotation_role_support_ids) == set(expected_annotation)
+        assert str(annotation_supports[0]["action_cue_label"]) == str(execution["instruction_cue_label"])
+        assert str(annotation_supports[0]["action_code_label"]) == str(execution["instruction_code_label"])
         assert str(action_support["action_label"]) == str(execution["action_label"])
         assert str(action_support["action_code_label"]) == str(execution["instruction_code_label"])
 
@@ -114,12 +114,12 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
         assert all(
             0.0 <= float(coord) <= 1280.0
-            for box in out.evidence_gt.value.values()
+            for box in out.annotation_gt.value.values()
             for coord in (box[0], box[2])
         )
         assert all(
             0.0 <= float(coord) <= 800.0
-            for box in out.evidence_gt.value.values()
+            for box in out.annotation_gt.value.values()
             for coord in (box[1], box[3])
         )
 
@@ -127,8 +127,8 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
 def test_gui_relation_command_intent_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationCommandIntentTargetLabelTask()
     out = task.generate(79200, params={"query_id": "create_insert_command_label"}, max_attempts=20)
-    assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": {
+    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
+        "annotation": {
             "action_cue_guide": [290, 150, 480, 190],
             "object_row": [70, 240, 270, 310],
             "action_code_header": [290, 200, 480, 235],
@@ -197,7 +197,7 @@ def test_gui_relation_command_intent_target_label_deterministic() -> None:
     out_a = task.generate(79400, params=params, max_attempts=20)
     out_b = task.generate(79400, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()

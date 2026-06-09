@@ -61,7 +61,7 @@ class BowlingSample:
     target_path_id: str | None
     target_path_label: str | None
     remaining_pin_ids: Tuple[str, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
     path_visible_fraction: float | None = None
     path_clearance_px: float | None = None
@@ -86,7 +86,7 @@ def option_label(index: int) -> str:
 
 
 def validate_bowling_sample(sample: BowlingSample) -> None:
-    """Validate that answer and evidence match the active Bowling query."""
+    """Validate that answer and annotation match the active Bowling query."""
 
     query = str(sample.query_id)
     pin_ids = [str(pin.pin_id) for pin in sample.pins]
@@ -103,8 +103,8 @@ def validate_bowling_sample(sample: BowlingSample) -> None:
         raise ValueError("bowling path labels must be unique")
     standing_ids = {str(pin.pin_id) for pin in sample.pins if bool(pin.standing)}
     known_entities = set(pin_ids) | set(path_ids) | {"ball"}
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("bowling evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("bowling annotation references unknown entities")
     if not set(sample.remaining_pin_ids) <= standing_ids:
         raise ValueError("bowling remaining pins must be standing pins")
 
@@ -114,7 +114,7 @@ def validate_bowling_sample(sample: BowlingSample) -> None:
         if str(sample.target_pin_id) not in standing_ids:
             raise ValueError("first-hit target pin must be standing")
         expected_answer = str(sample.target_pin_label)
-        expected_evidence = {str(sample.target_pin_id)}
+        expected_annotation = {str(sample.target_pin_id)}
     elif query == "spare_path_label":
         if sample.target_path_id is None or sample.target_path_label is None:
             raise ValueError("spare_path_label requires a target path")
@@ -123,13 +123,13 @@ def validate_bowling_sample(sample: BowlingSample) -> None:
         if len(sample.remaining_pin_ids) < 1:
             raise ValueError("spare_path_label needs at least one remaining pin")
         expected_answer = str(sample.target_path_label)
-        expected_evidence = {str(sample.target_path_id)}
+        expected_annotation = {str(sample.target_path_id)}
     else:
         raise ValueError(f"unsupported bowling query_id: {sample.query_id}")
     if str(sample.answer) != str(expected_answer):
         raise ValueError("bowling answer does not match active query")
-    if set(sample.evidence_entity_ids) != expected_evidence:
-        raise ValueError("bowling evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected_annotation:
+        raise ValueError("bowling annotation ids do not match active query")
 
 
 __all__ = [

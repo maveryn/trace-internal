@@ -87,12 +87,12 @@ def test_physics_electrostatics_defaults_expose_scene_query_and_answer_support()
 
     assert "visible distance labels" in str(prompt["object_description_dense_grid_potential_value"])
 
-    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["evidence_hint_field_direction_choice"])
+    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["annotation_hint_field_direction_choice"])
 
-    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["evidence_hint_potential_value"])
+    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["annotation_hint_potential_value"])
 
-    assert 'keys "Q1" and "Q2"' in str(prompt["evidence_hint_zero_field_point_label"])
+    assert 'keys "Q1" and "Q2"' in str(prompt["annotation_hint_zero_field_point_label"])
 
-    assert "do not" not in str(prompt["evidence_hint_potential_value"]).lower()
+    assert "do not" not in str(prompt["annotation_hint_potential_value"]).lower()
 
     assert "zero-field point" in str(prompt["answer_hint_zero_field_point_label"])

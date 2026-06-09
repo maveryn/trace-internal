@@ -89,10 +89,10 @@ prompt:
     task_key: bubble_shooter_query
     object_description_open_pack: a close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
     object_description_dense_pack: a dense close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
-    bubble_shooter_rule_text: A shot bubble attaches at the marked landing target; a same-color connected group pops when the placed bubble makes the group size at least three. After popped bubbles are removed, bubbles not connected to the top drop.
-    evidence_hint_pop_count: set "evidence" to center points [x, y] of the existing board bubbles that pop
+    bubble_shooter_rule_text: A shot bubble attaches at the marked landing target; a same-color connected group pops when the placed bubble makes the group size at least three. Do not include the marked landing target as a board bubble. After popped bubbles are removed, bubbles not connected to the top drop.
+    annotation_hint_pop_count: set "annotation" to pixel-space center points [x, y] of the existing board bubbles that pop
     answer_hint_pop_count: set "answer" to the number of existing board bubbles that pop, excluding the shot bubble
-    evidence_hint_drop_count: set "evidence" to center points [x, y] of the bubbles that drop after the popped group is removed
+    annotation_hint_drop_count: set "annotation" to pixel-space center points [x, y] of the bubbles that drop after the popped group is removed
     answer_hint_drop_count: set "answer" to the number of bubbles that drop after the shot, excluding popped bubbles
-    evidence_hint_pop_color_label: set "evidence" to center points [x, y] of the existing board bubbles that would pop for the selected option color
+    annotation_hint_pop_color_label: set "annotation" to pixel-space center points [x, y] of the existing board bubbles that would pop for the selected option color
     answer_hint_pop_color_label: set "answer" to the single option letter whose color would make bubbles pop

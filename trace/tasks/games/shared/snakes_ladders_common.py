@@ -14,6 +14,8 @@ SUPPORTED_BOARD_SIDES: Tuple[int, ...] = (5, 6, 7)
 SUPPORTED_SNAKES_LADDERS_QUERY_IDS: Tuple[str, ...] = (
     "move_outcome_value",
     "best_roll_value",
+    "ladder_start_ahead_count",
+    "snake_head_ahead_count",
 )
 SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS: Tuple[str, ...] = ("standard_board",)
 SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -79,7 +81,7 @@ class SnakesLaddersSample:
     move: SnakesLaddersMove | None
     horizon_roll_count: int | None
     optimal_route: Tuple[SnakesLaddersMove, ...]
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
 
 

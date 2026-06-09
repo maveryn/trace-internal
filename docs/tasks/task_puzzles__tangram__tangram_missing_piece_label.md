@@ -11,6 +11,6 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `missing_piece_label`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence targets: correct option panel bbox followed by the black missing-region bbox
+4. Annotation type: `bbox_set`
+5. Annotation targets: correct option panel bbox followed by the black missing-region bbox
 6. Scene variants: `tangram_square|tangram_diamond|tangram_tilted`

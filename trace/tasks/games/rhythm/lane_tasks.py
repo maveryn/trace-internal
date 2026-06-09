@@ -379,11 +379,11 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
     builder = _NoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
     target_rows = list(range(1, int(axes.beat_window) + 1))
     rng.shuffle(target_rows)
-    evidence_ids: list[str] = []
+    annotation_ids: list[str] = []
     for row in target_rows[:target_count]:
         color = str(target_color) if target_color is not None else str(rng.choice(SUPPORTED_RHYTHM_COLOR_KEYS))
         note = builder.add_note(lane=selected_lane, bottom_row=int(row), length=1, color_key=color)
-        evidence_ids.append(str(note.note_id))
+        annotation_ids.append(str(note.note_id))
 
     if str(axes.query_id) == "lane_color_hit_count":
         other_colors = [color for color in SUPPORTED_RHYTHM_COLOR_KEYS if str(color) != str(target_color)]
@@ -423,7 +423,7 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
         target_color_key=target_color,
         answer=int(target_count),
         notes=notes,
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         construction_mode=f"{str(axes.query_id)}_constructed_count",
     )
     validate_rhythm_sample(sample)
@@ -438,7 +438,7 @@ def _sample_most_hits_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
     builder = _NoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
     rows = list(range(1, int(axes.beat_window) + 1))
     rng.shuffle(rows)
-    evidence_ids: list[str] = []
+    annotation_ids: list[str] = []
     for row in rows[:target_count]:
         note = builder.add_note(
             lane=target_lane,
@@ -446,7 +446,7 @@ def _sample_most_hits_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
             length=1,
             color_key=str(rng.choice(SUPPORTED_RHYTHM_COLOR_KEYS)),
         )
-        evidence_ids.append(str(note.note_id))
+        annotation_ids.append(str(note.note_id))
 
     for lane in range(int(axes.lane_count)):
         if int(lane) == int(target_lane):
@@ -474,7 +474,7 @@ def _sample_most_hits_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
         target_color_key=None,
         answer=int(lane_label(int(target_lane))),
         notes=tuple(builder.notes),
-        evidence_entity_ids=tuple(evidence_ids),
+        annotation_entity_ids=tuple(annotation_ids),
         construction_mode="most_hits_unique_lane",
     )
     validate_rhythm_sample(sample)
@@ -518,7 +518,7 @@ def _sample_earliest_hit_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
         target_color_key=None,
         answer=int(lane_label(int(target_lane))),
         notes=tuple(builder.notes),
-        evidence_entity_ids=(str(target_note.note_id),),
+        annotation_entity_ids=(str(target_note.note_id),),
         construction_mode="earliest_hit_unique_lane",
     )
     validate_rhythm_sample(sample)
@@ -543,12 +543,12 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) in {"most_hits_lane_label", "earliest_hit_lane_label"}:
         answer_value = 4
-        evidence_value = [[318, 392, 401, 438]]
+        annotation_value = [[318, 392, 401, 438]]
     else:
         answer_value = 3
-        evidence_value = [[260, 498, 341, 545], [260, 432, 341, 479], [260, 302, 341, 349]]
+        annotation_value = [[260, 498, 341, 545], [260, 432, 341, 479], [260, 302, 341, 349]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -607,9 +607,9 @@ class GamesRhythmLanesTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_bboxes = [
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
+            for entity_id in sampled_scene.annotation_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -629,13 +629,13 @@ class GamesRhythmLanesTask:
                 "object_description_falling_notes",
                 "rhythm_motion_rule_text",
                 "answer_hint_lane_hit_count",
-                "evidence_hint_lane_hit_count",
+                "annotation_hint_lane_hit_count",
                 "answer_hint_lane_color_hit_count",
-                "evidence_hint_lane_color_hit_count",
+                "annotation_hint_lane_color_hit_count",
                 "answer_hint_most_hits_lane_label",
-                "evidence_hint_most_hits_lane_label",
+                "annotation_hint_most_hits_lane_label",
                 "answer_hint_earliest_hit_lane_label",
-                "evidence_hint_earliest_hit_lane_label",
+                "annotation_hint_earliest_hit_lane_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -649,7 +649,7 @@ class GamesRhythmLanesTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_falling_notes"]),
                 "rhythm_motion_rule_text": str(prompt_defaults["rhythm_motion_rule_text"]),
@@ -659,7 +659,7 @@ class GamesRhythmLanesTask:
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -668,7 +668,7 @@ class GamesRhythmLanesTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         text_style_meta = {
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
@@ -681,7 +681,7 @@ class GamesRhythmLanesTask:
             row_count=int(sampled_scene.row_count),
             beat_window=int(sampled_scene.beat_window),
             note_count=len(sampled_scene.notes),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            annotation_count=len(sampled_scene.annotation_entity_ids),
         )
         note_trace = [
             {
@@ -706,7 +706,7 @@ class GamesRhythmLanesTask:
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
                     "beat_window": int(sampled_scene.beat_window),
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 },
             },
             "query_spec": {
@@ -758,15 +758,15 @@ class GamesRhythmLanesTask:
                 "target_color_key": sampled_scene.target_color_key,
                 "answer": int(sampled_scene.answer),
                 "notes": note_trace,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -775,7 +775,7 @@ class GamesRhythmLanesTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -802,30 +802,49 @@ def _rewrite_generated_output(output: TaskOutput) -> TaskOutput:
     return rewrite_public_query_output(output, query_id=query_id, query_id_probabilities=probabilities)
 
 
+class _GamesRhythmSingleQueryTask(GamesRhythmLanesTask):
+    """Shared wrapper for one rhythm-lane query contract."""
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
+
+
 @register_task
-class GamesRhythmHitWindowCountTask(GamesRhythmLanesTask):
+class GamesRhythmLaneHitCountTask(_GamesRhythmSingleQueryTask):
     """Count notes in a lane that reach the hit line within a beat window."""
 
-    task_id = "task_games__rhythm__hit_window_count"
-    supported_query_ids = COUNT_QUERY_IDS
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
+    task_id = "task_games__rhythm__lane_hit_count"
+    supported_query_ids = ("lane_hit_count",)
 
 
 @register_task
-class GamesRhythmLaneChoiceLabelTask(GamesRhythmLanesTask):
-    """Choose a lane by hit-count or earliest-hit timing."""
+class GamesRhythmLaneColorHitCountTask(_GamesRhythmSingleQueryTask):
+    """Count notes in a lane with a target color that reach the hit line."""
 
-    task_id = "task_games__rhythm__lane_choice_value"
-    supported_query_ids = LANE_CHOICE_QUERY_IDS
+    task_id = "task_games__rhythm__lane_color_hit_count"
+    supported_query_ids = ("lane_color_hit_count",)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
+
+@register_task
+class GamesRhythmMostHitsLaneLabelTask(_GamesRhythmSingleQueryTask):
+    """Return the lane number with the most hits in the beat window."""
+
+    task_id = "task_games__rhythm__most_hits_lane_label"
+    supported_query_ids = ("most_hits_lane_label",)
+
+
+@register_task
+class GamesRhythmEarliestHitLaneLabelTask(_GamesRhythmSingleQueryTask):
+    """Return the lane number whose note reaches the hit line earliest."""
+
+    task_id = "task_games__rhythm__earliest_hit_lane_label"
+    supported_query_ids = ("earliest_hit_lane_label",)
 
 
 __all__ = [
-    "GamesRhythmHitWindowCountTask",
-    "GamesRhythmLaneChoiceLabelTask",
+    "GamesRhythmEarliestHitLaneLabelTask",
+    "GamesRhythmLaneColorHitCountTask",
+    "GamesRhythmLaneHitCountTask",
     "GamesRhythmLanesTask",
+    "GamesRhythmMostHitsLaneLabelTask",
 ]

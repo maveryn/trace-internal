@@ -5,7 +5,16 @@ generation:
     cols_min: 3
     cols_max: 7
   task_overrides:
-    task_puzzles__cell_board__attribute_count:
+    task_puzzles__cell_board__single_attribute_membership_count:
+      rows_min: 5
+      rows_max: 10
+      cols_min: 5
+      cols_max: 10
+      palette_size_min: 3
+      palette_size_max: 6
+      target_answer_min: 0
+      target_answer_max: 10
+    task_puzzles__cell_board__scoped_attribute_count:
       rows_min: 5
       rows_max: 10
       cols_min: 5
@@ -52,7 +61,11 @@ complexity:
       reasoning_load: 0.5
       scene_variant_load: 0.0
   task_overrides:
-    task_puzzles__cell_board__attribute_count:
+    task_puzzles__cell_board__single_attribute_membership_count:
+      criteria_weights:
+        visual_scan: 0.65
+        reasoning_load: 0.35
+    task_puzzles__cell_board__scoped_attribute_count:
       criteria_weights:
         visual_scan: 0.65
         reasoning_load: 0.35
@@ -132,36 +145,42 @@ visual:
         - 0.04
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     bundle_id: puzzles_cell_board_count_v0
     scene_key: rectangular_tile_board
   task_overrides:
-    task_puzzles__cell_board__attribute_count:
+    task_puzzles__cell_board__single_attribute_membership_count:
       answer_hint: set "answer" to the counted number of matching cells as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of every counted matching cell,
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of every counted matching cell,
         or [] if none match
-      json_example: '{"evidence":[[120,120],[168,120],[216,168]],"answer":3}'
+      json_example: '{"annotation":[[120,120],[168,120],[216,168]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_puzzles__cell_board__scoped_attribute_count:
+      answer_hint: set "answer" to the counted number of matching cells as an integer
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of every counted matching cell,
+        or [] if none match
+      json_example: '{"annotation":[[120,120],[168,120],[216,168]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     cell_board_color_count_internal:
       task_key: color_count_query
       answer_hint: set "answer" to the number of tiles matching the query color as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of every tile matching the query
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of every tile matching the query
         color
-      json_example: '{"evidence":[[120,120],[168,120],[216,168]],"answer":3}'
+      json_example: '{"annotation":[[120,120],[168,120],[216,168]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     cell_board_color_components_internal:
       task_key: color_component_count_query
       answer_hint: set "answer" to the number of 4-neighbor connected components formed by the query-color tiles as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of every tile matching the query
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of every tile matching the query
         color
-      json_example: '{"evidence":[[120,120],[168,120],[216,216]],"answer":2}'
+      json_example: '{"annotation":[[120,120],[168,120],[216,216]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     cell_board_largest_component_size_internal:
       task_key: largest_component_size_query
       answer_hint: set "answer" to the size of the largest 4-neighbor connected component formed by the query-color tiles
         as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the tiles in that largest query-color
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of the tiles in that largest query-color
         component
-      json_example: '{"evidence":[[120,120],[168,120],[168,168],[216,168]],"answer":4}'
+      json_example: '{"annotation":[[120,120],[168,120],[168,168],[216,168]],"answer":4}'
       json_example_answer_only: '{"answer":4}'

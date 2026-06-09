@@ -29,7 +29,6 @@ from ..shared.complexity import (
 )
 from ..shared.graph_sampling import (
     SUPPORTED_LABEL_VARIANTS,
-    SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_OPTIMIZATION_QUERY_IDS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
@@ -38,13 +37,11 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
-    SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-    SUPPORTED_NODE_SHAPE_VARIANTS,
-    projected_edge_pair_evidence,
+    projected_edge_pair_annotation,
     render_graph_scene,
 )
+from ..shared.node_link_axes import resolve_node_link_visual_axes
 from ..shared.fixed_query_task import rewrite_graph_query_output
-from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
@@ -119,11 +116,11 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the pixel-space edge evidence format."""
+    """Return prompt examples that match the pixel-space edge annotation format."""
 
-    example_evidence = [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]]
+    example_annotation = [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]]
     return (
-        json.dumps({"evidence": example_evidence, "answer": 12}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": example_annotation, "answer": 12}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 12}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -204,71 +201,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="topology_profile",
     )
-    layout_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_variant")
-    layout_variant, layout_variant_probabilities = resolve_graph_named_variant(
-        layout_rng,
+    visual_axes = resolve_node_link_visual_axes(
+        int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_variant",
-        weights_key="layout_variant_weights",
-        balance_flag_key="balanced_layout_variant_sampling",
-        supported=SUPPORTED_LAYOUT_VARIANTS,
-        instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="layout_variant",
+        supported_label_variants=SUPPORTED_LABEL_VARIANTS,
+        include_edge_routing_axis=False,
     )
-    label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
-    label_variant, label_variant_probabilities = resolve_graph_named_variant(
-        label_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="label_variant",
-        weights_key="label_variant_weights",
-        balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_LABEL_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="label_variant",
-    )
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
-    node_shape_variant, node_shape_variant_probabilities = resolve_graph_named_variant(
-        shape_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_shape_variant",
-        weights_key="node_shape_variant_weights",
-        balance_flag_key="balanced_node_shape_variant_sampling",
-        supported=SUPPORTED_NODE_SHAPE_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_shape_variant",
-    )
-    transform_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.layout_transform_variant")
-    layout_transform_variant, layout_transform_variant_probabilities = resolve_graph_named_variant(
-        transform_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="layout_transform_variant",
-        weights_key="layout_transform_variant_weights",
-        balance_flag_key="balanced_layout_transform_variant_sampling",
-        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="layout_transform_variant",
-    )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
-    node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
-        color_rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        explicit_key="node_color_name",
-        weights_key="node_color_name_weights",
-        balance_flag_key="balanced_node_color_name_sampling",
-        supported=SUPPORTED_NODE_COLOR_NAMES,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        namespace="node_color_name",
-    )
+    layout_variant = visual_axes.layout_variant
+    label_variant = visual_axes.label_variant
+    node_shape_variant = visual_axes.node_shape_variant
+    layout_transform_variant = visual_axes.layout_transform_variant
+    node_color_name = visual_axes.node_color_name
+    layout_variant_probabilities = visual_axes.layout_variant_probabilities
+    label_variant_probabilities = visual_axes.label_variant_probabilities
+    node_shape_variant_probabilities = visual_axes.node_shape_variant_probabilities
+    layout_transform_variant_probabilities = visual_axes.layout_transform_variant_probabilities
+    node_color_name_probabilities = visual_axes.node_color_name_probabilities
 
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -453,7 +403,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_undirected",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -470,12 +420,12 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key="minimum_spanning_tree_weight",
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_undirected"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -484,12 +434,12 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
-        evidence_edge_set = {tuple(edge) for edge in evidence_edges}
+        annotation_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
+        annotation_edge_set = {tuple(edge) for edge in annotation_edges}
         answer_gt = TypedValue(type="integer", value=int(graph_sample.target_total_weight))
-        evidence_projection = projected_edge_pair_evidence(rendered_scene, evidence_edges)
-        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+        annotation_projection = projected_edge_pair_annotation(rendered_scene, annotation_edges)
+        annotation_point_pairs = [[list(point) for point in pair] for pair in annotation_projection["point_pair_set"]]
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
 
         node_entities = [
             {
@@ -517,7 +467,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 "weight_label_bbox_xyxy": list(edge.weight_label_bbox_xyxy) if edge.weight_label_bbox_xyxy is not None else None,
                 "is_in_minimum_spanning_tree": bool(
                     canonicalize_graph_edge_label(str(edge.node_u_label), str(edge.node_v_label), directed=False)
-                    in evidence_edge_set
+                    in annotation_edge_set
                 ),
             }
             for edge in rendered_scene.edges
@@ -547,7 +497,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                     "question_rule": "sum_minimum_spanning_tree_weights",
                     "graph_directionality": "undirected",
                     "edge_weights_by_label": list(edge_weights_trace),
-                    "minimum_spanning_tree_edges": [list(edge) for edge in evidence_edges],
+                    "minimum_spanning_tree_edges": [list(edge) for edge in annotation_edges],
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
                     "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                     "edge_labels": [list(edge) for edge in graph_sample.edge_labels],
@@ -630,7 +580,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 "edge_weight_min": int(query.edge_weight_min),
                 "edge_weight_max": int(query.edge_weight_max),
                 "minimum_spanning_tree_total_weight": int(graph_sample.target_total_weight),
-                "minimum_spanning_tree_edges": [list(edge) for edge in evidence_edges],
+                "minimum_spanning_tree_edges": [list(edge) for edge in annotation_edges],
                 "edge_weights_by_label": list(edge_weights_trace),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
                 "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -645,11 +595,11 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             },
             "witness_symbolic": {
                 "type": "edge_pair_set",
-                "edges": [list(edge) for edge in evidence_edges],
+                "edges": [list(edge) for edge in annotation_edges],
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "point_pair_set",
-                **dict(evidence_projection),
+                **dict(annotation_projection),
             },
         }
 
@@ -657,7 +607,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

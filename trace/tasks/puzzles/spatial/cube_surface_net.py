@@ -30,7 +30,9 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 INTERNAL_TASK_ID = "puzzles_spatial_cube_surface_net_internal"
 FACE_RELATION_TASK_ID = "task_puzzles__cube_net__cube_net_face_relation_label"
 ROLLING_RESULT_TASK_ID = "task_puzzles__cube_net__cube_rolling_result_label"
-SURFACE_PATH_TASK_ID = "task_puzzles__cube_net__surface_net_path_label"
+SURFACE_PATH_FAMILY_ID = "puzzles_spatial_cube_surface_net_path_internal"
+FOLDED_PATH_ENDPOINT_TASK_ID = "task_puzzles__cube_net__folded_path_endpoint_label"
+FOLDED_PATH_FACE_SEQUENCE_TASK_ID = "task_puzzles__cube_net__folded_path_face_sequence_label"
 SCENE_ID = "cube_net"
 
 FACE_RELATION_QUERY_IDS: Tuple[str, ...] = (
@@ -213,12 +215,12 @@ def _font_trace_record(font_family: str) -> Dict[str, Any]:
     }
 
 
-def _round_evidence_bbox(bbox: Sequence[float]) -> List[float]:
+def _round_annotation_bbox(bbox: Sequence[float]) -> List[float]:
     return [round(float(value), 3) for value in bbox]
 
 
-def _projected_keyed_bbox_map(evidence: Mapping[str, Sequence[float]]) -> Dict[str, Any]:
-    value = {str(key): _round_evidence_bbox(bbox) for key, bbox in evidence.items()}
+def _projected_keyed_bbox_map(annotation: Mapping[str, Sequence[float]]) -> Dict[str, Any]:
+    value = {str(key): _round_annotation_bbox(bbox) for key, bbox in annotation.items()}
     return {
         "type": "keyed_bbox_map",
         "keyed_bbox_map": dict(value),
@@ -449,7 +451,7 @@ def _sample_surface_path_dataset(*, query_id: str, params: Mapping[str, Any], in
     rng = spawn_rng(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}.surface_path")
     step_min = _get_int(params, "surface_path_step_count_min", _DEFAULTS.surface_path_step_count_min)
     step_max = _get_int(params, "surface_path_step_count_max", _DEFAULTS.surface_path_step_count_max)
-    step_count = int(step_min + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_TASK_ID}.step_count") % max(1, step_max - step_min + 1)))
+    step_count = int(step_min + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_FAMILY_ID}.step_count") % max(1, step_max - step_min + 1)))
     face_labels = _sample_face_labels(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}")
 
     sides = tuple(SIDE_OFFSETS.keys())
@@ -476,13 +478,13 @@ def _sample_surface_path_dataset(*, query_id: str, params: Mapping[str, Any], in
         face_labels=face_labels,
         correct_face=str(sequence[-1]),
         instance_seed=int(instance_seed),
-        namespace=f"{SURFACE_PATH_TASK_ID}.{query_id}.endpoint",
+        namespace=f"{SURFACE_PATH_FAMILY_ID}.{query_id}.endpoint",
     )
     sequence_options, sequence_label = _surface_sequence_options(
         face_labels=face_labels,
         correct_sequence=tuple(sequence),
         instance_seed=int(instance_seed),
-        namespace=f"{SURFACE_PATH_TASK_ID}.{query_id}.sequence",
+        namespace=f"{SURFACE_PATH_FAMILY_ID}.{query_id}.sequence",
     )
     correct_label = str(endpoint_label if str(query_id) == "folded_path_endpoint_label" else sequence_label)
     if str(query_id) not in SURFACE_PATH_QUERY_IDS:
@@ -1312,7 +1314,7 @@ def _render_surface_path_scene(
 ) -> Tuple[Image.Image, Dict[str, Any]]:
     width = _get_int(params, "canvas_width", _DEFAULTS.canvas_width)
     height = _get_int(params, "rolling_canvas_height", _DEFAULTS.rolling_canvas_height)
-    style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_TASK_ID}.cube_surface_net")
+    style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_FAMILY_ID}.cube_surface_net")
     image, background_meta = make_puzzle_scene_background(canvas_width=int(width), canvas_height=int(height), style=style)
     draw = ImageDraw.Draw(image)
     net_panel = (54, 54, 520, 482)
@@ -1395,9 +1397,9 @@ def _prompt_defaults() -> Mapping[str, Any]:
             "json_output_contract",
             "json_output_contract_answer_only",
             "answer_hint_option_letter",
-            "evidence_hint_face_relation",
-            "evidence_hint_rolling_result",
-            "evidence_hint_surface_path",
+            "annotation_hint_face_relation",
+            "annotation_hint_rolling_result",
+            "annotation_hint_surface_path",
             "json_example_face_relation",
             "json_example_rolling_result",
             "json_example_surface_path",
@@ -1470,12 +1472,12 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_face_relation_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_face_relation"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_face_relation"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(prompt_defaults["json_example_face_relation"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only_option_label"]),
@@ -1485,12 +1487,12 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         ref_bbox = render_meta["face_bboxes_px"][str(dataset.reference_face)]
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = {
-            "marked_face": _round_evidence_bbox(ref_bbox),
-            "selected_option": _round_evidence_bbox(option_bbox),
+        annotation_bboxes = {
+            "marked_face": _round_annotation_bbox(ref_bbox),
+            "selected_option": _round_annotation_bbox(option_bbox),
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1550,7 +1552,7 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 "image_id": "img0",
                 "face_bboxes_px": dict(render_meta["face_bboxes_px"]),
                 "option_panel_bboxes_px": dict(render_meta["option_panel_bboxes_px"]),
-                "evidence_source": "face_bboxes_px+option_panel_bboxes_px",
+                "annotation_source": "face_bboxes_px+option_panel_bboxes_px",
             },
             "execution_trace": {
                 "scene_id": SCENE_ID,
@@ -1573,15 +1575,15 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                     "correct_option_label": str(dataset.correct_option_label),
                 },
             },
-            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
+            "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1591,7 +1593,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-
 
 @register_task
 class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
@@ -1631,12 +1632,12 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_rolling_result_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_rolling_result"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_rolling_result"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(prompt_defaults["json_example_rolling_result"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only_option_label"]),
@@ -1645,13 +1646,13 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = {
-            "start_cube": _round_evidence_bbox(render_meta["start_cube_bbox_px"]),
-            "roll_path": _round_evidence_bbox(render_meta["path_panel_bbox_px"]),
-            "selected_option": _round_evidence_bbox(option_bbox),
+        annotation_bboxes = {
+            "start_cube": _round_annotation_bbox(render_meta["start_cube_bbox_px"]),
+            "roll_path": _round_annotation_bbox(render_meta["path_panel_bbox_px"]),
+            "selected_option": _round_annotation_bbox(option_bbox),
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         path_norm = normalize_int_with_bounds(len(dataset.path_directions), (_DEFAULTS.rolling_path_length_min, _DEFAULTS.rolling_path_length_max))
         grid_norm = normalize_int_with_bounds(dataset.grid_rows * dataset.grid_cols, (25, 36))
         complexity = build_puzzle_complexity(
@@ -1715,7 +1716,7 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 "path_panel_bbox_px": list(render_meta["path_panel_bbox_px"]),
                 "path_cell_bboxes_px": dict(render_meta["path_cell_bboxes_px"]),
                 "option_panel_bboxes_px": dict(render_meta["option_panel_bboxes_px"]),
-                "evidence_source": "start_cube_bbox_px+path_panel_bbox_px+option_panel_bboxes_px",
+                "annotation_source": "start_cube_bbox_px+path_panel_bbox_px+option_panel_bboxes_px",
             },
             "execution_trace": {
                 "scene_id": SCENE_ID,
@@ -1742,15 +1743,15 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                     "correct_option_label": str(dataset.correct_option_label),
                 },
             },
-            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
+            "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1762,12 +1763,8 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         )
 
 
-@register_task
-class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
-    """Select a folded cube-net path endpoint or visited-face sequence."""
-
-    task_id = SURFACE_PATH_TASK_ID
-    supported_query_ids = SURFACE_PATH_QUERY_IDS
+class _PuzzlesSpatialCubeSurfacePathTask(_CubeSurfaceBaseTask):
+    """Shared implementation for folded cube-net path tasks."""
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1800,12 +1797,12 @@ class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_surface_path_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_surface_path"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint_surface_path"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(prompt_defaults["json_example_surface_path"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only_option_label"]),
@@ -1814,13 +1811,13 @@ class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = {
-            "start_face": _round_evidence_bbox(render_meta["face_bboxes_px"][str(dataset.start_face)]),
-            "move_instructions": _round_evidence_bbox(render_meta["instruction_panel_bbox_px"]),
-            "selected_option": _round_evidence_bbox(option_bbox),
+        annotation_bboxes = {
+            "start_face": _round_annotation_bbox(render_meta["face_bboxes_px"][str(dataset.start_face)]),
+            "move_instructions": _round_annotation_bbox(render_meta["instruction_panel_bbox_px"]),
+            "selected_option": _round_annotation_bbox(option_bbox),
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         path_norm = normalize_int_with_bounds(len(dataset.path_sides), (_DEFAULTS.surface_path_step_count_min, _DEFAULTS.surface_path_step_count_max))
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,
@@ -1889,7 +1886,7 @@ class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
                 "face_bboxes_px": dict(render_meta["face_bboxes_px"]),
                 "instruction_panel_bbox_px": list(render_meta["instruction_panel_bbox_px"]),
                 "option_panel_bboxes_px": dict(render_meta["option_panel_bboxes_px"]),
-                "evidence_source": "face_bboxes_px+instruction_panel_bbox_px+option_panel_bboxes_px",
+                "annotation_source": "face_bboxes_px+instruction_panel_bbox_px+option_panel_bboxes_px",
             },
             "execution_trace": {
                 "scene_id": SCENE_ID,
@@ -1915,15 +1912,15 @@ class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
                     "correct_option_label": str(dataset.correct_option_label),
                 },
             },
-            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
+            "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
-            "evidence_gt": evidence_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
             "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1933,3 +1930,19 @@ class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
+
+
+@register_task
+class PuzzlesSpatialCubeFoldedPathEndpointLabelTask(_PuzzlesSpatialCubeSurfacePathTask):
+    """Select the endpoint face reached by a folded cube-net path."""
+
+    task_id = FOLDED_PATH_ENDPOINT_TASK_ID
+    supported_query_ids = ("folded_path_endpoint_label",)
+
+
+@register_task
+class PuzzlesSpatialCubeFoldedPathFaceSequenceLabelTask(_PuzzlesSpatialCubeSurfacePathTask):
+    """Select the visited-face sequence for a folded cube-net path."""
+
+    task_id = FOLDED_PATH_FACE_SEQUENCE_TASK_ID
+    supported_query_ids = ("folded_path_face_sequence_label",)

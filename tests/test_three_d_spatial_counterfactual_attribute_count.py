@@ -19,7 +19,7 @@ def _spec_matches_predicate(spec: dict, predicate: dict) -> bool:
     return True
 
 
-def test_counterfactual_attribute_count_answer_and_evidence() -> None:
+def test_counterfactual_attribute_count_answer_and_annotation() -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260529,
@@ -45,7 +45,7 @@ def test_counterfactual_attribute_count_answer_and_evidence() -> None:
     assert output.scene_id == "object_scene"
     assert output.query_id == "attribute_count_after_edits"
     assert output.answer_gt.type == "integer"
-    assert output.evidence_gt.type == "bbox_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert trace["target_predicate_kind"] == "color_object"
     assert trace["target_shape_type"] == "cube"
     assert trace["target_color_name"] == "red"
@@ -53,10 +53,10 @@ def test_counterfactual_attribute_count_answer_and_evidence() -> None:
     assert trace["initial_target_count"] == 4
     assert output.answer_gt.value == int(trace["initial_target_count"]) + int(target_delta)
     assert output.answer_gt.value == trace["final_target_count"]
-    assert output.answer_gt.value != len(output.evidence_gt.value)
-    assert len(output.evidence_gt.value) == int(trace["initial_target_count"])
-    assert output.evidence_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in initial_target_ids]
-    assert output.trace_payload["projected_evidence"]["bbox_set"] == output.evidence_gt.value
+    assert output.answer_gt.value != len(output.annotation_gt.value)
+    assert len(output.annotation_gt.value) == int(trace["initial_target_count"])
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in initial_target_ids]
+    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
     assert all(str(step["step_text"]) in output.prompt for step in trace["counterfactual_steps"])
     assert "red cubes" in output.prompt
     assert "clear prompt colors" not in output.prompt
@@ -96,7 +96,7 @@ def test_counterfactual_attribute_count_generates_object_only_target_with_two_st
 
     assert len(trace["counterfactual_steps"]) == 2
     assert output.answer_gt.value == int(trace["initial_target_count"]) + int(target_delta)
-    assert len(output.evidence_gt.value) == int(trace["initial_target_count"])
+    assert len(output.annotation_gt.value) == int(trace["initial_target_count"])
     assert trace["target_predicate_kind"] == "object"
     assert trace["target_property_phrase"] == "balls"
     assert trace["target_color_name"] is None
@@ -132,7 +132,7 @@ def test_counterfactual_attribute_count_generates_color_only_target_with_one_ste
     assert trace["target_shape_type"] is None
     assert trace["target_property_phrase"] == "blue objects"
     assert output.answer_gt.value == int(trace["initial_target_count"]) + int(target_delta)
-    assert len(output.evidence_gt.value) == int(trace["initial_target_count"])
+    assert len(output.annotation_gt.value) == int(trace["initial_target_count"])
     assert all(
         _spec_matches_predicate(spec, trace["target_predicate"])
         for spec in trace["object_specs"]

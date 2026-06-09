@@ -9,8 +9,12 @@ from PIL import Image, ImageDraw
 
 from .go_common import BLACK, WHITE, Board, Coord, color_name, coord_to_point_id, coord_to_stone_id
 from .layout import apply_games_layout_jitter_to_bbox
+from .marking import SemanticMarkerStyle, draw_semantic_ellipse_marker, resolve_semantic_marker_style
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import GoTheme, build_games_go_theme
+
+
+GO_MARKED_GROUP_RED_RGB: Tuple[int, int, int] = (220, 38, 38)
 
 
 @dataclass(frozen=True)
@@ -30,6 +34,7 @@ class GoRenderParams:
     highlight_outline_width_px: int
     liberty_bbox_fraction: float
     layout_jitter_meta: Dict[str, Any] | None = None
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -74,22 +79,11 @@ def _draw_stone(
     color: int,
     marked: bool,
     highlight_outline_width_px: int,
+    marker_style: SemanticMarkerStyle | None = None,
+    marker_metadata: Dict[str, Any] | None = None,
 ) -> None:
     """Draw one black or white Go stone with optional marked-group outline."""
 
-    if bool(marked):
-        highlight_inset = -float(max(3, int(highlight_outline_width_px)))
-        draw.ellipse(
-            [
-                bbox_px[0] + highlight_inset,
-                bbox_px[1] + highlight_inset,
-                bbox_px[2] - highlight_inset,
-                bbox_px[3] - highlight_inset,
-            ],
-            fill=tuple(int(value) for value in theme.highlight_fill_rgba),
-            outline=tuple(int(value) for value in theme.highlight_outline_rgb),
-            width=int(highlight_outline_width_px),
-        )
     if int(color) == int(BLACK):
         fill_rgb = theme.black_stone_fill_rgb
         outline_rgb = theme.black_stone_outline_rgb
@@ -116,6 +110,30 @@ def _draw_stone(
         ],
         fill=tuple(int(value) for value in shine_rgb),
     )
+    if bool(marked):
+        highlight_inset = -float(max(3, int(highlight_outline_width_px)))
+        if marker_style is None:
+            marker_style = resolve_semantic_marker_style(
+                instance_seed=0,
+                namespace="games.go.marked_group.fallback",
+                role="go_marked_stone",
+                surface_rgbs=(tuple(int(value) for value in fill_rgb), tuple(int(value) for value in outline_rgb)),
+                preferred_rgbs=(GO_MARKED_GROUP_RED_RGB,),
+                candidate_rgbs=(GO_MARKED_GROUP_RED_RGB,),
+            )
+        draw_semantic_ellipse_marker(
+            draw,
+            (
+                bbox_px[0] + highlight_inset,
+                bbox_px[1] + highlight_inset,
+                bbox_px[2] - highlight_inset,
+                bbox_px[3] - highlight_inset,
+            ),
+            style=marker_style,
+            width=int(highlight_outline_width_px),
+            marker_kind="go_marked_stone_ring",
+            extra_metadata=marker_metadata,
+        )
 
 
 def render_go_board_scene(
@@ -201,6 +219,39 @@ def render_go_board_scene(
     stone_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
     liberty_set = {(int(coord[0]), int(coord[1])) for coord in liberty_coords}
     marked_group = {(int(coord[0]), int(coord[1])) for coord in marked_group_coords}
+    marked_group_colors = {
+        int(board[row][col])
+        for row, col in marked_group
+        if 0 <= int(row) < int(board_size)
+        and 0 <= int(col) < int(board_size)
+        and int(board[row][col]) != 0
+    }
+    marked_group_color = next(iter(marked_group_colors), 0)
+    marked_stone_surface_rgbs: Tuple[Tuple[int, int, int], ...]
+    if int(marked_group_color) == int(BLACK):
+        marked_stone_surface_rgbs = (
+            tuple(int(value) for value in theme.black_stone_fill_rgb),
+            tuple(int(value) for value in theme.black_stone_outline_rgb),
+        )
+    elif int(marked_group_color) == int(WHITE):
+        marked_stone_surface_rgbs = (
+            tuple(int(value) for value in theme.white_stone_fill_rgb),
+            tuple(int(value) for value in theme.white_stone_outline_rgb),
+        )
+    else:
+        marked_stone_surface_rgbs = ()
+    marked_group_marker_style = (
+        resolve_semantic_marker_style(
+            instance_seed=int(params.instance_seed),
+            namespace="games.go.marked_group",
+            role="go_marked_stone_group",
+            surface_rgbs=marked_stone_surface_rgbs or (tuple(int(value) for value in theme.board_fill_rgb),),
+            preferred_rgbs=(GO_MARKED_GROUP_RED_RGB,),
+            candidate_rgbs=(GO_MARKED_GROUP_RED_RGB,),
+        )
+        if marked_group
+        else None
+    )
 
     for index in range(board_size):
         offset = float(index) * float(step)
@@ -250,6 +301,8 @@ def render_go_board_scene(
                     color=int(occupant),
                     marked=(int(row), int(col)) in marked_group,
                     highlight_outline_width_px=int(params.highlight_outline_width_px),
+                    marker_style=marked_group_marker_style if (int(row), int(col)) in marked_group else None,
+                    marker_metadata={"point_id": str(point_id), "stone_id": str(stone_id)},
                 )
             scene_entities.append(
                 {
@@ -273,6 +326,7 @@ def render_go_board_scene(
         "point_centers_px": {str(key): [float(value[0]), float(value[1])] for key, value in centers_px.items()},
         "point_bboxes_px": {str(key): list(value) for key, value in point_bboxes_px.items()},
         "stone_bboxes_px": {str(key): list(value) for key, value in stone_bboxes_px.items()},
+        "marked_group_marker_style": None if marked_group_marker_style is None else marked_group_marker_style.metadata(),
         "layout_jitter": dict(layout_jitter),
         "scene_panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),

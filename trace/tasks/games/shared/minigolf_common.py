@@ -61,7 +61,7 @@ class MinigolfSample:
     target_obstacle_label: str | None
     target_path_id: str | None
     target_path_label: str | None
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
     cue_visible_fraction: float
     hidden_paths_norm: Mapping[str, Tuple[Tuple[float, float], ...]]
@@ -86,7 +86,7 @@ def path_label(index: int) -> str:
 
 
 def validate_minigolf_sample(sample: MinigolfSample) -> None:
-    """Validate answer and evidence for one Mini-golf sample."""
+    """Validate answer and annotation for one Mini-golf sample."""
 
     query = str(sample.query_id)
     obstacle_ids = [str(obstacle.obstacle_id) for obstacle in sample.obstacles]
@@ -103,8 +103,8 @@ def validate_minigolf_sample(sample: MinigolfSample) -> None:
         raise ValueError("mini-golf path labels must be unique")
 
     known_entities = set(obstacle_ids) | set(path_ids) | {"ball", "hole"}
-    if not set(sample.evidence_entity_ids) <= known_entities:
-        raise ValueError("mini-golf evidence references unknown entities")
+    if not set(sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("mini-golf annotation references unknown entities")
 
     if query == "first_obstacle_label":
         if sample.target_obstacle_id is None or sample.target_obstacle_label is None:
@@ -112,21 +112,21 @@ def validate_minigolf_sample(sample: MinigolfSample) -> None:
         if str(sample.target_obstacle_id) not in set(obstacle_ids):
             raise ValueError("target obstacle id must be visible")
         expected_answer = str(sample.target_obstacle_label)
-        expected_evidence = {str(sample.target_obstacle_id)}
+        expected_annotation = {str(sample.target_obstacle_id)}
     elif query == "shot_path_label":
         if sample.target_path_id is None or sample.target_path_label is None:
             raise ValueError("shot_path_label requires a target path")
         if str(sample.target_path_id) not in set(path_ids):
             raise ValueError("target path id must be visible")
         expected_answer = str(sample.target_path_label)
-        expected_evidence = {str(sample.target_path_id)}
+        expected_annotation = {str(sample.target_path_id)}
     else:
         raise ValueError(f"unsupported mini-golf query_id: {sample.query_id}")
 
     if str(sample.answer) != str(expected_answer):
         raise ValueError("mini-golf answer does not match active query")
-    if set(sample.evidence_entity_ids) != expected_evidence:
-        raise ValueError("mini-golf evidence ids do not match active query")
+    if set(sample.annotation_entity_ids) != expected_annotation:
+        raise ValueError("mini-golf annotation ids do not match active query")
 
 
 __all__ = [

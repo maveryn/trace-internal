@@ -7,16 +7,15 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.drawing import draw_arrow, draw_rounded_rect
 from ...shared.text_rendering import fit_font_to_box
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from .text import draw_centered_game_text as draw_centered_text
 from .twenty_forty_eight_common import (
     Board,
-    Coord,
     EMPTY,
     SIZE,
-    SUPPORTED_2048_DIRECTIONS,
     coord_to_cell_id,
 )
 
@@ -35,8 +34,8 @@ class TwentyFortyEightRenderParams:
     tile_font_size_px: int
     arrow_width_px: int
     label_font_size_px: int
-    goal_outline_width_px: int
     font_family: str = ""
+    instance_seed: int = 0
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -52,7 +51,6 @@ class TwentyFortyEightTheme:
     arrow_rgb: Tuple[int, int, int]
     arrow_label_fill_rgb: Tuple[int, int, int]
     arrow_label_text_rgb: Tuple[int, int, int]
-    goal_outline_rgb: Tuple[int, int, int]
     tile_palette: Mapping[int, Tuple[int, int, int]]
 
 
@@ -78,7 +76,6 @@ def build_2048_theme(*, style_variant: str) -> TwentyFortyEightTheme:
             arrow_rgb=(63, 91, 125),
             arrow_label_fill_rgb=(246, 243, 232),
             arrow_label_text_rgb=(41, 48, 58),
-            goal_outline_rgb=(34, 150, 214),
             tile_palette={
                 2: (238, 228, 218),
                 4: (237, 224, 200),
@@ -100,7 +97,6 @@ def build_2048_theme(*, style_variant: str) -> TwentyFortyEightTheme:
             arrow_rgb=(96, 196, 181),
             arrow_label_fill_rgb=(21, 27, 36),
             arrow_label_text_rgb=(238, 246, 248),
-            goal_outline_rgb=(255, 212, 95),
             tile_palette={
                 2: (184, 205, 214),
                 4: (149, 188, 202),
@@ -122,7 +118,6 @@ def build_2048_theme(*, style_variant: str) -> TwentyFortyEightTheme:
             arrow_rgb=(106, 86, 63),
             arrow_label_fill_rgb=(255, 248, 228),
             arrow_label_text_rgb=(73, 58, 42),
-            goal_outline_rgb=(196, 82, 72),
             tile_palette={
                 2: (246, 236, 209),
                 4: (232, 218, 178),
@@ -144,7 +139,6 @@ def build_2048_theme(*, style_variant: str) -> TwentyFortyEightTheme:
             arrow_rgb=(255, 91, 155),
             arrow_label_fill_rgb=(30, 31, 68),
             arrow_label_text_rgb=(249, 250, 255),
-            goal_outline_rgb=(67, 234, 179),
             tile_palette={
                 2: (124, 231, 213),
                 4: (80, 202, 237),
@@ -166,7 +160,6 @@ def build_2048_theme(*, style_variant: str) -> TwentyFortyEightTheme:
             arrow_rgb=(82, 112, 166),
             arrow_label_fill_rgb=(249, 252, 255),
             arrow_label_text_rgb=(48, 58, 77),
-            goal_outline_rgb=(215, 100, 83),
             tile_palette={
                 2: (232, 220, 239),
                 4: (215, 229, 249),
@@ -242,13 +235,14 @@ def _draw_tile_text(
         font_family=str(font_family) or None,
     )
     fill = theme.tile_text_rgb_dark if int(value) <= 4 else theme.tile_text_rgb_light
+    tile_fill = _tile_fill(int(value), theme)
     draw_centered_text(
         draw,
         text=text,
         center=(float((left + right) / 2.0), float((top + bottom) / 2.0)),
         font=font,
         fill=fill,
-        stroke_fill=fill,
+        stroke_fill=tile_fill,
         stroke_width=0,
     )
 
@@ -259,13 +253,14 @@ def _direction_arrow_points(
     board_bbox: Tuple[float, float, float, float],
     canvas_width: int,
     canvas_height: int,
+    span_px: float | None = None,
 ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
     """Return start/end points for one prominent move arrow."""
 
     left, top, right, bottom = [float(v) for v in board_bbox]
     cx = float((left + right) / 2.0)
     cy = float((top + bottom) / 2.0)
-    span = min(float(canvas_width), float(canvas_height)) * 0.085
+    span = float(span_px) if span_px is not None else min(float(canvas_width), float(canvas_height)) * 0.085
     if str(direction) == "up":
         return (cx, float(top - span * 0.15)), (cx, float(top - span * 0.95))
     if str(direction) == "down":
@@ -277,39 +272,111 @@ def _direction_arrow_points(
     raise ValueError(f"unsupported direction: {direction!r}")
 
 
-def _draw_arrow_label(
+def _draw_board_grid_at(
+    draw: ImageDraw.ImageDraw,
+    *,
+    board: Board,
+    board_bbox: Tuple[float, float, float, float],
+    params: TwentyFortyEightRenderParams,
+    theme: TwentyFortyEightTheme,
+    entity_prefix: str,
+    entity_type: str,
+) -> Tuple[Dict[str, Tuple[float, float, float, float]], Tuple[Dict[str, Any], ...]]:
+    """Draw one 2048 board into a fixed bbox and return cell geometry."""
+
+    left, top, right, bottom = [float(v) for v in board_bbox]
+    board_size = max(1.0, min(float(right - left), float(bottom - top)))
+    nominal_size = max(1.0, float(params.board_size_px))
+    scale = float(board_size / nominal_size)
+    board_radius = max(6, int(round(float(params.board_radius_px) * scale)))
+    cell_radius = max(4, int(round(float(params.cell_radius_px) * scale)))
+    gap = max(4.0, float(params.cell_gap_px) * scale)
+    tile_font_size = max(13, int(round(float(params.tile_font_size_px) * scale)))
+
+    draw_rounded_rect(
+        draw,
+        (left, top, left + board_size, top + board_size),
+        radius=board_radius,
+        fill=theme.board_fill_rgb,
+        outline=theme.board_outline_rgb,
+        width=max(2, int(round(4.0 * scale))),
+    )
+    cell_size = float((board_size - ((SIZE + 1) * gap)) / float(SIZE))
+    entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    scene_entities: list[Dict[str, Any]] = []
+    for row in range(SIZE):
+        for col in range(SIZE):
+            value = int(board[row][col])
+            cell_id = f"{entity_prefix}_{coord_to_cell_id((row, col))}"
+            bbox = _cell_bbox(
+                board_left=left,
+                board_top=top,
+                cell_size=cell_size,
+                gap_px=gap,
+                row=row,
+                col=col,
+            )
+            entity_bboxes[cell_id] = bbox
+            fill = _tile_fill(value, theme)
+            draw_rounded_rect(
+                draw,
+                bbox,
+                radius=cell_radius,
+                fill=fill,
+                outline=theme.board_outline_rgb if value == EMPTY else fill,
+                width=max(1, int(round(2.0 * scale))),
+            )
+            _draw_tile_text(
+                draw,
+                bbox=bbox,
+                value=value,
+                theme=theme,
+                max_font_size_px=tile_font_size,
+                font_family=str(params.font_family),
+            )
+            scene_entities.append(
+                {
+                    "id": cell_id,
+                    "type": str(entity_type),
+                    "row": int(row),
+                    "col": int(col),
+                    "value": int(value),
+                    "bbox": list(bbox),
+                }
+            )
+    return entity_bboxes, tuple(scene_entities)
+
+
+def _draw_result_option_label(
     draw: ImageDraw.ImageDraw,
     *,
     label: str,
     center: Tuple[float, float],
+    radius: float,
     params: TwentyFortyEightRenderParams,
     theme: TwentyFortyEightTheme,
 ) -> Tuple[float, float, float, float]:
-    """Draw a compact label badge near one arrow."""
+    """Draw one high-contrast result-board option label."""
 
-    radius = max(18.0, float(params.label_font_size_px) * 0.86)
     cx, cy = float(center[0]), float(center[1])
     bbox = (
-        round(cx - radius, 3),
-        round(cy - radius, 3),
-        round(cx + radius, 3),
-        round(cy + radius, 3),
+        round(cx - float(radius), 3),
+        round(cy - float(radius), 3),
+        round(cx + float(radius), 3),
+        round(cy + float(radius), 3),
     )
-    draw.ellipse(
-        bbox,
-        fill=tuple(int(v) for v in theme.arrow_label_fill_rgb),
-        outline=tuple(int(v) for v in theme.arrow_rgb),
-        width=3,
-    )
+    badge_fill = tuple(int(v) for v in theme.arrow_rgb)
+    badge_outline = tuple(int(v) for v in theme.arrow_label_fill_rgb)
+    draw.ellipse(bbox, fill=badge_fill, outline=badge_outline, width=4)
     font = fit_font_to_box(
         draw,
         text=str(label),
         max_width=float(2.0 * radius),
         max_height=float(2.0 * radius),
         bold=True,
-        min_size_px=12,
-        max_size_px=int(params.label_font_size_px),
-        fill_ratio=0.70,
+        min_size_px=14,
+        max_size_px=max(18, int(params.label_font_size_px)),
+        fill_ratio=0.72,
         font_family=str(params.font_family) or None,
     )
     draw_centered_text(
@@ -318,8 +385,14 @@ def _draw_arrow_label(
         center=(cx, cy),
         font=font,
         fill=theme.arrow_label_text_rgb,
-        stroke_fill=theme.arrow_label_text_rgb,
-        stroke_width=0,
+        stroke_fill=badge_fill,
+        stroke_width=1,
+        role="option_label",
+        required=True,
+        surface_rgbs=(badge_fill,),
+        preferred_rgbs=(theme.arrow_label_text_rgb,),
+        instance_seed=int(params.instance_seed),
+        namespace="games.2048.result_board_option_label",
     )
     return bbox
 
@@ -332,10 +405,8 @@ def render_2048_board_scene(
     params: TwentyFortyEightRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
     move_direction: str | None = None,
-    move_label_by_direction: Mapping[str, str] | None = None,
-    goal_cell: Coord | None = None,
 ) -> Rendered2048Scene:
-    """Render one 2048 board with either one move arrow or labeled candidate arrows."""
+    """Render one 2048 board with an optional move arrow."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
@@ -414,19 +485,6 @@ def render_2048_board_scene(
                 outline=theme.board_outline_rgb if value == EMPTY else fill,
                 width=2,
             )
-            if goal_cell is not None and int(goal_cell[0]) == row and int(goal_cell[1]) == col:
-                inset = max(3.0, float(params.goal_outline_width_px) * 0.35)
-                draw.rounded_rectangle(
-                    (
-                        float(bbox[0] + inset),
-                        float(bbox[1] + inset),
-                        float(bbox[2] - inset),
-                        float(bbox[3] - inset),
-                    ),
-                    radius=max(4, int(params.cell_radius_px) - 2),
-                    outline=tuple(int(v) for v in theme.goal_outline_rgb),
-                    width=int(params.goal_outline_width_px),
-                )
             _draw_tile_text(
                 draw,
                 bbox=bbox,
@@ -447,46 +505,7 @@ def render_2048_board_scene(
             )
 
     arrow_entities: list[Dict[str, Any]] = []
-    if move_label_by_direction:
-        for direction in SUPPORTED_2048_DIRECTIONS:
-            if str(direction) not in move_label_by_direction:
-                continue
-            start, end = _direction_arrow_points(
-                direction=str(direction),
-                board_bbox=board_bbox,
-                canvas_width=int(params.canvas_width),
-                canvas_height=int(params.canvas_height),
-            )
-            draw_arrow(
-                draw,
-                start=start,
-                end=end,
-                fill=theme.arrow_rgb,
-                width=int(params.arrow_width_px),
-                head_length_px=24,
-                head_width_px=28,
-            )
-            label_center = (
-                float(end[0] + ((end[0] - start[0]) * 0.22)),
-                float(end[1] + ((end[1] - start[1]) * 0.22)),
-            )
-            label_bbox = _draw_arrow_label(
-                draw,
-                label=str(move_label_by_direction[str(direction)]),
-                center=label_center,
-                params=params,
-                theme=theme,
-            )
-            arrow_entities.append(
-                {
-                    "id": f"move_{direction}",
-                    "type": "2048_candidate_move",
-                    "direction": str(direction),
-                    "label": str(move_label_by_direction[str(direction)]),
-                    "bbox": list(label_bbox),
-                }
-            )
-    elif move_direction is not None:
+    if move_direction is not None:
         start, end = _direction_arrow_points(
             direction=str(move_direction),
             board_bbox=board_bbox,
@@ -526,7 +545,195 @@ def render_2048_board_scene(
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "effective_cell_size_px": round(float(cell_size), 3),
         "font_family": str(params.font_family),
-        "goal_cell": None if goal_cell is None else [int(goal_cell[0]), int(goal_cell[1])],
+    }
+    return Rendered2048Scene(
+        image=image,
+        scene_entities=tuple(scene_entities),
+        render_map=render_map,
+    )
+
+
+def render_2048_result_options_scene(
+    *,
+    board: Board,
+    option_boards: Mapping[str, Board],
+    background: Image.Image,
+    style_variant: str,
+    params: TwentyFortyEightRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
+    move_direction: str,
+) -> Rendered2048Scene:
+    """Render one source 2048 board plus labeled candidate result boards."""
+
+    image = background.convert("RGBA")
+    draw = ImageDraw.Draw(image, "RGBA")
+    theme = build_2048_theme(style_variant=str(style_variant))
+    canvas_width = int(params.canvas_width)
+    canvas_height = int(params.canvas_height)
+
+    board_size = float(min(210, max(188, int(round(min(canvas_width, canvas_height) * 0.23)))))
+    source_size = float(board_size)
+    option_size = float(board_size)
+    arrow_span = float(min(54.0, max(42.0, float(source_size) * 0.25)))
+    arrow_clearance = float(max(16.0, float(params.arrow_width_px) * 1.8))
+    option_label_band = float(max(34, int(round(float(option_size) * 0.19))))
+    option_panel_height = float(option_size + option_label_band)
+    option_gap_x = float(max(20, int(round(float(option_size) * 0.10))))
+    option_gap_y = float(max(22, int(round(float(option_size) * 0.11))))
+    source_to_options_gap = float(max(86.0, (arrow_span * 0.95) + arrow_clearance + 18.0, float(source_size) * 0.40))
+    arrow_pad = float(max(56.0, (arrow_span * 1.05) + arrow_clearance))
+    options_width = float((3.0 * option_size) + (2.0 * option_gap_x))
+    options_height = float((2.0 * option_panel_height) + option_gap_y)
+    content_width = float(max(source_size + (2.0 * arrow_pad), options_width))
+    content_height = float(arrow_pad + source_size + source_to_options_gap + options_height)
+    group_left = float((canvas_width - content_width) / 2.0)
+    group_top = float((canvas_height - content_height) / 2.0)
+    group_bbox = (
+        round(group_left, 3),
+        round(group_top, 3),
+        round(group_left + content_width, 3),
+        round(group_top + content_height, 3),
+    )
+    group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=group_bbox,
+        canvas_width=canvas_width,
+        canvas_height=canvas_height,
+        jitter=params.layout_jitter_meta,
+    )
+    group_left, group_top, _group_right, _group_bottom = [float(v) for v in group_bbox]
+    source_left = float(group_left + ((content_width - source_size) / 2.0))
+    source_top = float(group_top + arrow_pad)
+    source_bbox = (
+        round(source_left, 3),
+        round(source_top, 3),
+        round(source_left + source_size, 3),
+        round(source_top + source_size, 3),
+    )
+    options_left = float(group_left + ((content_width - options_width) / 2.0))
+    options_top = float(source_top + source_size + source_to_options_gap)
+
+    scene_entities: list[Dict[str, Any]] = []
+    source_cell_bboxes, source_entities = _draw_board_grid_at(
+        draw,
+        board=board,
+        board_bbox=source_bbox,
+        params=params,
+        theme=theme,
+        entity_prefix="source",
+        entity_type="2048_source_cell",
+    )
+    scene_entities.extend(source_entities)
+
+    start, end = _direction_arrow_points(
+        direction=str(move_direction),
+        board_bbox=source_bbox,
+        canvas_width=canvas_width,
+        canvas_height=canvas_height,
+        span_px=arrow_span,
+    )
+    draw_arrow(
+        draw,
+        start=start,
+        end=end,
+        fill=theme.arrow_rgb,
+        width=int(params.arrow_width_px),
+        head_length_px=26,
+        head_width_px=31,
+    )
+    scene_entities.append(
+        {
+            "id": "shown_move",
+            "type": "2048_move_arrow",
+            "direction": str(move_direction),
+            "bbox": [
+                round(min(start[0], end[0]) - 20.0, 3),
+                round(min(start[1], end[1]) - 20.0, 3),
+                round(max(start[0], end[0]) + 20.0, 3),
+                round(max(start[1], end[1]) + 20.0, 3),
+            ],
+        }
+    )
+
+    option_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    option_panel_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    option_cell_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    label_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    for option_index, (label, option_board) in enumerate(option_boards.items()):
+        row = int(option_index // 3)
+        col = int(option_index % 3)
+        panel_left = float(options_left + (col * (option_size + option_gap_x)))
+        panel_top = float(options_top + (row * (option_panel_height + option_gap_y)))
+        panel_bbox = (
+            round(panel_left - 8.0, 3),
+            round(panel_top - 4.0, 3),
+            round(panel_left + option_size + 8.0, 3),
+            round(panel_top + option_panel_height + 8.0, 3),
+        )
+        option_panel_bboxes[str(label)] = panel_bbox
+        if panel_style is not None:
+            draw_rounded_rect(
+                draw,
+                panel_bbox,
+                radius=14,
+                fill=tuple(int(v) for v in panel_style.option_fill_rgb),
+                outline=tuple(int(v) for v in panel_style.panel_border_rgb),
+                width=2,
+            )
+        board_top = float(panel_top)
+        option_bbox = (
+            round(panel_left, 3),
+            round(board_top, 3),
+            round(panel_left + option_size, 3),
+            round(board_top + option_size, 3),
+        )
+        option_bboxes[str(label)] = option_bbox
+        label_bboxes[str(label)] = _draw_result_option_label(
+            draw,
+            label=str(label),
+            center=(
+                float(panel_left + (option_size / 2.0)),
+                float(panel_top + option_size + (option_label_band / 2.0)),
+            ),
+            radius=max(15.0, float(option_label_band) * 0.45),
+            params=params,
+            theme=theme,
+        )
+        cell_bboxes, cell_entities = _draw_board_grid_at(
+            draw,
+            board=option_board,
+            board_bbox=option_bbox,
+            params=params,
+            theme=theme,
+            entity_prefix=f"result_option_{label}",
+            entity_type="2048_result_option_cell",
+        )
+        option_cell_bboxes.update(cell_bboxes)
+        scene_entities.append(
+            {
+                "id": f"result_option_{label}",
+                "type": "2048_result_option_board",
+                "label": str(label),
+                "bbox": list(option_bbox),
+            }
+        )
+        scene_entities.extend(cell_entities)
+
+    render_map: Dict[str, Any] = {
+        "entity_bboxes_px": {
+            **{str(key): list(value) for key, value in source_cell_bboxes.items()},
+            **{str(key): list(value) for key, value in option_cell_bboxes.items()},
+            **{f"result_option_{label}": list(bbox) for label, bbox in option_bboxes.items()},
+        },
+        "source_board_bbox_px": list(source_bbox),
+        "result_option_bboxes_px": {str(key): list(value) for key, value in option_bboxes.items()},
+        "result_option_panel_bboxes_px": {str(key): list(value) for key, value in option_panel_bboxes.items()},
+        "result_option_label_bboxes_px": {str(key): list(value) for key, value in label_bboxes.items()},
+        "layout_jitter": dict(layout_jitter),
+        "layout_offset_px": [round(float(dx), 3), round(float(dy), 3)],
+        "style_variant": str(style_variant),
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "effective_cell_size_px": round(float((option_size - ((SIZE + 1) * max(4.0, float(params.cell_gap_px) * (option_size / max(1.0, float(params.board_size_px)))))) / float(SIZE)), 3),
+        "font_family": str(params.font_family),
     }
     return Rendered2048Scene(
         image=image,
@@ -540,4 +747,5 @@ __all__ = [
     "Rendered2048Scene",
     "build_2048_theme",
     "render_2048_board_scene",
+    "render_2048_result_options_scene",
 ]

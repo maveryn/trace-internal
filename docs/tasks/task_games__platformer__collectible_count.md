@@ -1,13 +1,16 @@
 # `task_games__platformer__collectible_count`
 
+## Contract
 1. Domain: `games`
 2. Task group: `platformer`
 3. Scene id: `platformer`
-4. Query id: `collectible_count`
-5. Prompt bundle: `games_platformer_v0`
+4. Public task id: `task_games__platformer__collectible_count`
+5. Supported `query_id` values: `collectible_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `point_set`
+8. Program schema: `count(filter(collectibles, collected_by_route=True)); scene=platformer; scope=collectible_count`
 
-The image shows a side-scroller platformer level with a player character, platforms, hazards, coins, and a dashed jump arc. The task asks how many coins lie on the dashed jump arc.
-
-The answer is an integer coin count. Evidence is `point_set`: one pixel point at the center of each coin that lies on the jump arc.
-
-Generation is deterministic for a fixed seed and records the full arc, on-path coin ids, distractor coin ids, prompt keys, render style, and projected evidence in the trace payload.
+## Generation Notes
+1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
+2. Query ids are internal replay/sampling keys and do not define public task units.
+3. Annotation is projected from the same generated game state used for answer verification.

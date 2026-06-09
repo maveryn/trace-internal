@@ -108,6 +108,155 @@ generation:
       component_answer_support: [-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]
       mass_support: [1, 2, 3, 4, 5, 6]
       speed_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    physics_mechanics_collision_aftermath_family:
+      scene_variant_weights:
+        aftermath_table: 1.0
+        aftermath_gridded_table: 1.0
+        aftermath_compact_table: 1.0
+      query_id_weights:
+        incoming_path_cause_choice: 1.0
+      final_motion_direction_weights:
+        east: 1.0
+        northeast: 1.0
+        north: 1.0
+        northwest: 1.0
+        west: 1.0
+        southwest: 1.0
+        south: 1.0
+        southeast: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_final_motion_direction_sampling: true
+      balanced_correct_option_letter_sampling: true
+    physics_mechanics_free_body_forces_family:
+      scene_variant_weights:
+        clean_table: 1.0
+        gridded_table: 1.0
+        lab_card: 1.0
+      query_id_weights:
+        net_force_direction_choice: 1.0
+      net_force_direction_weights:
+        east: 1.0
+        northeast: 1.0
+        north: 1.0
+        northwest: 1.0
+        west: 1.0
+        southwest: 1.0
+        south: 1.0
+        southeast: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+        G: 1.0
+        H: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_net_force_direction_sampling: true
+      balanced_correct_option_letter_sampling: true
+      resultant_component_support: [2, 3, 4, 5, 6]
+      base_force_support: [2, 3, 4, 5, 6, 7, 8]
+      canceling_pair_support: [1, 2, 3, 4]
+    physics_mechanics_orbital_motion_family:
+      query_id_weights:
+        sun_focus_label: 1.0
+        greatest_speed_position_label: 1.0
+        least_speed_position_label: 1.0
+      balanced_query_id_sampling: true
+      balanced_target_answer_sampling: true
+    physics_mechanics_motion_graph_family:
+      scene_variant_weights:
+        clean_grid: 1.0
+        paper_grid: 1.0
+        bold_grid: 1.0
+      query_id_weights:
+        velocity_sign_choice: 1.0
+        speed_change_state_choice: 1.0
+      velocity_sign_choice_state_weights:
+        moving_right: 1.0
+        moving_left: 1.0
+        stationary: 1.0
+      speed_change_state_choice_state_weights:
+        speeding_up: 1.0
+        slowing_down: 1.0
+        constant_speed: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_motion_state_sampling: true
+      balanced_correct_option_letter_sampling: true
+    physics_mechanics_motion_graph_interval_displacement_family:
+      scene_variant_weights:
+        clean_grid: 1.0
+        paper_grid: 1.0
+        bold_grid: 1.0
+      query_id_weights:
+        constant_velocity_interval_displacement: 1.0
+        constant_acceleration_interval_displacement: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      constant_velocity_interval_width_support: [2, 3, 4]
+      constant_acceleration_interval_width_support: [2, 4]
+      constant_velocity_support: [1, 2, 3, 4, 5, 6, 7]
+      acceleration_endpoint_velocity_support: [1, 2, 3, 4, 5, 6, 7, 8]
+      constant_acceleration_slope_support: [-2, -1, 1, 2]
+    physics_mechanics_stack_stability_family:
+      query_id_weights:
+        stable_stack_label: 1.0
+        tipping_stack_label: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      balanced_query_id_sampling: true
+      balanced_correct_option_letter_sampling: true
+    physics_mechanics_gear_train_family:
+      scene_variant_weights:
+        straight_chain: 1.0
+        staggered_chain: 1.0
+        arc_chain: 1.0
+      query_id_weights:
+        marked_output_direction: 1.0
+      gear_count_support: [2, 3, 4, 5, 6]
+      gear_radius_px_support: [42, 48, 54, 60]
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_gear_count_sampling: true
+      balanced_target_answer_sampling: true
+    physics_mechanics_gear_train_speed_family:
+      scene_variant_weights:
+        straight_chain: 1.0
+        staggered_chain: 1.0
+        arc_chain: 1.0
+      query_id_weights:
+        simple_gear_ratio_output_speed: 1.0
+      gear_count_support: [2, 3, 4]
+      tooth_count_support: [12, 16, 18, 20, 24, 30, 36, 40, 48]
+      input_rpm_support: [30, 40, 45, 60, 72, 80, 90, 100, 120, 144, 150, 180]
+      output_rpm_min: 20
+      output_rpm_max: 240
+      balanced_scene_variant_sampling: true
+      balanced_query_id_sampling: true
+      balanced_gear_count_sampling: true
+      balanced_speed_relation_sampling: true
+      balanced_target_answer_sampling: true
 
 rendering:
   shared:
@@ -316,6 +465,195 @@ rendering:
       layout_jitter_x_px_max: 28
       layout_jitter_y_px_min: -18
       layout_jitter_y_px_max: 10
+    physics_mechanics_collision_aftermath_family:
+      canvas_width: 1180
+      canvas_height: 760
+      table_left_px: 52
+      table_top_px: 52
+      table_width_px: 1076
+      table_height_px: 640
+      table_corner_radius_px: 22
+      impact_center_x_px: 590
+      impact_center_y_px: 380
+      compact_impact_center_y_px: 364
+      puck_radius_px: 38
+      impact_radius_px: 16
+      target_distance_px: 156
+      trail_start_gap_px: 18
+      incoming_arrow_inner_gap_px: 58
+      incoming_arrow_length_px: 210
+      candidate_label_offset_px: 38
+      motion_arrow_width_px: 8
+      motion_arrow_width_px_min: 7
+      motion_arrow_width_px_max: 9
+      candidate_arrow_width_px: 6
+      candidate_arrow_width_px_min: 5
+      candidate_arrow_width_px_max: 7
+      arrow_head_length_px: 23
+      arrow_head_width_px: 19
+      candidate_arrow_head_length_px: 20
+      candidate_arrow_head_width_px: 17
+      title_font_size_px: 27
+      label_font_size_px: 23
+      puck_font_size_px: 23
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      grid_spacing_px: 44
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 20
+      layout_jitter_x_px_min: -20
+      layout_jitter_x_px_max: 20
+      layout_jitter_y_px_min: -12
+      layout_jitter_y_px_max: 12
+    physics_mechanics_free_body_forces_family:
+      canvas_width: 1180
+      canvas_height: 760
+      panel_left_px: 52
+      panel_top_px: 52
+      panel_right_px: 1128
+      panel_bottom_px: 708
+      panel_corner_radius_px: 22
+      object_center_x_px: 590
+      object_center_y_px: 340
+      object_width_px: 148
+      object_height_px: 104
+      force_arrow_length_px: 112
+      force_arrow_width_px: 8
+      force_arrow_head_length_px: 24
+      force_arrow_head_width_px: 20
+      option_panel_top_px: 594
+      option_cell_left_px: 58
+      option_cell_width_px: 132
+      option_cell_height_px: 92
+      option_arrow_length_px: 54
+      option_arrow_width_px: 6
+      option_arrow_head_length_px: 18
+      option_arrow_head_width_px: 16
+      title_font_size_px: 27
+      label_font_size_px: 22
+      option_font_size_px: 22
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      grid_spacing_px: 44
+    physics_mechanics_orbital_motion_family:
+      canvas_width: 1040
+      canvas_height: 720
+    physics_mechanics_motion_graph_family:
+      canvas_width: 1120
+      canvas_height: 760
+      plot_left_px: 132
+      plot_top_px: 74
+      plot_width_px: 856
+      plot_height_px: 500
+      option_panel_top_px: 610
+      option_cell_left_px: 70
+      option_cell_width_px: 468
+      option_cell_height_px: 66
+      option_cell_gap_x_px: 24
+      option_cell_gap_y_px: 14
+      axis_width_px: 5
+      axis_width_px_min: 4
+      axis_width_px_max: 6
+      curve_width_px: 7
+      curve_width_px_min: 6
+      curve_width_px_max: 8
+      grid_line_width_px: 1
+      bold_grid_line_width_px: 2
+      label_font_size_px: 25
+      tick_font_size_px: 18
+      option_font_size_px: 22
+      title_font_size_px: 28
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      point_radius_px: 5
+      y_min: -5
+      y_max: 5
+      t_min: 0
+      t_max: 6
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -24
+      layout_jitter_x_px_max: 24
+      layout_jitter_y_px_min: -12
+      layout_jitter_y_px_max: 10
+    physics_mechanics_motion_graph_interval_displacement_family:
+      canvas_width: 1120
+      canvas_height: 720
+      plot_left_px: 132
+      plot_top_px: 86
+      plot_width_px: 856
+      plot_height_px: 500
+      axis_width_px: 5
+      axis_width_px_min: 4
+      axis_width_px_max: 6
+      curve_width_px: 7
+      curve_width_px_min: 6
+      curve_width_px_max: 8
+      grid_line_width_px: 1
+      bold_grid_line_width_px: 2
+      label_font_size_px: 25
+      tick_font_size_px: 18
+      option_font_size_px: 22
+      title_font_size_px: 28
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      point_radius_px: 5
+      y_min: 0
+      y_max: 8
+      t_min: 0
+      t_max: 8
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -24
+      layout_jitter_x_px_max: 24
+      layout_jitter_y_px_min: -10
+      layout_jitter_y_px_max: 10
+    physics_mechanics_stack_stability_family:
+      canvas_width: 1180
+      canvas_height: 780
+      board_left_px: 48
+      board_top_px: 48
+      board_right_margin_px: 48
+      board_bottom_margin_px: 48
+      cell_gap_x_px: 26
+      cell_gap_y_px: 28
+      brick_width_px: 80
+      brick_width_px_min: 74
+      brick_width_px_max: 88
+      brick_height_px: 32
+      brick_height_px_min: 29
+      brick_height_px_max: 35
+      brick_gap_px: 3
+      label_font_size_px: 31
+      title_font_size_px: 25
+      small_font_size_px: 18
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      support_width_px: 5
+      projection_width_px: 4
+      com_radius_px: 8
+    physics_mechanics_gear_train_family:
+      canvas_width: 1040
+      canvas_height: 680
+      panel_margin_x_px: 54
+      panel_margin_top_px: 52
+      panel_margin_bottom_px: 58
+      label_font_size_px: 23
+      title_font_size_px: 27
+    physics_mechanics_gear_train_speed_family:
+      canvas_width: 1040
+      canvas_height: 680
+      panel_margin_x_px: 54
+      panel_margin_top_px: 52
+      panel_margin_bottom_px: 58
+      label_font_size_px: 22
+      tooth_label_font_size_px: 20
+      title_font_size_px: 27
 
 complexity:
   shared: {}
@@ -344,6 +682,56 @@ complexity:
         collision_reasoning: 0.48
         ambiguity: 0.14
         output_burden: 0.10
+    physics_mechanics_collision_aftermath_family:
+      criteria_weights:
+        visual_scan: 0.30
+        causal_reasoning: 0.46
+        ambiguity: 0.14
+        output_burden: 0.10
+    physics_mechanics_free_body_forces_family:
+      criteria_weights:
+        visual_scan: 0.30
+        vector_reasoning: 0.46
+        ambiguity: 0.14
+        output_burden: 0.10
+    physics_mechanics_orbital_motion_family:
+      criteria_weights:
+        visual_scan: 0.30
+        orbital_reasoning: 0.46
+        ambiguity: 0.12
+        output_burden: 0.12
+    physics_mechanics_motion_graph_family:
+      criteria_weights:
+        visual_scan: 0.24
+        graph_reasoning: 0.54
+        ambiguity: 0.12
+        output_burden: 0.10
+    physics_mechanics_motion_graph_interval_displacement_family:
+      criteria_weights:
+        visual_scan: 0.26
+        graph_reasoning: 0.44
+        arithmetic: 0.20
+        ambiguity: 0.06
+        output_burden: 0.04
+    physics_mechanics_stack_stability_family:
+      criteria_weights:
+        visual_scan: 0.34
+        center_of_mass_reasoning: 0.38
+        ambiguity: 0.16
+        output_burden: 0.12
+    physics_mechanics_gear_train_family:
+      criteria_weights:
+        visual_scan: 0.30
+        gear_reasoning: 0.48
+        ambiguity: 0.12
+        output_burden: 0.10
+    physics_mechanics_gear_train_speed_family:
+      criteria_weights:
+        visual_scan: 0.28
+        gear_ratio_reasoning: 0.42
+        arithmetic: 0.16
+        ambiguity: 0.08
+        output_burden: 0.06
 
 prompt:
   shared:
@@ -355,8 +743,8 @@ prompt:
       object_description_center_fulcrum: a horizontal lever beam with a central fulcrum, numbered distance marks, and weight blocks on both sides
       object_description_offset_fulcrum: a horizontal lever beam with an offset fulcrum, numbered distance marks, and weight blocks on both sides
       object_description_textured_beam: a textured lever beam with a fulcrum, numbered distance marks, and weight blocks on both sides
-      evidence_hint_torque: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all weight blocks on the queried side of the fulcrum
-      evidence_hint_missing_weight: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the known weight blocks and marked `?` weight block needed to determine the balancing weight
+      annotation_hint_torque: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for all weight blocks on the queried side of the fulcrum
+      annotation_hint_missing_weight: set "annotation" to an object mapping known_weights and target_weight to arrays of [x0, y0, x1, y1] bounding boxes for the known weight blocks and marked `?` weight block needed to determine the balancing weight
       answer_hint: set "answer" to the requested integer torque or missing weight value
     task_physics__pulley__pulley_mechanical_advantage:
       scene_key: pulley_system_diagram
@@ -364,8 +752,8 @@ prompt:
       object_description_open_block: one open block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
       object_description_compact_block: one compact block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
       object_description_tall_block: one tall block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
-      evidence_hint_effort_force: set "evidence" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown load-force label box, and target_force to the marked `?` effort label box
-      evidence_hint_load_force: set "evidence" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown effort-force label box, and target_force to the marked `?` load label box
+      annotation_hint_effort_force: set "annotation" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown load-force label box, and target_force to the marked `?` effort label box
+      annotation_hint_load_force: set "annotation" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown effort-force label box, and target_force to the marked `?` load label box
       answer_hint: set "answer" to the requested integer force value
     physics_mechanics_spring_extension_family:
       scene_key: paired_spring_diagram
@@ -373,9 +761,9 @@ prompt:
       object_description_paired_springs: two identical hanging springs shown in side-by-side cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_staggered_springs: two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_textured_spring: two identical hanging springs shown in textured cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
-      evidence_hint_missing_weight: set "evidence" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, marked red `?` weight block, and shown query extension marker
-      evidence_hint_missing_extension: set "evidence" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, shown query weight block, and marked red `?` extension tag
-      evidence_hint_difference: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the two shown extension markers being compared
+      annotation_hint_missing_weight: set "annotation" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, marked red `?` weight block, and shown query extension marker
+      annotation_hint_missing_extension: set "annotation" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, shown query weight block, and marked red `?` extension tag
+      annotation_hint_difference: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the two shown extension markers being compared
       answer_hint: set "answer" to the requested integer weight, extension, or extension difference value
     physics_mechanics_sticky_collision_family:
       scene_key: sticky_collision_diagram
@@ -383,7 +771,77 @@ prompt:
       object_description_wide_table: a collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
       object_description_compact_table: a compact collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
       object_description_gridded_table: a gridded collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
-      evidence_hint_direction_choice: set "evidence" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
-      evidence_hint_velocity_component: set "evidence" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
+      annotation_hint_direction_choice: set "annotation" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
+      annotation_hint_velocity_component: set "annotation" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
       answer_hint_direction_choice: set "answer" to the option letter of the correct candidate arrow
       answer_hint_component: set "answer" to the requested signed integer velocity component in m/s
+    physics_mechanics_collision_aftermath_family:
+      scene_key: collision_aftermath_diagram
+      task_key: collision_aftermath_query
+      object_description_aftermath_table: a top-down collision table with an impact marker, a target puck shown after impact with its motion trail, and six labeled incoming path arrows
+      object_description_aftermath_gridded_table: a gridded top-down collision table with an impact marker, a target puck shown after impact with its motion trail, and six labeled incoming path arrows
+      object_description_aftermath_compact_table: a compact top-down collision table with an impact marker, a target puck shown after impact with its motion trail, and six labeled incoming path arrows
+      annotation_hint_incoming_path_cause_choice: set "annotation" to an object mapping impact_point and target_after_motion to [x0, y0, x1, y1] pixel boxes around the impact marker and the target puck with its motion trail
+      answer_hint_incoming_path_cause_choice: set "answer" to the letter of the incoming path that caused the shown target-puck motion
+      json_example: '{"annotation":{"impact_point":[120,130,150,160],"target_after_motion":[180,90,260,150]},"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+    physics_mechanics_free_body_forces_family:
+      scene_key: free_body_force_diagram
+      task_key: free_body_force_query
+      object_description_clean_table: a top-down free-body-force diagram with one object, several labeled applied force arrows, and eight labeled candidate net-force direction arrows
+      object_description_gridded_table: a gridded top-down free-body-force diagram with one object, several labeled applied force arrows, and eight labeled candidate net-force direction arrows
+      object_description_lab_card: a lab-card free-body-force diagram with one object, several labeled applied force arrows, and eight labeled candidate net-force direction arrows
+      annotation_hint_net_force_direction_choice: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around each applied force arrow and its magnitude label
+      answer_hint_net_force_direction_choice: set "answer" to the option letter of the candidate arrow showing the net force direction
+      json_example: '{"annotation":[[90,120,220,160],[250,210,320,340]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    physics_mechanics_orbital_motion_family:
+      scene_key: orbital_motion_diagram
+      task_key: orbital_motion_query
+      object_description: an elliptical orbit with labeled candidate points and visual focus or speed-position cues
+      annotation_hint_sun_focus_label: set "annotation" to an object mapping center, selected_focus, major_axis_endpoint_1, and major_axis_endpoint_2 to pixel points [x,y]
+      annotation_hint_greatest_speed_position_label: set "annotation" to an object mapping sun and selected_position to pixel points [x,y]
+      annotation_hint_least_speed_position_label: set "annotation" to an object mapping sun and selected_position to pixel points [x,y]
+      answer_hint_sun_focus_label: set "answer" to the label of the candidate point that can be the Sun/focus
+      answer_hint_greatest_speed_position_label: set "answer" to the label of the planet position with greatest speed
+      answer_hint_least_speed_position_label: set "answer" to the label of the planet position with least speed
+    physics_mechanics_motion_graph_family:
+      scene_key: motion_graph_diagram
+      task_key: motion_graph_query
+      object_description: a kinematics graph with labeled axes, a piecewise-linear curve, one marked time interval, and visible candidate state options
+      annotation_hint_velocity_sign_choice: set "annotation" to an object mapping query_region and curve_segment to [x0, y0, x1, y1] pixel boxes around the marked interval and local graph segment
+      annotation_hint_speed_change_state_choice: set "annotation" to an object mapping query_region and curve_segment to [x0, y0, x1, y1] pixel boxes around the marked interval and local graph segment
+      answer_hint_velocity_sign_choice: set "answer" to the option letter for the motion state shown by the marked position-time graph interval
+      answer_hint_speed_change_state_choice: set "answer" to the option letter for the speed-change state shown by the marked velocity-time graph interval
+    physics_mechanics_motion_graph_interval_displacement_family:
+      scene_key: motion_graph_diagram
+      task_key: motion_graph_interval_query
+      object_description: a velocity-time graph with labeled axes, integer grid ticks, a piecewise-linear velocity curve, and one marked time interval
+      annotation_hint_constant_velocity_interval_displacement: set "annotation" to an object mapping marked_interval, velocity_segment, and axis_scale to [x0, y0, x1, y1] pixel boxes around the highlighted time interval, the velocity segment over that interval, and the visible axis scale
+      annotation_hint_constant_acceleration_interval_displacement: set "annotation" to an object mapping marked_interval, velocity_segment, and axis_scale to [x0, y0, x1, y1] pixel boxes around the highlighted time interval, the velocity segment over that interval, and the visible axis scale
+      answer_hint_constant_velocity_interval_displacement: set "answer" to the integer displacement in meters over the marked interval
+      answer_hint_constant_acceleration_interval_displacement: set "answer" to the integer displacement in meters over the marked interval
+    physics_mechanics_stack_stability_family:
+      scene_key: stack_stability_diagram
+      task_key: stack_stability_query
+      object_description: six labeled stacks of equal-size brick blocks, each with a red center-of-mass marker, a dashed vertical projection, and a support-footprint bracket
+      annotation_hint_stable_stack_label: set "annotation" to an object mapping center_of_mass, projection, and support_footprint to [x0, y0, x1, y1] pixel boxes for the selected stack
+      annotation_hint_tipping_stack_label: set "annotation" to an object mapping center_of_mass, projection, and support_footprint to [x0, y0, x1, y1] pixel boxes for the selected stack
+      answer_hint_stable_stack_label: set "answer" to the letter of the stack that stays upright
+      answer_hint_tipping_stack_label: set "answer" to the letter of the stack that tips over
+    physics_mechanics_gear_train_family:
+      scene_key: gear_train_diagram
+      task_key: gear_train_direction_query
+      object_description: a meshed gear train with one input gear marked by a rotation arrow and one output gear marked with a target cue
+      annotation_hint_marked_output_direction: set "annotation" to an object mapping input_gear, input_rotation_arrow, output_gear, and gear_train to [x0, y0, x1, y1] pixel boxes around the input gear, its visible rotation arrow, the marked output gear, and the complete meshed gear train
+      answer_hint_marked_output_direction: set "answer" to either "clockwise" or "counterclockwise" for the marked output gear
+      json_example: '{"annotation":{"input_gear":[10,20,90,100],"input_rotation_arrow":[5,10,100,110],"output_gear":[260,30,340,110],"gear_train":[10,20,340,110]},"answer":"clockwise"}'
+      json_example_answer_only: '{"answer":"counterclockwise"}'
+    physics_mechanics_gear_train_speed_family:
+      scene_key: gear_train_diagram
+      task_key: gear_train_speed_query
+      object_description: a meshed gear train with tooth-count labels on the gears, a visible input speed label, and a marked output speed label
+      annotation_hint_simple_gear_ratio_output_speed: set "annotation" to an object mapping input_gear, output_gear, and gear_train to [x0, y0, x1, y1] pixel boxes around the input gear with its tooth count and speed label, the marked output gear with its tooth count, and the complete meshed gear train
+      answer_hint_simple_gear_ratio_output_speed: set "answer" to the integer output rotational speed in rpm
+      json_example: '{"annotation":{"input_gear":[10,20,110,120],"output_gear":[260,30,360,130],"gear_train":[10,20,360,130]},"answer":90}'
+      json_example_answer_only: '{"answer":90}'

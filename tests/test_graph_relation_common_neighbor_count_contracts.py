@@ -16,13 +16,13 @@ def test_graph_relation_common_neighbor_count_deterministic() -> None:
     out_a = task.generate(20620, params={}, max_attempts=200)
     out_b = task.generate(20620, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "point_set"
+    assert out_a.annotation_gt.type == "point_set"
     assert out_a.scene_id == "node_link"
 
 
@@ -35,7 +35,7 @@ def test_graph_relation_common_neighbor_count_build_smoke(tmp_path: Path) -> Non
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph__node_link__common_neighbor_count",
+                task_id="task_graph__node_link__common_related_node_count",
                 count=4,
                 params={},
             )
@@ -53,7 +53,7 @@ def test_graph_relation_common_neighbor_count_build_smoke(tmp_path: Path) -> Non
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__common_neighbor_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__common_related_node_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

@@ -16,7 +16,7 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count"),
+    ("params", "expected_answer", "expected_annotation_count"),
     (
         (
             {"scene_variant": "single_board", "query_id": "ring_count", "target_ring": "double", "target_answer": 3, "dart_count": 8},
@@ -39,7 +39,7 @@ from tests.helpers import read_jsonl
 def test_games_darts_score_count_emits_expected_count_contract(
     params: dict[str, int | str],
     expected_answer: int,
-    expected_evidence_count: int,
+    expected_annotation_count: int,
 ) -> None:
     out = GamesDartsScoreCountTask().generate(92001, params=params, max_attempts=48)
     trace = out.trace_payload
@@ -47,18 +47,18 @@ def test_games_darts_score_count_emits_expected_count_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "point_set"
-    assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == int(expected_annotation_count)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert all(str(dart_id).startswith("dart_") for dart_id in execution["evidence_entity_ids"])
+    assert all(str(dart_id).startswith("dart_") for dart_id in execution["annotation_entity_ids"])
 
 
-def test_games_darts_score_count_total_score_uses_small_board_and_all_darts_as_evidence() -> None:
+def test_games_darts_score_count_total_score_uses_one_dart_as_annotation() -> None:
     out = GamesDartsScoreCountTask().generate(
         92011,
         params={"scene_variant": "single_board", "query_id": "total_score", "dart_count": 1},
@@ -72,18 +72,18 @@ def test_games_darts_score_count_total_score_uses_small_board_and_all_darts_as_e
         for option in execution["score_options"]
     }
     assert out.answer_gt.type == "string"
-    assert answer_label in {"A", "B", "C", "D", "E"}
-    assert len(answer_options) == 5
-    assert len(set(answer_options.values())) == 5
+    assert answer_label in {"A", "B", "C", "D", "E", "F"}
+    assert len(answer_options) in {4, 6}
+    assert len(set(answer_options.values())) == len(answer_options)
     assert int(execution["target_answer"]) == sum(dart_scores)
     assert answer_options[answer_label] == int(execution["target_answer"])
     assert [option for option in execution["score_options"] if bool(option["is_answer"])] == [
         {"label": answer_label, "score": int(execution["target_answer"]), "is_answer": True}
     ]
-    assert len(out.evidence_gt.value) == 1
-    assert out.evidence_gt.type == "point_set"
-    assert len(execution["evidence_entity_ids"]) == 1
-    assert execution["evidence_entity_ids"][0].startswith("dart_")
+    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "point_set"
+    assert len(execution["annotation_entity_ids"]) == 1
+    assert execution["annotation_entity_ids"][0].startswith("dart_")
     assert execution["target_answer_support"] is None
 
 
@@ -134,7 +134,7 @@ def test_games_darts_score_count_is_deterministic() -> None:
     out_a = task.generate(92031, params=params, max_attempts=48)
     out_b = task.generate(92031, params=params, max_attempts=48)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -171,12 +171,16 @@ def test_games_darts_score_count_total_score_prompt_asks_for_visible_option_lett
 
     assert "option letter" in out.prompt
     assert "shown in the image" in out.prompt
+    assert "marked dart" in out.prompt
+    assert "marked darts" not in out.prompt
 
 
 @pytest.mark.parametrize(
     ("target_ring", "expected_phrase"),
     (
         ("single", "yellow-highlighted single area"),
+        ("double", "yellow-highlighted double ring"),
+        ("triple", "yellow-highlighted triple ring"),
         ("bull", "yellow-highlighted bull area"),
     ),
 )
@@ -197,6 +201,24 @@ def test_games_darts_score_count_ring_prompt_uses_natural_area_names(
     )
 
     assert expected_phrase in out.prompt
+
+
+def test_games_darts_score_count_ring_prompt_describes_double_and_triple_bands() -> None:
+    out = GamesDartsScoreCountTask().generate(
+        92061,
+        params={
+            "scene_variant": "single_board",
+            "query_id": "ring_count",
+            "target_ring": "double",
+            "target_answer": 2,
+            "dart_count": 8,
+        },
+        max_attempts=48,
+    )
+
+    assert "double ring is the outer scoring band" in out.prompt
+    assert "triple ring is the inner scoring band" in out.prompt
+    assert "Single areas are the numbered wedge areas" in out.prompt
 
 
 def test_games_darts_score_count_build_smoke(tmp_path: Path) -> None:

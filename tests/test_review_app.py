@@ -12,7 +12,8 @@ from trace.review_app.artifact_index import build_review_index
 from trace.review_app.feedback import FeedbackStore
 
 
-TASK_ID = "task_pages__workspace__professional_target_label"
+TASK_ID = "task_pages__workspace__toolbar_palette_control_label"
+TASK_ID_2 = "task_pages__workspace__property_panel_control_label"
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -89,13 +90,13 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
         {
             "answer_gt": {"type": "option_letter", "value": "G"},
             "domain": "pages",
-            "evidence_gt": {"type": "bbox_set", "value": [[10, 10, 40, 40]]},
+            "annotation_gt": {"type": "bbox_set", "value": [[10, 10, 40, 40]]},
             "image": {"format": "png", "path": image_rel},
             "instance_seed": 123,
             "prompt": prompt,
             "prompt_variants": {
                 "answer_only": prompt + " Answer only.",
-                "answer_and_evidence": prompt + " Include evidence.",
+                "answer_and_annotation": prompt + " Include annotation.",
             },
             "query_id": "lookup",
             "scene_id": "workspace",
@@ -149,6 +150,123 @@ def _write_accepted_solve_status(root: Path) -> None:
     )
 
 
+def _write_taxonomy_audit_fixture(tmp_path: Path) -> None:
+    audit_dir = tmp_path / "review" / "taxonomy-audit" / "contract_v0_reanalysis"
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    program_arguments = json.dumps(
+        {
+            "schema_version": "program_arguments_v0",
+            "status": "inferred",
+            "parameter_axes": ["role_selection"],
+            "arguments": {
+                "reference_or_rule": {
+                    "value_type": "semantic_role",
+                    "allowed_values": ["target_control"],
+                    "source": "test_fixture",
+                    "notes": "",
+                },
+                "candidate_options": {
+                    "value_type": "semantic_role",
+                    "allowed_values": ["visible_candidate_options"],
+                    "source": "test_fixture",
+                    "notes": "",
+                },
+            },
+            "constraints": [],
+        },
+        sort_keys=True,
+    )
+    program_arguments_csv = program_arguments.replace('"', '""')
+    _write_json(
+        audit_dir / "summary.json",
+        {
+            "live_task_count": 2,
+            "proposed_task_count": 3,
+            "split_task_count": 1,
+            "query_row_count": 2,
+            "program_signature_count": 1,
+            "base_program_contract_count": 3,
+            "duplicate_base_program_contract_count": 0,
+            "program_argument_row_count": 2,
+            "program_argument_status_counts": {"inferred": 2},
+            "domains": {"pages": {"current_tasks": 2, "proposed_tasks": 3, "split_tasks": 1}},
+        },
+    )
+    (audit_dir / "domain_taxonomies").mkdir(parents=True, exist_ok=True)
+    (audit_dir / "domain_taxonomies" / "pages.md").write_text(
+        "# Pages Taxonomy\n\nWorkspace target lookup review notes.\n",
+        encoding="utf-8",
+    )
+    (audit_dir / "proposed_task_summary.csv").write_text(
+        "\n".join(
+            [
+                "domain,scene_id,current_task_id,decision,proposed_task_count,proposed_task_ids,query_ids,program_signature_ids,base_program_contracts,program_argument_axes_json,answer_schemas,annotation_schemas,rationale",
+                (
+                    "pages,workspace,"
+                    f"{TASK_ID},split,2,"
+                    "task_pages__workspace__control_text_label|task_pages__workspace__target_state_label,"
+                    "lookup,selection.option_match,"
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=control_text_label\","
+                    f"\"{program_arguments_csv}\","
+                    "option_letter,bbox_set,"
+                    "Split control text from state lookup."
+                ),
+                (
+                    "pages,workspace,"
+                    f"{TASK_ID_2},keep,1,"
+                    f"{TASK_ID_2},"
+                    "lookup,selection.option_match,"
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=secondary_target_label\","
+                    f"\"{program_arguments_csv}\","
+                    "option_letter,bbox_set,"
+                    "Keep secondary target lookup as one task."
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (audit_dir / "task_query_analysis.csv").write_text(
+        "\n".join(
+            [
+                "domain,scene_id,current_task_id,current_query_id,current_task_slug,proposed_task_id,proposed_task_slug,scene_contract,view_contract,answer_schema,answer_type_observed,annotation_schema,annotation_type_observed,annotation_schema_notes,program_signature_id,program_schema,base_program_contract,parameter_axes,program_arguments_json,decision_source,rationale,generation_failures,source_file,doc_path,sample_count,example_json_paths,example_image_paths,decision,split_from,merge_with,proposed_task_group_size",
+                (
+                    "pages,workspace,"
+                    f"{TASK_ID},lookup,toolbar_palette_control_label,"
+                    "task_pages__workspace__control_text_label,"
+                    "control_text_label,"
+                    "pages/workspace renderer grammar,workspace.default_view,"
+                    "option_letter,option_letter,bbox_set,bbox_set,,"
+                    "selection.option_match,"
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=control_text_label\","
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=control_text_label\","
+                    f"role_selection,\"{program_arguments_csv}\",manual_boundary_seed,"
+                    "Contract-v0 keeps the narrower visible-control objective.,"
+                    ",trace/tasks/pages/workspace.py,docs/tasks/example.md,1,,,split,"
+                    f"{TASK_ID},,2"
+                ),
+                (
+                    "pages,workspace,"
+                    f"{TASK_ID_2},lookup,secondary_target_label,"
+                    f"{TASK_ID_2},"
+                    "secondary_target_label,"
+                    "pages/workspace renderer grammar,workspace.default_view,"
+                    "option_letter,option_letter,bbox_set,bbox_set,,"
+                    "selection.option_match,"
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=secondary_target_label\","
+                    "\"select_option(reference_or_rule, candidate_options); scene=workspace; scope=secondary_target_label\","
+                    f"role_selection,\"{program_arguments_csv}\",manual_boundary_seed,"
+                    "Contract-v0 keeps the secondary visible-control objective.,"
+                    ",trace/tasks/pages/workspace.py,docs/tasks/example.md,0,,,keep,"
+                    f"{TASK_ID_2},,1"
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path)
     _write_json(
@@ -194,12 +312,12 @@ def test_feedback_store_persists_and_updates_records(tmp_path: Path) -> None:
     sample = next(iter(build_review_index(root, repo_root=tmp_path).samples.values()))
     store = FeedbackStore(tmp_path / "feedback.sqlite")
 
-    created = store.add_feedback(sample=sample, comment="Evidence box is too broad.", category="evidence")
+    created = store.add_feedback(sample=sample, comment="Annotation box is too broad.", category="annotation")
     updated = store.update_feedback(created.id, status="resolved", severity="note")
 
     assert updated.status == "resolved"
     assert updated.severity == "note"
-    assert store.list_for_sample(sample.uid)[0].comment == "Evidence box is too broad."
+    assert store.list_for_sample(sample.uid)[0].comment == "Annotation box is too broad."
     assert store.counts_by_task()[f"pages/workspace/{TASK_ID}"]["resolved"] == 1
 
     task_feedback = store.add_task_feedback(
@@ -219,7 +337,7 @@ def test_feedback_store_persists_and_updates_records(tmp_path: Path) -> None:
 
     note = store.add_feedback_note(
         created.id,
-        note="Narrowed the evidence box and regenerated the review sample.",
+        note="Narrowed the annotation box and regenerated the review sample.",
         author="agent",
     )
     comment = store.add_feedback_comment(
@@ -235,13 +353,13 @@ def test_feedback_store_persists_and_updates_records(tmp_path: Path) -> None:
         "Reviewer confirmed the new box is closer, but still slightly tall."
     )
     assert store.list_notes_for_feedback(created.id)[0].note == (
-        "Narrowed the evidence box and regenerated the review sample."
+        "Narrowed the annotation box and regenerated the review sample."
     )
     exported = {record["id"]: record for record in store.export_records()}
     assert exported[created.id]["reviewer_comments"][0]["comment"] == (
         "Reviewer confirmed the new box is closer, but still slightly tall."
     )
-    assert exported[created.id]["agent_notes"][0]["note"] == "Narrowed the evidence box and regenerated the review sample."
+    assert exported[created.id]["agent_notes"][0]["note"] == "Narrowed the annotation box and regenerated the review sample."
 
 
 def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
@@ -249,6 +367,7 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
 
     default = store.get_task_audit(domain="pages", scene_id="workspace", task_id=TASK_ID)
     assert default.manual_pass is False
+    assert default.review_pass is False
     assert default.passed_count == 0
 
     updated = store.update_task_audit(
@@ -257,15 +376,117 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
         task_id=TASK_ID,
         prompt_pass=True,
         image_pass=True,
-        evidence_pass=True,
+        annotation_pass=True,
         distribution_pass=True,
         solve_rate_pass=True,
         updated_by="reviewer",
     )
 
     assert updated.manual_pass is True
+    assert updated.review_pass is True
+    assert updated.review_count == 4
     assert updated.passed_count == 5
     assert store.task_audits_by_task()[f"pages/workspace/{TASK_ID}"].updated_by == "reviewer"
+
+    illustration_review = store.update_illustration_object_review(
+        item_id="top_down_pixel_rpg__pixel_rpg__tree__oak",
+        renderer_style="top_down_pixel_rpg",
+        category="plant",
+        object_type="tree",
+        label="tree · oak",
+        decision="improve",
+        notes="Canopy needs stronger isometric lighting.",
+        updated_by="reviewer",
+    )
+    assert illustration_review.decision == "improve"
+    assert illustration_review.notes == "Canopy needs stronger isometric lighting."
+    assert store.get_illustration_object_review(
+        item_id="top_down_pixel_rpg__pixel_rpg__tree__oak"
+    ).updated_by == "reviewer"
+    assert "top_down_pixel_rpg__pixel_rpg__tree__oak" in store.illustration_object_reviews_by_item()
+    assert "Canopy needs stronger isometric lighting." in store.export_illustration_object_reviews_jsonl()
+
+
+def test_illustration_object_review_uses_variant_pixel_footprints() -> None:
+    from trace.review_app.illustration_object_review import _pixel_footprint_for_item, illustration_object_review_item
+
+    chicken = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__domestic_animal__chicken")
+    cow = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__domestic_animal__cow")
+    cart = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__cart__default")
+    crop_row = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__crop_row__default")
+    carrot = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__vegetable_patch__carrot")
+    pumpkin = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__vegetable_patch__pumpkin")
+    shelf = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__shelf__mixed")
+    produce_bin = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__produce_bin__fruit")
+    cave_entrance = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__cave_entrance__default")
+    ore_vein = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__ore_vein__default")
+    rail_track = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__rail_track__horizontal")
+    stairs = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__stairs__down")
+    long_table = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__table__long")
+    square_table = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__table__square")
+    double_bed = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__bed__double")
+    single_bed = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__bed__single")
+    fireplace = illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__fireplace__lit")
+    room_divider = illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__room_divider__screen")
+
+    assert chicken is not None
+    assert cow is not None
+    assert cart is not None
+    assert crop_row is not None
+    assert carrot is not None
+    assert pumpkin is not None
+    assert shelf is not None
+    assert produce_bin is not None
+    assert cave_entrance is not None
+    assert ore_vein is not None
+    assert rail_track is not None
+    assert stairs is not None
+    assert long_table is not None
+    assert square_table is not None
+    assert double_bed is not None
+    assert single_bed is not None
+    assert fireplace is not None
+    assert room_divider is not None
+    assert _pixel_footprint_for_item(chicken) == (1, 1)
+    assert _pixel_footprint_for_item(cow) == (2, 1)
+    assert _pixel_footprint_for_item(cart) == (2, 1)
+    assert _pixel_footprint_for_item(crop_row) == (4, 1)
+    assert _pixel_footprint_for_item(carrot) == (1, 1)
+    assert _pixel_footprint_for_item(pumpkin) == (1, 1)
+    assert _pixel_footprint_for_item(shelf) == (3, 1)
+    assert _pixel_footprint_for_item(produce_bin) == (2, 1)
+    assert _pixel_footprint_for_item(cave_entrance) == (4, 3)
+    assert _pixel_footprint_for_item(ore_vein) == (1, 1)
+    assert _pixel_footprint_for_item(rail_track) == (1, 1)
+    assert _pixel_footprint_for_item(stairs) == (2, 2)
+    assert _pixel_footprint_for_item(long_table) == (3, 2)
+    assert _pixel_footprint_for_item(square_table) == (2, 2)
+    assert _pixel_footprint_for_item(double_bed) == (3, 3)
+    assert _pixel_footprint_for_item(single_bed) == (2, 3)
+    assert _pixel_footprint_for_item(fireplace) == (2, 1)
+    assert _pixel_footprint_for_item(room_divider) == (3, 1)
+
+
+def test_pixel_rpg_object_review_inventory_matches_between_rpg_renderers() -> None:
+    from trace.review_app.illustration_object_review import illustration_object_review_item, illustration_object_review_items
+
+    def normalized_items(renderer_style: str) -> set[tuple[str, str]]:
+        return {
+            (item.object_type, item.variant_label or "default")
+            for item in illustration_object_review_items()
+            if item.renderer_style == renderer_style and item.source == "pixel_rpg_shared"
+        }
+
+    top_down_items = normalized_items("top_down_pixel_rpg")
+    isometric_items = normalized_items("isometric_pixel_rpg")
+
+    assert top_down_items == isometric_items
+    assert all(object_type not in {"bottle", "bowl", "mug"} for object_type, _ in top_down_items)
+    assert ("chair", "up") not in top_down_items
+    assert illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__chair__up") is None
+    assert illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__chair__up") is None
+    assert illustration_object_review_item("top_down_pixel_rpg__pixel_rpg__bowl__default") is None
+    assert illustration_object_review_item("isometric_pixel_rpg__pixel_rpg__mug__default") is None
 
 
 def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
@@ -332,10 +553,17 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'class="sidebar"' not in page.text
     assert 'data-suggest-url="/proxy/7860/api/search-suggest"' in page.text
     assert 'href="/proxy/7860/resources"' in page.text
-    assert 'href="/proxy/7860/feedback"' in page.text
+    assert 'href="/proxy/7860/three-d/objects"' not in page.text
+    assert 'href="/proxy/7860/illustrations/objects"' not in page.text
+    assert 'href="/proxy/7860/issues"' in page.text
     assert 'class="theme-switch"' in page.text
     assert 'data-theme-choice="dark"' in page.text
     assert 'data-theme-choice="light"' in page.text
+
+    resources_page = client.get("/resources", headers={"Authorization": "Bearer secret"})
+    assert resources_page.status_code == 200
+    assert 'href="/proxy/7860/three-d/objects"' in resources_page.text
+    assert 'href="/proxy/7860/illustrations/objects"' in resources_page.text
 
     suggestions = client.get("/api/search-suggest?q=workspace", headers={"Authorization": "Bearer secret"})
     assert suggestions.status_code == 200
@@ -369,9 +597,12 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert "<th>Generated</th>" not in task_page.text
     assert 'name="distribution_pass" value="1" checked' in task_page.text
     assert f"/media/{next(iter(app.state.review.index().samples.values())).media_id}?v=" in task_page.text
-    assert "Include evidence." in task_page.text
+    assert "Include annotation." in task_page.text
+    assert "<p data-selectable-text>" in task_page.text
+    assert 'class="sample-row-main" href="/proxy/7860/samples/' in task_page.text
+    assert 'draggable="false"' in task_page.text
     assert "answer" in task_page.text
-    assert "evidence" in task_page.text
+    assert "annotation" in task_page.text
 
     sample = next(iter(app.state.review.index().samples.values()))
     image_task_page = client.get(
@@ -384,14 +615,14 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'class="image-only-card"' in image_task_page.text
     assert 'class="image-pair-card"' in image_task_page.text
     assert "Original" in image_task_page.text
-    assert "Evidence" in image_task_page.text
+    assert "Annotation" in image_task_page.text
     assert f"/proxy/7860/media/{sample.media_id}?v=" in image_task_page.text
     assert f"/proxy/7860/overlay/{sample.uid}.png?v=" in image_task_page.text
     assert 'class="sample-row-list"' in image_task_page.text
     assert f"/domains/pages/scenes/workspace/tasks/{TASK_ID}/queries/lookup?view=images" in image_task_page.text
 
     task_feedback = client.post(
-        f"/domains/pages/scenes/workspace/tasks/{TASK_ID}/feedback",
+        f"/domains/pages/scenes/workspace/tasks/{TASK_ID}/issues",
         headers={"Authorization": "Bearer secret"},
         data={
             "comment": "Task-level note.",
@@ -406,14 +637,14 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
 
     sample_feedback = app.state.review.feedback.add_feedback(
         sample=sample,
-        comment="Evidence should be tighter.",
-        category="evidence",
+        comment="Annotation should be tighter.",
+        category="annotation",
     )
     feedback_note = client.post(
-        f"/feedback/{sample_feedback.id}/notes",
+        f"/issues/{sample_feedback.id}/notes",
         headers={"Authorization": "Bearer secret"},
         data={
-            "note": "Adjusted evidence projection and regenerated the task review.",
+            "note": "Adjusted annotation projection and regenerated the task review.",
             "author": "agent",
             "next": f"/domains/pages/scenes/workspace/tasks/{TASK_ID}?view=images",
         },
@@ -422,10 +653,10 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert feedback_note.status_code == 303
     assert feedback_note.headers["location"] == f"/proxy/7860/domains/pages/scenes/workspace/tasks/{TASK_ID}?view=images"
     assert app.state.review.feedback.list_notes_for_feedback(sample_feedback.id)[0].note == (
-        "Adjusted evidence projection and regenerated the task review."
+        "Adjusted annotation projection and regenerated the task review."
     )
     feedback_comment = client.post(
-        f"/feedback/{sample_feedback.id}/comments",
+        f"/issues/{sample_feedback.id}/comments",
         headers={"Authorization": "Bearer secret"},
         data={
             "comment": "Reviewer follow-up should stay on the same thread.",
@@ -444,15 +675,16 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
         f"/domains/pages/scenes/workspace/tasks/{TASK_ID}?view=images",
         headers={"Authorization": "Bearer secret"},
     )
-    assert "Evidence should be tighter." in image_task_page.text
-    assert "Adjusted evidence projection and regenerated the task review." in image_task_page.text
+    assert "Annotation should be tighter." in image_task_page.text
+    assert "Adjusted annotation projection and regenerated the task review." in image_task_page.text
     assert "Reviewer follow-up should stay on the same thread." in image_task_page.text
-    assert "Continue task feedback" in image_task_page.text
-    assert f'action="/proxy/7860/feedback/{task_thread.id}/comments"' in image_task_page.text
-    assert "Continue existing sample feedback" in image_task_page.text
-    assert f'action="/proxy/7860/feedback/{sample_feedback.id}/comments"' in image_task_page.text
-    assert f'href="/proxy/7860/feedback/{sample_feedback.id}"' in image_task_page.text
+    assert "Continue task issue" in image_task_page.text
+    assert f'action="/proxy/7860/issues/{task_thread.id}/comments"' in image_task_page.text
+    assert "Continue existing sample issue" in image_task_page.text
+    assert f'action="/proxy/7860/issues/{sample_feedback.id}/comments"' in image_task_page.text
+    assert f'href="/proxy/7860/issues/{sample_feedback.id}"' in image_task_page.text
     assert "Brief repair note after changing code or artifacts" not in image_task_page.text
+    assert f'id="sample-{sample.uid}"' in image_task_page.text
 
     sample_page = client.get(f"/samples/{sample.uid}", headers={"Authorization": "Bearer secret"})
     assert sample_page.status_code == 200
@@ -460,44 +692,97 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert f"/proxy/7860/media/{sample.media_id}?v=" in sample_page.text
     assert f"/proxy/7860/overlay/{sample.uid}.png?v=" in sample_page.text
     assert "Reviewer follow-up should stay on the same thread." in sample_page.text
-    assert "Adjusted evidence projection and regenerated the task review." in sample_page.text
+    assert "Adjusted annotation projection and regenerated the task review." in sample_page.text
     assert "Brief repair note after changing code or artifacts" not in sample_page.text
 
-    feedback_queue = client.get("/feedback", headers={"Authorization": "Bearer secret"})
-    assert feedback_queue.status_code == 200
-    assert "Feedback Work Queue" in feedback_queue.text
-    assert "Task-level note." in feedback_queue.text
-    assert "Evidence should be tighter." in feedback_queue.text
-    assert "Missing manual audit: prompt, image, evidence" in feedback_queue.text
-    assert "Missing manual audit: prompt, image, evidence, distribution" not in feedback_queue.text
-    assert "Solve-rate manual checkbox not checked" in feedback_queue.text
-    assert "Automated solve-rate missing" in feedback_queue.text
-    assert f'href="/proxy/7860/samples/{sample.uid}"' in feedback_queue.text
-    assert f'href="/proxy/7860/feedback/{sample_feedback.id}"' in feedback_queue.text
+    feedback_redirect = client.get("/feedback", headers={"Authorization": "Bearer secret"}, follow_redirects=False)
+    assert feedback_redirect.status_code == 303
+    assert feedback_redirect.headers["location"] == "/proxy/7860/issues"
 
-    feedback_thread = client.get(f"/feedback/{sample_feedback.id}", headers={"Authorization": "Bearer secret"})
+    feedback_queue = client.get("/issues", headers={"Authorization": "Bearer secret"})
+    assert feedback_queue.status_code == 200
+    assert "Issue Work Queue" in feedback_queue.text
+    assert "review items with open issues" in feedback_queue.text
+    assert 'class="feedback-domain-filter"' in feedback_queue.text
+    assert 'href="/proxy/7860/issues?domain=pages"' in feedback_queue.text
+    assert "Task-level note." in feedback_queue.text
+    assert "Annotation should be tighter." in feedback_queue.text
+    assert "Missing manual audit: prompt, image, annotation" not in feedback_queue.text
+    assert "Missing manual audit: prompt, image, annotation, distribution" not in feedback_queue.text
+    assert "Solve-rate manual checkbox not checked" not in feedback_queue.text
+    assert "Automated solve-rate missing" not in feedback_queue.text
+    assert f'href="/proxy/7860/samples/{sample.uid}"' in feedback_queue.text
+    assert f'href="/proxy/7860/issues/{sample_feedback.id}"' in feedback_queue.text
+    assert (
+        f'href="/proxy/7860/domains/pages/scenes/workspace/tasks/{TASK_ID}'
+        f'/queries/{sample.query_id}?view=rows#sample-{sample.uid}"'
+    ) in feedback_queue.text
+
+    filtered_feedback_queue = client.get("/issues?domain=pages", headers={"Authorization": "Bearer secret"})
+    assert filtered_feedback_queue.status_code == 200
+    assert "Task-level note." in filtered_feedback_queue.text
+    assert "Annotation should be tighter." in filtered_feedback_queue.text
+    assert 'value="/issues?domain=pages"' in filtered_feedback_queue.text
+
+    empty_feedback_queue = client.get("/issues?domain=charts", headers={"Authorization": "Bearer secret"})
+    assert empty_feedback_queue.status_code == 200
+    assert "No open issues." in empty_feedback_queue.text
+    assert "Task-level note." not in empty_feedback_queue.text
+
+    app.state.review.feedback.add_task_feedback(
+        domain="games",
+        scene_id="stale_scene",
+        task_id="task_games__stale_scene__missing_task",
+        comment="Stale game feedback.",
+        category="rendering",
+    )
+    stale_feedback_queue = client.get("/issues?domain=games", headers={"Authorization": "Bearer secret"})
+    assert stale_feedback_queue.status_code == 200
+    assert "Stale game feedback." in stale_feedback_queue.text
+    assert "not in current index" in stale_feedback_queue.text
+    assert "No open issues." not in stale_feedback_queue.text
+
+    detail_redirect = client.get(f"/feedback/{sample_feedback.id}", headers={"Authorization": "Bearer secret"}, follow_redirects=False)
+    assert detail_redirect.status_code == 303
+    assert detail_redirect.headers["location"] == f"/proxy/7860/issues/{sample_feedback.id}"
+
+    feedback_thread = client.get(f"/issues/{sample_feedback.id}", headers={"Authorization": "Bearer secret"})
     assert feedback_thread.status_code == 200
-    assert "Reviewer Feedback" in feedback_thread.text
+    assert "Issue Thread" in feedback_thread.text
     assert "Reviewer Follow-Ups" in feedback_thread.text
     assert "Repair Notes" in feedback_thread.text
-    assert "Evidence should be tighter." in feedback_thread.text
+    assert "Reviewer issue" in feedback_thread.text
+    assert "Reviewer follow-up" in feedback_thread.text
+    assert "Agent repair note" in feedback_thread.text
+    assert "Annotation should be tighter." in feedback_thread.text
     assert "Reviewer follow-up should stay on the same thread." in feedback_thread.text
-    assert "Adjusted evidence projection and regenerated the task review." in feedback_thread.text
+    assert "Adjusted annotation projection and regenerated the task review." in feedback_thread.text
+    assert feedback_thread.text.index("Annotation should be tighter.") < feedback_thread.text.index(
+        "Reviewer follow-up should stay on the same thread."
+    )
+    assert feedback_thread.text.index("Annotation should be tighter.") < feedback_thread.text.index(
+        "Adjusted annotation projection and regenerated the task review."
+    )
+    assert "Open source" in feedback_thread.text
+    assert (
+        f'href="/proxy/7860/domains/pages/scenes/workspace/tasks/{TASK_ID}'
+        f'/queries/{sample.query_id}?view=rows#sample-{sample.uid}"'
+    ) in feedback_thread.text
     assert f'href="/proxy/7860/samples/{sample.uid}"' in feedback_thread.text
     assert f"/proxy/7860/media/{sample.media_id}?v=" in feedback_thread.text
     assert f"/proxy/7860/overlay/{sample.uid}.png?v=" in feedback_thread.text
 
     resolve = client.post(
-        f"/feedback/{sample_feedback.id}",
+        f"/issues/{sample_feedback.id}",
         headers={"Authorization": "Bearer secret"},
-        data={"status": "resolved", "next": "/feedback"},
+        data={"status": "resolved", "next": "/issues"},
         follow_redirects=False,
     )
     assert resolve.status_code == 303
-    assert resolve.headers["location"] == "/proxy/7860/feedback"
-    feedback_queue = client.get("/feedback", headers={"Authorization": "Bearer secret"})
+    assert resolve.headers["location"] == "/proxy/7860/issues"
+    feedback_queue = client.get("/issues", headers={"Authorization": "Bearer secret"})
     assert "Task-level note." in feedback_queue.text
-    assert "Evidence should be tighter." not in feedback_queue.text
+    assert "Annotation should be tighter." not in feedback_queue.text
 
     assets_redirect = client.get("/domains/assets", headers={"Authorization": "Bearer secret"}, follow_redirects=False)
     assert assets_redirect.status_code == 303
@@ -505,14 +790,175 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
 
     resources_page = client.get("/resources", headers={"Authorization": "Bearer secret"})
     assert resources_page.status_code == 200
+    assert 'class="resource-tabbar"' in resources_page.text
+    assert 'data-resource-tabs' in resources_page.text
+    assert "data-resource-page-tabs" in resources_page.text
+    assert 'href="#resource-collection-1"' in resources_page.text
+    assert 'id="resource-collection-1"' in resources_page.text
+    assert "<small>1 img</small>" not in resources_page.text
+    assert 'data-tooltip="fonts / readout pool v0 · 1 image(s), 1 manifest(s)"' in resources_page.text
+    assert 'aria-label="fonts / readout pool v0, 1 image(s), 1 manifest(s)"' in resources_page.text
+    assert 'title="fonts / readout pool v0' not in resources_page.text
     assert "fonts / readout pool v0" in resources_page.text
     assert "readout_pool_v0_spritesheet.png" in resources_page.text
     assert "readout_pool_v0_spritesheet_manifest.json" in resources_page.text
+    assert re.search(r'<a href="/proxy/7860/resources/media/[^"]+" target="_blank" rel="noopener noreferrer">', resources_page.text)
+    assert re.search(r'<a class="pill" href="/proxy/7860/resources/media/[^"]+" target="_blank" rel="noopener noreferrer">', resources_page.text)
     media_match = re.search(r'href="/proxy/7860/resources/media/([^"]+)"', resources_page.text)
     assert media_match is not None
     resource_media = client.get(f"/resources/media/{media_match.group(1)}", headers={"Authorization": "Bearer secret"})
     assert resource_media.status_code == 200
     assert resource_media.headers["cache-control"] == "no-cache"
+
+    illustration_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=plant",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert illustration_objects.status_code == 200
+    assert "Illustration Object Review" in illustration_objects.text
+    assert "data-illustration-object-tabs" in illustration_objects.text
+    assert 'class="illustration-object-grid"' in illustration_objects.text
+    assert "Top-down RPG" in illustration_objects.text
+    assert "Plants" in illustration_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__tree__oak" in illustration_objects.text
+    assert 'name="decision" value="approve"' in illustration_objects.text
+    assert 'name="decision" value="remove"' in illustration_objects.text
+    assert 'name="decision" value="improve"' in illustration_objects.text
+    assert 'textarea name="notes"' in illustration_objects.text
+    assert re.search(r'src="/proxy/7860/illustrations/objects/previews/[^"]+\.png"', illustration_objects.text)
+
+    vegetable_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=vegetable",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert vegetable_objects.status_code == 200
+    assert "Vegetables" in vegetable_objects.text
+    for vegetable_style in ("carrot", "cabbage", "corn", "tomato", "pumpkin"):
+        assert f"top_down_pixel_rpg__pixel_rpg__vegetable_patch__{vegetable_style}" in vegetable_objects.text
+
+    resource_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=resource",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert resource_objects.status_code == 200
+    assert "Resources" in resource_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__ore_vein__default" in resource_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__crystal_cluster__default" in resource_objects.text
+
+    route_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=route_feature",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert route_objects.status_code == 200
+    assert "Route Features" in route_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__rail_track__horizontal" in route_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__stairs__down" in route_objects.text
+
+    vegetable_preview = client.get(
+        "/illustrations/objects/previews/top_down_pixel_rpg__pixel_rpg__vegetable_patch__carrot.png",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert vegetable_preview.status_code == 200
+    assert vegetable_preview.headers["content-type"] == "image/png"
+    assert len(vegetable_preview.content) > 200
+
+    preview = client.get(
+        "/illustrations/objects/previews/top_down_pixel_rpg__pixel_rpg__tree__oak.png",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert preview.status_code == 200
+    assert preview.headers["cache-control"] == "no-cache"
+    assert preview.headers["content-type"] == "image/png"
+    assert len(preview.content) > 200
+
+    illustration_review = client.post(
+        "/illustrations/objects/reviews/top_down_pixel_rpg__pixel_rpg__tree__oak",
+        headers={"Authorization": "Bearer secret"},
+        data={
+            "decision": "improve",
+            "notes": "Oak canopy needs clearer highlight.",
+            "updated_by": "reviewer",
+            "next": "/illustrations/objects?renderer=top_down_pixel_rpg&category=plant#tree",
+        },
+        follow_redirects=False,
+    )
+    assert illustration_review.status_code == 303
+    assert illustration_review.headers["location"] == (
+        "/proxy/7860/illustrations/objects?renderer=top_down_pixel_rpg&category=plant#tree"
+    )
+    saved_illustration_review = app.state.review.feedback.get_illustration_object_review(
+        item_id="top_down_pixel_rpg__pixel_rpg__tree__oak"
+    )
+    assert saved_illustration_review.decision == "improve"
+    assert saved_illustration_review.notes == "Oak canopy needs clearer highlight."
+
+    improve_filtered_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=plant&decision=improve",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert improve_filtered_objects.status_code == 200
+    assert "All decisions" in improve_filtered_objects.text
+    assert "Oak canopy needs clearer highlight." in improve_filtered_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__tree__oak" in improve_filtered_objects.text
+    assert "top_down_pixel_rpg__pixel_rpg__tree__pine" not in improve_filtered_objects.text
+    assert (
+        'href="/proxy/7860/illustrations/objects?renderer=top_down_pixel_rpg&amp;category=plant&amp;decision=improve"'
+        in improve_filtered_objects.text
+    )
+
+    illustration_ajax_review = client.post(
+        "/illustrations/objects/reviews/top_down_pixel_rpg__pixel_rpg__tree__oak",
+        headers={
+            "Authorization": "Bearer secret",
+            "Accept": "application/json",
+            "X-Requested-With": "fetch",
+        },
+        data={
+            "decision": "approve",
+            "notes": "Highlight is acceptable after review.",
+            "updated_by": "reviewer",
+        },
+        follow_redirects=False,
+    )
+    assert illustration_ajax_review.status_code == 200
+    assert illustration_ajax_review.json()["decision"] == "approve"
+    assert illustration_ajax_review.json()["status_label"] == "Approved"
+
+    illustration_objects = client.get(
+        "/illustrations/objects?renderer=top_down_pixel_rpg&category=plant",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert "Highlight is acceptable after review." in illustration_objects.text
+    assert 'class="illustration-object-status approve"' in illustration_objects.text
+
+    illustration_reviews_api = client.get(
+        "/api/illustrations/objects/reviews?renderer=top_down_pixel_rpg&category=plant",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert illustration_reviews_api.status_code == 200
+    assert illustration_reviews_api.json()["summary"]["approve"] == 1
+
+    illustration_multipart_review = client.post(
+        "/illustrations/objects/reviews/top_down_pixel_rpg__pixel_rpg__tree__oak",
+        headers={
+            "Authorization": "Bearer secret",
+            "Accept": "application/json",
+            "X-Requested-With": "fetch",
+        },
+        files={
+            "decision": (None, "improve"),
+            "notes": (None, "Browser FormData save should keep notes."),
+            "updated_by": (None, "reviewer"),
+        },
+        follow_redirects=False,
+    )
+    assert illustration_multipart_review.status_code == 200
+    assert illustration_multipart_review.json()["decision"] == "improve"
+    saved_multipart_illustration_review = app.state.review.feedback.get_illustration_object_review(
+        item_id="top_down_pixel_rpg__pixel_rpg__tree__oak"
+    )
+    assert saved_multipart_illustration_review.decision == "improve"
+    assert saved_multipart_illustration_review.notes == "Browser FormData save should keep notes."
 
     media = client.get(f"/media/{sample.media_id}", headers={"Authorization": "Bearer secret"})
     assert media.status_code == 200
@@ -521,6 +967,120 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     static_asset = client.get("/static/app.css")
     assert static_asset.status_code == 200
     assert ":root" in static_asset.text
+
+
+def test_review_app_browses_taxonomy_audit_with_feedback(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    _write_taxonomy_audit_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+    )
+    client = TestClient(app)
+
+    redirect = client.get("/taxonomy", follow_redirects=False)
+    assert redirect.status_code == 303
+    assert redirect.headers["location"] == "/taxonomy/contract-v0"
+
+    overview = client.get("/taxonomy/contract-v0?domain=pages")
+    assert overview.status_code == 200
+    assert "Taxonomy Audit" in overview.text
+    assert "current tasks" in overview.text
+    assert "base program contracts" in overview.text
+    assert "approved decisions" in overview.text
+    assert "0/2" in overview.text
+    assert "argument metadata rows" in overview.text
+    assert "argument rows needing review" in overview.text
+    assert "2→3" in overview.text
+    assert "Pages Taxonomy" in overview.text
+    assert "/taxonomy/contract-v0/tree" in overview.text
+    assert TASK_ID in overview.text
+    assert "task_pages__workspace__control_text_label" in overview.text
+    assert "/media/" in overview.text
+
+    tree_page = client.get("/taxonomy/contract-v0/tree?domain=pages")
+    assert tree_page.status_code == 200
+    assert "Taxonomy Tree" in tree_page.text
+    assert "selection" in tree_page.text
+    assert "selection.option_match" in tree_page.text
+    assert "task_pages__workspace__control_text_label" in tree_page.text
+
+    task_page = client.get(f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}")
+    assert task_page.status_code == 200
+    assert "Program Taxonomy" in task_page.text
+    assert "selection / selection.option_match / control_text_label" in task_page.text
+    assert "base: select_option(reference_or_rule, candidate_options); scene=workspace; scope=control_text_label" in task_page.text
+    assert "Current → Updated Mapping" in task_page.text
+    assert "lookup" in task_page.text
+    assert "Contract-v0 keeps the narrower visible-control objective." in task_page.text
+    assert "What label is on the target control?" in task_page.text
+    assert "annotation" in task_page.text
+    assert f"/domains/pages/scenes/workspace/tasks/{TASK_ID}" in task_page.text
+    assert "Decision Approval" in task_page.text
+    assert "not approved" in task_page.text
+    assert "Approve and Next" in task_page.text
+    assert "Arguments / Variant Axes" in task_page.text
+    assert "target_control" in task_page.text
+    assert "visible_candidate_options" in task_page.text
+
+    next_task_path = f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID_2}"
+    approve_response = client.post(
+        f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}/decision-review",
+        data={
+            "action": "approve_next",
+            "notes": "Boundary decision reviewed.",
+            "updated_by": "tester",
+            "next": f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}",
+            "next_pending": next_task_path,
+        },
+        follow_redirects=False,
+    )
+    assert approve_response.status_code == 303
+    assert approve_response.headers["location"] == next_task_path
+    decision_review = app.state.review.feedback.get_taxonomy_decision_review(
+        round_id="contract_v0_reanalysis",
+        domain="pages",
+        scene_id="workspace",
+        task_id=TASK_ID,
+    )
+    assert decision_review.approved is True
+    assert decision_review.notes == "Boundary decision reviewed."
+
+    overview = client.get("/taxonomy/contract-v0?domain=pages")
+    assert "1/2" in overview.text
+    task_page = client.get(f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}")
+    assert "approved" in task_page.text
+
+    feedback_response = client.post(
+        f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}/issues",
+        data={
+            "query_id": "lookup",
+            "comment": "This query should stay with the original task.",
+            "next": f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}",
+        },
+        follow_redirects=False,
+    )
+    assert feedback_response.status_code == 303
+    assert feedback_response.headers["location"] == f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}"
+    stored = app.state.review.feedback.list_task_feedback(domain="pages", scene_id="workspace", task_id=TASK_ID)[0]
+    assert stored.comment == "[taxonomy:contract_v0_reanalysis query=lookup] This query should stay with the original task."
+    decision_review = app.state.review.feedback.get_taxonomy_decision_review(
+        round_id="contract_v0_reanalysis",
+        domain="pages",
+        scene_id="workspace",
+        task_id=TASK_ID,
+    )
+    assert decision_review.approved is False
+
+    task_page = client.get(f"/taxonomy/contract-v0/domains/pages/scenes/workspace/tasks/{TASK_ID}")
+    assert "This query should stay with the original task." in task_page.text
+    assert "1 open issue" in task_page.text
 
 
 def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
@@ -541,9 +1101,16 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
 
     domain_page = client.get("/domains/pages", headers={"Authorization": "Bearer secret"})
     assert domain_page.status_code == 200
-    assert "Manual 0/1" in domain_page.text
-    assert "Solve 1/1" in domain_page.text
-    assert "Completed 0/1" in domain_page.text
+    assert "<label>scenes</label>" in domain_page.text
+    assert "review passed" in domain_page.text
+    assert "solve rate passed" in domain_page.text
+    assert "<th>Task Progress</th>" in domain_page.text
+    assert "task-progress-cell" in domain_page.text
+    assert 'href="/issues?domain=pages"' in domain_page.text
+    assert 'aria-label="Open issues for pages"' in domain_page.text
+    assert "Review 0/1" in domain_page.text
+    assert "Solve rate 0/1" in domain_page.text
+    assert "Completed 0/1" not in domain_page.text
 
     update = client.patch(
         f"/api/tasks/pages/workspace/{TASK_ID}/audit",
@@ -551,7 +1118,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
         json={
             "prompt_pass": True,
             "image_pass": True,
-            "evidence_pass": True,
+            "annotation_pass": True,
             "distribution_pass": True,
             "solve_rate_pass": True,
             "updated_by": "reviewer",
@@ -559,16 +1126,92 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     )
     assert update.status_code == 200
     assert update.json()["status"]["complete"] is True
+    assert update.json()["status"]["review_pass"] is True
+    assert update.json()["status"]["solve_rate_pass"] is True
+    assert update.json()["status"]["solve_artifact_pass"] is True
 
     domain_page = client.get("/domains/pages", headers={"Authorization": "Bearer secret"})
-    assert "Manual 1/1" in domain_page.text
-    assert "Solve 1/1" in domain_page.text
-    assert "Completed 1/1" in domain_page.text
+    assert "Review 1/1" in domain_page.text
+    assert "Solve rate 1/1" in domain_page.text
+    assert "Completed 1/1" not in domain_page.text
 
     scene_page = client.get("/domains/pages/scenes/workspace", headers={"Authorization": "Bearer secret"})
     assert scene_page.status_code == 200
-    assert "manual 5/5" in scene_page.text
-    assert "completed" in scene_page.text
+    assert "review done" in scene_page.text
+    assert "4/4" in scene_page.text
+    assert "solve rate done" in scene_page.text
+
+
+def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer secret"}
+    sample = next(iter(app.state.review.index().samples.values()))
+
+    scene_page = client.get("/domains/pages/scenes/workspace", headers=headers)
+    assert scene_page.status_code == 200
+    assert "Open Scene Review" in scene_page.text
+    assert 'href="/domains/pages/scenes/workspace/review"' in scene_page.text
+    assert "<label>open scene issues</label>" in scene_page.text
+
+    review_page = client.get("/domains/pages/scenes/workspace/review", headers=headers)
+    assert review_page.status_code == 200
+    assert "Scene Review: workspace" in review_page.text
+    assert "<label>queries</label>" in review_page.text
+    assert "<label>preview cards</label>" in review_page.text
+    assert "missing sample" in review_page.text
+    assert f'href="/samples/{sample.uid}"' in review_page.text
+    assert f'src="/media/{sample.media_id}?v=' in review_page.text
+    assert "What label is on the target control?" in review_page.text
+    assert 'action="/domains/pages/scenes/workspace/issues"' in review_page.text
+
+    response = client.post(
+        "/domains/pages/scenes/workspace/issues",
+        headers=headers,
+        data={
+            "comment": "Scene grammar needs broader visual coverage.",
+            "category": "rendering",
+            "severity": "issue",
+            "author": "reviewer",
+            "next": "/domains/pages/scenes/workspace/review",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/domains/pages/scenes/workspace/review"
+
+    review_page = client.get("/domains/pages/scenes/workspace/review", headers=headers)
+    assert "Scene grammar needs broader visual coverage." in review_page.text
+    assert "<label>open scene issues</label>" in review_page.text
+
+    queue = client.get("/issues?domain=pages", headers=headers)
+    assert queue.status_code == 200
+    assert "Scene grammar needs broader visual coverage." in queue.text
+    assert "scene-level" in queue.text
+    assert 'href="/domains/pages/scenes/workspace/review"' in queue.text
+
+    scene_feedback = app.state.review.feedback.list_scene_feedback(domain="pages", scene_id="workspace")
+    assert len(scene_feedback) == 1
+    assert scene_feedback[0].task_id == ""
+    assert scene_feedback[0].sample_uid == ""
+    assert app.state.review.feedback.counts_by_task() == {}
+
+    detail = client.get(f"/issues/{scene_feedback[0].id}", headers=headers)
+    assert detail.status_code == 200
+    assert "<dt>scope</dt><dd>scene</dd>" in detail.text
+    assert "Open scene review" in detail.text
+    assert 'href="/domains/pages/scenes/workspace/review#scene-feedback"' in detail.text
 
 
 def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> None:
@@ -631,3 +1274,109 @@ def test_review_app_adds_feedback_via_api(tmp_path: Path) -> None:
     assert response.json()["feedback"]["category"] == "prompt"
     listed = client.get(f"/api/samples/{sample_uid}/feedback", headers={"Authorization": "Bearer secret"})
     assert listed.json()["feedback"][0]["comment"] == "Prompt wording is confusing."
+
+
+def test_review_app_reviews_three_d_object_profiles(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer secret"}
+    profile_id = "object_scene:spatial_small_shape:sphere"
+    encoded_profile_id = "object_scene%3Aspatial_small_shape%3Asphere"
+
+    page = client.get("/three-d/objects", headers=headers)
+    assert page.status_code == 200
+    assert "3D Object Review" in page.text
+    assert "Object Scene" in page.text
+    assert profile_id in page.text
+    assert 'href="/resources"' in page.text
+    assert "data-three-d-object-tabs" in page.text
+    assert 'class="three-d-object-grid"' in page.text
+    assert 'data-three-d-review-form' in page.text
+    assert 'data-three-d-object-status' in page.text
+    assert 'href="/three-d/objects?decision=improve"' in page.text
+
+    preview = client.get(f"/three-d/objects/previews/{encoded_profile_id}.png", headers=headers)
+    assert preview.status_code == 200
+    assert preview.headers["content-type"] == "image/png"
+    assert len(preview.content) > 1000
+
+    saved = client.post(
+        f"/three-d/objects/reviews/{encoded_profile_id}",
+        headers=headers,
+        data={
+            "decision": "improve",
+            "notes": "Needs a clearer silhouette.",
+            "updated_by": "reviewer",
+            "next": "/three-d/objects",
+        },
+        follow_redirects=False,
+    )
+    assert saved.status_code == 303
+    assert saved.headers["location"] == "/three-d/objects"
+
+    api = client.get("/api/three-d/objects/reviews", headers=headers)
+    assert api.status_code == 200
+    payload = api.json()
+    assert payload["summary"]["improve"] == 1
+    review = next(record for record in payload["reviews"] if record["profile_id"] == profile_id)
+    assert review["decision"] == "improve"
+    assert review["notes"] == "Needs a clearer silhouette."
+
+    improve_filtered = client.get(
+        "/three-d/objects?group=object_scene__object_scene_shape&decision=improve",
+        headers=headers,
+    )
+    assert improve_filtered.status_code == 200
+    assert "All decisions" in improve_filtered.text
+    assert "Needs a clearer silhouette." in improve_filtered.text
+    assert profile_id in improve_filtered.text
+    assert (
+        'href="/three-d/objects?group=object_scene__object_scene_shape&amp;decision=improve"'
+        in improve_filtered.text
+    )
+
+    ajax_saved = client.post(
+        f"/three-d/objects/reviews/{encoded_profile_id}",
+        headers={
+            "Authorization": "Bearer secret",
+            "Accept": "application/json",
+            "X-Requested-With": "fetch",
+        },
+        data={
+            "decision": "remove",
+            "notes": "Remove from the current object pool.",
+            "updated_by": "reviewer",
+        },
+        follow_redirects=False,
+    )
+    assert ajax_saved.status_code == 200
+    assert ajax_saved.json()["decision"] == "remove"
+    assert ajax_saved.json()["status_label"] == "Remove"
+
+    multipart_saved = client.post(
+        f"/three-d/objects/reviews/{encoded_profile_id}",
+        headers=headers,
+        files={
+            "decision": (None, "approve"),
+            "notes": (None, "Browser FormData save should keep 3D notes."),
+            "updated_by": (None, "reviewer"),
+            "next": (None, "/three-d/objects"),
+        },
+        follow_redirects=False,
+    )
+    assert multipart_saved.status_code == 303
+    assert multipart_saved.headers["location"] == "/three-d/objects"
+    multipart_review = app.state.review.feedback.get_three_d_object_review(profile_id=profile_id)
+    assert multipart_review.decision == "approve"
+    assert multipart_review.notes == "Browser FormData save should keep 3D notes."

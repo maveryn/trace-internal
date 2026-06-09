@@ -9,12 +9,15 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.connect_four.move_count import GamesConnectFourMoveCountTask
+from trace.tasks.games.connect_four.move_count import (
+    GamesConnectFourMoveCountTask,
+    GamesConnectFourWinningMoveColumnLabelTask,
+)
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count", "expected_rows", "expected_columns"),
+    ("params", "expected_answer", "expected_annotation_count", "expected_rows", "expected_columns"),
     (
         (
             {
@@ -45,7 +48,7 @@ from tests.helpers import read_jsonl
 def test_games_connect_four_move_count_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
-    expected_evidence_count: int,
+    expected_annotation_count: int,
     expected_rows: int,
     expected_columns: int,
 ) -> None:
@@ -55,20 +58,20 @@ def test_games_connect_four_move_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == int(expected_evidence_count)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == int(expected_annotation_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert int(execution["board_row_count"]) == int(expected_rows)
     assert int(execution["board_column_count"]) == int(expected_columns)
     assert int(trace["render_map"]["rows"]) == int(expected_rows)
     assert int(trace["render_map"]["columns"]) == int(expected_columns)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
-    assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
+    assert all(str(entity_id).startswith("cell_r") for entity_id in execution["annotation_entity_ids"])
 
 
-def test_games_connect_four_move_count_winning_evidence_stays_on_immediate_wins() -> None:
+def test_games_connect_four_move_count_winning_annotation_stays_on_immediate_wins() -> None:
     out = GamesConnectFourMoveCountTask().generate(
         31011,
         params={
@@ -80,14 +83,14 @@ def test_games_connect_four_move_count_winning_evidence_stays_on_immediate_wins(
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
-    evidence_coords = {tuple(coord) for coord in execution["evidence_coords"]}
+    annotation_coords = {tuple(coord) for coord in execution["annotation_coords"]}
     winning_coords = {tuple(coord) for coord in execution["winning_move_coords"]}
 
-    assert evidence_coords == winning_coords
-    assert len(evidence_coords) == 4
+    assert annotation_coords == winning_coords
+    assert len(annotation_coords) == 4
 
 
-def test_games_connect_four_move_count_safe_evidence_tracks_safe_landing_squares() -> None:
+def test_games_connect_four_move_count_safe_annotation_tracks_safe_landing_squares() -> None:
     out = GamesConnectFourMoveCountTask().generate(
         31021,
         params={
@@ -98,12 +101,63 @@ def test_games_connect_four_move_count_safe_evidence_tracks_safe_landing_squares
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
-    evidence_coords = {tuple(coord) for coord in execution["evidence_coords"]}
+    annotation_coords = {tuple(coord) for coord in execution["annotation_coords"]}
     safe_coords = {tuple(coord) for coord in execution["safe_move_coords"]}
 
-    assert evidence_coords == safe_coords
-    assert len(evidence_coords) == 3
+    assert annotation_coords == safe_coords
+    assert len(annotation_coords) == 3
     assert len(execution["winning_move_coords"]) == 0
+
+
+@pytest.mark.parametrize(
+    ("params", "expected_label", "expected_column", "expected_columns"),
+    (
+        (
+            {
+                "scene_variant": "midgame_board",
+                "board_size_variant": "small_6x5",
+                "target_column_label": "C",
+                "winning_move_label_threat_kind": "horizontal_threat",
+            },
+            "C",
+            2,
+            6,
+        ),
+        (
+            {
+                "scene_variant": "crowded_board",
+                "board_size_variant": "standard_7x6",
+                "target_column_label": "G",
+                "winning_move_label_threat_kind": "vertical_threat",
+            },
+            "G",
+            6,
+            7,
+        ),
+    ),
+)
+def test_games_connect_four_winning_move_column_label_contract(
+    params: dict[str, str],
+    expected_label: str,
+    expected_column: int,
+    expected_columns: int,
+) -> None:
+    out = GamesConnectFourWinningMoveColumnLabelTask().generate(31023, params=params, max_attempts=96)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+
+    assert out.answer_gt.type == "string"
+    assert str(out.answer_gt.value) == str(expected_label)
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 1
+    assert str(out.query_id) == "winning_move_column_label"
+    assert int(execution["answer_column"]) == int(expected_column)
+    assert execution["column_labels"] == list("ABCDEFG"[: int(expected_columns)])
+    assert trace["render_map"]["column_label_to_col"][str(expected_label)] == int(expected_column)
+    assert len(execution["winning_move_coords"]) == 1
+    assert int(execution["winning_move_coords"][0][1]) == int(expected_column)
+    assert execution["annotation_coords"] == execution["winning_move_coords"]
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_games_connect_four_safe_move_count_default_board_size_uses_square_range() -> None:
@@ -197,7 +251,7 @@ def test_games_connect_four_move_count_is_deterministic() -> None:
     out_a = task.generate(31041, params=params, max_attempts=64)
     out_b = task.generate(31041, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -212,6 +266,11 @@ def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_quer
         "legal_drop_rule_text",
         "winning_rule_text",
     ]
+    assert required["query:winning_move_column_label"] == [
+        "current_player_name",
+        "legal_drop_rule_text",
+        "winning_rule_text",
+    ]
     assert required["query:safe_move_count"] == [
         "current_player_name",
         "opponent_player_name",
@@ -222,15 +281,15 @@ def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_quer
 
 
 def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games__connect_four__move_count"
+    output_root = tmp_path / "task_games__connect_four__winning_move_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games__connect_four__move_count",
+        dataset_name="build_smoke_task_games__connect_four__winning_move_count",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games__connect_four__move_count",
+                task_id="task_games__connect_four__winning_move_count",
                 count=4,
                 params={},
             )
@@ -247,7 +306,7 @@ def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "connect_four" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games__connect_four__move_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__connect_four__winning_move_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

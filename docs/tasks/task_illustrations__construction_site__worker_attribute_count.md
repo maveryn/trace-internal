@@ -1,54 +1,56 @@
-# task_illustrations__construction_site__worker_attribute_count
+# `task_illustrations__construction_site__worker_attribute_count`
 
-Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
-calibration pending.
+## Summary
+- Domain: `illustrations`
+- Scene id: `construction_site`
+- Implementation task group: `counting`
+- Implementation source: `trace/tasks/illustrations/counting/worker_safety_gear_count.py`
+- Contract-v0 migration decision: `keep`
+- Public mapping: `task_illustrations__construction_site__worker_attribute_count` -> `task_illustrations__construction_site__worker_attribute_count`
+- Status: `pending_v0_manual_review_and_solve_rate`
 
-## Identity
-- domain: `illustrations`
-- scene_id: `construction_site`
-- task_group: `counting`
-- task: `worker_safety_gear_count`
-- module: `trace/tasks/illustrations/counting/worker_safety_gear_count.py`
-- prompt bundle: `prompts/illustrations/counting/illustrations_counting_v0.json`
+## Task Contract
+Counts visible workers matching one sampled safety-gear or held-tool attribute.
 
-## Scene And Query
-The task renders a varied synthetic construction site with workers, labeled
-zones, material stacks, construction equipment, scaffold/crane/roadwork decor,
-and one of the active illustration styles.
+This public task id is a stable contract-v0 unit: one renderer scene id plus one objective contract. Query ids may vary only narrow operands or parameters inside that same program contract.
 
-Query ids:
+## Query Branches
 
-- `hard_hat_color_worker_count`
-- `vest_color_worker_count`
-- `tool_holding_worker_count`
+| Query id | Program schema |
+| --- | --- |
+| `hard_hat_color_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=hard_hat_color_worker_count` |
+| `tool_holding_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=tool_holding_worker_count` |
+| `vest_color_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=vest_color_worker_count` |
 
-Each variant asks for the count of workers matching one visible safety-gear or
-tool condition.
+## Program Metadata
+- Program signatures: `count.single_attribute_membership`
+- Base program contract: `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
+- Parameter axes: `target_attribute`
+- Arguments:
+  - `target_attribute`: object_attribute; allowed `hard_hat_color`, `held_tool`, `vest_color`; source `program_schema_concrete|query_id|parameter_axes`
+  - `target_attribute_value`: object_attribute; allowed `sampled_color`, `sampled_tool_type`; source `program_schema_concrete`
+  - `worker`: semantic_role; allowed `worker_instance`; source `program_schema_concrete`
+  - `workers`: semantic_role; allowed `visible_workers`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
 
 ## Answer Contract
-- `answer_gt.type = integer`
-- value is the number of rendered workers matching the queried condition
+- Answer schema: `integer_count`
+- Generator `answer_gt.type`: `integer`
+- The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
-## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox around each counted worker
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
-## Trace Contract
-- `scene_ir.entities` contains `construction_worker`,
-  `construction_material`, `construction_equipment`, `construction_zone`, and
-  construction decor records.
-- `render_map.worker_bboxes_px` stores final worker bboxes by worker id.
-- `render_map.counted_worker_ids`, `witness_symbolic.counted_worker_ids`, and
-  `projected_evidence.bbox_set` are derived from the same rendered worker
-  records.
-- `render_spec.style.layout.zone_label_font` records the single global-pool
-  font family used consistently for all visible construction-zone labels.
+## Prompt And Trace Requirements
+- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
+- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
 
-## Prompt Contract
-- `scene_key = construction_site_canvas`
-- `task_key = worker_safety_gear_count_task`
-- `query_id` is one of the three worker-safety branches above
-- color query prompts use color names with hex codes, for example
-  `orange [#E87E36]`
-- answer-only and answer+evidence modes both include contract-valid JSON
-  examples
+## Review Artifacts
+- Task review artifacts: `review/task-reviews/illustrations/construction_site/task_illustrations__construction_site__worker_attribute_count/`
+- Browser review app manual audit state and issue threads are the source of truth for reviewer acceptance.
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`; historical solve-rate notes in task docs are intentionally omitted.

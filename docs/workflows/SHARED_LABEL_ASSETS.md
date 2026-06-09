@@ -41,11 +41,17 @@ not task-specific.
 - `industries/industries_bls_qcew.txt`
 - `mixed/proper_labels.txt`
 - `mixed/compact_labels.txt`
+- Generated chart-only entity bucket: `temporal`
 
 For chart-domain tasks, prefer `trace.tasks.charts.shared.label_assets` over
 calling `load_label_manifest(...)` directly. That helper exposes reusable
 entity-label and category-label bucket selection while still recording the
-manifest/filter metadata needed for trace/debug review.
+manifest/filter metadata needed for trace/debug review. The chart `temporal`
+entity bucket is generated at runtime rather than loaded from a manifest because
+it must return ordered sequences. It participates in the same bucket-weight
+maps as manifest-backed entity buckets and may internally sample consecutive
+years, fiscal years, quarters, months, or month-day labels while preserving
+chronological order.
 
 ## API
 

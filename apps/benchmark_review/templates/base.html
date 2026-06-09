@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} | TRACE Benchmark Review</title>
+    <script>
+      (() => {
+        try {
+          const theme = window.localStorage.getItem("trace-benchmark-review-theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.dataset.theme = theme;
+          }
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="{{ app_path('/static/app.css?v=' ~ static_version) }}">
+  </head>
+  <body>
+    {% set current_benchmark = '' %}
+    {% if benchmark is defined %}
+      {% set current_benchmark = benchmark.benchmark %}
+    {% elif sample is defined %}
+      {% set current_benchmark = sample.benchmark %}
+    {% endif %}
+    <div class="app-shell">
+      <header class="site-header">
+        <div class="site-header-main">
+          <div class="brand">
+            <a href="{{ app_path('/') }}">TRACE Benchmark Review</a>
+            <span>{{ index.samples|length if index is defined else 0 }} samples</span>
+          </div>
+          <form class="search global-search" action="{{ app_path('/search') }}" method="get" role="search">
+            <input
+              id="benchmark-search"
+              type="search"
+              name="q"
+              value="{{ q|default('') }}"
+              placeholder="Search benchmarks, prompts, responses"
+              autocomplete="off"
+              data-suggest-url="{{ app_path('/api/search-suggest') }}"
+            >
+            <div class="search-suggestions" id="search-suggestions" role="listbox" hidden></div>
+          </form>
+          <div class="top-actions">
+            <div class="theme-switch" role="group" aria-label="Color theme">
+              <button type="button" data-theme-choice="dark" aria-pressed="true" aria-label="Use dark theme" title="Dark theme">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"></path>
+                </svg>
+              </button>
+              <button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Use light theme" title="Light theme">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+              </button>
+            </div>
+            <form action="{{ app_path('/api/reload') }}" method="post">
+              <button type="submit" data-reload>Reload Index</button>
+            </form>
+            {% if request.app.state.auth_token %}
+              <form action="{{ app_path('/logout') }}" method="post">
+                <button type="submit">Log Out</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+        <nav class="benchmark-strip" aria-label="Benchmarks">
+          {% for benchmark_name, item in index.benchmarks.items() %}
+            <a href="{{ app_path('/benchmarks/' ~ benchmark_name) }}" class="{% if current_benchmark == benchmark_name %}active{% endif %}">
+              <span>{{ item.display }}</span>
+              <small>{{ item.correct_count }}/{{ item.correct_count + item.incorrect_count }}</small>
+            </a>
+          {% endfor %}
+        </nav>
+      </header>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1>{{ title }}</h1>
+            <p class="muted">
+              Run root: {{ run_root_display }}
+              {% if index.model_id %}<span class="dot-sep">Model: {{ index.model_id }}</span>{% endif %}
+            </p>
+          </div>
+        </header>
+
+        {% if index_stale %}
+          <section class="notice stale">
+            <strong>Benchmark artifacts changed.</strong>
+            <span>Reload Index before inspecting benchmark samples.</span>
+            <form action="{{ app_path('/api/reload') }}" method="post">
+              <button type="submit" data-reload>Reload Index</button>
+            </form>
+          </section>
+        {% endif %}
+
+        {% if index.errors %}
+          <section class="notice error">
+            <strong>{{ index.errors|length }} index issue(s)</strong>
+            <details>
+              <summary>Show details</summary>
+              <ul>
+                {% for error in index.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          </section>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    <script src="{{ app_path('/static/app.js?v=' ~ static_version) }}"></script>
+  </body>
+</html>

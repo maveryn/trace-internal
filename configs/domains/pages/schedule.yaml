@@ -95,11 +95,11 @@ prompt:
       answer_hint_overlap_count: set "answer" to the integer count of events that overlap the reference event
       answer_hint_longer_than_reference_count: set "answer" to the integer count of events that are longer than the reference event
       answer_hint_maximum_non_overlapping_count: set "answer" to the maximum number of non-overlapping events as an integer
-      evidence_hint_satisfying_event_blocks: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all event blocks that satisfy the query
-      evidence_hint_maximum_non_overlapping_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the unique maximum-size non-overlapping event set
-      json_example_overlap_count: '{"evidence":[[250,276,396,366],[404,318,550,438]],"answer":2}'
+      annotation_hint_satisfying_event_blocks: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for all event blocks that satisfy the query
+      annotation_hint_maximum_non_overlapping_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the unique maximum-size non-overlapping event set
+      json_example_overlap_count: '{"annotation":[[250,276,396,366],[404,318,550,438]],"answer":2}'
       json_example_answer_only_overlap_count: '{"answer":2}'
-      json_example_longer_than_reference_count: '{"evidence":[[250,240,396,408],[404,430,550,634],[558,352,704,568]],"answer":3}'
+      json_example_longer_than_reference_count: '{"annotation":[[250,240,396,408],[404,430,550,634],[558,352,704,568]],"answer":3}'
       json_example_answer_only_longer_than_reference_count: '{"answer":3}'
-      json_example_maximum_non_overlapping_count: '{"evidence":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],"answer":4}'
+      json_example_maximum_non_overlapping_count: '{"annotation":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],"answer":4}'
       json_example_answer_only_maximum_non_overlapping_count: '{"answer":4}'

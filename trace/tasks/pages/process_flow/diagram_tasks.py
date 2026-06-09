@@ -32,7 +32,7 @@ from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.diagram.common import (
-    projected_diagram_bbox_evidence,
+    projected_diagram_bbox_annotation,
     resolve_jittered_diagram_panel_geometry,
     round_diagram_bbox,
 )
@@ -49,7 +49,12 @@ from ..shared.public_query_task import rewrite_pages_query_output
 SCENE_ID = "process_flow"
 FILTERED_NODE_COUNT_TASK_ID = "task_pages__process_flow__filtered_node_count"
 CONDITION_PATH_ENDPOINT_TASK_ID = "task_pages__process_flow__condition_path_endpoint_label"
-ACTOR_HANDOFF_COUNT_TASK_ID = "task_pages__process_flow__actor_handoff_count"
+ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID = "task_pages__process_flow__all_cross_lane_handoff_count"
+LANE_FILTERED_HANDOFF_COUNT_TASK_ID = "task_pages__process_flow__lane_filtered_handoff_count"
+_HANDOFF_COUNT_TASK_IDS: Tuple[str, ...] = (
+    ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID,
+    LANE_FILTERED_HANDOFF_COUNT_TASK_ID,
+)
 
 _LAYOUT_VARIANTS: Tuple[str, ...] = (
     "vertical_swimlane",
@@ -80,7 +85,8 @@ _HANDOFF_QUERY_IDS: Tuple[str, ...] = (
 _TASK_QUERY_IDS: Dict[str, Tuple[str, ...]] = {
     FILTERED_NODE_COUNT_TASK_ID: _FILTER_QUERY_IDS,
     CONDITION_PATH_ENDPOINT_TASK_ID: ("condition_path_endpoint_label",),
-    ACTOR_HANDOFF_COUNT_TASK_ID: _HANDOFF_QUERY_IDS,
+    ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID: ("all_cross_lane_handoff_count",),
+    LANE_FILTERED_HANDOFF_COUNT_TASK_ID: ("lane_outgoing_handoff_count", "lane_involved_handoff_count"),
 }
 _TASK_KEYS: Dict[str, str] = {
     "shape_node_count": "shape_node_count_query",
@@ -100,6 +106,12 @@ _QUERY_PROBABILITY_KEYS: Dict[str, str] = {
     "lane_outgoing_handoff_count": "query_weights",
     "lane_involved_handoff_count": "query_weights",
 }
+
+
+def _is_handoff_task(task_id: str) -> bool:
+    """Return whether the public task uses process-flow handoff-arrow annotation."""
+
+    return str(task_id) in set(_HANDOFF_COUNT_TASK_IDS)
 
 _CONDITION_POOLS: Tuple[Tuple[str, str], ...] = (
     ("yes", "no"),
@@ -1201,15 +1213,15 @@ def _condition_path_query(
         "task_key": _TASK_KEYS["condition_path_endpoint_label"],
         "answer": str(node_by_id[second_target]["label"]),
         "answer_node_id": str(second_target),
-        "evidence_roles": [
+        "annotation_roles": [
             {"key": "start_step", "kind": "node", "id": "n0"},
             {"key": "first_decision_label", "kind": "edge_label", "id": first_edge_id},
             {"key": "intermediate_step", "kind": "node", "id": first_target},
             {"key": "second_decision_label", "kind": "edge_label", "id": second_edge_id},
             {"key": "endpoint_step", "kind": "node", "id": second_target},
         ],
-        "evidence_node_ids": [str(node_id) for node_id in path_node_ids],
-        "evidence_edge_label_ids": [first_edge_id, second_edge_id],
+        "annotation_node_ids": [str(node_id) for node_id in path_node_ids],
+        "annotation_edge_label_ids": [first_edge_id, second_edge_id],
         "condition_labels": labels,
         "condition_sequence_text": f"\"{labels[0]}\" then \"{labels[1]}\"",
         "start_label": str(node_by_id["n0"]["label"]),
@@ -1288,7 +1300,7 @@ def _select_filtered_query(
                     "shape_filter_description": str(description),
                     "filter_mode": "include",
                     "answer": int(len(ids)),
-                    "evidence_node_ids": ids,
+                    "annotation_node_ids": ids,
                     "answer_type": "integer",
                 }
             )
@@ -1303,7 +1315,7 @@ def _select_filtered_query(
                     "shape_filter_description": f"not {description}",
                     "filter_mode": "exclude",
                     "answer": int(len(complement_ids)),
-                    "evidence_node_ids": complement_ids,
+                    "annotation_node_ids": complement_ids,
                     "answer_type": "integer",
                 }
             )
@@ -1318,7 +1330,7 @@ def _select_filtered_query(
                     "status_filter_description": f"marked {status}",
                     "filter_mode": "include",
                     "answer": int(len(ids)),
-                    "evidence_node_ids": ids,
+                    "annotation_node_ids": ids,
                     "answer_type": "integer",
                 }
             )
@@ -1332,7 +1344,7 @@ def _select_filtered_query(
                     "status_filter_description": f"not marked {status}",
                     "filter_mode": "exclude",
                     "answer": int(len(complement_ids)),
-                    "evidence_node_ids": complement_ids,
+                    "annotation_node_ids": complement_ids,
                     "answer_type": "integer",
                 }
             )
@@ -1348,7 +1360,7 @@ def _select_filtered_query(
                     "role_filter_description": str(description),
                     "filter_mode": "include",
                     "answer": int(len(ids)),
-                    "evidence_node_ids": ids,
+                    "annotation_node_ids": ids,
                     "answer_type": "integer",
                 }
             )
@@ -1363,7 +1375,7 @@ def _select_filtered_query(
                     "role_filter_description": f"not {description}",
                     "filter_mode": "exclude",
                     "answer": int(len(complement_ids)),
-                    "evidence_node_ids": complement_ids,
+                    "annotation_node_ids": complement_ids,
                     "answer_type": "integer",
                 }
             )
@@ -1398,7 +1410,7 @@ def _select_handoff_query(
                 "query_id": "all_cross_lane_handoff_count",
                 "task_key": _TASK_KEYS["all_cross_lane_handoff_count"],
                 "answer": int(len(cross_edges)),
-                "evidence_edge_ids": [str(edge["edge_id"]) for edge in cross_edges],
+                "annotation_edge_ids": [str(edge["edge_id"]) for edge in cross_edges],
                 "answer_type": "integer",
             }
         ],
@@ -1418,7 +1430,7 @@ def _select_handoff_query(
                     "task_key": _TASK_KEYS["lane_outgoing_handoff_count"],
                     "lane_name": str(lane),
                     "answer": int(len(source_edges)),
-                    "evidence_edge_ids": [str(edge["edge_id"]) for edge in source_edges],
+                    "annotation_edge_ids": [str(edge["edge_id"]) for edge in source_edges],
                     "answer_type": "integer",
                 }
             )
@@ -1435,7 +1447,7 @@ def _select_handoff_query(
                     "task_key": _TASK_KEYS["lane_involved_handoff_count"],
                     "lane_name": str(lane),
                     "answer": int(len(involved_edges)),
-                    "evidence_edge_ids": [str(edge["edge_id"]) for edge in involved_edges],
+                    "annotation_edge_ids": [str(edge["edge_id"]) for edge in involved_edges],
                     "answer_type": "integer",
                 }
             )
@@ -1448,30 +1460,30 @@ def _select_handoff_query(
     return _choose_answer_balanced_candidate(all_candidates, rng=rng, min_answer=2)
 
 
-def _build_prompt_json_examples(*, answer_type: str, evidence_kind: str) -> tuple[str, str]:
-    evidence: Any
-    if str(evidence_kind) == "path":
-        evidence = {
+def _build_prompt_json_examples(*, answer_type: str, annotation_kind: str) -> tuple[str, str]:
+    annotation: Any
+    if str(annotation_kind) == "path":
+        annotation = {
             "start_step": [126, 208, 260, 270],
             "first_decision_label": [286, 254, 340, 278],
             "intermediate_step": [360, 300, 494, 362],
             "second_decision_label": [512, 412, 570, 436],
             "endpoint_step": [630, 458, 764, 520],
         }
-    elif str(evidence_kind) == "handoff":
-        evidence = [
+    elif str(annotation_kind) == "handoff":
+        annotation = [
             [[272, 294], [462, 348]],
             [[526, 408], [706, 462]],
         ]
     else:
-        evidence = {
+        annotation = {
             "node": [[168, 246, 302, 308], [340, 386, 474, 448]],
-        }.get(str(evidence_kind), [[168, 246, 302, 308]])
+        }.get(str(annotation_kind), [[168, 246, 302, 308]])
     answer_value: Any = "Publish" if str(answer_type) == "string" else 3
-    answer_and_evidence = {"evidence": evidence, "answer": answer_value}
+    answer_and_annotation = {"annotation": annotation, "answer": answer_value}
     answer_only = {"answer": answer_value}
     return (
-        json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
@@ -1672,38 +1684,38 @@ def _build_output(
             "json_output_contract_answer_only",
             "integer_answer_hint",
             "label_answer_hint",
-            "evidence_hint_node_count",
-            "evidence_hint_path_endpoint",
-            "evidence_hint_handoff_count",
+            "annotation_hint_node_count",
+            "annotation_hint_path_endpoint",
+            "annotation_hint_handoff_count",
         ),
         context=f"prompt defaults for {task_id}",
     )
-    evidence_kind = "node"
+    annotation_kind = "node"
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
-        evidence_kind = "path"
+        annotation_kind = "path"
         answer_hint = str(prompt_defaults["label_answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint_path_endpoint"])
+        annotation_hint = str(prompt_defaults["annotation_hint_path_endpoint"])
         answer_type = "string"
-    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
-        evidence_kind = "handoff"
+    elif _is_handoff_task(str(task_id)):
+        annotation_kind = "handoff"
         answer_hint = str(prompt_defaults["integer_answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint_handoff_count"])
+        annotation_hint = str(prompt_defaults["annotation_hint_handoff_count"])
         answer_type = "integer"
     else:
         answer_hint = str(prompt_defaults["integer_answer_hint"])
-        evidence_hint = str(prompt_defaults["evidence_hint_node_count"])
+        annotation_hint = str(prompt_defaults["annotation_hint_node_count"])
         answer_type = "integer"
-    json_example, json_example_answer_only = _build_prompt_json_examples(answer_type=str(answer_type), evidence_kind=evidence_kind)
+    json_example, json_example_answer_only = _build_prompt_json_examples(answer_type=str(answer_type), annotation_kind=annotation_kind)
     slots = {
         "object_description": str(prompt_defaults["object_description"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(answer_hint),
-        "evidence_hint": str(evidence_hint),
+        "annotation_hint": str(annotation_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
-    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "evidence_node_ids", "evidence_edge_ids", "evidence_edge_label_ids"}})
+    slots.update({str(key): value for key, value in query.items() if key not in {"answer", "annotation_node_ids", "annotation_edge_ids", "annotation_edge_label_ids"}})
 
     prompt_selection = render_task_prompt_variants(
         domain=str(domain),
@@ -1712,7 +1724,7 @@ def _build_output(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(query["task_key"]),
         query_key=str(query["query_id"]),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1722,14 +1734,14 @@ def _build_output(
     edge_bbox_map = dict(render_map["edge_bboxes_px"])
     edge_point_pair_map = dict(render_map["edge_point_pairs_px"])
     edge_label_bbox_map = dict(render_map["edge_label_bboxes_px"])
-    evidence_ids: list[str] = []
-    evidence_key_to_bbox_id: Dict[str, str] = {}
-    evidence_keyed_bboxes: Dict[str, list[float]] = {}
-    evidence_point_pairs: list[list[list[float]]] = []
+    annotation_ids: list[str] = []
+    annotation_key_to_bbox_id: Dict[str, str] = {}
+    annotation_keyed_bboxes: Dict[str, list[float]] = {}
+    annotation_point_pairs: list[list[list[float]]] = []
     bbox_source_map: Dict[str, Sequence[float]] = {}
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
-        for role in query.get("evidence_roles", []):
-            evidence_key = str(role["key"])
+        for role in query.get("annotation_roles", []):
+            annotation_key = str(role["key"])
             source_kind = str(role["kind"])
             source_id = str(role["id"])
             if source_kind == "node":
@@ -1739,66 +1751,67 @@ def _build_output(
                 bbox_id = f"edge_label:{source_id}"
                 bbox = edge_label_bbox_map[str(source_id)]
             else:
-                raise ValueError(f"unsupported process-flow evidence role kind: {source_kind}")
-            evidence_ids.append(bbox_id)
-            evidence_key_to_bbox_id[evidence_key] = bbox_id
-            evidence_keyed_bboxes[evidence_key] = [round(float(value), 3) for value in bbox]
-    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
-        for edge_id in [str(item) for item in query.get("evidence_edge_ids", [])]:
-            evidence_ids.append(f"edge_points:{edge_id}")
-            evidence_point_pairs.append(
+                raise ValueError(f"unsupported process-flow annotation role kind: {source_kind}")
+            annotation_ids.append(bbox_id)
+            annotation_key_to_bbox_id[annotation_key] = bbox_id
+            annotation_keyed_bboxes[annotation_key] = [round(float(value), 3) for value in bbox]
+    elif _is_handoff_task(str(task_id)):
+        for edge_id in [str(item) for item in query.get("annotation_edge_ids", [])]:
+            annotation_ids.append(f"edge_points:{edge_id}")
+            annotation_point_pairs.append(
                 [
                     [round(float(value), 3) for value in point]
                     for point in edge_point_pair_map[str(edge_id)]
                 ]
             )
     else:
-        for node_id in [str(item) for item in query.get("evidence_node_ids", [])]:
-            evidence_ids.append(f"node:{node_id}")
+        for node_id in [str(item) for item in query.get("annotation_node_ids", [])]:
+            annotation_ids.append(f"node:{node_id}")
             bbox_source_map[f"node:{node_id}"] = node_bbox_map[str(node_id)]
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
-        evidence_bboxes = [list(bbox) for bbox in evidence_keyed_bboxes.values()]
-        evidence_projection = {
+        annotation_bboxes = [list(bbox) for bbox in annotation_keyed_bboxes.values()]
+        annotation_projection = {
             "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(evidence_keyed_bboxes),
-            "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-            "bbox_set": list(evidence_bboxes),
-            "evidence_keys": list(evidence_keyed_bboxes.keys()),
-            "evidence_key_to_bbox_id": dict(evidence_key_to_bbox_id),
+            "keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "bbox_set": list(annotation_bboxes),
+            "annotation_keys": list(annotation_keyed_bboxes.keys()),
+            "annotation_key_to_bbox_id": dict(annotation_key_to_bbox_id),
         }
-    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
-        evidence_bboxes = []
-        evidence_projection = {
+    elif _is_handoff_task(str(task_id)):
+        annotation_bboxes = []
+        annotation_projection = {
             "type": "point_pair_set",
-            "point_pair_set": list(evidence_point_pairs),
-            "pixel_point_pair_set": list(evidence_point_pairs),
-            "evidence_ids": list(evidence_ids),
+            "point_pair_set": list(annotation_point_pairs),
+            "pixel_point_pair_set": list(annotation_point_pairs),
+            "annotation_ids": list(annotation_ids),
         }
     else:
-        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        annotation_projection = projected_diagram_bbox_annotation(bbox_source_map, annotation_ids)
+        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in annotation_projection["bbox_set"]]
     if str(answer_type) == "string":
         answer_gt = TypedValue(type="string", value=str(query["answer"]))
     else:
         answer_gt = TypedValue(type="integer", value=int(query["answer"]))
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
-    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
-        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
+    elif _is_handoff_task(str(task_id)):
+        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
     else:
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
     node_scan = normalize_int_with_bounds(int(scene["node_count"]), [10, 16])
     lane_scan = normalize_int_with_bounds(int(scene["lane_count"]), [3, 5])
     branch_scan = normalize_int_with_bounds(int(scene["decision_count"]), [2, 4])
     answer_load = normalize_int_with_bounds(
-        int(len(evidence_ids)) if str(answer_type) == "string" else int(answer_gt.value),
+        int(len(annotation_ids)) if str(answer_type) == "string" else int(answer_gt.value),
         [1, 14],
     )
     base_reasoning = {
         FILTERED_NODE_COUNT_TASK_ID: 0.34,
         CONDITION_PATH_ENDPOINT_TASK_ID: 0.58,
-        ACTOR_HANDOFF_COUNT_TASK_ID: 0.50,
+        ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID: 0.46,
+        LANE_FILTERED_HANDOFF_COUNT_TASK_ID: 0.52,
     }[str(task_id)]
     reasoning_load = clamp_unit_interval(float(base_reasoning) + (0.18 * answer_load) + (0.10 * branch_scan))
     complexity = build_diagrams_complexity(
@@ -1901,24 +1914,24 @@ def _build_output(
             "edge_specs": edge_specs,
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
-            "evidence_ids": list(evidence_ids),
-            "evidence_key_to_bbox_id": dict(evidence_key_to_bbox_id),
-            "supporting_bbox_ids": [] if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID else list(evidence_ids),
-            "supporting_point_pair_ids": list(evidence_ids) if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID else [],
+            "annotation_ids": list(annotation_ids),
+            "annotation_key_to_bbox_id": dict(annotation_key_to_bbox_id),
+            "supporting_bbox_ids": [] if _is_handoff_task(str(task_id)) else list(annotation_ids),
+            "supporting_point_pair_ids": list(annotation_ids) if _is_handoff_task(str(task_id)) else [],
         },
         "witness_symbolic": {
             "type": (
                 "keyed_path_support"
                 if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID
                 else "point_pair_id_set"
-                if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID
+                if _is_handoff_task(str(task_id))
                 else "bbox_id_set"
             ),
-            "ids": list(evidence_ids),
-            "keys": list(evidence_keyed_bboxes.keys()),
-            "point_pairs": list(evidence_point_pairs),
+            "ids": list(annotation_ids),
+            "keys": list(annotation_keyed_bboxes.keys()),
+            "point_pairs": list(annotation_point_pairs),
         },
-        "projected_evidence": dict(evidence_projection),
+        "projected_annotation": dict(annotation_projection),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
     }
@@ -1927,7 +1940,7 @@ def _build_output(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
         answer_gt=answer_gt,
-        evidence_gt=evidence_gt,
+        annotation_gt=annotation_gt,
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -1982,10 +1995,29 @@ class PagesProcessFlowConditionPathEndpointLabelTask:
 
 
 @register_task
-class PagesProcessFlowActorHandoffCountTask:
-    """Count lane-to-lane handoff arrows in a process-flow diagram."""
+class PagesProcessFlowAllCrossLaneHandoffCountTask:
+    """Count all cross-lane handoff arrows in a process-flow diagram."""
 
-    task_id = ACTOR_HANDOFF_COUNT_TASK_ID
+    task_id = ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID
+    domain = "pages"
+    task_group = "process_flow"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        return _build_output(
+            task_id=self.task_id,
+            domain=self.domain,
+            task_group=self.task_group,
+            instance_seed=int(instance_seed),
+            params=dict(params),
+            max_attempts=int(max_attempts),
+        )
+
+
+@register_task
+class PagesProcessFlowLaneFilteredHandoffCountTask:
+    """Count lane-filtered handoff arrows in a process-flow diagram."""
+
+    task_id = LANE_FILTERED_HANDOFF_COUNT_TASK_ID
     domain = "pages"
     task_group = "process_flow"
 
@@ -2001,7 +2033,8 @@ class PagesProcessFlowActorHandoffCountTask:
 
 
 __all__ = [
-    "PagesProcessFlowActorHandoffCountTask",
+    "PagesProcessFlowAllCrossLaneHandoffCountTask",
     "PagesProcessFlowConditionPathEndpointLabelTask",
     "PagesProcessFlowFilteredNodeCountTask",
+    "PagesProcessFlowLaneFilteredHandoffCountTask",
 ]

@@ -80,7 +80,7 @@ def test_graph_path_longest_path_length_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_longest_path_length"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_sequence"
+    assert out.annotation_gt.type == "point_sequence"
     assert trace["scene_ir"]["scene_kind"] == "graph_longest_path_length"
     assert execution["question_format"] == "directed_longest_path_length"
     assert execution["query_id"] == "directed_longest_path_length"
@@ -90,8 +90,8 @@ def test_graph_path_longest_path_length_contract_matches_trace() -> None:
     assert len(node_entities) == 8
     assert len(edge_entities) == int(execution["edge_count"])
     assert all(bool(edge["directed"]) for edge in edge_entities)
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -99,20 +99,20 @@ def test_graph_path_longest_path_length_contract_matches_trace() -> None:
         "clutter",
     }
 
-    evidence_labels = [str(label) for label in execution["longest_path_labels"]]
-    evidence_path = list(out.evidence_gt.value)
+    annotation_labels = [str(label) for label in execution["longest_path_labels"]]
+    annotation_path = list(out.annotation_gt.value)
     successors = {str(key): [str(value) for value in values] for key, values in execution["successors_by_label"].items()}
-    assert _unique_longest_path(successors) == evidence_labels
-    assert int(out.answer_gt.value) == len(evidence_path) - 1 == len(evidence_labels) - 1
-    assert str(execution["source_label"]) == str(evidence_labels[0])
-    assert str(execution["goal_label"]) == str(evidence_labels[-1])
-    assert sum(1 for node in node_entities if bool(node["is_on_longest_path"])) == len(evidence_labels)
-    assert sum(1 for edge in edge_entities if bool(edge["is_on_longest_path"])) == len(evidence_labels) - 1
+    assert _unique_longest_path(successors) == annotation_labels
+    assert int(out.answer_gt.value) == len(annotation_path) - 1 == len(annotation_labels) - 1
+    assert str(execution["source_label"]) == str(annotation_labels[0])
+    assert str(execution["goal_label"]) == str(annotation_labels[-1])
+    assert sum(1 for node in node_entities if bool(node["is_on_longest_path"])) == len(annotation_labels)
+    assert sum(1 for edge in edge_entities if bool(edge["is_on_longest_path"])) == len(annotation_labels) - 1
     assert trace["witness_symbolic"]["type"] == "node_path"
-    assert trace["witness_symbolic"]["nodes"] == evidence_labels
-    assert trace["projected_evidence"]["type"] == "point_sequence"
-    assert trace["projected_evidence"]["point_sequence"] == evidence_path
-    assert trace["projected_evidence"]["pixel_point_sequence"] == evidence_path
+    assert trace["witness_symbolic"]["nodes"] == annotation_labels
+    assert trace["projected_annotation"]["type"] == "point_sequence"
+    assert trace["projected_annotation"]["point_sequence"] == annotation_path
+    assert trace["projected_annotation"]["pixel_point_sequence"] == annotation_path
 
 
 def test_graph_path_longest_path_prompt_examples_match_contract() -> None:
@@ -123,11 +123,11 @@ def test_graph_path_longest_path_prompt_examples_match_contract() -> None:
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180], [430, 260]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180], [430, 260]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_path_longest_path_balanced_sampling_defaults() -> None:

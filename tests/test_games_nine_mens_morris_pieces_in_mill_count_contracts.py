@@ -9,9 +9,34 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.nine_mens_morris.pieces_in_mill_count import GamesNineMensMorrisPiecesInMillCountTask
+from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks.games.nine_mens_morris.pieces_in_mill_count import (
+    GamesNineMensMorrisAllPiecesInMillCountTask,
+    GamesNineMensMorrisMillCompletionPointCountTask,
+    GamesNineMensMorrisPiecesInMillCountTask,
+)
+from trace.tasks.games.shared.morris_common import MILL_POSITION_INDICES, POSITION_LAYOUT
 from trace.tasks.games.shared.style import SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS
 from tests.helpers import read_jsonl
+
+
+def _completion_node_labels(execution: dict, *, color: str) -> tuple[str, ...]:
+    occupancy = {
+        int(spec["node_index"]): str(spec["color"])
+        for spec in execution["piece_specs"]
+    }
+    labels: list[str] = []
+    for node_index, (node_label, _x_frac, _y_frac) in enumerate(POSITION_LAYOUT):
+        if int(node_index) in occupancy:
+            continue
+        for mill in MILL_POSITION_INDICES:
+            if int(node_index) not in mill:
+                continue
+            other_positions = [int(position) for position in mill if int(position) != int(node_index)]
+            if all(str(occupancy.get(int(position), "")) == str(color) for position in other_positions):
+                labels.append(str(node_label))
+                break
+    return tuple(labels)
 
 
 @pytest.mark.parametrize(
@@ -36,47 +61,149 @@ def test_games_nine_mens_morris_pieces_in_mill_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
+    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value) == int(expected_answer)
     assert len(execution["all_piece_ids_in_mill"]) == int(expected_answer)
+
+
+@pytest.mark.parametrize(
+    ("query_id", "target_answer", "color"),
+    (
+        ("white_mill_completion_point_count", 5, "white"),
+        ("black_mill_completion_point_count", 4, "black"),
+    ),
+)
+def test_games_nine_mens_morris_mill_completion_point_count_matches_trace(
+    query_id: str,
+    target_answer: int,
+    color: str,
+) -> None:
+    out = GamesNineMensMorrisMillCompletionPointCountTask().generate(
+        29141 + int(target_answer),
+        params={
+            "query_id": query_id,
+            "target_answer": target_answer,
+        },
+        max_attempts=128,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    expected_labels = _completion_node_labels(execution, color=color)
+    expected_points = [list(trace["render_map"]["node_centers_px"][str(label)]) for label in expected_labels]
+
+    assert out.query_id == query_id
+    assert execution["player_color"] == color
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == len(expected_labels) == int(target_answer)
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == expected_points
+    assert execution["annotation_map_key"] == "node_centers_px"
+    assert tuple(execution["annotation_entity_ids"]) == expected_labels
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+
+
+def test_games_nine_mens_morris_mill_completion_zero_answer_emits_empty_annotation() -> None:
+    out = GamesNineMensMorrisMillCompletionPointCountTask().generate(
+        29151,
+        params={
+            "query_id": "white_mill_completion_point_count",
+            "target_answer": 0,
+        },
+        max_attempts=128,
+    )
+    execution = out.trace_payload["execution_trace"]
+
+    assert int(out.answer_gt.value) == 0
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == []
+    assert execution["annotation_entity_ids"] == []
+    assert execution["white_mill_completion_node_labels"] == []
+
+
+def test_games_nine_mens_morris_mill_completion_taxonomy() -> None:
+    assert resolve_task_taxonomy("task_games__nine_mens_morris__mill_completion_point_count").scene_id == "nine_mens_morris"
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_query_cycle_covers_answer_and_style_support() -> None:
     task = GamesNineMensMorrisPiecesInMillCountTask()
-    answers_by_variant: dict[str, set[int]] = {
-        "all_pieces_in_mill_count": set(),
-    }
+    query_ids: set[str] = set()
     styles_by_variant: dict[str, set[str]] = {
         "all_pieces_in_mill_count": set(),
+        "black_mill_completion_point_count": set(),
+        "white_mill_completion_point_count": set(),
     }
 
-    for sampling_index in range(42):
+    for sampling_index in range(126):
         out = task.generate(
             29201 + int(sampling_index),
-            params={},
-            max_attempts=192,
+            params={"_sample_cursor": sampling_index},
+            max_attempts=256,
         )
         execution = out.trace_payload["execution_trace"]
         query_id = str(out.query_id or out.query_id)
-        answers_by_variant[query_id].add(int(out.answer_gt.value))
+        query_ids.add(query_id)
         styles_by_variant[query_id].add(str(execution["style_variant"]))
 
-    assert answers_by_variant == {
-        "all_pieces_in_mill_count": {0, 3, 5, 6, 7, 8, 9},
+    assert query_ids == {
+        "all_pieces_in_mill_count",
+        "black_mill_completion_point_count",
+        "white_mill_completion_point_count",
     }
     assert styles_by_variant == {
         "all_pieces_in_mill_count": set(SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS),
+        "black_mill_completion_point_count": set(SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS),
+        "white_mill_completion_point_count": set(SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS),
     }
 
 
-def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evidence() -> None:
+@pytest.mark.parametrize(
+    ("task_cls", "query_id", "support"),
+    (
+        (
+            GamesNineMensMorrisAllPiecesInMillCountTask,
+            "all_pieces_in_mill_count",
+            (0, 3, 5, 6, 7, 8, 9),
+        ),
+        (
+            GamesNineMensMorrisMillCompletionPointCountTask,
+            "white_mill_completion_point_count",
+            (0, 1, 2, 3, 4, 5),
+        ),
+        (
+            GamesNineMensMorrisMillCompletionPointCountTask,
+            "black_mill_completion_point_count",
+            (0, 1, 2, 3, 4, 5),
+        ),
+    ),
+)
+def test_games_nine_mens_morris_public_tasks_cover_supported_targets(
+    task_cls: type[GamesNineMensMorrisPiecesInMillCountTask],
+    query_id: str,
+    support: tuple[int, ...],
+) -> None:
+    task = task_cls()
+    for target_answer in support:
+        out = task.generate(
+            29301 + (17 * int(target_answer)),
+            params={
+                "query_id": str(query_id),
+                "target_answer": int(target_answer),
+            },
+            max_attempts=256,
+        )
+        assert str(out.query_id) == str(query_id)
+        assert int(out.answer_gt.value) == int(target_answer)
+
+
+def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_annotation() -> None:
     out = GamesNineMensMorrisPiecesInMillCountTask().generate(
         29111,
         params={
@@ -86,8 +213,8 @@ def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evi
         max_attempts=64,
     )
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == []
+    assert out.annotation_gt.value == []
+    assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == []
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_is_deterministic() -> None:
@@ -99,7 +226,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_is_deterministic() -> None:
     out_a = task.generate(29131, params=params, max_attempts=64)
     out_b = task.generate(29131, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
@@ -110,6 +237,8 @@ def test_games_nine_mens_morris_pieces_in_mill_count_prompt_bundle_requires_rule
     bundle = json.loads(Path("prompts/games/nine_mens_morris/games_nine_mens_morris_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:all_pieces_in_mill_count"] == ["mill_rule_text"]
+    assert required["query:white_mill_completion_point_count"] == ["mill_rule_text"]
+    assert required["query:black_mill_completion_point_count"] == ["mill_rule_text"]
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path) -> None:
@@ -124,7 +253,12 @@ def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path)
                 task_id="task_games__nine_mens_morris__pieces_in_mill_count",
                 count=4,
                 params={},
-            )
+            ),
+            BuildTaskConfig(
+                task_id="task_games__nine_mens_morris__mill_completion_point_count",
+                count=2,
+                params={},
+            ),
         ],
         strict_repro=False,
         max_attempts_per_instance=64,
@@ -133,7 +267,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path)
     final_path = build_dataset(config, code_hash="games-nine-mens-morris-pieces-in-mill-count-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
-    assert len(train_records) == 4
+    assert len(train_records) == 6
     assert all(record["domain"] == "games" for record in train_records)
     assert all(record["task_group"] == "nine_mens_morris" for record in train_records)
 

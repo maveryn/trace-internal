@@ -17,6 +17,7 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ..shared.object_rendering import IllustrationObjectSpec, vector_object_record_for_spec
 
 
 TASK_ID = "task_illustrations__single_object_figure__visible_part_count"
@@ -74,6 +75,20 @@ OBJECT_DESCRIPTION: Dict[str, str] = {
     FORK_VARIANT: "a stylized fork",
     SNOWFLAKE_VARIANT: "a stylized snowflake",
     CHAIR_VARIANT: "a stylized chair",
+}
+OBJECT_TYPE_BY_QUERY_ID: Dict[str, str] = {
+    BIRD_VARIANT: "bird",
+    QUADRUPED_VARIANT: "quadruped",
+    AIRPLANE_VARIANT: "airplane",
+    BUTTERFLY_VARIANT: "butterfly",
+    BICYCLE_VARIANT: "bicycle",
+    TRAFFIC_LIGHT_VARIANT: "traffic_light",
+    CLOVER_VARIANT: "clover",
+    STAR_VARIANT: "star",
+    GLOVE_VARIANT: "glove",
+    FORK_VARIANT: "fork",
+    SNOWFLAKE_VARIANT: "snowflake",
+    CHAIR_VARIANT: "chair",
 }
 COUNTED_PART_KIND: Dict[str, str] = {
     BIRD_VARIANT: "leg",
@@ -171,7 +186,7 @@ class _Defaults:
     canvas_width: int = 960
     canvas_height: int = 720
     render_scale: int = 2
-    evidence_padding_px: float = 7.0
+    annotation_padding_px: float = 7.0
     object_scale_min: float = 0.94
     object_scale_max: float = 1.10
 
@@ -934,7 +949,7 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
     height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
     scale = int(params.get("render_scale", group_default(_RENDER_DEFAULTS, "render_scale", _DEFAULTS.render_scale)))
-    pad = float(params.get("evidence_padding_px", group_default(_RENDER_DEFAULTS, "evidence_padding_px", _DEFAULTS.evidence_padding_px)))
+    pad = float(params.get("annotation_padding_px", group_default(_RENDER_DEFAULTS, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     scale_min = float(params.get("object_scale_min", group_default(_RENDER_DEFAULTS, "object_scale_min", _DEFAULTS.object_scale_min)))
     scale_max = float(params.get("object_scale_max", group_default(_RENDER_DEFAULTS, "object_scale_max", _DEFAULTS.object_scale_max)))
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:render:{sample.query_id}:{sample.visible_count}:{sample.style_id}")
@@ -1051,7 +1066,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
         del max_attempts
         sample = _sample_spec(instance_seed=int(instance_seed), params=params)
         image, parts, render_meta, object_bbox = _render_scene(sample, instance_seed=int(instance_seed), params=params)
-        evidence_boxes = [[round(float(value), 3) for value in part.bbox] for part in parts]
+        annotation_boxes = [[round(float(value), 3) for value in part.bbox] for part in parts]
         part_records = [
             {
                 "entity_id": str(part.part_id),
@@ -1059,6 +1074,15 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                 "part_kind": str(part.part_kind),
                 "bbox": [round(float(value), 3) for value in part.bbox],
                 "reading_order_index": int(index),
+            }
+            for index, part in enumerate(parts)
+        ]
+        object_record_parts = [
+            {
+                "part_id": str(part.part_id),
+                "part_kind": str(part.part_kind),
+                "bbox": [round(float(value), 3) for value in part.bbox],
+                "attributes": {"reading_order_index": int(index)},
             }
             for index, part in enumerate(parts)
         ]
@@ -1070,7 +1094,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -1088,17 +1112,43 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                 "object_description": OBJECT_DESCRIPTION[str(sample.query_id)],
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_evidence",
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+            preferred_mode="answer_and_annotation",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         canonical = int(CANONICAL_BIAS_ANSWER[str(sample.query_id)])
+        colors_rgb = dict(render_meta.get("colors_rgb", {})) if isinstance(render_meta.get("colors_rgb"), Mapping) else {}
+        visual_attributes: Dict[str, Any] = {"style_id": str(sample.style_id)}
+        if "primary" in colors_rgb:
+            visual_attributes["primary_color_rgb"] = colors_rgb["primary"]
+        if "accent" in colors_rgb:
+            visual_attributes["accent_color_rgb"] = colors_rgb["accent"]
+        object_record = vector_object_record_for_spec(
+            IllustrationObjectSpec(
+                object_id="object_0",
+                object_type=OBJECT_TYPE_BY_QUERY_ID[str(sample.query_id)],
+                bbox_xyxy=object_bbox,
+                semantic_attributes={
+                    "query_id": str(sample.query_id),
+                    "object_description": OBJECT_DESCRIPTION[str(sample.query_id)],
+                    "counted_part_kind": str(COUNTED_PART_KIND[str(sample.query_id)]),
+                    "visible_part_count": int(sample.visible_count),
+                    "canonical_bias_answer": int(canonical),
+                },
+                visual_attributes=visual_attributes,
+                parts=object_record_parts,
+                role="target",
+                source_entity_type="counterfactual_object",
+            ),
+            render_scale=int(render_meta.get("render_scale", 1)),
+            style_id=str(sample.style_id),
+        )
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
@@ -1110,6 +1160,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                         "object_description": OBJECT_DESCRIPTION[str(sample.query_id)],
                         "style_id": str(sample.style_id),
                         "bbox": [round(float(value), 3) for value in object_bbox],
+                        "object_record": object_record,
                     },
                     "parts": list(part_records),
                 },
@@ -1144,7 +1195,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
             "render_map": {
                 "object_bbox_px": [round(float(value), 3) for value in object_bbox],
                 "part_bboxes_px": {str(part.part_id): [round(float(value), 3) for value in part.bbox] for part in parts},
-                "evidence_part_ids": [str(part.part_id) for part in parts],
+                "annotation_part_ids": [str(part.part_id) for part in parts],
             },
             "execution_trace": {
                 "query_id": str(sample.query_id),
@@ -1155,19 +1206,19 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                 "counterfactual_delta": int(sample.visible_count) - int(canonical),
                 "counterfactual_edit_type": "visible_part_count_changed",
                 "is_counterfactual": bool(int(sample.visible_count) != int(canonical)),
-                "evidence_part_ids": [str(part.part_id) for part in parts],
+                "annotation_part_ids": [str(part.part_id) for part in parts],
             },
             "witness_symbolic": {
                 "answer": int(sample.visible_count),
                 "counted_part_ids": [str(part.part_id) for part in parts],
             },
-            "projected_evidence": {"bbox_set": list(evidence_boxes)},
+            "projected_annotation": {"bbox_set": list(annotation_boxes)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.visible_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_boxes)),
+            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_boxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

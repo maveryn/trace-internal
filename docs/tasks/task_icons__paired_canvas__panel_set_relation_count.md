@@ -17,9 +17,9 @@ Query ids:
 - `missing_from_right_count`
 
 Answer schema: integer.
-Evidence schema: `bbox_set`; exact-match and added-icon queries box counted
+Annotation schema: `bbox_set`; exact-match and added-icon queries box counted
 Right-panel icons, while missing-icon queries box counted Left-panel icons.
-`projected_evidence` mirrors this as typed bbox-set evidence with `bbox_set`,
+`projected_annotation` mirrors this as typed bbox-set annotation with `bbox_set`,
 `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 
 ## Notes

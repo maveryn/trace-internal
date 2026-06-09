@@ -8,8 +8,9 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
+from .text import draw_game_text_traced as draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
+from .marking import draw_semantic_bbox_marker, resolve_semantic_marker_style
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import SudokuTheme, build_games_sudoku_theme
 from .sudoku_common import Board, Coord, SIZE, coord_to_cell_id, unit_coords
@@ -31,6 +32,7 @@ class SudokuRenderParams:
     marked_cell_outline_width_px: int
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
+    instance_seed: int = 0
 
 
 @dataclass(frozen=True)
@@ -265,17 +267,31 @@ def render_sudoku_grid_scene(
 
     if marked_cell is not None:
         mark_row, mark_col = int(marked_cell[0]), int(marked_cell[1])
-        draw.rectangle(
-            _cell_bbox(
-                board_left=board_left,
-                board_top=board_top,
-                cell_size=cell_size,
-                row=mark_row,
-                col=mark_col,
-                padding_px=0.5 * float(params.marked_cell_outline_width_px),
+        marker_bbox = _cell_bbox(
+            board_left=board_left,
+            board_top=board_top,
+            cell_size=cell_size,
+            row=mark_row,
+            col=mark_col,
+            padding_px=0.5 * float(params.marked_cell_outline_width_px),
+        )
+        marker_style = resolve_semantic_marker_style(
+            instance_seed=int(params.instance_seed),
+            namespace=f"games.sudoku.marked_cell.{mark_row}.{mark_col}",
+            role="sudoku_marked_cell",
+            surface_rgbs=(
+                tuple(int(v) for v in theme.marked_cell_fill_rgba[:3]),
+                tuple(int(v) for v in theme.cell_fill_rgb),
             ),
-            outline=tuple(int(v) for v in theme.marked_cell_outline_rgb),
+            preferred_rgbs=(tuple(int(v) for v in theme.marked_cell_outline_rgb),),
+        )
+        draw_semantic_bbox_marker(
+            draw,
+            marker_bbox,
+            style=marker_style,
             width=int(params.marked_cell_outline_width_px),
+            marker_kind="sudoku_marked_cell_outline",
+            extra_metadata={"cell_id": coord_to_cell_id((mark_row, mark_col))},
         )
 
     render_map = {

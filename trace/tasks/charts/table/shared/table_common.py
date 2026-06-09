@@ -1516,11 +1516,11 @@ def build_temporal_value_dataset_for_variant(
     }
 
 
-def projected_table_bbox_evidence(
+def projected_table_bbox_annotation(
     rendered_scene,
     cell_ids: Sequence[str],
 ) -> Dict[str, Any]:
-    """Project one ordered table-cell id list into `bbox_set` evidence."""
+    """Project one ordered table-cell id list into `bbox_set` annotation."""
 
     requested = [str(cell_id) for cell_id in cell_ids]
     bbox_by_cell = {
@@ -1537,14 +1537,14 @@ def projected_table_bbox_evidence(
     }
 
 
-def projected_table_region_bbox_evidence(
+def projected_table_region_bbox_annotation(
     rendered_scene,
     *,
     row_labels: Sequence[str] = (),
     column_headers: Sequence[str] = (),
     include_numeric_table_region: bool = False,
 ) -> Dict[str, Any]:
-    """Project ordered row/column table regions into `bbox_set` evidence."""
+    """Project ordered row/column table regions into `bbox_set` annotation."""
 
     requested_rows = [str(row_label) for row_label in row_labels]
     requested_columns = [str(header) for header in column_headers]
@@ -1586,8 +1586,8 @@ __all__ = [
     "build_temporal_value_dataset_for_variant",
     "build_statistics_filtered_subset_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
-    "projected_table_bbox_evidence",
-    "projected_table_region_bbox_evidence",
+    "projected_table_bbox_annotation",
+    "projected_table_region_bbox_annotation",
     "render_table_filter_condition",
     "resolve_numeric_column_count_bounds",
     "resolve_row_count_bounds",

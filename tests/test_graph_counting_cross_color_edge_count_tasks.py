@@ -51,7 +51,7 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_cross_color_edge_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "point_pair_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_cross_color_edge_counting"
     assert execution["query_id"] == "directed_cross_color_edge_count"
@@ -71,7 +71,7 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
         str(label): str(color_name)
         for label, color_name in execution["node_color_names_by_label"].items()
     }
-    assert int(out.answer_gt.value) == len(matching_edges) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_edges) == len(out.annotation_gt.value)
     assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in matching_edges]
     assert trace["witness_symbolic"]["source_color_name"] == "green"
     assert trace["witness_symbolic"]["target_color_name"] == "red"
@@ -79,10 +79,10 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
     assert sum(1 for edge in edge_entities if bool(edge["is_target_cross_color_edge"])) == 3
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_evidence"]["type"] == "point_pair_set"
-    assert trace["projected_evidence"]["point_pair_set"] == out.evidence_gt.value
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["semantic_node_color_names_by_label"] == node_colors
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_cross_color_edge_count_undirected_and_zero_answer() -> None:
@@ -107,7 +107,7 @@ def test_graph_counting_cross_color_edge_count_undirected_and_zero_answer() -> N
 
     assert out.query_id == "cross_color_edge_count"
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["target_count"] == 0
     assert execution["matching_edges"] == []
     assert format_named_color_with_hex("cyan", named_color("cyan")) in str(out.prompt)
@@ -124,11 +124,11 @@ def test_graph_counting_cross_color_prompt_examples_match_contract() -> None:
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[[180, 220], [310, 180]], [[180, 220], [430, 260]]]
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[[180, 220], [310, 180]], [[180, 220], [430, 260]]]
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_graph_counting_cross_color_balanced_sampling_includes_zero() -> None:

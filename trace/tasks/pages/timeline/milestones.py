@@ -1,4 +1,4 @@
-"""Milestone-timeline page task with ordering and interval-count queries."""
+"""Milestone-timeline page tasks with ordering and date-arithmetic queries."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from ...shared.time_artifact_style import (
   SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
   build_time_artifact_timeline_theme,
 )
-from ...shared.time_artifact_fixed_query import rewrite_time_artifact_query_output
+from ...shared.time_artifact_fixed_query import force_time_artifact_query_params, rewrite_time_artifact_query_output
 from ...shared.time_artifact_task_support import resolve_time_artifact_named_variant, resolve_time_artifact_selection_index
 from ...shared.time_format import format_month_day_label, month_name
 from ..shared.timeline_scene import (
@@ -45,19 +45,23 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 
 TASK_ID = "pages_timeline_milestones_base"
 INTERVAL_MEMBERSHIP_TASK_ID = "task_pages__timeline__interval_membership_count"
+EVENT_DATE_GAP_TASK_ID = "task_pages__timeline__event_date_gap_value"
 PUBLIC_SCENE_ID = "timeline"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "interval_membership_count",
+  "event_date_gap_value",
 )
 _SOURCE_INTERVAL_RELATION_BY_VARIANT = {
   "between_reference_events_count": "between",
   "outside_reference_interval_count": "outside",
 }
 _SUPPORTED_INTERVAL_RELATIONS: Tuple[str, ...] = ("between", "outside")
+_DATE_GAP_RELATION = "date_gap"
 
 _TIMELINE_ORDER_BASE_BY_RELATION = {
   "between": 0.56,
   "outside": 0.62,
+  "date_gap": 0.66,
 }
 _VISUAL_SCAN_BASE_BY_SCENE = {
   "classic": 0.40,
@@ -91,6 +95,7 @@ class _TaskDefaults:
   event_count_support: Tuple[int, ...] = (6, 7, 8, 9, 10, 11, 12)
   between_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
   outside_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8)
+  date_gap_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24)
   event_label_pool: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
   canvas_width: int = 1120
   canvas_height: int = 700
@@ -151,9 +156,12 @@ class _ResolvedQuery:
   answer_value: int
   answer_event_ids: Tuple[str, ...]
   reference_event_ids: Tuple[str, ...]
+  endpoint_event_ids: Tuple[str, ...]
+  prompt_endpoint_event_ids: Tuple[str, ...]
   event_count_support: Tuple[int, ...]
   between_count_support: Tuple[int, ...]
   outside_count_support: Tuple[int, ...]
+  date_gap_support: Tuple[int, ...]
   query_id_probabilities: Dict[str, float]
   interval_relation_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
@@ -246,6 +254,19 @@ def _resolve_query_id(
     supported=SUPPORTED_QUERY_IDS,
     namespace="query_id",
   )
+
+
+def _force_interval_membership_params(params: Mapping[str, Any]) -> Dict[str, Any]:
+  """Force the interval task family while preserving its public query aliases."""
+
+  forced = dict(params)
+  explicit_variant = forced.get("query_id")
+  if explicit_variant is None or str(explicit_variant) == "default":
+    forced["query_id"] = "interval_membership_count"
+    return forced
+  if str(explicit_variant) == "interval_membership_count" or str(explicit_variant) in _SOURCE_INTERVAL_RELATION_BY_VARIANT:
+    return forced
+  raise ValueError(f"query_id={explicit_variant!r} is not valid for this timeline interval task")
 
 
 def _normalize_interval_relation(value: Any) -> str:
@@ -387,62 +408,18 @@ def _build_raw_events(
   return tuple(events)
 
 
-def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-  """Resolve one concrete milestone-timeline query from balanced supports."""
-
-  query_id, query_id_probabilities = _resolve_query_id(
-    instance_seed=int(instance_seed),
-    params=params,
-  )
-  interval_relation, interval_relation_probabilities = _resolve_interval_relation(
-    instance_seed=int(instance_seed),
-    params=params,
-  )
-  scene_variant, scene_variant_probabilities = _resolve_named_variant(
-    instance_seed=int(instance_seed),
-    params=_decoupled_named_axis_params(
-      params=params,
-      axis_key="scene_variant",
-      namespace=f"{TASK_ID}:scene_variant",
-    ),
-    explicit_key="scene_variant",
-    weights_key="scene_variant_weights",
-    balance_flag_key="balanced_scene_variant_sampling",
-    supported=SUPPORTED_PAGE_TIMELINE_SCENE_VARIANTS,
-    namespace="scene_variant",
-  )
-  style_variant, style_variant_probabilities = _resolve_named_variant(
-    instance_seed=int(instance_seed),
-    params=_decoupled_named_axis_params(
-      params=params,
-      axis_key="style_variant",
-      namespace=f"{TASK_ID}:style_variant",
-    ),
-    explicit_key="style_variant",
-    weights_key="style_variant_weights",
-    balance_flag_key="balanced_style_variant_sampling",
-    supported=SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
-    namespace="style_variant",
-  )
-  accent_color_name, accent_color_name_probabilities = _resolve_named_variant(
-    instance_seed=int(instance_seed),
-    params=_decoupled_named_axis_params(
-      params=params,
-      axis_key="accent_color_name",
-      namespace=f"{TASK_ID}:accent_color_name",
-    ),
-    explicit_key="accent_color_name",
-    weights_key="accent_color_name_weights",
-    balance_flag_key="balanced_accent_color_name_sampling",
-    supported=SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
-    namespace="accent_color_name",
-  )
-
-  year, month, days_in_month = _sample_month(int(instance_seed), params)
-  event_count_support = _resolve_int_support(params, "event_count_support", _DEFAULTS.event_count_support)
-  between_count_support = _resolve_int_support(params, "between_count_support", _DEFAULTS.between_count_support)
-  outside_count_support = _resolve_int_support(params, "outside_count_support", _DEFAULTS.outside_count_support)
-  event_label_pool = _resolve_str_support(params, "event_label_pool", _DEFAULTS.event_label_pool)
+def _sample_interval_query(
+  *,
+  instance_seed: int,
+  params: Mapping[str, Any],
+  interval_relation: str,
+  days_in_month: int,
+  event_count_support: Tuple[int, ...],
+  between_count_support: Tuple[int, ...],
+  outside_count_support: Tuple[int, ...],
+  event_label_pool: Tuple[str, ...],
+) -> Tuple[int, int, int, Tuple[int, ...], Tuple[int, ...]]:
+  """Sample the existing interval-membership query branch."""
 
   max_event_count = min(int(days_in_month), len(event_label_pool), max(int(value) for value in event_count_support))
   if int(max_event_count) < min(int(value) for value in event_count_support):
@@ -540,10 +517,172 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     answer_indices = tuple(range(0, int(primary_reference_index))) + tuple(
       range(int(secondary_reference_index + 1), int(event_count))
     )
+  return (
+    int(event_count),
+    int(primary_reference_index),
+    int(secondary_reference_index),
+    tuple(int(index) for index in answer_indices),
+    tuple(),
+  )
+
+
+def _sample_date_gap_query(
+  *,
+  instance_seed: int,
+  params: Mapping[str, Any],
+  days_in_month: int,
+  event_count_support: Tuple[int, ...],
+  date_gap_support: Tuple[int, ...],
+  event_label_pool: Tuple[str, ...],
+) -> Tuple[int, int, int, int, Tuple[int, ...]]:
+  """Sample a date-gap query and return event/date support."""
+
+  max_event_count = min(int(days_in_month), len(event_label_pool), max(int(value) for value in event_count_support))
+  feasible_event_counts = [int(value) for value in event_count_support if 2 <= int(value) <= int(max_event_count)]
+  if not feasible_event_counts:
+    raise ValueError("event_count_support has no feasible values for timeline date-gap tasks")
+  feasible_gaps = [int(value) for value in date_gap_support if 1 <= int(value) <= int(days_in_month - 1)]
+  if not feasible_gaps:
+    raise ValueError("date_gap_support has no feasible values for page timelines")
+  date_gap_value = int(
+    feasible_gaps[
+      int(
+        _resolve_support_selection_index(
+          params=params,
+          instance_seed=int(instance_seed),
+          namespace=f"{TASK_ID}:date_gap_value",
+        )
+        % len(feasible_gaps)
+      )
+    ]
+  )
+  event_count = int(
+    feasible_event_counts[
+      int(
+        _resolve_support_selection_index(
+          params=params,
+          instance_seed=int(instance_seed),
+          namespace=f"{TASK_ID}:date_gap_event_count",
+        )
+        % len(feasible_event_counts)
+      )
+    ]
+  )
+  start_day_support = tuple(range(1, int(days_in_month - date_gap_value + 1)))
+  earlier_day = int(
+    start_day_support[
+      int(
+        _resolve_support_selection_index(
+          params=params,
+          instance_seed=int(instance_seed),
+          namespace=f"{TASK_ID}:date_gap_start_day",
+        )
+        % len(start_day_support)
+      )
+    ]
+  )
+  later_day = int(earlier_day + date_gap_value)
+  remaining_day_pool = [int(day) for day in range(1, int(days_in_month) + 1) if int(day) not in {int(earlier_day), int(later_day)}]
+  rng = spawn_rng(int(instance_seed), f"{TASK_ID}.date_gap_days")
+  sampled_remaining = rng.sample(remaining_day_pool, k=int(event_count - 2))
+  day_values = tuple(sorted([int(earlier_day), int(later_day), *[int(value) for value in sampled_remaining]]))
+  return int(event_count), int(date_gap_value), int(earlier_day), int(later_day), tuple(int(value) for value in day_values)
+
+
+def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
+  """Resolve one concrete milestone-timeline query from balanced supports."""
+
+  query_id, query_id_probabilities = _resolve_query_id(
+    instance_seed=int(instance_seed),
+    params=params,
+  )
+  if str(query_id) == "event_date_gap_value":
+    interval_relation = _DATE_GAP_RELATION
+    interval_relation_probabilities = {str(_DATE_GAP_RELATION): 1.0}
+  else:
+    interval_relation, interval_relation_probabilities = _resolve_interval_relation(
+      instance_seed=int(instance_seed),
+      params=params,
+    )
+  scene_variant, scene_variant_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=_decoupled_named_axis_params(
+      params=params,
+      axis_key="scene_variant",
+      namespace=f"{TASK_ID}:scene_variant",
+    ),
+    explicit_key="scene_variant",
+    weights_key="scene_variant_weights",
+    balance_flag_key="balanced_scene_variant_sampling",
+    supported=SUPPORTED_PAGE_TIMELINE_SCENE_VARIANTS,
+    namespace="scene_variant",
+  )
+  style_variant, style_variant_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=_decoupled_named_axis_params(
+      params=params,
+      axis_key="style_variant",
+      namespace=f"{TASK_ID}:style_variant",
+    ),
+    explicit_key="style_variant",
+    weights_key="style_variant_weights",
+    balance_flag_key="balanced_style_variant_sampling",
+    supported=SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
+    namespace="style_variant",
+  )
+  accent_color_name, accent_color_name_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=_decoupled_named_axis_params(
+      params=params,
+      axis_key="accent_color_name",
+      namespace=f"{TASK_ID}:accent_color_name",
+    ),
+    explicit_key="accent_color_name",
+    weights_key="accent_color_name_weights",
+    balance_flag_key="balanced_accent_color_name_sampling",
+    supported=SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
+    namespace="accent_color_name",
+  )
+
+  year, month, days_in_month = _sample_month(int(instance_seed), params)
+  event_count_support = _resolve_int_support(params, "event_count_support", _DEFAULTS.event_count_support)
+  between_count_support = _resolve_int_support(params, "between_count_support", _DEFAULTS.between_count_support)
+  outside_count_support = _resolve_int_support(params, "outside_count_support", _DEFAULTS.outside_count_support)
+  date_gap_support = _resolve_int_support(params, "date_gap_support", _DEFAULTS.date_gap_support)
+  event_label_pool = _resolve_str_support(params, "event_label_pool", _DEFAULTS.event_label_pool)
+
+  if str(query_id) == "event_date_gap_value":
+    event_count, answer_value, earlier_day, later_day, day_values = _sample_date_gap_query(
+      instance_seed=int(instance_seed),
+      params=params,
+      days_in_month=int(days_in_month),
+      event_count_support=tuple(event_count_support),
+      date_gap_support=tuple(date_gap_support),
+      event_label_pool=tuple(event_label_pool),
+    )
+    primary_reference_index = int(tuple(day_values).index(int(earlier_day)))
+    secondary_reference_index = int(tuple(day_values).index(int(later_day)))
+    answer_indices: Tuple[int, ...] = tuple()
+    endpoint_indices = (int(primary_reference_index), int(secondary_reference_index))
+  else:
+    event_count, primary_reference_index, secondary_reference_index, answer_indices, endpoint_indices = _sample_interval_query(
+      instance_seed=int(instance_seed),
+      params=params,
+      interval_relation=str(interval_relation),
+      days_in_month=int(days_in_month),
+      event_count_support=tuple(event_count_support),
+      between_count_support=tuple(between_count_support),
+      outside_count_support=tuple(outside_count_support),
+      event_label_pool=tuple(event_label_pool),
+    )
+    if str(interval_relation) == "between":
+      answer_value = int(len(answer_indices))
+    else:
+      answer_value = int(len(answer_indices))
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.days")
+    day_values = tuple(sorted(int(value) for value in rng.sample(list(range(1, int(days_in_month) + 1)), k=int(event_count))))
 
   labels = tuple(str(label) for label in event_label_pool[:event_count])
-  rng = spawn_rng(int(instance_seed), f"{TASK_ID}.days")
-  day_values = tuple(sorted(int(value) for value in rng.sample(list(range(1, int(days_in_month) + 1)), k=int(event_count))))
   raw_events = _build_raw_events(
     month=int(month),
     day_values=tuple(day_values),
@@ -557,6 +696,19 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     for index in (primary_reference_index, secondary_reference_index)
     if index is not None
   )
+  endpoint_event_ids = tuple(str(raw_events[index].event_id) for index in endpoint_indices)
+  if str(query_id) == "event_date_gap_value":
+    endpoint_order = "later_first" if int(
+      _resolve_support_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:date_gap_prompt_order",
+      )
+      % 2
+    ) else "earlier_first"
+    prompt_endpoint_event_ids = tuple(reversed(endpoint_event_ids)) if endpoint_order == "later_first" else tuple(endpoint_event_ids)
+  else:
+    prompt_endpoint_event_ids = tuple(endpoint_event_ids)
 
   return _ResolvedQuery(
     query_id=str(query_id),
@@ -573,9 +725,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     answer_value=int(answer_value),
     answer_event_ids=tuple(answer_event_ids),
     reference_event_ids=tuple(reference_event_ids),
+    endpoint_event_ids=tuple(endpoint_event_ids),
+    prompt_endpoint_event_ids=tuple(prompt_endpoint_event_ids),
     event_count_support=tuple(int(value) for value in event_count_support),
     between_count_support=tuple(int(value) for value in between_count_support),
     outside_count_support=tuple(int(value) for value in outside_count_support),
+    date_gap_support=tuple(int(value) for value in date_gap_support),
     query_id_probabilities=dict(query_id_probabilities),
     interval_relation_probabilities=dict(interval_relation_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
@@ -651,20 +806,32 @@ class _PagesTimelineMilestonesBase:
       default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
 
-    evidence_bboxes = [
-      [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
-      for event_id in query.answer_event_ids
-    ]
-
-    answer_hint_key = f"answer_hint_{query.interval_relation}"
-    evidence_hint_key = f"evidence_hint_{query.interval_relation}"
     object_description_key = f"object_description_{query.query_id}"
-    interval_relation_description_key = f"interval_relation_description_{query.interval_relation}"
-    json_example_key = f"json_example_{query.interval_relation}"
-    json_example_answer_only_key = f"json_example_answer_only_{query.interval_relation}"
-    prompt_defaults = required_group_defaults(
-      _PROMPT_DEFAULTS,
-      (
+    required_prompt_keys: Tuple[str, ...]
+    if str(query.query_id) == "event_date_gap_value":
+      answer_hint_key = "answer_hint_event_date_gap_value"
+      annotation_hint_key = "annotation_hint_event_date_gap_value"
+      json_example_key = "json_example_event_date_gap_value"
+      json_example_answer_only_key = "json_example_answer_only_event_date_gap_value"
+      required_prompt_keys = (
+        "bundle_id",
+        "scene_key",
+        "task_key",
+        "json_output_contract",
+        "json_output_contract_answer_only",
+        object_description_key,
+        answer_hint_key,
+        annotation_hint_key,
+        json_example_key,
+        json_example_answer_only_key,
+      )
+    else:
+      answer_hint_key = f"answer_hint_{query.interval_relation}"
+      annotation_hint_key = f"annotation_hint_{query.interval_relation}"
+      interval_relation_description_key = f"interval_relation_description_{query.interval_relation}"
+      json_example_key = f"json_example_{query.interval_relation}"
+      json_example_answer_only_key = f"json_example_answer_only_{query.interval_relation}"
+      required_prompt_keys = (
         "bundle_id",
         "scene_key",
         "task_key",
@@ -673,10 +840,13 @@ class _PagesTimelineMilestonesBase:
         object_description_key,
         interval_relation_description_key,
         answer_hint_key,
-        evidence_hint_key,
+        annotation_hint_key,
         json_example_key,
         json_example_answer_only_key,
-      ),
+      )
+    prompt_defaults = required_group_defaults(
+      _PROMPT_DEFAULTS,
+      required_prompt_keys,
       context=f"prompt defaults for {self.task_id}",
     )
     object_description = str(prompt_defaults[object_description_key]).format(
@@ -685,14 +855,24 @@ class _PagesTimelineMilestonesBase:
     )
     slots: Dict[str, str] = {
       "object_description": str(object_description),
-      "interval_relation_description": str(prompt_defaults[interval_relation_description_key]),
       "json_output_contract": str(prompt_defaults["json_output_contract"]),
       "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-      "evidence_hint": str(prompt_defaults[evidence_hint_key]),
+      "annotation_hint": str(prompt_defaults[annotation_hint_key]),
       "answer_hint": str(prompt_defaults[answer_hint_key]),
       "json_example": str(prompt_defaults[json_example_key]),
       "json_example_answer_only": str(prompt_defaults[json_example_answer_only_key]),
     }
+    if str(query.query_id) == "event_date_gap_value":
+      endpoint_labels = {
+        str(event.event_id): str(event.label)
+        for event in query.raw_events
+      }
+      slots["endpoint_pair_description"] = " and ".join(
+        f"event {endpoint_labels[str(event_id)]}"
+        for event_id in query.prompt_endpoint_event_ids
+      )
+    else:
+      slots["interval_relation_description"] = str(prompt_defaults[interval_relation_description_key])
 
     prompt_selection = render_task_prompt_variants(
       domain=self.domain,
@@ -701,14 +881,25 @@ class _PagesTimelineMilestonesBase:
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
       query_key=str(query.query_id),
-      answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+      answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
     answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-    evidence_gt = TypedValue(type="bbox_set", value=[list(box) for box in evidence_bboxes])
+    if str(query.query_id) == "event_date_gap_value":
+      annotation_value: Dict[str, List[float]] = {
+        role: [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
+        for role, event_id in zip(("earlier_event", "later_event"), query.endpoint_event_ids)
+      }
+      annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
+    else:
+      annotation_bboxes = [
+        [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
+        for event_id in query.answer_event_ids
+      ]
+      annotation_gt = TypedValue(type="bbox_set", value=[list(box) for box in annotation_bboxes])
 
     event_records = [
       {
@@ -757,6 +948,7 @@ class _PagesTimelineMilestonesBase:
           "event_count_support": [int(value) for value in query.event_count_support],
           "between_count_support": [int(value) for value in query.between_count_support],
           "outside_count_support": [int(value) for value in query.outside_count_support],
+          "date_gap_support": [int(value) for value in query.date_gap_support],
           "query_id_probabilities": dict(query.query_id_probabilities),
           "interval_relation_probabilities": dict(query.interval_relation_probabilities),
           "scene_variant_probabilities": dict(query.scene_variant_probabilities),
@@ -801,6 +993,7 @@ class _PagesTimelineMilestonesBase:
         },
         "reference_event_ids": [str(value) for value in query.reference_event_ids],
         "answer_event_ids": [str(value) for value in query.answer_event_ids],
+        "endpoint_event_ids": [str(value) for value in query.endpoint_event_ids],
       },
       "execution_trace": {
         "query_id": str(query.query_id),
@@ -815,6 +1008,8 @@ class _PagesTimelineMilestonesBase:
         "answer_value": int(query.answer_value),
         "answer_event_ids": [str(value) for value in query.answer_event_ids],
         "reference_event_ids": [str(value) for value in query.reference_event_ids],
+        "endpoint_event_ids": [str(value) for value in query.endpoint_event_ids],
+        "prompt_endpoint_event_ids": [str(value) for value in query.prompt_endpoint_event_ids],
         "events": event_records,
         "query_id_probabilities": dict(query.query_id_probabilities),
         "interval_relation_probabilities": dict(query.interval_relation_probabilities),
@@ -823,11 +1018,11 @@ class _PagesTimelineMilestonesBase:
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
       },
       "witness_symbolic": {
-        "type": "bbox_set",
-        "value": [list(box) for box in evidence_bboxes],
+        "type": str(annotation_gt.type),
+        "value": annotation_gt.value,
       },
-      "projected_evidence": {
-        "bbox_set": [list(box) for box in evidence_bboxes],
+      "projected_annotation": {
+        str(annotation_gt.type): annotation_gt.value,
       },
     }
 
@@ -860,7 +1055,18 @@ class _PagesTimelineMilestonesBase:
               )
             )
           )
-          + (0.08 * float(normalize_int_with_bounds(int(reference_span), [0, 7]))),
+          + (0.08 * float(normalize_int_with_bounds(int(reference_span), [0, 7])))
+          + (
+            0.16
+            * float(
+              normalize_int_with_bounds(
+                int(query.answer_value),
+                [2, 24],
+              )
+            )
+            if str(query.query_id) == "event_date_gap_value"
+            else 0.0
+          ),
         ),
         "visual_scan": min(
           1.0,
@@ -903,7 +1109,7 @@ class _PagesTimelineMilestonesBase:
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
       answer_gt=answer_gt,
-      evidence_gt=evidence_gt,
+      annotation_gt=annotation_gt,
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
@@ -934,7 +1140,8 @@ class PagesTimelineIntervalMembershipCountTask(_PagesTimelineMilestonesBase):
   fixed_query_id = "interval_membership_count"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-    output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
+    forced_params = _force_interval_membership_params(params)
+    output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
     return rewrite_time_artifact_query_output(
       output,
       query_id=_timeline_query_id(output),
@@ -942,4 +1149,21 @@ class PagesTimelineIntervalMembershipCountTask(_PagesTimelineMilestonesBase):
     )
 
 
-__all__ = ["PagesTimelineIntervalMembershipCountTask"]
+@register_task
+class PagesTimelineEventDateGapValueTask(_PagesTimelineMilestonesBase):
+  """Compute the calendar-day gap between two highlighted milestone events."""
+
+  task_id = EVENT_DATE_GAP_TASK_ID
+  fixed_query_id = "event_date_gap_value"
+
+  def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    forced_params = force_time_artifact_query_params(params, query_id=str(self.fixed_query_id))
+    output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
+    return rewrite_time_artifact_query_output(
+      output,
+      query_id=str(self.fixed_query_id),
+      scene_id=PUBLIC_SCENE_ID,
+    )
+
+
+__all__ = ["PagesTimelineEventDateGapValueTask", "PagesTimelineIntervalMembershipCountTask"]

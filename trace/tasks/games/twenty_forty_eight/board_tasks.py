@@ -33,20 +33,22 @@ from ..shared.twenty_forty_eight_common import (
     MOVE_RESULT_QUERY_IDS,
     SIZE,
     SUPPORTED_2048_DIRECTIONS,
-    SUPPORTED_2048_GOAL_CELLS,
-    SUPPORTED_2048_LABELS,
     SUPPORTED_2048_QUERY_IDS,
+    SUPPORTED_2048_RESULT_BOARD_LABELS,
     SUPPORTED_2048_SCENE_VARIANTS,
     SUPPORTED_2048_STYLE_VARIANTS,
     Move2048Result,
     Sample2048,
     board_max_tile,
     coord_to_cell_id,
-    goal_cell_name_to_coord,
     simulate_2048_move,
     validate_2048_sample,
 )
-from ..shared.twenty_forty_eight_scene import TwentyFortyEightRenderParams, render_2048_board_scene
+from ..shared.twenty_forty_eight_scene import (
+    TwentyFortyEightRenderParams,
+    render_2048_board_scene,
+    render_2048_result_options_scene,
+)
 from ..shared.visual_defaults import load_games_noise_defaults
 
 
@@ -60,7 +62,8 @@ class _TaskDefaults:
     merge_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     score_value_support: Tuple[int, ...] = (0, 4, 8, 12, 16, 24, 32, 40)
     max_tile_value_support: Tuple[int, ...] = (16, 32, 64, 128, 256)
-    best_move_label_support: Tuple[str, ...] = SUPPORTED_2048_LABELS
+    result_board_label_support: Tuple[str, ...] = SUPPORTED_2048_RESULT_BOARD_LABELS
+    result_board_option_count_support: Tuple[int, ...] = (4, 6)
     canvas_width: int = 900
     canvas_height: int = 900
     panel_margin_px: int = 64
@@ -71,7 +74,6 @@ class _TaskDefaults:
     tile_font_size_px: int = 46
     arrow_width_px: int = 9
     label_font_size_px: int = 24
-    goal_outline_width_px: int = 7
     dynamic_canvas_size_enabled: bool = True
     canvas_min_size_px: int = 520
     canvas_side_padding_px: int = 128
@@ -87,18 +89,19 @@ class _ResolvedAxes:
     scene_variant: str
     style_variant: str
     move_direction: str
-    goal_cell_name: str
     target_answer: int | None
     target_label: str | None
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
+    result_board_option_count: int
+    result_board_option_count_support: Tuple[int, ...]
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     move_direction_probabilities: Dict[str, float]
-    goal_cell_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
     target_label_probabilities: Dict[str, float]
+    result_board_option_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -201,7 +204,7 @@ def _uses_uniform_query_cycle(
 ) -> bool:
     """Return true when the query axis uses the default balanced cycle."""
 
-    if params.get("query_id") is not None or params.get("query_id") is not None:
+    if params.get("query_id") is not None or params.get("query_variant") is not None:
         return False
     enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
@@ -303,26 +306,15 @@ def _resolve_axes(
         balance_flag_key="balanced_move_direction_sampling",
         supported=SUPPORTED_2048_DIRECTIONS,
     )
-    goal_cell_name, goal_cell_probabilities = _resolve_named_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        namespace="goal_cell",
-        explicit_key="goal_cell",
-        weights_key="goal_cell_weights",
-        balance_flag_key="balanced_goal_cell_sampling",
-        supported=SUPPORTED_2048_GOAL_CELLS,
-    )
-
     target_answer = None
     target_answer_support: Tuple[int, ...] = tuple()
     target_answer_probabilities: Dict[str, float] = {}
     target_label = None
     target_label_probabilities: Dict[str, float] = {}
-    target_label_support = _string_support(
-        params,
-        key="best_move_label_support",
-        fallback=_DEFAULTS.best_move_label_support,
-    )
+    target_label_support: Tuple[str, ...] = tuple()
+    result_board_option_count = 0
+    result_board_option_count_support: Tuple[int, ...] = tuple()
+    result_board_option_count_probabilities: Dict[str, float] = {}
     if str(query_id) in MOVE_RESULT_QUERY_IDS:
         support_key = _target_support_key(str(query_id))
         target_answer_support = resolve_integer_support(
@@ -342,14 +334,61 @@ def _resolve_axes(
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
-    elif str(query_id) == "best_move_label":
-        target_label, target_label_probabilities = _resolve_label_choice(
+    elif str(query_id) == "move_result_board_label":
+        full_label_support = _string_support(
+            params,
+            key="result_board_label_support",
+            fallback=_DEFAULTS.result_board_label_support,
+        )
+        result_board_option_count, result_board_option_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=answer_cycle_params,
-            support_key="best_move_label_support",
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="result_board_option_count_support",
+            explicit_key="result_board_option_count",
+            fallback_support=_DEFAULTS.result_board_option_count_support,
+            namespace=f"{TASK_ID}.result_board_option_count",
+            balanced_flag_key="balanced_result_board_option_count_sampling",
+            namespace_support_permutation=True,
+        )
+        result_board_option_count_support = resolve_integer_support(
+            params,
+            gen_defaults=_GEN_DEFAULTS,
+            key="result_board_option_count_support",
+            fallback=_DEFAULTS.result_board_option_count_support,
+        )
+        if int(result_board_option_count) < 2:
+            raise ValueError("result_board_option_count must be at least 2")
+        if int(result_board_option_count) > len(full_label_support):
+            raise ValueError("result_board_option_count exceeds result board label support")
+        explicit_target_label = params.get("target_label")
+        if explicit_target_label is not None and str(explicit_target_label) in full_label_support:
+            required_count = int(full_label_support.index(str(explicit_target_label)) + 1)
+            if required_count > int(result_board_option_count):
+                if params.get("result_board_option_count") is not None:
+                    raise ValueError("target_label is outside the explicit result_board_option_count label range")
+                feasible_counts = [
+                    int(value)
+                    for value in result_board_option_count_support
+                    if int(value) >= int(required_count)
+                ]
+                if not feasible_counts:
+                    raise ValueError("target_label is outside the configured result board label range")
+                result_board_option_count = int(min(feasible_counts))
+                result_board_option_count_probabilities = {
+                    str(value): (1.0 if int(value) == int(result_board_option_count) else 0.0)
+                    for value in result_board_option_count_support
+                }
+        target_label_support = tuple(str(label) for label in full_label_support[: int(result_board_option_count)])
+        label_params = dict(answer_cycle_params)
+        label_params["result_board_label_support"] = list(target_label_support)
+        target_label, target_label_probabilities = _resolve_label_choice(
+            instance_seed=int(instance_seed),
+            params=label_params,
+            support_key="result_board_label_support",
             explicit_key="target_label",
-            fallback_support=_DEFAULTS.best_move_label_support,
-            namespace=f"{TASK_ID}.target_label.best_move_label",
+            fallback_support=target_label_support,
+            namespace=f"{TASK_ID}.target_label.move_result_board_label",
             balanced_flag_key="balanced_target_label_sampling",
         )
     else:
@@ -360,18 +399,19 @@ def _resolve_axes(
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         move_direction=str(move_direction),
-        goal_cell_name=str(goal_cell_name),
         target_answer=None if target_answer is None else int(target_answer),
         target_label=None if target_label is None else str(target_label),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
+        result_board_option_count=int(result_board_option_count),
+        result_board_option_count_support=tuple(int(value) for value in result_board_option_count_support),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         move_direction_probabilities=dict(move_direction_probabilities),
-        goal_cell_probabilities=dict(goal_cell_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
         target_label_probabilities=dict(target_label_probabilities),
+        result_board_option_count_probabilities=dict(result_board_option_count_probabilities),
     )
 
 
@@ -479,9 +519,9 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> TwentyFo
         cell_radius_px=scale_games_px(params.get("cell_radius_px", group_default(_RENDER_DEFAULTS, "cell_radius_px", _DEFAULTS.cell_radius_px)), unit_scale, min_px=5),
         tile_font_size_px=scale_games_px(params.get("tile_font_size_px", group_default(_RENDER_DEFAULTS, "tile_font_size_px", _DEFAULTS.tile_font_size_px)), unit_scale, min_px=22),
         arrow_width_px=scale_games_px(params.get("arrow_width_px", group_default(_RENDER_DEFAULTS, "arrow_width_px", _DEFAULTS.arrow_width_px)), unit_scale, min_px=4),
-        label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=13),
-        goal_outline_width_px=scale_games_px(params.get("goal_outline_width_px", group_default(_RENDER_DEFAULTS, "goal_outline_width_px", _DEFAULTS.goal_outline_width_px)), unit_scale, min_px=3),
+        label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=18),
         font_family=str(font_family),
+        instance_seed=int(instance_seed),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -598,8 +638,8 @@ def _merge_metric(result: Move2048Result, *, query_id: str) -> int:
     raise ValueError(f"unsupported 2048 value query: {query_id}")
 
 
-def _evidence_coords_for_query(result: Move2048Result, *, query_id: str) -> Tuple[Coord, ...]:
-    """Return source-cell evidence coordinates for one value query."""
+def _annotation_coords_for_query(result: Move2048Result, *, query_id: str) -> Tuple[Coord, ...]:
+    """Return source-cell annotation coordinates for one value query."""
 
     if str(query_id) in {"merge_count", "score_value"}:
         return tuple(coord for pair in result.merge_pairs for coord in pair)
@@ -665,7 +705,7 @@ def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
             str(direction): simulate_2048_move(board, str(direction))
             for direction in SUPPORTED_2048_DIRECTIONS
         }
-        evidence_ids = tuple(coord_to_cell_id(coord) for coord in _evidence_coords_for_query(result, query_id=query))
+        annotation_ids = tuple(coord_to_cell_id(coord) for coord in _annotation_coords_for_query(result, query_id=query))
         sample = Sample2048(
             query_id=query,
             scene_variant=str(axes.scene_variant),
@@ -673,11 +713,9 @@ def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
             answer=int(target),
             board=board,
             move_direction=str(axes.move_direction),
-            move_label_by_direction={},
-            goal_cell=None,
             move_result=result,
             all_move_results=all_results,
-            evidence_cell_ids=evidence_ids,
+            annotation_cell_ids=annotation_ids,
             construction_mode=f"single_move_{query}",
         )
         validate_2048_sample(sample)
@@ -685,82 +723,146 @@ def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
     raise ValueError(f"failed to sample 2048 {query} scene")
 
 
-def _compatible_goal_directions(goal_cell: Coord) -> Tuple[str, ...]:
-    """Return directions that can move a tile directly into the goal corner."""
+def _board_key(board: Board) -> Tuple[Tuple[int, ...], ...]:
+    """Return a hashable normalized board key."""
 
-    row, col = int(goal_cell[0]), int(goal_cell[1])
-    directions: list[str] = []
-    if int(col) == 0:
-        directions.append("left")
-    if int(col) == SIZE - 1:
-        directions.append("right")
-    if int(row) == 0:
-        directions.append("up")
-    if int(row) == SIZE - 1:
-        directions.append("down")
-    return tuple(directions)
+    return tuple(tuple(int(value) for value in row) for row in board)
 
 
-def _assign_move_labels(*, rng, target_direction: str, target_label: str) -> Dict[str, str]:
-    """Assign four visible labels while forcing one target direction label."""
+def _try_add_unique_board(
+    out: list[Board],
+    seen: set[Tuple[Tuple[int, ...], ...]],
+    board: Board,
+) -> None:
+    """Append one unique 2048 board option."""
 
-    remaining_labels = [label for label in SUPPORTED_2048_LABELS if str(label) != str(target_label)]
-    rng.shuffle(remaining_labels)
-    other_directions = [direction for direction in SUPPORTED_2048_DIRECTIONS if str(direction) != str(target_direction)]
-    rng.shuffle(other_directions)
-    labels = {str(target_direction): str(target_label)}
-    for direction, label in zip(other_directions, remaining_labels[: len(other_directions)]):
-        labels[str(direction)] = str(label)
-    return labels
+    key = _board_key(board)
+    if key in seen:
+        return
+    seen.add(key)
+    out.append(key)
 
 
-def _sample_best_move_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
-    """Construct a candidate-arrow query with one best move for the outlined goal cell."""
+def _mutated_result_board(*, rng, board: Board, mutation_index: int) -> Board:
+    """Return one valid but usually incorrect 2048 result-board distractor."""
+
+    rows = [list(int(value) for value in row) for row in board]
+    nonempty = [(row, col) for row in range(SIZE) for col in range(SIZE) if int(rows[row][col]) != EMPTY]
+    empty = [(row, col) for row in range(SIZE) for col in range(SIZE) if int(rows[row][col]) == EMPTY]
+    mode = int(mutation_index) % 5
+    if mode == 0 and len(nonempty) >= 2:
+        a, b = rng.sample(nonempty, 2)
+        rows[a[0]][a[1]], rows[b[0]][b[1]] = rows[b[0]][b[1]], rows[a[0]][a[1]]
+    elif mode == 1 and nonempty:
+        row, col = rng.choice(nonempty)
+        rows[row][col] = max(2, int(rows[row][col]) // 2)
+    elif mode == 2 and nonempty:
+        row, col = rng.choice(nonempty)
+        rows[row][col] = min(512, int(rows[row][col]) * 2)
+    elif mode == 3 and empty:
+        row, col = rng.choice(empty)
+        rows[row][col] = int(rng.choice((2, 4)))
+    elif nonempty:
+        row, col = rng.choice(nonempty)
+        rows[row][col] = EMPTY
+    return tuple(tuple(int(value) for value in row) for row in rows)
+
+
+def _build_result_board_options(
+    *,
+    rng,
+    board: Board,
+    result: Move2048Result,
+    all_results: Mapping[str, Move2048Result],
+    target_label: str,
+    labels: Sequence[str],
+) -> Dict[str, Board]:
+    """Build labeled candidate post-move boards with one correct answer."""
+
+    label_list = [str(label) for label in labels]
+    if str(target_label) not in label_list:
+        raise ValueError("target result-board label must be in label support")
+    if len(label_list) < 2:
+        raise ValueError("move_result_board_label requires at least two labels")
+    distractor_count = int(len(label_list) - 1)
+
+    distractors: list[Board] = []
+    seen = {_board_key(result.after)}
+    for direction in SUPPORTED_2048_DIRECTIONS:
+        if str(direction) == str(result.direction):
+            continue
+        candidate = all_results[str(direction)].after
+        _try_add_unique_board(distractors, seen, candidate)
+    _try_add_unique_board(distractors, seen, board)
+    for direction in SUPPORTED_2048_DIRECTIONS:
+        candidate = simulate_2048_move(result.after, str(direction)).after
+        _try_add_unique_board(distractors, seen, candidate)
+    mutation_index = 0
+    while len(distractors) < distractor_count and mutation_index < 80:
+        candidate = _mutated_result_board(rng=rng, board=result.after, mutation_index=mutation_index)
+        _try_add_unique_board(distractors, seen, candidate)
+        mutation_index += 1
+    if len(distractors) < distractor_count:
+        raise ValueError("failed to build enough distinct 2048 result-board distractors")
+
+    out: Dict[str, Board] = {}
+    out[str(target_label)] = result.after
+    distractor_iter = iter(distractors[:distractor_count])
+    for label in label_list:
+        if str(label) == str(target_label):
+            continue
+        out[str(label)] = next(distractor_iter)
+    return {str(label): out[str(label)] for label in label_list}
+
+
+def _sample_result_board_label_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
+    """Construct a visual-MCQ query asking for the full post-move board."""
 
     target_label = str(axes.target_label or "A")
-    goal_cell = goal_cell_name_to_coord(str(axes.goal_cell_name))
-    compatible = _compatible_goal_directions(goal_cell)
-    target_direction = str(axes.move_direction) if str(axes.move_direction) in compatible else str(rng.choice(compatible))
-    line_index = int(goal_cell[0]) if target_direction in {"left", "right"} else int(goal_cell[1])
-
-    for _attempt in range(96):
-        lines = [_non_merging_line(rng, max_value=32) for _idx in range(SIZE)]
-        lines[line_index] = (64, 64, EMPTY, EMPTY)
-        board = _board_from_move_order(lines, direction=target_direction)
-        results = {
+    labels = tuple(str(label) for label in (axes.target_label_support or _DEFAULTS.result_board_label_support))
+    for _attempt in range(160):
+        merge_count = int(rng.randint(0, 3))
+        merge_values = tuple(int(rng.choice((4, 8, 16, 32, 64))) for _idx in range(merge_count))
+        board = _board_for_merge_values(
+            rng=rng,
+            direction=str(axes.move_direction),
+            merge_values=merge_values,
+            force_slide_when_no_merge=(merge_count == 0),
+        )
+        result = simulate_2048_move(board, str(axes.move_direction))
+        if not result.moved:
+            continue
+        all_results = {
             str(direction): simulate_2048_move(board, str(direction))
             for direction in SUPPORTED_2048_DIRECTIONS
         }
-        values = {
-            str(direction): int(result.after[int(goal_cell[0])][int(goal_cell[1])])
-            for direction, result in results.items()
-        }
-        best_value = max(values.values())
-        best_dirs = [direction for direction, value in values.items() if int(value) == int(best_value)]
-        if best_dirs != [target_direction] or int(best_value) <= 0:
+        try:
+            option_boards = _build_result_board_options(
+                rng=rng,
+                board=board,
+                result=result,
+                all_results=all_results,
+                target_label=target_label,
+                labels=labels,
+            )
+        except ValueError:
             continue
-        sources = tuple(results[target_direction].result_sources.get(goal_cell, tuple()))
-        if not sources:
-            continue
-        move_labels = _assign_move_labels(rng=rng, target_direction=target_direction, target_label=target_label)
-        evidence_ids = tuple(coord_to_cell_id(coord) for coord in sources)
         sample = Sample2048(
-            query_id="best_move_label",
+            query_id="move_result_board_label",
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_label),
             board=board,
-            move_direction=str(target_direction),
-            move_label_by_direction=move_labels,
-            goal_cell=goal_cell,
-            move_result=results[target_direction],
-            all_move_results=results,
-            evidence_cell_ids=evidence_ids,
-            construction_mode="candidate_move_maximizes_goal_cell_value",
+            move_direction=str(axes.move_direction),
+            move_result=result,
+            all_move_results=all_results,
+            annotation_cell_ids=(f"result_option_{target_label}",),
+            construction_mode="single_move_full_result_board_mcq",
+            result_option_boards=option_boards,
         )
         validate_2048_sample(sample)
         return sample
-    raise ValueError("failed to sample 2048 best-move scene")
+    raise ValueError("failed to sample 2048 result-board label scene")
 
 
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
@@ -768,20 +870,20 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
 
     if str(axes.query_id) in MOVE_RESULT_QUERY_IDS:
         return _sample_move_result_scene(rng=rng, axes=axes)
-    if str(axes.query_id) == "best_move_label":
-        return _sample_best_move_scene(rng=rng, axes=axes)
+    if str(axes.query_id) == "move_result_board_label":
+        return _sample_result_board_label_scene(rng=rng, axes=axes)
     raise ValueError(f"unsupported 2048 query_id: {axes.query_id}")
 
 
 def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for 2048 JSON output."""
 
-    if str(query_id) == "best_move_label":
-        answer_value: str | int = "D"
-        evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
+    if str(query_id) == "move_result_board_label":
+        answer_value = "C"
+        annotation_value = [[356, 542, 508, 694]]
     elif str(query_id) == "merge_count":
         answer_value = 2
-        evidence_value = [
+        annotation_value = [
             [224, 224, 344, 344],
             [358, 224, 478, 344],
             [224, 358, 344, 478],
@@ -789,7 +891,7 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         ]
     elif str(query_id) == "score_value":
         answer_value = 24
-        evidence_value = [
+        annotation_value = [
             [224, 224, 344, 344],
             [358, 224, 478, 344],
             [224, 358, 344, 478],
@@ -797,9 +899,9 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         ]
     else:
         answer_value = 128
-        evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
+        annotation_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
     return (
-        json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -885,19 +987,28 @@ class Games2048BoardTask:
             canvas_height=int(render_params.canvas_height),
             style=panel_style,
         )
-        rendered_scene = render_2048_board_scene(
-            board=sampled_scene.board,
-            background=background,
-            style_variant=str(axes.style_variant),
-            params=render_params,
-            panel_style=panel_style,
-            move_direction=None if str(axes.query_id) == "best_move_label" else str(sampled_scene.move_direction),
-            move_label_by_direction=sampled_scene.move_label_by_direction if str(axes.query_id) == "best_move_label" else None,
-            goal_cell=sampled_scene.goal_cell,
-        )
-        evidence_bboxes = [
+        if str(axes.query_id) == "move_result_board_label":
+            rendered_scene = render_2048_result_options_scene(
+                board=sampled_scene.board,
+                option_boards=sampled_scene.result_option_boards,
+                background=background,
+                style_variant=str(axes.style_variant),
+                params=render_params,
+                panel_style=panel_style,
+                move_direction=str(sampled_scene.move_direction),
+            )
+        else:
+            rendered_scene = render_2048_board_scene(
+                board=sampled_scene.board,
+                background=background,
+                style_variant=str(axes.style_variant),
+                params=render_params,
+                panel_style=panel_style,
+                move_direction=str(sampled_scene.move_direction),
+            )
+        annotation_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_cell_ids
+            for entity_id in sampled_scene.annotation_cell_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -917,15 +1028,15 @@ class Games2048BoardTask:
                 "object_description_standard_board",
                 "move_rule_text",
                 "score_rule_text",
-                "goal_rule_text",
                 "answer_hint_merge_count",
-                "evidence_hint_merge_count",
+                "annotation_hint_merge_count",
                 "answer_hint_score_value",
-                "evidence_hint_score_value",
+                "annotation_hint_score_value",
                 "answer_hint_max_tile_value",
-                "evidence_hint_max_tile_value",
-                "answer_hint_best_move_label",
-                "evidence_hint_best_move_label",
+                "annotation_hint_max_tile_value",
+                "result_board_rule_text",
+                "answer_hint_move_result_board_label",
+                "annotation_hint_move_result_board_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -937,16 +1048,16 @@ class Games2048BoardTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(axes.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "move_rule_text": str(prompt_defaults["move_rule_text"]),
                 "score_rule_text": str(prompt_defaults["score_rule_text"]),
-                "goal_rule_text": str(prompt_defaults["goal_rule_text"]),
+                "result_board_rule_text": str(prompt_defaults["result_board_rule_text"]),
                 "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -956,10 +1067,10 @@ class Games2048BoardTask:
 
         answer_gt = (
             TypedValue(type="string", value=str(sampled_scene.answer))
-            if str(axes.query_id) == "best_move_label"
+            if str(axes.query_id) == "move_result_board_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         filled_count = sum(1 for row in sampled_scene.board for value in row if int(value) != EMPTY)
         complexity = build_games_2048_board_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -969,7 +1080,7 @@ class Games2048BoardTask:
             filled_count=int(filled_count),
             merge_count=int(len(sampled_scene.move_result.merge_pairs)),
             target_answer=sampled_scene.answer,
-            evidence_count=len(sampled_scene.evidence_cell_ids),
+            annotation_count=len(sampled_scene.annotation_cell_ids),
         )
         trace_payload = {
             "scene_ir": {
@@ -980,8 +1091,8 @@ class Games2048BoardTask:
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "move_direction": str(sampled_scene.move_direction),
-                    "goal_cell": None if sampled_scene.goal_cell is None else [int(sampled_scene.goal_cell[0]), int(sampled_scene.goal_cell[1])],
-                    "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_cell_ids],
+                    "result_option_labels": [str(label) for label in sampled_scene.result_option_boards.keys()],
+                    "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_cell_ids],
                 },
             },
             "query_spec": {
@@ -995,19 +1106,21 @@ class Games2048BoardTask:
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "move_direction": str(sampled_scene.move_direction),
-                    "goal_cell": str(axes.goal_cell_name),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "move_direction_probabilities": dict(axes.move_direction_probabilities),
-                    "goal_cell_probabilities": dict(axes.goal_cell_probabilities),
                     "target_answer": axes.target_answer,
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
                     "target_label": axes.target_label,
                     "target_label_support": [str(value) for value in axes.target_label_support],
                     "target_label_probabilities": dict(axes.target_label_probabilities),
+                    "result_board_option_count": int(axes.result_board_option_count),
+                    "result_board_option_count_support": [int(value) for value in axes.result_board_option_count_support],
+                    "result_board_option_count_probabilities": dict(axes.result_board_option_count_probabilities),
                     "filled_count": int(filled_count),
+                    "result_option_count": int(len(sampled_scene.result_option_boards)),
                 },
             },
             "render_spec": {
@@ -1027,23 +1140,25 @@ class Games2048BoardTask:
                 "style_variant": str(axes.style_variant),
                 "board_before": [[int(value) for value in row] for row in sampled_scene.board],
                 "move_direction": str(sampled_scene.move_direction),
-                "move_label_by_direction": dict(sampled_scene.move_label_by_direction),
-                "goal_cell": None if sampled_scene.goal_cell is None else [int(sampled_scene.goal_cell[0]), int(sampled_scene.goal_cell[1])],
                 "move_result": _move_result_trace(sampled_scene.move_result),
                 "all_move_results": {
                     str(direction): _move_result_trace(result)
                     for direction, result in sampled_scene.all_move_results.items()
                 },
+                "result_option_boards": {
+                    str(label): [[int(value) for value in row] for row in option_board]
+                    for label, option_board in sampled_scene.result_option_boards.items()
+                },
                 "answer": sampled_scene.answer,
-                "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_cell_ids],
+                "annotation_entity_ids": [str(entity_id) for entity_id in sampled_scene.annotation_cell_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
                 "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_cell_ids],
+                "ids": [str(entity_id) for entity_id in sampled_scene.annotation_cell_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            "projected_annotation": {
+                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1052,7 +1167,7 @@ class Games2048BoardTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1063,12 +1178,8 @@ class Games2048BoardTask:
         )
 
 
-@register_task
-class Games2048MoveResultValueTask(Games2048BoardTask):
-    """Answer integer questions about one shown 2048 move."""
-
-    task_id = "task_games__2048__move_result_value"
-    supported_query_ids = MOVE_RESULT_QUERY_IDS
+class _Games2048SingleMoveValueTask(Games2048BoardTask):
+    """Shared wrapper for one integer-valued 2048 move-result query."""
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
@@ -1086,16 +1197,54 @@ class Games2048MoveResultValueTask(Games2048BoardTask):
 
 
 @register_task
-class Games2048BestMoveLabelTask(FixedQueryVariantTaskMixin, Games2048BoardTask):
-    """Choose the labeled 2048 move that maximizes the outlined goal-cell value."""
+class Games2048MergeCountTask(_Games2048SingleMoveValueTask):
+    """Count merges made by one shown 2048 move."""
 
-    task_id = "task_games__2048__best_move_label"
-    fixed_query_id = "best_move_label"
-    supported_query_ids = ("best_move_label",)
+    task_id = "task_games__2048__merge_count"
+    supported_query_ids = ("merge_count",)
+
+
+@register_task
+class Games2048ScoreValueTask(_Games2048SingleMoveValueTask):
+    """Compute the move score from one shown 2048 move."""
+
+    task_id = "task_games__2048__score_value"
+    supported_query_ids = ("score_value",)
+
+
+@register_task
+class Games2048MaxTileValueTask(_Games2048SingleMoveValueTask):
+    """Return the largest tile value after one shown 2048 move."""
+
+    task_id = "task_games__2048__max_tile_value"
+    supported_query_ids = ("max_tile_value",)
+
+
+@register_task
+class Games2048MoveResultBoardLabelTask(FixedQueryVariantTaskMixin, Games2048BoardTask):
+    """Choose the labeled candidate board matching one shown 2048 move result."""
+
+    task_id = "task_games__2048__move_result_board_label"
+    fixed_query_id = "move_result_board_label"
+    supported_query_ids = ("move_result_board_label",)
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        render_params = {
+            "dynamic_canvas_size_enabled": False,
+            "canvas_width": 900,
+            "canvas_height": 900,
+        }
+        return super().generate(
+            int(instance_seed),
+            params={**render_params, **dict(params)},
+            max_attempts=int(max_attempts),
+        )
 
 
 __all__ = [
-    "Games2048BestMoveLabelTask",
     "Games2048BoardTask",
-    "Games2048MoveResultValueTask",
+    "Games2048MaxTileValueTask",
+    "Games2048MergeCountTask",
+    "Games2048MoveResultBoardLabelTask",
+    "Games2048ScoreValueTask",
 ]

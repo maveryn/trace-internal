@@ -9,7 +9,7 @@ from trace.core.seed import hash64
 from trace.tasks import create_task
 
 
-TASK_ID = "task_icons__named_grid__line_condition_count"
+TASK_ID = "task_icons__named_grid__group_predicate_count"
 QUERY_IDS = (
     "row_at_least_shape_count",
     "column_at_least_shape_count",
@@ -73,8 +73,8 @@ def test_icons_counting_named_grid_row_at_least_contract_matches_scene() -> None
     assert out.query_id == "row_at_least_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 2
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "icons_named_grid_line_condition_count"
     assert execution["question_format"] == "count_grid_lines_satisfying_named_shape_count_condition"
     assert str(execution["queried_axis"]) == "row"
@@ -83,10 +83,10 @@ def test_icons_counting_named_grid_row_at_least_contract_matches_scene() -> None
     assert counts == execution["row_target_counts"]
     assert qualifying_indices == execution["qualifying_line_indices"]
     assert len(qualifying_indices) == 2
-    assert sorted(out.evidence_gt.value) == expected_bboxes
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert sorted(out.annotation_gt.value) == expected_bboxes
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert "axis_label_stroke_rgb" in style
     assert style["text_legibility"]["required_role_count"] >= 2
@@ -120,7 +120,7 @@ def test_icons_counting_named_grid_column_no_contract_matches_scene() -> None:
 
     assert out.query_id == "column_no_shape_count"
     assert out.answer_gt.value == 2
-    assert len(out.evidence_gt.value) == 2
+    assert len(out.annotation_gt.value) == 2
     assert str(execution["queried_axis"]) == "column"
     assert str(execution["condition"]) == "none"
     assert int(execution["threshold"]) == 0
@@ -138,11 +138,11 @@ def test_icons_counting_named_grid_line_condition_prompt_example_matches_contrac
     )
     assert '"bell"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert isinstance(answer_and_evidence["evidence"], list)
-    assert answer_and_evidence["answer"] == 2
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert isinstance(answer_and_annotation["annotation"], list)
+    assert answer_and_annotation["answer"] == 2
 
 
 def test_icons_counting_named_grid_line_condition_sampling_distribution() -> None:
@@ -173,7 +173,7 @@ def test_icons_counting_named_grid_line_condition_sampling_distribution() -> Non
         assert 0 <= int(out.answer_gt.value) <= 5
         assert len(qualifying_indices) == int(out.answer_gt.value)
         assert qualifying_indices == execution["qualifying_line_indices"]
-        assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
         assert 4 <= int(execution["grid_rows"]) <= 6
         assert 4 <= int(execution["grid_cols"]) <= 6
         if condition == "at_least":

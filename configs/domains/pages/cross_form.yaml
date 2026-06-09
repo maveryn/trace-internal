@@ -5,7 +5,7 @@ complexity:
       reasoning_load: 0.34
       scene_variant_load: 0.24
   task_overrides:
-    task_pages__paired_forms__reconciliation_value:
+    pages_paired_forms_reconciliation_source:
       criteria_weights:
         visual_scan: 0.55
         reasoning_load: 0.4
@@ -19,7 +19,7 @@ rendering:
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 16
   task_overrides:
-    task_pages__paired_forms__reconciliation_value:
+    pages_paired_forms_reconciliation_source:
       canvas_width: 1392
       canvas_height: 848
       outer_margin_px: 36
@@ -246,7 +246,7 @@ visual:
         - 0.035
 generation:
   task_overrides:
-    task_pages__paired_forms__reconciliation_value:
+    pages_paired_forms_reconciliation_source:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       item_count_min: 6
@@ -271,18 +271,18 @@ prompt:
     bundle_id: pages_cross_form_v0
     answer_hint: set "answer" to the computed integer
   task_overrides:
-    task_pages__paired_forms__reconciliation_value:
+    pages_paired_forms_reconciliation_source:
       scene_key: cross_form_reconciliation
       task_key: reconciliation_value_query
       object_description_purchase_receipt_pair: two side-by-side business forms, a
         purchase order and a receiving slip, with matching item codes and visible
         quantities
-      evidence_hint_total_amount_delta: set "evidence" to an array of [x0, y0, x1, y1]
+      annotation_hint_total_amount_delta: set "annotation" to an array of [x0, y0, x1, y1]
         boxes for the full receiving-slip rows whose received quantity differs
         from the matching purchase-order quantity
-      evidence_hint_shortfall_minus_overage_value: set "evidence" to an array
+      annotation_hint_shortfall_minus_overage_value: set "annotation" to an array
         of [x0, y0, x1, y1] boxes for the full receiving-slip rows whose received
         quantity differs from the matching purchase-order quantity
-      evidence_hint_sum_absolute_quantity_differences: set "evidence" to an array
+      annotation_hint_sum_absolute_quantity_differences: set "annotation" to an array
         of [x0, y0, x1, y1] boxes for the full receiving-slip rows whose received
         quantity differs from the matching purchase-order quantity

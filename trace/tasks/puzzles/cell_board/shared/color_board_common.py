@@ -13,7 +13,7 @@ from .named_color_board import (
     sample_color_board,
 )
 from .grid_graph import connected_components_for_active_coords
-from .tile_evidence import sort_coords_row_major
+from .tile_annotation import sort_coords_row_major
 
 
 def build_color_component_catalog(

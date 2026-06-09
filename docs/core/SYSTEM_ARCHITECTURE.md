@@ -21,7 +21,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - public taxonomy resolution (`domain -> scene_id -> task_id`) with source `task_group` retained for configs,
    - prompt rendering,
    - image rendering + visual variation,
-   - reward-contract resolution from public answer/evidence types,
+   - reward-contract resolution from public answer/annotation types,
    - trace write,
    - train-record write with `trace_ref`.
 4. Optional strict-repro second pass + compare.
@@ -35,13 +35,13 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/core/canonical.py` + `trace/core/hash_utils.py` — canonical hashing.
 3. `trace/core/seed.py` — seed derivation/spawn helpers.
 4. `trace/core/identity.py` — `instance_id` computation.
-5. `trace/core/type_registry.py` — answer/evidence type checks.
+5. `trace/core/type_registry.py` — answer/annotation type checks.
 6. `trace/core/trace_store.py` — sidecar trace shard I/O.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
 8. `trace/core/builder.py` — build orchestration, including deterministic multi-process generation when `BuildConfig.workers > 1`.
 9. `trace/core/build_presets.py` — reusable build recipes, including equal-split all-task configs for training datasets.
 10. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
-11. `trace/core/reward_scoring.py` — shared TRACE answer/evidence reward scoring used by RLVR adapters.
+11. `trace/core/reward_scoring.py` — shared TRACE answer/annotation reward scoring used by RLVR adapters.
 12. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
 13. `trace/core/taxonomy.py` — public domain/scene mapping plus implementation/config/prompt routing metadata.
 14. `trace/core/strict_repro.py` — strict reproducibility comparisons.
@@ -61,7 +61,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 ### Task framework
 1. `trace/tasks/registry.py` — registration and creation.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
-3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
+3. `trace/tasks/shared/*` — reusable query/layout/annotation/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); `puzzles/cell_board` keeps scene-specific internals under `trace/tasks/puzzles/cell_board/`.
 5. `trace/tasks/<domain>/shared/*` — domain/scene shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/pages/shared/*` plus `trace/tasks/puzzles/shared/*` for page and puzzle scene renderers, `trace/tasks/shared/time_artifact_*.py` for reusable clock/calendar/schedule/timeline plumbing, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers/Darts rendering, rule helpers, styling, sampling, complexity, and visual defaults).
 
@@ -84,7 +84,7 @@ generated inventory instead of duplicating task lists here.
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.
 3. Public records expose `domain`, `scene_id`, and `task`; source `task_group` remains readable during the taxonomy transition.
-4. Answer/evidence/witness are consistent from one execution trace.
+4. Answer/annotation/witness are consistent from one execution trace.
 5. Shared helpers are reused before adding task-local utilities.
 6. Builder parallelism changes throughput only; dataset identity and finalized row ordering stay invariant for fixed build-critical config.
 

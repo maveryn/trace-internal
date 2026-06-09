@@ -12,8 +12,8 @@ Status: accepted active default cell-board puzzle task.
 ## Contract
 1. Objective: count cells that violate the board's mirror-symmetry rule.
 2. `answer_gt.type`: `integer`
-3. `evidence_gt.type`: `point_set`
-4. Evidence contains tile-center pixel points for violating cells.
+3. `annotation_gt.type`: `point_set`
+4. Annotation contains tile-center pixel points for violating cells.
 
 ## Notes
 1. Symmetry axes and paired cells are recorded in private trace metadata.

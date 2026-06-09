@@ -454,7 +454,7 @@ def render_snake_grid_scene(
 
     for row, col in all_coords(board_size):
         full_bbox = _cell_bbox(board_left=board_left, board_top=board_top, cell_size=cell_size, row=row, col=col)
-        evidence_bbox = _cell_bbox(
+        annotation_bbox = _cell_bbox(
             board_left=board_left,
             board_top=board_top,
             cell_size=cell_size,
@@ -466,7 +466,7 @@ def render_snake_grid_scene(
         if (int(row) + int(col)) % 2:
             draw.rectangle(full_bbox, fill=tuple(int(v) for v in theme.cell_alt_rgba))
         cell_id = coord_to_cell_id((row, col))
-        cell_bboxes_px[cell_id] = list(evidence_bbox)
+        cell_bboxes_px[cell_id] = list(annotation_bbox)
         piece_bboxes_px[cell_id] = list(piece_bbox)
         occupancy = "empty"
         if (row, col) == head:
@@ -484,7 +484,7 @@ def render_snake_grid_scene(
                 "row": int(row),
                 "col": int(col),
                 "occupancy": str(occupancy),
-                "bbox_px": list(evidence_bbox),
+                "bbox_px": list(annotation_bbox),
             }
         )
 
@@ -540,7 +540,7 @@ def render_snake_grid_scene(
         facing=facing,
     )
 
-    # Grid lines last, lightly, to keep empty-cell evidence boundaries clear.
+    # Grid lines last, lightly, to keep empty-cell annotation boundaries clear.
     for index in range(board_size + 1):
         x = float(board_left + (index * cell_size))
         y = float(board_top + (index * cell_size))

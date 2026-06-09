@@ -42,6 +42,7 @@ from ..shared.diagram_style import (
 from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_support
+from ..shared.vector_arrows import SEMANTIC_DIRECTION_VECTORS, arrow_bbox, centered_arrow_endpoints, draw_arrow_with_bbox
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
@@ -72,16 +73,7 @@ SUPPORTED_DIRECTIONS: Tuple[str, ...] = (
     "south",
     "southeast",
 )
-DIRECTION_VECTORS: Dict[str, Tuple[int, int]] = {
-    "east": (1, 0),
-    "northeast": (1, 1),
-    "north": (0, 1),
-    "northwest": (-1, 1),
-    "west": (-1, 0),
-    "southwest": (-1, -1),
-    "south": (0, -1),
-    "southeast": (1, -1),
-}
+DIRECTION_VECTORS: Dict[str, Tuple[int, int]] = dict(SEMANTIC_DIRECTION_VECTORS)
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 POINT_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 POTENTIAL_DISTANCE_UNITS: Tuple[int, ...] = (2, 3, 4)
@@ -224,19 +216,19 @@ class _SceneSpec:
     direction_scenario: _DirectionScenario | None
     zero_field_scenario: _ZeroFieldScenario | None
     potential_scenario: _PotentialScenario | None
-    evidence_entity_ids: Tuple[str, ...]
+    annotation_entity_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class _RenderedScene:
-    """Rendered electrostatics scene plus prompt-facing evidence metadata."""
+    """Rendered electrostatics scene plus prompt-facing annotation metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
-    evidence_points: List[List[float]]
-    evidence_point_map: Dict[str, List[float]]
-    evidence_entity_ids: List[str]
-    evidence_key_by_entity_id: Dict[str, str]
+    annotation_bboxes: List[List[float]]
+    annotation_points: List[List[float]]
+    annotation_point_map: Dict[str, List[float]]
+    annotation_entity_ids: List[str]
+    annotation_key_by_entity_id: Dict[str, str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -817,7 +809,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -
             direction_scenario=scenario,
             zero_field_scenario=None,
             potential_scenario=None,
-            evidence_entity_ids=("charge_main", "charge_cancel_a", "charge_cancel_b", "query_point"),
+            annotation_entity_ids=("charge_main", "charge_cancel_a", "charge_cancel_b", "query_point"),
         )
     if str(axes.query_id) == "zero_field_point_label":
         scenario = _sample_zero_field_scenario(rng, axes=axes)
@@ -831,7 +823,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -
             direction_scenario=None,
             zero_field_scenario=scenario,
             potential_scenario=None,
-            evidence_entity_ids=tuple(str(charge.charge_id) for charge in scenario.charges),
+            annotation_entity_ids=tuple(str(charge.charge_id) for charge in scenario.charges),
         )
     scenario = _sample_potential_scenario(rng, target_answer=int(axes.target_answer), params=params)
     return _SceneSpec(
@@ -844,19 +836,19 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -
         direction_scenario=None,
         zero_field_scenario=None,
         potential_scenario=scenario,
-        evidence_entity_ids=tuple(
+        annotation_entity_ids=tuple(
             [str(charge.charge_id) for charge in scenario.charges]
             + ["query_point"]
         ),
     )
 
 
-def _evidence_entity_key_map(scene_spec: _SceneSpec) -> Dict[str, str]:
-    """Return neutral visible evidence keys by rendered entity id."""
+def _annotation_entity_key_map(scene_spec: _SceneSpec) -> Dict[str, str]:
+    """Return neutral visible annotation keys by rendered entity id."""
 
     key_by_entity_id: Dict[str, str] = {}
     charge_index = 1
-    for entity_id in scene_spec.evidence_entity_ids:
+    for entity_id in scene_spec.annotation_entity_ids:
         if str(entity_id) == "query_point":
             key_by_entity_id[str(entity_id)] = "P"
         else:
@@ -903,7 +895,7 @@ def _resolve_electrostatics_layout_placement(
     instance_seed: int,
     query_id: str,
 ) -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """Resolve a whole-diagram offset before rendering and evidence projection."""
+    """Resolve a whole-diagram offset before rendering and annotation projection."""
 
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
@@ -996,14 +988,72 @@ def _point_bbox(center: Tuple[float, float], *, radius_px: float, padding_px: fl
     ]
 
 
-def _arrow_bbox(start: Tuple[float, float], end: Tuple[float, float], *, padding_px: float) -> List[float]:
-    """Return a conservative bbox for one arrow."""
+def _expand_bbox(bbox: Sequence[float], padding_px: float) -> List[float]:
+    """Return one bbox expanded by a constant pixel margin."""
 
     return [
-        round(float(min(float(start[0]), float(end[0])) - float(padding_px)), 3),
-        round(float(min(float(start[1]), float(end[1])) - float(padding_px)), 3),
-        round(float(max(float(start[0]), float(end[0])) + float(padding_px)), 3),
-        round(float(max(float(start[1]), float(end[1])) + float(padding_px)), 3),
+        round(float(bbox[0]) - float(padding_px), 3),
+        round(float(bbox[1]) - float(padding_px), 3),
+        round(float(bbox[2]) + float(padding_px), 3),
+        round(float(bbox[3]) + float(padding_px), 3),
+    ]
+
+
+def _bbox_overlaps(left: Sequence[float], right: Sequence[float]) -> bool:
+    """Return whether two axis-aligned bboxes overlap."""
+
+    return not (
+        float(left[2]) <= float(right[0])
+        or float(left[0]) >= float(right[2])
+        or float(left[3]) <= float(right[1])
+        or float(left[1]) >= float(right[3])
+    )
+
+
+def _bbox_intersection_area(left: Sequence[float], right: Sequence[float]) -> float:
+    """Return the positive intersection area between two bboxes."""
+
+    x0 = max(float(left[0]), float(right[0]))
+    y0 = max(float(left[1]), float(right[1]))
+    x1 = min(float(left[2]), float(right[2]))
+    y1 = min(float(left[3]), float(right[3]))
+    if x1 <= x0 or y1 <= y0:
+        return 0.0
+    return float((x1 - x0) * (y1 - y0))
+
+
+def _bbox_inside(inner: Sequence[float], outer: Sequence[float], padding_px: float = 0.0) -> bool:
+    """Return whether one bbox stays inside another with optional margin."""
+
+    return (
+        float(inner[0]) >= float(outer[0]) + float(padding_px)
+        and float(inner[1]) >= float(outer[1]) + float(padding_px)
+        and float(inner[2]) <= float(outer[2]) - float(padding_px)
+        and float(inner[3]) <= float(outer[3]) - float(padding_px)
+    )
+
+
+def _text_tag_bbox(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    center: Tuple[float, float],
+    font,
+    stroke_width_px: int,
+) -> List[float]:
+    """Return the outer bbox for one rounded text tag before drawing it."""
+
+    text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width_px)))
+    text_width = float(text_bbox[2] - text_bbox[0])
+    text_height = float(text_bbox[3] - text_bbox[1])
+    pad_x = 11.0
+    pad_y = 7.0
+    center_x, center_y = float(center[0]), float(center[1])
+    return [
+        round(float(center_x - (0.5 * text_width) - pad_x), 3),
+        round(float(center_y - (0.5 * text_height) - pad_y), 3),
+        round(float(center_x + (0.5 * text_width) + pad_x), 3),
+        round(float(center_y + (0.5 * text_height) + pad_y), 3),
     ]
 
 
@@ -1020,18 +1070,8 @@ def _draw_text_tag(
 ) -> List[float]:
     """Draw one rounded text tag and return its outer bbox."""
 
-    text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width_px)))
-    text_width = float(text_bbox[2] - text_bbox[0])
-    text_height = float(text_bbox[3] - text_bbox[1])
-    pad_x = 11.0
-    pad_y = 7.0
     center_x, center_y = float(center[0]), float(center[1])
-    tag_bbox = [
-        round(float(center_x - (0.5 * text_width) - pad_x), 3),
-        round(float(center_y - (0.5 * text_height) - pad_y), 3),
-        round(float(center_x + (0.5 * text_width) + pad_x), 3),
-        round(float(center_y + (0.5 * text_height) + pad_y), 3),
-    ]
+    tag_bbox = _text_tag_bbox(draw, text=str(text), center=(center_x, center_y), font=font, stroke_width_px=int(stroke_width_px))
     draw_rounded_rect(
         draw,
         tuple(float(value) for value in tag_bbox),
@@ -1240,6 +1280,112 @@ def _draw_charge(
     return entity, list(entity_bbox)
 
 
+def _choose_point_label_center(
+    draw: ImageDraw.ImageDraw,
+    *,
+    marker_center: Tuple[float, float],
+    label: str,
+    font,
+    board_bbox: Sequence[float],
+    avoid_bboxes: Sequence[Sequence[float]],
+    stroke_width_px: int,
+) -> Tuple[Tuple[float, float], List[float]]:
+    """Choose a point-label location that avoids nearby charge/candidate labels."""
+
+    offsets = (
+        (24.0, -22.0),
+        (-24.0, -22.0),
+        (24.0, 24.0),
+        (-24.0, 24.0),
+        (0.0, -38.0),
+        (0.0, 38.0),
+        (40.0, 0.0),
+        (-40.0, 0.0),
+        (0.0, -64.0),
+        (0.0, 64.0),
+        (62.0, -42.0),
+        (-62.0, -42.0),
+        (62.0, 42.0),
+        (-62.0, 42.0),
+        (88.0, 0.0),
+        (-88.0, 0.0),
+        (120.0, 0.0),
+        (-120.0, 0.0),
+        (120.0, -42.0),
+        (-120.0, -42.0),
+        (120.0, 42.0),
+        (-120.0, 42.0),
+    )
+    expanded_avoid = [_expand_bbox(bbox, 8.0) for bbox in avoid_bboxes]
+    fallback_center = (float(marker_center[0] + offsets[0][0]), float(marker_center[1] + offsets[0][1]))
+    fallback_bbox = _text_tag_bbox(draw, text=str(label), center=fallback_center, font=font, stroke_width_px=int(stroke_width_px))
+    best_score = float("inf")
+    for dx, dy in offsets:
+        center = (float(marker_center[0] + float(dx)), float(marker_center[1] + float(dy)))
+        label_bbox = _text_tag_bbox(draw, text=str(label), center=center, font=font, stroke_width_px=int(stroke_width_px))
+        if not _bbox_inside(label_bbox, board_bbox, padding_px=4.0):
+            continue
+        expanded_label = _expand_bbox(label_bbox, 2.0)
+        overlap_score = sum(_bbox_intersection_area(expanded_label, avoid) for avoid in expanded_avoid)
+        if overlap_score < best_score:
+            best_score = float(overlap_score)
+            fallback_center = center
+            fallback_bbox = list(label_bbox)
+        if any(_bbox_overlaps(expanded_label, avoid) for avoid in expanded_avoid):
+            continue
+        return center, label_bbox
+    return fallback_center, fallback_bbox
+
+
+def _draw_point_marker_with_label_bbox(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: Sequence[float],
+    coord_extent: int,
+    x: int,
+    y: int,
+    label: str,
+    render_defaults: Mapping[str, Any],
+    theme,
+    point_font,
+    target: bool,
+    avoid_bboxes: Sequence[Sequence[float]] = (),
+) -> Tuple[List[float], List[float]]:
+    """Draw a labeled point marker and return full and label bboxes."""
+
+    center = _coord_to_px(bbox=bbox, x=int(x), y=int(y), coord_extent=int(coord_extent))
+    radius = float(render_defaults["point_radius_px"]) + (4.0 if bool(target) else 0.0)
+    fill_rgb = theme.target_fill_rgb if bool(target) else theme.point_fill_rgb
+    outline_rgb = theme.target_outline_rgb if bool(target) else theme.point_outline_rgb
+    circle_bbox = _point_bbox(center, radius_px=radius)
+    draw.ellipse(
+        tuple(float(value) for value in circle_bbox),
+        fill=tuple(int(value) for value in fill_rgb),
+        outline=tuple(int(value) for value in outline_rgb),
+        width=3,
+    )
+    label_center, _ = _choose_point_label_center(
+        draw,
+        marker_center=center,
+        label=str(label),
+        font=point_font,
+        board_bbox=bbox,
+        avoid_bboxes=avoid_bboxes,
+        stroke_width_px=2,
+    )
+    label_bbox = _draw_text_tag(
+        draw,
+        text=str(label),
+        center=label_center,
+        font=point_font,
+        fill_rgb=tuple(int(value) for value in theme.label_fill_rgb),
+        outline_rgb=tuple(int(value) for value in outline_rgb),
+        text_rgb=tuple(int(value) for value in theme.point_text_rgb),
+        stroke_width_px=2,
+    )
+    return list(_bbox_union(circle_bbox, label_bbox)), list(label_bbox)
+
+
 def _draw_point_marker(
     draw: ImageDraw.ImageDraw,
     *,
@@ -1255,28 +1401,19 @@ def _draw_point_marker(
 ) -> List[float]:
     """Draw a labeled point marker and return its bbox."""
 
-    center = _coord_to_px(bbox=bbox, x=int(x), y=int(y), coord_extent=int(coord_extent))
-    radius = float(render_defaults["point_radius_px"]) + (4.0 if bool(target) else 0.0)
-    fill_rgb = theme.target_fill_rgb if bool(target) else theme.point_fill_rgb
-    outline_rgb = theme.target_outline_rgb if bool(target) else theme.point_outline_rgb
-    circle_bbox = _point_bbox(center, radius_px=radius)
-    draw.ellipse(
-        tuple(float(value) for value in circle_bbox),
-        fill=tuple(int(value) for value in fill_rgb),
-        outline=tuple(int(value) for value in outline_rgb),
-        width=3,
-    )
-    label_bbox = _draw_text_tag(
+    point_bbox, _ = _draw_point_marker_with_label_bbox(
         draw,
-        text=str(label),
-        center=(float(center[0] + 24.0), float(center[1] - 22.0)),
-        font=point_font,
-        fill_rgb=tuple(int(value) for value in theme.label_fill_rgb),
-        outline_rgb=tuple(int(value) for value in outline_rgb),
-        text_rgb=tuple(int(value) for value in theme.point_text_rgb),
-        stroke_width_px=2,
+        bbox=bbox,
+        coord_extent=int(coord_extent),
+        x=int(x),
+        y=int(y),
+        label=str(label),
+        render_defaults=render_defaults,
+        theme=theme,
+        point_font=point_font,
+        target=bool(target),
     )
-    return list(_bbox_union(circle_bbox, label_bbox))
+    return list(point_bbox)
 
 
 def _draw_direction_options(
@@ -1316,14 +1453,17 @@ def _draw_direction_options(
             width=2,
         )
         direction = str(scenario.option_directions[str(letter)])
-        dx, dy = DIRECTION_VECTORS[str(direction)]
         length = float(render_defaults["option_arrow_length_px"])
-        norm = max(1.0, math.hypot(float(dx), float(dy)))
         cx = float((cell_bbox[0] + cell_bbox[2]) / 2.0 + 14.0)
         cy = float((cell_bbox[1] + cell_bbox[3]) / 2.0 + 8.0)
-        start = (float(cx - (dx / norm) * length * 0.42), float(cy + (dy / norm) * length * 0.42))
-        end = (float(cx + (dx / norm) * length * 0.42), float(cy - (dy / norm) * length * 0.42))
-        draw_arrow(
+        start, end = centered_arrow_endpoints(
+            (cx, cy),
+            direction=direction,
+            length_px=length,
+            direction_vectors=DIRECTION_VECTORS,
+            half_fraction=0.42,
+        )
+        arrow_bbox_value = draw_arrow_with_bbox(
             draw,
             start=start,
             end=end,
@@ -1331,8 +1471,8 @@ def _draw_direction_options(
             width=int(render_defaults["option_arrow_width_px"]),
             head_length_px=float(render_defaults["option_arrow_head_length_px"]),
             head_width_px=float(render_defaults["option_arrow_head_width_px"]),
+            padding_px=22.0,
         )
-        arrow_bbox = _arrow_bbox(start, end, padding_px=22.0)
         label_bbox = draw_centered_text(
             draw,
             text=str(letter),
@@ -1342,7 +1482,7 @@ def _draw_direction_options(
             stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.axis_text_rgb)),
             stroke_width=1,
         )
-        option_bbox = _bbox_union(cell_bbox, label_bbox, arrow_bbox)
+        option_bbox = _bbox_union(cell_bbox, label_bbox, arrow_bbox_value)
         option_bboxes[str(letter)] = list(option_bbox)
         option_directions[str(letter)] = str(direction)
         entities.append(
@@ -1383,7 +1523,7 @@ def _draw_distance_label(
         dash_px=10.0,
         gap_px=6.0,
     )
-    guide_bbox = _arrow_bbox(start, end, padding_px=6.0)
+    guide_bbox = arrow_bbox(start, end, padding_px=6.0)
     mid = (float((start[0] + end[0]) / 2.0), float((start[1] + end[1]) / 2.0))
     dx = float(end[0] - start[0])
     dy = float(end[1] - start[1])
@@ -1451,7 +1591,7 @@ def _render_scene(
         "technical_diagram_frame_mode": str(diagram_style.frame_mode),
     }
     coord_extent = int(render_defaults["coord_extent"])
-    evidence_key_by_entity_id = _evidence_entity_key_map(scene_spec)
+    annotation_key_by_entity_id = _annotation_entity_key_map(scene_spec)
 
     if str(scene_spec.query_id) == "field_direction_choice":
         if scene_spec.direction_scenario is None:
@@ -1464,7 +1604,7 @@ def _render_scene(
                 bbox=board,
                 coord_extent=coord_extent,
                 charge=charge,
-                display_label=str(evidence_key_by_entity_id[str(charge.charge_id)]),
+                display_label=str(annotation_key_by_entity_id[str(charge.charge_id)]),
                 render_defaults=render_defaults,
                 theme=theme,
                 charge_font=charge_font,
@@ -1515,13 +1655,15 @@ def _render_scene(
             raise ValueError("zero_field_point_label render requires a zero-field scenario")
         scenario = scene_spec.zero_field_scenario
         charge_bboxes = []
+        avoid_bboxes: List[List[float]] = []
+        charge_label_bboxes: List[List[float]] = []
         for charge in scenario.charges:
             entity, charge_bbox = _draw_charge(
                 draw,
                 bbox=board,
                 coord_extent=coord_extent,
                 charge=charge,
-                display_label=str(evidence_key_by_entity_id[str(charge.charge_id)]),
+                display_label=str(annotation_key_by_entity_id[str(charge.charge_id)]),
                 render_defaults=render_defaults,
                 theme=theme,
                 charge_font=charge_font,
@@ -1529,10 +1671,15 @@ def _render_scene(
             )
             scene_entities.append(entity)
             charge_bboxes.append(list(charge_bbox))
+            avoid_bboxes.append(list(charge_bbox))
+            label_bbox = entity.get("meta", {}).get("charge_label_bbox_px", [])
+            if isinstance(label_bbox, Sequence) and len(label_bbox) == 4:
+                charge_label_bboxes.append([float(value) for value in label_bbox])
         candidate_bboxes: Dict[str, List[float]] = {}
+        candidate_label_bboxes: Dict[str, List[float]] = {}
         for point in scenario.candidate_points:
             point_center = _coord_to_px(bbox=board, x=int(point.x), y=int(point.y), coord_extent=coord_extent)
-            point_bbox = _draw_point_marker(
+            point_bbox, point_label_bbox = _draw_point_marker_with_label_bbox(
                 draw,
                 bbox=board,
                 coord_extent=coord_extent,
@@ -1543,8 +1690,11 @@ def _render_scene(
                 theme=theme,
                 point_font=option_font,
                 target=False,
+                avoid_bboxes=avoid_bboxes,
             )
             candidate_bboxes[str(point.letter)] = list(point_bbox)
+            candidate_label_bboxes[str(point.letter)] = list(point_label_bbox)
+            avoid_bboxes.append(list(point_bbox))
             scene_entities.append(
                 {
                     "entity_id": f"candidate_{str(point.letter)}",
@@ -1561,7 +1711,9 @@ def _render_scene(
             )
         render_map.update(board_meta)
         render_map["charge_bboxes_px"] = [list(bbox) for bbox in charge_bboxes]
+        render_map["charge_label_bboxes_px"] = [list(bbox) for bbox in charge_label_bboxes]
         render_map["candidate_point_bboxes_px"] = {key: list(value) for key, value in candidate_bboxes.items()}
+        render_map["candidate_label_bboxes_px"] = {key: list(value) for key, value in candidate_label_bboxes.items()}
     else:
         if scene_spec.potential_scenario is None:
             raise ValueError("potential_value render requires a potential scenario")
@@ -1618,7 +1770,7 @@ def _render_scene(
                 bbox=board,
                 coord_extent=coord_extent,
                 charge=charge,
-                display_label=str(evidence_key_by_entity_id[str(charge.charge_id)]),
+                display_label=str(annotation_key_by_entity_id[str(charge.charge_id)]),
                 render_defaults=render_defaults,
                 theme=theme,
                 charge_font=charge_font,
@@ -1676,28 +1828,28 @@ def _render_scene(
         for entity in scene_entities
         if "center_px" in entity.get("meta", {})
     }
-    evidence_bboxes: List[List[float]] = []
-    evidence_points: List[List[float]] = []
-    evidence_point_map: Dict[str, List[float]] = {}
-    for entity_id in scene_spec.evidence_entity_ids:
+    annotation_bboxes: List[List[float]] = []
+    annotation_points: List[List[float]] = []
+    annotation_point_map: Dict[str, List[float]] = {}
+    for entity_id in scene_spec.annotation_entity_ids:
         entity_key = str(entity_id)
         if entity_key not in entity_bbox_map or entity_key not in entity_point_map:
-            raise ValueError(f"missing electrostatics evidence projection for entity {entity_key!r}")
-        evidence_key = str(evidence_key_by_entity_id[entity_key])
-        evidence_bboxes.append(list(entity_bbox_map[entity_key]))
-        evidence_points.append(list(entity_point_map[entity_key]))
-        evidence_point_map[evidence_key] = list(entity_point_map[entity_key])
-    render_map["evidence_entity_ids"] = list(scene_spec.evidence_entity_ids)
-    render_map["evidence_key_by_entity_id"] = dict(evidence_key_by_entity_id)
-    render_map["evidence_points_px"] = [list(point) for point in evidence_points]
-    render_map["evidence_keyed_points_px"] = {str(key): list(point) for key, point in evidence_point_map.items()}
+            raise ValueError(f"missing electrostatics annotation projection for entity {entity_key!r}")
+        annotation_key = str(annotation_key_by_entity_id[entity_key])
+        annotation_bboxes.append(list(entity_bbox_map[entity_key]))
+        annotation_points.append(list(entity_point_map[entity_key]))
+        annotation_point_map[annotation_key] = list(entity_point_map[entity_key])
+    render_map["annotation_entity_ids"] = list(scene_spec.annotation_entity_ids)
+    render_map["annotation_key_by_entity_id"] = dict(annotation_key_by_entity_id)
+    render_map["annotation_points_px"] = [list(point) for point in annotation_points]
+    render_map["annotation_keyed_points_px"] = {str(key): list(point) for key, point in annotation_point_map.items()}
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
-        evidence_points=[list(point) for point in evidence_points],
-        evidence_point_map={str(key): list(point) for key, point in evidence_point_map.items()},
-        evidence_entity_ids=list(scene_spec.evidence_entity_ids),
-        evidence_key_by_entity_id={str(key): str(value) for key, value in evidence_key_by_entity_id.items()},
+        annotation_bboxes=[list(bbox) for bbox in annotation_bboxes],
+        annotation_points=[list(point) for point in annotation_points],
+        annotation_point_map={str(key): list(point) for key, point in annotation_point_map.items()},
+        annotation_entity_ids=list(scene_spec.annotation_entity_ids),
+        annotation_key_by_entity_id={str(key): str(value) for key, value in annotation_key_by_entity_id.items()},
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -1716,7 +1868,7 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "field_direction_choice":
         return build_prompt_json_examples(
-            evidence_value={
+            annotation_value={
                 "Q1": [210, 308],
                 "Q2": [496, 194],
                 "Q3": [496, 446],
@@ -1726,14 +1878,14 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
         )
     if str(query_id) == "zero_field_point_label":
         return build_prompt_json_examples(
-            evidence_value={
+            annotation_value={
                 "Q1": [270, 330],
                 "Q2": [540, 330],
             },
             answer_type="option_letter",
         )
     return build_prompt_json_examples(
-        evidence_value={
+        annotation_value={
             "Q1": [592, 330],
             "Q2": [428, 164],
             "Q3": [126, 330],
@@ -1892,9 +2044,9 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "answer_hint_field_direction_choice",
                     "answer_hint_zero_field_point_label",
                     "answer_hint_potential_value",
-                    "evidence_hint_field_direction_choice",
-                    "evidence_hint_zero_field_point_label",
-                    "evidence_hint_potential_value",
+                    "annotation_hint_field_direction_choice",
+                    "annotation_hint_zero_field_point_label",
+                    "annotation_hint_potential_value",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -1906,7 +2058,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
                 query_key=str(axes.query_id),
-                answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+                answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": _object_description_for_query(
                         prompt_defaults,
@@ -1918,7 +2070,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(axes.query_id)}"]),
                     "direction_mode_phrase": _direction_mode_phrase(axes.direction_mode),
                 },
                 instance_seed=int(instance_seed),
@@ -1933,9 +2085,9 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
             else:
                 answer_value = str(scene_spec.correct_option_letter)
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(
+            annotation_gt = TypedValue(
                 type="keyed_point_map",
-                value={str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()},
+                value={str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()},
             )
 
             charge_count = 0
@@ -1959,7 +2111,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 charge_count=int(charge_count),
                 option_count=int(option_count),
                 target_answer_magnitude=int(answer_magnitude),
-                evidence_count=len(rendered_scene.evidence_points),
+                annotation_count=len(rendered_scene.annotation_points),
             )
 
             direction_payload: Dict[str, Any] = {}
@@ -1968,7 +2120,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "charges": [
                         {
                             "charge_id": str(charge.charge_id),
-                            "display_label": str(rendered_scene.evidence_key_by_entity_id.get(str(charge.charge_id), "")),
+                            "display_label": str(rendered_scene.annotation_key_by_entity_id.get(str(charge.charge_id), "")),
                             "charge_value": int(charge.charge_value),
                             "x": int(charge.x),
                             "y": int(charge.y),
@@ -1986,7 +2138,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "charges": [
                         {
                             "charge_id": str(charge.charge_id),
-                            "display_label": str(rendered_scene.evidence_key_by_entity_id.get(str(charge.charge_id), "")),
+                            "display_label": str(rendered_scene.annotation_key_by_entity_id.get(str(charge.charge_id), "")),
                             "charge_value": int(charge.charge_value),
                             "x": int(charge.x),
                             "y": int(charge.y),
@@ -2012,7 +2164,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "charges": [
                         {
                             "charge_id": str(charge.charge_id),
-                            "display_label": str(rendered_scene.evidence_key_by_entity_id.get(str(charge.charge_id), "")),
+                            "display_label": str(rendered_scene.annotation_key_by_entity_id.get(str(charge.charge_id), "")),
                             "charge_value": int(charge.charge_value),
                             "distance_units": int(charge.distance_units),
                             "potential_contribution": int(charge.contribution),
@@ -2041,8 +2193,8 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                         "direction_scenario": dict(direction_payload),
                         "zero_field_scenario": dict(zero_payload),
                         "potential_scenario": dict(potential_payload),
-                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                        "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
+                        "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                        "annotation_key_by_entity_id": dict(rendered_scene.annotation_key_by_entity_id),
                     },
                 },
                 "query_spec": {
@@ -2108,19 +2260,19 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "zero_field_scenario": dict(zero_payload),
                     "potential_scenario": dict(potential_payload),
                     "correct_option_letter": scene_spec.correct_option_letter,
-                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
-                    "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
+                    "annotation_entity_ids": list(rendered_scene.annotation_entity_ids),
+                    "annotation_key_by_entity_id": dict(rendered_scene.annotation_key_by_entity_id),
                 },
                 "witness_symbolic": {
                     "type": "object_key_map",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
-                    "keys": dict(rendered_scene.evidence_key_by_entity_id),
+                    "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
+                    "keys": dict(rendered_scene.annotation_key_by_entity_id),
                 },
-                "projected_evidence": {
+                "projected_annotation": {
                     "type": "keyed_point_map",
-                    "keyed_point_map": {str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()},
+                    "keyed_point_map": {str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()},
                     "pixel_keyed_point_map": {
-                        str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()
+                        str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()
                     },
                 },
                 "background": background_meta,
@@ -2131,7 +2283,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
                 answer_gt=answer_gt,
-                evidence_gt=evidence_gt,
+                annotation_gt=annotation_gt,
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,

@@ -6,10 +6,13 @@ import random
 
 from trace.tasks.charts.shared.label_assets import (
     CHART_CATEGORY_LABEL_BUCKET_MANIFESTS,
+    CHART_PANEL_LABEL_BUCKET_MANIFESTS,
     resolve_chart_category_labels,
     resolve_chart_compact_axis_labels,
     resolve_chart_entity_labels,
+    resolve_chart_panel_labels,
     resolve_chart_text_labels,
+    validate_chart_label_namespaces,
 )
 from trace.tasks.shared.name_assets import load_label_manifest
 
@@ -67,3 +70,68 @@ def test_chart_compact_axis_labels_use_large_synthetic_pool() -> None:
     assert resolved.label_bucket == "dense_axis_compact_id"
     assert all(2 <= len(label) <= 4 for label in resolved.labels)
     assert all(label.isascii() and label.isalnum() for label in resolved.labels)
+
+
+def test_chart_panel_labels_use_technical_manifest_and_reserved_filter() -> None:
+    resolved = resolve_chart_panel_labels(
+        random.Random(41),
+        count=8,
+        min_chars=3,
+        max_chars=14,
+        allow_spaces=False,
+        variant_weights={"technical_topics": 1.0},
+        reserved_labels=("Ablation", "Latency", "Recall"),
+    )
+
+    technical_terms = set(
+        load_label_manifest(
+            CHART_PANEL_LABEL_BUCKET_MANIFESTS["technical_topics"],
+            min_chars=3,
+            max_chars=14,
+            allow_spaces=False,
+            allow_punctuation=False,
+            compact_length=True,
+        )
+    )
+    assert resolved.label_pool_kind == "panel"
+    assert resolved.label_bucket == "technical_topics"
+    assert resolved.label_manifest == CHART_PANEL_LABEL_BUCKET_MANIFESTS["technical_topics"]
+    assert len(resolved.labels) == 8
+    assert len(set(resolved.labels)) == 8
+    assert set(resolved.labels).issubset(technical_terms)
+    assert {"Ablation", "Latency", "Recall"}.isdisjoint(set(resolved.labels))
+
+
+def test_chart_panel_labels_can_emit_ordered_temporal_sequence() -> None:
+    resolved = resolve_chart_panel_labels(
+        random.Random(43),
+        count=5,
+        min_chars=4,
+        max_chars=6,
+        allow_spaces=False,
+        variant_weights={"temporal_sequence": 1.0},
+    )
+
+    assert resolved.label_bucket == "temporal_sequence"
+    assert resolved.label_source_kind == "synthetic_temporal_sequence"
+    assert len(resolved.labels) == 5
+    assert len(set(resolved.labels)) == 5
+
+
+def test_chart_panel_label_namespace_validator_rejects_collisions() -> None:
+    validate_chart_label_namespaces(
+        panel_labels=("Alpha", "Beta"),
+        other_label_groups={"series": ("Gamma", "Delta")},
+        context="unit_test",
+    )
+
+    try:
+        validate_chart_label_namespaces(
+            panel_labels=("Alpha", "Beta"),
+            other_label_groups={"series": (" alpha ",)},
+            context="unit_test",
+        )
+    except ValueError as exc:
+        assert "collide" in str(exc)
+    else:
+        raise AssertionError("expected panel-label collision to raise")

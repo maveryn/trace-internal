@@ -4,6 +4,7 @@ generation:
       square_grid: 1.0
     query_id_weights:
       safe_direction_count: 1.0
+      shortest_food_path_length: 1.0
       path_result_option_label: 1.0
     style_variant_weights:
       classic: 1.0
@@ -18,6 +19,7 @@ generation:
     balanced_body_length_sampling: true
     balanced_planned_move_count_sampling: true
     balanced_safe_direction_count_sampling: true
+    balanced_shortest_food_path_length_sampling: true
     balanced_obstacle_count_sampling: true
     balanced_planned_move_outcome_sampling: true
     board_size_support:
@@ -38,6 +40,15 @@ generation:
       - 1
       - 2
       - 3
+    shortest_food_path_length_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
     obstacle_count_support:
       - 2
       - 3
@@ -78,8 +89,11 @@ prompt:
     task_key: snake_grid_query
     object_description_square_grid: a Snake game board with a yellow snake head, connected body cells, red food, and gray wall cells
     snake_rule_text: A move is safe when the head stays inside the board and does not enter the snake body or a gray wall cell. Moving onto red food counts as safe.
-    planned_move_wall_evidence_rule_text: For a game-over result, use boxes around the visible in-board head path cells up to the hit cell or board edge.
-    evidence_hint_safe_direction_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around each destination cell that is safe for the next move; include the food cell if it is safely reachable
+    shortest_food_path_rule_text: Treat the current body cells and gray wall cells as blocked while finding the shortest path to the food.
+    planned_move_wall_annotation_rule_text: For a game-over result, use boxes around the visible in-board head path cells up to the hit cell or board edge.
+    annotation_hint_safe_direction_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around each destination cell that is safe for the next move; include the food cell if it is safely reachable
     answer_hint_safe_direction_count: set "answer" to the number of safe next-move directions as an integer
-    evidence_hint_path_result_option_label: set "evidence" to bounding boxes [x0, y0, x1, y1] around the in-board cells the head traverses until the result; for an off-board hit, use the visible path cells up to the board edge
+    annotation_hint_shortest_food_path_length: set "annotation" to bounding boxes [x0, y0, x1, y1] around the traversed cells after the head through the food cell on one shortest safe path
+    answer_hint_shortest_food_path_length: set "answer" to the fewest number of moves needed to reach the food as an integer
+    annotation_hint_path_result_option_label: set "annotation" to bounding boxes [x0, y0, x1, y1] around the in-board cells the head traverses until the result; for an off-board hit, use the visible path cells up to the board edge
     answer_hint_path_result_option_label: set "answer" to the option letter shown in the image, one of "A", "B", "C", or "D"

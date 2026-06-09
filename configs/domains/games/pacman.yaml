@@ -7,6 +7,7 @@ generation:
       path_pellet_count: 1.0
       next_item_label: 1.0
       pellet_count_before_ghost: 1.0
+      route_score_value: 1.0
     style_variant_weights:
       classic: 1.0
       neon: 1.0
@@ -41,6 +42,24 @@ generation:
       - 3
       - 4
       - 5
+    route_score_on_route_pellet_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+    route_score_on_route_bonus_count_support:
+      - 1
+      - 2
+      - 3
+    route_score_off_route_bonus_count_support:
+      - 1
+      - 2
+      - 3
+    route_score_bonus_value_support:
+      - 2
+      - 3
+      - 5
+      - 10
     next_item_label_support:
       - A
       - B
@@ -49,6 +68,7 @@ generation:
       - E
       - F
     item_count_support:
+      - 4
       - 5
       - 6
 rendering:
@@ -79,11 +99,14 @@ prompt:
     bundle_id: games_pacman_v0
     scene_key: visible_pacman_maze
     task_key: pacman_maze_query
-    object_description_compact_maze: a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, and a highlighted route
-    object_description_wide_maze: a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, and a highlighted route
-    evidence_hint_path_pellet_count: set "evidence" to [x, y] pixel points at the centers of the normal pellets that lie on the highlighted route
+    object_description_compact_maze: a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route
+    object_description_wide_maze: a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route
+    annotation_hint_path_pellet_count: set "annotation" to [x, y] pixel points at the centers of the normal pellets that lie on the highlighted route
     answer_hint_path_pellet_count: set "answer" to the number of normal pellets on the highlighted route
-    evidence_hint_next_item_label: set "evidence" to one [x, y] pixel point at the center of the first labeled bonus item reached along the highlighted route
+    annotation_hint_next_item_label: set "annotation" to one [x, y] pixel point at the center of the first labeled bonus item reached along the highlighted route
     answer_hint_next_item_label: set "answer" to the single option letter of the first labeled bonus item reached along the highlighted route
-    evidence_hint_pellet_count_before_ghost: set "evidence" to [x, y] pixel points at the centers of the counted normal pellets before the first ghost on the highlighted route, plus the center of that first route ghost
+    annotation_hint_pellet_count_before_ghost: set "annotation" to [x, y] pixel points at the centers of the counted normal pellets before the first ghost on the highlighted route, plus the center of that first route ghost
     answer_hint_pellet_count_before_ghost: set "answer" to the number of normal pellets reached before the first ghost on the highlighted route
+    annotation_hint_route_score_value: set "annotation" to [x, y] pixel points at the centers of every normal pellet and printed-value bonus item included in the highlighted-route score
+    answer_hint_route_score_value: set "answer" to the integer total score from collectibles on the highlighted route
+    score_rule_text: Pellets score 1; bonus items score their printed value.

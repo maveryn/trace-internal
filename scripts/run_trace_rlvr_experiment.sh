@@ -9,11 +9,11 @@ usage() {
   cat <<'USAGE' >&2
 Usage:
   scripts/run_trace_rlvr_experiment.sh alpha_ablation <0|0.5|1>
-  scripts/run_trace_rlvr_experiment.sh evidence_ablation <gated|additive>
+  scripts/run_trace_rlvr_experiment.sh annotation_ablation <gated|additive>
   scripts/run_trace_rlvr_experiment.sh final <qwen3vl4b|qwen3vl8b|qwen25vl7b>
 
 Environment overrides:
-  TRAIN_FILES, MODEL_PATH, TRACE_OUTPUT_MODE, TRACE_EVIDENCE_REWARD_FORMULA,
+  TRAIN_FILES, MODEL_PATH, TRACE_OUTPUT_MODE, TRACE_ANNOTATION_REWARD_FORMULA,
   TOTAL_TRAINING_STEPS, TRAINER_EXPERIMENT_NAME, RESUME_FROM_PATH,
   CUDA_VISIBLE_DEVICES, NUM_GPUS, SAVE_FREQ, TEST_FREQ, VAL_FILES.
 Additional arguments after the mode are forwarded to the underlying Hydra run.
@@ -73,36 +73,36 @@ case "$mode" in
     token="$(alpha_token "$arg")"
     export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen3-VL-4B-Instruct}"
     export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
-    export TRACE_EVIDENCE_REWARD_FORMULA="${TRACE_EVIDENCE_REWARD_FORMULA:-gated}"
+    export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
     export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-250}"
     export TRAIN_FILES="${TRAIN_FILES:-$REPO_ROOT/rlvr/dataset/train/trace_rlvr_train_102400_query_id_alpha${token}_answer_retained_seed20260504.parquet}"
     export VAL_FILES="${VAL_FILES:-$(validation_files_for_alpha "$token")}"
     export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_qwen3vl4b_alpha${token}_answer_250_seed20260504}"
     ;;
-  evidence_ablation)
+  annotation_ablation)
     case "$arg" in
       gated|additive) ;;
       *)
-        echo "Unsupported evidence reward formula: $arg" >&2
+        echo "Unsupported annotation reward formula: $arg" >&2
         exit 1
         ;;
     esac
     token="$(alpha_token "${TRACE_ALPHA:-0_5}")"
     export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen3-VL-4B-Instruct}"
-    export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer_and_evidence}"
-    export TRACE_EVIDENCE_REWARD_FORMULA="$arg"
+    export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer_and_annotation}"
+    export TRACE_ANNOTATION_REWARD_FORMULA="$arg"
     export TRACE_ANSWER_WEIGHT="${TRACE_ANSWER_WEIGHT:-0.5}"
-    export TRACE_EVIDENCE_WEIGHT="${TRACE_EVIDENCE_WEIGHT:-0.5}"
+    export TRACE_ANNOTATION_WEIGHT="${TRACE_ANNOTATION_WEIGHT:-0.5}"
     export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-250}"
     export TRAIN_FILES="${TRAIN_FILES:-$REPO_ROOT/rlvr/dataset/train/trace_rlvr_train_102400_query_id_alpha${token}_answer_retained_seed20260504.parquet}"
     export VAL_FILES="${VAL_FILES:-$(validation_files_for_alpha "$token")}"
-    export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_qwen3vl4b_alpha${token}_evidence_${arg}_250_seed20260504}"
+    export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_qwen3vl4b_alpha${token}_annotation_${arg}_250_seed20260504}"
     ;;
   final)
     export MODEL_PATH="${MODEL_PATH:-$(model_path_for_alias "$arg")}"
     token="$(alpha_token "${TRACE_ALPHA:-0_5}")"
     export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
-    export TRACE_EVIDENCE_REWARD_FORMULA="${TRACE_EVIDENCE_REWARD_FORMULA:-gated}"
+    export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
     export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-800}"
     export TRAIN_FILES="${TRAIN_FILES:-$REPO_ROOT/rlvr/dataset/train/trace_rlvr_train_102400_query_id_alpha${token}_answer_retained_seed20260504.parquet}"
     export VAL_FILES="${VAL_FILES:-$(validation_files_for_alpha "$token")}"

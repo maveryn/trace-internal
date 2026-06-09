@@ -47,8 +47,8 @@ def resolve_axis_variant(
 
     local_params = dict(params)
     locked_variant = local_params.get(f"_locked_{explicit_key}") if bool(allow_locked) else None
-    if str(explicit_key) == "query_id" and "query_id" not in local_params and "query_id" in local_params:
-        local_params["query_id"] = local_params["query_id"]
+    if str(explicit_key) == "query_id" and "query_id" not in local_params and "query_variant" in local_params:
+        local_params["query_id"] = local_params["query_variant"]
     rng = spawn_rng(int(instance_seed), f"{task_id}.{axis_namespace}")
     selected, probabilities = resolve_variant(
         rng,

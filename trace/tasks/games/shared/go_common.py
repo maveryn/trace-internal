@@ -43,6 +43,18 @@ class GoBoardState:
     scene_variant: str
 
 
+@dataclass(frozen=True)
+class GoStoneGroupCountState:
+    """One visible Go board plus whole-board groups for one queried color."""
+
+    board: Board
+    target_color: int
+    target_group_coords: Tuple[Tuple[Coord, ...], ...]
+    representative_coords: Tuple[Coord, ...]
+    stone_specs: Tuple[GoStoneSpec, ...]
+    scene_variant: str
+
+
 def color_name(color: int) -> str:
     """Return the canonical prompt-facing color name for one stone value."""
 
@@ -139,6 +151,36 @@ def all_groups_have_liberty(board: Sequence[Sequence[int]]) -> bool:
     return True
 
 
+def stone_groups(board: Sequence[Sequence[int]], *, color: int) -> Tuple[Tuple[Coord, ...], ...]:
+    """Return all same-color connected groups in stable row-major order."""
+
+    board_size = int(len(board))
+    target_color = int(color)
+    if target_color == int(EMPTY):
+        raise ValueError("stone_groups requires a non-empty stone color")
+    seen: Set[Coord] = set()
+    groups: List[Tuple[Coord, ...]] = []
+    for row in range(board_size):
+        for col in range(board_size):
+            coord = (int(row), int(col))
+            if coord in seen or int(board[row][col]) != int(target_color):
+                continue
+            group = connected_group(board, coord)
+            seen.update(group)
+            groups.append(tuple(sorted(group)))
+    return tuple(sorted(groups, key=lambda group: group[0] if group else (9999, 9999)))
+
+
+def stone_group_representative_coords(
+    board: Sequence[Sequence[int]],
+    *,
+    color: int,
+) -> Tuple[Coord, ...]:
+    """Return one deterministic representative coordinate for each same-color group."""
+
+    return tuple(group[0] for group in stone_groups(board, color=int(color)) if group)
+
+
 def liberty_point_ids(liberties: Iterable[Coord]) -> Tuple[str, ...]:
     """Return stable point ids for one liberty set."""
 
@@ -204,6 +246,8 @@ def supported_targets_for_query(query_id: str = "marked_group_liberty_count") ->
         return (1, 2, 3, 4, 5, 6)
     if variant == "marked_group_shared_liberty_count":
         return (1, 2, 3, 4, 5)
+    if variant in {"black_stone_group_count", "white_stone_group_count"}:
+        return tuple(range(1, 9))
     raise ValueError(f"unsupported Go query id: {query_id}")
 
 
@@ -288,6 +332,154 @@ def _stone_specs(board: Sequence[Sequence[int]], *, marked_group_coords: Iterabl
                 )
             )
     return tuple(specs)
+
+
+def _can_place_separate_target_group(
+    rows: Sequence[Sequence[int]],
+    group: Iterable[Coord],
+    *,
+    target_color: int,
+    board_size: int,
+) -> bool:
+    """Return whether a sampled group can be placed without joining existing target groups."""
+
+    group_set = {(int(row), int(col)) for row, col in group}
+    if not group_set:
+        return False
+    for row, col in group_set:
+        if int(rows[int(row)][int(col)]) != int(EMPTY):
+            return False
+    for row, col in group_set:
+        for neighbor in neighbors((int(row), int(col)), board_size=int(board_size)):
+            if neighbor not in group_set and int(rows[neighbor[0]][neighbor[1]]) == int(target_color):
+                return False
+    return True
+
+
+def _stone_group_size_max_for_target_count(target_answer: int) -> int:
+    """Return a readable target-group size cap for one requested component count."""
+
+    target = int(target_answer)
+    if target >= 7:
+        return 1
+    if target >= 5:
+        return 2
+    return 4
+
+
+def build_go_stone_group_count_state(
+    *,
+    rng,
+    query_id: str,
+    scene_variant: str,
+    target_answer: int,
+    board_size: int = BOARD_SIZE,
+    max_internal_attempts: int = 1024,
+) -> GoStoneGroupCountState:
+    """Construct one visible Go board with an exact same-color group count."""
+
+    target = int(target_answer)
+    if int(board_size) < 5:
+        raise ValueError("Go group-count boards require board_size >= 5")
+    variant = str(query_id)
+    if variant == "black_stone_group_count":
+        target_color = int(BLACK)
+    elif variant == "white_stone_group_count":
+        target_color = int(WHITE)
+    else:
+        raise ValueError(f"unsupported Go group-count query id: {query_id}")
+    if target not in supported_targets_for_query(variant):
+        raise ValueError(f"unsupported Go target {target} for {variant}")
+    if str(scene_variant) not in {"open_board", "crowded_board"}:
+        raise ValueError(f"unsupported Go scene variant: {scene_variant}")
+
+    opponent_color = int(opponent(target_color))
+    extras_min, extras_max = (4, 10) if str(scene_variant) == "open_board" else (10, 18)
+
+    for _ in range(max(1, int(max_internal_attempts))):
+        rows = [[int(EMPTY) for _ in range(int(board_size))] for _ in range(int(board_size))]
+        group_size_max = _stone_group_size_max_for_target_count(int(target))
+        placed_groups: List[Tuple[Coord, ...]] = []
+        failed = False
+        for _group_index in range(int(target)):
+            group: Tuple[Coord, ...] = tuple()
+            for _placement_attempt in range(192):
+                group_size = int(rng.randint(1, int(group_size_max)))
+                candidate = _sample_connected_group(
+                    rng,
+                    board_size=int(board_size),
+                    size=int(group_size),
+                    favor_center=False,
+                )
+                if not _can_place_separate_target_group(
+                    rows,
+                    candidate,
+                    target_color=int(target_color),
+                    board_size=int(board_size),
+                ):
+                    continue
+                group = tuple(sorted(candidate))
+                break
+            if not group:
+                failed = True
+                break
+            for row, col in group:
+                rows[int(row)][int(col)] = int(target_color)
+            placed_groups.append(group)
+        if failed:
+            continue
+
+        board = _board_from_rows(rows)
+        if len(stone_groups(board, color=int(target_color))) != int(target):
+            continue
+        if not all_groups_have_liberty(board):
+            continue
+
+        empty_coords = [
+            (int(row), int(col))
+            for row in range(int(board_size))
+            for col in range(int(board_size))
+            if int(board[row][col]) == int(EMPTY)
+        ]
+        rng.shuffle(empty_coords)
+        extras_target = int(rng.randint(int(extras_min), int(extras_max)))
+        mutable_rows = [list(int(cell) for cell in row) for row in board]
+        extras_added = 0
+        for row, col in empty_coords:
+            if extras_added >= int(extras_target):
+                break
+            mutable_rows[int(row)][int(col)] = int(opponent_color)
+            candidate_board = _board_from_rows(mutable_rows)
+            if len(stone_groups(candidate_board, color=int(target_color))) != int(target):
+                mutable_rows[int(row)][int(col)] = int(EMPTY)
+                continue
+            if not all_groups_have_liberty(candidate_board):
+                mutable_rows[int(row)][int(col)] = int(EMPTY)
+                continue
+            extras_added += 1
+
+        board = _board_from_rows(mutable_rows)
+        target_groups = stone_groups(board, color=int(target_color))
+        if len(target_groups) != int(target):
+            continue
+        representatives = stone_group_representative_coords(board, color=int(target_color))
+        if len(representatives) != int(target):
+            continue
+        if not all_groups_have_liberty(board):
+            continue
+
+        return GoStoneGroupCountState(
+            board=board,
+            target_color=int(target_color),
+            target_group_coords=tuple(tuple(group) for group in target_groups),
+            representative_coords=tuple(representatives),
+            stone_specs=_stone_specs(board, marked_group_coords=()),
+            scene_variant=str(scene_variant),
+        )
+
+    raise RuntimeError(
+        f"failed to construct a visible Go board with target {target} for {query_id}/{scene_variant}"
+    )
 
 
 def build_go_board_state(
@@ -472,12 +664,14 @@ __all__ = [
     "Coord",
     "EMPTY",
     "GoBoardState",
+    "GoStoneGroupCountState",
     "GoStoneSpec",
     "SUPPORTED_GO_PLAYER_COLORS",
     "WHITE",
     "adjacent_enemy_coords",
     "all_groups_have_liberty",
     "build_go_board_state",
+    "build_go_stone_group_count_state",
     "color_name",
     "connected_group",
     "coord_to_point_id",
@@ -488,5 +682,7 @@ __all__ = [
     "opponent",
     "shared_liberty_coords",
     "stone_ids_for_coords",
+    "stone_group_representative_coords",
+    "stone_groups",
     "supported_targets_for_query",
 ]

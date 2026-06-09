@@ -416,7 +416,7 @@ class TextLegibilityRecorder:
     Use this when a renderer draws required/read-off text and wants the trace
     to record both the resolved style and the final projected glyph box. The
     recorder is intentionally lightweight so renderers can adopt it without
-    changing their geometry/evidence source of truth.
+    changing their geometry/annotation source of truth.
     """
 
     canvas_size_px: tuple[int, int] | None = None

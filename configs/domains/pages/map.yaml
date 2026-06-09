@@ -5,7 +5,7 @@ complexity:
       reasoning_load: 0.34
       scene_variant_load: 0.24
   task_overrides:
-    task_pages__map__navigation_label:
+    pages_map_navigation_source:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.5
@@ -19,7 +19,7 @@ rendering:
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 16
   task_overrides:
-    task_pages__map__navigation_label:
+    pages_map_navigation_source:
       canvas_width: 1280
       canvas_height: 900
       outer_margin_px: 46
@@ -306,7 +306,7 @@ visual:
         - 0.035
 generation:
   task_overrides:
-    task_pages__map__navigation_label:
+    pages_map_navigation_source:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       landmark_count_min: 10
@@ -325,14 +325,14 @@ prompt:
     bundle_id: pages_map_v0
     answer_hint: set "answer" to the exact visible landmark or zone label
   task_overrides:
-    task_pages__map__navigation_label:
+    pages_map_navigation_source:
       scene_key: printed_map
       task_key: map_navigation_query
       object_description_campus_map: a printed campus layout with labeled landmarks,
         named zones, visible walking paths, and a compass
-      evidence_hint_destination_after_directions: set "evidence" to an ordered array
+      annotation_hint_destination_after_directions: set "annotation" to an ordered array
         of [x0, y0, x1, y1] pixel bounding boxes for the route landmarks from the
         start through the destination
-      evidence_hint_landmark_after_route_step: set "evidence" to an ordered array
+      annotation_hint_landmark_after_route_step: set "annotation" to an ordered array
         of [x0, y0, x1, y1] pixel bounding boxes for the highlighted-route landmarks
         from the start through the requested landmark

@@ -1,0 +1,84 @@
+generation:
+  task_overrides:
+    games_sliding_block_internal:
+      board_rows_min: 6
+      board_rows_max: 8
+      board_cols_min: 6
+      board_cols_max: 8
+      blocker_count_min: 1
+      blocker_count_max: 6
+      movable_block_count_min: 4
+      movable_block_count_max: 9
+      movable_block_count_generation_attempts: 512
+      non_target_block_count_min: 6
+      non_target_block_count_max: 10
+      move_result_option_count_support: [4, 6]
+      balanced_move_result_option_count_sampling: true
+      move_result_move_count_min: 1
+      move_result_move_count_max: 2
+      move_result_slide_distance_max: 3
+      balanced_scene_variant_sampling: true
+      balanced_exit_side_sampling: true
+      scene_variant_weights:
+        wooden_tray: 1.0
+        cool_grid: 1.0
+        paper_board: 1.0
+      exit_side_weights:
+        right: 1.0
+        left: 1.0
+        top: 1.0
+        bottom: 1.0
+
+rendering:
+  task_overrides:
+    games_sliding_block_internal:
+      canvas_width: 980
+      canvas_height: 900
+      board_size_px: 660
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+      panel_padding_px: 44
+      panel_corner_radius_px: 28
+      block_corner_radius_px: 16
+      board_border_width_px: 5
+      grid_width_px: 2
+      block_gap_px: 7
+      target_outline_width_px: 6
+      label_font_size_px: 30
+      target_label_font_size_px: 34
+      arrow_width_px: 8
+      arrow_head_length_px: 28
+      arrow_head_width_px: 28
+      text_color_rgb: [28, 32, 38]
+      text_stroke_rgb: [255, 255, 255]
+
+complexity:
+  task_overrides:
+    games_sliding_block_internal:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.42
+        scene_variant_load: 0.18
+
+prompt:
+  task_overrides:
+    games_sliding_block_internal:
+      bundle_id: games_sliding_block_v0
+      scene_key: sliding_block
+      task_key: sliding_block_query
+      object_description: a sliding-block board with a red target block labeled T and other labeled rectangular blocks
+      answer_hint_integer: set "answer" to the exact count as an integer
+      answer_hint_option_letter: set "answer" to the single option label as a capital letter
+      annotation_hint_blocker_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around every block currently occupying the target block's straight path to the exit
+      annotation_hint_movable_block_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around every non-target block that can slide at least one cell
+      annotation_hint_move_result_label: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] containing the original boxes of the moved blocks in first-seen move order, followed by the correct final-board option panel box
+      json_example_blocker_count: '{"annotation":[[520,284,604,496],[700,284,784,496]],"answer":2}'
+      json_example_movable_block_count: '{"annotation":[[160,220,312,296],[356,220,432,448],[510,370,662,446]],"answer":3}'
+      json_example_move_result_label: '{"annotation":[[128,322,220,414],[256,414,348,506],[520,195,720,445]],"answer":"C"}'
+      json_example_answer_only_blocker_count: '{"answer":2}'
+      json_example_answer_only_movable_block_count: '{"answer":3}'
+      json_example_answer_only_move_result_label: '{"answer":"C"}'
+
+visual:
+  noise:
+    apply_prob: 0.0

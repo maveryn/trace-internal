@@ -42,11 +42,11 @@ def test_graph_counting_node_count_after_degree_filter_contract_matches_trace() 
         entity for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"
     ]
 
-    assert "task_graph__node_link__degree_predicate_count" in TASK_REGISTRY
+    assert "task_graph__node_link__degree_after_removal_filter_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_in_degree_one_filter_remaining_count"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "point_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_degree_filter_remaining_counting"
     assert execution["query_id"] == "directed_in_degree_one_filter_remaining_count"
@@ -60,7 +60,7 @@ def test_graph_counting_node_count_after_degree_filter_contract_matches_trace() 
     remaining_labels = [str(label) for label in execution["remaining_labels"]]
     removed_labels = [str(label) for label in execution["removed_labels"]]
     queried_degrees = {str(label): int(value) for label, value in execution["queried_degrees_by_label"].items()}
-    assert len(remaining_labels) == int(out.answer_gt.value) == len(out.evidence_gt.value)
+    assert len(remaining_labels) == int(out.answer_gt.value) == len(out.annotation_gt.value)
     assert len(removed_labels) == int(execution["removed_count"])
     assert len(remaining_labels) + len(removed_labels) == int(execution["node_count"])
     assert all(queried_degrees[label] != 1 for label in remaining_labels)
@@ -69,9 +69,9 @@ def test_graph_counting_node_count_after_degree_filter_contract_matches_trace() 
     assert trace["witness_symbolic"]["removed_labels"] == removed_labels
     assert sum(1 for node in node_entities if bool(node["is_remaining_after_filter"])) == 3
     assert sum(1 for node in node_entities if bool(node["is_removed_by_filter"])) == int(execution["removed_count"])
-    assert trace["projected_evidence"]["type"] == "point_set"
-    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_counting_node_count_after_degree_filter_zero_answer() -> None:
@@ -90,7 +90,7 @@ def test_graph_counting_node_count_after_degree_filter_zero_answer() -> None:
 
     assert out.query_id == "undirected_degree_one_filter_remaining_count"
     assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
+    assert out.annotation_gt.value == []
     assert execution["remaining_labels"] == []
     assert len(execution["removed_labels"]) == int(execution["node_count"])
     assert all(int(value) == 1 for value in execution["queried_degrees_by_label"].values())
@@ -104,11 +104,11 @@ def test_graph_counting_node_count_after_degree_filter_prompt_examples_match_con
         max_attempts=100,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 3}
-    assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180], [430, 260]]
-    assert answer_and_evidence["answer"] == 3
+    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
+    assert answer_and_annotation["annotation"] == [[180, 220], [310, 180], [430, 260]]
+    assert answer_and_annotation["answer"] == 3
 
 
 def test_graph_counting_node_count_after_degree_filter_balanced_sampling_includes_zero() -> None:
@@ -154,7 +154,7 @@ def test_graph_counting_node_count_after_degree_filter_build_smoke(tmp_path: Pat
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph__node_link__degree_predicate_count",
+                task_id="task_graph__node_link__degree_after_removal_filter_count",
                 count=4,
                 params={},
             )
@@ -171,7 +171,7 @@ def test_graph_counting_node_count_after_degree_filter_build_smoke(tmp_path: Pat
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__degree_predicate_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__degree_after_removal_filter_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

@@ -11,7 +11,10 @@ from trace.tasks.shared.visual_style.information_scene import (
     information_scene_style_metadata,
     make_information_scene_background,
     resolve_information_scene_style,
+    resolve_information_scene_style_from_request,
 )
+from trace.tasks.shared.visual_style.request import build_visual_style_request
+from trace.tasks.charts.shared.information_style import resolve_chart_information_style
 
 
 def test_information_scene_style_has_expected_breadth() -> None:
@@ -95,3 +98,41 @@ def test_information_scene_protected_color_metadata() -> None:
     assert meta["protected_colors_rgb"] == [[30, 126, 147]]
     assert meta["selection"]["min_protected_rgb_distance_required"] > 0
     assert "protected_palette_filter_fallback" in meta["selection"]
+
+
+def test_information_scene_request_records_policy_and_can_enable_dark() -> None:
+    request = build_visual_style_request(
+        domain="charts",
+        scene_id="histogram",
+        task_group="distribution",
+        instance_seed=42,
+        params={},
+        style_family="information_scene",
+        allow_dark=True,
+        allow_colored_surface=True,
+        protected_colors=((20, 120, 200),),
+        required_text_roles=("axis_tick", "chart_label"),
+    )
+    _style, meta = resolve_information_scene_style_from_request(
+        request,
+        treatments=("dark_analytics_board",),
+        palettes=("dark_analytics",),
+    )
+    assert meta["style_request"]["domain"] == "charts"
+    assert meta["style_request"]["style_family"] == "information_scene"
+    assert meta["style_request"]["allow_dark"] is True
+    assert meta["style_request"]["protected_colors_rgb"] == [[20, 120, 200]]
+    assert meta["palette_id"] == "dark_analytics"
+
+
+def test_chart_information_style_reads_group_defaults() -> None:
+    _style, meta = resolve_chart_information_style(
+        instance_seed=91,
+        params={},
+        scene_id="histogram",
+        task_group="distribution",
+    )
+    assert meta["style_request"]["domain"] == "charts"
+    assert meta["style_request"]["allow_dark"] is True
+    assert meta["style_request"]["allow_colored_surface"] is True
+    assert "dark_analytics_board" in set(meta["selection"]["eligible_treatments"])

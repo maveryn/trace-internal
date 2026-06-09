@@ -46,6 +46,8 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
+from ..shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -160,6 +162,7 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    scene_transform: LazySceneTransform
 
 
 @dataclass(frozen=True)
@@ -175,8 +178,8 @@ class _ResolvedProblem:
 class _RenderedTangentPackingScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -208,6 +211,25 @@ def _ellipse_bbox(center: Point, radius: float) -> BBox:
         float(center[0]) + float(radius),
         float(center[1]) + float(radius),
     )
+
+
+def _rect_points(rect: BBox) -> Tuple[Point, Point, Point, Point]:
+    return (
+        (float(rect[0]), float(rect[1])),
+        (float(rect[2]), float(rect[1])),
+        (float(rect[2]), float(rect[3])),
+        (float(rect[0]), float(rect[3])),
+    )
+
+
+def _closed(points: Sequence[Point]) -> list[Point]:
+    if not points:
+        return []
+    return list(points) + [points[0]]
+
+
+def _transformed_radius(ctx: _RenderContext, radius: float) -> float:
+    return float(radius) * float(ctx.scene_transform.transform.scale)
 
 
 def _draw_dimension(
@@ -248,13 +270,6 @@ def _draw_dimension(
     )
     line_bbox = _bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=10.0)
     return _union_bboxes((line_bbox, label_bbox), width=ctx.width, height=ctx.height)
-
-
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if abs(float(value) - float(selected)) <= 1e-9 else 0.0)
-        for value in values
-    }
 
 
 def _answer_for_case(case: _Case, *, answer_kind: str) -> float:
@@ -328,7 +343,10 @@ def _resolve_problem(
         case=case,
         query_probabilities=dict(query_probabilities),
         support_probabilities=_selected_probability_map(
-            tuple(sorted(set(float(value) for value in support_values))), float(answer)
+            tuple(sorted(set(float(value) for value in support_values))),
+            float(answer),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: abs(float(value) - float(selected)) <= 1e-9,
         ),
     )
 
@@ -362,7 +380,24 @@ def _render_circle_in_square(
     ctx: _RenderContext, problem: _ResolvedProblem, *, answer_kind: str
 ) -> _RenderedTangentPackingScene:
     case = problem.case
-    square, center, radius_px = _circle_in_square_geometry()
+    square, center_raw, radius_raw = _circle_in_square_geometry()
+    circle_extents = (
+        (center_raw[0] - radius_raw, center_raw[1]),
+        (center_raw[0] + radius_raw, center_raw[1]),
+        (center_raw[0], center_raw[1] - radius_raw),
+        (center_raw[0], center_raw[1] + radius_raw),
+    )
+    label_anchors = (
+        (580.0, 104.0),
+        (560.0, 274.0),
+        (590.0, 104.0),
+        (square[0], square[3] + 26.0),
+        (square[2], square[3] + 26.0),
+    )
+    ctx.scene_transform.resolve(_rect_points(square) + circle_extents + label_anchors)
+    square_points = ctx.scene_transform.points(_rect_points(square))
+    center = ctx.scene_transform.point(center_raw)
+    radius_px = _transformed_radius(ctx, radius_raw)
     circle_bbox = _ellipse_bbox(center, radius_px)
     label_bboxes: Dict[str, BBox] = {}
     uses_gap_area = problem.query_id in {
@@ -370,50 +405,55 @@ def _render_circle_in_square(
         "circle_in_square_radius_from_gap_area",
     }
     if uses_gap_area:
-        ctx.draw.rectangle(square, fill=ctx.shaded_color)
+        ctx.draw.polygon(square_points, fill=ctx.shaded_color)
         ctx.draw.ellipse(circle_bbox, fill=ctx.fill_color)
     else:
-        ctx.draw.rectangle(square, fill=ctx.fill_color)
+        ctx.draw.polygon(square_points, fill=ctx.fill_color)
         ctx.draw.ellipse(circle_bbox, outline=ctx.accent_color, width=ctx.line_width)
-    ctx.draw.rectangle(square, outline=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line(_closed(square_points), fill=ctx.line_color, width=ctx.line_width, joint="curve")
     ctx.draw.ellipse(circle_bbox, outline=ctx.accent_color, width=ctx.line_width)
     supporting: list[BBox] = []
     if problem.query_id == "circle_in_square_radius_from_gap_area":
         label_bboxes["shaded_area"] = _draw_label(
-            ctx, f"shaded area={_fmt_number(case.circle_in_square_gap_area)}", (580.0, 104.0), small=True
+            ctx,
+            f"shaded area={_fmt_number(case.circle_in_square_gap_area)}",
+            ctx.scene_transform.point((580.0, 104.0)),
+            small=True,
         )
         supporting.append(label_bboxes["shaded_area"])
-        ctx.draw.line([center, (center[0] + radius_px, center[1])], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
-        label_bboxes["target"] = _draw_label(ctx, "r=?", (560.0, 274.0), small=True)
+        radius_endpoint = ctx.scene_transform.point((center_raw[0] + radius_raw, center_raw[1]))
+        ctx.draw.line([center, radius_endpoint], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+        label_bboxes["target"] = _draw_label(ctx, "r=?", ctx.scene_transform.point((560.0, 274.0)), small=True)
         target_role = "target_radius_cue"
         formula = "radius = sqrt(shaded area / (4 - pi))"
     elif answer_kind == "length":
         label_bboxes["square_side"] = _draw_dimension(
             ctx,
-            (square[0], square[3] + 26.0),
-            (square[2], square[3] + 26.0),
+            ctx.scene_transform.point((square[0], square[3] + 26.0)),
+            ctx.scene_transform.point((square[2], square[3] + 26.0)),
             f"side={case.square_side}",
-            label_offset=(0.0, 25.0),
+            label_offset=(0.0, 0.0),
         )
         supporting.append(label_bboxes["square_side"])
-        ctx.draw.line([center, (center[0] + radius_px, center[1])], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
-        label_bboxes["target"] = _draw_label(ctx, "r=?", (560.0, 274.0), small=True)
+        radius_endpoint = ctx.scene_transform.point((center_raw[0] + radius_raw, center_raw[1]))
+        ctx.draw.line([center, radius_endpoint], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+        label_bboxes["target"] = _draw_label(ctx, "r=?", ctx.scene_transform.point((560.0, 274.0)), small=True)
         target_role = "target_radius_cue"
         formula = "radius = square side / 2"
     else:
         label_bboxes["square_side"] = _draw_dimension(
             ctx,
-            (square[0], square[3] + 26.0),
-            (square[2], square[3] + 26.0),
+            ctx.scene_transform.point((square[0], square[3] + 26.0)),
+            ctx.scene_transform.point((square[2], square[3] + 26.0)),
             f"side={case.square_side}",
-            label_offset=(0.0, 25.0),
+            label_offset=(0.0, 0.0),
         )
         supporting.append(label_bboxes["square_side"])
-        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", (590.0, 104.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", ctx.scene_transform.point((590.0, 104.0)), small=True)
         target_role = "target_shaded_area_cue"
         formula = "shaded area = square area - circle area"
     scene_bbox = _bbox_from_points(
-        ((square[0], square[1]), (square[2], square[3])),
+        square_points,
         width=ctx.width,
         height=ctx.height,
         pad=10.0,
@@ -470,7 +510,22 @@ def _render_square_in_circle(
     ctx: _RenderContext, problem: _ResolvedProblem, *, answer_kind: str
 ) -> _RenderedTangentPackingScene:
     case = problem.case
-    center, radius_px, square_points = _square_in_circle_geometry()
+    center_raw, radius_raw, square_points_raw = _square_in_circle_geometry()
+    ctx.scene_transform.resolve(
+        tuple(square_points_raw)
+        + (
+            (center_raw[0] - radius_raw, center_raw[1]),
+            (center_raw[0] + radius_raw, center_raw[1]),
+            (center_raw[0], center_raw[1] - radius_raw),
+            (center_raw[0], center_raw[1] + radius_raw),
+            (575.0, 104.0),
+            (570.0, 454.0),
+            (440.0, 252.0),
+        )
+    )
+    center = ctx.scene_transform.point(center_raw)
+    radius_px = _transformed_radius(ctx, radius_raw)
+    square_points = ctx.scene_transform.points(square_points_raw)
     circle_bbox = _ellipse_bbox(center, radius_px)
     label_bboxes: Dict[str, BBox] = {}
     uses_gap_area = problem.query_id in {
@@ -483,27 +538,31 @@ def _render_square_in_circle(
     else:
         ctx.draw.ellipse(circle_bbox, fill=ctx.fill_color)
     ctx.draw.ellipse(circle_bbox, outline=ctx.line_color, width=ctx.line_width)
-    ctx.draw.polygon(square_points, outline=ctx.accent_color, width=ctx.line_width)
-    ctx.draw.line([center, (center[0] + radius_px, center[1])], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    ctx.draw.line(_closed(square_points), fill=ctx.accent_color, width=ctx.line_width, joint="curve")
+    radius_endpoint = ctx.scene_transform.point((center_raw[0] + radius_raw, center_raw[1]))
+    ctx.draw.line([center, radius_endpoint], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
     supporting: list[BBox] = []
     if problem.query_id == "square_in_circle_side_from_gap_area":
         label_bboxes["shaded_area"] = _draw_label(
-            ctx, f"shaded area={_fmt_number(case.square_in_circle_gap_area)}", (575.0, 104.0), small=True
+            ctx,
+            f"shaded area={_fmt_number(case.square_in_circle_gap_area)}",
+            ctx.scene_transform.point((575.0, 104.0)),
+            small=True,
         )
         supporting.append(label_bboxes["shaded_area"])
-        label_bboxes["target"] = _draw_label(ctx, "square side=?", (570.0, 454.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "square side=?", ctx.scene_transform.point((570.0, 454.0)), small=True)
         target_role = "target_square_side_cue"
         formula = "inscribed square side = sqrt(2 * shaded area / (pi - 2))"
     elif answer_kind == "length":
-        label_bboxes["radius"] = _draw_label(ctx, f"r={case.radius}", (440.0, 252.0), small=True)
+        label_bboxes["radius"] = _draw_label(ctx, f"r={case.radius}", ctx.scene_transform.point((440.0, 252.0)), small=True)
         supporting.append(label_bboxes["radius"])
-        label_bboxes["target"] = _draw_label(ctx, "square side=?", (570.0, 454.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "square side=?", ctx.scene_transform.point((570.0, 454.0)), small=True)
         target_role = "target_square_side_cue"
         formula = "inscribed square side = radius * sqrt(2)"
     else:
-        label_bboxes["radius"] = _draw_label(ctx, f"r={case.radius}", (440.0, 252.0), small=True)
+        label_bboxes["radius"] = _draw_label(ctx, f"r={case.radius}", ctx.scene_transform.point((440.0, 252.0)), small=True)
         supporting.append(label_bboxes["radius"])
-        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", (575.0, 104.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", ctx.scene_transform.point((575.0, 104.0)), small=True)
         target_role = "target_shaded_area_cue"
         formula = "shaded area = circle area - inscribed square area"
     scene_bbox = _pad_bbox(circle_bbox, 10.0, width=ctx.width, height=ctx.height)
@@ -558,7 +617,28 @@ def _render_two_circles_rectangle(
     ctx: _RenderContext, problem: _ResolvedProblem, *, answer_kind: str
 ) -> _RenderedTangentPackingScene:
     case = problem.case
-    rect, c1, c2, radius_px = _two_circles_geometry()
+    rect, c1_raw, c2_raw, radius_raw = _two_circles_geometry()
+    ctx.scene_transform.resolve(
+        _rect_points(rect)
+        + (
+            (c1_raw[0] - radius_raw, c1_raw[1]),
+            (c1_raw[0] + radius_raw, c1_raw[1]),
+            (c1_raw[0], c1_raw[1] - radius_raw),
+            (c1_raw[0], c1_raw[1] + radius_raw),
+            (c2_raw[0] - radius_raw, c2_raw[1]),
+            (c2_raw[0] + radius_raw, c2_raw[1]),
+            (c2_raw[0], c2_raw[1] - radius_raw),
+            (c2_raw[0], c2_raw[1] + radius_raw),
+            (570.0, 112.0),
+            (250.0, 262.0),
+            (rect[0], rect[3] + 26.0),
+            (rect[2], rect[3] + 26.0),
+        )
+    )
+    rect_points = ctx.scene_transform.points(_rect_points(rect))
+    c1 = ctx.scene_transform.point(c1_raw)
+    c2 = ctx.scene_transform.point(c2_raw)
+    radius_px = _transformed_radius(ctx, radius_raw)
     circle1_bbox = _ellipse_bbox(c1, radius_px)
     circle2_bbox = _ellipse_bbox(c2, radius_px)
     label_bboxes: Dict[str, BBox] = {}
@@ -567,50 +647,53 @@ def _render_two_circles_rectangle(
         "two_circles_in_rectangle_radius_from_gap_area",
     }
     if uses_gap_area:
-        ctx.draw.rectangle(rect, fill=ctx.shaded_color)
+        ctx.draw.polygon(rect_points, fill=ctx.shaded_color)
         ctx.draw.ellipse(circle1_bbox, fill=ctx.fill_color)
         ctx.draw.ellipse(circle2_bbox, fill=ctx.fill_color)
     else:
-        ctx.draw.rectangle(rect, fill=ctx.fill_color)
-    ctx.draw.rectangle(rect, outline=ctx.line_color, width=ctx.line_width)
+        ctx.draw.polygon(rect_points, fill=ctx.fill_color)
+    ctx.draw.line(_closed(rect_points), fill=ctx.line_color, width=ctx.line_width, joint="curve")
     ctx.draw.ellipse(circle1_bbox, outline=ctx.accent_color, width=ctx.line_width)
     ctx.draw.ellipse(circle2_bbox, outline=ctx.accent_color, width=ctx.line_width)
-    ctx.draw.line([c1, (c1[0] + radius_px, c1[1])], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    ctx.draw.line([c1, ctx.scene_transform.point((c1_raw[0] + radius_raw, c1_raw[1]))], fill=ctx.accent_color, width=max(2, ctx.line_width - 1))
     supporting: list[BBox] = []
     if problem.query_id == "two_circles_in_rectangle_radius_from_gap_area":
         label_bboxes["shaded_area"] = _draw_label(
-            ctx, f"shaded area={_fmt_number(case.two_circles_rectangle_gap_area)}", (570.0, 112.0), small=True
+            ctx,
+            f"shaded area={_fmt_number(case.two_circles_rectangle_gap_area)}",
+            ctx.scene_transform.point((570.0, 112.0)),
+            small=True,
         )
         supporting.append(label_bboxes["shaded_area"])
-        label_bboxes["target"] = _draw_label(ctx, "r=?", (250.0, 262.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "r=?", ctx.scene_transform.point((250.0, 262.0)), small=True)
         target_role = "target_radius_cue"
         formula = "radius = sqrt(shaded area / (8 - 2*pi))"
     elif answer_kind == "length":
         label_bboxes["width"] = _draw_dimension(
             ctx,
-            (rect[0], rect[3] + 26.0),
-            (rect[2], rect[3] + 26.0),
+            ctx.scene_transform.point((rect[0], rect[3] + 26.0)),
+            ctx.scene_transform.point((rect[2], rect[3] + 26.0)),
             f"width={case.packed_rectangle_width}",
-            label_offset=(0.0, 25.0),
+            label_offset=(0.0, 0.0),
         )
         supporting.append(label_bboxes["width"])
-        label_bboxes["target"] = _draw_label(ctx, "r=?", (250.0, 262.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "r=?", ctx.scene_transform.point((250.0, 262.0)), small=True)
         target_role = "target_radius_cue"
         formula = "radius = rectangle width / 4"
     else:
         label_bboxes["width"] = _draw_dimension(
             ctx,
-            (rect[0], rect[3] + 26.0),
-            (rect[2], rect[3] + 26.0),
+            ctx.scene_transform.point((rect[0], rect[3] + 26.0)),
+            ctx.scene_transform.point((rect[2], rect[3] + 26.0)),
             f"width={case.packed_rectangle_width}",
-            label_offset=(0.0, 25.0),
+            label_offset=(0.0, 0.0),
         )
         supporting.append(label_bboxes["width"])
-        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", (570.0, 112.0), small=True)
+        label_bboxes["target"] = _draw_label(ctx, "shaded area=?", ctx.scene_transform.point((570.0, 112.0)), small=True)
         target_role = "target_shaded_area_cue"
         formula = "shaded area = rectangle area - areas of two equal circles"
     scene_bbox = _bbox_from_points(
-        ((rect[0], rect[1]), (rect[2], rect[3])),
+        rect_points,
         width=ctx.width,
         height=ctx.height,
         pad=10.0,
@@ -687,13 +770,13 @@ def _build_rendered_scene(
     render_map: Dict[str, Any],
     witness: Dict[str, Any],
 ) -> _RenderedTangentPackingScene:
-    evidence_roles = (target_role, scene_role, support_role)
-    evidence_bboxes = (target_bbox, scene_bbox, support_bbox)
+    annotation_roles = (target_role, scene_role, support_role)
+    annotation_bboxes = (target_bbox, scene_bbox, support_bbox)
     return _RenderedTangentPackingScene(
         image=rendered_image,
         answer=float(answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=tuple(scene_entities),
         render_map={
@@ -804,6 +887,13 @@ class _TangentPackingBaseTask:
             line_width=max(2, int(line_width)),
             font=load_font(max(12, int(font_size)), bold=True),
             small_font=load_font(max(10, int(small_font_size)), bold=True),
+            scene_transform=LazySceneTransform(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                canvas_width=int(width),
+                canvas_height=int(height),
+            ),
         )
         return ctx, {
             "background_style": dict(background_meta),
@@ -820,7 +910,7 @@ class _TangentPackingBaseTask:
     def _build_complexity(self, rendered: _RenderedTangentPackingScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.48
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.16
         )
         is_area = self.answer_kind == "area"
@@ -829,7 +919,7 @@ class _TangentPackingBaseTask:
         ambiguity = 0.50 + (0.08 if is_area else 0.0) + (0.04 if is_two_circle else 0.0)
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=3, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -874,6 +964,7 @@ class _TangentPackingBaseTask:
                     ctx, problem, answer_kind=str(self.answer_kind)
                 )
                 render_meta = dict(render_meta_attempt)
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
                 break
             except Exception as exc:
                 last_error = exc
@@ -896,7 +987,7 @@ class _TangentPackingBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -910,14 +1001,14 @@ class _TangentPackingBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -928,16 +1019,16 @@ class _TangentPackingBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "query_id": str(problem.query_id),
@@ -953,7 +1044,7 @@ class _TangentPackingBaseTask:
                 "relations": {
                     "query_id": str(problem.query_id),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -981,7 +1072,7 @@ class _TangentPackingBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "one_decimal",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2 if self.answer_kind == "area" else 1,
                 **dict(rendered.witness),
             },
@@ -991,21 +1082,21 @@ class _TangentPackingBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1018,29 +1109,77 @@ class _TangentPackingBaseTask:
 
 
 @register_task
-class GeometryTangentPackingLengthValueTask(_TangentPackingBaseTask):
-    """Infer a tangent-packing length from a square, circle, or rectangle container."""
+class GeometryCircleInSquareRadiusFromGapAreaTask(_TangentPackingBaseTask):
+    """Infer the circle radius in a square from the shaded gap area."""
 
-    task_id = "task_geometry__tangent_packing__tangent_packing_length_value"
-    supported_queries = _LENGTH_QUERIES
-    cases = _LENGTH_CASES
+    task_id = "task_geometry__tangent_packing__circle_in_square_radius_from_gap_area"
+    supported_queries = ("circle_in_square_radius_from_gap_area",)
+    cases = tuple(case for case in _LENGTH_CASES if case.query_id == "circle_in_square_radius_from_gap_area")
     answer_kind = "length"
     reasoning_kind = "length"
 
 
 @register_task
-class GeometryTangentPackingShadedAreaValueTask(_TangentPackingBaseTask):
-    """Compute a shaded area in a circle/square tangent-packing diagram."""
+class GeometrySquareInCircleSideFromGapAreaTask(_TangentPackingBaseTask):
+    """Infer the square side in a circle from the shaded gap area."""
 
-    task_id = "task_geometry__tangent_packing__tangent_packing_shaded_area_value"
-    supported_queries = _AREA_QUERIES
-    cases = _AREA_CASES
+    task_id = "task_geometry__tangent_packing__square_in_circle_side_from_gap_area"
+    supported_queries = ("square_in_circle_side_from_gap_area",)
+    cases = tuple(case for case in _LENGTH_CASES if case.query_id == "square_in_circle_side_from_gap_area")
+    answer_kind = "length"
+    reasoning_kind = "length"
+
+
+@register_task
+class GeometryTwoCirclesInRectangleRadiusFromGapAreaTask(_TangentPackingBaseTask):
+    """Infer the circle radius in a rectangle from the shaded gap area."""
+
+    task_id = "task_geometry__tangent_packing__two_circles_in_rectangle_radius_from_gap_area"
+    supported_queries = ("two_circles_in_rectangle_radius_from_gap_area",)
+    cases = tuple(case for case in _LENGTH_CASES if case.query_id == "two_circles_in_rectangle_radius_from_gap_area")
+    answer_kind = "length"
+    reasoning_kind = "length"
+
+
+@register_task
+class GeometryCircleInSquareGapAreaTask(_TangentPackingBaseTask):
+    """Compute the gap area between a circle and a square container."""
+
+    task_id = "task_geometry__tangent_packing__circle_in_square_gap_area"
+    supported_queries = ("circle_in_square_gap_area",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "circle_in_square_gap_area")
+    answer_kind = "area"
+    reasoning_kind = "shaded_area"
+
+
+@register_task
+class GeometrySquareInCircleGapAreaTask(_TangentPackingBaseTask):
+    """Compute the gap area between a square and a circular container."""
+
+    task_id = "task_geometry__tangent_packing__square_in_circle_gap_area"
+    supported_queries = ("square_in_circle_gap_area",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "square_in_circle_gap_area")
+    answer_kind = "area"
+    reasoning_kind = "shaded_area"
+
+
+@register_task
+class GeometryTwoCirclesInRectangleGapAreaTask(_TangentPackingBaseTask):
+    """Compute the gap area around two circles in a rectangle."""
+
+    task_id = "task_geometry__tangent_packing__two_circles_in_rectangle_gap_area"
+    supported_queries = ("two_circles_in_rectangle_gap_area",)
+    cases = tuple(case for case in _AREA_CASES if case.query_id == "two_circles_in_rectangle_gap_area")
     answer_kind = "area"
     reasoning_kind = "shaded_area"
 
 
 __all__ = [
-    "GeometryTangentPackingLengthValueTask",
-    "GeometryTangentPackingShadedAreaValueTask",
+    "GeometryCircleInSquareGapAreaTask",
+    "GeometryCircleInSquareRadiusFromGapAreaTask",
     "SCENE_ID",
+    "GeometrySquareInCircleGapAreaTask",
+    "GeometrySquareInCircleSideFromGapAreaTask",
+    "GeometryTwoCirclesInRectangleGapAreaTask",
+    "GeometryTwoCirclesInRectangleRadiusFromGapAreaTask",
 ]

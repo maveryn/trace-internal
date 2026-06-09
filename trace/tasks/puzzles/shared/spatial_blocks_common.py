@@ -19,18 +19,6 @@ SUPPORTED_PUZZLE_BLOCK_SCENE_VARIANTS: Tuple[str, ...] = (
 )
 SUPPORTED_PUZZLE_BLOCK_REMOVAL_VARIANTS: Tuple[str, ...] = ("cube_removal_count",)
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 @dataclass(frozen=True)
 class PuzzleCubeRemovalDefaults:
     """Default generation bounds for cube-removal block-stack puzzles."""

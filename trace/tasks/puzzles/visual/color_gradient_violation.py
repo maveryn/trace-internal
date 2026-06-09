@@ -27,7 +27,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.text_rendering import load_font, temporary_default_font_family
-from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -1181,7 +1181,7 @@ def _build_prompt(
         f"object_description_{scene_variant}",
         "json_output_contract",
         "json_output_contract_answer_only",
-        "evidence_hint",
+        "annotation_hint",
         "answer_hint",
         "json_example",
         "json_example_answer_only",
@@ -1195,7 +1195,7 @@ def _build_prompt(
         "object_description": str(prompt_values[f"object_description_{scene_variant}"]),
         "json_output_contract": str(prompt_values["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_values["json_output_contract_answer_only"]),
-        "evidence_hint": str(prompt_values["evidence_hint"]),
+        "annotation_hint": str(prompt_values["annotation_hint"]),
         "answer_hint": str(prompt_values["answer_hint"]),
         "json_example": str(prompt_values["json_example"]),
         "json_example_answer_only": str(prompt_values["json_example_answer_only"]),
@@ -1207,7 +1207,7 @@ def _build_prompt(
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
         query_key=str(query_id),
-        answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots=slots,
         instance_seed=int(instance_seed),
     )
@@ -1328,13 +1328,13 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
             scene_variant=str(scene_variant),
             instance_seed=int(instance_seed),
         )
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, [dataset.violation_cell_id])
-        evidence_bboxes = [
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.item_bbox_map, [dataset.violation_cell_id])
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 
         query_params = {
             "query_id": QUERY_ID,
@@ -1414,7 +1414,7 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
                 "scene_bbox_px": [int(value) for value in rendered_scene.scene_bbox_px],
                 "cell_bboxes_px": {str(key): list(value) for key, value in rendered_scene.cell_bbox_map.items()},
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 **dict(query_params),
@@ -1429,12 +1429,12 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
             },
             "witness_symbolic": {
                 "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "value": list(annotation_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "value": list(annotation_bboxes),
             },
         }
         grid_area = int(dataset.rows * dataset.cols)
@@ -1450,7 +1450,7 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1593,17 +1593,17 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             query_id=COMPLETION_QUERY_ID,
         )
         supporting_item_ids = [str(dataset.missing_cell_id), str(dataset.correct_option_id)]
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, supporting_item_ids)
-        evidence_bboxes = [
+        annotation_projection = projected_puzzle_bbox_annotation(rendered_scene.item_bbox_map, supporting_item_ids)
+        annotation_bboxes = [
             [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
+            for bbox in annotation_projection["bbox_set"]
         ]
-        evidence_keyed_bboxes = {
-            "blank_swatch": list(evidence_bboxes[0]),
-            "selected_option": list(evidence_bboxes[1]),
+        annotation_keyed_bboxes = {
+            "blank_swatch": list(annotation_bboxes[0]),
+            "selected_option": list(annotation_bboxes[1]),
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
 
         query_params = {
             "query_id": COMPLETION_QUERY_ID,
@@ -1691,7 +1691,7 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
                 "scene_bbox_px": [int(value) for value in rendered_scene.scene_bbox_px],
                 "cell_bboxes_px": {str(key): list(value) for key, value in rendered_scene.cell_bbox_map.items()},
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "item_bboxes_px",
+                "annotation_source": "item_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 **dict(query_params),
@@ -1706,14 +1706,14 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             },
             "witness_symbolic": {
                 "type": "keyed_bbox_map",
-                "value": dict(evidence_keyed_bboxes),
+                "value": dict(annotation_keyed_bboxes),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
-                "bbox_set": list(evidence_bboxes),
-                "value": dict(evidence_keyed_bboxes),
+                "keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+                "bbox_set": list(annotation_bboxes),
+                "value": dict(annotation_keyed_bboxes),
             },
         }
         visual_scan = normalize_int_with_bounds(int(dataset.sequence_length + dataset.option_count), [9, 13])
@@ -1728,7 +1728,7 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -126,7 +126,7 @@ visual:
         - 0.08
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     bundle_id: puzzles_cell_board_path_v0
     scene_key: rectangular_tile_board
@@ -134,20 +134,20 @@ prompt:
     cell_board_shortest_path_internal:
       task_key: shortest_path_query
       answer_hint: set "answer" to the shortest path length as an integer
-      evidence_hint: set "evidence" to the ordered list of image pixel points [x, y] at tile centers along one shortest path
+      annotation_hint: set "annotation" to the ordered list of image pixel points [x, y] at tile centers along one shortest path
         from the start tile to the goal tile, inclusive
-      json_example: '{"evidence":[[120,120],[168,120],[168,168],[216,168]],"answer":3}'
+      json_example: '{"annotation":[[120,120],[168,120],[168,168],[216,168]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     cell_board_target_reachability_count_internal:
       task_key: reachable_target_count_query
       answer_hint: set "answer" to the number of reachable target tiles as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the reachable target tiles,
+      annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of the reachable target tiles,
         or [] if no target tiles are reachable
-      json_example: '{"evidence":[[216,120],[168,216]],"answer":2}'
+      json_example: '{"annotation":[[216,120],[168,216]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       unreachable_task_key: unreachable_target_count_query
       unreachable_answer_hint: set "answer" to the number of unreachable target tiles as an integer
-      unreachable_evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the unreachable
+      unreachable_annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of the unreachable
         target tiles, or [] if no target tiles are unreachable
-      unreachable_json_example: '{"evidence":[[216,120],[168,216]],"answer":2}'
+      unreachable_json_example: '{"annotation":[[216,120],[168,216]],"answer":2}'
       unreachable_json_example_answer_only: '{"answer":2}'

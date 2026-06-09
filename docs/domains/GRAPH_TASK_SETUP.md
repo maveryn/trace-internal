@@ -8,115 +8,145 @@ For cross-domain rollups, use `docs/project/STATUS.md` and `docs/ACTIVE_TASK_INV
 ## Current Scope
 1. `domain = graph`
 2. Active `task_group`s: `counting`, `comparison`, `order`, `optimization`, `path`, `relation`
-3. Active public graph task count: `40`
+3. Active public graph task count: `61`
+4. Active public graph scene count: `10`
 
 ## Active Tasks
 
-1. `task_graph__adjacency__component_count`
-2. `task_graph__adjacency__mst_weight`
-3. `task_graph__adjacency__traversal_kth_label`
-4. `task_graph__automaton__accepted_string_label`
-5. `task_graph__automaton__state_after_input_label`
-6. `task_graph__binary_tree__node_property_count`
-7. `task_graph__binary_tree__node_relation_label`
-8. `task_graph__binary_tree__traversal_kth_label`
-9. `task_graph__binary_tree__bst_path_operation_label`
-10. `task_graph__binary_tree__heap_property_violation_label`
-11. `task_graph__flow_network__max_flow_value`
-12. `task_graph__flow_network__min_cut_edge_count`
-13. `task_graph__graph_options__structure_match_label`
-14. `task_graph__metro__exact_distance_station_count`
-15. `task_graph__metro__shortest_path_length`
-16. `task_graph__metro__station_membership_count`
-17. `task_graph__metro__transfer_count`
-18. `task_graph__node_link__articulation_point_count`
-19. `task_graph__node_link__bridge_count`
-20. `task_graph__node_link__common_neighbor_count`
-21. `task_graph__node_link__component_membership_count`
-22. `task_graph__node_link__cross_color_edge_count`
-23. `task_graph__node_link__degree_extremum_value`
-24. `task_graph__node_link__degree_predicate_count`
-25. `task_graph__node_link__edge_attribute_label`
-26. `task_graph__node_link__edge_color_count`
-27. `task_graph__node_link__edge_text_count`
-28. `task_graph__node_link__isolated_after_removal_count`
-29. `task_graph__node_link__longest_path_length`
-30. `task_graph__node_link__mst_weight`
-31. `task_graph__node_link__named_node_degree_value`
-32. `task_graph__node_link__node_color_count`
-33. `task_graph__node_link__reachable_node_count`
-34. `task_graph__node_link__shortest_path_length`
-35. `task_graph__node_link__topological_position_value`
-36. `task_graph__node_link__unique_cycle_size`
-37. `task_graph__node_link__unique_node_label`
-38. `task_graph__pipe_network__bridge_count`
-39. `task_graph__pipe_network__junction_path_count`
-40. `task_graph__pipe_network__shortest_path_length`
+### `adjacency` (5)
+
+1. `task_graph__adjacency__directed_pair_reciprocity_count`
+1. `task_graph__adjacency__directed_strong_component_count`
+1. `task_graph__adjacency__mst_weight`
+1. `task_graph__adjacency__traversal_kth_label`
+1. `task_graph__adjacency__undirected_component_count`
+
+### `automaton` (4)
+
+1. `task_graph__automaton__dfa_accepted_string_label`
+1. `task_graph__automaton__nfa_accepted_string_label`
+1. `task_graph__automaton__nondeterministic_state_count`
+1. `task_graph__automaton__state_after_input_label`
+
+### `binary_tree` (7)
+
+1. `task_graph__binary_tree__bst_path_operation_label`
+1. `task_graph__binary_tree__child_structure_node_count`
+1. `task_graph__binary_tree__depth_level_node_count`
+1. `task_graph__binary_tree__heap_property_violation_label`
+1. `task_graph__binary_tree__local_relative_node_label`
+1. `task_graph__binary_tree__lowest_common_ancestor_label`
+1. `task_graph__binary_tree__traversal_kth_label`
+
+### `flow_network` (2)
+
+1. `task_graph__flow_network__max_flow_value`
+1. `task_graph__flow_network__min_cut_edge_count`
+
+### `graph_options` (2)
+
+1. `task_graph__graph_options__contained_subgraph_label`
+1. `task_graph__graph_options__same_structure_label`
+
+### `metro` (4)
+
+1. `task_graph__metro__exact_distance_station_count`
+1. `task_graph__metro__shortest_path_length`
+1. `task_graph__metro__station_membership_count`
+1. `task_graph__metro__transfer_count`
+
+### `node_link` (27)
+
+1. `task_graph__node_link__articulation_point_count`
+1. `task_graph__node_link__bridge_count`
+1. `task_graph__node_link__common_related_node_count`
+1. `task_graph__node_link__component_size_after_edge_edit`
+1. `task_graph__node_link__cross_color_edge_count`
+1. `task_graph__node_link__degree_after_removal_filter_count`
+1. `task_graph__node_link__degree_extremum_value`
+1. `task_graph__node_link__degree_value_filter_count`
+1. `task_graph__node_link__edge_between_nodes_label`
+1. `task_graph__node_link__edge_color_count`
+1. `task_graph__node_link__edge_text_count`
+1. `task_graph__node_link__hamiltonian_cycle_neighbor_label`
+1. `task_graph__node_link__isolated_after_removal_count`
+1. `task_graph__node_link__largest_chordless_cycle_size`
+1. `task_graph__node_link__largest_component_size`
+1. `task_graph__node_link__longest_path_length`
+1. `task_graph__node_link__mst_weight`
+1. `task_graph__node_link__named_node_degree_value`
+1. `task_graph__node_link__node_color_count`
+1. `task_graph__node_link__reachable_count`
+1. `task_graph__node_link__reachable_count_after_edge_edit`
+1. `task_graph__node_link__same_component_count`
+1. `task_graph__node_link__shortest_path_first_edge_label`
+1. `task_graph__node_link__shortest_path_length`
+1. `task_graph__node_link__topological_position_value`
+1. `task_graph__node_link__unique_cycle_size`
+1. `task_graph__node_link__unique_related_node_label`
+
+### `pedigree_chart` (2)
+
+1. `task_graph__pedigree_chart__relatedness_coefficient_label`
+1. `task_graph__pedigree_chart__relationship_label`
+
+### `phylogeny_tree` (4)
+
+1. `task_graph__phylogeny_tree__clade_leaf_count`
+1. `task_graph__phylogeny_tree__mrca_clade_membership_count`
+1. `task_graph__phylogeny_tree__sister_leaf_label`
+1. `task_graph__phylogeny_tree__topology_outlier_label`
+
+### `pipe_network` (4)
+
+1. `task_graph__pipe_network__bridge_count`
+1. `task_graph__pipe_network__pipe_exact_distance_count`
+1. `task_graph__pipe_network__pipe_reachable_junction_count`
+1. `task_graph__pipe_network__shortest_path_length`
 
 ## Scene Contract
-1. Simple undirected and directed node-link diagrams use `node_link`.
-2. `pipe_network` renders labeled junctions connected by open or blocked pipe segments.
-3. `metro` renders colored route lines with labeled stations.
+1. `node_link` renders simple undirected or directed node-link diagrams with labeled nodes, optional edge labels/colors, graph layout variation, readable text, bounded content jitter, optional non-answer context text, and graph-domain post-render noise.
+2. `pipe_network` renders labeled junctions connected by open or blocked cylindrical pipe segments; blocked-pipe markers are scene-native distractors.
+3. `metro` renders colored route lines with labeled stations and route legends.
 4. `automaton` renders directed state-transition diagrams with start arrows, accepting-state rings, visible transition-symbol labels, and optional candidate-string panels.
 5. `flow_network` renders directed capacity networks with source/sink roles and visible capacities.
-6. `graph_options` renders one reference/target graph above six option graphs for structural matching and subgraph-selection tasks.
-7. `binary_tree` renders one top-down ordered binary tree for binary-tree counting, traversal, node-relation, BST path-operation, and heap-property tasks.
+6. `graph_options` renders one reference or target graph above six visual option graphs; selected option panel bboxes are allowed annotation for these true visual-option tasks.
+7. `binary_tree` renders one top-down ordered binary tree; left/right semantics come from horizontal placement in the rendered tree.
 8. `adjacency` renders adjacency-list, adjacency-matrix, and weighted-adjacency-matrix panels for representation-level graph reasoning.
-9. Node-link scenes support layout variants `circular|shell|spring|grid_jitter|layered|component_clustered|path_spine|radial_tree`, node label variants `letters|numbers|named`, node glyph variants `circle|rounded_square|hexagon`, edge routing `straight|mixed_arc`, named node colors, and global layout transforms.
-10. Node-link named labels use shared label manifests with task-specific length caps; metro, binary-tree, and adjacency-representation labels use tighter caps so labels remain legible. Pipe-network labels use compact letter/number labels only because the labels sit inside small physical fittings.
-11. Node-link render audits use the role-appropriate shared font pool (`readout` for title/node/edge labels, `context` for optional non-answer context text), readable text styles, bounded graph-content jitter before evidence projection, and graph-appropriate plain/card/publication/print information-scene treatments; app/dashboard/console text chrome is excluded because it competes with prompt-facing graph labels. Optional non-answer context text can appear as title chips or reserved top/bottom/side blocks with sampled clutter levels; graph positions and evidence are projected after any block reservation.
-12. Pipe-network renders use the role-appropriate shared font pool, readable text styles for title/junction labels, physical pipe-board styling with cylindrical tubes and flanged junction fittings, sampled board treatments (`plain_panel`, `plate_seams`, `perforated_panel`, and occasional `blueprint_grid`), optional non-answer context text, bounded content jitter before junction projection, and graph-domain post-render noise policy; blocked-pipe markers remain the primary scene-native distractors.
-13. Metro renders use the role-appropriate shared font pool, readable text styles for station labels/title/legend, optional title-band context chips, bounded content jitter before station projection, and graph-domain post-render noise policy; colored route lines and the route legend remain the scene-native context.
-14. Automaton renders use the role-appropriate shared font pool, readable text styles for state labels, transition labels, the start marker, and candidate strings, optional graph context text from the shared node-link renderer, bounded content jitter before state projection, and graph-domain post-render noise policy; start arrows, accepting-state rings, transition labels, and candidate-string panels remain scene-native context.
-15. Binary-tree renders use the role-appropriate shared font pool, readable text styles for title and node labels, sampled tree treatments (`classic_tree`, `paper_tree`, `boxed_tree`), sampled node shapes/colors, and graph-domain post-render noise policy. Evidence boxes are projected from final node geometry; left/right child semantics come from horizontal placement in the ordered tree.
-16. Flow-network renders use the role-appropriate shared font pool, readable text styles for title, node labels, and capacity labels, optional graph context text, bounded content jitter before node/edge projection, and graph-domain post-render noise policy. The layout remains layered left-to-right so the source-to-sink direction is readable; capacity labels are visible read-off text, while source/sink roles are identified by labels `S` and `T`.
-17. Graph-options renders use the role-appropriate shared font pool, sampled panel/background/node-color styles, contrast-adjusted node fills for readable labels, per-panel graph-layout jitter within fixed option panels, final option-panel bboxes for evidence, and graph-domain post-render noise policy. Directed graph-options samples exclude anti-parallel edge pairs so opposite arrows do not overlap on one segment. Extra context text is intentionally omitted in this scene because the six option graphs are the visual distractors and additional prose would compete with option letters and node labels.
-18. Adjacency renders use the role-appropriate shared font pool, readable text styles for panel titles, row/column labels, adjacency-list entries, and matrix cell values, sampled table/list panel styles (`clean_card`, `cool_sheet`, `warm_ledger`, `mint_index`, `ink_header`), optional non-answer header context chips, and graph-domain post-render noise policy. Evidence boxes are projected from final table/list cell geometry, while blank weighted-matrix cells remain visible by absence rather than by a text glyph.
-19. Graph-domain post-render noise probability resolves to `0.50` for current graph generation. Calibration artifacts made before this standard can contain stale noise metadata.
+9. `pedigree_chart` renders family pedigree notation with sex-coded symbols, generation rows, spouse connectors, and descent/sibling connectors. Active tasks use the family graph for relationship and relatedness reasoning; disease-status and inheritance-model tasks are retired.
+10. `phylogeny_tree` renders rooted cladograms with labeled terminal taxa and unlabeled internal branch points; child order, branch length, and drawing layout are non-semantic unless a task explicitly asks about a visible option panel.
+11. All graph scenes use the approved shared font pool by role, readable foreground/background text contrast for answer-relevant text, scene-appropriate style variation, and annotation projection after final layout.
+12. Graph-domain post-render noise probability resolves to `0.50` for current graph generation unless a scene has a documented task-specific exception.
 
-## Merged Public Tasks
-1. `task_graph__node_link__degree_predicate_count`
-   - Query ids: `undirected_degree_count`, `directed_in_degree_count`, `directed_out_degree_count`, `undirected_degree_one_filter_remaining_count`, `directed_in_degree_one_filter_remaining_count`, `directed_out_degree_one_filter_remaining_count`, `directed_source_count`, `directed_sink_count`
-   - Reasoning pattern: count nodes satisfying a degree-style predicate.
-   - Answer/evidence: `integer`, `point_set` of matching node centers.
-   - Earlier narrower public ids were absorbed into these `query_id` branches and should not be reintroduced.
-2. `task_graph__node_link__component_membership_count`
-   - Query ids: `same_component_count`, `largest_component_size`, `component_size_after_edge_removal`, `component_size_after_edge_addition`
-   - Reasoning pattern: count a connected-component node set under direct or one-edit hypothetical conditions.
-   - Answer/evidence: `integer`, `point_set` of component node centers.
-   - Earlier narrower public ids were absorbed into these `query_id` branches and should not be reintroduced.
-3. `task_graph__node_link__reachable_node_count`
-   - Query ids: `reachable_count`, `reachable_count_after_edge_removal`, `reachable_count_after_edge_addition`
-   - Reasoning pattern: count nodes reachable from a query node in a directed graph before or after one hypothetical arrow edit.
-   - Answer/evidence: `integer`, `point_set` of reachable node centers.
-   - Earlier narrower public ids were absorbed into these `query_id` branches and should not be reintroduced.
-4. `task_graph__metro__station_membership_count`
-   - Query ids: `metro_transfer_station_count`, `metro_single_route_station_count`
-   - Reasoning pattern: count stations satisfying a route-membership predicate.
-   - Answer/evidence: `integer`, `point_set` of matching station centers.
-   - Earlier narrower public ids were absorbed into these `query_id` branches and should not be reintroduced.
+## Contract-V0 Task Boundaries
+1. Public task ids use `task_graph__<scene_id>__<objective_contract>` and are the sampling surface.
+2. `query_id` is internal replay metadata and may vary only within one stable scene, answer schema, annotation schema, and program contract.
+3. Former broad graph tasks have been split into narrower public tasks where branches had different program contracts, such as direct reachability vs reachability after an edge edit, local binary-tree relation vs lowest-common-ancestor, and edge-between lookup vs shortest-path first-edge lookup.
+4. Retired pre-v0 public ids must not be registered, documented, configured, or kept as review folders.
 
-## Evidence Rules
-1. Node and station count tasks use `point_set`: an unordered array of `[x,y]` pixel points at matching node/station centers.
-2. Path tasks use `point_sequence`: an ordered array of `[x,y]` centers from start through end. Metro transfer-count evidence is the selected minimum-transfer station path in travel order, so the source is first, the required via station is included, and the goal is last.
-3. Edge-count tasks with geometric edge evidence use `point_pair_set`: each item is a pair of endpoint-center points, and endpoint order inside each pair is semantically unordered.
-4. Node-link tasks that answer with a node label but identify a graph node as the visual witness use `point_set` at the answer-node center; the visible label text is an identity attribute, not standalone evidence.
-5. Visible text-label tasks use `bbox_set`: `[x0,y0,x1,y1]` pixel boxes around the visible label text.
-6. Graph option-selection tasks use `bbox_set`: one `[x0,y0,x1,y1]` pixel box around the selected option panel.
-7. Binary-tree count tasks use `bbox_set`: one node box per counted node.
-8. Binary-tree traversal tasks use `bbox_sequence`: ordered node boxes from the first visited node through the answer node.
-9. Binary-tree node-label relation tasks use `keyed_bbox_map`: role-bound node boxes such as `child`/`parent`, `parent`/`left_child`, `node`/`sibling`, or `node_a`/`node_b`/`lowest_common_ancestor`.
-10. BST path-operation tasks use `bbox_sequence`: ordered operation-path node boxes from the root through the answer node.
-11. Heap property-violation tasks use `bbox_sequence`: the checked parent node box followed by the violating child node box.
-12. Adjacency-list traversal tasks use `bbox_sequence`: ordered row-label boxes from the source row through the answer row.
-13. Adjacency component tasks use `bbox_set`: one representative row/header label box per connected component or strongly connected component.
-14. Weighted adjacency-matrix MST tasks use `bbox_set`: one visible matrix-cell box per minimum-spanning-tree edge.
-15. Automaton state-simulation and string-acceptance tasks use `point_sequence`: the visited state centers in transition order. String-acceptance evidence is one accepting state path for the candidate string whose option label is returned as the answer.
-16. Evidence and answers must come from the same execution trace; verifiers rely on metadata/projections, not pixels.
+## Annotation Rules
+1. Node, junction, and station count tasks use `point_set`: unordered `[x,y]` pixel points at matching centers.
+2. Path, traversal, and ordered-cycle tasks use `point_sequence` or `bbox_sequence` in traversal order.
+3. Edge-count tasks with geometric edge annotation use `point_pair_set`; endpoint order is semantically unordered unless the task explicitly asks about directed arrows.
+4. Visible text-label tasks use `bbox_set` around the visible text label that answers or witnesses the lookup.
+5. Graph option-selection tasks use one option-panel `bbox_set` because the option image itself is the visual answer candidate.
+6. Binary-tree count tasks use `bbox_set`; binary-tree role relations use `keyed_bbox_map` when witness roles matter.
+7. Largest chordless-cycle size and Hamiltonian-cycle neighbor lookup use `point_sequence` around the relevant ordered cycle; unique-cycle size uses `point_set` because ordering is not needed for that simpler unicyclic witness.
+8. Phylogeny clade count uses `point_set` over descendant taxon terminals; phylogeny sister/MRCA role relations use `keyed_bbox_map`; phylogeny option topology uses one selected option-panel `bbox_set`.
+9. Pedigree relationship and relatedness tasks use role-bound `keyed_bbox_map` over the queried people and any needed family-path witnesses; rendered relationship/fraction options are answer choices, not prompt-facing annotation.
+10. Automaton state simulation and string acceptance use `point_sequence` for the visited state centers in transition order.
+11. Directed adjacency reciprocal-pair counts use `bbox_set` around both mirrored off-diagonal matrix cells for every counted unordered pair; zero-answer cases use an empty `bbox_set`.
+12. Annotation and answers must come from the same execution trace; verifiers rely on metadata/projections, not pixels as source of truth.
 
 ## Implementation Notes
-1. Retired task modules may remain as internal branch generators, but they are not imported by `trace/tasks/__init__.py`, not present in `TASK_TAXONOMY`, and not registered as default public tasks.
-2. Public merged task outputs rewrite `scene_ir.task_id`, `query_spec.task_id`, and `execution_trace.task_id` to the merged task id while preserving concrete branch `query_id`.
-3. Prompt text remains external to task code. Merged branches reuse the existing graph prompt bundles for their concrete `query_id`.
-4. For any graph task with multiple query branches, the evidence instruction must be selected from the same concrete `query_id` as the question text. Avoid generic evidence wording such as "requested relation" when the branch is actually predecessor, successor, source, sink, add-edge, remove-edge, BFS, DFS, or a specific traversal order.
-5. Solve-rate calibration for merged graph tasks should be regenerated after this consolidation.
+1. Internal source helpers may remain when they are private implementation routing and not exposed as retired public ids.
+2. Public wrapper outputs must rewrite `scene_ir.task_id`, `query_spec.task_id`, and `execution_trace.task_id` to the final public task id.
+3. Prompt text remains external to task code and must select annotation instructions from the same concrete `query_id` as the question text.
+4. Review artifacts belong under `review/task-reviews/graph/<scene_id>/<task_id>/` for final public ids only.
+
+## Maintenance Organization
+1. Node-link tasks should resolve common non-semantic visual axes through `trace/tasks/graph/shared/node_link_axes.py`: layout, label style, node shape, layout transform, edge routing, and node color. Tasks with semantic color queries or no routed-edge style axis should call the helper with the relevant optional axis disabled and keep the semantic/static axis local. Task modules should keep semantic query-axis resolution local unless at least two tasks share the same program contract.
+2. Node-link render dataclasses and public render constants live in `trace/tasks/graph/shared/node_link_render_types.py`; `graph_scene.py` is only the compatibility facade. Renderer behavior is split across focused `node_link_*` modules for projection, panel/context handling, layout projection, geometry, edge routing/labels, node drawing, and orchestration.
+3. Task-local support selection that only needs deterministic decoupling from already-balanced axes should use `trace/tasks/graph/shared/task_scaffolding.py`; do not reintroduce private `_node_count_selection_index` hash helpers or inline visual-axis resolution for new graph tasks.
+4. Counting and relation task-group config files remain the loader boundary for now. Keep large `task_overrides` sections grouped by scene family in this order when editing: adjacency, automaton, binary tree, flow network, graph options, metro, node-link, pedigree, phylogeny, pipe network.
+5. Prompt bundle files remain unsplit until the prompt loader has explicit include support and tests that preserve prompt metadata, template ordering, and deterministic variant selection.

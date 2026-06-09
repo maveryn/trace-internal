@@ -1,0 +1,128 @@
+{
+  "bundle_id": "charts_errorbar_series_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "errorbar_series_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:errorbar_series_scene": [
+      "object_description"
+    ],
+    "query:entirely_above_threshold_count": [
+      "target_series_label",
+      "threshold_relation_phrase",
+      "threshold_value"
+    ],
+    "query:entirely_below_threshold_count": [
+      "target_series_label",
+      "threshold_relation_phrase",
+      "threshold_value"
+    ],
+    "query:contains_threshold_count": [
+      "target_series_label",
+      "threshold_relation_phrase",
+      "threshold_value"
+    ],
+    "query:highest_upper_bound_x_label": [
+      "target_series_label",
+      "bound_phrase",
+      "extremum_phrase"
+    ],
+    "query:lowest_lower_bound_x_label": [
+      "target_series_label",
+      "bound_phrase",
+      "extremum_phrase"
+    ],
+    "query:overlap_target_errorbar_at_x_count": [
+      "target_series_label",
+      "target_x_label"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "errorbar_series_scene": [
+      "The image shows {object_description}.",
+      "The chart shows {object_description}.",
+      "The image shows {object_description}.",
+      "The chart shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "entirely_above_threshold_count": [
+      "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+      "Count the x positions where series \"{target_series_label}\" has its whole error bar {threshold_relation_phrase} {threshold_value}.",
+      "Using the error bars for \"{target_series_label}\", how many are {threshold_relation_phrase} the reference value {threshold_value}?",
+      "How many \"{target_series_label}\" error bars lie {threshold_relation_phrase} {threshold_value}?",
+      "For \"{target_series_label}\", count the x-axis labels whose error bar is {threshold_relation_phrase} {threshold_value}."
+    ],
+    "entirely_below_threshold_count": [
+      "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+      "Count the x positions where series \"{target_series_label}\" has its whole error bar {threshold_relation_phrase} {threshold_value}.",
+      "Using the error bars for \"{target_series_label}\", how many are {threshold_relation_phrase} the reference value {threshold_value}?",
+      "How many \"{target_series_label}\" error bars lie {threshold_relation_phrase} {threshold_value}?",
+      "For \"{target_series_label}\", count the x-axis labels whose error bar is {threshold_relation_phrase} {threshold_value}."
+    ],
+    "contains_threshold_count": [
+      "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+      "Count the x positions where series \"{target_series_label}\" has an error bar {threshold_relation_phrase} {threshold_value}.",
+      "Using the error bars for \"{target_series_label}\", how many include the reference value {threshold_value}?",
+      "How many \"{target_series_label}\" error bars contain {threshold_value}?",
+      "For \"{target_series_label}\", count the x-axis labels whose error bar contains {threshold_value}."
+    ],
+    "highest_upper_bound_x_label": [
+      "For series \"{target_series_label}\", which x-axis label has the {extremum_phrase} {bound_phrase}?",
+      "Find the x-axis label where \"{target_series_label}\" has the {extremum_phrase} {bound_phrase}.",
+      "Looking only at \"{target_series_label}\", which x label has the {extremum_phrase} {bound_phrase}?",
+      "Which visible x-axis label corresponds to the {extremum_phrase} {bound_phrase} for \"{target_series_label}\"?",
+      "For \"{target_series_label}\", identify the x-axis label with the {extremum_phrase} {bound_phrase}."
+    ],
+    "lowest_lower_bound_x_label": [
+      "For series \"{target_series_label}\", which x-axis label has the {extremum_phrase} {bound_phrase}?",
+      "Find the x-axis label where \"{target_series_label}\" has the {extremum_phrase} {bound_phrase}.",
+      "Looking only at \"{target_series_label}\", which x label has the {extremum_phrase} {bound_phrase}?",
+      "Which visible x-axis label corresponds to the {extremum_phrase} {bound_phrase} for \"{target_series_label}\"?",
+      "For \"{target_series_label}\", identify the x-axis label with the {extremum_phrase} {bound_phrase}."
+    ],
+    "overlap_target_errorbar_at_x_count": [
+      "At x-axis label \"{target_x_label}\", how many other series have error bars that overlap the error bar for \"{target_series_label}\"?",
+      "Compare all series at \"{target_x_label}\". How many other error bars overlap \"{target_series_label}\"?",
+      "At \"{target_x_label}\", count the other series whose error-bar interval overlaps the interval for \"{target_series_label}\".",
+      "Using the error bars at x label \"{target_x_label}\", how many non-target series overlap \"{target_series_label}\"?",
+      "For x label \"{target_x_label}\", how many other series share any error-bar range with \"{target_series_label}\"?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -16,6 +16,13 @@
       "",
       ""
     ],
+    "adjacency_pair_reciprocity_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "named_node_degree_value_query": [
       "",
       "",
@@ -106,6 +113,13 @@
       "",
       "",
       ""
+    ],
+    "phylogeny_tree_clade_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -119,6 +133,9 @@
       "object_description"
     ],
     "scene:binary_tree_counting": [
+      "object_description"
+    ],
+    "scene:phylogeny_tree_counting": [
       "object_description"
     ],
     "query:degree_count": [
@@ -171,6 +188,8 @@
     "query:bridge_count": [],
     "query:undirected_component_count": [],
     "query:directed_strong_component_count": [],
+    "query:one_way_pair_count": [],
+    "query:mutual_pair_count": [],
     "query:pipe_bridge_count": [],
     "query:metro_transfer_station_count": [],
     "query:metro_single_route_station_count": [],
@@ -181,19 +200,20 @@
     "query:depth_level_node_count": [
       "target_depth"
     ],
-    "answer_or_evidence:answer_only": [
+    "query:marked_clade_leaf_count": [],
+    "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_evidence:answer_and_evidence": [
+    "answer_or_annotation:answer_and_annotation": [
       "json_output_contract",
-      "evidence_hint",
+      "annotation_hint",
       "answer_hint",
       "json_example"
     ]
   },
-  "answer_or_evidence_templates": {
+  "answer_or_annotation_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
@@ -201,12 +221,12 @@
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
-    "answer_and_evidence": [
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -232,6 +252,13 @@
       "This diagram shows {object_description}."
     ],
     "binary_tree_counting": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ],
+    "phylogeny_tree_counting": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}.",
@@ -274,6 +301,13 @@
       "What is the number of nodes on depth level {target_depth}, counting the root as depth 0?",
       "How many nodes are exactly {target_depth} edges below the root?",
       "Find all nodes at depth {target_depth} from the root. How many are there?"
+    ],
+    "marked_clade_leaf_count": [
+      "How many taxa are in the marked clade?",
+      "Count the descendant taxa inside the marked clade.",
+      "What is the number of labeled taxa descending from the marked clade?",
+      "The highlighted branch marks one clade. How many terminal taxa does that clade contain?",
+      "Find the marked clade and count its descendant taxon labels. How many are there?"
     ],
     "degree_count": [
       "How many nodes have degree {query_degree}?",
@@ -428,6 +462,20 @@
       "What is the number of strongly connected components?",
       "How many maximal groups have directed paths both ways between every pair of nodes in the group?",
       "Find the strongly connected groups. How many groups are there?"
+    ],
+    "one_way_pair_count": [
+      "How many unordered node pairs have an edge in exactly one direction?",
+      "Count the node pairs where exactly one of the two mirrored off-diagonal cells is 1.",
+      "What is the number of node pairs with a directed edge one way but not back?",
+      "How many pairs have one matrix cell marked 1 and the mirrored cell marked 0?",
+      "Find every one-way node pair in the directed matrix. How many are there?"
+    ],
+    "mutual_pair_count": [
+      "How many unordered node pairs have edges in both directions?",
+      "Count the node pairs where both mirrored off-diagonal cells are 1.",
+      "What is the number of node pairs connected by directed edges both ways?",
+      "How many pairs have a 1 in each of the two mirrored matrix cells?",
+      "Find every mutual node pair in the directed matrix. How many are there?"
     ],
     "pipe_bridge_count": [
       "How many open pipes would disconnect part of the open-pipe network if removed?",

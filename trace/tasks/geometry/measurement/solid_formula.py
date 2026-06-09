@@ -46,6 +46,7 @@ from ..shared.measurement_rendering import (
     bbox_from_points as _bbox_from_points,
     draw_label as _draw_label,
 )
+from ..shared.fixed_query_task import geometry_selected_probability_map as _selected_probability_map
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
@@ -183,8 +184,8 @@ class _ResolvedProblem:
 class _RenderedSolidFormulaScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
-    evidence_roles: Tuple[str, ...]
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -291,13 +292,6 @@ def _draw_dashed_line(
             width=width,
         )
         distance += dash + gap
-
-
-def _selected_probability_map(values: Sequence[float], selected: float) -> Dict[str, float]:
-    return {
-        _fmt_number(value): (1.0 if abs(float(value) - float(selected)) <= 1e-9 else 0.0)
-        for value in values
-    }
 
 
 def _case_pool_for_query(query_id: str) -> Tuple[Tuple[float, ...], ...]:
@@ -463,6 +457,8 @@ def _resolve_problem(
         support_probabilities=_selected_probability_map(
             tuple(sorted(set(float(value) for value in support_values))),
             _round1(answer),
+            key_fn=_fmt_number,
+            is_selected=lambda value, selected: abs(float(value) - float(selected)) <= 1e-9,
         ),
     )
 
@@ -784,21 +780,21 @@ def _render_solid_formula_scene(
     ctx: _RenderContext, problem: _ResolvedProblem
 ) -> _RenderedSolidFormulaScene:
     if problem.query_id == "cylinder_cone_radius_from_volume_heights":
-        solid_bbox, label_bboxes, evidence_roles = _draw_cylinder_cone_radius(
+        solid_bbox, label_bboxes, annotation_roles = _draw_cylinder_cone_radius(
             ctx, problem
         )
     elif problem.query_id == "cylinder_cone_height_from_volume_radius":
-        solid_bbox, label_bboxes, evidence_roles = _draw_cylinder_cone_height(
+        solid_bbox, label_bboxes, annotation_roles = _draw_cylinder_cone_height(
             ctx, problem
         )
     elif problem.query_id == "prism_pyramid_height_from_volume":
-        solid_bbox, label_bboxes, evidence_roles = _draw_prism_pyramid(ctx, problem)
+        solid_bbox, label_bboxes, annotation_roles = _draw_prism_pyramid(ctx, problem)
     elif problem.query_id == "house_prism_length_from_volume":
-        solid_bbox, label_bboxes, evidence_roles = _draw_house_prism(ctx, problem)
+        solid_bbox, label_bboxes, annotation_roles = _draw_house_prism(ctx, problem)
     else:
         raise ValueError(f"unsupported solid-formula query_id: {problem.query_id}")
 
-    evidence_lookup = {
+    annotation_lookup = {
         "target_radius_label": label_bboxes.get("target"),
         "target_cylinder_height_label": label_bboxes.get("target"),
         "target_prism_height_label": label_bboxes.get("target"),
@@ -817,10 +813,10 @@ def _render_solid_formula_scene(
         "wall_height_label": label_bboxes.get("wall_height"),
         "roof_height_label": label_bboxes.get("roof_height"),
     }
-    evidence_bboxes = tuple(
+    annotation_bboxes = tuple(
         bbox
-        for role in evidence_roles
-        for bbox in (evidence_lookup.get(role),)
+        for role in annotation_roles
+        for bbox in (annotation_lookup.get(role),)
         if bbox is not None
     )
     scene_entities = (
@@ -866,8 +862,8 @@ def _render_solid_formula_scene(
     return _RenderedSolidFormulaScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
-        evidence_roles=tuple(evidence_roles),
+        annotation_bboxes=tuple(annotation_bboxes),
+        annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -890,6 +886,7 @@ class _SolidFormulaBaseTask:
     domain = "geometry"
     task_group = TASK_GROUP
     default_dataset_enabled = True
+    scene_id = SCENE_ID
     public_scene_id = SCENE_ID
     supported_queries: Sequence[str] = ()
     reasoning_kind = "solid_formula"
@@ -987,7 +984,7 @@ class _SolidFormulaBaseTask:
     def _build_complexity(self, rendered: _RenderedSolidFormulaScene) -> TaskComplexity:
         visual_scan = clamp_unit_interval(
             0.44
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=5)
             * 0.18
         )
         precision_by_kind = {
@@ -1003,7 +1000,7 @@ class _SolidFormulaBaseTask:
         solid_kind = str(rendered.witness.get("solid_kind", "cylinder_cone"))
         output_burden = clamp_unit_interval(
             0.44
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=4, max_value=5)
+            + normalize_linear(len(rendered.annotation_bboxes), min_value=4, max_value=5)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -1066,7 +1063,7 @@ class _SolidFormulaBaseTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint_number",
                 "json_example",
                 "json_example_answer_only",
@@ -1080,14 +1077,14 @@ class _SolidFormulaBaseTask:
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(problem.query_id),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "annotation_hint": str(prompt_defaults["annotation_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint_number"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(
@@ -1098,16 +1095,16 @@ class _SolidFormulaBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
+        annotation_bboxes = [_bbox_to_list(bbox) for bbox in rendered.annotation_bboxes]
+        annotation_points = [
             [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
+            for bbox in annotation_bboxes
         ]
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.solid_kind),
@@ -1125,7 +1122,7 @@ class _SolidFormulaBaseTask:
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.solid_kind),
                     "answer_value": float(rendered.answer),
-                    "evidence_roles": list(rendered.evidence_roles),
+                    "annotation_roles": list(rendered.annotation_roles),
                 },
             },
             "query_spec": {
@@ -1154,7 +1151,7 @@ class _SolidFormulaBaseTask:
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "one_decimal",
-                "evidence_roles": list(rendered.evidence_roles),
+                "annotation_roles": list(rendered.annotation_roles),
                 "reasoning_steps": 2,
                 **dict(rendered.witness),
             },
@@ -1164,21 +1161,21 @@ class _SolidFormulaBaseTask:
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "original_annotation_value": list(rendered.annotation_roles),
                 **dict(rendered.witness),
             },
-            "projected_evidence": {
+            "projected_annotation": {
                 "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "bbox_set": list(annotation_bboxes),
+                "pixel_bbox_set": list(annotation_bboxes),
+                "point_set": list(annotation_points),
+                "pixel_point_set": list(annotation_points),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
+            annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1191,15 +1188,45 @@ class _SolidFormulaBaseTask:
 
 
 @register_task
-class GeometrySolidFormulaMissingDimensionValueTask(_SolidFormulaBaseTask):
-    """Compute a missing dimension from direct solid formula labels."""
+class GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask(_SolidFormulaBaseTask):
+    """Compute cylinder-cone height from volume and radius."""
 
-    task_id = "task_geometry__solid_formula__solid_formula_missing_dimension_value"
-    supported_queries = _MISSING_DIMENSION_QUERIES
+    task_id = "task_geometry__solid_formula__cylinder_cone_height_from_volume_radius"
+    supported_queries = ("cylinder_cone_height_from_volume_radius",)
+    reasoning_kind = "missing_dimension"
+
+
+@register_task
+class GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask(_SolidFormulaBaseTask):
+    """Compute cylinder-cone radius from volume and heights."""
+
+    task_id = "task_geometry__solid_formula__cylinder_cone_radius_from_volume_heights"
+    supported_queries = ("cylinder_cone_radius_from_volume_heights",)
+    reasoning_kind = "missing_dimension"
+
+
+@register_task
+class GeometrySolidFormulaHousePrismLengthFromVolumeTask(_SolidFormulaBaseTask):
+    """Compute house-prism length from volume."""
+
+    task_id = "task_geometry__solid_formula__house_prism_length_from_volume"
+    supported_queries = ("house_prism_length_from_volume",)
+    reasoning_kind = "missing_dimension"
+
+
+@register_task
+class GeometrySolidFormulaPrismPyramidHeightFromVolumeTask(_SolidFormulaBaseTask):
+    """Compute prism-pyramid height from volume."""
+
+    task_id = "task_geometry__solid_formula__prism_pyramid_height_from_volume"
+    supported_queries = ("prism_pyramid_height_from_volume",)
     reasoning_kind = "missing_dimension"
 
 
 __all__ = [
-    "GeometrySolidFormulaMissingDimensionValueTask",
+    "GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask",
+    "GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask",
+    "GeometrySolidFormulaHousePrismLengthFromVolumeTask",
+    "GeometrySolidFormulaPrismPyramidHeightFromVolumeTask",
     "SCENE_ID",
 ]

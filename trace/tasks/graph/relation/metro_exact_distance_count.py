@@ -13,7 +13,7 @@ class GraphRelationMetroExactDistanceCountTask(MetroRouteGraphTaskBase):
     task_id = "task_graph__metro__exact_distance_station_count"
     task_group = "relation"
     query_id = "metro_exact_distance_count"
-    prompt_evidence_key = "evidence_hint_exact_distance_count"
+    prompt_annotation_key = "annotation_hint_exact_distance_count"
     prompt_task_key_fallback = "exact_distance_count_query"
 
 

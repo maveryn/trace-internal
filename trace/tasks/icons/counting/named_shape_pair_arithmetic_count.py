@@ -19,7 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import keyed_bbox_map_evidence
+from ..shared.annotation import keyed_bbox_set_map_annotation
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
@@ -42,7 +42,7 @@ from ..shared.procedural_named_icons import (
 )
 
 
-TASK_ID = "task_icons__named_field__shape_pair_arithmetic_count"
+TASK_ID = "task_icons__named_field__count_arithmetic"
 
 QUERY_IDS: Tuple[str, ...] = (
     "two_shape_total_count",
@@ -407,7 +407,7 @@ def _sample_operands(
         shape_name = procedural_named_icon_display_name(str(shape_id))
         if str(color_name):
             color_label = str(color_by_name[str(color_name)].label)
-            label = f"{color_label} {shape_name}"
+            label = f'{color_label} "{shape_name}"'
         else:
             color_label = ""
             label = str(shape_name)
@@ -694,12 +694,12 @@ def _instance_bbox_sort_key(instance: Any) -> tuple[int, int, int, int]:
     return (bbox[1], bbox[0], bbox[3], bbox[2])
 
 
-def _operand_evidence_role_maps(
+def _operand_annotation_role_maps(
     *,
     instances: Sequence[Any],
     left_instance_ids: Sequence[str],
     right_instance_ids: Sequence[str],
-) -> tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+) -> tuple[Dict[str, list[list[int]]], Dict[str, list[str]]]:
     left_ids = {str(instance_id) for instance_id in left_instance_ids}
     right_ids = {str(instance_id) for instance_id in right_instance_ids}
     left_instances = sorted(
@@ -710,16 +710,14 @@ def _operand_evidence_role_maps(
         [instance for instance in instances if str(instance.instance_id) in right_ids],
         key=_instance_bbox_sort_key,
     )
-    role_bboxes: Dict[str, Sequence[int]] = {}
-    role_instance_ids: Dict[str, str] = {}
-    for index, instance in enumerate(left_instances, start=1):
-        role = f"left_operand_{index}"
-        role_bboxes[role] = list(instance.bbox_xyxy)
-        role_instance_ids[role] = str(instance.instance_id)
-    for index, instance in enumerate(right_instances, start=1):
-        role = f"right_operand_{index}"
-        role_bboxes[role] = list(instance.bbox_xyxy)
-        role_instance_ids[role] = str(instance.instance_id)
+    role_bboxes: Dict[str, list[list[int]]] = {
+        "left_operand": [[int(value) for value in instance.bbox_xyxy] for instance in left_instances],
+        "right_operand": [[int(value) for value in instance.bbox_xyxy] for instance in right_instances],
+    }
+    role_instance_ids: Dict[str, list[str]] = {
+        "left_operand": [str(instance.instance_id) for instance in left_instances],
+        "right_operand": [str(instance.instance_id) for instance in right_instances],
+    }
     return role_bboxes, role_instance_ids
 
 
@@ -864,7 +862,7 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
                 "json_output_contract_answer_only",
                 "object_description",
                 question_key,
-                "evidence_hint",
+                "annotation_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -877,13 +875,13 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": _question_text(active_prompt_defaults, sample),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
                     left_operand_label=str(sample.left_operand.label),
                     right_operand_label=str(sample.right_operand.label),
                 ),
@@ -916,14 +914,15 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         )
         if len(left_instance_ids) != int(sample.left_count) or len(right_instance_ids) != int(sample.right_count):
             raise RuntimeError("operand role counts do not match sampled counts")
-        evidence_role_bboxes, evidence_role_instance_ids = _operand_evidence_role_maps(
+        annotation_role_bboxes, annotation_role_instance_ids = _operand_annotation_role_maps(
             instances=scene.instances,
             left_instance_ids=left_instance_ids,
             right_instance_ids=right_instance_ids,
         )
-        if len(evidence_role_bboxes) != int(sample.left_count) + int(sample.right_count):
-            raise RuntimeError("rendered named-icon pair arithmetic evidence did not match operand counts")
-        evidence_artifacts = keyed_bbox_map_evidence(evidence_role_bboxes)
+        annotation_bbox_count = sum(len(bboxes) for bboxes in annotation_role_bboxes.values())
+        if annotation_bbox_count != int(sample.left_count) + int(sample.right_count):
+            raise RuntimeError("rendered named-icon pair arithmetic annotation did not match operand counts")
+        annotation_artifacts = keyed_bbox_set_map_annotation(annotation_role_bboxes)
 
         trace_payload = {
             "scene_ir": {
@@ -1100,18 +1099,18 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
                 "counted_instance_ids": list(counted_instance_ids),
                 "left_operand_instance_ids": list(left_instance_ids),
                 "right_operand_instance_ids": list(right_instance_ids),
-                "evidence_roles": dict(evidence_role_instance_ids),
+                "annotation_roles": dict(annotation_role_instance_ids),
             },
-            "projected_evidence": {
-                **dict(evidence_artifacts["projected_evidence"]),
+            "projected_annotation": {
+                **dict(annotation_artifacts["projected_annotation"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(
-                type=str(evidence_artifacts["evidence_type"]),
-                value=dict(evidence_artifacts["evidence_value"]),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=dict(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

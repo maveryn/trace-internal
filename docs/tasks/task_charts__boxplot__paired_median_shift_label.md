@@ -4,15 +4,28 @@
 1. Domain: `charts`
 2. Scene id: `boxplot`
 3. Source implementation domain/group: `charts/distribution`
-4. Query id: sampled internally and recorded in `query_id`
+4. Query id: sampled from `paired_median_greatest_absolute_change_label`, `paired_median_greatest_decrease_label`, `paired_median_greatest_increase_label`
 5. Semantic query details are recorded in `query_id` and trace params.
-6. Answer type: `string`, the exact visible matched label.
-7. Evidence type: `keyed_point_map` with keys `before_boxplot` and `after_boxplot`.
-
-Prompt-facing evidence marks the before and after median witnesses for the winning label.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.distribution.boxplot_label.ChartsDistributionBoxplotPairedMedianShiftLabelTask`
 2. Prompt lookup domain/group: `charts/distribution`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and evidence are produced from the same metadata execution trace.
+4. Answers and annotation are produced from the same metadata execution trace.
+
+## Annotation Contract
+1. Answer schema: `string_label`.
+2. Annotation schema: `keyed_point_map`.
+3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `paired_median_greatest_absolute_change_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `paired_median_greatest_decrease_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `paired_median_greatest_increase_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+
+## Review
+- Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

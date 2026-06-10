@@ -35,6 +35,9 @@ RLVR training/export/validation docs live under:
 - `TAXONOMY_V0_DOMAIN_MIGRATION.md` — strict per-domain migration workflow for
   applying the approved contract-v0 taxonomy with no compatibility aliases or
   stale public task ids.
+- `SCENE_PACKAGE_MIGRATION/README.md` — tracked scene-package migration
+  workflow for retiring legacy task-group packages, enforcing objective
+  ownership, and validating domain/scene/task packages.
 - `TASK_REVIEW_WEB_APP.md` — browser app workflow for inspecting active
   task-review sidecars and collecting sample-level reviewer issues.
 - `BENCHMARK_REVIEW_WEB_APP.md` — separate browser app workflow for inspecting

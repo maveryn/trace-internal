@@ -1,9 +1,16 @@
 """Behavior tests for chart distribution tasks."""
 from __future__ import annotations
 import json
-from trace.tasks.charts.boxplot.shared.boxplot_label import ChartsDistributionBoxplotLabelTask, ChartsDistributionBoxplotMedianRankDifferenceValueTask, ChartsDistributionBoxplotPairedMedianShiftLabelTask
-from trace.tasks.charts.histogram.shared.histogram_count import ChartsDistributionHistogramCountTask, ChartsDistributionHistogramCumulativeRankLabelTask
-from trace.tasks.charts.violin.shared.violin_label import ChartsDistributionViolinLabelTask, ChartsDistributionViolinModeExtremumLabelTask, ChartsDistributionViolinModalityLabelTask, ChartsDistributionViolinSupportWidthExtremumLabelTask
+from trace.tasks.charts.boxplot.iqr_extremum_label import ChartsDistributionBoxplotIqrExtremumLabelTask
+from trace.tasks.charts.boxplot.median_rank_difference_value import ChartsDistributionBoxplotMedianRankDifferenceValueTask
+from trace.tasks.charts.boxplot.median_reference_label import ChartsDistributionBoxplotMedianReferenceLabelTask
+from trace.tasks.charts.boxplot.paired_median_shift_label import ChartsDistributionBoxplotPairedMedianShiftLabelTask
+from trace.tasks.charts.histogram.bin_count_between_values import ChartsDistributionHistogramBinCountBetweenValuesTask
+from trace.tasks.charts.histogram.cumulative_rank_bin_label import ChartsDistributionHistogramCumulativeRankLabelTask
+from trace.tasks.charts.histogram.interval_mass import ChartsDistributionHistogramIntervalMassTask
+from trace.tasks.charts.violin.modality_label import ChartsDistributionViolinModalityLabelTask
+from trace.tasks.charts.violin.mode_extremum_label import ChartsDistributionViolinModeExtremumLabelTask
+from trace.tasks.charts.violin.support_width_extremum_label import ChartsDistributionViolinSupportWidthExtremumLabelTask
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -142,71 +149,76 @@ def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> 
     assert out.annotation_gt.type == 'bbox_set'
 
 def test_chart_distribution_boxplot_variants_match_contract() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
-    cases = (('median_reference_label', {'median_reference_direction': 'above_reference_q3'}), ('median_reference_label', {'median_reference_direction': 'below_reference_q1'}), ('iqr_extremum_label', {'extremum_direction': 'largest'}), ('iqr_extremum_label', {'extremum_direction': 'smallest'}))
-    for seed, (query_id, extra_params) in enumerate(cases, start=11110):
-        out = task.generate(seed, params={'query_id': query_id, **extra_params}, max_attempts=10)
+    cases = (
+        (ChartsDistributionBoxplotMedianReferenceLabelTask, {'median_reference_direction': 'above_reference_q3'}),
+        (ChartsDistributionBoxplotMedianReferenceLabelTask, {'median_reference_direction': 'below_reference_q1'}),
+        (ChartsDistributionBoxplotIqrExtremumLabelTask, {'extremum_direction': 'largest'}),
+        (ChartsDistributionBoxplotIqrExtremumLabelTask, {'extremum_direction': 'smallest'}),
+    )
+    for seed, (task_cls, extra_params) in enumerate(cases, start=11110):
+        out = task_cls().generate(seed, params=extra_params, max_attempts=10)
         trace = out.trace_payload
         execution = trace['execution_trace']
         render = trace['render_spec']
         quartiles_by_label = {str(label): dict(values) for label, values in execution['quartiles_by_label'].items()}
-        assert str(out.query_id) == str(query_id)
+        assert str(out.query_id) == 'default'
         assert out.answer_gt.type == 'string'
         assert str(execution['scene_variant']) == 'boxplot'
         assert str(render['scene_variant']) == 'boxplot'
-        if str(query_id) == 'median_reference_label':
+        if task_cls is ChartsDistributionBoxplotMedianReferenceLabelTask:
             assert out.annotation_gt.type == 'keyed_point_map'
             assert trace['projected_annotation']['type'] == 'keyed_point_map'
             assert set(out.annotation_gt.value) == {'reference_boxplot', 'answer_boxplot'}
             assert trace['projected_annotation']['keyed_point_map'] == out.annotation_gt.value
         else:
-            assert out.annotation_gt.type == 'point_set'
-            annotation_points = [list(point) for point in out.annotation_gt.value]
-            assert trace['projected_annotation']['type'] == 'point_set'
-            assert trace['projected_annotation']['point_set'] == annotation_points
-            assert trace['projected_annotation']['pixel_point_set'] == annotation_points
-            assert len(trace['projected_annotation']['bbox_set']) == 1
+            assert task_cls is ChartsDistributionBoxplotIqrExtremumLabelTask
+            assert out.annotation_gt.type == 'keyed_point_map'
+            assert trace['projected_annotation']['type'] == 'keyed_point_map'
+            assert set(out.annotation_gt.value) == {'answer_boxplot'}
+            assert trace['projected_annotation']['keyed_point_map'] == out.annotation_gt.value
         assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
         all_box_values = [int(value) for stats in quartiles_by_label.values() for value in (stats['whisker_min'], stats['q1'], stats['median'], stats['q3'], stats['whisker_max'])]
         _assert_value_axis_covers_values(render, all_box_values)
         for stats in quartiles_by_label.values():
             assert int(stats['whisker_min']) <= int(stats['q1']) < int(stats['median']) < int(stats['q3']) <= int(stats['whisker_max'])
-        if str(query_id) == 'median_reference_label' and str(execution['median_reference_direction']) == 'above_reference_q3':
+        if task_cls is ChartsDistributionBoxplotMedianReferenceLabelTask and str(execution['median_reference_direction']) == 'above_reference_q3':
             reference_label = str(execution['reference_label'])
             reference_q3 = int(execution['reference_q3'])
             target_label = max((str(label) for label in quartiles_by_label if str(label) != str(reference_label)), key=lambda label: int(quartiles_by_label[label]['median']) - int(reference_q3))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(quartiles_by_label[target_label]['median']) - int(reference_q3)
-        elif str(query_id) == 'median_reference_label' and str(execution['median_reference_direction']) == 'below_reference_q1':
+        elif task_cls is ChartsDistributionBoxplotMedianReferenceLabelTask and str(execution['median_reference_direction']) == 'below_reference_q1':
             reference_label = str(execution['reference_label'])
             reference_q1 = int(execution['reference_q1'])
             target_label = max((str(label) for label in quartiles_by_label if str(label) != str(reference_label)), key=lambda label: int(reference_q1) - int(quartiles_by_label[label]['median']))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(reference_q1) - int(quartiles_by_label[target_label]['median'])
-        elif str(query_id) == 'iqr_extremum_label' and str(execution['extremum_direction']) == 'largest':
+        elif task_cls is ChartsDistributionBoxplotIqrExtremumLabelTask and str(execution['extremum_direction']) == 'largest':
             target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]['iqr']))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(quartiles_by_label[target_label]['iqr'])
         else:
-            assert str(query_id) == 'iqr_extremum_label'
+            assert task_cls is ChartsDistributionBoxplotIqrExtremumLabelTask
             assert str(execution['extremum_direction']) == 'smallest'
             target_label = min(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]['iqr']))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(quartiles_by_label[target_label]['iqr'])
 
 def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
-    expected = {'median_reference_label': {'annotation': {'reference_boxplot': [240, 300], 'answer_boxplot': [430, 250]}, 'answer': 'Maple'}, 'iqr_extremum_label': {'annotation': [[430, 250]], 'answer': 'Ivory'}}
-    for index, query_id in enumerate(expected, start=11140):
-        out = task.generate(index, params={'query_id': query_id}, max_attempts=10)
+    cases = (
+        (ChartsDistributionBoxplotMedianReferenceLabelTask, {'annotation': {'reference_boxplot': [240, 300], 'answer_boxplot': [430, 250]}, 'answer': 'Maple'}),
+        (ChartsDistributionBoxplotIqrExtremumLabelTask, {'annotation': {'answer_boxplot': [430, 250]}, 'answer': 'Ivory'}),
+    )
+    for index, (task_cls, expected) in enumerate(cases, start=11140):
+        out = task_cls().generate(index, params={}, max_attempts=10)
         answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
         answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
-        assert answer_and_annotation == expected[query_id]
-        assert answer_only == {'answer': expected[query_id]['answer']}
+        assert answer_and_annotation == expected
+        assert answer_only == {'answer': expected['answer']}
 
 def test_chart_distribution_boxplot_task_is_deterministic() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
-    params = {'query_id': 'iqr_extremum_label', 'extremum_direction': 'largest'}
+    task = ChartsDistributionBoxplotIqrExtremumLabelTask()
+    params = {'extremum_direction': 'largest'}
     out_a = task.generate(11160, params=params, max_attempts=10)
     out_b = task.generate(11160, params=params, max_attempts=10)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -217,17 +229,17 @@ def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 def test_chart_distribution_boxplot_can_tighten_reference_q3_winner_gap() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
-    out = task.generate(11162, params={'query_id': 'median_reference_label', 'median_reference_direction': 'above_reference_q3', 'category_count_min': 7, 'category_count_max': 7, 'median_reference_winner_gap_min': 1, 'median_reference_winner_gap_max': 1}, max_attempts=10)
+    task = ChartsDistributionBoxplotMedianReferenceLabelTask()
+    out = task.generate(11162, params={'median_reference_direction': 'above_reference_q3', 'category_count_min': 7, 'category_count_max': 7, 'median_reference_winner_gap_min': 1, 'median_reference_winner_gap_max': 1}, max_attempts=10)
     execution = out.trace_payload['execution_trace']
     quartiles_by_label = execution['quartiles_by_label']
     reference_q3 = int(execution['reference_q3'])
     margins = sorted((int(stats['median']) - int(reference_q3) for label, stats in quartiles_by_label.items() if str(label) != str(execution['reference_label']) and int(stats['median']) > int(reference_q3)))
     assert margins[-1] - margins[-2] == 1
 
-def test_chart_distribution_boxplot_supports_query_id_overrides() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
-    out = task.generate(11164, params={'query_id': 'median_reference_label', 'median_reference_direction': 'above_reference_q3', 'category_count_min': 4, 'category_count_max': 7, 'query_id_overrides': {'median_reference_label': {'category_count_min': 8, 'category_count_max': 8, 'median_reference_winner_gap_min': 1, 'median_reference_winner_gap_max': 1}}}, max_attempts=10)
+def test_chart_distribution_boxplot_reference_uses_direct_generation_params() -> None:
+    task = ChartsDistributionBoxplotMedianReferenceLabelTask()
+    out = task.generate(11164, params={'median_reference_direction': 'above_reference_q3', 'category_count_min': 8, 'category_count_max': 8, 'median_reference_winner_gap_min': 1, 'median_reference_winner_gap_max': 1}, max_attempts=10)
     execution = out.trace_payload['execution_trace']
     assert int(execution['category_count']) == 8
     reference_q3 = int(execution['reference_q3'])
@@ -235,9 +247,9 @@ def test_chart_distribution_boxplot_supports_query_id_overrides() -> None:
     assert margins[-1] - margins[-2] == 1
 
 def test_chart_distribution_boxplot_can_tighten_iqr_winner_gap() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
+    task = ChartsDistributionBoxplotIqrExtremumLabelTask()
     for seed, extremum_direction in enumerate(('largest', 'smallest'), start=11163):
-        out = task.generate(seed, params={'query_id': 'iqr_extremum_label', 'extremum_direction': extremum_direction, 'category_count_min': 7, 'category_count_max': 7, 'iqr_winner_gap_min': 1, 'iqr_winner_gap_max': 1}, max_attempts=10)
+        out = task.generate(seed, params={'extremum_direction': extremum_direction, 'category_count_min': 7, 'category_count_max': 7, 'iqr_winner_gap_min': 1, 'iqr_winner_gap_max': 1}, max_attempts=10)
         quartiles_by_label = out.trace_payload['execution_trace']['quartiles_by_label']
         iqrs = sorted((int(stats['iqr']) for stats in quartiles_by_label.values()))
         if extremum_direction == 'largest':
@@ -246,9 +258,9 @@ def test_chart_distribution_boxplot_can_tighten_iqr_winner_gap() -> None:
             assert iqrs[1] - iqrs[0] == 1
 
 def test_chart_distribution_boxplot_uses_configured_iqr_winner_gap() -> None:
-    task = ChartsDistributionBoxplotLabelTask()
+    task = ChartsDistributionBoxplotIqrExtremumLabelTask()
     for seed, extremum_direction in enumerate(('largest', 'smallest'), start=11167):
-        out = task.generate(seed, params={'query_id': 'iqr_extremum_label', 'extremum_direction': extremum_direction, 'category_count_min': 7, 'category_count_max': 7}, max_attempts=10)
+        out = task.generate(seed, params={'extremum_direction': extremum_direction, 'category_count_min': 7, 'category_count_max': 7}, max_attempts=10)
         quartiles_by_label = out.trace_payload['execution_trace']['quartiles_by_label']
         iqrs = sorted((int(stats['iqr']) for stats in quartiles_by_label.values()))
         if extremum_direction == 'largest':
@@ -257,6 +269,12 @@ def test_chart_distribution_boxplot_uses_configured_iqr_winner_gap() -> None:
             assert iqrs[1] - iqrs[0] == 1
 
 def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_annotation() -> None:
+    iqr = ChartsDistributionBoxplotIqrExtremumLabelTask().generate(11179, params={'extremum_direction': 'largest'}, max_attempts=10)
+    assert iqr.answer_gt.type == 'string'
+    assert iqr.annotation_gt.type == 'keyed_point_map'
+    assert set(iqr.annotation_gt.value) == {'answer_boxplot'}
+    assert iqr.trace_payload['projected_annotation']['type'] == 'keyed_point_map'
+    assert iqr.trace_payload['projected_annotation']['keyed_point_map'] == iqr.annotation_gt.value
     median_rank = ChartsDistributionBoxplotMedianRankDifferenceValueTask().generate(11180, params={'query_id': 'median_top_second_difference_value'}, max_attempts=10)
     assert median_rank.answer_gt.type == 'integer'
     assert median_rank.annotation_gt.type == 'keyed_point_map'

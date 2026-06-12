@@ -3,13 +3,13 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `boxplot`
-3. Source implementation domain/group: `charts/distribution`
-4. Query id: `median_reference_label`
+3. Source implementation scene package: `charts/boxplot`
+4. Query id: `default`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.distribution.boxplot_label.ChartsDistributionBoxplotMedianReferenceLabelTask`
-2. Prompt lookup domain/group: `charts/distribution`
+1. Registered class: `trace.tasks.charts.boxplot.median_reference_label.ChartsDistributionBoxplotMedianReferenceLabelTask`
+2. Prompt lookup scene package: `charts/boxplot`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `median_reference_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `default` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

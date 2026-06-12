@@ -121,6 +121,8 @@ def render_paired_boxplot_panels(
     after_title: str,
     instance_seed: int,
 ) -> BoxplotRenderArtifacts:
+    """Render before/after boxplot panels with a shared value axis and labels."""
+
     render_params = _render_params(params, mark_style, instance_seed=int(instance_seed))
     background, background_meta = make_background_canvas(
         canvas_width=int(render_params.canvas_width),
@@ -168,14 +170,6 @@ def point_map_for_labels(
         str(label): [round(float(point[0]), 3), round(float(point[1]), 3)]
         for label, point in zip(labels, points)
     }
-
-
-def point_set_for_labels(
-    rendered_scene: RenderedChartScene,
-    labels: Sequence[str],
-) -> tuple[list[list[float]], dict[str, Any]]:
-    projection = projected_mark_annotation(rendered_scene, [str(label) for label in labels])
-    return [list(point) for point in projection["pixel_point_set"]], dict(projection)
 
 
 def label_centers(rendered_scene: RenderedChartScene) -> dict[str, list[float]]:
@@ -246,7 +240,6 @@ __all__ = [
     "BoxplotRenderArtifacts",
     "build_trace_scaffold",
     "point_map_for_labels",
-    "point_set_for_labels",
     "render_paired_boxplot_panels",
     "render_single_boxplot_scene",
     "resolve_mark_style",

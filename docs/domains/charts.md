@@ -70,10 +70,10 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 | `bar_3d` | `task_charts__bar_3d__series_category_scope_total_value` | `series_total_value`, `series_interval_total_value` |
 | `bar_3d` | `task_charts__bar_3d__series_threshold_count` | `series_threshold_count` |
 | `bar_3d` | `task_charts__bar_3d__series_total_gap_value` | `series_total_gap_value` |
-| `boxplot` | `task_charts__boxplot__iqr_extremum_label` | `iqr_extremum_label` |
-| `boxplot` | `task_charts__boxplot__median_rank_difference_value` | `default` |
-| `boxplot` | `task_charts__boxplot__median_reference_label` | `median_reference_label` |
-| `boxplot` | `task_charts__boxplot__paired_median_shift_label` | `default` |
+| `boxplot` | `task_charts__boxplot__iqr_extremum_label` | `default` |
+| `boxplot` | `task_charts__boxplot__median_rank_difference_value` | `median_top_bottom_difference_value`, `median_top_second_difference_value`, `median_top_third_difference_value` |
+| `boxplot` | `task_charts__boxplot__median_reference_label` | `default` |
+| `boxplot` | `task_charts__boxplot__paired_median_shift_label` | `paired_median_greatest_absolute_change_label`, `paired_median_greatest_decrease_label`, `paired_median_greatest_increase_label` |
 | `candlestick` | `task_charts__candlestick__counterfactual_close_value` | `close_after_body_change_value` |
 | `candlestick` | `task_charts__candlestick__range_extremum_label` | `wick_range_extremum_label`, `body_range_extremum_label` |
 | `combo_mark` | `task_charts__combo_mark__absolute_gap_extremum_label` | `largest_absolute_gap_label`, `smallest_nonzero_absolute_gap_label` |

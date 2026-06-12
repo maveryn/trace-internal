@@ -1,0 +1,12 @@
+{
+  "calibration_baseline": "v0",
+  "inspection_count": 100,
+  "query_ids": {
+    "pop_color_label": 100
+  },
+  "task_id": "task_games__bubble_shooter__pop_color_label",
+  "workbook": "games/bubble_shooter/task_games__bubble_shooter__pop_color_label/task_games__bubble_shooter__pop_color_label.xlsx",
+  "workbook_sheets": {
+    "pop_color_label": "pop_color_label"
+  }
+}

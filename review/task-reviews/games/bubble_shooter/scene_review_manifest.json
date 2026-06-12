@@ -1,0 +1,36 @@
+{
+  "calibration_baseline": "v0",
+  "domain": "games",
+  "inspection_count": 300,
+  "model_stats_count": 0,
+  "model_stats_sheet": "model_stats",
+  "scene_id": "bubble_shooter",
+  "task_count": 3,
+  "tasks": {
+    "task_games__bubble_shooter__drop_count": {
+      "inspection_count": 100,
+      "scene_preview_rows_per_task": 100,
+      "sheet": "_bubble_shooter__drop_count",
+      "source_inspection_count": 100,
+      "task_manifest": "games/bubble_shooter/task_games__bubble_shooter__drop_count/manifest.json",
+      "task_workbook": "games/bubble_shooter/task_games__bubble_shooter__drop_count/task_games__bubble_shooter__drop_count.xlsx"
+    },
+    "task_games__bubble_shooter__pop_color_label": {
+      "inspection_count": 100,
+      "scene_preview_rows_per_task": 100,
+      "sheet": "_bubble_shooter__pop_color_labe",
+      "source_inspection_count": 100,
+      "task_manifest": "games/bubble_shooter/task_games__bubble_shooter__pop_color_label/manifest.json",
+      "task_workbook": "games/bubble_shooter/task_games__bubble_shooter__pop_color_label/task_games__bubble_shooter__pop_color_label.xlsx"
+    },
+    "task_games__bubble_shooter__pop_count": {
+      "inspection_count": 100,
+      "scene_preview_rows_per_task": 100,
+      "sheet": "_bubble_shooter__pop_count",
+      "source_inspection_count": 100,
+      "task_manifest": "games/bubble_shooter/task_games__bubble_shooter__pop_count/manifest.json",
+      "task_workbook": "games/bubble_shooter/task_games__bubble_shooter__pop_count/task_games__bubble_shooter__pop_count.xlsx"
+    }
+  },
+  "workbook": "games/bubble_shooter/scene_review.xlsx"
+}

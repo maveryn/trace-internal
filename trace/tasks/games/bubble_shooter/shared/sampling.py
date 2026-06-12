@@ -26,9 +26,11 @@ from .state import (
     BubbleShooterOption,
     BubbleShooterState,
     Coord,
+    bubble_entity_id,
+)
+from .rules import (
     all_bubble_coords,
     board_from_mapping,
-    bubble_entity_id,
     bubble_neighbors,
     compute_shot_outcome,
     occupied_coords,
@@ -456,6 +458,8 @@ def _make_pop_board(
     target: int,
     color_key: str,
 ) -> Tuple[Board, Coord]:
+    """Construct a supported board where the placed shot pops exactly target bubbles."""
+
     if int(target) == 0:
         return _make_no_pop_board(
             rng=rng,
@@ -515,6 +519,8 @@ def _make_drop_board(
     target: int,
     color_key: str,
 ) -> Tuple[Board, Coord]:
+    """Construct a supported board where a small pop disconnects exactly target bubbles."""
+
     if int(target) > max(1, (int(rows) - 4) * 2):
         raise ValueError("drop target is too large for this board")
     start = (int(rng.randint(2, max(2, rows - 4))), int(rng.randint(2, max(2, cols - 3))))

@@ -21,13 +21,12 @@ from .state import (
     Board,
     BubbleShooterOption,
     Coord,
-    board_value,
     bubble_entity_id,
     landing_slot_entity_id,
-    occupied_coords,
     option_entity_id,
     shooter_bubble_entity_id,
 )
+from .rules import board_value, occupied_coords
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import (
     GamePanelSceneStyle,
@@ -102,7 +101,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id="bubble_sho
 
 
 def build_games_bubble_shooter_theme(*, style_variant: str) -> BubbleShooterTheme:
-    """Return one Bubble-shooter visual theme."""
+    """Return one Bubble-shooter visual theme with stable contrast-safe role colors."""
 
     style = str(style_variant)
     if style == "pastel":

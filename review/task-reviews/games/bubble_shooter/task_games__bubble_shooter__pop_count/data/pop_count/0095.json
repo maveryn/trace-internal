@@ -1,0 +1,2269 @@
+{
+  "annotation_gt": {
+    "type": "point_set",
+    "value": []
+  },
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/bubble_shooter/task_games__bubble_shooter__pop_count/images/pop_count/0095.png"
+  },
+  "instance_seed": 8430900901871439,
+  "prompt": "This scene shows a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area. A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself. The launcher bubble lands at the marked target. How many existing board bubbles pop?\nAnnotation format: set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop.\nAnswer format: set \"answer\" to the number of existing board bubbles that pop.\nExample JSON:\n{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_annotation": "This scene shows a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area. A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself. The launcher bubble lands at the marked target. How many existing board bubbles pop?\nAnnotation format: set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop.\nAnswer format: set \"answer\" to the number of existing board bubbles that pop.\nExample JSON:\n{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+    "answer_only": "This scene shows a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area. A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself. The launcher bubble lands at the marked target. How many existing board bubbles pop?\nAnswer format: set \"answer\" to the number of existing board bubbles that pop.\nExample JSON:\n{\"answer\":5}"
+  },
+  "query_id": "pop_count",
+  "scene_id": "bubble_shooter",
+  "task": "task_games__bubble_shooter__pop_count",
+  "task_id": "task_games__bubble_shooter__pop_count",
+  "trace_payload": {
+    "background": {
+      "available_palettes": [
+        "arcade_navy",
+        "arcade_purple",
+        "cool_blue",
+        "coral_card",
+        "cyan_lab",
+        "gold_card",
+        "mint_green",
+        "plain_neutral",
+        "rose_sheet",
+        "sage_board",
+        "sky_lilac",
+        "slate_paper",
+        "soft_gray",
+        "teal_card",
+        "terminal_amber",
+        "terminal_blue",
+        "terminal_green",
+        "violet_note",
+        "warm_linen",
+        "warm_paper"
+      ],
+      "available_treatments": [
+        "bare_canvas",
+        "plain_sheet",
+        "matte_sheet",
+        "thin_frame",
+        "soft_panel",
+        "margin_sheet",
+        "dot_sheet",
+        "worksheet_panel",
+        "notebook_grid",
+        "index_card",
+        "clipboard_sheet",
+        "printout_panel",
+        "puzzle_card",
+        "inset_board",
+        "tabletop_mat",
+        "corkboard_sheet",
+        "game_table",
+        "lab_panel",
+        "arcade_screen",
+        "terminal_screen"
+      ],
+      "enabled": true,
+      "selected_style": "panel_scene_style:notebook_grid:coral_card",
+      "style_spec": {
+        "background_accent_rgb": [
+          228,
+          200,
+          188
+        ],
+        "background_rgb": [
+          242,
+          225,
+          216
+        ],
+        "kind": "panel_scene_style",
+        "min_background_state_lab_distance": 9.719,
+        "min_background_state_rgb_distance": 41.773,
+        "palette_id": "coral_card",
+        "style_pack": "notebook_grid:coral_card",
+        "treatment": "notebook_grid"
+      }
+    },
+    "execution_trace": {
+      "answer": 0,
+      "board_bubbles": [
+        {
+          "color_key": "purple",
+          "coord": [
+            0,
+            0
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            0,
+            1
+          ]
+        },
+        {
+          "color_key": "red",
+          "coord": [
+            0,
+            2
+          ]
+        },
+        {
+          "color_key": "orange",
+          "coord": [
+            0,
+            3
+          ]
+        },
+        {
+          "color_key": "red",
+          "coord": [
+            0,
+            4
+          ]
+        },
+        {
+          "color_key": "purple",
+          "coord": [
+            0,
+            5
+          ]
+        },
+        {
+          "color_key": "red",
+          "coord": [
+            0,
+            6
+          ]
+        },
+        {
+          "color_key": "orange",
+          "coord": [
+            0,
+            7
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            0,
+            8
+          ]
+        },
+        {
+          "color_key": "yellow",
+          "coord": [
+            0,
+            9
+          ]
+        },
+        {
+          "color_key": "red",
+          "coord": [
+            1,
+            0
+          ]
+        },
+        {
+          "color_key": "yellow",
+          "coord": [
+            1,
+            1
+          ]
+        },
+        {
+          "color_key": "yellow",
+          "coord": [
+            1,
+            2
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            1,
+            3
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            1,
+            5
+          ]
+        },
+        {
+          "color_key": "purple",
+          "coord": [
+            1,
+            7
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            1,
+            8
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            1,
+            9
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            2,
+            0
+          ]
+        },
+        {
+          "color_key": "green",
+          "coord": [
+            2,
+            1
+          ]
+        },
+        {
+          "color_key": "orange",
+          "coord": [
+            2,
+            3
+          ]
+        },
+        {
+          "color_key": "red",
+          "coord": [
+            2,
+            4
+          ]
+        },
+        {
+          "color_key": "purple",
+          "coord": [
+            2,
+            5
+          ]
+        },
+        {
+          "color_key": "purple",
+          "coord": [
+            2,
+            9
+          ]
+        }
+      ],
+      "col_count": 10,
+      "construction_mode": "single_shot_pop_component",
+      "domain": "games",
+      "landing_coord": [
+        3,
+        4
+      ],
+      "option_specs": [],
+      "outcome": {
+        "color_key": "blue",
+        "connected_same_color_coords": [],
+        "dropped_coords": [],
+        "popped_coords": []
+      },
+      "query_id": "pop_count",
+      "row_count": 7,
+      "scene_id": "bubble_shooter",
+      "scene_variant": "dense_pack",
+      "shooter_color_key": "blue",
+      "style_variant": "classic",
+      "task_id": "task_games__bubble_shooter__pop_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "pixel_point_set": [],
+      "point_set": [],
+      "type": "point_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "internal_query_id": "pop_count",
+      "params": {
+        "bubble_count": 24,
+        "col_count": 10,
+        "col_count_probabilities": {
+          "10": 1.0
+        },
+        "col_count_support": [
+          8,
+          9,
+          10
+        ],
+        "internal_query_id": "pop_count",
+        "option_count": 0,
+        "query_id": "pop_count",
+        "query_id_probabilities": {
+          "pop_count": 1.0
+        },
+        "row_count": 7,
+        "row_count_probabilities": {
+          "7": 1.0
+        },
+        "row_count_support": [
+          7
+        ],
+        "scene_id": "bubble_shooter",
+        "scene_variant": "dense_pack",
+        "scene_variant_probabilities": {
+          "dense_pack": 1.0,
+          "open_pack": 0.0
+        },
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "arcade": 0.0,
+          "classic": 1.0,
+          "neon": 0.0,
+          "paper": 0.0,
+          "pastel": 0.0
+        },
+        "target_answer": 0,
+        "target_answer_probabilities": {
+          "0": 1.0
+        },
+        "target_answer_support": [
+          0,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 4,
+        "prompt_bundle_hash": "794c72b309b1819b9c9c506e517c68641323a2fdeba6324dc37e86542da90189",
+        "prompt_bundle_id": "games_bubble_shooter_v1",
+        "prompt_bundle_path": "games/bubble_shooter/games_bubble_shooter_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bubble_shooter",
+        "prompt_schema_version": "v1",
+        "query_key": "pop_count",
+        "query_template_index": 0,
+        "scene_key": "visible_bubble_shooter_board",
+        "scene_template_index": 2,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 4,
+          "query": 0,
+          "scene": 2,
+          "task": 1
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "pop_count",
+          "scene": "visible_bubble_shooter_board",
+          "task": "bubble_shooter_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:pop_count",
+          "answer_hint": "static:query:pop_count",
+          "bubble_shooter_rule_text": "static:query:pop_count",
+          "json_example": "static:query:pop_count",
+          "json_example_answer_only": "static:query:pop_count",
+          "object_description": "static:scene:visible_bubble_shooter_board"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+          "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+          "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+          "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+          "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+          "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+          "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+        },
+        "task_key": "bubble_shooter_query",
+        "task_template_index": 1,
+        "template_paths": [
+          "games/bubble_shooter/games_bubble_shooter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:pop_count": 5,
+          "scene:visible_bubble_shooter_board": 5,
+          "task:bubble_shooter_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "794c72b309b1819b9c9c506e517c68641323a2fdeba6324dc37e86542da90189",
+            "prompt_bundle_id": "games_bubble_shooter_v1",
+            "prompt_bundle_path": "games/bubble_shooter/games_bubble_shooter_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bubble_shooter",
+            "prompt_schema_version": "v1",
+            "query_key": "pop_count",
+            "query_template_index": 0,
+            "scene_key": "visible_bubble_shooter_board",
+            "scene_template_index": 2,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 0,
+              "scene": 2,
+              "task": 1
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "pop_count",
+              "scene": "visible_bubble_shooter_board",
+              "task": "bubble_shooter_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:pop_count",
+              "answer_hint": "static:query:pop_count",
+              "bubble_shooter_rule_text": "static:query:pop_count",
+              "json_example": "static:query:pop_count",
+              "json_example_answer_only": "static:query:pop_count",
+              "object_description": "static:scene:visible_bubble_shooter_board"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+              "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+              "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+              "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+              "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+              "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+              "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+            },
+            "task_key": "bubble_shooter_query",
+            "task_template_index": 1,
+            "template_paths": [
+              "games/bubble_shooter/games_bubble_shooter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:pop_count": 5,
+              "scene:visible_bubble_shooter_board": 5,
+              "task:bubble_shooter_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "This scene shows a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area. A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself. The launcher bubble lands at the marked target. How many existing board bubbles pop?\nAnnotation format: set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop.\nAnswer format: set \"answer\" to the number of existing board bubbles that pop.\nExample JSON:\n{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 0,
+            "prompt_bundle_hash": "794c72b309b1819b9c9c506e517c68641323a2fdeba6324dc37e86542da90189",
+            "prompt_bundle_id": "games_bubble_shooter_v1",
+            "prompt_bundle_path": "games/bubble_shooter/games_bubble_shooter_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bubble_shooter",
+            "prompt_schema_version": "v1",
+            "query_key": "pop_count",
+            "query_template_index": 0,
+            "scene_key": "visible_bubble_shooter_board",
+            "scene_template_index": 2,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 0,
+              "query": 0,
+              "scene": 2,
+              "task": 1
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "pop_count",
+              "scene": "visible_bubble_shooter_board",
+              "task": "bubble_shooter_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:pop_count",
+              "answer_hint": "static:query:pop_count",
+              "bubble_shooter_rule_text": "static:query:pop_count",
+              "json_example": "static:query:pop_count",
+              "json_example_answer_only": "static:query:pop_count",
+              "object_description": "static:scene:visible_bubble_shooter_board"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+              "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+              "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+              "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
+              "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
+              "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
+              "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "object_description": "a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area"
+            },
+            "task_key": "bubble_shooter_query",
+            "task_template_index": 1,
+            "template_paths": [
+              "games/bubble_shooter/games_bubble_shooter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:pop_count": 5,
+              "scene:visible_bubble_shooter_board": 5,
+              "task:bubble_shooter_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "This scene shows a close-packed bubble-shooter board with colored bubbles, a marked landing target, and a visible launcher area. A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself. The launcher bubble lands at the marked target. How many existing board bubbles pop?\nAnswer format: set \"answer\" to the number of existing board bubbles that pop.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "query_id": "pop_count",
+      "scene_id": "bubble_shooter",
+      "task_id": "task_games__bubble_shooter__pop_count",
+      "template_id": "games_bubble_shooter_v1"
+    },
+    "render_map": {
+      "aim_cue_path_px": {
+        "end": [
+          487.11,
+          590.087
+        ],
+        "start": [
+          489.058,
+          622.378
+        ]
+      },
+      "bubble_bboxes_px": {
+        "bubble_r0_c0": [
+          142.164,
+          117.0,
+          206.704,
+          181.54
+        ],
+        "bubble_r0_c1": [
+          208.704,
+          117.0,
+          273.244,
+          181.54
+        ],
+        "bubble_r0_c2": [
+          275.244,
+          117.0,
+          339.784,
+          181.54
+        ],
+        "bubble_r0_c3": [
+          341.785,
+          117.0,
+          406.325,
+          181.54
+        ],
+        "bubble_r0_c4": [
+          408.325,
+          117.0,
+          472.865,
+          181.54
+        ],
+        "bubble_r0_c5": [
+          474.865,
+          117.0,
+          539.405,
+          181.54
+        ],
+        "bubble_r0_c6": [
+          541.405,
+          117.0,
+          605.945,
+          181.54
+        ],
+        "bubble_r0_c7": [
+          607.946,
+          117.0,
+          672.486,
+          181.54
+        ],
+        "bubble_r0_c8": [
+          674.486,
+          117.0,
+          739.026,
+          181.54
+        ],
+        "bubble_r0_c9": [
+          741.026,
+          117.0,
+          805.566,
+          181.54
+        ],
+        "bubble_r1_c0": [
+          174.434,
+          174.334,
+          238.974,
+          238.874
+        ],
+        "bubble_r1_c1": [
+          240.974,
+          174.334,
+          305.514,
+          238.874
+        ],
+        "bubble_r1_c2": [
+          307.514,
+          174.334,
+          372.054,
+          238.874
+        ],
+        "bubble_r1_c3": [
+          374.055,
+          174.334,
+          438.595,
+          238.874
+        ],
+        "bubble_r1_c5": [
+          507.135,
+          174.334,
+          571.675,
+          238.874
+        ],
+        "bubble_r1_c7": [
+          640.216,
+          174.334,
+          704.756,
+          238.874
+        ],
+        "bubble_r1_c8": [
+          706.756,
+          174.334,
+          771.296,
+          238.874
+        ],
+        "bubble_r1_c9": [
+          773.296,
+          174.334,
+          837.836,
+          238.874
+        ],
+        "bubble_r2_c0": [
+          142.164,
+          231.667,
+          206.704,
+          296.207
+        ],
+        "bubble_r2_c1": [
+          208.704,
+          231.667,
+          273.244,
+          296.207
+        ],
+        "bubble_r2_c3": [
+          341.785,
+          231.667,
+          406.325,
+          296.207
+        ],
+        "bubble_r2_c4": [
+          408.325,
+          231.667,
+          472.865,
+          296.207
+        ],
+        "bubble_r2_c5": [
+          474.865,
+          231.667,
+          539.405,
+          296.207
+        ],
+        "bubble_r2_c9": [
+          741.026,
+          231.667,
+          805.566,
+          296.207
+        ]
+      },
+      "bubble_radius_px": 32.27,
+      "entity_bboxes_px": {
+        "bubble_r0_c0": [
+          142.164,
+          117.0,
+          206.704,
+          181.54
+        ],
+        "bubble_r0_c1": [
+          208.704,
+          117.0,
+          273.244,
+          181.54
+        ],
+        "bubble_r0_c2": [
+          275.244,
+          117.0,
+          339.784,
+          181.54
+        ],
+        "bubble_r0_c3": [
+          341.785,
+          117.0,
+          406.325,
+          181.54
+        ],
+        "bubble_r0_c4": [
+          408.325,
+          117.0,
+          472.865,
+          181.54
+        ],
+        "bubble_r0_c5": [
+          474.865,
+          117.0,
+          539.405,
+          181.54
+        ],
+        "bubble_r0_c6": [
+          541.405,
+          117.0,
+          605.945,
+          181.54
+        ],
+        "bubble_r0_c7": [
+          607.946,
+          117.0,
+          672.486,
+          181.54
+        ],
+        "bubble_r0_c8": [
+          674.486,
+          117.0,
+          739.026,
+          181.54
+        ],
+        "bubble_r0_c9": [
+          741.026,
+          117.0,
+          805.566,
+          181.54
+        ],
+        "bubble_r1_c0": [
+          174.434,
+          174.334,
+          238.974,
+          238.874
+        ],
+        "bubble_r1_c1": [
+          240.974,
+          174.334,
+          305.514,
+          238.874
+        ],
+        "bubble_r1_c2": [
+          307.514,
+          174.334,
+          372.054,
+          238.874
+        ],
+        "bubble_r1_c3": [
+          374.055,
+          174.334,
+          438.595,
+          238.874
+        ],
+        "bubble_r1_c5": [
+          507.135,
+          174.334,
+          571.675,
+          238.874
+        ],
+        "bubble_r1_c7": [
+          640.216,
+          174.334,
+          704.756,
+          238.874
+        ],
+        "bubble_r1_c8": [
+          706.756,
+          174.334,
+          771.296,
+          238.874
+        ],
+        "bubble_r1_c9": [
+          773.296,
+          174.334,
+          837.836,
+          238.874
+        ],
+        "bubble_r2_c0": [
+          142.164,
+          231.667,
+          206.704,
+          296.207
+        ],
+        "bubble_r2_c1": [
+          208.704,
+          231.667,
+          273.244,
+          296.207
+        ],
+        "bubble_r2_c3": [
+          341.785,
+          231.667,
+          406.325,
+          296.207
+        ],
+        "bubble_r2_c4": [
+          408.325,
+          231.667,
+          472.865,
+          296.207
+        ],
+        "bubble_r2_c5": [
+          474.865,
+          231.667,
+          539.405,
+          296.207
+        ],
+        "bubble_r2_c9": [
+          741.026,
+          231.667,
+          805.566,
+          296.207
+        ],
+        "landing_slot": [
+          436.722,
+          285.128,
+          509.008,
+          357.414
+        ],
+        "shooter_bubble": [
+          470.0,
+          642.0,
+          510.0,
+          682.0
+        ]
+      },
+      "entity_centers_px": {
+        "bubble_r0_c0": [
+          174.434,
+          149.27
+        ],
+        "bubble_r0_c1": [
+          240.974,
+          149.27
+        ],
+        "bubble_r0_c2": [
+          307.514,
+          149.27
+        ],
+        "bubble_r0_c3": [
+          374.055,
+          149.27
+        ],
+        "bubble_r0_c4": [
+          440.595,
+          149.27
+        ],
+        "bubble_r0_c5": [
+          507.135,
+          149.27
+        ],
+        "bubble_r0_c6": [
+          573.675,
+          149.27
+        ],
+        "bubble_r0_c7": [
+          640.216,
+          149.27
+        ],
+        "bubble_r0_c8": [
+          706.756,
+          149.27
+        ],
+        "bubble_r0_c9": [
+          773.296,
+          149.27
+        ],
+        "bubble_r1_c0": [
+          206.704,
+          206.604
+        ],
+        "bubble_r1_c1": [
+          273.244,
+          206.604
+        ],
+        "bubble_r1_c2": [
+          339.784,
+          206.604
+        ],
+        "bubble_r1_c3": [
+          406.325,
+          206.604
+        ],
+        "bubble_r1_c5": [
+          539.405,
+          206.604
+        ],
+        "bubble_r1_c7": [
+          672.486,
+          206.604
+        ],
+        "bubble_r1_c8": [
+          739.026,
+          206.604
+        ],
+        "bubble_r1_c9": [
+          805.566,
+          206.604
+        ],
+        "bubble_r2_c0": [
+          174.434,
+          263.937
+        ],
+        "bubble_r2_c1": [
+          240.974,
+          263.937
+        ],
+        "bubble_r2_c3": [
+          374.055,
+          263.937
+        ],
+        "bubble_r2_c4": [
+          440.595,
+          263.937
+        ],
+        "bubble_r2_c5": [
+          507.135,
+          263.937
+        ],
+        "bubble_r2_c9": [
+          773.296,
+          263.937
+        ],
+        "landing_slot": [
+          472.865,
+          321.271
+        ],
+        "shooter_bubble": [
+          490.0,
+          662.0
+        ]
+      },
+      "font_family": "outfit",
+      "guide_color_safety": {
+        "anchor_rgbs": [
+          [
+            242,
+            225,
+            216
+          ],
+          [
+            228,
+            200,
+            188
+          ],
+          [
+            255,
+            249,
+            245
+          ],
+          [
+            118,
+            78,
+            68
+          ],
+          [
+            247,
+            222,
+            211
+          ],
+          [
+            111,
+            82,
+            75
+          ],
+          [
+            21,
+            29,
+            45
+          ],
+          [
+            145,
+            165,
+            194
+          ],
+          [
+            255,
+            221,
+            104
+          ],
+          [
+            42,
+            55,
+            78
+          ],
+          [
+            172,
+            192,
+            218
+          ],
+          [
+            38,
+            50,
+            72
+          ],
+          [
+            150,
+            174,
+            207
+          ]
+        ],
+        "distance_space": "lab",
+        "guide_anchor_lab_distance": 56.746,
+        "min_anchor_distance_required": 40.0
+      },
+      "guide_line_rgb": [
+        213,
+        94,
+        0
+      ],
+      "landing_slot_bbox_px": [
+        436.722,
+        285.128,
+        509.008,
+        357.414
+      ],
+      "landing_slot_center_px": [
+        472.865,
+        321.271
+      ],
+      "layout_jitter": {
+        "clamp_x_px": [
+          -75,
+          75
+        ],
+        "clamp_y_px": [
+          -60,
+          60
+        ],
+        "dx_px": 0,
+        "dy_px": 6,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": 0,
+        "requested_dy_px": 6,
+        "requested_x_slack_fraction": 0.0044999999999999485,
+        "requested_y_slack_fraction": 0.09519999999999995,
+        "unit_size_jitter": {
+          "enabled": true,
+          "key": "unit_size_scale",
+          "max": 1.0,
+          "min": 0.5,
+          "range_ratio": 2.0,
+          "scale": 0.9279999999999999
+        }
+      },
+      "motion_path_px": {
+        "end": [
+          472.865,
+          353.96
+        ],
+        "start": [
+          490.0,
+          638.0
+        ]
+      },
+      "option_bboxes_px": {},
+      "panel_bbox_px": [
+        67,
+        58,
+        913,
+        774
+      ],
+      "panel_scene_style": {
+        "agent_rgb": [
+          190,
+          56,
+          91
+        ],
+        "background_accent_rgb": [
+          228,
+          200,
+          188
+        ],
+        "background_rgb": [
+          242,
+          225,
+          216
+        ],
+        "background_state_lab_distances": [
+          9.719,
+          60.216,
+          48.449
+        ],
+        "background_state_rgb_distances": [
+          41.773,
+          203.431,
+          203.443
+        ],
+        "grid_rgb": [
+          111,
+          82,
+          75
+        ],
+        "mark_rgb": [
+          205,
+          69,
+          73
+        ],
+        "min_background_state_lab_distance": 9.719,
+        "min_background_state_rgb_distance": 41.773,
+        "notebook_line_rgb": [
+          232,
+          214,
+          207
+        ],
+        "option_fill_rgb": [
+          255,
+          250,
+          247
+        ],
+        "palette_id": "coral_card",
+        "panel_accent_rgb": [
+          247,
+          222,
+          211
+        ],
+        "panel_border_rgb": [
+          118,
+          78,
+          68
+        ],
+        "panel_fill_rgb": [
+          255,
+          249,
+          245
+        ],
+        "state_colors_rgb": [
+          [
+            255,
+            251,
+            246
+          ],
+          [
+            64,
+            129,
+            194
+          ],
+          [
+            76,
+            153,
+            123
+          ]
+        ],
+        "style_pack": "notebook_grid:coral_card",
+        "text_rgb": [
+          54,
+          54,
+          52
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "notebook_grid"
+      },
+      "playfield_bbox_px": [
+        91.0,
+        82.0,
+        889.0,
+        750.0
+      ],
+      "shooter_bubble_bbox_px": [
+        470.0,
+        642.0,
+        510.0,
+        682.0
+      ],
+      "shooter_bubble_center_px": [
+        490.0,
+        662.0
+      ],
+      "slot_centers_px": {
+        "0,0": [
+          174.434,
+          149.27
+        ],
+        "0,1": [
+          240.974,
+          149.27
+        ],
+        "0,2": [
+          307.514,
+          149.27
+        ],
+        "0,3": [
+          374.055,
+          149.27
+        ],
+        "0,4": [
+          440.595,
+          149.27
+        ],
+        "0,5": [
+          507.135,
+          149.27
+        ],
+        "0,6": [
+          573.675,
+          149.27
+        ],
+        "0,7": [
+          640.216,
+          149.27
+        ],
+        "0,8": [
+          706.756,
+          149.27
+        ],
+        "0,9": [
+          773.296,
+          149.27
+        ],
+        "1,0": [
+          206.704,
+          206.604
+        ],
+        "1,1": [
+          273.244,
+          206.604
+        ],
+        "1,2": [
+          339.784,
+          206.604
+        ],
+        "1,3": [
+          406.325,
+          206.604
+        ],
+        "1,4": [
+          472.865,
+          206.604
+        ],
+        "1,5": [
+          539.405,
+          206.604
+        ],
+        "1,6": [
+          605.945,
+          206.604
+        ],
+        "1,7": [
+          672.486,
+          206.604
+        ],
+        "1,8": [
+          739.026,
+          206.604
+        ],
+        "1,9": [
+          805.566,
+          206.604
+        ],
+        "2,0": [
+          174.434,
+          263.937
+        ],
+        "2,1": [
+          240.974,
+          263.937
+        ],
+        "2,2": [
+          307.514,
+          263.937
+        ],
+        "2,3": [
+          374.055,
+          263.937
+        ],
+        "2,4": [
+          440.595,
+          263.937
+        ],
+        "2,5": [
+          507.135,
+          263.937
+        ],
+        "2,6": [
+          573.675,
+          263.937
+        ],
+        "2,7": [
+          640.216,
+          263.937
+        ],
+        "2,8": [
+          706.756,
+          263.937
+        ],
+        "2,9": [
+          773.296,
+          263.937
+        ],
+        "3,0": [
+          206.704,
+          321.271
+        ],
+        "3,1": [
+          273.244,
+          321.271
+        ],
+        "3,2": [
+          339.784,
+          321.271
+        ],
+        "3,3": [
+          406.325,
+          321.271
+        ],
+        "3,4": [
+          472.865,
+          321.271
+        ],
+        "3,5": [
+          539.405,
+          321.271
+        ],
+        "3,6": [
+          605.945,
+          321.271
+        ],
+        "3,7": [
+          672.486,
+          321.271
+        ],
+        "3,8": [
+          739.026,
+          321.271
+        ],
+        "3,9": [
+          805.566,
+          321.271
+        ],
+        "4,0": [
+          174.434,
+          378.604
+        ],
+        "4,1": [
+          240.974,
+          378.604
+        ],
+        "4,2": [
+          307.514,
+          378.604
+        ],
+        "4,3": [
+          374.055,
+          378.604
+        ],
+        "4,4": [
+          440.595,
+          378.604
+        ],
+        "4,5": [
+          507.135,
+          378.604
+        ],
+        "4,6": [
+          573.675,
+          378.604
+        ],
+        "4,7": [
+          640.216,
+          378.604
+        ],
+        "4,8": [
+          706.756,
+          378.604
+        ],
+        "4,9": [
+          773.296,
+          378.604
+        ],
+        "5,0": [
+          206.704,
+          435.938
+        ],
+        "5,1": [
+          273.244,
+          435.938
+        ],
+        "5,2": [
+          339.784,
+          435.938
+        ],
+        "5,3": [
+          406.325,
+          435.938
+        ],
+        "5,4": [
+          472.865,
+          435.938
+        ],
+        "5,5": [
+          539.405,
+          435.938
+        ],
+        "5,6": [
+          605.945,
+          435.938
+        ],
+        "5,7": [
+          672.486,
+          435.938
+        ],
+        "5,8": [
+          739.026,
+          435.938
+        ],
+        "5,9": [
+          805.566,
+          435.938
+        ],
+        "6,0": [
+          174.434,
+          493.271
+        ],
+        "6,1": [
+          240.974,
+          493.271
+        ],
+        "6,2": [
+          307.514,
+          493.271
+        ],
+        "6,3": [
+          374.055,
+          493.271
+        ],
+        "6,4": [
+          440.595,
+          493.271
+        ],
+        "6,5": [
+          507.135,
+          493.271
+        ],
+        "6,6": [
+          573.675,
+          493.271
+        ],
+        "6,7": [
+          640.216,
+          493.271
+        ],
+        "6,8": [
+          706.756,
+          493.271
+        ],
+        "6,9": [
+          773.296,
+          493.271
+        ]
+      }
+    },
+    "render_spec": {
+      "canvas_height": 820,
+      "canvas_width": 980,
+      "domain": "games",
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Source Serif 4",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "source_serif_4",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/sourceserif4",
+          "tags": [
+            "serif",
+            "readable",
+            "variable"
+          ]
+        }
+      },
+      "layout_jitter": {
+        "clamp_x_px": [
+          -75,
+          75
+        ],
+        "clamp_y_px": [
+          -60,
+          60
+        ],
+        "dx_px": 0,
+        "dy_px": 6,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": 0,
+        "requested_dy_px": 6,
+        "requested_x_slack_fraction": 0.0044999999999999485,
+        "requested_y_slack_fraction": 0.09519999999999995,
+        "unit_size_jitter": {
+          "enabled": true,
+          "key": "unit_size_scale",
+          "max": 1.0,
+          "min": 0.5,
+          "range_ratio": 2.0,
+          "scale": 0.9279999999999999
+        }
+      },
+      "panel_scene_style": {
+        "agent_rgb": [
+          190,
+          56,
+          91
+        ],
+        "background_accent_rgb": [
+          228,
+          200,
+          188
+        ],
+        "background_rgb": [
+          242,
+          225,
+          216
+        ],
+        "background_state_lab_distances": [
+          9.719,
+          60.216,
+          48.449
+        ],
+        "background_state_rgb_distances": [
+          41.773,
+          203.431,
+          203.443
+        ],
+        "grid_rgb": [
+          111,
+          82,
+          75
+        ],
+        "mark_rgb": [
+          205,
+          69,
+          73
+        ],
+        "min_background_state_lab_distance": 9.719,
+        "min_background_state_rgb_distance": 41.773,
+        "notebook_line_rgb": [
+          232,
+          214,
+          207
+        ],
+        "option_fill_rgb": [
+          255,
+          250,
+          247
+        ],
+        "palette_id": "coral_card",
+        "panel_accent_rgb": [
+          247,
+          222,
+          211
+        ],
+        "panel_border_rgb": [
+          118,
+          78,
+          68
+        ],
+        "panel_fill_rgb": [
+          255,
+          249,
+          245
+        ],
+        "state_colors_rgb": [
+          [
+            255,
+            251,
+            246
+          ],
+          [
+            64,
+            129,
+            194
+          ],
+          [
+            76,
+            153,
+            123
+          ]
+        ],
+        "style_pack": "notebook_grid:coral_card",
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
+        "text_legibility": {
+          "drawn_text_record_count": 0,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 9.536,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "min_contrast_ratio": 9.536,
+              "min_contrast_required": 7.0,
+              "min_lab_distance": 68.453,
+              "min_lab_distance_required": 38.0,
+              "passes": true,
+              "required": true,
+              "role": "read_required_panel_text",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "surface_rgbs": [
+                [
+                  242,
+                  225,
+                  216
+                ],
+                [
+                  255,
+                  249,
+                  245
+                ],
+                [
+                  255,
+                  250,
+                  247
+                ]
+              ]
+            }
+          ],
+          "required_role_count": 1
+        },
+        "text_rgb": [
+          54,
+          54,
+          52
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "notebook_grid"
+      },
+      "query_id": "pop_count",
+      "scene_id": "bubble_shooter",
+      "scene_variant": "dense_pack",
+      "style_variant": "classic",
+      "task_id": "task_games__bubble_shooter__pop_count",
+      "text_style": {
+        "font_asset": {
+          "family_name": "Outfit",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "outfit",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/outfit",
+          "tags": [
+            "sans",
+            "geometric",
+            "variable"
+          ]
+        },
+        "font_family": "outfit"
+      }
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "bbox_px": [
+            142.164,
+            117.0,
+            206.704,
+            181.54
+          ],
+          "center_px": [
+            174.434,
+            149.27
+          ],
+          "col": 0,
+          "color_key": "purple",
+          "entity_id": "bubble_r0_c0",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            208.704,
+            117.0,
+            273.244,
+            181.54
+          ],
+          "center_px": [
+            240.974,
+            149.27
+          ],
+          "col": 1,
+          "color_key": "green",
+          "entity_id": "bubble_r0_c1",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            275.244,
+            117.0,
+            339.784,
+            181.54
+          ],
+          "center_px": [
+            307.514,
+            149.27
+          ],
+          "col": 2,
+          "color_key": "red",
+          "entity_id": "bubble_r0_c2",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            341.785,
+            117.0,
+            406.325,
+            181.54
+          ],
+          "center_px": [
+            374.055,
+            149.27
+          ],
+          "col": 3,
+          "color_key": "orange",
+          "entity_id": "bubble_r0_c3",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            408.325,
+            117.0,
+            472.865,
+            181.54
+          ],
+          "center_px": [
+            440.595,
+            149.27
+          ],
+          "col": 4,
+          "color_key": "red",
+          "entity_id": "bubble_r0_c4",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            474.865,
+            117.0,
+            539.405,
+            181.54
+          ],
+          "center_px": [
+            507.135,
+            149.27
+          ],
+          "col": 5,
+          "color_key": "purple",
+          "entity_id": "bubble_r0_c5",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            541.405,
+            117.0,
+            605.945,
+            181.54
+          ],
+          "center_px": [
+            573.675,
+            149.27
+          ],
+          "col": 6,
+          "color_key": "red",
+          "entity_id": "bubble_r0_c6",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            607.946,
+            117.0,
+            672.486,
+            181.54
+          ],
+          "center_px": [
+            640.216,
+            149.27
+          ],
+          "col": 7,
+          "color_key": "orange",
+          "entity_id": "bubble_r0_c7",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            674.486,
+            117.0,
+            739.026,
+            181.54
+          ],
+          "center_px": [
+            706.756,
+            149.27
+          ],
+          "col": 8,
+          "color_key": "green",
+          "entity_id": "bubble_r0_c8",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            741.026,
+            117.0,
+            805.566,
+            181.54
+          ],
+          "center_px": [
+            773.296,
+            149.27
+          ],
+          "col": 9,
+          "color_key": "yellow",
+          "entity_id": "bubble_r0_c9",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            174.434,
+            174.334,
+            238.974,
+            238.874
+          ],
+          "center_px": [
+            206.704,
+            206.604
+          ],
+          "col": 0,
+          "color_key": "red",
+          "entity_id": "bubble_r1_c0",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            240.974,
+            174.334,
+            305.514,
+            238.874
+          ],
+          "center_px": [
+            273.244,
+            206.604
+          ],
+          "col": 1,
+          "color_key": "yellow",
+          "entity_id": "bubble_r1_c1",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            307.514,
+            174.334,
+            372.054,
+            238.874
+          ],
+          "center_px": [
+            339.784,
+            206.604
+          ],
+          "col": 2,
+          "color_key": "yellow",
+          "entity_id": "bubble_r1_c2",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            374.055,
+            174.334,
+            438.595,
+            238.874
+          ],
+          "center_px": [
+            406.325,
+            206.604
+          ],
+          "col": 3,
+          "color_key": "green",
+          "entity_id": "bubble_r1_c3",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            507.135,
+            174.334,
+            571.675,
+            238.874
+          ],
+          "center_px": [
+            539.405,
+            206.604
+          ],
+          "col": 5,
+          "color_key": "green",
+          "entity_id": "bubble_r1_c5",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            640.216,
+            174.334,
+            704.756,
+            238.874
+          ],
+          "center_px": [
+            672.486,
+            206.604
+          ],
+          "col": 7,
+          "color_key": "purple",
+          "entity_id": "bubble_r1_c7",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            706.756,
+            174.334,
+            771.296,
+            238.874
+          ],
+          "center_px": [
+            739.026,
+            206.604
+          ],
+          "col": 8,
+          "color_key": "green",
+          "entity_id": "bubble_r1_c8",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            773.296,
+            174.334,
+            837.836,
+            238.874
+          ],
+          "center_px": [
+            805.566,
+            206.604
+          ],
+          "col": 9,
+          "color_key": "green",
+          "entity_id": "bubble_r1_c9",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            142.164,
+            231.667,
+            206.704,
+            296.207
+          ],
+          "center_px": [
+            174.434,
+            263.937
+          ],
+          "col": 0,
+          "color_key": "green",
+          "entity_id": "bubble_r2_c0",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            208.704,
+            231.667,
+            273.244,
+            296.207
+          ],
+          "center_px": [
+            240.974,
+            263.937
+          ],
+          "col": 1,
+          "color_key": "green",
+          "entity_id": "bubble_r2_c1",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            341.785,
+            231.667,
+            406.325,
+            296.207
+          ],
+          "center_px": [
+            374.055,
+            263.937
+          ],
+          "col": 3,
+          "color_key": "orange",
+          "entity_id": "bubble_r2_c3",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            408.325,
+            231.667,
+            472.865,
+            296.207
+          ],
+          "center_px": [
+            440.595,
+            263.937
+          ],
+          "col": 4,
+          "color_key": "red",
+          "entity_id": "bubble_r2_c4",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            474.865,
+            231.667,
+            539.405,
+            296.207
+          ],
+          "center_px": [
+            507.135,
+            263.937
+          ],
+          "col": 5,
+          "color_key": "purple",
+          "entity_id": "bubble_r2_c5",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            741.026,
+            231.667,
+            805.566,
+            296.207
+          ],
+          "center_px": [
+            773.296,
+            263.937
+          ],
+          "col": 9,
+          "color_key": "purple",
+          "entity_id": "bubble_r2_c9",
+          "entity_type": "bubble_shooter_bubble",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            436.722,
+            285.128,
+            509.008,
+            357.414
+          ],
+          "center_px": [
+            472.865,
+            321.271
+          ],
+          "col": 4,
+          "entity_id": "landing_slot",
+          "entity_type": "bubble_shooter_landing_slot",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            470.0,
+            642.0,
+            510.0,
+            682.0
+          ],
+          "center_px": [
+            490.0,
+            662.0
+          ],
+          "color_key": "blue",
+          "entity_id": "shooter_bubble",
+          "entity_type": "bubble_shooter_launcher_bubble"
+        }
+      ],
+      "query_id": "pop_count",
+      "relations": {
+        "annotation_entity_ids": [],
+        "col_count": 10,
+        "query_id": "pop_count",
+        "row_count": 7,
+        "scene_id": "bubble_shooter",
+        "scene_variant": "dense_pack",
+        "style_variant": "classic"
+      },
+      "scene_id": "bubble_shooter",
+      "scene_kind": "games_bubble_shooter_dense_pack",
+      "task_id": "task_games__bubble_shooter__pop_count"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "pop_count",
+        "scene_id": "bubble_shooter",
+        "task_id": "task_games__bubble_shooter__pop_count"
+      },
+      "query_id": "pop_count",
+      "registered": {
+        "domain": "games",
+        "scene_id": "bubble_shooter",
+        "task_id": "task_games__bubble_shooter__pop_count"
+      },
+      "scene_id": "bubble_shooter",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "bubble_shooter",
+        "implementation_domain": "games",
+        "implementation_scene_id": "bubble_shooter",
+        "implementation_task_id": "task_games__bubble_shooter__pop_count",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bubble_shooter"
+      },
+      "task_id": "task_games__bubble_shooter__pop_count"
+    },
+    "witness_symbolic": {
+      "count": 0,
+      "type": "point_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

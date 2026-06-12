@@ -11,13 +11,15 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.bubble_shooter.drop_count import GamesBubbleShooterDropCountTask
 from trace.tasks.games.bubble_shooter.pop_color_label import GamesBubbleShooterPopColorLabelTask
 from trace.tasks.games.bubble_shooter.pop_count import GamesBubbleShooterPopCountTask
-from trace.tasks.games.bubble_shooter.shared.common import (
-    BUBBLE_OPTION_LABELS,
-    bubble_entity_id,
+from trace.tasks.games.bubble_shooter.shared.rules import (
     compute_shot_outcome,
     sorted_coords,
 )
-from trace.tasks.games.bubble_shooter.shared.common import landing_slot_entity_id
+from trace.tasks.games.bubble_shooter.shared.state import (
+    BUBBLE_OPTION_LABELS,
+    bubble_entity_id,
+    landing_slot_entity_id,
+)
 from tests.helpers import read_jsonl
 
 
@@ -37,16 +39,16 @@ def _board_from_trace(execution: dict) -> tuple[tuple[str | None, ...], ...]:
         (
             GamesBubbleShooterPopCountTask,
             {"target_answer": 5, "row_count": 7, "col_count": 9},
-            "default",
+            "pop_count",
             "integer",
         ),
         (
             GamesBubbleShooterDropCountTask,
             {"target_answer": 4, "row_count": 7, "col_count": 9},
-            "default",
+            "drop_count",
             "integer",
         ),
-        (GamesBubbleShooterPopColorLabelTask, {"target_label": "E", "option_count": 6}, "default", "string"),
+        (GamesBubbleShooterPopColorLabelTask, {"target_label": "E", "option_count": 6}, "pop_color_label", "string"),
     ),
 )
 def test_games_bubble_shooter_public_tasks_emit_expected_contract(
@@ -207,9 +209,10 @@ def test_games_bubble_shooter_pop_color_prompt_excludes_non_board_bubbles() -> N
 )
 def test_games_bubble_shooter_fixed_tasks_reject_unsupported_query_id(task_cls) -> None:
     task = task_cls()
-    assert task.generate(102090, params={"query_id": "default"}, max_attempts=256).query_id == "default"
+    expected_query = str(task.supported_query_ids[0])
+    assert task.generate(102090, params={"query_id": expected_query}, max_attempts=256).query_id == expected_query
     with pytest.raises(ValueError, match="unsupported query_id"):
-        task.generate(102090, params={"query_id": "pop_count"}, max_attempts=256)
+        task.generate(102090, params={"query_id": "default"}, max_attempts=256)
 
 
 def test_games_bubble_shooter_task_axes_cover_support() -> None:
@@ -235,7 +238,7 @@ def test_games_bubble_shooter_task_axes_cover_support() -> None:
             else:
                 counts.add(int(out.answer_gt.value))
 
-    assert queries == {"default"}
+    assert queries == {"pop_count", "drop_count", "pop_color_label"}
     assert rows <= {7, 8, 9}
     assert 7 in rows
     assert cols == {8, 9, 10}

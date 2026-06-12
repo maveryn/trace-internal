@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
-from .state import BubbleShooterState, bubble_entity_id, occupied_coords, option_entity_id
+from .rules import occupied_coords
+from .state import BubbleShooterState, bubble_entity_id, option_entity_id
 from .sampling import ResolvedBubbleShooterSceneAxes
 from .rendering import RenderedBubbleShooterTaskContext
 

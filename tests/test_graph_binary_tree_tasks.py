@@ -3,19 +3,25 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.binary_tree_node_count import (
+from trace.tasks.graph.binary_tree.child_structure_node_count import (
     GraphCountingBinaryTreeChildStructureNodeCountTask,
+)
+from trace.tasks.graph.binary_tree.depth_level_node_count import (
     GraphCountingBinaryTreeDepthLevelNodeCountTask,
 )
-from trace.tasks.graph.order.binary_tree_traversal_label import (
+from trace.tasks.graph.binary_tree.traversal_kth_label import (
     GraphOrderBinaryTreeTraversalLabelTask,
 )
-from trace.tasks.graph.relation.binary_tree_node_label import (
+from trace.tasks.graph.binary_tree.local_relative_node_label import (
     GraphRelationBinaryTreeLocalRelativeNodeLabelTask,
+)
+from trace.tasks.graph.binary_tree.lowest_common_ancestor_label import (
     GraphRelationBinaryTreeLowestCommonAncestorLabelTask,
 )
-from trace.tasks.graph.relation.search_tree_operation_label import (
+from trace.tasks.graph.binary_tree.bst_path_operation_label import (
     GraphRelationBstPathOperationLabelTask,
+)
+from trace.tasks.graph.binary_tree.heap_property_violation_label import (
     GraphRelationHeapPropertyViolationLabelTask,
 )
 

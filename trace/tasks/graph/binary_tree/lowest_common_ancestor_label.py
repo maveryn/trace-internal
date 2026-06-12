@@ -2,91 +2,71 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Tuple
 
-from ....core.scene_config import get_scene_defaults
-from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from ...shared.fixed_query import force_query_id_params
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from ..shared.task_support import format_graph_prompt_label
-from .shared.node_label import build_relation_render_bundle, build_relation_trace_payload
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
+from ._lifecycle import BinaryTreeRelationPlan, run_binary_tree_relation_plan
+from .shared.defaults import BinaryTreeDefaults
+from .shared.state import SCENE_ID
 
 
 TASK_ID = "task_graph__binary_tree__lowest_common_ancestor_label"
-SCENE_ID = "binary_tree"
 QUERY_ID = "lowest_common_ancestor_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+_ANNOTATION_ROLES = ("node_a", "node_b", "lowest_common_ancestor")
 
-_SCENE_DEFAULTS = get_scene_defaults("graph", SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
+_DEFAULTS = BinaryTreeDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "graph",
+    SCENE_ID,
     task_id=TASK_ID,
 )
+POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_scene_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
+
+
+def _build_objective_plan() -> BinaryTreeRelationPlan:
+    """Bind the LCA query to its relation kind and keyed annotation roles."""
+
+    return BinaryTreeRelationPlan(
+        owner_id=TASK_ID,
+        supported_branch_names=SUPPORTED_QUERY_IDS,
+        default_branch_name=QUERY_ID,
+        relation_kind_by_branch={QUERY_ID: "lowest_common_ancestor"},
+        annotation_roles_by_branch={QUERY_ID: _ANNOTATION_ROLES},
+    )
 
 
 @register_task
 class GraphRelationBinaryTreeLowestCommonAncestorLabelTask:
-    """Return the lowest common ancestor label for two queried nodes."""
+    """Public owner for lowest-common-ancestor label queries."""
 
     task_id = TASK_ID
     domain = "graph"
-    scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
 
+    def _build_objective_plan(self) -> BinaryTreeRelationPlan:
+        """Return this task's local LCA objective plan."""
+
+        return _build_objective_plan()
+
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        bundle = build_relation_render_bundle(
+        """Generate one LCA instance through neutral scene lifecycle plumbing."""
+
+        return run_binary_tree_relation_plan(
+            plan=self._build_objective_plan(),
             instance_seed=int(instance_seed),
-            params=force_query_id_params(params, query_id=QUERY_ID),
+            params=dict(params),
             max_attempts=int(max_attempts),
-        )
-        prompt_defaults = dict(_PROMPT_DEFAULTS)
-        prompt_query_labels = tuple(
-            format_graph_prompt_label(str(label), label_variant=str(bundle.query.label_variant))
-            for label in bundle.relation.query_labels
-        )
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(bundle.query.query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "query_label": str(prompt_query_labels[0]),
-                "query_label_a": str(prompt_query_labels[0]),
-                "query_label_b": str(prompt_query_labels[1]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint_lowest_common_ancestor_label"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="string", value=str(bundle.relation.answer_label)),
-            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(bundle.annotation_keyed_bboxes)),
-            image=bundle.image,
-            image_id="img0",
-            trace_payload=build_relation_trace_payload(
-                bundle=bundle,
-                prompt_defaults=prompt_defaults,
-                prompt_artifacts=prompt_artifacts,
-                trace_task_id=TASK_ID,
-            ),
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(bundle.query.query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            gen_defaults=_GEN_DEFAULTS,
+            render_defaults=_RENDER_DEFAULTS,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            defaults=_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
 
 

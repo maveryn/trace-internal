@@ -2,94 +2,78 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Tuple
 
-from ....core.scene_config import get_scene_defaults
-from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from ...shared.fixed_query import force_query_id_params, select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from .shared.search_tree_operation import (
-    SCENE_ID,
-    SUPPORTED_BST_PATH_OPERATION_QUERY_IDS,
-    build_operation_prompt_json_examples,
-    build_operation_render_bundle,
-    build_operation_trace_payload,
-)
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
+from ._lifecycle import BinaryTreeOperationPlan, run_binary_tree_operation_plan
+from .shared.defaults import BinaryTreeDefaults
+from .shared.state import SCENE_ID
 
 
 TASK_ID = "task_graph__binary_tree__bst_path_operation_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = tuple(SUPPORTED_BST_PATH_OPERATION_QUERY_IDS)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+    "bst_search_terminal_label",
+    "bst_insert_parent_label",
+)
+_OPERATION_KIND_BY_QUERY = {
+    "bst_search_terminal_label": "bst_search_terminal",
+    "bst_insert_parent_label": "bst_insert_parent",
+}
 
-_SCENE_DEFAULTS = get_scene_defaults("graph", SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
+_DEFAULTS = BinaryTreeDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "graph",
+    SCENE_ID,
     task_id=TASK_ID,
 )
+POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_scene_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
+
+
+def _build_objective_plan() -> BinaryTreeOperationPlan:
+    """Bind BST operation queries to semantic path-operation kinds."""
+
+    return BinaryTreeOperationPlan(
+        owner_id=TASK_ID,
+        supported_branch_names=SUPPORTED_QUERY_IDS,
+        default_branch_name=SUPPORTED_QUERY_IDS[0],
+        operation_kind_by_branch=_OPERATION_KIND_BY_QUERY,
+        scene_title="Binary Search Tree",
+        object_description_key="object_description_bst",
+        prompt_family="operation_path",
+    )
 
 
 @register_task
 class GraphRelationBstPathOperationLabelTask:
-    """Answer BST search and insert path-operation label queries."""
+    """Public owner for BST search and insert path-operation queries."""
 
     task_id = TASK_ID
     domain = "graph"
-    scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
 
+    def _build_objective_plan(self) -> BinaryTreeOperationPlan:
+        """Return this task's local BST operation objective plan."""
+
+        return _build_objective_plan()
+
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, _query_probs, task_params = select_task_query_id(
+        """Generate one BST operation instance through neutral scene lifecycle plumbing."""
+
+        return run_binary_tree_operation_plan(
+            plan=self._build_objective_plan(),
             instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=SUPPORTED_QUERY_IDS[0],
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        prompt_defaults = dict(_PROMPT_DEFAULTS)
-        json_example, json_example_answer_only = build_operation_prompt_json_examples(str(bundle.query.query_id))
-        annotation_hint_key = f"annotation_hint_{bundle.query.query_id}"
-        target_key = "" if bundle.operation.target_key is None else str(bundle.operation.target_key)
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(bundle.query.query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults.get("object_description_bst", prompt_defaults["object_description"])),
-                "target_key": str(target_key),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults[annotation_hint_key]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="string", value=str(bundle.operation.answer_label)),
-            annotation_gt=TypedValue(type="bbox_sequence", value=list(bundle.annotation_bboxes)),
-            image=bundle.image,
-            image_id="img0",
-            trace_payload=build_operation_trace_payload(
-                bundle=bundle,
-                prompt_defaults=prompt_defaults,
-                prompt_artifacts=prompt_artifacts,
-                trace_task_id=TASK_ID,
-            ),
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(bundle.query.query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            gen_defaults=_GEN_DEFAULTS,
+            render_defaults=_RENDER_DEFAULTS,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            defaults=_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
 
 

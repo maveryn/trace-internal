@@ -17,7 +17,7 @@ The graph domain currently has 10 active scenes and 61 active public tasks.
 |---|---:|---|---|
 | `adjacency` | 5 | Review-candidate shape, mostly aligned | Scene root `_lifecycle.py` still assembles some final outputs for component-count tasks. Shared role files are otherwise close to target. |
 | `automaton` | 4 | Review-candidate shape, partially aligned | Acceptance tasks use `_lifecycle.py`; state-simulation tasks are more task-owned. Shared role files are close to target. |
-| `binary_tree` | 7 | Not migrated to contract | `shared/node_count.py`, `shared/node_label.py`, `shared/scene.py`, and `shared/search_tree_operation.py` are disallowed role names and mix objective logic with scene primitives. |
+| `binary_tree` | 7 | Review-candidate shape, migrated to contract | Scene-local role modules own identity-free state, sampling, algorithms, rendering, annotations, prompts, and output fragments; public files own task ids, query ids, and semantic objective plans consumed by a private lifecycle. |
 | `flow_network` | 2 | Not migrated to contract | `shared/instance.py` is a scene builder/orchestrator. |
 | `graph_options` | 2 | Not migrated to contract | `shared/structure_match.py` is one large mixed sampler/renderer/task helper. |
 | `metro` | 4 | Not migrated to contract | `shared/instance.py` branches on `query_id`; `shared/scene_common.py` mixes algorithms, sampling, rendering, and projection. |

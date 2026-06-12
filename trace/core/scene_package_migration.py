@@ -19,7 +19,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "geometry": frozenset(
         {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
     ),
-    "graph": frozenset({"adjacency", "automaton", "node_link"}),
+    "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick"}),
@@ -27,7 +27,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "geometry": frozenset(
         {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
     ),
-    "graph": frozenset({"adjacency", "automaton", "node_link"}),
+    "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 

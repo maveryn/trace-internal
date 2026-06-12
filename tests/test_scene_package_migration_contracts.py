@@ -542,7 +542,7 @@ def test_three_d_is_not_allowlisted_before_full_scene_package_migration() -> Non
 
 def test_scene_package_migration_registries_only_track_review_candidate_scenes() -> None:
     assert not MIGRATED_SCENE_PACKAGE_DOMAINS
-    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents'}), 'graph': frozenset({'adjacency', 'automaton', 'node_link'})}
+    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'})}
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
     assert not SCENE_PACKAGE_PILOT_TASK_IDS

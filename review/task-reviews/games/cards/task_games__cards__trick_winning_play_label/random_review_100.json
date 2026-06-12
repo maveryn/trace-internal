@@ -1,0 +1,147 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "string": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.26,
+        "pass": true,
+        "threshold": 0.3333333333333333
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 6,
+        "pass": true,
+        "threshold": 4
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 26,
+    "max_answer_frequency": 0.26,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "B",
+        "count": 26
+      },
+      {
+        "answer_label": "C",
+        "count": 23
+      },
+      {
+        "answer_label": "A",
+        "count": 19
+      },
+      {
+        "answer_label": "D",
+        "count": 18
+      },
+      {
+        "answer_label": "E",
+        "count": 8
+      },
+      {
+        "answer_label": "F",
+        "count": 6
+      }
+    ],
+    "unique_answers": 6
+  },
+  "calibration_baseline": "v0",
+  "query_id_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "default": 1.0
+    },
+    "expected_source": "query_params",
+    "has_query_ids": false,
+    "observed_counts": {
+      "default": 100
+    },
+    "status": "skipped_no_query_ids",
+    "warnings": []
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "candidate_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "4": 0.5,
+        "6": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    },
+    "played_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "3": 0.5,
+        "4": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.51,
+      "observed_counts": {
+        "3": 51,
+        "4": 49
+      },
+      "sample_count": 100
+    },
+    "query_id": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "default": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "default": 100
+      },
+      "sample_count": 100
+    },
+    "style_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "classic": 0.2,
+        "ivory": 0.2,
+        "outlined": 0.2,
+        "slate": 0.2,
+        "soft": 0.2
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.23,
+      "observed_counts": {
+        "classic": 15,
+        "ivory": 21,
+        "outlined": 19,
+        "slate": 23,
+        "soft": 22
+      },
+      "sample_count": 100
+    },
+    "trick_play_trump_mode": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "no_trump": 0.5,
+        "with_trump": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_games__cards__trick_winning_play_label",
+  "warnings": []
+}

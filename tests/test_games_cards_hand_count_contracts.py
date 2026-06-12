@@ -12,8 +12,9 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.cards.exact_triple_count import GamesCardsExactTripleCountTask
 from trace.tasks.games.cards.higher_than_reference_count import GamesCardsHigherThanReferenceCountTask
 from trace.tasks.games.cards.longest_run_length import GamesCardsLongestRunLengthTask
+from trace.tasks.games.cards.missing_card_to_complete_hand_label import MISSING_CARD_COMPLETION_KINDS
 from trace.tasks.games.cards.same_suit_as_reference_count import GamesCardsSameSuitAsReferenceCountTask
-from trace.tasks.games.cards.shared.sampling import MISSING_CARD_COMPLETION_KINDS, poker_score
+from trace.tasks.games.cards.shared.sampling import poker_score
 from trace.tasks.registry import create_task
 from tests.helpers import read_jsonl
 

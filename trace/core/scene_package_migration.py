@@ -14,18 +14,32 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards"}),
     "geometry": frozenset(
-        {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
+        {
+            "angle_relations",
+            "area_partition",
+            "bearing_route",
+            "circle_centerline_overlap",
+            "circle_pair_tangents",
+            "circle_polygon_composite",
+        }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards"}),
     "geometry": frozenset(
-        {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
+        {
+            "angle_relations",
+            "area_partition",
+            "bearing_route",
+            "circle_centerline_overlap",
+            "circle_pair_tangents",
+            "circle_polygon_composite",
+        }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
 }

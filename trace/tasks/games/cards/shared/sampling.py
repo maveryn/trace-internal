@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .card_face_rendering import CardInstance
 from .state import (
+    CardInstance,
     CANDIDATE_LABELS,
     HAND_LABELS,
-    MISSING_CARD_COMPLETION_KINDS,
     PLAYER_LABELS,
     POKER_CATEGORY_LABEL_BY_KEY,
     POKER_CATEGORY_SCORE_BY_KEY,
@@ -73,7 +72,7 @@ def feasible_card_count_support(
     feasible: List[int] = []
     for raw_value in raw_support:
         card_count = int(raw_value)
-        if str(hand_kind) == "exact_triple_count":
+        if str(hand_kind) == "exact_triple":
             if int(card_count) < 3 * int(target_answer):
                 continue
             if not _can_fill_non_triple_rank_counts(
@@ -81,7 +80,7 @@ def feasible_card_count_support(
                 total_count=int(card_count) - (3 * int(target_answer)),
             ):
                 continue
-        elif str(hand_kind) == "longest_run_length":
+        elif str(hand_kind) == "longest_run":
             if int(card_count) < int(target_answer):
                 continue
         else:
@@ -615,7 +614,7 @@ def sample_blackjack_best_hand(
                 if int(hand_index) == int(winner_index):
                     annotation_ids.append(str(card_id))
         return RuleSample(
-            pattern_kind="blackjack_best_hand_label",
+            pattern_kind="blackjack_best",
             scene_variant="blackjack_multi_hand",
             cards=tuple(cards),
             answer=str(winner_option),
@@ -858,7 +857,7 @@ def sample_poker_best_hand(
                 if int(hand_index) == int(winner_index):
                     annotation_ids.append(str(card_id))
         return RuleSample(
-            pattern_kind="poker_best_hand_label",
+            pattern_kind="poker_best",
             scene_variant="poker_multi_hand",
             cards=tuple(cards),
             answer=str(winner_option),
@@ -999,7 +998,7 @@ def sample_poker_draw_card(
         answer_label = str(labels[int(target_index)])
         answer_card_id = str(candidate_ids_by_label[str(answer_label)])
         return RuleSample(
-            pattern_kind="poker_draw_card_label",
+            pattern_kind="poker_draw",
             scene_variant="poker_draw_completion",
             cards=tuple(cards),
             answer=str(answer_label),
@@ -1077,16 +1076,16 @@ def _completion_matches_pattern(
 
     completed = list(partial_hand) + [(int(candidate_card[0]), str(candidate_card[1]))]
     query = str(pattern_kind)
-    if query == "missing_flush_card_label":
+    if query == "missing_flush":
         return len({str(suit_name) for _rank, suit_name in completed}) == 1
-    if query == "missing_straight_card_label":
+    if query == "missing_straight":
         ranks = [int(rank_value) for rank_value, _suit_name in completed]
         return _straight_high_rank(ranks) is not None and set(ranks) in (
             set(sequence) for sequence in _ace_high_straight_sequences()
         )
-    if query == "missing_full_house_card_label":
+    if query == "missing_full_house":
         return str(poker_score(completed)[2]) == "full house"
-    if query == "missing_three_of_kind_card_label":
+    if query == "missing_three_kind":
         return str(poker_score(completed)[2]) == "three of a kind"
     raise ValueError(f"unsupported missing-card query: {pattern_kind}")
 
@@ -1095,10 +1094,10 @@ def _missing_card_pattern_label(pattern_kind: str) -> str:
     """Return the human-readable pattern name for one missing-card query."""
 
     return {
-        "missing_flush_card_label": "flush",
-        "missing_straight_card_label": "straight",
-        "missing_full_house_card_label": "full house",
-        "missing_three_of_kind_card_label": "three of a kind",
+        "missing_flush": "flush",
+        "missing_straight": "straight",
+        "missing_full_house": "full house",
+        "missing_three_kind": "three of a kind",
     }[str(pattern_kind)]
 
 
@@ -1110,14 +1109,14 @@ def _sample_missing_card_base(
     """Sample a partial four-card hand and the unique intended completion card."""
 
     query = str(pattern_kind)
-    if query == "missing_flush_card_label":
+    if query == "missing_flush":
         suit_name = str(SUIT_NAMES[int(rng.randrange(len(SUIT_NAMES)))])
         ranks = list(rng.sample(list(RANK_VALUES), 5))
         partial = tuple((int(rank), str(suit_name)) for rank in ranks[:4])
         correct = (int(ranks[4]), str(suit_name))
         return partial, correct
 
-    if query == "missing_straight_card_label":
+    if query == "missing_straight":
         sequence = list(_ace_high_straight_sequences()[int(rng.randrange(len(_ace_high_straight_sequences())))])
         missing_offset = int(rng.randrange(1, 4))
         missing_rank = int(sequence[int(missing_offset)])
@@ -1135,7 +1134,7 @@ def _sample_missing_card_base(
         correct = (int(missing_rank), str(suit_options[int(rng.randrange(len(suit_options)))]))
         return partial, correct
 
-    if query == "missing_full_house_card_label":
+    if query == "missing_full_house":
         triple_rank, pair_rank = [int(rank) for rank in rng.sample(list(RANK_VALUES), 2)]
         triple_cards = tuple((int(triple_rank), str(suit)) for suit in rng.sample(list(SUIT_NAMES), 3))
         pair_suits = list(rng.sample(list(SUIT_NAMES), 2))
@@ -1143,7 +1142,7 @@ def _sample_missing_card_base(
         correct = (int(pair_rank), str(pair_suits[1]))
         return partial, correct
 
-    if query == "missing_three_of_kind_card_label":
+    if query == "missing_three_kind":
         triple_rank = int(rng.choice(RANK_VALUES))
         kicker_ranks = list(rng.sample([int(rank) for rank in RANK_VALUES if int(rank) != int(triple_rank)], 2))
         pair_suits = list(rng.sample(list(SUIT_NAMES), 3))
@@ -1339,7 +1338,7 @@ def sample_trick_taking_winner(
             )
         trump_text = "There is no trump suit." if trump_suit is None else f"Trump suit: {trump_suit}."
         return RuleSample(
-            pattern_kind="trick_taking_winner_label",
+            pattern_kind="trick_winner",
             scene_variant="trick_row",
             cards=tuple(cards),
             answer=str(winner_option),
@@ -1482,7 +1481,7 @@ def sample_trick_winning_play(
         answer_card_id = str(candidate_ids_by_label[str(answer_label)])
         trump_text = "There is no trump suit." if trump_suit is None else f"Trump suit: {trump_suit}."
         return RuleSample(
-            pattern_kind="trick_winning_play_label",
+            pattern_kind="trick_play",
             scene_variant="trick_candidate_play",
             cards=tuple(cards),
             answer=str(answer_label),
@@ -1534,7 +1533,6 @@ def sample_trick_winning_play(
 
 
 __all__ = [
-    "MISSING_CARD_COMPLETION_KINDS",
     "SUPPORTED_POKER_DRAW_TARGET_CATEGORIES",
     "SUPPORTED_POKER_WINNING_CATEGORIES",
     "SUPPORTED_TRICK_PLAY_TRUMP_MODES",

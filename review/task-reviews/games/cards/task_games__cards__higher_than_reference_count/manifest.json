@@ -1,0 +1,12 @@
+{
+  "calibration_baseline": "v0",
+  "inspection_count": 100,
+  "query_ids": {
+    "default": 100
+  },
+  "task_id": "task_games__cards__higher_than_reference_count",
+  "workbook": "games/cards/task_games__cards__higher_than_reference_count/task_games__cards__higher_than_reference_count.xlsx",
+  "workbook_sheets": {
+    "default": "default"
+  }
+}

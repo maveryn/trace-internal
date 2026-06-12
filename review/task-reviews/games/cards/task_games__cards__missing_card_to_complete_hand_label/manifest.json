@@ -1,0 +1,18 @@
+{
+  "calibration_baseline": "v0",
+  "inspection_count": 100,
+  "query_ids": {
+    "missing_flush_card_label": 25,
+    "missing_full_house_card_label": 25,
+    "missing_straight_card_label": 25,
+    "missing_three_of_kind_card_label": 25
+  },
+  "task_id": "task_games__cards__missing_card_to_complete_hand_label",
+  "workbook": "games/cards/task_games__cards__missing_card_to_complete_hand_label/task_games__cards__missing_card_to_complete_hand_label.xlsx",
+  "workbook_sheets": {
+    "missing_flush_card_label": "missing_flush_card_label",
+    "missing_full_house_card_label": "missing_full_house_card_label",
+    "missing_straight_card_label": "missing_straight_card_label",
+    "missing_three_of_kind_card_label": "missing_three_of_kind_card_labe"
+  }
+}

@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
-from .card_face_rendering import CardInstance
-
 SCENE_ID = "cards"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("multi_row",)
 RANK_VALUES: Tuple[int, ...] = tuple(range(2, 15))
@@ -21,12 +19,6 @@ SUIT_NAMES: Tuple[str, ...] = ("spades", "hearts", "diamonds", "clubs")
 HAND_LABELS: Tuple[str, ...] = ("Hand A", "Hand B", "Hand C", "Hand D", "Hand E", "Hand F")
 PLAYER_LABELS: Tuple[str, ...] = ("Player A", "Player B", "Player C", "Player D", "Player E", "Player F")
 CANDIDATE_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-MISSING_CARD_COMPLETION_KINDS: Tuple[str, ...] = (
-    "missing_flush_card_label",
-    "missing_straight_card_label",
-    "missing_full_house_card_label",
-    "missing_three_of_kind_card_label",
-)
 POKER_CATEGORY_LABEL_BY_KEY: Dict[str, str] = {
     "high_card": "high card",
     "one_pair": "one pair",
@@ -69,6 +61,19 @@ SUPPORTED_POKER_DRAW_TARGET_CATEGORIES: Tuple[str, ...] = SUPPORTED_POKER_WINNIN
 
 
 @dataclass(frozen=True)
+class CardInstance:
+    """One visible face-up playing card before rendering."""
+
+    card_id: str
+    rank_label: str
+    rank_value: int
+    suit_name: str
+    is_reference: bool = False
+    badge_text: str | None = None
+    group_label: str | None = None
+
+
+@dataclass(frozen=True)
 class SampledHand:
     """Constructed visible hand plus witness metadata."""
 
@@ -102,8 +107,8 @@ class RuleSample:
 
 __all__ = [
     "CANDIDATE_LABELS",
+    "CardInstance",
     "HAND_LABELS",
-    "MISSING_CARD_COMPLETION_KINDS",
     "PLAYER_LABELS",
     "POKER_CATEGORY_LABEL_BY_KEY",
     "POKER_CATEGORY_SCORE_BY_KEY",

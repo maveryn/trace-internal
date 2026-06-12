@@ -1,0 +1,1778 @@
+{
+  "annotation_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        839.0,
+        57.0,
+        935.0,
+        193.0
+      ]
+    ]
+  },
+  "answer_gt": {
+    "type": "string",
+    "value": "D"
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/cards/task_games__cards__trick_taking_winner_label/images/default/0051.png"
+  },
+  "instance_seed": 3067402901273481,
+  "prompt": "The figure shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins. Trump suit: hearts. Which option letter labels the player with the winning card?\nFinal answer format: set \"answer\" to only the winning player option letter.\nAnnotation format: set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card.\nExample JSON:\n{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_annotation": "The figure shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins. Trump suit: hearts. Which option letter labels the player with the winning card?\nFinal answer format: set \"answer\" to only the winning player option letter.\nAnnotation format: set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card.\nExample JSON:\n{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+    "answer_only": "The figure shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins. Trump suit: hearts. Which option letter labels the player with the winning card?\nRequired answer format: set \"answer\" to only the winning player option letter.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "query_id": "default",
+  "scene_id": "cards",
+  "task": "task_games__cards__trick_taking_winner_label",
+  "task_id": "task_games__cards__trick_taking_winner_label",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_blue_green",
+        "felt_charcoal",
+        "felt_deep_green",
+        "felt_green",
+        "felt_navy",
+        "felt_olive",
+        "muted_burgundy",
+        "table_slate",
+        "warm_table"
+      ],
+      "enabled": true,
+      "selected_style": "muted_burgundy",
+      "style_spec": {
+        "color": [
+          82,
+          52,
+          60
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "answer_label": "D",
+      "card_count": 4,
+      "card_specs": [
+        {
+          "badge_text": "Player A",
+          "group_label": null,
+          "is_reference": false,
+          "order_index": 0,
+          "rank_label": "4",
+          "rank_value": 4,
+          "row_index": 0,
+          "suit_name": "spades"
+        },
+        {
+          "badge_text": "Player B",
+          "group_label": null,
+          "is_reference": false,
+          "order_index": 1,
+          "rank_label": "K",
+          "rank_value": 13,
+          "row_index": 0,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": "Player C",
+          "group_label": null,
+          "is_reference": false,
+          "order_index": 2,
+          "rank_label": "6",
+          "rank_value": 6,
+          "row_index": 0,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": "Player D",
+          "group_label": null,
+          "is_reference": false,
+          "order_index": 3,
+          "rank_label": "10",
+          "rank_value": 10,
+          "row_index": 0,
+          "suit_name": "spades"
+        }
+      ],
+      "domain": "games",
+      "led_suit": "spades",
+      "option_count": 4,
+      "pattern_kind": "trick_taking_winner_label",
+      "player_count_probabilities": {
+        "4": 1.0
+      },
+      "player_count_support": [
+        4,
+        6
+      ],
+      "query_id": "default",
+      "scene_id": "cards",
+      "scene_variant": "trick_row",
+      "style_variant": "ivory",
+      "target_winner_index": 3,
+      "task_id": "task_games__cards__trick_taking_winner_label",
+      "trick_scores": {
+        "Player A": [
+          1,
+          4
+        ],
+        "Player B": [
+          0,
+          13
+        ],
+        "Player C": [
+          0,
+          6
+        ],
+        "Player D": [
+          1,
+          10
+        ]
+      },
+      "trump_suit": "hearts",
+      "winning_label": "Player D",
+      "winning_option": "D"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "bbox_set": [
+        [
+          839.0,
+          57.0,
+          935.0,
+          193.0
+        ]
+      ],
+      "type": "bbox_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "params": {
+        "cards_per_row": 4,
+        "led_suit": "spades",
+        "option_count": 4,
+        "pattern_kind": "trick_taking_winner_label",
+        "player_count_probabilities": {
+          "4": 1.0
+        },
+        "player_count_support": [
+          4,
+          6
+        ],
+        "player_labels": [
+          "Player A",
+          "Player B",
+          "Player C",
+          "Player D"
+        ],
+        "query_id": "default",
+        "query_id_probabilities": {
+          "default": 1.0
+        },
+        "scene_id": "cards",
+        "scene_variant": "trick_row",
+        "style_variant": "ivory",
+        "style_variant_probabilities": {
+          "classic": 0.0,
+          "ivory": 1.0,
+          "outlined": 0.0,
+          "slate": 0.0,
+          "soft": 0.0
+        },
+        "target_winner_index": 3,
+        "trick_scores": {
+          "Player A": [
+            1,
+            4
+          ],
+          "Player B": [
+            0,
+            13
+          ],
+          "Player C": [
+            0,
+            6
+          ],
+          "Player D": [
+            1,
+            10
+          ]
+        },
+        "trump_suit": "hearts",
+        "winning_label": "Player D",
+        "winning_option": "D"
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 3,
+        "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+        "prompt_bundle_id": "games_cards_v1",
+        "prompt_bundle_path": "games/cards/games_cards_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "cards",
+        "prompt_schema_version": "v1",
+        "query_key": "trick_taking_winner_label",
+        "query_template_index": 4,
+        "scene_key": "visible_card_hand",
+        "scene_template_index": 3,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 3,
+          "query": 4,
+          "scene": 3,
+          "task": 2
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "trick_taking_winner_label",
+          "scene": "visible_card_hand",
+          "task": "cards_hand_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:trick_taking_winner_label",
+          "answer_hint": "static:query:trick_taking_winner_label",
+          "json_example": "static:query:trick_taking_winner_label",
+          "json_example_answer_only": "static:query:trick_taking_winner_label",
+          "object_description": "static:scene:visible_card_hand",
+          "rank_order_text": "static:query:trick_taking_winner_label",
+          "trick_winner_rule_text": "static:query:trick_taking_winner_label",
+          "trump_text": "dynamic:trump_text"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+          "answer_hint": "set \"answer\" to only the winning player option letter",
+          "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+          "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+          "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+          "trump_text": "Trump suit: hearts."
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+          "answer_hint": "set \"answer\" to only the winning player option letter",
+          "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+          "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+          "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+          "trump_text": "Trump suit: hearts."
+        },
+        "task_key": "cards_hand_query",
+        "task_template_index": 2,
+        "template_paths": [
+          "games/cards/games_cards_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:trick_taking_winner_label": 5,
+          "scene:visible_card_hand": 5,
+          "task:cards_hand_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 3,
+            "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+            "prompt_bundle_id": "games_cards_v1",
+            "prompt_bundle_path": "games/cards/games_cards_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "cards",
+            "prompt_schema_version": "v1",
+            "query_key": "trick_taking_winner_label",
+            "query_template_index": 4,
+            "scene_key": "visible_card_hand",
+            "scene_template_index": 3,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 3,
+              "query": 4,
+              "scene": 3,
+              "task": 2
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "trick_taking_winner_label",
+              "scene": "visible_card_hand",
+              "task": "cards_hand_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:trick_taking_winner_label",
+              "answer_hint": "static:query:trick_taking_winner_label",
+              "json_example": "static:query:trick_taking_winner_label",
+              "json_example_answer_only": "static:query:trick_taking_winner_label",
+              "object_description": "static:scene:visible_card_hand",
+              "rank_order_text": "static:query:trick_taking_winner_label",
+              "trick_winner_rule_text": "static:query:trick_taking_winner_label",
+              "trump_text": "dynamic:trump_text"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+              "answer_hint": "set \"answer\" to only the winning player option letter",
+              "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+              "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+              "trump_text": "Trump suit: hearts."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+              "answer_hint": "set \"answer\" to only the winning player option letter",
+              "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+              "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+              "trump_text": "Trump suit: hearts."
+            },
+            "task_key": "cards_hand_query",
+            "task_template_index": 2,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:trick_taking_winner_label": 5,
+              "scene:visible_card_hand": 5,
+              "task:cards_hand_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The figure shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins. Trump suit: hearts. Which option letter labels the player with the winning card?\nFinal answer format: set \"answer\" to only the winning player option letter.\nAnnotation format: set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card.\nExample JSON:\n{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 2,
+            "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+            "prompt_bundle_id": "games_cards_v1",
+            "prompt_bundle_path": "games/cards/games_cards_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "cards",
+            "prompt_schema_version": "v1",
+            "query_key": "trick_taking_winner_label",
+            "query_template_index": 4,
+            "scene_key": "visible_card_hand",
+            "scene_template_index": 3,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 2,
+              "query": 4,
+              "scene": 3,
+              "task": 2
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "trick_taking_winner_label",
+              "scene": "visible_card_hand",
+              "task": "cards_hand_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:trick_taking_winner_label",
+              "answer_hint": "static:query:trick_taking_winner_label",
+              "json_example": "static:query:trick_taking_winner_label",
+              "json_example_answer_only": "static:query:trick_taking_winner_label",
+              "object_description": "static:scene:visible_card_hand",
+              "rank_order_text": "static:query:trick_taking_winner_label",
+              "trick_winner_rule_text": "static:query:trick_taking_winner_label",
+              "trump_text": "dynamic:trump_text"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+              "answer_hint": "set \"answer\" to only the winning player option letter",
+              "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+              "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+              "trump_text": "Trump suit: hearts."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+              "answer_hint": "set \"answer\" to only the winning player option letter",
+              "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
+              "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
+              "trump_text": "Trump suit: hearts."
+            },
+            "task_key": "cards_hand_query",
+            "task_template_index": 2,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:trick_taking_winner_label": 5,
+              "scene:visible_card_hand": 5,
+              "task:cards_hand_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The figure shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins. Trump suit: hearts. Which option letter labels the player with the winning card?\nRequired answer format: set \"answer\" to only the winning player option letter.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "query_id": "default",
+      "scene_id": "cards",
+      "task_id": "task_games__cards__trick_taking_winner_label",
+      "template_id": "games_cards_v1"
+    },
+    "render_map": {
+      "card_badges": {
+        "player_01_card_01": "Player A",
+        "player_02_card_01": "Player B",
+        "player_03_card_01": "Player C",
+        "player_04_card_01": "Player D"
+      },
+      "card_bboxes_px": {
+        "player_01_card_01": [
+          497.0,
+          57.0,
+          593.0,
+          193.0
+        ],
+        "player_02_card_01": [
+          611.0,
+          57.0,
+          707.0,
+          193.0
+        ],
+        "player_03_card_01": [
+          725.0,
+          57.0,
+          821.0,
+          193.0
+        ],
+        "player_04_card_01": [
+          839.0,
+          57.0,
+          935.0,
+          193.0
+        ]
+      },
+      "card_group_labels": {},
+      "center_label_mode": "rank_suit",
+      "continuation_cue_bbox_px": null,
+      "continuation_cue_bboxes_px": [],
+      "font_family": "source_sans_3",
+      "layout_jitter": {
+        "clamp_x_px": [
+          -355,
+          355
+        ],
+        "clamp_y_px": [
+          -96,
+          96
+        ],
+        "dx_px": 126,
+        "dy_px": -55,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": 126,
+        "requested_dy_px": -55,
+        "requested_x_slack_fraction": 0.3554999999999999,
+        "requested_y_slack_fraction": -0.5684
+      },
+      "max_cards_per_row": 4,
+      "reference_card_ids": [],
+      "row_card_counts": [
+        4
+      ],
+      "row_card_ids": [
+        [
+          "player_01_card_01",
+          "player_02_card_01",
+          "player_03_card_01",
+          "player_04_card_01"
+        ]
+      ],
+      "row_count": 1,
+      "scene_variant": "trick_row",
+      "style_variant": "ivory",
+      "suit_symbol_font_family": "system_fallback"
+    },
+    "render_spec": {
+      "canvas_height": 360,
+      "canvas_width": 1180,
+      "center_label_mode": "rank_suit",
+      "domain": "games",
+      "drawn_text": {
+        "text_legibility": {
+          "drawn_text_record_count": 28,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 9.078,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "bbox_px": [
+                522.0,
+                63.0,
+                566.0,
+                79.0
+              ],
+              "fill_rgb": [
+                255,
+                250,
+                236
+              ],
+              "font_size_px": 13,
+              "min_contrast_ratio": 20.137,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 98.581,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "text": "Player A"
+            },
+            {
+              "bbox_px": [
+                506.0,
+                99.0,
+                517.0,
+                113.0
+              ],
+              "fill_rgb": [
+                38,
+                32,
+                26
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.105,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 87.434,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                519.0,
+                94.0,
+                538.0,
+                110.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                550.0,
+                175.0,
+                561.0,
+                189.0
+              ],
+              "fill_rgb": [
+                38,
+                32,
+                26
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.105,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 87.434,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                563.0,
+                170.0,
+                582.0,
+                186.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                519.0,
+                130.5,
+                536.0,
+                153.5
+              ],
+              "fill_rgb": [
+                38,
+                32,
+                26
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 16.105,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 87.434,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                538.0,
+                123.0,
+                569.0,
+                149.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                636.0,
+                63.0,
+                680.0,
+                79.0
+              ],
+              "fill_rgb": [
+                255,
+                247,
+                229
+              ],
+              "font_size_px": 13,
+              "min_contrast_ratio": 19.688,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 97.878,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "text": "Player B"
+            },
+            {
+              "bbox_px": [
+                620.0,
+                99.0,
+                633.0,
+                113.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                635.0,
+                94.0,
+                654.0,
+                110.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                662.0,
+                175.0,
+                675.0,
+                189.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                677.0,
+                170.0,
+                696.0,
+                186.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                632.0,
+                129.0,
+                651.0,
+                153.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                653.0,
+                123.0,
+                684.0,
+                149.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                750.0,
+                63.0,
+                794.0,
+                79.0
+              ],
+              "fill_rgb": [
+                255,
+                237,
+                236
+              ],
+              "font_size_px": 13,
+              "min_contrast_ratio": 18.577,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 95.334,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "text": "Player C"
+            },
+            {
+              "bbox_px": [
+                734.0,
+                99.0,
+                745.0,
+                113.0
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                747.0,
+                94.0,
+                766.0,
+                110.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                778.0,
+                175.0,
+                789.0,
+                189.0
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                791.0,
+                170.0,
+                810.0,
+                186.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                747.0,
+                129.0,
+                764.0,
+                153.0
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                766.0,
+                123.0,
+                797.0,
+                149.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                864.0,
+                63.0,
+                908.0,
+                79.0
+              ],
+              "fill_rgb": [
+                232,
+                250,
+                246
+              ],
+              "font_size_px": 13,
+              "min_contrast_ratio": 19.436,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 97.119,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "text": "Player D"
+            },
+            {
+              "bbox_px": [
+                848.0,
+                99.0,
+                868.0,
+                113.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                870.0,
+                94.0,
+                889.0,
+                110.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                883.0,
+                175.0,
+                903.0,
+                189.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                905.0,
+                170.0,
+                924.0,
+                186.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                853.5,
+                129.0,
+                885.5,
+                153.0
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                887.5,
+                123.0,
+                918.5,
+                149.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 32,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            }
+          ],
+          "required_role_count": 28,
+          "source": "automatic_drawn_text_collector"
+        }
+      },
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Cabin",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "cabin",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/cabin",
+          "tags": [
+            "sans",
+            "variable",
+            "google_auto"
+          ]
+        }
+      },
+      "font_family": "source_sans_3",
+      "layout_jitter": {
+        "clamp_x_px": [
+          -355,
+          355
+        ],
+        "clamp_y_px": [
+          -96,
+          96
+        ],
+        "dx_px": 126,
+        "dy_px": -55,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": 126,
+        "requested_dy_px": -55,
+        "requested_x_slack_fraction": 0.3554999999999999,
+        "requested_y_slack_fraction": -0.5684
+      },
+      "max_cards_per_row": 4,
+      "query_id": "default",
+      "row_count": 1,
+      "scene_id": "cards",
+      "scene_variant": "trick_row",
+      "style_variant": "ivory",
+      "suit_symbol_font_family": "system_fallback",
+      "task_id": "task_games__cards__trick_taking_winner_label"
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "bbox_px": [
+            497.0,
+            57.0,
+            593.0,
+            193.0
+          ],
+          "entity_id": "player_01_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": "Player A",
+            "group_label": null,
+            "is_reference": false,
+            "order_index": 0,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            611.0,
+            57.0,
+            707.0,
+            193.0
+          ],
+          "entity_id": "player_02_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": "Player B",
+            "group_label": null,
+            "is_reference": false,
+            "order_index": 1,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 0,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            725.0,
+            57.0,
+            821.0,
+            193.0
+          ],
+          "entity_id": "player_03_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": "Player C",
+            "group_label": null,
+            "is_reference": false,
+            "order_index": 2,
+            "rank_label": "6",
+            "rank_value": 6,
+            "row_index": 0,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            839.0,
+            57.0,
+            935.0,
+            193.0
+          ],
+          "entity_id": "player_04_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": "Player D",
+            "group_label": null,
+            "is_reference": false,
+            "order_index": 3,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        }
+      ],
+      "query_id": "default",
+      "relations": {
+        "annotation_entity_ids": [
+          "player_04_card_01"
+        ],
+        "answer_label": "D",
+        "card_count": 4,
+        "option_count": 4,
+        "pattern_kind": "trick_taking_winner_label",
+        "query_id": "default",
+        "scene_id": "cards",
+        "scene_variant": "trick_row",
+        "style_variant": "ivory"
+      },
+      "scene_id": "cards",
+      "scene_kind": "games_cards_hand_trick_row",
+      "task_id": "task_games__cards__trick_taking_winner_label"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "default",
+        "scene_id": "cards",
+        "task_id": "task_games__cards__trick_taking_winner_label"
+      },
+      "query_id": "default",
+      "registered": {
+        "domain": "games",
+        "scene_id": "cards",
+        "task_id": "task_games__cards__trick_taking_winner_label"
+      },
+      "scene_id": "cards",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "cards",
+        "implementation_domain": "games",
+        "implementation_scene_id": "cards",
+        "implementation_task_id": "task_games__cards__trick_taking_winner_label",
+        "prompt_domain": "games",
+        "prompt_scene_id": "cards"
+      },
+      "task_id": "task_games__cards__trick_taking_winner_label"
+    },
+    "witness_symbolic": {
+      "count": 1,
+      "type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

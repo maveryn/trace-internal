@@ -1,29 +1,18 @@
-"""GamesCardsPokerBestHandLabelTask cards task."""
+"""Choose the poker hand with the strongest category."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence
-
-from trace.core.seed import spawn_rng
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
-from trace.tasks.games.shared.style_card_table import SUPPORTED_CARD_STYLE_VARIANTS
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
-from .shared.annotations import card_bboxes_for_ids
-from .shared.output import build_cards_rule_trace_payload, cards_rule_trace_params
-from .shared.prompts import build_cards_prompt_artifacts
-from .shared.rendering import apply_cards_render_overrides, render_cards_task_scene, resolve_cards_render_params
-from .shared.sampling import (
-    SUPPORTED_POKER_WINNING_CATEGORIES,
-    sample_poker_best_hand,
+from ._lifecycle import (
+    build_cards_rule_objective_plan,
+    resolve_cards_integer_axis,
+    run_cards_rule_lifecycle,
 )
+from .shared.sampling import SUPPORTED_POKER_WINNING_CATEGORIES, sample_poker_best_hand
 from .shared.state import SCENE_ID
 
 
@@ -39,194 +28,70 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_gen
 )
 
 
-def _resolve_style(instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
-    return resolve_games_named_axis(
+def _prepare_poker_best_objective(instance_seed, task_params, _query_id, _query_probabilities):
+    """Resolve poker hand-count/category axes and bind the best-hand sampler."""
+
+    hand_count = resolve_cards_integer_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="poker_hand_count_support",
+        explicit_key="option_count",
+        fallback_support=POKER_HAND_COUNT_SUPPORT,
+        namespace=f"{TASK_ID}.hand_count",
+    )
+    winning_category, winning_category_probs = resolve_games_named_axis(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        namespace="style_variant",
-        explicit_key="style_variant",
-        weights_key="style_variant_weights",
-        balance_flag_key="balanced_style_variant_sampling",
-        supported_variants=SUPPORTED_CARD_STYLE_VARIANTS,
-    )
-
-
-def _resolve_integer_axis(
-    instance_seed: int,
-    params: Mapping[str, Any],
-    *,
-    support_key: str,
-    explicit_key: str,
-    fallback_support: Sequence[int],
-    namespace: str,
-    balanced_flag_key: str = "balanced_option_count_sampling",
-) -> tuple[int, tuple[int, ...], Dict[str, float]]:
-    support = resolve_integer_support(
-        params,
-        gen_defaults=_GEN_DEFAULTS,
-        key=str(support_key),
-        fallback=tuple(int(value) for value in fallback_support),
-    )
-    axis_params = dict(params)
-    axis_params[f"{explicit_key}_support"] = [int(value) for value in support]
-    value, probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=axis_params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key=f"{explicit_key}_support",
-        explicit_key=str(explicit_key),
-        fallback_support=support,
-        namespace=str(namespace),
-        balanced_flag_key=str(balanced_flag_key),
-        namespace_support_permutation=True,
-    )
-    return int(value), tuple(int(item) for item in support), dict(probabilities)
-
-
-def _render_and_return(
-    *,
-    self_obj,
-    instance_seed: int,
-    task_params: Mapping[str, Any],
-    style_variant: str,
-    style_probabilities: Mapping[str, float],
-    sample,
-    runtime_query_id: str,
-    prompt_query_key: str,
-    query_params: Mapping[str, Any],
-) -> TaskOutput:
-    render_params = resolve_cards_render_params(task_params, instance_seed=int(instance_seed))
-    render_params = apply_cards_render_overrides(
-        render_params,
-        sample.render_overrides,
-        center_label_mode=str(sample.center_label_mode),
-        max_cards_per_row=int(sample.cards_per_row),
-    )
-    rendered_context = render_cards_task_scene(
-        cards=sample.cards,
-        scene_variant=str(sample.scene_variant),
-        style_variant=str(style_variant),
         params=task_params,
-        instance_seed=int(instance_seed),
-        render_params=render_params,
-        show_continuation_cue=False,
-        row_card_counts=sample.row_card_counts if sample.row_card_counts else None,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace="poker_winning_category",
+        explicit_key="poker_winning_category",
+        weights_key="poker_winning_category_weights",
+        balance_flag_key="balanced_poker_winning_category_sampling",
+        supported_variants=SUPPORTED_POKER_WINNING_CATEGORIES,
     )
-    annotation_bboxes = card_bboxes_for_ids(
-        rendered_context.rendered_scene.render_map,
-        sample.annotation_card_ids,
-    )
-    prompt_defaults, prompt_artifacts = build_cards_prompt_artifacts(
-        domain=self_obj.domain,
-        prompt_query_key=str(prompt_query_key),
-        dynamic_slots={str(key): str(value) for key, value in sample.prompt_slots.items()},
-        instance_seed=int(instance_seed),
-    )
-    answer_gt = TypedValue(type="string", value=str(sample.answer))
-    annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
-    query_spec = build_prompt_query_spec(
-        prompt_artifacts=prompt_artifacts,
-        query_id=str(runtime_query_id),
-        params=cards_rule_trace_params(
-            sample=sample,
-            rendered_context=rendered_context,
-            style_variant=str(style_variant),
-            style_variant_probabilities=style_probabilities,
-            extra_trace_params=dict(query_params),
-        ),
-    )
-    trace_payload = build_cards_rule_trace_payload(
-        annotation_gt=annotation_gt,
-        sample=sample,
-        rendered_context=rendered_context,
-        prompt_defaults=prompt_defaults,
-        prompt_artifacts=prompt_artifacts,
-        query_spec=query_spec,
-        style_variant=str(style_variant),
-        style_variant_probabilities=style_probabilities,
-    )
-    return TaskOutput(
-        prompt=str(prompt_artifacts.prompt),
-        prompt_variants=dict(prompt_artifacts.prompt_variants),
-        answer_gt=answer_gt,
-        annotation_gt=annotation_gt,
-        image=rendered_context.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=SCENE_ID,
-        query_id=str(runtime_query_id),
+
+    def construct_attempt(rng):
+        return sample_poker_best_hand(
+            rng,
+            hand_count=int(hand_count.value),
+            winning_category_key=str(winning_category),
+            hand_count_support=hand_count.support,
+            hand_count_probabilities=hand_count.probabilities,
+            winning_category_probabilities=winning_category_probs,
+        )
+
+    return build_cards_rule_objective_plan(
+        attempt_namespace="games.cards.poker_best_hand_label",
+        prompt_query_key=PROMPT_QUERY_KEY,
+        construct_attempt=construct_attempt,
     )
 
 
 @register_task
 class GamesCardsPokerBestHandLabelTask:
-    """Generate the poker_best_hand_label card-rule task."""
+    """Generate the poker best-hand label task."""
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        runtime_query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        """Generate a poker best-hand scene by binding category and option axes locally."""
+
+        return run_cards_rule_lifecycle(
+            task_id=self.task_id,
+            domain=self.domain,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        style_variant, style_probabilities = _resolve_style(int(instance_seed), task_params)
-        hand_count, hand_count_support, hand_count_probs = _resolve_integer_axis(
-            int(instance_seed),
-            task_params,
-            support_key="poker_hand_count_support",
-            explicit_key="option_count",
-            fallback_support=POKER_HAND_COUNT_SUPPORT,
-            namespace=f"{TASK_ID}.hand_count",
-        )
-        winning_category, winning_category_probs = resolve_games_named_axis(
-            task_id=TASK_ID,
-            instance_seed=int(instance_seed),
-            params=task_params,
             gen_defaults=_GEN_DEFAULTS,
-            namespace="poker_winning_category",
-            explicit_key="poker_winning_category",
-            weights_key="poker_winning_category_weights",
-            balance_flag_key="balanced_poker_winning_category_sampling",
-            supported_variants=SUPPORTED_POKER_WINNING_CATEGORIES,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_poker_best_objective,
         )
-        last_error: ValueError | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sample = sample_poker_best_hand(
-                    rng,
-                    hand_count=int(hand_count),
-                    winning_category_key=str(winning_category),
-                    hand_count_support=hand_count_support,
-                    hand_count_probabilities=hand_count_probs,
-                    winning_category_probabilities=winning_category_probs,
-                )
-            except ValueError as exc:
-                last_error = exc
-                continue
-            return _render_and_return(
-                self_obj=self,
-                instance_seed=int(instance_seed),
-                task_params=task_params,
-                style_variant=str(style_variant),
-                style_probabilities=style_probabilities,
-                sample=sample,
-                runtime_query_id=str(runtime_query_id),
-                prompt_query_key=PROMPT_QUERY_KEY,
-                query_params={"query_id_probabilities": dict(query_id_probabilities)},
-            )
-        raise RuntimeError(f"{TASK_ID} failed to generate a valid poker scene") from last_error
 
 
 __all__ = ["GamesCardsPokerBestHandLabelTask"]

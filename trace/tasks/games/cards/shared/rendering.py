@@ -14,8 +14,9 @@ from trace.tasks.games.shared.visual_defaults import load_games_scene_background
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.font_assets import sample_font_family
 
+from .components import CardRenderParams, RenderedCardHandScene, render_cards_hand_scene
 from .defaults import RENDER_FALLBACKS, SCENE_ID
-from .card_face_rendering import CardInstance, CardRenderParams, RenderedCardHandScene, render_cards_hand_scene
+from .state import CardInstance
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",

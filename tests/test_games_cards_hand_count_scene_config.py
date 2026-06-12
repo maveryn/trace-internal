@@ -8,28 +8,37 @@ def test_games_cards_scene_defaults_expose_shared_rendering_and_task_axes() -> N
     shared_generation = cfg['generation']['shared']
     assert 'query_id_weights' not in shared_generation
     assert 'balanced_query_id_sampling' not in shared_generation
+    assert 'balanced_target_answer_sampling' not in shared_generation
+    assert 'balanced_card_count_sampling' not in shared_generation
+    assert 'balanced_option_count_sampling' not in shared_generation
     assert bool(shared_generation['balanced_scene_variant_sampling']) is True
     assert bool(shared_generation['balanced_style_variant_sampling']) is True
-    assert bool(shared_generation['balanced_target_answer_sampling']) is True
-    assert bool(shared_generation['balanced_card_count_sampling']) is True
-    assert bool(shared_generation['balanced_option_count_sampling']) is True
     assert set(shared_generation['scene_variant_weights'].keys()) == {'multi_row'}
     assert set(shared_generation['style_variant_weights'].keys()) == {'classic', 'soft', 'outlined', 'ivory', 'slate'}
     same_generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__same_suit_as_reference_count')
+    assert bool(same_generation['balanced_target_answer_sampling']) is True
+    assert bool(same_generation['balanced_card_count_sampling']) is True
     assert list(same_generation['same_suit_target_answer_support']) == [0, 1, 2, 3, 4, 5]
     assert bool(same_generation['same_suit_order_by_suit']) is False
     assert list(same_generation['same_suit_as_reference_count_card_count_support']) == list(range(16, 27))
     higher_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__higher_than_reference_count')
+    assert bool(higher_generation['balanced_target_answer_sampling']) is True
+    assert bool(higher_generation['balanced_card_count_sampling']) is True
     assert list(higher_generation['higher_rank_target_answer_support']) == [0, 1, 2, 3, 4, 5]
     assert bool(higher_generation['higher_rank_order_by_rank']) is False
     assert list(higher_generation['higher_than_reference_count_card_count_support']) == list(range(16, 27))
     triple_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__exact_triple_count')
+    assert bool(triple_generation['balanced_target_answer_sampling']) is True
+    assert bool(triple_generation['balanced_card_count_sampling']) is True
     assert list(triple_generation['exact_triple_count_support']) == [0, 1, 2, 3, 4]
     assert list(triple_generation['exact_triple_count_card_count_support']) == list(range(12, 23))
     run_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__longest_run_length')
+    assert bool(run_generation['balanced_target_answer_sampling']) is True
+    assert bool(run_generation['balanced_card_count_sampling']) is True
     assert list(run_generation['longest_run_length_support']) == [2, 3, 4, 5, 6]
     assert list(run_generation['card_count_support']) == list(range(16, 41))
     blackjack_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__blackjack_best_hand_label')
+    assert bool(blackjack_generation['balanced_option_count_sampling']) is True
     assert list(blackjack_generation['blackjack_hand_count_support']) == [4, 6]
     assert list(blackjack_generation['blackjack_cards_per_hand_support']) == [3, 4]
     poker_draw_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__poker_draw_card_label')

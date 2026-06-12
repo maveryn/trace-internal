@@ -1,0 +1,39 @@
+{
+  "schema": "trace_scene_migration_test_status_v1",
+  "domain": "games",
+  "scene_id": "cards",
+  "passed": true,
+  "status": "passed_scene_scoped",
+  "checked_at": "2026-06-12T22:54:52+00:00",
+  "summary": "Cards-scoped migration, structural audit, behavior tests, and direct task/query smoke checks passed.",
+  "commands": [
+    {
+      "command": "python -m compileall -q trace/tasks/games/cards tests/test_games_cards_hand_count_contracts.py tests/test_games_cards_hand_count_scene_config.py",
+      "status": "passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_games_cards_hand_count_contracts.py tests/test_games_cards_hand_count_scene_config.py",
+      "status": "passed",
+      "summary": "29 passed"
+    },
+    {
+      "command": "PYTHONPATH=. python - <<'PY' ... audit_scene_package_review_candidate('games', 'cards') ... PY",
+      "status": "passed",
+      "summary": "passed: true; no structural failures"
+    },
+    {
+      "command": "TRACE_SCENE_PACKAGE_REVIEW_SCENE=games/cards PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_scene_package_migration_contracts.py",
+      "status": "passed",
+      "summary": "52 passed"
+    },
+    {
+      "command": "TRACE_SCENE_PACKAGE_REVIEW_SCENE=games/cards PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_review_app.py tests/test_run_task_review.py tests/test_scene_package_migration_contracts.py",
+      "status": "passed",
+      "summary": "81 passed"
+    }
+  ],
+  "notes": [
+    "No games/cards failures remain in the scoped migration suite or structural audit.",
+    "This status does not mark the scene accepted; browser-app human review is still required."
+  ]
+}

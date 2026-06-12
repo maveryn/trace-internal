@@ -542,7 +542,7 @@ def test_three_d_is_not_allowlisted_before_full_scene_package_migration() -> Non
 
 def test_scene_package_migration_registries_only_track_review_candidate_scenes() -> None:
     assert not MIGRATED_SCENE_PACKAGE_DOMAINS
-    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'})}
+    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark', 'contour_density'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter', 'cards'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents', 'circle_polygon_composite'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'})}
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
     assert not SCENE_PACKAGE_PILOT_TASK_IDS
@@ -551,6 +551,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__angle_relations__triangle_exterior_angle', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__area_partition__total_area_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__bearing_route__final_bearing_value', domain='geometry')
+    assert scene_package_migration.is_scene_package_task('task_geometry__circle_polygon_composite__square_circle_tangent_angle_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_graph__adjacency__traversal_kth_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__automaton__state_after_input_label', domain='graph')
 

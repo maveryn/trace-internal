@@ -1,0 +1,5962 @@
+{
+  "annotation_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        369.0,
+        268.0,
+        447.0,
+        376.0
+      ],
+      [
+        459.0,
+        268.0,
+        537.0,
+        376.0
+      ],
+      [
+        549.0,
+        268.0,
+        627.0,
+        376.0
+      ],
+      [
+        639.0,
+        268.0,
+        717.0,
+        376.0
+      ],
+      [
+        729.0,
+        268.0,
+        807.0,
+        376.0
+      ]
+    ]
+  },
+  "answer_gt": {
+    "type": "string",
+    "value": "B"
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/cards/task_games__cards__poker_best_hand_label/images/default/0022.png"
+  },
+  "instance_seed": 5508120558555855,
+  "prompt": "The visual shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high. Which option letter labels the winning poker hand?\nAnnotation format: set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand.\nAnswer format: set \"answer\" to only the winning poker hand option letter.\nExample JSON:\n{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_annotation": "The visual shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high. Which option letter labels the winning poker hand?\nAnnotation format: set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand.\nAnswer format: set \"answer\" to only the winning poker hand option letter.\nExample JSON:\n{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+    "answer_only": "The visual shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high. Which option letter labels the winning poker hand?\nRequired answer format: set \"answer\" to only the winning poker hand option letter.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "query_id": "default",
+  "scene_id": "cards",
+  "task": "task_games__cards__poker_best_hand_label",
+  "task_id": "task_games__cards__poker_best_hand_label",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_blue_green",
+        "felt_charcoal",
+        "felt_deep_green",
+        "felt_green",
+        "felt_navy",
+        "felt_olive",
+        "muted_burgundy",
+        "table_slate",
+        "warm_table"
+      ],
+      "enabled": true,
+      "selected_style": "felt_deep_green",
+      "style_spec": {
+        "color": [
+          34,
+          78,
+          66
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "answer_label": "B",
+      "card_count": 20,
+      "card_specs": [
+        {
+          "badge_text": null,
+          "group_label": "Hand A",
+          "is_reference": false,
+          "order_index": 0,
+          "rank_label": "2",
+          "rank_value": 2,
+          "row_index": 0,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand A",
+          "is_reference": false,
+          "order_index": 1,
+          "rank_label": "K",
+          "rank_value": 13,
+          "row_index": 0,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand A",
+          "is_reference": false,
+          "order_index": 2,
+          "rank_label": "5",
+          "rank_value": 5,
+          "row_index": 0,
+          "suit_name": "spades"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand A",
+          "is_reference": false,
+          "order_index": 3,
+          "rank_label": "8",
+          "rank_value": 8,
+          "row_index": 0,
+          "suit_name": "hearts"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand A",
+          "is_reference": false,
+          "order_index": 4,
+          "rank_label": "K",
+          "rank_value": 13,
+          "row_index": 0,
+          "suit_name": "spades"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand B",
+          "is_reference": false,
+          "order_index": 5,
+          "rank_label": "9",
+          "rank_value": 9,
+          "row_index": 1,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand B",
+          "is_reference": false,
+          "order_index": 6,
+          "rank_label": "J",
+          "rank_value": 11,
+          "row_index": 1,
+          "suit_name": "spades"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand B",
+          "is_reference": false,
+          "order_index": 7,
+          "rank_label": "7",
+          "rank_value": 7,
+          "row_index": 1,
+          "suit_name": "hearts"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand B",
+          "is_reference": false,
+          "order_index": 8,
+          "rank_label": "10",
+          "rank_value": 10,
+          "row_index": 1,
+          "suit_name": "hearts"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand B",
+          "is_reference": false,
+          "order_index": 9,
+          "rank_label": "8",
+          "rank_value": 8,
+          "row_index": 1,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand C",
+          "is_reference": false,
+          "order_index": 10,
+          "rank_label": "4",
+          "rank_value": 4,
+          "row_index": 2,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand C",
+          "is_reference": false,
+          "order_index": 11,
+          "rank_label": "10",
+          "rank_value": 10,
+          "row_index": 2,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand C",
+          "is_reference": false,
+          "order_index": 12,
+          "rank_label": "5",
+          "rank_value": 5,
+          "row_index": 2,
+          "suit_name": "hearts"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand C",
+          "is_reference": false,
+          "order_index": 13,
+          "rank_label": "6",
+          "rank_value": 6,
+          "row_index": 2,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand C",
+          "is_reference": false,
+          "order_index": 14,
+          "rank_label": "K",
+          "rank_value": 13,
+          "row_index": 2,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand D",
+          "is_reference": false,
+          "order_index": 15,
+          "rank_label": "7",
+          "rank_value": 7,
+          "row_index": 3,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand D",
+          "is_reference": false,
+          "order_index": 16,
+          "rank_label": "3",
+          "rank_value": 3,
+          "row_index": 3,
+          "suit_name": "clubs"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand D",
+          "is_reference": false,
+          "order_index": 17,
+          "rank_label": "A",
+          "rank_value": 14,
+          "row_index": 3,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand D",
+          "is_reference": false,
+          "order_index": 18,
+          "rank_label": "7",
+          "rank_value": 7,
+          "row_index": 3,
+          "suit_name": "diamonds"
+        },
+        {
+          "badge_text": null,
+          "group_label": "Hand D",
+          "is_reference": false,
+          "order_index": 19,
+          "rank_label": "J",
+          "rank_value": 11,
+          "row_index": 3,
+          "suit_name": "diamonds"
+        }
+      ],
+      "domain": "games",
+      "hand_categories": {
+        "Hand A": "one pair",
+        "Hand B": "straight",
+        "Hand C": "high card",
+        "Hand D": "one pair"
+      },
+      "hand_count_probabilities": {
+        "4": 1.0
+      },
+      "hand_count_support": [
+        4,
+        6
+      ],
+      "hand_scores": {
+        "Hand A": [
+          1,
+          [
+            13,
+            8,
+            5,
+            2
+          ]
+        ],
+        "Hand B": [
+          4,
+          [
+            11
+          ]
+        ],
+        "Hand C": [
+          0,
+          [
+            13,
+            10,
+            6,
+            5,
+            4
+          ]
+        ],
+        "Hand D": [
+          1,
+          [
+            7,
+            14,
+            11,
+            3
+          ]
+        ]
+      },
+      "option_count": 4,
+      "pattern_kind": "poker_best_hand_label",
+      "poker_winning_category_probabilities": {
+        "flush": 0.125,
+        "four_of_a_kind": 0.125,
+        "full_house": 0.125,
+        "one_pair": 0.125,
+        "straight": 0.125,
+        "straight_flush": 0.125,
+        "three_of_a_kind": 0.125,
+        "two_pair": 0.125
+      },
+      "query_id": "default",
+      "scene_id": "cards",
+      "scene_variant": "poker_multi_hand",
+      "style_variant": "classic",
+      "target_winning_category": "straight",
+      "target_winning_category_key": "straight",
+      "task_id": "task_games__cards__poker_best_hand_label",
+      "winning_category": "straight",
+      "winning_category_key": "straight",
+      "winning_label": "Hand B",
+      "winning_option": "B"
+    },
+    "post_image_noise": {
+      "applied": true,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [
+        {
+          "params": {
+            "amount": 0.300361
+          },
+          "type": "edge_soften"
+        }
+      ],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "bbox_set": [
+        [
+          369.0,
+          268.0,
+          447.0,
+          376.0
+        ],
+        [
+          459.0,
+          268.0,
+          537.0,
+          376.0
+        ],
+        [
+          549.0,
+          268.0,
+          627.0,
+          376.0
+        ],
+        [
+          639.0,
+          268.0,
+          717.0,
+          376.0
+        ],
+        [
+          729.0,
+          268.0,
+          807.0,
+          376.0
+        ]
+      ],
+      "type": "bbox_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "params": {
+        "cards_per_row": 5,
+        "hand_categories": {
+          "Hand A": "one pair",
+          "Hand B": "straight",
+          "Hand C": "high card",
+          "Hand D": "one pair"
+        },
+        "hand_count_probabilities": {
+          "4": 1.0
+        },
+        "hand_count_support": [
+          4,
+          6
+        ],
+        "hand_labels": [
+          "Hand A",
+          "Hand B",
+          "Hand C",
+          "Hand D"
+        ],
+        "hand_scores": {
+          "Hand A": [
+            1,
+            [
+              13,
+              8,
+              5,
+              2
+            ]
+          ],
+          "Hand B": [
+            4,
+            [
+              11
+            ]
+          ],
+          "Hand C": [
+            0,
+            [
+              13,
+              10,
+              6,
+              5,
+              4
+            ]
+          ],
+          "Hand D": [
+            1,
+            [
+              7,
+              14,
+              11,
+              3
+            ]
+          ]
+        },
+        "option_count": 4,
+        "pattern_kind": "poker_best_hand_label",
+        "poker_winning_category_probabilities": {
+          "flush": 0.125,
+          "four_of_a_kind": 0.125,
+          "full_house": 0.125,
+          "one_pair": 0.125,
+          "straight": 0.125,
+          "straight_flush": 0.125,
+          "three_of_a_kind": 0.125,
+          "two_pair": 0.125
+        },
+        "query_id": "default",
+        "query_id_probabilities": {
+          "default": 1.0
+        },
+        "scene_id": "cards",
+        "scene_variant": "poker_multi_hand",
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "classic": 1.0,
+          "ivory": 0.0,
+          "outlined": 0.0,
+          "slate": 0.0,
+          "soft": 0.0
+        },
+        "target_winning_category": "straight",
+        "target_winning_category_key": "straight",
+        "winning_category": "straight",
+        "winning_category_key": "straight",
+        "winning_label": "Hand B",
+        "winning_option": "B"
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 0,
+        "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+        "prompt_bundle_id": "games_cards_v1",
+        "prompt_bundle_path": "games/cards/games_cards_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "cards",
+        "prompt_schema_version": "v1",
+        "query_key": "poker_best_hand_label",
+        "query_template_index": 0,
+        "scene_key": "visible_card_hand",
+        "scene_template_index": 1,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 0,
+          "query": 0,
+          "scene": 1,
+          "task": 3
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "poker_best_hand_label",
+          "scene": "visible_card_hand",
+          "task": "cards_hand_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:poker_best_hand_label",
+          "answer_hint": "static:query:poker_best_hand_label",
+          "json_example": "static:query:poker_best_hand_label",
+          "json_example_answer_only": "static:query:poker_best_hand_label",
+          "object_description": "static:scene:visible_card_hand",
+          "poker_rule_text": "static:query:poker_best_hand_label"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+          "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+          "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+          "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+          "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+          "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+          "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+        },
+        "task_key": "cards_hand_query",
+        "task_template_index": 3,
+        "template_paths": [
+          "games/cards/games_cards_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:poker_best_hand_label": 5,
+          "scene:visible_card_hand": 5,
+          "task:cards_hand_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 0,
+            "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+            "prompt_bundle_id": "games_cards_v1",
+            "prompt_bundle_path": "games/cards/games_cards_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "cards",
+            "prompt_schema_version": "v1",
+            "query_key": "poker_best_hand_label",
+            "query_template_index": 0,
+            "scene_key": "visible_card_hand",
+            "scene_template_index": 1,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 0,
+              "query": 0,
+              "scene": 1,
+              "task": 3
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "poker_best_hand_label",
+              "scene": "visible_card_hand",
+              "task": "cards_hand_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:poker_best_hand_label",
+              "answer_hint": "static:query:poker_best_hand_label",
+              "json_example": "static:query:poker_best_hand_label",
+              "json_example_answer_only": "static:query:poker_best_hand_label",
+              "object_description": "static:scene:visible_card_hand",
+              "poker_rule_text": "static:query:poker_best_hand_label"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+              "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+              "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+              "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+              "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+            },
+            "task_key": "cards_hand_query",
+            "task_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:poker_best_hand_label": 5,
+              "scene:visible_card_hand": 5,
+              "task:cards_hand_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The visual shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high. Which option letter labels the winning poker hand?\nAnnotation format: set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand.\nAnswer format: set \"answer\" to only the winning poker hand option letter.\nExample JSON:\n{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 2,
+            "prompt_bundle_hash": "27ede58dc3215002367d63a1bbb97c2ae0b6cf2dbac95b1c51e3f1b9463dbb7d",
+            "prompt_bundle_id": "games_cards_v1",
+            "prompt_bundle_path": "games/cards/games_cards_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "cards",
+            "prompt_schema_version": "v1",
+            "query_key": "poker_best_hand_label",
+            "query_template_index": 0,
+            "scene_key": "visible_card_hand",
+            "scene_template_index": 1,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 2,
+              "query": 0,
+              "scene": 1,
+              "task": 3
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "poker_best_hand_label",
+              "scene": "visible_card_hand",
+              "task": "cards_hand_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:poker_best_hand_label",
+              "answer_hint": "static:query:poker_best_hand_label",
+              "json_example": "static:query:poker_best_hand_label",
+              "json_example_answer_only": "static:query:poker_best_hand_label",
+              "object_description": "static:scene:visible_card_hand",
+              "poker_rule_text": "static:query:poker_best_hand_label"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+              "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+              "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning poker hand",
+              "answer_hint": "set \"answer\" to only the winning poker hand option letter",
+              "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190],[420,80,500,190],[520,80,600,190]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "object_description": "face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards",
+              "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high."
+            },
+            "task_key": "cards_hand_query",
+            "task_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:poker_best_hand_label": 5,
+              "scene:visible_card_hand": 5,
+              "task:cards_hand_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The visual shows face-up playing cards arranged as a hand, labeled hands, or labeled candidate cards. Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high. Which option letter labels the winning poker hand?\nRequired answer format: set \"answer\" to only the winning poker hand option letter.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "query_id": "default",
+      "scene_id": "cards",
+      "task_id": "task_games__cards__poker_best_hand_label",
+      "template_id": "games_cards_v1"
+    },
+    "render_map": {
+      "card_badges": {},
+      "card_bboxes_px": {
+        "hand_01_card_01": [
+          369.0,
+          142.0,
+          447.0,
+          250.0
+        ],
+        "hand_01_card_02": [
+          459.0,
+          142.0,
+          537.0,
+          250.0
+        ],
+        "hand_01_card_03": [
+          549.0,
+          142.0,
+          627.0,
+          250.0
+        ],
+        "hand_01_card_04": [
+          639.0,
+          142.0,
+          717.0,
+          250.0
+        ],
+        "hand_01_card_05": [
+          729.0,
+          142.0,
+          807.0,
+          250.0
+        ],
+        "hand_02_card_01": [
+          369.0,
+          268.0,
+          447.0,
+          376.0
+        ],
+        "hand_02_card_02": [
+          459.0,
+          268.0,
+          537.0,
+          376.0
+        ],
+        "hand_02_card_03": [
+          549.0,
+          268.0,
+          627.0,
+          376.0
+        ],
+        "hand_02_card_04": [
+          639.0,
+          268.0,
+          717.0,
+          376.0
+        ],
+        "hand_02_card_05": [
+          729.0,
+          268.0,
+          807.0,
+          376.0
+        ],
+        "hand_03_card_01": [
+          369.0,
+          394.0,
+          447.0,
+          502.0
+        ],
+        "hand_03_card_02": [
+          459.0,
+          394.0,
+          537.0,
+          502.0
+        ],
+        "hand_03_card_03": [
+          549.0,
+          394.0,
+          627.0,
+          502.0
+        ],
+        "hand_03_card_04": [
+          639.0,
+          394.0,
+          717.0,
+          502.0
+        ],
+        "hand_03_card_05": [
+          729.0,
+          394.0,
+          807.0,
+          502.0
+        ],
+        "hand_04_card_01": [
+          369.0,
+          520.0,
+          447.0,
+          628.0
+        ],
+        "hand_04_card_02": [
+          459.0,
+          520.0,
+          537.0,
+          628.0
+        ],
+        "hand_04_card_03": [
+          549.0,
+          520.0,
+          627.0,
+          628.0
+        ],
+        "hand_04_card_04": [
+          639.0,
+          520.0,
+          717.0,
+          628.0
+        ],
+        "hand_04_card_05": [
+          729.0,
+          520.0,
+          807.0,
+          628.0
+        ]
+      },
+      "card_group_labels": {
+        "hand_01_card_01": "Hand A",
+        "hand_01_card_02": "Hand A",
+        "hand_01_card_03": "Hand A",
+        "hand_01_card_04": "Hand A",
+        "hand_01_card_05": "Hand A",
+        "hand_02_card_01": "Hand B",
+        "hand_02_card_02": "Hand B",
+        "hand_02_card_03": "Hand B",
+        "hand_02_card_04": "Hand B",
+        "hand_02_card_05": "Hand B",
+        "hand_03_card_01": "Hand C",
+        "hand_03_card_02": "Hand C",
+        "hand_03_card_03": "Hand C",
+        "hand_03_card_04": "Hand C",
+        "hand_03_card_05": "Hand C",
+        "hand_04_card_01": "Hand D",
+        "hand_04_card_02": "Hand D",
+        "hand_04_card_03": "Hand D",
+        "hand_04_card_04": "Hand D",
+        "hand_04_card_05": "Hand D"
+      },
+      "center_label_mode": "rank_suit",
+      "continuation_cue_bbox_px": null,
+      "continuation_cue_bboxes_px": [],
+      "font_family": "darker_grotesque",
+      "layout_jitter": {
+        "clamp_x_px": [
+          -355,
+          355
+        ],
+        "clamp_y_px": [
+          -181,
+          181
+        ],
+        "dx_px": -2,
+        "dy_px": -55,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -2,
+        "requested_dy_px": -55,
+        "requested_x_slack_fraction": -0.006000000000000005,
+        "requested_y_slack_fraction": -0.3052
+      },
+      "max_cards_per_row": 5,
+      "reference_card_ids": [],
+      "row_card_counts": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "row_card_ids": [
+        [
+          "hand_01_card_01",
+          "hand_01_card_02",
+          "hand_01_card_03",
+          "hand_01_card_04",
+          "hand_01_card_05"
+        ],
+        [
+          "hand_02_card_01",
+          "hand_02_card_02",
+          "hand_02_card_03",
+          "hand_02_card_04",
+          "hand_02_card_05"
+        ],
+        [
+          "hand_03_card_01",
+          "hand_03_card_02",
+          "hand_03_card_03",
+          "hand_03_card_04",
+          "hand_03_card_05"
+        ],
+        [
+          "hand_04_card_01",
+          "hand_04_card_02",
+          "hand_04_card_03",
+          "hand_04_card_04",
+          "hand_04_card_05"
+        ]
+      ],
+      "row_count": 4,
+      "scene_variant": "poker_multi_hand",
+      "style_variant": "classic",
+      "suit_symbol_font_family": "system_fallback"
+    },
+    "render_spec": {
+      "canvas_height": 880,
+      "canvas_width": 1180,
+      "center_label_mode": "rank_suit",
+      "domain": "games",
+      "drawn_text": {
+        "text_legibility": {
+          "drawn_text_record_count": 124,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 5.144,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "bbox_px": [
+                289.0,
+                198.5,
+                350.0,
+                213.5
+              ],
+              "fill_rgb": [
+                56,
+                106,
+                202
+              ],
+              "font_size_px": 22,
+              "min_contrast_ratio": 5.144,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.479,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "Hand A"
+            },
+            {
+              "bbox_px": [
+                378.0,
+                161.5,
+                388.0,
+                173.5
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "2"
+            },
+            {
+              "bbox_px": [
+                390.0,
+                154.0,
+                407.0,
+                169.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                407.0,
+                234.5,
+                417.0,
+                246.5
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "2"
+            },
+            {
+              "bbox_px": [
+                419.0,
+                227.0,
+                436.0,
+                242.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                384.5,
+                193.5,
+                399.5,
+                212.5
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "2"
+            },
+            {
+              "bbox_px": [
+                401.5,
+                182.0,
+                429.5,
+                206.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                468.0,
+                161.5,
+                479.0,
+                173.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                481.0,
+                154.0,
+                498.0,
+                169.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                496.0,
+                234.5,
+                507.0,
+                246.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                509.0,
+                227.0,
+                526.0,
+                242.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                473.5,
+                193.5,
+                490.5,
+                212.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                492.5,
+                182.0,
+                520.5,
+                206.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                558.0,
+                161.5,
+                568.0,
+                173.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                570.0,
+                154.0,
+                587.0,
+                169.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                587.0,
+                234.5,
+                597.0,
+                246.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                599.0,
+                227.0,
+                616.0,
+                242.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                564.0,
+                193.5,
+                580.0,
+                212.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                582.0,
+                182.0,
+                610.0,
+                206.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                648.0,
+                161.5,
+                659.0,
+                173.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                661.0,
+                154.0,
+                678.0,
+                169.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                676.0,
+                234.5,
+                687.0,
+                246.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                689.0,
+                227.0,
+                706.0,
+                242.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                653.5,
+                193.5,
+                670.5,
+                212.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                672.5,
+                182.0,
+                700.5,
+                206.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                738.0,
+                161.5,
+                749.0,
+                173.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                751.0,
+                154.0,
+                768.0,
+                169.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                766.0,
+                234.5,
+                777.0,
+                246.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                779.0,
+                227.0,
+                796.0,
+                242.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                743.5,
+                193.5,
+                760.5,
+                212.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                762.5,
+                182.0,
+                790.5,
+                206.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                289.0,
+                324.5,
+                350.0,
+                339.5
+              ],
+              "fill_rgb": [
+                56,
+                106,
+                202
+              ],
+              "font_size_px": 22,
+              "min_contrast_ratio": 5.144,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.479,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "Hand B"
+            },
+            {
+              "bbox_px": [
+                378.0,
+                287.5,
+                389.0,
+                299.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "9"
+            },
+            {
+              "bbox_px": [
+                391.0,
+                280.0,
+                408.0,
+                295.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                406.0,
+                360.5,
+                417.0,
+                372.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "9"
+            },
+            {
+              "bbox_px": [
+                419.0,
+                353.0,
+                436.0,
+                368.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                383.5,
+                319.5,
+                400.5,
+                338.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "9"
+            },
+            {
+              "bbox_px": [
+                402.5,
+                308.0,
+                430.5,
+                332.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                468.0,
+                287.5,
+                477.0,
+                299.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                479.0,
+                280.0,
+                496.0,
+                295.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                498.0,
+                360.5,
+                507.0,
+                372.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                509.0,
+                353.0,
+                526.0,
+                368.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                475.5,
+                319.5,
+                488.5,
+                338.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                490.5,
+                308.0,
+                518.5,
+                332.0
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♠"
+            },
+            {
+              "bbox_px": [
+                558.0,
+                287.5,
+                568.0,
+                299.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                570.0,
+                280.0,
+                587.0,
+                295.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                587.0,
+                360.5,
+                597.0,
+                372.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                599.0,
+                353.0,
+                616.0,
+                368.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                564.5,
+                319.5,
+                579.5,
+                338.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                581.5,
+                308.0,
+                609.5,
+                332.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                648.0,
+                287.5,
+                663.0,
+                299.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                665.0,
+                280.0,
+                682.0,
+                295.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                672.0,
+                360.5,
+                687.0,
+                372.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                689.0,
+                353.0,
+                706.0,
+                368.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                649.5,
+                319.5,
+                674.5,
+                338.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                676.5,
+                308.0,
+                704.5,
+                332.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                738.0,
+                287.5,
+                749.0,
+                299.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                751.0,
+                280.0,
+                768.0,
+                295.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                766.0,
+                360.5,
+                777.0,
+                372.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                779.0,
+                353.0,
+                796.0,
+                368.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                743.5,
+                319.5,
+                760.5,
+                338.5
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "8"
+            },
+            {
+              "bbox_px": [
+                762.5,
+                308.0,
+                790.5,
+                332.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                287.0,
+                450.5,
+                350.0,
+                465.5
+              ],
+              "fill_rgb": [
+                56,
+                106,
+                202
+              ],
+              "font_size_px": 22,
+              "min_contrast_ratio": 5.144,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.479,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "Hand C"
+            },
+            {
+              "bbox_px": [
+                378.0,
+                413.5,
+                388.0,
+                425.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                390.0,
+                406.0,
+                407.0,
+                421.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                407.0,
+                486.5,
+                417.0,
+                498.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                419.0,
+                479.0,
+                436.0,
+                494.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                384.5,
+                445.5,
+                399.5,
+                464.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                401.5,
+                434.0,
+                429.5,
+                458.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                468.0,
+                413.5,
+                483.0,
+                425.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                485.0,
+                406.0,
+                502.0,
+                421.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                492.0,
+                486.5,
+                507.0,
+                498.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                509.0,
+                479.0,
+                526.0,
+                494.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                469.5,
+                445.5,
+                494.5,
+                464.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "10"
+            },
+            {
+              "bbox_px": [
+                496.5,
+                434.0,
+                524.5,
+                458.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                558.0,
+                413.5,
+                568.0,
+                425.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                570.0,
+                406.0,
+                587.0,
+                421.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                587.0,
+                486.5,
+                597.0,
+                498.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                599.0,
+                479.0,
+                616.0,
+                494.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                564.0,
+                445.5,
+                580.0,
+                464.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                582.0,
+                434.0,
+                610.0,
+                458.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♥"
+            },
+            {
+              "bbox_px": [
+                648.0,
+                413.5,
+                659.0,
+                425.5
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                661.0,
+                406.0,
+                678.0,
+                421.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                676.0,
+                486.5,
+                687.0,
+                498.5
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                689.0,
+                479.0,
+                706.0,
+                494.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                654.0,
+                445.5,
+                670.0,
+                464.5
+              ],
+              "fill_rgb": [
+                18,
+                70,
+                69
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 10.565,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 75.484,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                672.0,
+                434.0,
+                700.0,
+                458.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                738.0,
+                413.5,
+                749.0,
+                425.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                751.0,
+                406.0,
+                768.0,
+                421.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                766.0,
+                486.5,
+                777.0,
+                498.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                779.0,
+                479.0,
+                796.0,
+                494.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                743.5,
+                445.5,
+                760.5,
+                464.5
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                762.5,
+                434.0,
+                790.5,
+                458.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                288.0,
+                576.5,
+                350.0,
+                591.5
+              ],
+              "fill_rgb": [
+                56,
+                106,
+                202
+              ],
+              "font_size_px": 22,
+              "min_contrast_ratio": 5.144,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.479,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "Hand D"
+            },
+            {
+              "bbox_px": [
+                378.0,
+                539.5,
+                388.0,
+                551.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                390.0,
+                532.0,
+                407.0,
+                547.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                407.0,
+                612.5,
+                417.0,
+                624.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                419.0,
+                605.0,
+                436.0,
+                620.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                384.5,
+                571.5,
+                399.5,
+                590.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                401.5,
+                560.0,
+                429.5,
+                584.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                468.0,
+                539.5,
+                477.0,
+                551.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "3"
+            },
+            {
+              "bbox_px": [
+                479.0,
+                532.0,
+                496.0,
+                547.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                498.0,
+                612.5,
+                507.0,
+                624.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "3"
+            },
+            {
+              "bbox_px": [
+                509.0,
+                605.0,
+                526.0,
+                620.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                474.5,
+                571.5,
+                489.5,
+                590.5
+              ],
+              "fill_rgb": [
+                24,
+                28,
+                32
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 17.132,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 90.044,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "3"
+            },
+            {
+              "bbox_px": [
+                491.5,
+                560.0,
+                519.5,
+                584.0
+              ],
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 9.078,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 74.207,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♣"
+            },
+            {
+              "bbox_px": [
+                558.0,
+                539.5,
+                569.0,
+                551.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "A"
+            },
+            {
+              "bbox_px": [
+                571.0,
+                532.0,
+                588.0,
+                547.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                586.0,
+                612.5,
+                597.0,
+                624.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "A"
+            },
+            {
+              "bbox_px": [
+                599.0,
+                605.0,
+                616.0,
+                620.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                563.5,
+                571.5,
+                580.5,
+                590.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "A"
+            },
+            {
+              "bbox_px": [
+                582.5,
+                560.0,
+                610.5,
+                584.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                648.0,
+                539.5,
+                658.0,
+                551.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                660.0,
+                532.0,
+                677.0,
+                547.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                677.0,
+                612.5,
+                687.0,
+                624.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                689.0,
+                605.0,
+                706.0,
+                620.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                654.5,
+                571.5,
+                669.5,
+                590.5
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "7"
+            },
+            {
+              "bbox_px": [
+                671.5,
+                560.0,
+                699.5,
+                584.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                738.0,
+                539.5,
+                747.0,
+                551.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                749.0,
+                532.0,
+                766.0,
+                547.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                768.0,
+                612.5,
+                777.0,
+                624.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                779.0,
+                605.0,
+                796.0,
+                620.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            },
+            {
+              "bbox_px": [
+                745.5,
+                571.5,
+                758.5,
+                590.5
+              ],
+              "fill_rgb": [
+                180,
+                37,
+                57
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 6.433,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 86.156,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                760.5,
+                560.0,
+                788.5,
+                584.0
+              ],
+              "fill_rgb": [
+                54,
+                54,
+                52
+              ],
+              "font_size_px": 29,
+              "min_contrast_ratio": 12.11,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 77.461,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "♦"
+            }
+          ],
+          "required_role_count": 124,
+          "source": "automatic_drawn_text_collector"
+        }
+      },
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Sansita",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "sansita",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/sansita",
+          "tags": [
+            "sans",
+            "static",
+            "google_auto"
+          ]
+        }
+      },
+      "font_family": "darker_grotesque",
+      "layout_jitter": {
+        "clamp_x_px": [
+          -355,
+          355
+        ],
+        "clamp_y_px": [
+          -181,
+          181
+        ],
+        "dx_px": -2,
+        "dy_px": -55,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -2,
+        "requested_dy_px": -55,
+        "requested_x_slack_fraction": -0.006000000000000005,
+        "requested_y_slack_fraction": -0.3052
+      },
+      "max_cards_per_row": 5,
+      "query_id": "default",
+      "row_count": 4,
+      "scene_id": "cards",
+      "scene_variant": "poker_multi_hand",
+      "style_variant": "classic",
+      "suit_symbol_font_family": "system_fallback",
+      "task_id": "task_games__cards__poker_best_hand_label"
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "bbox_px": [
+            369.0,
+            142.0,
+            447.0,
+            250.0
+          ],
+          "entity_id": "hand_01_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand A",
+            "is_reference": false,
+            "order_index": 0,
+            "rank_label": "2",
+            "rank_value": 2,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            459.0,
+            142.0,
+            537.0,
+            250.0
+          ],
+          "entity_id": "hand_01_card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand A",
+            "is_reference": false,
+            "order_index": 1,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            549.0,
+            142.0,
+            627.0,
+            250.0
+          ],
+          "entity_id": "hand_01_card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand A",
+            "is_reference": false,
+            "order_index": 2,
+            "rank_label": "5",
+            "rank_value": 5,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            639.0,
+            142.0,
+            717.0,
+            250.0
+          ],
+          "entity_id": "hand_01_card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand A",
+            "is_reference": false,
+            "order_index": 3,
+            "rank_label": "8",
+            "rank_value": 8,
+            "row_index": 0,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            729.0,
+            142.0,
+            807.0,
+            250.0
+          ],
+          "entity_id": "hand_01_card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand A",
+            "is_reference": false,
+            "order_index": 4,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            369.0,
+            268.0,
+            447.0,
+            376.0
+          ],
+          "entity_id": "hand_02_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand B",
+            "is_reference": false,
+            "order_index": 5,
+            "rank_label": "9",
+            "rank_value": 9,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            459.0,
+            268.0,
+            537.0,
+            376.0
+          ],
+          "entity_id": "hand_02_card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand B",
+            "is_reference": false,
+            "order_index": 6,
+            "rank_label": "J",
+            "rank_value": 11,
+            "row_index": 1,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            549.0,
+            268.0,
+            627.0,
+            376.0
+          ],
+          "entity_id": "hand_02_card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand B",
+            "is_reference": false,
+            "order_index": 7,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 1,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            639.0,
+            268.0,
+            717.0,
+            376.0
+          ],
+          "entity_id": "hand_02_card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand B",
+            "is_reference": false,
+            "order_index": 8,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 1,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            729.0,
+            268.0,
+            807.0,
+            376.0
+          ],
+          "entity_id": "hand_02_card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand B",
+            "is_reference": false,
+            "order_index": 9,
+            "rank_label": "8",
+            "rank_value": 8,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            369.0,
+            394.0,
+            447.0,
+            502.0
+          ],
+          "entity_id": "hand_03_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand C",
+            "is_reference": false,
+            "order_index": 10,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 2,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            459.0,
+            394.0,
+            537.0,
+            502.0
+          ],
+          "entity_id": "hand_03_card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand C",
+            "is_reference": false,
+            "order_index": 11,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 2,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            549.0,
+            394.0,
+            627.0,
+            502.0
+          ],
+          "entity_id": "hand_03_card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand C",
+            "is_reference": false,
+            "order_index": 12,
+            "rank_label": "5",
+            "rank_value": 5,
+            "row_index": 2,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            639.0,
+            394.0,
+            717.0,
+            502.0
+          ],
+          "entity_id": "hand_03_card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand C",
+            "is_reference": false,
+            "order_index": 13,
+            "rank_label": "6",
+            "rank_value": 6,
+            "row_index": 2,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            729.0,
+            394.0,
+            807.0,
+            502.0
+          ],
+          "entity_id": "hand_03_card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand C",
+            "is_reference": false,
+            "order_index": 14,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 2,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            369.0,
+            520.0,
+            447.0,
+            628.0
+          ],
+          "entity_id": "hand_04_card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand D",
+            "is_reference": false,
+            "order_index": 15,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 3,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            459.0,
+            520.0,
+            537.0,
+            628.0
+          ],
+          "entity_id": "hand_04_card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand D",
+            "is_reference": false,
+            "order_index": 16,
+            "rank_label": "3",
+            "rank_value": 3,
+            "row_index": 3,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            549.0,
+            520.0,
+            627.0,
+            628.0
+          ],
+          "entity_id": "hand_04_card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand D",
+            "is_reference": false,
+            "order_index": 17,
+            "rank_label": "A",
+            "rank_value": 14,
+            "row_index": 3,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            639.0,
+            520.0,
+            717.0,
+            628.0
+          ],
+          "entity_id": "hand_04_card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand D",
+            "is_reference": false,
+            "order_index": 18,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 3,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            729.0,
+            520.0,
+            807.0,
+            628.0
+          ],
+          "entity_id": "hand_04_card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "badge_text": null,
+            "group_label": "Hand D",
+            "is_reference": false,
+            "order_index": 19,
+            "rank_label": "J",
+            "rank_value": 11,
+            "row_index": 3,
+            "suit_name": "diamonds"
+          }
+        }
+      ],
+      "query_id": "default",
+      "relations": {
+        "annotation_entity_ids": [
+          "hand_02_card_01",
+          "hand_02_card_02",
+          "hand_02_card_03",
+          "hand_02_card_04",
+          "hand_02_card_05"
+        ],
+        "answer_label": "B",
+        "card_count": 20,
+        "option_count": 4,
+        "pattern_kind": "poker_best_hand_label",
+        "query_id": "default",
+        "scene_id": "cards",
+        "scene_variant": "poker_multi_hand",
+        "style_variant": "classic"
+      },
+      "scene_id": "cards",
+      "scene_kind": "games_cards_hand_poker_multi_hand",
+      "task_id": "task_games__cards__poker_best_hand_label"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "default",
+        "scene_id": "cards",
+        "task_id": "task_games__cards__poker_best_hand_label"
+      },
+      "query_id": "default",
+      "registered": {
+        "domain": "games",
+        "scene_id": "cards",
+        "task_id": "task_games__cards__poker_best_hand_label"
+      },
+      "scene_id": "cards",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "cards",
+        "implementation_domain": "games",
+        "implementation_scene_id": "cards",
+        "implementation_task_id": "task_games__cards__poker_best_hand_label",
+        "prompt_domain": "games",
+        "prompt_scene_id": "cards"
+      },
+      "task_id": "task_games__cards__poker_best_hand_label"
+    },
+    "witness_symbolic": {
+      "count": 5,
+      "type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

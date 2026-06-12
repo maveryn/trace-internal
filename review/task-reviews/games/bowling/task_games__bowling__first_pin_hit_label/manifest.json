@@ -1,0 +1,12 @@
+{
+  "calibration_baseline": "v0",
+  "inspection_count": 100,
+  "query_ids": {
+    "first_pin_hit_label": 100
+  },
+  "task_id": "task_games__bowling__first_pin_hit_label",
+  "workbook": "games/bowling/task_games__bowling__first_pin_hit_label/task_games__bowling__first_pin_hit_label.xlsx",
+  "workbook_sheets": {
+    "first_pin_hit_label": "first_pin_hit_label"
+  }
+}

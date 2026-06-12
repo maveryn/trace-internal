@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.games.bowling.shared.common import (
+from trace.tasks.games.bowling.shared.state import (
     SUPPORTED_BOWLING_SCENE_VARIANTS,
     SUPPORTED_BOWLING_STYLE_VARIANTS,
 )

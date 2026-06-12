@@ -1,0 +1,1763 @@
+{
+  "annotation_gt": {
+    "type": "point_pair_set",
+    "value": [
+      [
+        [
+          487.0,
+          602.5
+        ],
+        [
+          524.382,
+          369.895
+        ]
+      ]
+    ]
+  },
+  "answer_gt": {
+    "type": "string",
+    "value": "6"
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/bowling/task_games__bowling__spare_path_label/images/spare_path_label/0082.png"
+  },
+  "instance_seed": 4256776632365280,
+  "prompt": "The figure shows a bowling lane with a ball, labeled pins, and any shown aiming paths. Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin. Which numbered path is the correct spare path?\nAnnotation format: set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue.\nAnswer format: set \"answer\" to the selected numbered path label as a string.\nExample JSON:\n{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+  "prompt_variants": {
+    "answer_and_annotation": "The figure shows a bowling lane with a ball, labeled pins, and any shown aiming paths. Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin. Which numbered path is the correct spare path?\nAnnotation format: set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue.\nAnswer format: set \"answer\" to the selected numbered path label as a string.\nExample JSON:\n{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+    "answer_only": "The figure shows a bowling lane with a ball, labeled pins, and any shown aiming paths. Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin. Which numbered path is the correct spare path?\nFormat for the \"answer\" field: set \"answer\" to the selected numbered path label as a string.\nExample JSON:\n{\"answer\":\"4\"}"
+  },
+  "query_id": "spare_path_label",
+  "scene_id": "bowling",
+  "task": "task_games__bowling__spare_path_label",
+  "task_id": "task_games__bowling__spare_path_label",
+  "trace_payload": {
+    "background": {
+      "available_palettes": [
+        "arcade_navy",
+        "arcade_purple",
+        "cool_blue",
+        "coral_card",
+        "cyan_lab",
+        "gold_card",
+        "mint_green",
+        "plain_neutral",
+        "rose_sheet",
+        "sage_board",
+        "sky_lilac",
+        "slate_paper",
+        "soft_gray",
+        "teal_card",
+        "terminal_amber",
+        "terminal_blue",
+        "terminal_green",
+        "violet_note",
+        "warm_linen",
+        "warm_paper"
+      ],
+      "available_treatments": [
+        "bare_canvas",
+        "plain_sheet",
+        "matte_sheet",
+        "thin_frame",
+        "soft_panel",
+        "margin_sheet",
+        "dot_sheet",
+        "worksheet_panel",
+        "notebook_grid",
+        "index_card",
+        "clipboard_sheet",
+        "printout_panel",
+        "puzzle_card",
+        "inset_board",
+        "tabletop_mat",
+        "corkboard_sheet",
+        "game_table",
+        "lab_panel",
+        "arcade_screen",
+        "terminal_screen"
+      ],
+      "enabled": true,
+      "selected_style": "panel_scene_style:thin_frame:rose_sheet",
+      "style_spec": {
+        "background_accent_rgb": [
+          226,
+          203,
+          207
+        ],
+        "background_rgb": [
+          241,
+          224,
+          226
+        ],
+        "kind": "panel_scene_style",
+        "min_background_state_lab_distance": 10.06,
+        "min_background_state_rgb_distance": 41.34,
+        "palette_id": "rose_sheet",
+        "style_pack": "thin_frame:rose_sheet",
+        "treatment": "thin_frame"
+      }
+    },
+    "execution_trace": {
+      "answer": "6",
+      "ball_x_norm": 0.5,
+      "construction_mode": "unique_path_through_remaining_pins",
+      "domain": "games",
+      "path_clearance_px": null,
+      "path_options": [
+        {
+          "aim_x_norm": 0.7045574110791334,
+          "label": "1"
+        },
+        {
+          "aim_x_norm": 0.4195574110791334,
+          "label": "2"
+        },
+        {
+          "aim_x_norm": 0.4695574110791334,
+          "label": "3"
+        },
+        {
+          "aim_x_norm": 0.31955741107913344,
+          "label": "4"
+        },
+        {
+          "aim_x_norm": 0.3695574110791334,
+          "label": "5"
+        },
+        {
+          "aim_x_norm": 0.6095574110791334,
+          "label": "6"
+        }
+      ],
+      "path_visible_fraction": 0.44895719383714644,
+      "pins": [
+        {
+          "col": 2,
+          "label": "C",
+          "rack_index": 2,
+          "row": 0,
+          "standing": true,
+          "x_norm": 0.5933704303774662,
+          "y_norm": 0.19989999999999997
+        },
+        {
+          "col": 1,
+          "label": "I",
+          "rack_index": 8,
+          "row": 2,
+          "standing": true,
+          "x_norm": 0.5857014116019268,
+          "y_norm": 0.2548499999999999
+        }
+      ],
+      "query_id": "spare_path_label",
+      "scene_id": "bowling",
+      "scene_variant": "lane_rack",
+      "style_variant": "cosmic",
+      "target_path_index": 5,
+      "target_path_label": "6",
+      "target_pin_label": null,
+      "task_id": "task_games__bowling__spare_path_label",
+      "visible_pin_count": 2
+    },
+    "post_image_noise": {
+      "applied": true,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [
+        {
+          "params": {
+            "alpha": 0.019624,
+            "axis_code": 0.0,
+            "period": 7.0
+          },
+          "type": "scanline_texture"
+        }
+      ],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "point_pair_set": [
+        [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            524.382,
+            369.895
+          ]
+        ]
+      ],
+      "type": "point_pair_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "internal_query_id": "spare_path_label",
+      "params": {
+        "internal_query_id": "spare_path_label",
+        "path_option_count": 6,
+        "path_option_count_probabilities": {
+          "6": 1.0
+        },
+        "path_option_count_support": [
+          4,
+          5,
+          6
+        ],
+        "query_id": "spare_path_label",
+        "query_id_probabilities": {
+          "spare_path_label": 1.0
+        },
+        "scene_id": "bowling",
+        "scene_variant": "lane_rack",
+        "scene_variant_probabilities": {
+          "lane_rack": 1.0
+        },
+        "style_variant": "cosmic",
+        "style_variant_probabilities": {
+          "classic": 0.0,
+          "cosmic": 1.0,
+          "paper": 0.0,
+          "retro": 0.0,
+          "tournament": 0.0
+        },
+        "target_path_index": 5,
+        "target_path_index_probabilities": {
+          "5": 1.0
+        },
+        "target_path_index_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 4,
+        "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+        "prompt_bundle_id": "games_bowling_v1",
+        "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bowling",
+        "prompt_schema_version": "v1",
+        "query_key": "spare_path_label",
+        "query_template_index": 0,
+        "scene_key": "visible_bowling_lane",
+        "scene_template_index": 3,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 4,
+          "query": 0,
+          "scene": 3,
+          "task": 4
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "spare_path_label",
+          "scene": "visible_bowling_lane",
+          "task": "bowling_lane_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:spare_path_label",
+          "answer_hint": "static:query:spare_path_label",
+          "json_example": "static:query:spare_path_label",
+          "json_example_answer_only": "static:query:spare_path_label",
+          "object_description": "static:scene:visible_bowling_lane",
+          "spare_path_rule_text": "static:query:spare_path_label"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+          "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+          "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+          "json_example_answer_only": "{\"answer\":\"4\"}",
+          "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+          "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+          "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+          "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+          "json_example_answer_only": "{\"answer\":\"4\"}",
+          "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+          "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+        },
+        "task_key": "bowling_lane_query",
+        "task_template_index": 4,
+        "template_paths": [
+          "games/bowling/games_bowling_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:spare_path_label": 5,
+          "scene:visible_bowling_lane": 5,
+          "task:bowling_lane_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+            "prompt_bundle_id": "games_bowling_v1",
+            "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bowling",
+            "prompt_schema_version": "v1",
+            "query_key": "spare_path_label",
+            "query_template_index": 0,
+            "scene_key": "visible_bowling_lane",
+            "scene_template_index": 3,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 0,
+              "scene": 3,
+              "task": 4
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "spare_path_label",
+              "scene": "visible_bowling_lane",
+              "task": "bowling_lane_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:spare_path_label",
+              "answer_hint": "static:query:spare_path_label",
+              "json_example": "static:query:spare_path_label",
+              "json_example_answer_only": "static:query:spare_path_label",
+              "object_description": "static:scene:visible_bowling_lane",
+              "spare_path_rule_text": "static:query:spare_path_label"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+              "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+              "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+              "json_example_answer_only": "{\"answer\":\"4\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+              "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+              "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+              "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+              "json_example_answer_only": "{\"answer\":\"4\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+              "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+            },
+            "task_key": "bowling_lane_query",
+            "task_template_index": 4,
+            "template_paths": [
+              "games/bowling/games_bowling_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:spare_path_label": 5,
+              "scene:visible_bowling_lane": 5,
+              "task:bowling_lane_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The figure shows a bowling lane with a ball, labeled pins, and any shown aiming paths. Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin. Which numbered path is the correct spare path?\nAnnotation format: set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue.\nAnswer format: set \"answer\" to the selected numbered path label as a string.\nExample JSON:\n{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+            "prompt_bundle_id": "games_bowling_v1",
+            "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bowling",
+            "prompt_schema_version": "v1",
+            "query_key": "spare_path_label",
+            "query_template_index": 0,
+            "scene_key": "visible_bowling_lane",
+            "scene_template_index": 3,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 0,
+              "scene": 3,
+              "task": 4
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "spare_path_label",
+              "scene": "visible_bowling_lane",
+              "task": "bowling_lane_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:spare_path_label",
+              "answer_hint": "static:query:spare_path_label",
+              "json_example": "static:query:spare_path_label",
+              "json_example_answer_only": "static:query:spare_path_label",
+              "object_description": "static:scene:visible_bowling_lane",
+              "spare_path_rule_text": "static:query:spare_path_label"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+              "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+              "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+              "json_example_answer_only": "{\"answer\":\"4\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+              "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue",
+              "answer_hint": "set \"answer\" to the selected numbered path label as a string",
+              "json_example": "{\"annotation\":[[[430,610],[620,250]]],\"answer\":\"4\"}",
+              "json_example_answer_only": "{\"answer\":\"4\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths",
+              "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin."
+            },
+            "task_key": "bowling_lane_query",
+            "task_template_index": 4,
+            "template_paths": [
+              "games/bowling/games_bowling_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:spare_path_label": 5,
+              "scene:visible_bowling_lane": 5,
+              "task:bowling_lane_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The figure shows a bowling lane with a ball, labeled pins, and any shown aiming paths. Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin. Which numbered path is the correct spare path?\nFormat for the \"answer\" field: set \"answer\" to the selected numbered path label as a string.\nExample JSON:\n{\"answer\":\"4\"}"
+        }
+      },
+      "query_id": "spare_path_label",
+      "scene_id": "bowling",
+      "task_id": "task_games__bowling__spare_path_label",
+      "template_id": "games_bowling_v1"
+    },
+    "render_map": {
+      "ball_bbox_px": [
+        463.0,
+        578.5,
+        511.0,
+        626.5
+      ],
+      "ball_center_px": [
+        487.0,
+        602.5
+      ],
+      "entity_bboxes_px": {
+        "ball": [
+          463.0,
+          578.5,
+          511.0,
+          626.5
+        ],
+        "path_0": [
+          467.0,
+          64.4,
+          662.464,
+          622.5
+        ],
+        "path_1": [
+          405.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_2": [
+          443.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_3": [
+          329.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_4": [
+          367.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_5": [
+          467.0,
+          64.4,
+          590.264,
+          622.5
+        ],
+        "pin_2": [
+          535.962,
+          127.234,
+          579.962,
+          186.634
+        ],
+        "pin_8": [
+          530.133,
+          163.501,
+          574.133,
+          222.901
+        ]
+      },
+      "font_family": "inter_tight",
+      "lane_bbox_px": [
+        107.0,
+        25.0,
+        867.0,
+        685.0
+      ],
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -24,
+          24
+        ],
+        "dx_px": -13,
+        "dy_px": -15,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -13,
+        "requested_dy_px": -15,
+        "requested_x_slack_fraction": -0.12150000000000005,
+        "requested_y_slack_fraction": -0.6454
+      },
+      "motion_paths_px": {
+        "path_0": {
+          "end": [
+            642.464,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            556.797,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        },
+        "path_1": {
+          "end": [
+            425.864,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            459.552,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        },
+        "path_2": {
+          "end": [
+            463.864,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            476.613,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        },
+        "path_3": {
+          "end": [
+            349.864,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            425.432,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        },
+        "path_4": {
+          "end": [
+            387.864,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            442.492,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        },
+        "path_5": {
+          "end": [
+            570.264,
+            84.4
+          ],
+          "start": [
+            487.0,
+            602.5
+          ],
+          "visible_end": [
+            524.382,
+            369.895
+          ],
+          "visible_fraction": 0.449
+        }
+      },
+      "panel_bbox_px": [
+        85,
+        7,
+        889,
+        703
+      ],
+      "panel_scene_style": {
+        "agent_rgb": [
+          195,
+          54,
+          92
+        ],
+        "background_accent_rgb": [
+          226,
+          203,
+          207
+        ],
+        "background_rgb": [
+          241,
+          224,
+          226
+        ],
+        "background_state_lab_distances": [
+          10.06,
+          58.298,
+          50.477
+        ],
+        "background_state_rgb_distances": [
+          41.34,
+          197.355,
+          205.543
+        ],
+        "grid_rgb": [
+          110,
+          84,
+          90
+        ],
+        "mark_rgb": [
+          210,
+          71,
+          74
+        ],
+        "min_background_state_lab_distance": 10.06,
+        "min_background_state_rgb_distance": 41.34,
+        "notebook_line_rgb": [
+          232,
+          214,
+          218
+        ],
+        "option_fill_rgb": [
+          255,
+          250,
+          251
+        ],
+        "palette_id": "rose_sheet",
+        "panel_accent_rgb": [
+          243,
+          224,
+          228
+        ],
+        "panel_border_rgb": [
+          115,
+          80,
+          88
+        ],
+        "panel_fill_rgb": [
+          254,
+          249,
+          250
+        ],
+        "state_colors_rgb": [
+          [
+            255,
+            252,
+            253
+          ],
+          [
+            72,
+            126,
+            198
+          ],
+          [
+            83,
+            152,
+            116
+          ]
+        ],
+        "style_pack": "thin_frame:rose_sheet",
+        "text_rgb": [
+          103,
+          42,
+          82
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "thin_frame"
+      },
+      "path_bboxes_px": {
+        "path_0": [
+          467.0,
+          64.4,
+          662.464,
+          622.5
+        ],
+        "path_1": [
+          405.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_2": [
+          443.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_3": [
+          329.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_4": [
+          367.864,
+          64.4,
+          507.0,
+          622.5
+        ],
+        "path_5": [
+          467.0,
+          64.4,
+          590.264,
+          622.5
+        ]
+      },
+      "path_color_safety": {
+        "anchor_rgbs": [
+          [
+            241,
+            224,
+            226
+          ],
+          [
+            226,
+            203,
+            207
+          ],
+          [
+            254,
+            249,
+            250
+          ],
+          [
+            115,
+            80,
+            88
+          ],
+          [
+            243,
+            224,
+            228
+          ],
+          [
+            110,
+            84,
+            90
+          ],
+          [
+            31,
+            27,
+            63
+          ],
+          [
+            18,
+            16,
+            37
+          ],
+          [
+            79,
+            83,
+            142
+          ],
+          [
+            30,
+            27,
+            57
+          ]
+        ],
+        "distance_space": "lab",
+        "min_anchor_distance_required": 40.0,
+        "min_pairwise_distance_required": 24.0,
+        "min_path_anchor_lab_distance": 53.393,
+        "path_anchor_lab_distances": [
+          66.654,
+          62.398,
+          53.393,
+          69.711,
+          61.435,
+          56.01
+        ]
+      },
+      "path_palette_rgb": [
+        [
+          255,
+          214,
+          83
+        ],
+        [
+          92,
+          238,
+          168
+        ],
+        [
+          255,
+          111,
+          173
+        ],
+        [
+          213,
+          94,
+          0
+        ],
+        [
+          0,
+          158,
+          115
+        ],
+        [
+          199,
+          112,
+          255
+        ]
+      ],
+      "path_point_pairs_px": {
+        "path_0": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            556.797,
+            369.895
+          ]
+        ],
+        "path_1": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            459.552,
+            369.895
+          ]
+        ],
+        "path_2": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            476.613,
+            369.895
+          ]
+        ],
+        "path_3": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            425.432,
+            369.895
+          ]
+        ],
+        "path_4": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            442.492,
+            369.895
+          ]
+        ],
+        "path_5": [
+          [
+            487.0,
+            602.5
+          ],
+          [
+            524.382,
+            369.895
+          ]
+        ]
+      },
+      "path_visible_fraction": 0.449,
+      "pin_bboxes_px": {
+        "pin_2": [
+          535.962,
+          127.234,
+          579.962,
+          186.634
+        ],
+        "pin_8": [
+          530.133,
+          163.501,
+          574.133,
+          222.901
+        ]
+      },
+      "pin_centers_px": {
+        "pin_2": [
+          557.962,
+          156.934
+        ],
+        "pin_8": [
+          552.133,
+          193.201
+        ]
+      },
+      "style_variant": "cosmic"
+    },
+    "render_spec": {
+      "canvas_height": 740,
+      "canvas_width": 1000,
+      "domain": "games",
+      "drawn_text": {
+        "text_legibility": {
+          "drawn_text_record_count": 8,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 8.183,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "bbox_px": [
+                636.964,
+                639.2,
+                647.964,
+                658.2
+              ],
+              "fill_rgb": [
+                245,
+                247,
+                255
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 18.055,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.352,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "1"
+            },
+            {
+              "bbox_px": [
+                418.364,
+                639.2,
+                433.364,
+                658.2
+              ],
+              "fill_rgb": [
+                232,
+                250,
+                246
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 17.876,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.347,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "2"
+            },
+            {
+              "bbox_px": [
+                455.864,
+                639.2,
+                471.864,
+                658.2
+              ],
+              "fill_rgb": [
+                245,
+                247,
+                255
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 18.055,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.352,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "3"
+            },
+            {
+              "bbox_px": [
+                341.864,
+                639.2,
+                357.864,
+                658.2
+              ],
+              "fill_rgb": [
+                245,
+                247,
+                255
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 18.055,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.352,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "4"
+            },
+            {
+              "bbox_px": [
+                380.364,
+                639.2,
+                395.364,
+                658.2
+              ],
+              "fill_rgb": [
+                245,
+                247,
+                255
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 18.055,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.352,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "5"
+            },
+            {
+              "bbox_px": [
+                562.264,
+                639.2,
+                578.264,
+                658.2
+              ],
+              "fill_rgb": [
+                245,
+                248,
+                241
+              ],
+              "font_size_px": 24,
+              "min_contrast_ratio": 18.007,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.621,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "6"
+            },
+            {
+              "bbox_px": [
+                551.462,
+                159.174,
+                564.462,
+                173.174
+              ],
+              "fill_rgb": [
+                34,
+                26,
+                61
+              ],
+              "font_size_px": 16,
+              "min_contrast_ratio": 16.366,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.546,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "C"
+            },
+            {
+              "bbox_px": [
+                549.633,
+                195.441,
+                554.633,
+                209.441
+              ],
+              "fill_rgb": [
+                118,
+                66,
+                28
+              ],
+              "font_size_px": 16,
+              "min_contrast_ratio": 8.183,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 76.093,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "I"
+            }
+          ],
+          "required_role_count": 8,
+          "source": "automatic_drawn_text_collector"
+        }
+      },
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Cabin",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "cabin",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/cabin",
+          "tags": [
+            "sans",
+            "variable",
+            "google_auto"
+          ]
+        }
+      },
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -24,
+          24
+        ],
+        "dx_px": -13,
+        "dy_px": -15,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -13,
+        "requested_dy_px": -15,
+        "requested_x_slack_fraction": -0.12150000000000005,
+        "requested_y_slack_fraction": -0.6454
+      },
+      "panel_scene_style": {
+        "agent_rgb": [
+          195,
+          54,
+          92
+        ],
+        "background_accent_rgb": [
+          226,
+          203,
+          207
+        ],
+        "background_rgb": [
+          241,
+          224,
+          226
+        ],
+        "background_state_lab_distances": [
+          10.06,
+          58.298,
+          50.477
+        ],
+        "background_state_rgb_distances": [
+          41.34,
+          197.355,
+          205.543
+        ],
+        "grid_rgb": [
+          110,
+          84,
+          90
+        ],
+        "mark_rgb": [
+          210,
+          71,
+          74
+        ],
+        "min_background_state_lab_distance": 10.06,
+        "min_background_state_rgb_distance": 41.34,
+        "notebook_line_rgb": [
+          232,
+          214,
+          218
+        ],
+        "option_fill_rgb": [
+          255,
+          250,
+          251
+        ],
+        "palette_id": "rose_sheet",
+        "panel_accent_rgb": [
+          243,
+          224,
+          228
+        ],
+        "panel_border_rgb": [
+          115,
+          80,
+          88
+        ],
+        "panel_fill_rgb": [
+          254,
+          249,
+          250
+        ],
+        "state_colors_rgb": [
+          [
+            255,
+            252,
+            253
+          ],
+          [
+            72,
+            126,
+            198
+          ],
+          [
+            83,
+            152,
+            116
+          ]
+        ],
+        "style_pack": "thin_frame:rose_sheet",
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
+        "text_legibility": {
+          "drawn_text_record_count": 0,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 8.129,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "min_contrast_ratio": 8.129,
+              "min_contrast_required": 7.0,
+              "min_lab_distance": 69.804,
+              "min_lab_distance_required": 38.0,
+              "passes": true,
+              "required": true,
+              "role": "read_required_panel_text",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "surface_rgbs": [
+                [
+                  241,
+                  224,
+                  226
+                ],
+                [
+                  254,
+                  249,
+                  250
+                ],
+                [
+                  255,
+                  250,
+                  251
+                ]
+              ]
+            }
+          ],
+          "required_role_count": 1
+        },
+        "text_rgb": [
+          103,
+          42,
+          82
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "thin_frame"
+      },
+      "query_id": "spare_path_label",
+      "scene_id": "bowling",
+      "scene_variant": "lane_rack",
+      "style_variant": "cosmic",
+      "task_id": "task_games__bowling__spare_path_label",
+      "text_style": {
+        "font_asset": {
+          "family_name": "Inter Tight",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "inter_tight",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/intertight",
+          "tags": [
+            "sans",
+            "variable",
+            "google_auto"
+          ]
+        },
+        "font_family": "inter_tight"
+      }
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "aim_x_norm": 0.7045574110791334,
+          "bbox_px": [
+            467.0,
+            64.4,
+            662.464,
+            622.5
+          ],
+          "entity_id": "path_0",
+          "entity_type": "bowling_path_option",
+          "label": "1",
+          "label_bbox_px": [
+            624.464,
+            630.7,
+            660.464,
+            666.7
+          ],
+          "path_bbox_px": [
+            467.0,
+            64.4,
+            662.464,
+            622.5
+          ]
+        },
+        {
+          "aim_x_norm": 0.4195574110791334,
+          "bbox_px": [
+            405.864,
+            64.4,
+            507.0,
+            622.5
+          ],
+          "entity_id": "path_1",
+          "entity_type": "bowling_path_option",
+          "label": "2",
+          "label_bbox_px": [
+            407.864,
+            630.7,
+            443.864,
+            666.7
+          ],
+          "path_bbox_px": [
+            405.864,
+            64.4,
+            507.0,
+            622.5
+          ]
+        },
+        {
+          "aim_x_norm": 0.4695574110791334,
+          "bbox_px": [
+            443.864,
+            64.4,
+            507.0,
+            622.5
+          ],
+          "entity_id": "path_2",
+          "entity_type": "bowling_path_option",
+          "label": "3",
+          "label_bbox_px": [
+            445.864,
+            630.7,
+            481.864,
+            666.7
+          ],
+          "path_bbox_px": [
+            443.864,
+            64.4,
+            507.0,
+            622.5
+          ]
+        },
+        {
+          "aim_x_norm": 0.31955741107913344,
+          "bbox_px": [
+            329.864,
+            64.4,
+            507.0,
+            622.5
+          ],
+          "entity_id": "path_3",
+          "entity_type": "bowling_path_option",
+          "label": "4",
+          "label_bbox_px": [
+            331.864,
+            630.7,
+            367.864,
+            666.7
+          ],
+          "path_bbox_px": [
+            329.864,
+            64.4,
+            507.0,
+            622.5
+          ]
+        },
+        {
+          "aim_x_norm": 0.3695574110791334,
+          "bbox_px": [
+            367.864,
+            64.4,
+            507.0,
+            622.5
+          ],
+          "entity_id": "path_4",
+          "entity_type": "bowling_path_option",
+          "label": "5",
+          "label_bbox_px": [
+            369.864,
+            630.7,
+            405.864,
+            666.7
+          ],
+          "path_bbox_px": [
+            367.864,
+            64.4,
+            507.0,
+            622.5
+          ]
+        },
+        {
+          "aim_x_norm": 0.6095574110791334,
+          "bbox_px": [
+            467.0,
+            64.4,
+            590.264,
+            622.5
+          ],
+          "entity_id": "path_5",
+          "entity_type": "bowling_path_option",
+          "label": "6",
+          "label_bbox_px": [
+            552.264,
+            630.7,
+            588.264,
+            666.7
+          ],
+          "path_bbox_px": [
+            467.0,
+            64.4,
+            590.264,
+            622.5
+          ]
+        },
+        {
+          "bbox_px": [
+            535.962,
+            127.234,
+            579.962,
+            186.634
+          ],
+          "col": 2,
+          "entity_id": "pin_2",
+          "entity_type": "bowling_pin",
+          "label": "C",
+          "rack_index": 2,
+          "row": 0,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            530.133,
+            163.501,
+            574.133,
+            222.901
+          ],
+          "col": 1,
+          "entity_id": "pin_8",
+          "entity_type": "bowling_pin",
+          "label": "I",
+          "rack_index": 8,
+          "row": 2,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            463.0,
+            578.5,
+            511.0,
+            626.5
+          ],
+          "entity_id": "ball",
+          "entity_type": "bowling_ball"
+        }
+      ],
+      "query_id": "spare_path_label",
+      "relations": {
+        "annotation_entity_ids": [
+          "path_5"
+        ],
+        "path_option_count": 6,
+        "query_id": "spare_path_label",
+        "scene_id": "bowling",
+        "scene_variant": "lane_rack",
+        "standing_pin_count": 2,
+        "style_variant": "cosmic"
+      },
+      "scene_id": "bowling",
+      "scene_kind": "games_bowling_lane_rack",
+      "task_id": "task_games__bowling__spare_path_label"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "spare_path_label",
+        "scene_id": "bowling",
+        "task_id": "task_games__bowling__spare_path_label"
+      },
+      "query_id": "spare_path_label",
+      "registered": {
+        "domain": "games",
+        "scene_id": "bowling",
+        "task_id": "task_games__bowling__spare_path_label"
+      },
+      "scene_id": "bowling",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "bowling",
+        "implementation_domain": "games",
+        "implementation_scene_id": "bowling",
+        "implementation_task_id": "task_games__bowling__spare_path_label",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bowling"
+      },
+      "task_id": "task_games__bowling__spare_path_label"
+    },
+    "witness_symbolic": {
+      "count": 1,
+      "type": "point_pair_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

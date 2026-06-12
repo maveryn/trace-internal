@@ -96,7 +96,7 @@ class RenderedBowlingTaskContext:
 
 
 def build_games_bowling_theme(*, style_variant: str) -> BowlingTheme:
-    """Return one Bowling visual theme."""
+    """Return the configured Bowling visual theme for one style variant."""
 
     style = str(style_variant)
     if style == "cosmic":
@@ -392,7 +392,7 @@ def render_bowling_scene(
     params: BowlingRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBowlingScene:
-    """Render one bowling lane scene."""
+    """Render one Bowling lane scene and record pixel geometry for annotation."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")

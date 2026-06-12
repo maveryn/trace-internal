@@ -13,8 +13,8 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.bowling.first_pin_hit_label import (
     GamesBowlingFirstPinHitLabelTask,
 )
-from trace.tasks.games.bowling.shared.common import BowlingPin
-from trace.tasks.games.bowling.shared.mechanics import first_intersected_pin_id
+from trace.tasks.games.bowling.shared.rules import first_intersected_pin_id
+from trace.tasks.games.bowling.shared.state import BowlingPin
 from trace.tasks.games.bowling.spare_path_label import GamesBowlingSparePathLabelTask
 from tests.helpers import read_jsonl
 
@@ -28,8 +28,7 @@ def test_games_bowling_scene_package_source_layout() -> None:
     for task_cls, relative_path in expected_sources.items():
         source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
         assert source_path == (Path.cwd() / relative_path).resolve()
-        assert getattr(task_cls, "scene_id", "")
-        assert getattr(task_cls, "scene_id") == "bowling"
+        assert not getattr(task_cls, "scene_id", "")
 
 
 @pytest.mark.parametrize(

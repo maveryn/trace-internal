@@ -1,4 +1,4 @@
-"""Identity-free Bowling lane mechanics and scene construction helpers."""
+"""Identity-free Bowling lane rules and scene construction helpers."""
 
 from __future__ import annotations
 

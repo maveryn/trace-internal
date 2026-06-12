@@ -1,0 +1,1458 @@
+{
+  "annotation_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        354.778,
+        156.967,
+        398.778,
+        216.367
+      ]
+    ]
+  },
+  "answer_gt": {
+    "type": "string",
+    "value": "B"
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/bowling/task_games__bowling__first_pin_hit_label/images/first_pin_hit_label/0074.png"
+  },
+  "instance_seed": 2051844814793517,
+  "prompt": "The image shows a bowling lane with a ball, labeled pins, and any shown aiming paths. The dashed arrow shows the ball's current straight path. Extend that path and identify the labeled pin reached before any other pin.\nAnnotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path.\nAnswer format: set \"answer\" to the selected pin label as a string.\nExample JSON:\n{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+  "prompt_variants": {
+    "answer_and_annotation": "The image shows a bowling lane with a ball, labeled pins, and any shown aiming paths. The dashed arrow shows the ball's current straight path. Extend that path and identify the labeled pin reached before any other pin.\nAnnotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path.\nAnswer format: set \"answer\" to the selected pin label as a string.\nExample JSON:\n{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+    "answer_only": "The image shows a bowling lane with a ball, labeled pins, and any shown aiming paths. The dashed arrow shows the ball's current straight path. Extend that path and identify the labeled pin reached before any other pin.\nFormat for the \"answer\" field: set \"answer\" to the selected pin label as a string.\nExample JSON:\n{\"answer\":\"G\"}"
+  },
+  "query_id": "first_pin_hit_label",
+  "scene_id": "bowling",
+  "task": "task_games__bowling__first_pin_hit_label",
+  "task_id": "task_games__bowling__first_pin_hit_label",
+  "trace_payload": {
+    "background": {
+      "available_palettes": [
+        "arcade_navy",
+        "arcade_purple",
+        "cool_blue",
+        "coral_card",
+        "cyan_lab",
+        "gold_card",
+        "mint_green",
+        "plain_neutral",
+        "rose_sheet",
+        "sage_board",
+        "sky_lilac",
+        "slate_paper",
+        "soft_gray",
+        "teal_card",
+        "terminal_amber",
+        "terminal_blue",
+        "terminal_green",
+        "violet_note",
+        "warm_linen",
+        "warm_paper"
+      ],
+      "available_treatments": [
+        "bare_canvas",
+        "plain_sheet",
+        "matte_sheet",
+        "thin_frame",
+        "soft_panel",
+        "margin_sheet",
+        "dot_sheet",
+        "worksheet_panel",
+        "notebook_grid",
+        "index_card",
+        "clipboard_sheet",
+        "printout_panel",
+        "puzzle_card",
+        "inset_board",
+        "tabletop_mat",
+        "corkboard_sheet",
+        "game_table",
+        "lab_panel",
+        "arcade_screen",
+        "terminal_screen"
+      ],
+      "enabled": true,
+      "selected_style": "panel_scene_style:clipboard_sheet:plain_neutral",
+      "style_spec": {
+        "background_accent_rgb": [
+          235,
+          239,
+          245
+        ],
+        "background_rgb": [
+          248,
+          250,
+          252
+        ],
+        "kind": "panel_scene_style",
+        "min_background_state_lab_distance": 13.246,
+        "min_background_state_rgb_distance": 47.117,
+        "palette_id": "plain_neutral",
+        "style_pack": "clipboard_sheet:plain_neutral",
+        "treatment": "clipboard_sheet"
+      }
+    },
+    "execution_trace": {
+      "answer": "B",
+      "ball_x_norm": 0.2688271219282017,
+      "construction_mode": "verified_first_collision_path",
+      "domain": "games",
+      "path_clearance_px": 44.574172375817604,
+      "path_options": [],
+      "path_visible_fraction": null,
+      "pins": [
+        {
+          "col": 1,
+          "label": "G",
+          "rack_index": 1,
+          "row": 0,
+          "standing": true,
+          "x_norm": 0.4715601981033174,
+          "y_norm": 0.13502857952465264
+        },
+        {
+          "col": 3,
+          "label": "J",
+          "rack_index": 3,
+          "row": 0,
+          "standing": true,
+          "x_norm": 0.5872182707597922,
+          "y_norm": 0.14987745070454006
+        },
+        {
+          "col": 0,
+          "label": "B",
+          "rack_index": 4,
+          "row": 1,
+          "standing": true,
+          "x_norm": 0.43128717546664497,
+          "y_norm": 0.19949538456907312
+        },
+        {
+          "col": 1,
+          "label": "D",
+          "rack_index": 5,
+          "row": 1,
+          "standing": true,
+          "x_norm": 0.49039661471568485,
+          "y_norm": 0.20676508595794835
+        },
+        {
+          "col": 0,
+          "label": "E",
+          "rack_index": 7,
+          "row": 2,
+          "standing": true,
+          "x_norm": 0.481013199161868,
+          "y_norm": 0.26141814250323286
+        },
+        {
+          "col": 0,
+          "label": "I",
+          "rack_index": 9,
+          "row": 3,
+          "standing": true,
+          "x_norm": 0.4861242036688644,
+          "y_norm": 0.32931943095316896
+        }
+      ],
+      "query_id": "first_pin_hit_label",
+      "scene_id": "bowling",
+      "scene_variant": "lane_rack",
+      "style_variant": "retro",
+      "target_path_label": null,
+      "target_pin_index": 1,
+      "target_pin_label": "B",
+      "task_id": "task_games__bowling__first_pin_hit_label",
+      "visible_pin_count": 6
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "bbox_set": [
+        [
+          354.778,
+          156.967,
+          398.778,
+          216.367
+        ]
+      ],
+      "type": "bbox_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "internal_query_id": "first_pin_hit_label",
+      "params": {
+        "internal_query_id": "first_pin_hit_label",
+        "query_id": "first_pin_hit_label",
+        "query_id_probabilities": {
+          "first_pin_hit_label": 1.0
+        },
+        "scene_id": "bowling",
+        "scene_variant": "lane_rack",
+        "scene_variant_probabilities": {
+          "lane_rack": 1.0
+        },
+        "style_variant": "retro",
+        "style_variant_probabilities": {
+          "classic": 0.0,
+          "cosmic": 0.0,
+          "paper": 0.0,
+          "retro": 1.0,
+          "tournament": 0.0
+        },
+        "target_pin_index": 1,
+        "target_pin_index_probabilities": {
+          "1": 1.0
+        },
+        "target_pin_index_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "target_pin_label_index": 1,
+        "visible_pin_count": 6,
+        "visible_pin_count_probabilities": {
+          "6": 1.0
+        },
+        "visible_pin_count_support": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 4,
+        "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+        "prompt_bundle_id": "games_bowling_v1",
+        "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bowling",
+        "prompt_schema_version": "v1",
+        "query_key": "first_pin_hit_label",
+        "query_template_index": 2,
+        "scene_key": "visible_bowling_lane",
+        "scene_template_index": 0,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 4,
+          "query": 2,
+          "scene": 0,
+          "task": 3
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "first_pin_hit_label",
+          "scene": "visible_bowling_lane",
+          "task": "bowling_lane_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:first_pin_hit_label",
+          "answer_hint": "static:query:first_pin_hit_label",
+          "bowling_motion_rule_text": "static:query:first_pin_hit_label",
+          "json_example": "static:query:first_pin_hit_label",
+          "json_example_answer_only": "static:query:first_pin_hit_label",
+          "object_description": "static:scene:visible_bowling_lane"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+          "answer_hint": "set \"answer\" to the selected pin label as a string",
+          "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+          "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+          "json_example_answer_only": "{\"answer\":\"G\"}",
+          "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+          "answer_hint": "set \"answer\" to the selected pin label as a string",
+          "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+          "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+          "json_example_answer_only": "{\"answer\":\"G\"}",
+          "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+        },
+        "task_key": "bowling_lane_query",
+        "task_template_index": 3,
+        "template_paths": [
+          "games/bowling/games_bowling_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:first_pin_hit_label": 5,
+          "scene:visible_bowling_lane": 5,
+          "task:bowling_lane_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+            "prompt_bundle_id": "games_bowling_v1",
+            "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bowling",
+            "prompt_schema_version": "v1",
+            "query_key": "first_pin_hit_label",
+            "query_template_index": 2,
+            "scene_key": "visible_bowling_lane",
+            "scene_template_index": 0,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 2,
+              "scene": 0,
+              "task": 3
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "first_pin_hit_label",
+              "scene": "visible_bowling_lane",
+              "task": "bowling_lane_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:first_pin_hit_label",
+              "answer_hint": "static:query:first_pin_hit_label",
+              "bowling_motion_rule_text": "static:query:first_pin_hit_label",
+              "json_example": "static:query:first_pin_hit_label",
+              "json_example_answer_only": "static:query:first_pin_hit_label",
+              "object_description": "static:scene:visible_bowling_lane"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+              "answer_hint": "set \"answer\" to the selected pin label as a string",
+              "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+              "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+              "json_example_answer_only": "{\"answer\":\"G\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+              "answer_hint": "set \"answer\" to the selected pin label as a string",
+              "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+              "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+              "json_example_answer_only": "{\"answer\":\"G\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+            },
+            "task_key": "bowling_lane_query",
+            "task_template_index": 3,
+            "template_paths": [
+              "games/bowling/games_bowling_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:first_pin_hit_label": 5,
+              "scene:visible_bowling_lane": 5,
+              "task:bowling_lane_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The image shows a bowling lane with a ball, labeled pins, and any shown aiming paths. The dashed arrow shows the ball's current straight path. Extend that path and identify the labeled pin reached before any other pin.\nAnnotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path.\nAnswer format: set \"answer\" to the selected pin label as a string.\nExample JSON:\n{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "79d39307e3ac121ef9769e10fdd7806374ff1bd7d7c70f64c2d4fe037c96a1d4",
+            "prompt_bundle_id": "games_bowling_v1",
+            "prompt_bundle_path": "games/bowling/games_bowling_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "bowling",
+            "prompt_schema_version": "v1",
+            "query_key": "first_pin_hit_label",
+            "query_template_index": 2,
+            "scene_key": "visible_bowling_lane",
+            "scene_template_index": 0,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 2,
+              "scene": 0,
+              "task": 3
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "first_pin_hit_label",
+              "scene": "visible_bowling_lane",
+              "task": "bowling_lane_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:first_pin_hit_label",
+              "answer_hint": "static:query:first_pin_hit_label",
+              "bowling_motion_rule_text": "static:query:first_pin_hit_label",
+              "json_example": "static:query:first_pin_hit_label",
+              "json_example_answer_only": "static:query:first_pin_hit_label",
+              "object_description": "static:scene:visible_bowling_lane"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+              "answer_hint": "set \"answer\" to the selected pin label as a string",
+              "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+              "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+              "json_example_answer_only": "{\"answer\":\"G\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path",
+              "answer_hint": "set \"answer\" to the selected pin label as a string",
+              "bowling_motion_rule_text": "The dashed arrow shows the ball's current straight path.",
+              "json_example": "{\"annotation\":[[510,164,554,224]],\"answer\":\"G\"}",
+              "json_example_answer_only": "{\"answer\":\"G\"}",
+              "object_description": "a bowling lane with a ball, labeled pins, and any shown aiming paths"
+            },
+            "task_key": "bowling_lane_query",
+            "task_template_index": 3,
+            "template_paths": [
+              "games/bowling/games_bowling_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:first_pin_hit_label": 5,
+              "scene:visible_bowling_lane": 5,
+              "task:bowling_lane_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The image shows a bowling lane with a ball, labeled pins, and any shown aiming paths. The dashed arrow shows the ball's current straight path. Extend that path and identify the labeled pin reached before any other pin.\nFormat for the \"answer\" field: set \"answer\" to the selected pin label as a string.\nExample JSON:\n{\"answer\":\"G\"}"
+        }
+      },
+      "query_id": "first_pin_hit_label",
+      "scene_id": "bowling",
+      "task_id": "task_games__bowling__first_pin_hit_label",
+      "template_id": "games_bowling_v1"
+    },
+    "render_map": {
+      "ball_bbox_px": [
+        229.309,
+        608.5,
+        277.309,
+        656.5
+      ],
+      "ball_center_px": [
+        253.309,
+        632.5
+      ],
+      "entity_bboxes_px": {
+        "ball": [
+          229.309,
+          608.5,
+          277.309,
+          656.5
+        ],
+        "pin_1": [
+          385.386,
+          114.419,
+          429.386,
+          173.819
+        ],
+        "pin_3": [
+          473.286,
+          124.219,
+          517.286,
+          183.619
+        ],
+        "pin_4": [
+          354.778,
+          156.967,
+          398.778,
+          216.367
+        ],
+        "pin_5": [
+          399.701,
+          161.765,
+          443.701,
+          221.165
+        ],
+        "pin_7": [
+          392.57,
+          197.836,
+          436.57,
+          257.236
+        ],
+        "pin_9": [
+          396.454,
+          242.651,
+          440.454,
+          302.051
+        ]
+      },
+      "font_family": "eb_garamond",
+      "lane_bbox_px": [
+        49.0,
+        55.0,
+        809.0,
+        715.0
+      ],
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -24,
+          24
+        ],
+        "dx_px": -71,
+        "dy_px": 15,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -71,
+        "requested_dy_px": 15,
+        "requested_x_slack_fraction": -0.687,
+        "requested_y_slack_fraction": 0.6243999999999998
+      },
+      "motion_paths_px": {
+        "shown_path": {
+          "end": [
+            376.778,
+            186.667
+          ],
+          "start": [
+            253.309,
+            632.5
+          ],
+          "visible_end": [
+            329.86,
+            356.084
+          ]
+        }
+      },
+      "panel_bbox_px": [
+        27,
+        37,
+        831,
+        733
+      ],
+      "panel_scene_style": {
+        "agent_rgb": [
+          211,
+          58,
+          82
+        ],
+        "background_accent_rgb": [
+          235,
+          239,
+          245
+        ],
+        "background_rgb": [
+          248,
+          250,
+          252
+        ],
+        "background_state_lab_distances": [
+          13.246,
+          63.754,
+          54.714
+        ],
+        "background_state_rgb_distances": [
+          47.117,
+          220.005,
+          236.538
+        ],
+        "grid_rgb": [
+          84,
+          94,
+          110
+        ],
+        "mark_rgb": [
+          226,
+          82,
+          68
+        ],
+        "min_background_state_lab_distance": 13.246,
+        "min_background_state_rgb_distance": 47.117,
+        "notebook_line_rgb": [
+          225,
+          231,
+          240
+        ],
+        "option_fill_rgb": [
+          251,
+          252,
+          254
+        ],
+        "palette_id": "plain_neutral",
+        "panel_accent_rgb": [
+          228,
+          235,
+          246
+        ],
+        "panel_border_rgb": [
+          84,
+          94,
+          110
+        ],
+        "panel_fill_rgb": [
+          252,
+          253,
+          255
+        ],
+        "state_colors_rgb": [
+          [
+            210,
+            224,
+            242
+          ],
+          [
+            73,
+            126,
+            203
+          ],
+          [
+            78,
+            159,
+            115
+          ]
+        ],
+        "style_pack": "clipboard_sheet:plain_neutral",
+        "text_rgb": [
+          28,
+          82,
+          56
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "clipboard_sheet"
+      },
+      "path_bboxes_px": {},
+      "path_color_safety": {
+        "anchor_rgbs": [
+          [
+            248,
+            250,
+            252
+          ],
+          [
+            235,
+            239,
+            245
+          ],
+          [
+            252,
+            253,
+            255
+          ],
+          [
+            84,
+            94,
+            110
+          ],
+          [
+            228,
+            235,
+            246
+          ],
+          [
+            231,
+            182,
+            95
+          ],
+          [
+            58,
+            65,
+            95
+          ],
+          [
+            189,
+            133,
+            73
+          ],
+          [
+            247,
+            236,
+            196
+          ]
+        ],
+        "distance_space": "lab",
+        "min_anchor_distance_required": 40.0,
+        "min_pairwise_distance_required": 24.0,
+        "min_path_anchor_lab_distance": 44.077,
+        "path_anchor_lab_distances": [
+          45.035,
+          46.727,
+          49.24,
+          48.581,
+          44.077,
+          54.388
+        ]
+      },
+      "path_palette_rgb": [
+        [
+          221,
+          76,
+          87
+        ],
+        [
+          80,
+          173,
+          126
+        ],
+        [
+          60,
+          70,
+          180
+        ],
+        [
+          171,
+          92,
+          180
+        ],
+        [
+          204,
+          121,
+          167
+        ],
+        [
+          0,
+          158,
+          115
+        ]
+      ],
+      "path_point_pairs_px": {},
+      "path_visible_fraction": null,
+      "pin_bboxes_px": {
+        "pin_1": [
+          385.386,
+          114.419,
+          429.386,
+          173.819
+        ],
+        "pin_3": [
+          473.286,
+          124.219,
+          517.286,
+          183.619
+        ],
+        "pin_4": [
+          354.778,
+          156.967,
+          398.778,
+          216.367
+        ],
+        "pin_5": [
+          399.701,
+          161.765,
+          443.701,
+          221.165
+        ],
+        "pin_7": [
+          392.57,
+          197.836,
+          436.57,
+          257.236
+        ],
+        "pin_9": [
+          396.454,
+          242.651,
+          440.454,
+          302.051
+        ]
+      },
+      "pin_centers_px": {
+        "pin_1": [
+          407.386,
+          144.119
+        ],
+        "pin_3": [
+          495.286,
+          153.919
+        ],
+        "pin_4": [
+          376.778,
+          186.667
+        ],
+        "pin_5": [
+          421.701,
+          191.465
+        ],
+        "pin_7": [
+          414.57,
+          227.536
+        ],
+        "pin_9": [
+          418.454,
+          272.351
+        ]
+      },
+      "style_variant": "retro"
+    },
+    "render_spec": {
+      "canvas_height": 740,
+      "canvas_width": 1000,
+      "domain": "games",
+      "drawn_text": {
+        "text_legibility": {
+          "drawn_text_record_count": 6,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 8.183,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "bbox_px": [
+                399.886,
+                146.859,
+                414.886,
+                159.859
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "G"
+            },
+            {
+              "bbox_px": [
+                491.286,
+                156.659,
+                499.286,
+                169.659
+              ],
+              "fill_rgb": [
+                48,
+                38,
+                42
+              ],
+              "font_size_px": 12,
+              "min_contrast_ratio": 14.62,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 83.773,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                370.278,
+                189.407,
+                383.278,
+                202.407
+              ],
+              "fill_rgb": [
+                48,
+                38,
+                42
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 14.62,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 83.773,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "B"
+            },
+            {
+              "bbox_px": [
+                414.201,
+                194.205,
+                429.201,
+                207.205
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "D"
+            },
+            {
+              "bbox_px": [
+                408.57,
+                230.276,
+                420.57,
+                243.276
+              ],
+              "fill_rgb": [
+                48,
+                38,
+                42
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 14.62,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 83.773,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "E"
+            },
+            {
+              "bbox_px": [
+                413.954,
+                275.091,
+                422.954,
+                288.091
+              ],
+              "fill_rgb": [
+                118,
+                66,
+                28
+              ],
+              "font_size_px": 17,
+              "min_contrast_ratio": 8.183,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 76.093,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "I"
+            }
+          ],
+          "required_role_count": 6,
+          "source": "automatic_drawn_text_collector"
+        }
+      },
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Instrument Sans",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "instrument_sans",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/instrumentsans",
+          "tags": [
+            "sans",
+            "variable",
+            "google_auto"
+          ]
+        }
+      },
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -24,
+          24
+        ],
+        "dx_px": -71,
+        "dy_px": 15,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -71,
+        "requested_dy_px": 15,
+        "requested_x_slack_fraction": -0.687,
+        "requested_y_slack_fraction": 0.6243999999999998
+      },
+      "panel_scene_style": {
+        "agent_rgb": [
+          211,
+          58,
+          82
+        ],
+        "background_accent_rgb": [
+          235,
+          239,
+          245
+        ],
+        "background_rgb": [
+          248,
+          250,
+          252
+        ],
+        "background_state_lab_distances": [
+          13.246,
+          63.754,
+          54.714
+        ],
+        "background_state_rgb_distances": [
+          47.117,
+          220.005,
+          236.538
+        ],
+        "grid_rgb": [
+          84,
+          94,
+          110
+        ],
+        "mark_rgb": [
+          226,
+          82,
+          68
+        ],
+        "min_background_state_lab_distance": 13.246,
+        "min_background_state_rgb_distance": 47.117,
+        "notebook_line_rgb": [
+          225,
+          231,
+          240
+        ],
+        "option_fill_rgb": [
+          251,
+          252,
+          254
+        ],
+        "palette_id": "plain_neutral",
+        "panel_accent_rgb": [
+          228,
+          235,
+          246
+        ],
+        "panel_border_rgb": [
+          84,
+          94,
+          110
+        ],
+        "panel_fill_rgb": [
+          252,
+          253,
+          255
+        ],
+        "state_colors_rgb": [
+          [
+            210,
+            224,
+            242
+          ],
+          [
+            73,
+            126,
+            203
+          ],
+          [
+            78,
+            159,
+            115
+          ]
+        ],
+        "style_pack": "clipboard_sheet:plain_neutral",
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
+        "text_legibility": {
+          "drawn_text_record_count": 0,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 8.676,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "fill_rgb": [
+                28,
+                82,
+                56
+              ],
+              "min_contrast_ratio": 8.676,
+              "min_contrast_required": 7.0,
+              "min_lab_distance": 72.58,
+              "min_lab_distance_required": 38.0,
+              "passes": true,
+              "required": true,
+              "role": "read_required_panel_text",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "surface_rgbs": [
+                [
+                  248,
+                  250,
+                  252
+                ],
+                [
+                  252,
+                  253,
+                  255
+                ],
+                [
+                  251,
+                  252,
+                  254
+                ]
+              ]
+            }
+          ],
+          "required_role_count": 1
+        },
+        "text_rgb": [
+          28,
+          82,
+          56
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "clipboard_sheet"
+      },
+      "query_id": "first_pin_hit_label",
+      "scene_id": "bowling",
+      "scene_variant": "lane_rack",
+      "style_variant": "retro",
+      "task_id": "task_games__bowling__first_pin_hit_label",
+      "text_style": {
+        "font_asset": {
+          "family_name": "EB Garamond",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "eb_garamond",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/ebgaramond",
+          "tags": [
+            "serif",
+            "book",
+            "variable"
+          ]
+        },
+        "font_family": "eb_garamond"
+      }
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "bbox_px": [
+            385.386,
+            114.419,
+            429.386,
+            173.819
+          ],
+          "col": 1,
+          "entity_id": "pin_1",
+          "entity_type": "bowling_pin",
+          "label": "G",
+          "rack_index": 1,
+          "row": 0,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            473.286,
+            124.219,
+            517.286,
+            183.619
+          ],
+          "col": 3,
+          "entity_id": "pin_3",
+          "entity_type": "bowling_pin",
+          "label": "J",
+          "rack_index": 3,
+          "row": 0,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            354.778,
+            156.967,
+            398.778,
+            216.367
+          ],
+          "col": 0,
+          "entity_id": "pin_4",
+          "entity_type": "bowling_pin",
+          "label": "B",
+          "rack_index": 4,
+          "row": 1,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            399.701,
+            161.765,
+            443.701,
+            221.165
+          ],
+          "col": 1,
+          "entity_id": "pin_5",
+          "entity_type": "bowling_pin",
+          "label": "D",
+          "rack_index": 5,
+          "row": 1,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            392.57,
+            197.836,
+            436.57,
+            257.236
+          ],
+          "col": 0,
+          "entity_id": "pin_7",
+          "entity_type": "bowling_pin",
+          "label": "E",
+          "rack_index": 7,
+          "row": 2,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            396.454,
+            242.651,
+            440.454,
+            302.051
+          ],
+          "col": 0,
+          "entity_id": "pin_9",
+          "entity_type": "bowling_pin",
+          "label": "I",
+          "rack_index": 9,
+          "row": 3,
+          "standing": true
+        },
+        {
+          "bbox_px": [
+            229.309,
+            608.5,
+            277.309,
+            656.5
+          ],
+          "entity_id": "ball",
+          "entity_type": "bowling_ball"
+        }
+      ],
+      "query_id": "first_pin_hit_label",
+      "relations": {
+        "annotation_entity_ids": [
+          "pin_4"
+        ],
+        "path_option_count": 0,
+        "query_id": "first_pin_hit_label",
+        "scene_id": "bowling",
+        "scene_variant": "lane_rack",
+        "standing_pin_count": 6,
+        "style_variant": "retro"
+      },
+      "scene_id": "bowling",
+      "scene_kind": "games_bowling_lane_rack",
+      "task_id": "task_games__bowling__first_pin_hit_label"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "first_pin_hit_label",
+        "scene_id": "bowling",
+        "task_id": "task_games__bowling__first_pin_hit_label"
+      },
+      "query_id": "first_pin_hit_label",
+      "registered": {
+        "domain": "games",
+        "scene_id": "bowling",
+        "task_id": "task_games__bowling__first_pin_hit_label"
+      },
+      "scene_id": "bowling",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "bowling",
+        "implementation_domain": "games",
+        "implementation_scene_id": "bowling",
+        "implementation_task_id": "task_games__bowling__first_pin_hit_label",
+        "prompt_domain": "games",
+        "prompt_scene_id": "bowling"
+      },
+      "task_id": "task_games__bowling__first_pin_hit_label"
+    },
+    "witness_symbolic": {
+      "count": 1,
+      "type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

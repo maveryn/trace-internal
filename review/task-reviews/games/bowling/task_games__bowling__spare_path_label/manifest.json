@@ -1,0 +1,12 @@
+{
+  "calibration_baseline": "v0",
+  "inspection_count": 100,
+  "query_ids": {
+    "spare_path_label": 100
+  },
+  "task_id": "task_games__bowling__spare_path_label",
+  "workbook": "games/bowling/task_games__bowling__spare_path_label/task_games__bowling__spare_path_label.xlsx",
+  "workbook_sheets": {
+    "spare_path_label": "spare_path_label"
+  }
+}

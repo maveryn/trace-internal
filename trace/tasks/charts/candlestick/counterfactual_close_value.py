@@ -7,17 +7,22 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.candlestick.shared.ohlc import (
+from trace.tasks.charts.candlestick.shared.annotations import annotation_boxes_and_points
+from trace.tasks.charts.candlestick.shared.defaults import (
+    GENERATION_DEFAULTS,
     DOMAIN,
+    SCENE_NAMESPACE,
     SCENE_ID,
-    annotation_boxes_and_points,
-    build_trace_scaffold,
-    counterfactual_close_dataset,
-    render_dataset,
 )
+from trace.tasks.charts.candlestick.shared.output import build_trace_scaffold
 from trace.tasks.charts.candlestick.shared.prompts import build_prompt_artifacts
+from trace.tasks.charts.candlestick.shared.rendering import render_dataset
+from trace.tasks.charts.candlestick.shared.sampling import sample_candles, select_semantic_branch
+from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
+from trace.tasks.shared.config_defaults import resolve_required_int_bounds
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -26,25 +31,77 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 COUNTERFACTUAL_QUERY_ID = "close_after_body_change_value"
 
 
-def _select_change_direction(params: dict[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float], dict[str, Any]]:
-    support = ("increase", "decrease")
-    requested = params.get("change_direction")
-    if requested is not None:
-        selected = str(requested)
-        if selected not in support:
-            raise ValueError(f"unsupported change_direction: {selected}; supported: {support}")
-        branch_params = dict(params)
-        branch_params.pop("change_direction", None)
-        return selected, {value: (1.0 if value == selected else 0.0) for value in support}, branch_params
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        cursor = abs(int(sample_cursor))
-        selected = support[cursor % len(support)]
-        branch_params = dict(params)
-        branch_params["_sample_cursor"] = cursor // len(support)
-        return selected, {value: 0.5 for value in support}, branch_params
-    selected = support[int(hash64(int(instance_seed), "charts.candlestick.change_direction")) % len(support)]
-    return selected, {value: 0.5 for value in support}, dict(params)
+def _build_counterfactual_close_dataset(
+    *,
+    params: dict[str, Any],
+    instance_seed: int,
+    change_direction: str,
+) -> Dataset:
+    """Select the target candle and bind the counterfactual close objective."""
+
+    candles = sample_candles(params, instance_seed=int(instance_seed))
+    change_min, change_max = resolve_required_int_bounds(
+        params,
+        GENERATION_DEFAULTS,
+        min_key="counterfactual_change_min",
+        max_key="counterfactual_change_max",
+        fallback_min=2,
+        fallback_max=6,
+        context="candlestick counterfactual body-size change",
+    )
+    increase = str(change_direction) == "increase"
+    if str(change_direction) not in {"increase", "decrease"}:
+        raise ValueError(f"unsupported body-size change direction: {change_direction}")
+    index_seed = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.counterfactual.target",
+    )
+    candidates = list(candles)
+    start_index = int(index_seed) % len(candidates)
+    candidates = candidates[start_index:] + candidates[:start_index]
+    for candidate in candidates:
+        current_body = int(candidate.body_size)
+        if increase:
+            max_change = min(int(change_max), 96 - max(int(candidate.open_value), int(candidate.close_value)))
+        else:
+            max_change = min(int(change_max), int(current_body) - 1)
+        if int(max_change) < int(change_min):
+            continue
+        change = int(change_min) + int(index_seed % (int(max_change) - int(change_min) + 1))
+        new_body = int(current_body) + int(change) if increase else int(current_body) - int(change)
+        answer = (
+            int(candidate.open_value) + int(new_body)
+            if str(candidate.direction) == "up"
+            else int(candidate.open_value) - int(new_body)
+        )
+        if 1 <= int(answer) <= 99:
+            selection = Selection(
+                answer=int(answer),
+                answer_type="integer",
+                annotation_candle_ids=(str(candidate.candle_id),),
+                annotation_label_ids=(
+                    f"x_label:{candidate.candle_id}",
+                    f"{candidate.candle_id}:open",
+                    f"{candidate.candle_id}:close",
+                ),
+                annotation_roles=("target_body",),
+                trace={
+                    "target_candle_id": str(candidate.candle_id),
+                    "target_label": str(candidate.label),
+                    "target_direction": str(candidate.direction),
+                    "change_value": int(change),
+                    "change_direction": str(change_direction),
+                    "change_phrase": "increased" if increase else "decreased",
+                    "change_verb": "increase" if increase else "decrease",
+                    "change_past_phrase": "increased" if increase else "decreased",
+                    "current_body_size": int(current_body),
+                    "new_body_size": int(new_body),
+                    "candle_count": int(len(candles)),
+                },
+            )
+            return Dataset(candles=tuple(candles), selection=selection)
+    raise ValueError("no feasible counterfactual close target")
 
 
 @register_task
@@ -53,17 +110,21 @@ class ChartsCandlestickCounterfactualCloseValueTask:
 
     task_id = "task_charts__candlestick__counterfactual_close_value"
     domain = DOMAIN
-    scene_id = SCENE_ID
     objective_contract = "counterfactual_close_value"
     supported_query_ids = (COUNTERFACTUAL_QUERY_ID,)
     default_dataset_enabled = True
 
     def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        change_direction, direction_probabilities, branch_params = _select_change_direction(
+        """Generate one counterfactual-close instance with task-owned answer binding."""
+
+        change_direction, direction_probabilities, branch_params = select_semantic_branch(
             params,
+            branch_key="change_direction",
+            support=("increase", "decrease"),
             instance_seed=int(instance_seed),
+            namespace="charts.candlestick.change_direction",
         )
-        dataset = counterfactual_close_dataset(
+        dataset = _build_counterfactual_close_dataset(
             params=branch_params,
             instance_seed=int(instance_seed),
             change_direction=str(change_direction),

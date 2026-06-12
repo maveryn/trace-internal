@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.candlestick.shared.ohlc import (
+from trace.tasks.charts.candlestick.shared.defaults import (
     DOMAIN,
     PROMPT_BUNDLE_ID,
     PROMPT_DEFAULTS,

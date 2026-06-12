@@ -7,15 +7,16 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.candlestick.shared.ohlc import (
+from trace.tasks.charts.candlestick.shared.annotations import annotation_boxes_and_points
+from trace.tasks.charts.candlestick.shared.defaults import (
     DOMAIN,
     SCENE_ID,
-    annotation_boxes_and_points,
-    build_trace_scaffold,
-    range_extremum_dataset,
-    render_dataset,
 )
+from trace.tasks.charts.candlestick.shared.output import build_trace_scaffold
 from trace.tasks.charts.candlestick.shared.prompts import build_prompt_artifacts
+from trace.tasks.charts.candlestick.shared.rendering import render_dataset
+from trace.tasks.charts.candlestick.shared.sampling import sample_candles, select_semantic_branch
+from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.annotation_artifacts import point_set_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -35,25 +36,57 @@ def _range_kind(selected_query_id: str) -> str:
     raise ValueError(f"unsupported candlestick range query: {selected_query_id}")
 
 
-def _select_extremum(params: dict[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float], dict[str, Any]]:
-    support = ("largest", "smallest")
-    requested = params.get("extremum")
-    if requested is not None:
-        selected = str(requested)
-        if selected not in support:
-            raise ValueError(f"unsupported extremum: {selected}; supported: {support}")
-        branch_params = dict(params)
-        branch_params.pop("extremum", None)
-        return selected, {value: (1.0 if value == selected else 0.0) for value in support}, branch_params
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        cursor = abs(int(sample_cursor))
-        selected = support[cursor % len(support)]
-        branch_params = dict(params)
-        branch_params["_sample_cursor"] = cursor // len(support)
-        return selected, {value: 0.5 for value in support}, branch_params
-    selected = support[int(hash64(int(instance_seed), "charts.candlestick.extremum")) % len(support)]
-    return selected, {value: 0.5 for value in support}, dict(params)
+def _build_range_extremum_dataset(
+    *,
+    params: dict[str, Any],
+    instance_seed: int,
+    range_kind: str,
+    extremum: str,
+) -> Dataset:
+    """Select the answer candle for the wick/body range objective."""
+
+    candles = sample_candles(params, instance_seed=int(instance_seed))
+    if str(range_kind) not in {"wick", "body"}:
+        raise ValueError(f"unsupported candlestick range kind: {range_kind}")
+    if str(extremum) not in {"largest", "smallest"}:
+        raise ValueError(f"unsupported candlestick extremum: {extremum}")
+    scored = [
+        (
+            int(candle.wick_range if str(range_kind) == "wick" else candle.body_size),
+            candle,
+        )
+        for candle in candles
+    ]
+    scored.sort(key=lambda item: (int(item[0]), str(item[1].label)))
+    target = scored[-1][1] if str(extremum) == "largest" else scored[0][1]
+    if str(range_kind) == "wick":
+        value_ids = (f"{target.candle_id}:high", f"{target.candle_id}:low")
+        range_phrase = "high-low wick range"
+        annotation_roles = ("answer_wick",)
+        answer_range = int(target.wick_range)
+    else:
+        value_ids = (f"{target.candle_id}:open", f"{target.candle_id}:close")
+        range_phrase = "open-close body size"
+        annotation_roles = ("answer_body",)
+        answer_range = int(target.body_size)
+    selection = Selection(
+        answer=str(target.label),
+        answer_type="string",
+        annotation_candle_ids=(str(target.candle_id),),
+        annotation_label_ids=(f"x_label:{target.candle_id}", *value_ids),
+        annotation_roles=tuple(annotation_roles),
+        trace={
+            "range_kind": str(range_kind),
+            "range_kind_phrase": str(range_phrase),
+            "extremum": str(extremum),
+            "extremum_phrase": str(extremum),
+            "answer_candle_id": str(target.candle_id),
+            "answer_label": str(target.label),
+            "answer_range_value": int(answer_range),
+            "candle_count": int(len(candles)),
+        },
+    )
+    return Dataset(candles=tuple(candles), selection=selection)
 
 
 @register_task
@@ -62,17 +95,21 @@ class ChartsCandlestickRangeExtremumLabelTask:
 
     task_id = "task_charts__candlestick__range_extremum_label"
     domain = DOMAIN
-    scene_id = SCENE_ID
     objective_contract = "range_extremum_label"
     supported_query_ids = (WICK_QUERY_ID, BODY_QUERY_ID)
     default_dataset_enabled = True
 
     def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        extremum, extremum_probabilities, branch_params = _select_extremum(
+        """Generate one range-extremum instance with task-owned answer binding."""
+
+        extremum, extremum_probabilities, branch_params = select_semantic_branch(
             params,
+            branch_key="extremum",
+            support=("largest", "smallest"),
             instance_seed=int(instance_seed),
+            namespace="charts.candlestick.extremum",
         )
-        dataset = range_extremum_dataset(
+        dataset = _build_range_extremum_dataset(
             params=branch_params,
             instance_seed=int(instance_seed),
             range_kind=_range_kind(str(selected_query_id)),

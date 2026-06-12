@@ -59,9 +59,9 @@
       ],
       "category_extremum_gap_value": [
         "Within category {category_label}, what is the difference between its highest and lowest series bar values?",
-        "For category {category_label}, find the tallest and shortest series bars; what is their value gap?",
-        "At category {category_label}, subtract the smallest series value from the largest series value.",
-        "What is the range of series values within category {category_label}?",
+        "For category {category_label}, find the highest and lowest series bars; what is their value gap?",
+        "At category {category_label}, subtract the lowest series value from the highest series value.",
+        "What is the highest-minus-lowest series value within category {category_label}?",
         "Looking only at category {category_label}, what is the highest-minus-lowest bar value?"
       ],
       "series_threshold_count": [

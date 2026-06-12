@@ -71,7 +71,7 @@
   "static_slots_by_key": {
     "query:interval_area_value": {
       "answer_hint": "set \"answer\" to the requested area as an integer",
-      "annotation_hint": "set \"annotation\" to [x, y] pixel points at the centers of every point value from the first queried x-axis label through the second queried x-axis label",
+      "annotation_hint": "set \"annotation\" to [x, y] pixel points at the centers of the data point markers from the first queried x-axis label through the second queried x-axis label",
       "json_example": "{\"annotation\":[[180,420],[280,360],[380,300],[480,260]],\"answer\":72}",
       "json_example_answer_only": "{\"answer\":72}"
     },

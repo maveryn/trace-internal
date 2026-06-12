@@ -1,0 +1,240 @@
+"""Neutral sampling primitives for contour-density chart scenes."""
+
+from __future__ import annotations
+
+import math
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
+
+from trace.core.seed import spawn_rng
+from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
+from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant
+from trace.tasks.charts.contour_density.shared.defaults import (
+    CONFIG_CONTEXT_KEY,
+    GENERATION_DEFAULTS,
+    OPTION_LABELS,
+    RENDER_DEFAULTS,
+    SCENE_NAMESPACE,
+    SUPPORTED_SCENE_VARIANTS,
+)
+from trace.tasks.charts.contour_density.shared.state import RGB, Region, Reference
+
+
+def as_rgb(value: Any, fallback: RGB) -> RGB:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or len(value) < 3:
+        return tuple(int(channel) for channel in fallback)
+    return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[index]
+
+
+def bbox(values: Sequence[float]) -> List[float]:
+    return [round(float(value), 3) for value in values]
+
+
+def choice_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
+    return int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
+
+
+def balanced_choice(values: Sequence[Any], params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> Any:
+    support = list(values)
+    if not support:
+        raise ValueError(f"empty support for {namespace}")
+    return support[choice_index(params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)]
+
+
+def resolve_semantic_axis(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    supported: Sequence[str],
+    explicit_key: str,
+    weights_key: str,
+    balance_key: str,
+    namespace: str,
+) -> Tuple[str, Dict[str, float]]:
+    return resolve_chart_axis_variant(
+        params=params,
+        gen_defaults=GENERATION_DEFAULTS,
+        instance_seed=int(instance_seed),
+        supported_variants=tuple(str(value) for value in supported),
+        **{CONFIG_CONTEXT_KEY: SCENE_NAMESPACE},
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+        balance_flag_key=str(balance_key),
+        axis_namespace=str(namespace),
+    )
+
+
+def option_count_support(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    explicit = params.get("option_count")
+    raw_support = params.get("option_count_support", group_default(GENERATION_DEFAULTS, "option_count_support", (4, 6)))
+    if explicit is not None:
+        count = int(explicit)
+        if count not in {4, 6}:
+            raise ValueError("option_count must be either 4 or 6 for contour-density option tasks")
+        return (int(count),)
+    if isinstance(raw_support, Sequence) and not isinstance(raw_support, (str, bytes)):
+        support = sorted({int(value) for value in raw_support if int(value) in {4, 6}})
+    else:
+        support = []
+    if not support:
+        raise ValueError("option_count_support must contain 4 and/or 6")
+    return tuple(support)
+
+
+def option_labels_for_count(option_count: int) -> Tuple[str, ...]:
+    if int(option_count) not in {4, 6}:
+        raise ValueError("option_count must be either 4 or 6")
+    return tuple(OPTION_LABELS[: int(option_count)])
+
+
+def palette(params: Mapping[str, Any]) -> Tuple[RGB, ...]:
+    raw = params.get("region_palette_rgb", RENDER_DEFAULTS.get("region_palette_rgb", ()))
+    colors: List[RGB] = []
+    if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)):
+        for item in raw:
+            if isinstance(item, Sequence) and not isinstance(item, (str, bytes)) and len(item) >= 3:
+                colors.append(as_rgb(item, (0, 0, 0)))
+    return tuple(colors) if colors else (
+        (37, 99, 180),
+        (210, 83, 73),
+        (59, 145, 99),
+        (143, 91, 184),
+        (216, 145, 48),
+        (65, 157, 183),
+        (188, 88, 135),
+    )
+
+
+def region_labels(count: int, *, instance_seed: int) -> Tuple[str, ...]:
+    labels = resolve_chart_entity_labels(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.labels"),
+        count=int(count),
+        min_chars=2,
+        max_chars=8,
+        allow_spaces=False,
+    ).labels
+    return tuple(str(label) for label in labels)
+
+
+def density_level_from_density(density: float) -> int:
+    return max(1, min(5, int(round(float(density) * 5.0))))
+
+
+def density_from_level(level: int) -> float:
+    return 0.20 + (0.15 * max(1, min(5, int(level))))
+
+
+def region_count(params: Mapping[str, Any], *, instance_seed: int) -> int:
+    low, high = resolve_required_int_bounds(
+        params,
+        GENERATION_DEFAULTS,
+        min_key="region_count_min",
+        max_key="region_count_max",
+        fallback_min=5,
+        fallback_max=7,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    return int(
+        balanced_choice(
+            list(range(int(low), int(high) + 1)),
+            params,
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.region_count",
+        )
+    )
+
+
+def scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    return resolve_semantic_axis(
+        params,
+        instance_seed=int(instance_seed),
+        supported=SUPPORTED_SCENE_VARIANTS,
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_key="balanced_scene_variant_sampling",
+        namespace="scene_variant",
+    )
+
+
+def base_centers(count: int, *, rng: Any) -> List[Tuple[float, float]]:
+    candidates = [
+        (18.0, 24.0),
+        (50.0, 18.0),
+        (80.0, 28.0),
+        (24.0, 72.0),
+        (58.0, 56.0),
+        (82.0, 76.0),
+        (42.0, 84.0),
+    ]
+    rng.shuffle(candidates)
+    centers: List[Tuple[float, float]] = []
+    for x_value, y_value in candidates[: int(count)]:
+        centers.append((float(x_value) + rng.uniform(-4.0, 4.0), float(y_value) + rng.uniform(-4.0, 4.0)))
+    return centers
+
+
+def build_regions(
+    *,
+    count: int,
+    labels: Sequence[str],
+    option_labels: Sequence[str],
+    densities: Sequence[float],
+    density_levels: Sequence[int] | None = None,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[Region, ...]:
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    centers = base_centers(int(count), rng=rng)
+    colors = palette(params)
+    regions: List[Region] = []
+    for index in range(int(count)):
+        density = float(densities[int(index)])
+        density_level = (
+            max(1, min(5, int(density_levels[int(index)])))
+            if density_levels is not None and int(index) < len(density_levels)
+            else density_level_from_density(float(density))
+        )
+        regions.append(
+            Region(
+                region_id=f"region_{index}",
+                label=str(labels[int(index)]),
+                option_label=str(option_labels[int(index)]) if int(index) < len(option_labels) else "",
+                center_x=float(centers[int(index)][0]),
+                center_y=float(centers[int(index)][1]),
+                radius_x=float(rng.uniform(7.5, 12.0)),
+                radius_y=float(rng.uniform(6.5, 11.5)),
+                density=float(density),
+                density_level=int(density_level),
+                color_rgb=tuple(colors[int(index) % len(colors)]),
+            )
+        )
+    return tuple(regions)
+
+
+def distance_to_reference(region: Region, reference: Reference) -> float:
+    if str(reference.kind) == "point":
+        return math.hypot(float(region.center_x) - float(reference.x_value), float(region.center_y) - float(reference.y_value))
+    if str(reference.kind) == "vertical_line":
+        return abs(float(region.center_x) - float(reference.x_value))
+    if str(reference.kind) == "horizontal_line":
+        return abs(float(region.center_y) - float(reference.y_value))
+    raise ValueError(f"unsupported reference kind: {reference.kind}")
+
+
+__all__ = [
+    "bbox",
+    "balanced_choice",
+    "build_regions",
+    "choice_index",
+    "density_from_level",
+    "density_level_from_density",
+    "distance_to_reference",
+    "option_count_support",
+    "option_labels_for_count",
+    "region_count",
+    "region_labels",
+    "resolve_semantic_axis",
+    "scene_variant",
+]

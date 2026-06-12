@@ -2,27 +2,83 @@
 
 from __future__ import annotations
 
-from typing import Any
+from dataclasses import replace
+from typing import Any, List, Mapping, Sequence, Tuple
 
-from trace.core.seed import hash64
-from trace.core.types import TypedValue
+from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.contour_density.shared.field_query import (
-    SCENE_ID,
-    annotation_value,
-    answer_value,
-    build_spread_extremum_dataset,
-    build_trace_scaffold,
-    render_dataset,
-)
+from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
+from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE, SUPPORTED_SPREAD_EXTREMA
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
+from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, density_from_level, region_count, region_labels, resolve_semantic_axis, scene_variant
+from trace.tasks.charts.contour_density.shared.state import ContourDataset, QuerySelection, Region
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 
 QUERY_ID = "spread_extremum_region_label"
+
+
+def _build_task_output(materialized):
+    return TaskOutput(**contour_task_output_fields(materialized))
+
+
+def _spread_density_profile(count: int, *, rng: Any) -> Tuple[List[int], List[float]]:
+    density_levels = [1 + ((index + rng.randrange(5)) % 5) for index in range(int(count))]
+    return density_levels, [density_from_level(level) for level in density_levels]
+
+
+def _spread_radius_pair(*, rng: Any, is_answer: bool, spread_extremum: str) -> Tuple[float, float]:
+    if str(spread_extremum) == "widest":
+        return (
+            rng.uniform(13.5, 15.0) if bool(is_answer) else rng.uniform(6.0, 9.5),
+            rng.uniform(12.0, 13.8) if bool(is_answer) else rng.uniform(5.4, 8.4),
+        )
+    return (
+        rng.uniform(5.1, 6.2) if bool(is_answer) else rng.uniform(8.4, 12.0),
+        rng.uniform(4.8, 5.8) if bool(is_answer) else rng.uniform(7.2, 11.2),
+    )
+
+
+def _construct_spread_regions(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    labels: Sequence[str],
+    answer_index: int,
+    spread_extremum: str,
+) -> Tuple[Region, ...]:
+    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.spread_extremum.regions")
+    density_levels, densities = _spread_density_profile(len(labels), rng=rng)
+    base_regions = build_regions(
+        count=len(labels),
+        labels=labels,
+        option_labels=(),
+        densities=densities,
+        density_levels=density_levels,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.spread_extremum.base_regions",
+    )
+    regions: List[Region] = []
+    for index, region in enumerate(base_regions):
+        radius_x, radius_y = _spread_radius_pair(
+            rng=rng,
+            is_answer=int(index) == int(answer_index),
+            spread_extremum=str(spread_extremum),
+        )
+        regions.append(replace(region, radius_x=float(radius_x), radius_y=float(radius_y)))
+    return tuple(regions)
+
+
+def _footprint_area_by_label(regions: Sequence[Region]) -> Mapping[str, float]:
+    return {str(region.label): float(region.radius_x) * float(region.radius_y) for region in regions}
+
+
+def _spread_answer_label(spread_by_label: Mapping[str, float], *, spread_extremum: str) -> str:
+    if str(spread_extremum) == "widest":
+        return str(max(spread_by_label, key=lambda label: (spread_by_label[label], label)))
+    return str(min(spread_by_label, key=lambda label: (spread_by_label[label], label)))
 
 
 @register_task
@@ -30,54 +86,72 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
     """Return the region label with the widest or narrowest visible footprint."""
 
     task_id = "task_charts__contour_density__spread_extremum_region_label"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "spread_extremum_region_label"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
-    def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        dataset = build_spread_extremum_dataset(params, instance_seed=int(instance_seed))
-        rendered, chart_font_family = render_dataset(dataset, params=params, instance_seed=int(instance_seed))
-        annotation = annotation_value(dataset, rendered)
+    def _build_spread_extremum_plan(self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> ContourTaskPlan:
+        """Resize the sampled answer region to create a unique visible-footprint extremum."""
+
+        scene_name, scene_probabilities = scene_variant(params, instance_seed=int(instance_seed))
+        spread_extremum, spread_probabilities = resolve_semantic_axis(
+            params,
+            instance_seed=int(instance_seed),
+            supported=SUPPORTED_SPREAD_EXTREMA,
+            explicit_key="spread_extremum",
+            weights_key="spread_extremum_weights",
+            balance_key="balanced_spread_extremum_sampling",
+            namespace="spread_extremum",
+        )
+        count = region_count(params, instance_seed=int(instance_seed))
+        labels = region_labels(int(count), instance_seed=int(instance_seed))
+        answer_index = int(
+            balanced_choice(
+                list(range(int(count))),
+                params,
+                instance_seed=int(instance_seed),
+                namespace=f"{SCENE_NAMESPACE}.spread_extremum.answer",
+            )
+        )
+        regions = _construct_spread_regions(
+            params=params,
+            instance_seed=int(instance_seed),
+            labels=labels,
+            answer_index=int(answer_index),
+            spread_extremum=str(spread_extremum),
+        )
+        spread_by_label = _footprint_area_by_label(regions)
+        answer_label = _spread_answer_label(spread_by_label, spread_extremum=str(spread_extremum))
+        phrase = "widest" if str(spread_extremum) == "widest" else "narrowest"
+        answer_region = next(region for region in regions if str(region.label) == str(answer_label))
+        if str(answer_region.region_id) != f"region_{int(answer_index)}":
+            raise RuntimeError("spread-extremum construction lost unique answer")
+        selection = QuerySelection(
+            prompt_key=str(selected_query_id),
+            answer=str(answer_label),
+            answer_type="string",
+            annotation_type="keyed_bbox_map",
+            annotation_roles={"answer_region": str(answer_region.region_id)},
+            annotation_region_ids=(),
+            trace={
+                "spread_extremum": str(spread_extremum),
+                "spread_extremum_phrase": str(phrase),
+                "footprint_area_by_region_label": {key: round(float(value), 3) for key, value in spread_by_label.items()},
+                "spread_extremum_probabilities": dict(spread_probabilities),
+                "scene_variant_probabilities": dict(scene_probabilities),
+            },
+        )
+        dataset = ContourDataset(scene_variant=str(scene_name), regions=tuple(regions), query=selection, reference=None)
         prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=QUERY_ID,
-            dynamic_slots={"spread_extremum_phrase": str(dataset.query.trace["spread_extremum_phrase"])},
+            prompt_query_key=str(selected_query_id),
+            dynamic_slots={"spread_extremum_phrase": str(selection.trace["spread_extremum_phrase"])},
             instance_seed=int(instance_seed),
         )
-        resolved_answer = answer_value(dataset)
-        annotation_gt = TypedValue(type="keyed_bbox_map", value={key: list(value) for key, value in annotation.items()})
-        trace_payload = build_trace_scaffold(
+        return ContourTaskPlan(
             dataset=dataset,
-            rendered=rendered,
-            annotation=annotation,
-            chart_font_family=str(chart_font_family),
-        )
-        relation_params = {
-            "query_id": str(selected_query_id),
-            "scene_id": SCENE_ID,
-            "scene_variant": str(dataset.scene_variant),
-            "region_count": int(len(dataset.regions)),
-            **dict(dataset.query.trace),
-        }
-        trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query_id)
-        trace_payload["query_spec"] = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            params=relation_params,
-        )
-        trace_payload["execution_trace"]["query_id"] = str(selected_query_id)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type=str(dataset.query.answer_type), value=resolved_answer),
-            annotation_gt=annotation_gt,
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            relations={"scene_variant": str(scene_name), "region_count": int(len(dataset.regions)), **dict(selection.trace)},
         )
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -88,14 +162,15 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
             default_query_id=QUERY_ID,
             task_id=self.task_id,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), "charts.contour_density.retry", int(attempt_index)))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        return run_contour_public_task(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            max_attempts=int(max_attempts),
+            selected_query_id=str(selected_query_id),
+            failure_label=self.task_id,
+            build_plan=self._build_spread_extremum_plan,
+            build_output=_build_task_output,
+        )
 
 
 __all__ = ["ChartsContourDensitySpreadExtremumRegionLabelTask"]

@@ -2,184 +2,113 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.defaults import SCENE_ID
-from .shared.mechanics import sample_hit_row_remaining_scene
-from .shared.output import build_brick_breaker_common_trace_params, build_brick_breaker_trace_payload
-from .shared.prompts import build_brick_breaker_prompt_artifacts
-from .shared.sampling import (
-    resolve_brick_breaker_integer_axis,
-    resolve_brick_breaker_playfield_axes,
-    resolve_brick_breaker_render_params,
-    resolve_brick_breaker_scene_axes,
+from ._lifecycle import (
+    BrickBreakerObjectivePlan,
+    bbox_set_attempt,
+    brick_breaker_integer_axis_spec,
+    resolve_brick_breaker_integer_axis_spec,
+    resolve_brick_breaker_playfield_axis_specs,
+    run_brick_breaker_lifecycle,
 )
-from .shared.rendering import render_brick_breaker_task_scene
+from .shared.defaults import SCENE_ID
+from .shared.rules import sample_hit_row_remaining_scene
+from .shared.sampling import ResolvedBrickBreakerSceneAxes
 
 
 TASK_ID = "task_games__brick_breaker__hit_row_remaining_count"
 QUERY_ID = "hit_row_remaining_count"
-PROMPT_QUERY_KEY = QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 BRICK_ROW_COUNT_SUPPORT = (4, 5)
 BRICK_COL_COUNT_SUPPORT = (5, 6)
 CATCH_LANE_COUNT_SUPPORT = (5, 6, 7, 8)
-ROW_REMAINING_COUNT_SUPPORT = (1, 2, 3, 4, 5)
-_GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
+ROW_REMAINING_AXIS_SPEC = brick_breaker_integer_axis_spec(
+    "row_remaining_count",
+    (1, 2, 3, 4, 5),
+    balanced_flag_key="balanced_row_remaining_count_sampling",
 )
+_GEN_DEFAULTS = load_scene_generation_rendering_prompt_defaults("games", SCENE_ID, task_id=TASK_ID)[0]
 
 
-@register_task
-class GamesBrickBreakerHitRowRemainingCountTask:
-    """Count bricks remaining in the row after the shown shot removes one brick."""
+def _prepare_hit_row_remaining_objective(
+    instance_seed,
+    task_params,
+    _query_id,
+    _query_probabilities,
+):
+    """Resolve playfield/count axes and bind the same-row survivor constructor."""
 
-    task_id = TASK_ID
-    domain = "games"
-    scene_id = SCENE_ID
-    default_dataset_enabled = True
-    supported_query_ids = SUPPORTED_QUERY_IDS
+    playfield_axes, playfield_query_params = resolve_brick_breaker_playfield_axis_specs(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        task_id=TASK_ID,
+        brick_row_count_support=BRICK_ROW_COUNT_SUPPORT,
+        brick_col_count_support=BRICK_COL_COUNT_SUPPORT,
+        catch_lane_count_support=CATCH_LANE_COUNT_SUPPORT,
+    )
+    row_axis, row_query_params = resolve_brick_breaker_integer_axis_spec(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        task_id=TASK_ID,
+        spec=ROW_REMAINING_AXIS_SPEC,
+    )
+    brick_cols = max(int(playfield_axes.brick_cols.value), int(row_axis.value) + 1)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
+    def construct_attempt(rng, axes: ResolvedBrickBreakerSceneAxes):
+        sample = sample_hit_row_remaining_scene(
+            rng=rng,
+            scene_variant=str(axes.scene_variant),
+            brick_rows=int(playfield_axes.brick_rows.value),
+            brick_cols=int(brick_cols),
+            lane_count=int(playfield_axes.lane_count.value),
+            row_remaining_count=int(row_axis.value),
         )
-        axes = resolve_brick_breaker_scene_axes(int(instance_seed), params=task_params)
-        playfield_axis_seed = hash64(int(instance_seed), f"{TASK_ID}.playfield_axes")
-        playfield_axes = resolve_brick_breaker_playfield_axes(
-            int(playfield_axis_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            brick_row_count_support=BRICK_ROW_COUNT_SUPPORT,
-            brick_col_count_support=BRICK_COL_COUNT_SUPPORT,
-            catch_lane_count_support=CATCH_LANE_COUNT_SUPPORT,
-        )
-        row_axis = resolve_brick_breaker_integer_axis(
-            int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="row_remaining_count_support",
-            explicit_key="row_remaining_count",
-            fallback_support=ROW_REMAINING_COUNT_SUPPORT,
-            namespace=f"{TASK_ID}.row_remaining_count",
-            balanced_flag_key="balanced_row_remaining_count_sampling",
-        )
-        brick_cols = max(int(playfield_axes.brick_cols.value), int(row_axis.value) + 1)
-
-        sample = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.brick_breaker.{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sample = sample_hit_row_remaining_scene(
-                    rng=rng,
-                    scene_variant=str(axes.scene_variant),
-                    brick_rows=int(playfield_axes.brick_rows.value),
-                    brick_cols=int(brick_cols),
-                    lane_count=int(playfield_axes.lane_count.value),
-                    row_remaining_count=int(row_axis.value),
-                )
-            except ValueError:
-                continue
-            break
-        if sample is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid Brick-breaker hit-row scene after {max_attempts} attempts")
         if sample.target_row_remaining_count is None:
-            raise RuntimeError("hit-row Brick-breaker sample is missing row remaining count")
-
-        render_params = resolve_brick_breaker_render_params(task_params, instance_seed=int(instance_seed))
-        rendered_context = render_brick_breaker_task_scene(
-            brick_rows=int(sample.brick_rows),
-            brick_cols=int(sample.brick_cols),
-            lane_count=int(sample.lane_count),
-            bricks=sample.bricks,
-            render_mode="brick_hit_path",
-            target_brick_id=sample.target_brick_id,
-            target_lane_index=sample.target_lane_index,
-            ball_start_lane_index=sample.ball_start_lane_index,
-            style_variant=str(axes.style_variant),
-            render_params=render_params,
-            params=task_params,
-            instance_seed=int(instance_seed),
-        )
-        annotation_entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
-        annotation_artifacts = bbox_set_annotation_artifacts(
-            [
-                rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(entity_id)]
-                for entity_id in annotation_entity_ids
-            ]
-        )
-        prompt_defaults, prompt_artifacts = build_brick_breaker_prompt_artifacts(
-            domain=self.domain,
-            prompt_query_key=PROMPT_QUERY_KEY,
-            instance_seed=int(instance_seed),
-        )
-        answer_gt = TypedValue(type="integer", value=int(sample.target_row_remaining_count))
-        query_params = {
-            "brick_rows": int(sample.brick_rows),
-            "brick_cols": int(sample.brick_cols),
-            "brick_count": int(len(sample.bricks)),
-            "lane_count": int(sample.lane_count),
-            "brick_row_count_support": [int(value) for value in playfield_axes.brick_rows.support],
-            "brick_row_count_probabilities": dict(playfield_axes.brick_rows.probabilities),
-            "brick_col_count_support": [int(value) for value in playfield_axes.brick_cols.support],
-            "brick_col_count_probabilities": dict(playfield_axes.brick_cols.probabilities),
-            "catch_lane_count_support": [int(value) for value in playfield_axes.lane_count.support],
-            "catch_lane_count_probabilities": dict(playfield_axes.lane_count.probabilities),
-            "row_remaining_count_support": [int(value) for value in row_axis.support],
-            "row_remaining_count_probabilities": dict(row_axis.probabilities),
-            "query_id_probabilities": dict(query_id_probabilities),
-            "target_brick_id": sample.target_brick_id,
-            "target_brick_label": sample.target_brick_label,
-            "target_row_remaining_brick_ids": list(sample.target_row_remaining_brick_ids),
-            "target_row_remaining_count": int(sample.target_row_remaining_count),
-        }
-        query_spec = build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(query_id),
-            params=build_brick_breaker_common_trace_params(axes=axes, extra_params=query_params),
-        )
-        trace_payload = build_brick_breaker_trace_payload(
-            annotation_artifacts=annotation_artifacts,
-            annotation_entity_ids=annotation_entity_ids,
-            axes=axes,
+            raise ValueError("hit-row Brick-breaker sample is missing row remaining count")
+        return bbox_set_attempt(
             sample=sample,
-            rendered_context=rendered_context,
-            prompt_defaults=prompt_defaults,
-            prompt_artifacts=prompt_artifacts,
-            query_spec=query_spec,
-            answer_value=int(answer_gt.value),
+            answer_gt=TypedValue(type="integer", value=int(sample.target_row_remaining_count)),
+            annotation_entity_ids=tuple(str(entity_id) for entity_id in sample.target_row_remaining_brick_ids),
             execution_extra={
                 "row_remaining_count": int(row_axis.value),
             },
         )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_artifacts.annotation_gt,
-            image=rendered_context.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+
+    return BrickBreakerObjectivePlan(
+        attempt_namespace="games.brick_breaker.hit_row_remaining_count",
+        prompt_query_key=QUERY_ID,
+        render_mode="brick_hit_path",
+        query_params={
+            **dict(playfield_query_params),
+            **dict(row_query_params),
+            "brick_cols": int(brick_cols),
+        },
+        construct_attempt=construct_attempt,
+    )
+
+
+@register_task
+class GamesBrickBreakerHitRowRemainingCountTask:
+    """Count same-row bricks remaining after the visible ball path hits one brick."""
+
+    task_id = TASK_ID
+    domain = "games"
+    default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
+
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_brick_breaker_lifecycle(
+            task_id=TASK_ID,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_hit_row_remaining_objective,
         )
 
 

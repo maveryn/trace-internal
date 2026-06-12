@@ -1,0 +1,209 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.23,
+        "pass": true,
+        "threshold": 0.3333333333333333
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.23,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 5,
+        "pass": true,
+        "threshold": 4
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 23,
+          "label": "[1, 1.8)"
+        },
+        {
+          "bin_id": 1,
+          "count": 19,
+          "label": "[1.8, 2.6)"
+        },
+        {
+          "bin_id": 2,
+          "count": 23,
+          "label": "[2.6, 3.4)"
+        },
+        {
+          "bin_id": 3,
+          "count": 17,
+          "label": "[3.4, 4.2)"
+        },
+        {
+          "bin_id": 4,
+          "count": 18,
+          "label": "[4.2, 5]"
+        }
+      ],
+      "max_bin_count": 23,
+      "max_bin_frequency": 0.23,
+      "range_max": 5.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 23,
+    "max_answer_frequency": 0.23,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "1",
+        "count": 23
+      },
+      {
+        "answer_label": "3",
+        "count": 23
+      },
+      {
+        "answer_label": "2",
+        "count": 19
+      },
+      {
+        "answer_label": "5",
+        "count": 18
+      },
+      {
+        "answer_label": "4",
+        "count": 17
+      }
+    ],
+    "unique_answers": 5
+  },
+  "calibration_baseline": "v0",
+  "query_id_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "hit_row_remaining_count": 1.0
+    },
+    "expected_source": "query_params",
+    "has_query_ids": false,
+    "observed_counts": {
+      "hit_row_remaining_count": 100
+    },
+    "status": "skipped_no_query_ids",
+    "warnings": []
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "brick_col_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "5": 0.5,
+        "6": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    },
+    "brick_row_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "4": 0.5,
+        "5": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    },
+    "catch_lane_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "5": 0.25,
+        "6": 0.25,
+        "7": 0.25,
+        "8": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    },
+    "query_id": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "hit_row_remaining_count": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "hit_row_remaining_count": 100
+      },
+      "sample_count": 100
+    },
+    "row_remaining_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "1": 0.2,
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2,
+        "5": 0.2
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.23,
+      "observed_counts": {
+        "1": 23,
+        "2": 19,
+        "3": 23,
+        "4": 17,
+        "5": 18
+      },
+      "sample_count": 100
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "brick_wall": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "brick_wall": 100
+      },
+      "sample_count": 100
+    },
+    "style_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "arcade": 0.2,
+        "blueprint": 0.2,
+        "classic": 0.2,
+        "neon": 0.2,
+        "paper": 0.2
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.29,
+      "observed_counts": {
+        "arcade": 23,
+        "blueprint": 16,
+        "classic": 29,
+        "neon": 15,
+        "paper": 17
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_games__brick_breaker__hit_row_remaining_count",
+  "warnings": []
+}

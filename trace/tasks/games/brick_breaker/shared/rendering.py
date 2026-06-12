@@ -101,7 +101,7 @@ class RenderedBrickBreakerTaskContext:
 
 
 def build_games_brick_breaker_theme(*, style_variant: str) -> BrickBreakerTheme:
-    """Return one Brick-breaker visual theme."""
+    """Return one Brick-breaker theme with safe contrast for labels, lanes, and paths."""
 
     style = str(style_variant)
     if style == "neon":
@@ -375,7 +375,7 @@ def render_brick_breaker_scene(
     params: BrickBreakerRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBrickBreakerScene:
-    """Render one Brick-breaker playfield."""
+    """Render the playfield and preserve brick/lane geometry for annotation projection."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")

@@ -1,0 +1,2630 @@
+{
+  "annotation_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        133.0,
+        241.75,
+        247.6,
+        291.0
+      ]
+    ]
+  },
+  "answer_gt": {
+    "type": "string",
+    "value": "K"
+  },
+  "domain": "games",
+  "image": {
+    "format": "png",
+    "path": "games/brick_breaker/task_games__brick_breaker__next_hit_label/images/next_hit_label/0055.png"
+  },
+  "instance_seed": 8920638405501872,
+  "prompt": "The image shows a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom. The short dashed arrow shows the ball's current straight direction. Which labeled brick will the ball hit first?\nRequired annotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction.\nRequired answer format: set \"answer\" to the selected brick label as a string.\nExample JSON:\n{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+  "prompt_variants": {
+    "answer_and_annotation": "The image shows a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom. The short dashed arrow shows the ball's current straight direction. Which labeled brick will the ball hit first?\nRequired annotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction.\nRequired answer format: set \"answer\" to the selected brick label as a string.\nExample JSON:\n{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+    "answer_only": "The image shows a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom. The short dashed arrow shows the ball's current straight direction. Which labeled brick will the ball hit first?\nFormat for the \"answer\" field: set \"answer\" to the selected brick label as a string.\nExample JSON:\n{\"answer\":\"H\"}"
+  },
+  "query_id": "next_hit_label",
+  "scene_id": "brick_breaker",
+  "task": "task_games__brick_breaker__next_hit_label",
+  "task_id": "task_games__brick_breaker__next_hit_label",
+  "trace_payload": {
+    "background": {
+      "available_palettes": [
+        "arcade_navy",
+        "arcade_purple",
+        "cool_blue",
+        "coral_card",
+        "cyan_lab",
+        "gold_card",
+        "mint_green",
+        "plain_neutral",
+        "rose_sheet",
+        "sage_board",
+        "sky_lilac",
+        "slate_paper",
+        "soft_gray",
+        "teal_card",
+        "terminal_amber",
+        "terminal_blue",
+        "terminal_green",
+        "violet_note",
+        "warm_linen",
+        "warm_paper"
+      ],
+      "available_treatments": [
+        "bare_canvas",
+        "plain_sheet",
+        "matte_sheet",
+        "thin_frame",
+        "soft_panel",
+        "margin_sheet",
+        "dot_sheet",
+        "worksheet_panel",
+        "notebook_grid",
+        "index_card",
+        "clipboard_sheet",
+        "printout_panel",
+        "puzzle_card",
+        "inset_board",
+        "tabletop_mat",
+        "corkboard_sheet",
+        "game_table",
+        "lab_panel",
+        "arcade_screen",
+        "terminal_screen"
+      ],
+      "enabled": true,
+      "selected_style": "panel_scene_style:clipboard_sheet:slate_paper",
+      "style_spec": {
+        "background_accent_rgb": [
+          204,
+          213,
+          219
+        ],
+        "background_rgb": [
+          224,
+          229,
+          232
+        ],
+        "kind": "panel_scene_style",
+        "min_background_state_lab_distance": 9.056,
+        "min_background_state_rgb_distance": 43.509,
+        "palette_id": "slate_paper",
+        "style_pack": "clipboard_sheet:slate_paper",
+        "treatment": "clipboard_sheet"
+      }
+    },
+    "execution_trace": {
+      "answer": "K",
+      "ball_start_lane_index": 1,
+      "brick_cols": 5,
+      "brick_rows": 4,
+      "bricks": [
+        {
+          "col": 0,
+          "label": "I",
+          "row": 0
+        },
+        {
+          "col": 1,
+          "label": "E",
+          "row": 0
+        },
+        {
+          "col": 3,
+          "label": "A",
+          "row": 0
+        },
+        {
+          "col": 4,
+          "label": "F",
+          "row": 0
+        },
+        {
+          "col": 0,
+          "label": "H",
+          "row": 1
+        },
+        {
+          "col": 1,
+          "label": "N",
+          "row": 1
+        },
+        {
+          "col": 2,
+          "label": "C",
+          "row": 1
+        },
+        {
+          "col": 3,
+          "label": "D",
+          "row": 1
+        },
+        {
+          "col": 4,
+          "label": "M",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "label": "B",
+          "row": 2
+        },
+        {
+          "col": 3,
+          "label": "Q",
+          "row": 2
+        },
+        {
+          "col": 4,
+          "label": "J",
+          "row": 2
+        },
+        {
+          "col": 0,
+          "label": "K",
+          "row": 3
+        },
+        {
+          "col": 1,
+          "label": "L",
+          "row": 3
+        },
+        {
+          "col": 2,
+          "label": "O",
+          "row": 3
+        },
+        {
+          "col": 3,
+          "label": "G",
+          "row": 3
+        },
+        {
+          "col": 4,
+          "label": "P",
+          "row": 3
+        }
+      ],
+      "construction_mode": "angled_path_first_lower_row_brick",
+      "domain": "games",
+      "lane_count": 8,
+      "query_id": "next_hit_label",
+      "scene_id": "brick_breaker",
+      "scene_variant": "brick_wall",
+      "style_variant": "classic",
+      "target_brick_label": "K",
+      "target_lane_index": null,
+      "target_lane_label": null,
+      "target_row_remaining_count": null,
+      "task_id": "task_games__brick_breaker__next_hit_label"
+    },
+    "post_image_noise": {
+      "applied": true,
+      "apply_prob": 0.5,
+      "edit_count_range": [
+        1,
+        1
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "directional_blur",
+        "edge_soften",
+        "unsharp_mask",
+        "jpeg",
+        "posterize_quantization",
+        "noise",
+        "gaussian_noise",
+        "poisson_noise",
+        "salt_pepper_noise",
+        "speckle_noise",
+        "dust_speckle",
+        "brightness_contrast",
+        "exposure_shift",
+        "gamma_shift",
+        "low_contrast_fade",
+        "uneven_illumination",
+        "screen_or_paper_texture",
+        "scanline_texture",
+        "subpixel_display_texture",
+        "neutral_moire_texture",
+        "ink_bleed",
+        "local_contrast_jitter",
+        "vignette"
+      ],
+      "edits": [
+        {
+          "params": {
+            "peak": 705.914916
+          },
+          "type": "poisson_noise"
+        }
+      ],
+      "enabled": true
+    },
+    "projected_annotation": {
+      "bbox_set": [
+        [
+          133.0,
+          241.75,
+          247.6,
+          291.0
+        ]
+      ],
+      "type": "bbox_set"
+    },
+    "query_spec": {
+      "domain": "games",
+      "internal_query_id": "next_hit_label",
+      "params": {
+        "brick_col_count_probabilities": {
+          "5": 1.0
+        },
+        "brick_col_count_support": [
+          5,
+          6
+        ],
+        "brick_cols": 5,
+        "brick_count": 17,
+        "brick_row_count_probabilities": {
+          "4": 1.0
+        },
+        "brick_row_count_support": [
+          4,
+          5
+        ],
+        "brick_rows": 4,
+        "catch_lane_count_probabilities": {
+          "8": 1.0
+        },
+        "catch_lane_count_support": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "internal_query_id": "next_hit_label",
+        "lane_count": 8,
+        "query_id": "next_hit_label",
+        "query_id_probabilities": {
+          "next_hit_label": 1.0
+        },
+        "scene_id": "brick_breaker",
+        "scene_variant": "brick_wall",
+        "scene_variant_probabilities": {
+          "brick_wall": 1.0
+        },
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "arcade": 0.0,
+          "blueprint": 0.0,
+          "classic": 1.0,
+          "neon": 0.0,
+          "paper": 0.0
+        },
+        "target_brick_id": "brick_3_0",
+        "target_brick_label": "K",
+        "target_lane_index": null,
+        "target_lane_label": null,
+        "target_row_remaining_brick_ids": [],
+        "target_row_remaining_count": null
+      },
+      "prompt_variant": {
+        "answer_or_annotation_key": "answer_and_annotation",
+        "answer_or_annotation_query_id_index": 2,
+        "prompt_bundle_hash": "4da706e98a1f3396ea4adde2098e25ee12024038d4ab250bbc6d09a65fd596a1",
+        "prompt_bundle_id": "games_brick_breaker_v1",
+        "prompt_bundle_path": "games/brick_breaker/games_brick_breaker_v1.json",
+        "prompt_domain": "games",
+        "prompt_scene_id": "brick_breaker",
+        "prompt_schema_version": "v1",
+        "query_key": "next_hit_label",
+        "query_template_index": 0,
+        "scene_key": "visible_brick_breaker_playfield",
+        "scene_template_index": 0,
+        "schema_version": "v1",
+        "selected_indices": {
+          "output": 2,
+          "query": 0,
+          "scene": 0,
+          "task": 4
+        },
+        "selected_keys": {
+          "output": "answer_and_annotation",
+          "query": "next_hit_label",
+          "scene": "visible_brick_breaker_playfield",
+          "task": "brick_breaker_query"
+        },
+        "slot_sources": {
+          "annotation_hint": "static:query:next_hit_label",
+          "answer_hint": "static:query:next_hit_label",
+          "brick_breaker_motion_rule_text": "static:query:next_hit_label",
+          "json_example": "static:query:next_hit_label",
+          "json_example_answer_only": "static:query:next_hit_label",
+          "object_description": "static:scene:visible_brick_breaker_playfield"
+        },
+        "slot_values": {
+          "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+          "answer_hint": "set \"answer\" to the selected brick label as a string",
+          "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+          "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+          "json_example_answer_only": "{\"answer\":\"H\"}",
+          "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+        },
+        "slot_values_rendered": {
+          "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+          "answer_hint": "set \"answer\" to the selected brick label as a string",
+          "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+          "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+          "json_example_answer_only": "{\"answer\":\"H\"}",
+          "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+        },
+        "task_key": "brick_breaker_query",
+        "task_template_index": 4,
+        "template_paths": [
+          "games/brick_breaker/games_brick_breaker_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_annotation:answer_and_annotation": 5,
+          "query:next_hit_label": 5,
+          "scene:visible_brick_breaker_playfield": 5,
+          "task:brick_breaker_query": 5
+        },
+        "variant_counts": {
+          "output": 5,
+          "query": 5,
+          "scene": 5,
+          "task": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_annotation",
+      "prompt_variants": {
+        "answer_and_annotation": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_and_annotation",
+            "answer_or_annotation_query_id_index": 2,
+            "prompt_bundle_hash": "4da706e98a1f3396ea4adde2098e25ee12024038d4ab250bbc6d09a65fd596a1",
+            "prompt_bundle_id": "games_brick_breaker_v1",
+            "prompt_bundle_path": "games/brick_breaker/games_brick_breaker_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "brick_breaker",
+            "prompt_schema_version": "v1",
+            "query_key": "next_hit_label",
+            "query_template_index": 0,
+            "scene_key": "visible_brick_breaker_playfield",
+            "scene_template_index": 0,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 2,
+              "query": 0,
+              "scene": 0,
+              "task": 4
+            },
+            "selected_keys": {
+              "output": "answer_and_annotation",
+              "query": "next_hit_label",
+              "scene": "visible_brick_breaker_playfield",
+              "task": "brick_breaker_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:next_hit_label",
+              "answer_hint": "static:query:next_hit_label",
+              "brick_breaker_motion_rule_text": "static:query:next_hit_label",
+              "json_example": "static:query:next_hit_label",
+              "json_example_answer_only": "static:query:next_hit_label",
+              "object_description": "static:scene:visible_brick_breaker_playfield"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+              "answer_hint": "set \"answer\" to the selected brick label as a string",
+              "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+              "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+              "json_example_answer_only": "{\"answer\":\"H\"}",
+              "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+              "answer_hint": "set \"answer\" to the selected brick label as a string",
+              "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+              "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+              "json_example_answer_only": "{\"answer\":\"H\"}",
+              "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+            },
+            "task_key": "brick_breaker_query",
+            "task_template_index": 4,
+            "template_paths": [
+              "games/brick_breaker/games_brick_breaker_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_and_annotation": 5,
+              "query:next_hit_label": 5,
+              "scene:visible_brick_breaker_playfield": 5,
+              "task:brick_breaker_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The image shows a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom. The short dashed arrow shows the ball's current straight direction. Which labeled brick will the ball hit first?\nRequired annotation format: set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction.\nRequired answer format: set \"answer\" to the selected brick label as a string.\nExample JSON:\n{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_annotation_key": "answer_only",
+            "answer_or_annotation_query_id_index": 4,
+            "prompt_bundle_hash": "4da706e98a1f3396ea4adde2098e25ee12024038d4ab250bbc6d09a65fd596a1",
+            "prompt_bundle_id": "games_brick_breaker_v1",
+            "prompt_bundle_path": "games/brick_breaker/games_brick_breaker_v1.json",
+            "prompt_domain": "games",
+            "prompt_scene_id": "brick_breaker",
+            "prompt_schema_version": "v1",
+            "query_key": "next_hit_label",
+            "query_template_index": 0,
+            "scene_key": "visible_brick_breaker_playfield",
+            "scene_template_index": 0,
+            "schema_version": "v1",
+            "selected_indices": {
+              "output": 4,
+              "query": 0,
+              "scene": 0,
+              "task": 4
+            },
+            "selected_keys": {
+              "output": "answer_only",
+              "query": "next_hit_label",
+              "scene": "visible_brick_breaker_playfield",
+              "task": "brick_breaker_query"
+            },
+            "slot_sources": {
+              "annotation_hint": "static:query:next_hit_label",
+              "answer_hint": "static:query:next_hit_label",
+              "brick_breaker_motion_rule_text": "static:query:next_hit_label",
+              "json_example": "static:query:next_hit_label",
+              "json_example_answer_only": "static:query:next_hit_label",
+              "object_description": "static:scene:visible_brick_breaker_playfield"
+            },
+            "slot_values": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+              "answer_hint": "set \"answer\" to the selected brick label as a string",
+              "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+              "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+              "json_example_answer_only": "{\"answer\":\"H\"}",
+              "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+            },
+            "slot_values_rendered": {
+              "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
+              "answer_hint": "set \"answer\" to the selected brick label as a string",
+              "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
+              "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+              "json_example_answer_only": "{\"answer\":\"H\"}",
+              "object_description": "a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom"
+            },
+            "task_key": "brick_breaker_query",
+            "task_template_index": 4,
+            "template_paths": [
+              "games/brick_breaker/games_brick_breaker_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_annotation:answer_only": 5,
+              "query:next_hit_label": 5,
+              "scene:visible_brick_breaker_playfield": 5,
+              "task:brick_breaker_query": 5
+            },
+            "variant_counts": {
+              "output": 5,
+              "query": 5,
+              "scene": 5,
+              "task": 5
+            }
+          },
+          "prompt": "The image shows a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom. The short dashed arrow shows the ball's current straight direction. Which labeled brick will the ball hit first?\nFormat for the \"answer\" field: set \"answer\" to the selected brick label as a string.\nExample JSON:\n{\"answer\":\"H\"}"
+        }
+      },
+      "query_id": "next_hit_label",
+      "scene_id": "brick_breaker",
+      "task_id": "task_games__brick_breaker__next_hit_label",
+      "template_id": "games_brick_breaker_v1"
+    },
+    "render_map": {
+      "ball_bbox_px": [
+        204.438,
+        401.0,
+        230.438,
+        427.0
+      ],
+      "brick_bboxes_px": {
+        "brick_0_0": [
+          133.0,
+          76.0,
+          247.6,
+          125.25
+        ],
+        "brick_0_1": [
+          253.6,
+          76.0,
+          368.2,
+          125.25
+        ],
+        "brick_0_3": [
+          494.8,
+          76.0,
+          609.4,
+          125.25
+        ],
+        "brick_0_4": [
+          615.4,
+          76.0,
+          730.0,
+          125.25
+        ],
+        "brick_1_0": [
+          133.0,
+          131.25,
+          247.6,
+          180.5
+        ],
+        "brick_1_1": [
+          253.6,
+          131.25,
+          368.2,
+          180.5
+        ],
+        "brick_1_2": [
+          374.2,
+          131.25,
+          488.8,
+          180.5
+        ],
+        "brick_1_3": [
+          494.8,
+          131.25,
+          609.4,
+          180.5
+        ],
+        "brick_1_4": [
+          615.4,
+          131.25,
+          730.0,
+          180.5
+        ],
+        "brick_2_0": [
+          133.0,
+          186.5,
+          247.6,
+          235.75
+        ],
+        "brick_2_3": [
+          494.8,
+          186.5,
+          609.4,
+          235.75
+        ],
+        "brick_2_4": [
+          615.4,
+          186.5,
+          730.0,
+          235.75
+        ],
+        "brick_3_0": [
+          133.0,
+          241.75,
+          247.6,
+          291.0
+        ],
+        "brick_3_1": [
+          253.6,
+          241.75,
+          368.2,
+          291.0
+        ],
+        "brick_3_2": [
+          374.2,
+          241.75,
+          488.8,
+          291.0
+        ],
+        "brick_3_3": [
+          494.8,
+          241.75,
+          609.4,
+          291.0
+        ],
+        "brick_3_4": [
+          615.4,
+          241.75,
+          730.0,
+          291.0
+        ]
+      },
+      "entity_bboxes_px": {
+        "ball": [
+          204.438,
+          401.0,
+          230.438,
+          427.0
+        ],
+        "brick_0_0": [
+          133.0,
+          76.0,
+          247.6,
+          125.25
+        ],
+        "brick_0_1": [
+          253.6,
+          76.0,
+          368.2,
+          125.25
+        ],
+        "brick_0_3": [
+          494.8,
+          76.0,
+          609.4,
+          125.25
+        ],
+        "brick_0_4": [
+          615.4,
+          76.0,
+          730.0,
+          125.25
+        ],
+        "brick_1_0": [
+          133.0,
+          131.25,
+          247.6,
+          180.5
+        ],
+        "brick_1_1": [
+          253.6,
+          131.25,
+          368.2,
+          180.5
+        ],
+        "brick_1_2": [
+          374.2,
+          131.25,
+          488.8,
+          180.5
+        ],
+        "brick_1_3": [
+          494.8,
+          131.25,
+          609.4,
+          180.5
+        ],
+        "brick_1_4": [
+          615.4,
+          131.25,
+          730.0,
+          180.5
+        ],
+        "brick_2_0": [
+          133.0,
+          186.5,
+          247.6,
+          235.75
+        ],
+        "brick_2_3": [
+          494.8,
+          186.5,
+          609.4,
+          235.75
+        ],
+        "brick_2_4": [
+          615.4,
+          186.5,
+          730.0,
+          235.75
+        ],
+        "brick_3_0": [
+          133.0,
+          241.75,
+          247.6,
+          291.0
+        ],
+        "brick_3_1": [
+          253.6,
+          241.75,
+          368.2,
+          291.0
+        ],
+        "brick_3_2": [
+          374.2,
+          241.75,
+          488.8,
+          291.0
+        ],
+        "brick_3_3": [
+          494.8,
+          241.75,
+          609.4,
+          291.0
+        ],
+        "brick_3_4": [
+          615.4,
+          241.75,
+          730.0,
+          291.0
+        ],
+        "lane_0": [
+          95.0,
+          486.0,
+          168.625,
+          519.0
+        ],
+        "lane_1": [
+          180.625,
+          486.0,
+          254.25,
+          519.0
+        ],
+        "lane_2": [
+          266.25,
+          486.0,
+          339.875,
+          519.0
+        ],
+        "lane_3": [
+          351.875,
+          486.0,
+          425.5,
+          519.0
+        ],
+        "lane_4": [
+          437.5,
+          486.0,
+          511.125,
+          519.0
+        ],
+        "lane_5": [
+          523.125,
+          486.0,
+          596.75,
+          519.0
+        ],
+        "lane_6": [
+          608.75,
+          486.0,
+          682.375,
+          519.0
+        ],
+        "lane_7": [
+          694.375,
+          486.0,
+          768.0,
+          519.0
+        ],
+        "paddle": [
+          219.15,
+          458.0,
+          643.85,
+          472.0
+        ]
+      },
+      "font_family": "crimson_text",
+      "guide_color_safety": {
+        "anchor_rgbs": [
+          [
+            224,
+            229,
+            232
+          ],
+          [
+            204,
+            213,
+            219
+          ],
+          [
+            247,
+            250,
+            251
+          ],
+          [
+            70,
+            82,
+            93
+          ],
+          [
+            221,
+            229,
+            235
+          ],
+          [
+            72,
+            84,
+            95
+          ],
+          [
+            21,
+            28,
+            46
+          ],
+          [
+            143,
+            166,
+            196
+          ],
+          [
+            45,
+            58,
+            82
+          ],
+          [
+            166,
+            188,
+            214
+          ],
+          [
+            86,
+            171,
+            224
+          ],
+          [
+            217,
+            238,
+            255
+          ]
+        ],
+        "distance_space": "lab",
+        "guide_anchor_lab_distance": 63.374,
+        "min_anchor_distance_required": 40.0
+      },
+      "guide_line_rgb": [
+        255,
+        226,
+        104
+      ],
+      "lane_bboxes_px": {
+        "lane_0": [
+          95.0,
+          486.0,
+          168.625,
+          519.0
+        ],
+        "lane_1": [
+          180.625,
+          486.0,
+          254.25,
+          519.0
+        ],
+        "lane_2": [
+          266.25,
+          486.0,
+          339.875,
+          519.0
+        ],
+        "lane_3": [
+          351.875,
+          486.0,
+          425.5,
+          519.0
+        ],
+        "lane_4": [
+          437.5,
+          486.0,
+          511.125,
+          519.0
+        ],
+        "lane_5": [
+          523.125,
+          486.0,
+          596.75,
+          519.0
+        ],
+        "lane_6": [
+          608.75,
+          486.0,
+          682.375,
+          519.0
+        ],
+        "lane_7": [
+          694.375,
+          486.0,
+          768.0,
+          519.0
+        ]
+      },
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -62,
+          62
+        ],
+        "dx_px": -31,
+        "dy_px": -39,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -31,
+        "requested_dy_px": -39,
+        "requested_x_slack_fraction": -0.2955,
+        "requested_y_slack_fraction": -0.6215999999999999,
+        "unit_size_jitter": {
+          "enabled": true,
+          "key": "unit_size_scale",
+          "max": 1.0,
+          "min": 0.5,
+          "range_ratio": 2.0,
+          "scale": 0.7965
+        }
+      },
+      "motion_path_px": {
+        "end": [
+          190.3,
+          266.375
+        ],
+        "start": [
+          217.438,
+          414.0
+        ]
+      },
+      "paddle_bbox_px": [
+        219.15,
+        458.0,
+        643.85,
+        472.0
+      ],
+      "panel_bbox_px": [
+        68,
+        18,
+        795,
+        570
+      ],
+      "panel_scene_style": {
+        "agent_rgb": [
+          204,
+          57,
+          86
+        ],
+        "background_accent_rgb": [
+          204,
+          213,
+          219
+        ],
+        "background_rgb": [
+          224,
+          229,
+          232
+        ],
+        "background_state_lab_distances": [
+          9.056,
+          56.961,
+          46.855
+        ],
+        "background_state_rgb_distances": [
+          43.509,
+          188.098,
+          205.407
+        ],
+        "grid_rgb": [
+          72,
+          84,
+          95
+        ],
+        "mark_rgb": [
+          220,
+          80,
+          69
+        ],
+        "min_background_state_lab_distance": 9.056,
+        "min_background_state_rgb_distance": 43.509,
+        "notebook_line_rgb": [
+          213,
+          222,
+          228
+        ],
+        "option_fill_rgb": [
+          249,
+          251,
+          252
+        ],
+        "palette_id": "slate_paper",
+        "panel_accent_rgb": [
+          221,
+          229,
+          235
+        ],
+        "panel_border_rgb": [
+          70,
+          82,
+          93
+        ],
+        "panel_fill_rgb": [
+          247,
+          250,
+          251
+        ],
+        "state_colors_rgb": [
+          [
+            252,
+            254,
+            254
+          ],
+          [
+            71,
+            125,
+            198
+          ],
+          [
+            80,
+            145,
+            112
+          ]
+        ],
+        "style_pack": "clipboard_sheet:slate_paper",
+        "text_rgb": [
+          22,
+          52,
+          70
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "clipboard_sheet"
+      },
+      "playfield_bbox_px": [
+        89.0,
+        39.0,
+        774.0,
+        549.0
+      ],
+      "visible_motion_path_px": {
+        "end": [
+          202.512,
+          332.806
+        ],
+        "fraction_of_full_path": 0.55,
+        "start": [
+          217.438,
+          414.0
+        ]
+      }
+    },
+    "render_spec": {
+      "canvas_height": 666,
+      "canvas_width": 925,
+      "domain": "games",
+      "drawn_text": {
+        "text_legibility": {
+          "drawn_text_record_count": 25,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 8.183,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "bbox_px": [
+                186.3,
+                93.125,
+                194.3,
+                108.125
+              ],
+              "fill_rgb": [
+                118,
+                66,
+                28
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 8.183,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 76.093,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "I"
+            },
+            {
+              "bbox_px": [
+                304.4,
+                93.625,
+                317.4,
+                107.625
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "E"
+            },
+            {
+              "bbox_px": [
+                544.1,
+                93.625,
+                560.1,
+                107.625
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "A"
+            },
+            {
+              "bbox_px": [
+                666.7,
+                93.625,
+                678.7,
+                107.625
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "F"
+            },
+            {
+              "bbox_px": [
+                182.8,
+                148.375,
+                197.8,
+                163.375
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "H"
+            },
+            {
+              "bbox_px": [
+                302.9,
+                148.375,
+                318.9,
+                163.375
+              ],
+              "fill_rgb": [
+                36,
+                45,
+                64
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 13.776,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 82.629,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "N"
+            },
+            {
+              "bbox_px": [
+                424.5,
+                148.875,
+                438.5,
+                162.875
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "C"
+            },
+            {
+              "bbox_px": [
+                544.6,
+                148.875,
+                559.6,
+                162.875
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "D"
+            },
+            {
+              "bbox_px": [
+                663.2,
+                147.875,
+                682.2,
+                163.875
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "M"
+            },
+            {
+              "bbox_px": [
+                183.8,
+                203.625,
+                196.8,
+                218.625
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "B"
+            },
+            {
+              "bbox_px": [
+                544.1,
+                202.625,
+                560.1,
+                219.625
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "Q"
+            },
+            {
+              "bbox_px": [
+                667.2,
+                202.125,
+                678.2,
+                220.125
+              ],
+              "fill_rgb": [
+                24,
+                29,
+                38
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.9,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 89.613,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "J"
+            },
+            {
+              "bbox_px": [
+                182.3,
+                258.875,
+                198.3,
+                273.875
+              ],
+              "fill_rgb": [
+                122,
+                45,
+                54
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 9.308,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 78.782,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "K"
+            },
+            {
+              "bbox_px": [
+                304.4,
+                259.375,
+                317.4,
+                273.375
+              ],
+              "fill_rgb": [
+                103,
+                42,
+                82
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 10.346,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 80.596,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "L"
+            },
+            {
+              "bbox_px": [
+                424.0,
+                258.875,
+                439.0,
+                273.875
+              ],
+              "fill_rgb": [
+                73,
+                53,
+                112
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 10.363,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 82.581,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "O"
+            },
+            {
+              "bbox_px": [
+                544.6,
+                259.375,
+                559.6,
+                273.375
+              ],
+              "fill_rgb": [
+                24,
+                31,
+                44
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 16.52,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 88.876,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "G"
+            },
+            {
+              "bbox_px": [
+                666.2,
+                259.375,
+                679.2,
+                273.375
+              ],
+              "fill_rgb": [
+                118,
+                66,
+                28
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 8.183,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 76.093,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  255,
+                  255,
+                  255
+                ]
+              ],
+              "text": "P"
+            },
+            {
+              "bbox_px": [
+                123.812,
+                495.5,
+                139.812,
+                509.5
+              ],
+              "fill_rgb": [
+                237,
+                242,
+                247
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.148,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.342,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "A"
+            },
+            {
+              "bbox_px": [
+                210.938,
+                495.0,
+                223.938,
+                510.0
+              ],
+              "fill_rgb": [
+                237,
+                242,
+                247
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.148,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.342,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "B"
+            },
+            {
+              "bbox_px": [
+                296.062,
+                495.5,
+                310.062,
+                509.5
+              ],
+              "fill_rgb": [
+                237,
+                242,
+                247
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.148,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.342,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "C"
+            },
+            {
+              "bbox_px": [
+                381.188,
+                495.5,
+                396.188,
+                509.5
+              ],
+              "fill_rgb": [
+                237,
+                242,
+                247
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.148,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.342,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "D"
+            },
+            {
+              "bbox_px": [
+                467.812,
+                495.5,
+                480.812,
+                509.5
+              ],
+              "fill_rgb": [
+                255,
+                247,
+                229
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 18.107,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 94.59,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "E"
+            },
+            {
+              "bbox_px": [
+                553.938,
+                495.5,
+                565.938,
+                509.5
+              ],
+              "fill_rgb": [
+                232,
+                250,
+                246
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.876,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.347,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "F"
+            },
+            {
+              "bbox_px": [
+                638.062,
+                495.5,
+                653.062,
+                509.5
+              ],
+              "fill_rgb": [
+                237,
+                242,
+                247
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 17.148,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 91.342,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "G"
+            },
+            {
+              "bbox_px": [
+                723.688,
+                495.0,
+                738.688,
+                510.0
+              ],
+              "fill_rgb": [
+                245,
+                248,
+                241
+              ],
+              "font_size_px": 19,
+              "min_contrast_ratio": 18.007,
+              "min_contrast_required": 4.5,
+              "min_lab_distance": 93.621,
+              "min_lab_distance_required": 24.0,
+              "passes": true,
+              "required": true,
+              "role": "readout",
+              "source": "games_text_helper",
+              "stroke_rgb": [
+                10,
+                14,
+                22
+              ],
+              "stroke_width_px": 1,
+              "surface_rgbs": [
+                [
+                  10,
+                  14,
+                  22
+                ]
+              ],
+              "text": "H"
+            }
+          ],
+          "required_role_count": 25,
+          "source": "automatic_drawn_text_collector"
+        }
+      },
+      "font_assets": {
+        "implicit_readout_font_family": {
+          "family_name": "Ropa Sans",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "ropa_sans",
+          "font_pool_id": "readout_v0",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "font_pool_size": 100,
+          "font_role": "readout",
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/ropasans",
+          "tags": [
+            "sans",
+            "static",
+            "google_auto"
+          ]
+        }
+      },
+      "layout_jitter": {
+        "clamp_x_px": [
+          -104,
+          104
+        ],
+        "clamp_y_px": [
+          -62,
+          62
+        ],
+        "dx_px": -31,
+        "dy_px": -39,
+        "enabled": true,
+        "min_margin_px": 16,
+        "mode": "slack_fraction",
+        "requested_dx_px": -31,
+        "requested_dy_px": -39,
+        "requested_x_slack_fraction": -0.2955,
+        "requested_y_slack_fraction": -0.6215999999999999,
+        "unit_size_jitter": {
+          "enabled": true,
+          "key": "unit_size_scale",
+          "max": 1.0,
+          "min": 0.5,
+          "range_ratio": 2.0,
+          "scale": 0.7965
+        }
+      },
+      "panel_scene_style": {
+        "agent_rgb": [
+          204,
+          57,
+          86
+        ],
+        "background_accent_rgb": [
+          204,
+          213,
+          219
+        ],
+        "background_rgb": [
+          224,
+          229,
+          232
+        ],
+        "background_state_lab_distances": [
+          9.056,
+          56.961,
+          46.855
+        ],
+        "background_state_rgb_distances": [
+          43.509,
+          188.098,
+          205.407
+        ],
+        "grid_rgb": [
+          72,
+          84,
+          95
+        ],
+        "mark_rgb": [
+          220,
+          80,
+          69
+        ],
+        "min_background_state_lab_distance": 9.056,
+        "min_background_state_rgb_distance": 43.509,
+        "notebook_line_rgb": [
+          213,
+          222,
+          228
+        ],
+        "option_fill_rgb": [
+          249,
+          251,
+          252
+        ],
+        "palette_id": "slate_paper",
+        "panel_accent_rgb": [
+          221,
+          229,
+          235
+        ],
+        "panel_border_rgb": [
+          70,
+          82,
+          93
+        ],
+        "panel_fill_rgb": [
+          247,
+          250,
+          251
+        ],
+        "state_colors_rgb": [
+          [
+            252,
+            254,
+            254
+          ],
+          [
+            71,
+            125,
+            198
+          ],
+          [
+            80,
+            145,
+            112
+          ]
+        ],
+        "style_pack": "clipboard_sheet:slate_paper",
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
+        "text_legibility": {
+          "drawn_text_record_count": 0,
+          "enabled": true,
+          "failure_count": 0,
+          "min_required_contrast_ratio": 10.251,
+          "policy": "required_text_uses_random_nonsemantic_readable_ink",
+          "policy_version": "text_legibility_v1",
+          "records": [
+            {
+              "fill_rgb": [
+                22,
+                52,
+                70
+              ],
+              "min_contrast_ratio": 10.251,
+              "min_contrast_required": 7.0,
+              "min_lab_distance": 71.517,
+              "min_lab_distance_required": 38.0,
+              "passes": true,
+              "required": true,
+              "role": "read_required_panel_text",
+              "stroke_rgb": [
+                255,
+                255,
+                255
+              ],
+              "surface_rgbs": [
+                [
+                  224,
+                  229,
+                  232
+                ],
+                [
+                  247,
+                  250,
+                  251
+                ],
+                [
+                  249,
+                  251,
+                  252
+                ]
+              ]
+            }
+          ],
+          "required_role_count": 1
+        },
+        "text_rgb": [
+          22,
+          52,
+          70
+        ],
+        "text_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "treatment": "clipboard_sheet"
+      },
+      "query_id": "next_hit_label",
+      "scene_id": "brick_breaker",
+      "scene_variant": "brick_wall",
+      "style_variant": "classic",
+      "task_id": "task_games__brick_breaker__next_hit_label",
+      "text_style": {
+        "font_asset": {
+          "family_name": "Crimson Text",
+          "font_asset_version": "font_assets_v2",
+          "font_family": "crimson_text",
+          "font_pool_memberships": [
+            {
+              "font_pool_id": "readout_v0",
+              "font_pool_size": 100,
+              "font_role": "readout"
+            }
+          ],
+          "license": "OFL-1.1",
+          "source_id": "google_fonts",
+          "source_url": "https://github.com/google/fonts/tree/main/ofl/crimsontext",
+          "tags": [
+            "serif",
+            "static",
+            "google_auto"
+          ]
+        },
+        "font_family": "crimson_text"
+      }
+    },
+    "scene_ir": {
+      "domain": "games",
+      "entities": [
+        {
+          "bbox_px": [
+            133.0,
+            76.0,
+            247.6,
+            125.25
+          ],
+          "col": 0,
+          "entity_id": "brick_0_0",
+          "entity_type": "brick_breaker_brick",
+          "label": "I",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            253.6,
+            76.0,
+            368.2,
+            125.25
+          ],
+          "col": 1,
+          "entity_id": "brick_0_1",
+          "entity_type": "brick_breaker_brick",
+          "label": "E",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            494.8,
+            76.0,
+            609.4,
+            125.25
+          ],
+          "col": 3,
+          "entity_id": "brick_0_3",
+          "entity_type": "brick_breaker_brick",
+          "label": "A",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            615.4,
+            76.0,
+            730.0,
+            125.25
+          ],
+          "col": 4,
+          "entity_id": "brick_0_4",
+          "entity_type": "brick_breaker_brick",
+          "label": "F",
+          "row": 0
+        },
+        {
+          "bbox_px": [
+            133.0,
+            131.25,
+            247.6,
+            180.5
+          ],
+          "col": 0,
+          "entity_id": "brick_1_0",
+          "entity_type": "brick_breaker_brick",
+          "label": "H",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            253.6,
+            131.25,
+            368.2,
+            180.5
+          ],
+          "col": 1,
+          "entity_id": "brick_1_1",
+          "entity_type": "brick_breaker_brick",
+          "label": "N",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            374.2,
+            131.25,
+            488.8,
+            180.5
+          ],
+          "col": 2,
+          "entity_id": "brick_1_2",
+          "entity_type": "brick_breaker_brick",
+          "label": "C",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            494.8,
+            131.25,
+            609.4,
+            180.5
+          ],
+          "col": 3,
+          "entity_id": "brick_1_3",
+          "entity_type": "brick_breaker_brick",
+          "label": "D",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            615.4,
+            131.25,
+            730.0,
+            180.5
+          ],
+          "col": 4,
+          "entity_id": "brick_1_4",
+          "entity_type": "brick_breaker_brick",
+          "label": "M",
+          "row": 1
+        },
+        {
+          "bbox_px": [
+            133.0,
+            186.5,
+            247.6,
+            235.75
+          ],
+          "col": 0,
+          "entity_id": "brick_2_0",
+          "entity_type": "brick_breaker_brick",
+          "label": "B",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            494.8,
+            186.5,
+            609.4,
+            235.75
+          ],
+          "col": 3,
+          "entity_id": "brick_2_3",
+          "entity_type": "brick_breaker_brick",
+          "label": "Q",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            615.4,
+            186.5,
+            730.0,
+            235.75
+          ],
+          "col": 4,
+          "entity_id": "brick_2_4",
+          "entity_type": "brick_breaker_brick",
+          "label": "J",
+          "row": 2
+        },
+        {
+          "bbox_px": [
+            133.0,
+            241.75,
+            247.6,
+            291.0
+          ],
+          "col": 0,
+          "entity_id": "brick_3_0",
+          "entity_type": "brick_breaker_brick",
+          "label": "K",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            253.6,
+            241.75,
+            368.2,
+            291.0
+          ],
+          "col": 1,
+          "entity_id": "brick_3_1",
+          "entity_type": "brick_breaker_brick",
+          "label": "L",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            374.2,
+            241.75,
+            488.8,
+            291.0
+          ],
+          "col": 2,
+          "entity_id": "brick_3_2",
+          "entity_type": "brick_breaker_brick",
+          "label": "O",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            494.8,
+            241.75,
+            609.4,
+            291.0
+          ],
+          "col": 3,
+          "entity_id": "brick_3_3",
+          "entity_type": "brick_breaker_brick",
+          "label": "G",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            615.4,
+            241.75,
+            730.0,
+            291.0
+          ],
+          "col": 4,
+          "entity_id": "brick_3_4",
+          "entity_type": "brick_breaker_brick",
+          "label": "P",
+          "row": 3
+        },
+        {
+          "bbox_px": [
+            95.0,
+            486.0,
+            168.625,
+            519.0
+          ],
+          "entity_id": "lane_0",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "A",
+          "lane": 0
+        },
+        {
+          "bbox_px": [
+            180.625,
+            486.0,
+            254.25,
+            519.0
+          ],
+          "entity_id": "lane_1",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "B",
+          "lane": 1
+        },
+        {
+          "bbox_px": [
+            266.25,
+            486.0,
+            339.875,
+            519.0
+          ],
+          "entity_id": "lane_2",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "C",
+          "lane": 2
+        },
+        {
+          "bbox_px": [
+            351.875,
+            486.0,
+            425.5,
+            519.0
+          ],
+          "entity_id": "lane_3",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "D",
+          "lane": 3
+        },
+        {
+          "bbox_px": [
+            437.5,
+            486.0,
+            511.125,
+            519.0
+          ],
+          "entity_id": "lane_4",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "E",
+          "lane": 4
+        },
+        {
+          "bbox_px": [
+            523.125,
+            486.0,
+            596.75,
+            519.0
+          ],
+          "entity_id": "lane_5",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "F",
+          "lane": 5
+        },
+        {
+          "bbox_px": [
+            608.75,
+            486.0,
+            682.375,
+            519.0
+          ],
+          "entity_id": "lane_6",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "G",
+          "lane": 6
+        },
+        {
+          "bbox_px": [
+            694.375,
+            486.0,
+            768.0,
+            519.0
+          ],
+          "entity_id": "lane_7",
+          "entity_type": "brick_breaker_catch_lane",
+          "label": "H",
+          "lane": 7
+        },
+        {
+          "bbox_px": [
+            219.15,
+            458.0,
+            643.85,
+            472.0
+          ],
+          "entity_id": "paddle",
+          "entity_type": "brick_breaker_paddle"
+        },
+        {
+          "bbox_px": [
+            204.438,
+            401.0,
+            230.438,
+            427.0
+          ],
+          "entity_id": "ball",
+          "entity_type": "brick_breaker_ball"
+        }
+      ],
+      "query_id": "next_hit_label",
+      "relations": {
+        "annotation_entity_ids": [
+          "brick_3_0"
+        ],
+        "brick_cols": 5,
+        "brick_rows": 4,
+        "lane_count": 8,
+        "query_id": "next_hit_label",
+        "scene_id": "brick_breaker",
+        "scene_variant": "brick_wall",
+        "style_variant": "classic"
+      },
+      "scene_id": "brick_breaker",
+      "scene_kind": "games_brick_breaker_brick_wall",
+      "task_id": "task_games__brick_breaker__next_hit_label"
+    },
+    "taxonomy": {
+      "domain": "games",
+      "metadata_schema_version": "v0",
+      "public": {
+        "domain": "games",
+        "query_id": "next_hit_label",
+        "scene_id": "brick_breaker",
+        "task_id": "task_games__brick_breaker__next_hit_label"
+      },
+      "query_id": "next_hit_label",
+      "registered": {
+        "domain": "games",
+        "scene_id": "brick_breaker",
+        "task_id": "task_games__brick_breaker__next_hit_label"
+      },
+      "scene_id": "brick_breaker",
+      "source": {
+        "config_domain": "games",
+        "config_scene_id": "brick_breaker",
+        "implementation_domain": "games",
+        "implementation_scene_id": "brick_breaker",
+        "implementation_task_id": "task_games__brick_breaker__next_hit_label",
+        "prompt_domain": "games",
+        "prompt_scene_id": "brick_breaker"
+      },
+      "task_id": "task_games__brick_breaker__next_hit_label"
+    },
+    "witness_symbolic": {
+      "count": 1,
+      "type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v0",
+    "dsl_spec_version": "v0",
+    "operator_bundle_version": "v0",
+    "renderer_version": "v0",
+    "template_version": "v0"
+  }
+}

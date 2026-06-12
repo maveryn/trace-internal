@@ -66,7 +66,7 @@ def lane_label(lane: int) -> str:
 
 
 def validate_brick_breaker_scene_state(sample: BrickBreakerSample) -> None:
-    """Validate scene-level Brick-breaker state invariants."""
+    """Validate Brick-breaker entity ids, labels, targets, and annotation references together."""
 
     if int(sample.brick_rows) <= 0 or int(sample.brick_cols) <= 0:
         raise ValueError("brick breaker brick grid dimensions must be positive")

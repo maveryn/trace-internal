@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.games.brick_breaker.shared.common import (
+from trace.tasks.games.brick_breaker.shared.state import (
     SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS,
     SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS,
 )

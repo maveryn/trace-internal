@@ -7,11 +7,13 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_value import GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask
+from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_value import (
+    SUPPORTED_QUERY_IDS as SQUARE_CIRCLE_TANGENT_ANGLE_QUERY_IDS,
+    TASK_ID as SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID,
+    GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask,
+)
 from trace.tasks.geometry.circle_polygon_composite.tangential_quadrilateral_side_sum_value import (
     QUERY_ID,
-    SQUARE_CIRCLE_TANGENT_ANGLE_QUERY_IDS,
-    SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID,
     TASK_ID,
     GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask,
 )

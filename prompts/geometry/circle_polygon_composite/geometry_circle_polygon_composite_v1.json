@@ -1,0 +1,120 @@
+{
+  "bundle_id": "geometry_circle_polygon_composite_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "circle_polygon_composite_scene": [
+        "The diagram shows a circle-polygon geometry construction.",
+        "The figure shows a circle-polygon geometry construction.",
+        "This geometry diagram shows a circle-polygon construction.",
+        "The image shows a circle-polygon geometry construction.",
+        "The labeled diagram shows a circle-polygon construction."
+      ]
+    },
+    "task": {
+      "tangential_quadrilateral_side_sum_value_query": [
+        "{object_description}",
+        "{object_description}",
+        "{object_description}",
+        "{object_description}",
+        "{object_description}"
+      ],
+      "square_circle_tangent_angle_value_query": [
+        "{object_description}",
+        "{object_description}",
+        "{object_description}",
+        "{object_description}",
+        "{object_description}"
+      ]
+    },
+    "query": {
+      "opposite_side_sum_from_tangent_quadrilateral": [
+        "The side lengths for {known_pair} are labeled. What is {target_pair}?",
+        "Using the tangential quadrilateral, find {target_pair}. The visible side lengths are for {known_pair}.",
+        "The quadrilateral's sides are tangent to the circle. What is the sum {target_pair}?",
+        "Use the labeled opposite side lengths to determine {target_pair}.",
+        "In the tangential quadrilateral, what is the value of {target_pair}?"
+      ],
+      "square_incircle_tangent_angle": [
+        "A tangent touches the incircle at T. What is the angle marked ?",
+        "Use the tangent-radius construction to find angle ?.",
+        "The radius to T is perpendicular to the tangent line. What is the angle marked ?",
+        "Determine the angle marked ?.",
+        "Find angle ? using the tangent angle."
+      ],
+      "square_semicircle_tangent_angle": [
+        "A tangent touches the semicircle at T. What is the angle marked ?",
+        "Use the tangent-radius construction to find angle ?.",
+        "The radius to T is perpendicular to the tangent line. What is the angle marked ?",
+        "Determine the angle marked ?.",
+        "Find angle ? using the tangent angle."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Return a JSON object with an \"answer\" field only.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Return only a JSON object containing \"answer\".\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Respond with JSON only.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Return a JSON object.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use JSON only.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Respond with JSON only.\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Return a JSON object.\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use JSON only.\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:tangential_quadrilateral_side_sum_value_query": {
+      "object_description": "It includes a convex quadrilateral whose four sides are tangent to an incircle, labeled vertices, tangency points, and two visible side-length labels.",
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: \"vertex_A\", \"vertex_B\", \"vertex_C\", \"vertex_D\", \"tangent_AB\", \"tangent_BC\", \"tangent_CD\", \"tangent_DA\", and \"incircle_center\"; each value must be the pixel point [x,y] at that visible vertex, tangency point, or circle center",
+      "answer_hint": "set \"answer\" to the requested opposite-side sum as an integer"
+    },
+    "task:square_circle_tangent_angle_value_query": {
+      "object_description": "It includes a square or rectangle, a circle or semicircle, a tangent line, radius to T, one known angle, and one target angle marked ?.",
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: \"shape_corner_A\", \"shape_corner_B\", \"shape_corner_C\", \"shape_corner_D\", \"circle_center\", \"tangent_point\", \"known_angle_vertex\", \"known_angle_reference_point\", \"target_angle_vertex\", and \"target_reference_point\"; each value must be the pixel point [x,y] at the named corner, construction point, or angle point",
+      "answer_hint": "set \"answer\" to the target angle in degrees as an integer"
+    }
+  },
+  "dynamic_slots": {
+    "target_pair": {
+      "type": "string"
+    },
+    "known_pair": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "task:tangential_quadrilateral_side_sum_value_query": [
+      "object_description"
+    ],
+    "task:square_circle_tangent_angle_value_query": [
+      "object_description"
+    ],
+    "query:opposite_side_sum_from_tangent_quadrilateral": [
+      "target_pair",
+      "known_pair"
+    ],
+    "query:square_incircle_tangent_angle": [],
+    "query:square_semicircle_tangent_angle": [],
+    "output:answer_only": [
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

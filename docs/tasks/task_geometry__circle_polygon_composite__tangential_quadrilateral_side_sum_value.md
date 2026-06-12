@@ -3,17 +3,16 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_polygon_composite`
-3. Scene id: `circle_polygon_composite`
-4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
-5. Query ids: `opposite_side_sum_from_tangent_quadrilateral`
-6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+3. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+4. Query ids: `opposite_side_sum_from_tangent_quadrilateral`
+5. Answer schema: `integer_value`
+6. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `solve_formula(tangential_quadrilateral, unknown_role=opposite_side_sum, formula_schema=opposite_side_sums_equal); scene=circle_polygon_composite; scope=tangential_quadrilateral_side_sum_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_circle_polygon_composite_v0`.
+- Prompt text is loaded from `geometry_circle_polygon_composite_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation

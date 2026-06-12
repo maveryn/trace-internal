@@ -1,93 +1,9 @@
 generation:
-  shared:
-    answer_min: 8
-    polygon_allowed_sides:
-    - 3
-    - 4
-    - 5
-    - 6
-    circle_radius_min: 2
-    circle_radius_max: 10
-    ellipse_axis_min: 2
-    ellipse_axis_max: 10
-    ellipse_allow_circle: false
   task_overrides:
-    geometry_measurement_value_base:
-      query_id_weights:
-        angle: 1.0
-        area: 1.0
-        perimeter: 1.0
-        slope: 1.0
-      scene_variant_weights:
-        angle: 1.0
-        triangle: 1.0
-        quadrilateral: 1.0
-        circle: 1.0
-        ellipse: 1.0
-        line: 1.0
-      balanced_query_id_sampling: true
-      balanced_scene_variant_sampling: true
-    source_geometry_measurement_angle:
-      min_angle: 30
-      max_angle: 150
-      angle_step: 1
-      quantization_tolerance_degrees: 0.05
-      max_abs_vector_component: 20
-      min_ray_length_units: 2
-      balanced_sampling: true
-      source_kind_weights:
-        primitive_angle: 1.0
-        intersection_lines: 1.0
-    source_geometry_measurement_area:
-      answer_min: 8
-      answer_max: 96
-      balanced_variant_sampling: true
-      variant_weights:
-        triangle: 1.0
-        quadrilateral: 1.0
-        ellipse: 1.0
-      ellipse_allow_circle: true
-    source_geometry_measurement_perimeter:
-      answer_min: 8
-      answer_max: 64
-      balanced_variant_sampling: true
-      variant_weights:
-        triangle: 1.0
-        quadrilateral: 1.0
-        circle: 1.0
-    source_geometry_measurement_length:
-      answer_min: 2
-      answer_max: 20
-      balanced_variant_sampling: true
-      variant_weights:
-        segment: 1.0
-        triangle: 1.0
-        quadrilateral: 1.0
-        pentagon: 1.0
-        circle_radius: 0.25
-        circle_diameter: 0.25
-        ellipse_major_axis: 0.25
-        ellipse_minor_axis: 0.25
-      segment_length_min: 2
-      segment_length_max: 20
-      segment_vector_max_abs_component: 20
-    source_geometry_measurement_slope:
-      slope_tenths_min: -40
-      slope_tenths_max: 40
-      balanced_sampling: true
+    task_geometry__circle_polygon_composite__tangential_quadrilateral_side_sum_value: {}
+    task_geometry__circle_polygon_composite__square_circle_tangent_angle_value: {}
 rendering:
   shared:
-    graph_cells_min: 6
-    graph_cells_max: 20
-    line_width: 4
-    line_width_min: 2
-    line_width_max: 5
-    label_offset_px: 14
-    label_font_size_min: 14
-    label_font_size_max: 32
-    label_stroke_width: 1
-    label_stroke_width_min: 1
-    label_stroke_width_max: 1
     single_object_scene_rotation:
       enabled: true
       probability: 0.5
@@ -109,127 +25,12 @@ rendering:
       line_width: 3
       label_font_size: 22
       small_label_font_size: 18
-    source_geometry_measurement_perimeter:
-      graph_cells_max: 24
 prompt:
   shared:
-    bundle_id: geometry_measurement_v0
-    scene_key: measurement_single_object
-    task_key: measurement_query
-    object_description_segment: a labeled line segment
-    object_description_polygon: a polygon
-    object_description_ellipse: an ellipse
-    object_description_circle: a circle
-    annotation_hint_point_map: set "annotation" to a JSON object mapping each required
-      label to one pixel point [x,y]
-    annotation_hint_segment: provide exactly two labels for the measured segment endpoints
-    annotation_hint_polygon_side: provide exactly two labels for the measured polygon
-      side endpoints
-    annotation_hint_circle_center: provide exactly one label for the circle center
-      point
-    annotation_hint_ellipse_axis: provide exactly two labels for the measured ellipse-axis
-      endpoints
-    answer_hint_integer: set "answer" to the measurement value as an integer
-    answer_hint_pi: set "answer" to the measurement value in the form kπ (for example
-      12π)
-    json_example_integer: '{"annotation":{"A":[120,180],"B":[260,180]},"answer":4}'
-    json_example_pi: '{"annotation":{"A":[160,220],"B":[280,220]},"answer":"6π"}'
-    json_example_answer_only_integer: '{"answer":8}'
-    json_example_answer_only_pi: '{"answer":"12π"}'
+    bundle_id: geometry_circle_polygon_composite_v1
+    scene_key: circle_polygon_composite_scene
   task_overrides:
-    source_geometry_measurement_angle:
-      bundle_id: geometry_angle_measure_v0
-      task_key: measurement_angle_value
-      annotation_hint: 'set "annotation" to an array of exactly three pixel points
-        [x,y] for the queried angle: the vertex and the two ray endpoints'
-      answer_hint: set "answer" to the angle value rounded to the nearest integer
-      json_example: '{"annotation":[[180,120],[180,240],[300,240]],"answer":90}'
-      json_example_answer_only: '{"answer":45}'
-    source_geometry_measurement_area:
-      question_text_polygon: What is the area of the polygon in square units?
-      question_text_ellipse: What is the area of the ellipse in square units? Express
-        the answer in the form kπ.
-      annotation_hint_polygon: set "annotation" to an array of pixel points [x,y]
-        for all polygon vertices
-      annotation_hint_ellipse: set "annotation" to an array containing one pixel point
-        [x,y] for the ellipse center
-      json_example_triangle: '{"annotation":[[120,220],[260,220],[120,340]],"answer":6}'
-      json_example_quadrilateral: '{"annotation":[[120,180],[280,180],[280,260],[120,260]],"answer":8}'
-      json_example_ellipse: '{"annotation":[[220,220]],"answer":"6π"}'
-      json_example_integer: '{"annotation":[[120,220],[260,220],[120,340]],"answer":6}'
-      json_example_pi: '{"annotation":[[220,220]],"answer":"6π"}'
-    source_geometry_measurement_perimeter:
-      question_text_polygon: What is the perimeter of the polygon in graph units?
-      question_text_circle: What is the circumference of the circle in graph units?
-        Express the answer in the form kπ.
-      annotation_hint_polygon: set "annotation" to an array of pixel points [x,y]
-        for all polygon vertices
-      annotation_hint_circle: set "annotation" to an array containing one pixel point
-        [x,y] for the circle center
-      json_example_triangle: '{"annotation":[[120,220],[260,220],[120,340]],"answer":12}'
-      json_example_quadrilateral: '{"annotation":[[120,180],[280,180],[280,260],[120,260]],"answer":12}'
-      json_example_circle: '{"annotation":[[220,220]],"answer":"8π"}'
-      json_example_integer: '{"annotation":[[120,220],[260,220],[120,340]],"answer":12}'
-      json_example_pi: '{"annotation":[[220,220]],"answer":"8π"}'
-    source_geometry_measurement_length:
-      question_template_segment: What is the length of segment {label_a}{label_b}
-        in graph units?
-      question_template_polygon_side: What is the length of side {label_a}{label_b}
-        in graph units?
-      question_text_circle_radius: What is the radius of the circle in graph units?
-      question_text_circle_diameter: What is the diameter of the circle in graph units?
-      question_text_ellipse_major_axis: What is the length of the major axis of the
-        ellipse in graph units?
-      question_text_ellipse_minor_axis: What is the length of the minor axis of the
-        ellipse in graph units?
-      annotation_hint_segment: set "annotation" to an array of exactly two pixel points
-        [x,y] for the measured segment endpoints
-      annotation_hint_polygon_side: set "annotation" to an array of exactly two pixel
-        points [x,y] for the measured polygon-side endpoints
-      annotation_hint_circle_center: set "annotation" to an array containing exactly
-        one pixel point [x,y] for the circle center
-      annotation_hint_ellipse_axis: set "annotation" to an array of exactly two pixel
-        points [x,y] for the measured ellipse-axis endpoints
-      json_example_segment_integer: '{"annotation":[[120,180],[280,180]],"answer":5}'
-      json_example_polygon_side_integer: '{"annotation":[[140,180],[260,300]],"answer":5}'
-      json_example_circle_radius_integer: '{"annotation":[[220,220]],"answer":4}'
-      json_example_circle_diameter_integer: '{"annotation":[[220,220]],"answer":8}'
-      json_example_ellipse_major_axis_integer: '{"annotation":[[140,220],[300,220]],"answer":8}'
-      json_example_ellipse_minor_axis_integer: '{"annotation":[[220,160],[220,280]],"answer":6}'
-      json_example_integer: '{"annotation":[[120,180],[280,180]],"answer":5}'
-    source_geometry_measurement_slope:
-      object_description: a straight line
-      question_text: What is the slope of the line?
-      annotation_hint: set "annotation" to an array containing one pixel point [x,y]
-        where the line crosses the x-axis
-      answer_hint: set "answer" to the slope value rounded to one decimal place
-      json_example: '{"annotation":[[220,300]],"answer":-1.5}'
-      json_example_answer_only: '{"answer":-1.5}'
     task_geometry__circle_polygon_composite__tangential_quadrilateral_side_sum_value:
-      bundle_id: geometry_circle_polygon_composite_v0
-      scene_key: circle_polygon_composite_scene
-      task_key: tangential_quadrilateral_side_sum_query
-      object_description: a convex quadrilateral whose four sides are tangent to an
-        incircle, with labeled vertices, tangency points, and two visible side-length
-        labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these keys:
-        "vertex_A", "vertex_B", "vertex_C", "vertex_D", "tangent_AB", "tangent_BC",
-        "tangent_CD", "tangent_DA", and "incircle_center"; each value must be the
-        pixel point [x,y] at that visible vertex, tangency point, or circle center'
-      answer_hint_integer: set "answer" to the requested opposite-side sum as an integer
-      json_example: '{"annotation":{"vertex_A":[180,360],"vertex_B":[350,140],"vertex_C":[560,220],"vertex_D":[500,430],"tangent_AB":[280,240],"tangent_BC":[440,175],"tangent_CD":[535,325],"tangent_DA":[330,410],"incircle_center":[390,285]},"answer":26}'
-      json_example_answer_only: '{"answer":26}'
+      task_key: tangential_quadrilateral_side_sum_value_query
     task_geometry__circle_polygon_composite__square_circle_tangent_angle_value:
-      bundle_id: geometry_circle_polygon_composite_v0
-      scene_key: circle_polygon_composite_scene
-      task_key: square_circle_tangent_angle_query
-      object_description: a square or rectangle, a circle or semicircle, a tangent
-        line, radius to T, one known angle, and one target angle marked ?
-      annotation_hint: 'set "annotation" to a JSON object with exactly these keys:
-        "shape_corner_A", "shape_corner_B", "shape_corner_C", "shape_corner_D", "circle_center",
-        "tangent_point", "known_angle_vertex", "known_angle_reference_point", "target_angle_vertex",
-        and "target_reference_point"; each value must be the pixel point [x,y] at
-        the named corner, construction point, or angle point'
-      answer_hint_integer: set "answer" to the target angle in degrees as an integer
-      json_example: '{"annotation":{"shape_corner_A":[180,120],"shape_corner_B":[540,120],"shape_corner_C":[540,480],"shape_corner_D":[180,480],"circle_center":[360,300],"tangent_point":[250,160],"known_angle_vertex":[300,120],"known_angle_reference_point":[390,120],"target_angle_vertex":[360,300],"target_reference_point":[360,130]},"answer":45}'
-      json_example_answer_only: '{"answer":45}'
+      task_key: square_circle_tangent_angle_value_query

@@ -3,17 +3,16 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_polygon_composite`
-3. Scene id: `circle_polygon_composite`
-4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
-5. Query ids: `square_incircle_tangent_angle`, `square_semicircle_tangent_angle`
-6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+3. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+4. Query ids: `square_incircle_tangent_angle`, `square_semicircle_tangent_angle`
+5. Answer schema: `integer_value`
+6. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `solve_formula(square_or_semicircle_tangent_construction, unknown_role=target_angle, formula_schema=tangent_radius_perpendicular_angle_transfer); scene=circle_polygon_composite; scope=square_circle_tangent_angle_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_circle_polygon_composite_v0`.
+- Prompt text is loaded from `geometry_circle_polygon_composite_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation

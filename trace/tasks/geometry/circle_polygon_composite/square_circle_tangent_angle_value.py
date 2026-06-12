@@ -2,33 +2,26 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_query_spec,
-    build_prompt_trace_artifacts,
-    render_scene_prompt_variants,
-)
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
-from trace.tasks.geometry.shared.vector2d import point_to_list
 
-from .shared.rendering import (
-    SCENE_ID,
-    RenderedAngleScene,
-    make_angle_prompt_examples,
-    make_render_context,
-    render_angle_scene,
-    resolve_angle_problem,
-)
+from ._lifecycle import projected_keyed_point_payload, render_spec_payload, render_with_layout_retry
+from .shared.annotations import keyed_point_annotation
+from .shared.construction import select_angle_degrees, select_side_sign, validate_construction_kind
+from .shared.prompts import tangent_angle_prompt_artifacts
+from .shared.rendering import create_circle_polygon_render_context, render_angle_scene
+from .shared.state import ANGLE_ANNOTATION_KEYS, SCENE_ID, AngleDiagramSpec, RenderedAngleScene
 
 
 TASK_ID = "task_geometry__circle_polygon_composite__square_circle_tangent_angle_value"
@@ -47,46 +40,14 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generatio
 )
 
 
-def _prompt_artifacts(*, selected_query: str, instance_seed: int) -> tuple[Dict[str, Any], Any]:
-    defaults = required_group_defaults(
-        _PROMPT_DEFAULTS,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
-            "answer_hint_integer",
-        ),
-        context=f"prompt defaults for {TASK_ID}",
-    )
-    json_example, json_example_answer_only = make_angle_prompt_examples()
-    prompt_selection = render_scene_prompt_variants(
-        domain="geometry",
-        scene_id=SCENE_ID,
-        bundle_id=str(defaults["bundle_id"]),
-        scene_key=str(defaults["scene_key"]),
-        task_key=str(defaults["task_key"]),
-        query_key=str(selected_query),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(defaults["object_description"]),
-            "json_output_contract": str(defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(defaults["annotation_hint"]),
-            "answer_hint": str(defaults["answer_hint_integer"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
-        instance_seed=int(instance_seed),
-    )
-    return dict(defaults), build_prompt_trace_artifacts(prompt_selection)
+@dataclass(frozen=True)
+class _AngleTransferProblem:
+    """Task-owned answer, prompt, and trace facts for one tangent-angle instance."""
 
-
-def _annotation_value(rendered: RenderedAngleScene) -> Dict[str, list[float]]:
-    return {str(key): point_to_list(value) for key, value in rendered.annotation_keyed_points.items()}
+    diagram_spec: AngleDiagramSpec
+    answer: int
+    angle_probabilities: dict[str, float]
+    side_probabilities: dict[str, float]
 
 
 @register_task
@@ -95,11 +56,162 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
+    @staticmethod
+    def _prepare_tangent_angle_problem(
+        *,
+        instance_seed: int,
+        params: Mapping[str, Any],
+        selected_query: str,
+    ) -> _AngleTransferProblem:
+        """Resolve the query branch to a construction kind and integer angle answer."""
+
+        construction_kind = validate_construction_kind(_CONSTRUCTION_BY_QUERY[str(selected_query)])
+        angle_degrees, angle_probabilities = select_angle_degrees(
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=f"{TASK_ID}.{selected_query}.target_angle",
+        )
+        side_sign, side_probabilities = select_side_sign(
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=f"{TASK_ID}.{selected_query}.side_sign",
+        )
+        return _AngleTransferProblem(
+            diagram_spec=AngleDiagramSpec(
+                construction_kind=str(construction_kind),
+                angle_degrees=int(angle_degrees),
+                side_sign=int(side_sign),
+            ),
+            answer=int(angle_degrees),
+            angle_probabilities=dict(angle_probabilities),
+            side_probabilities=dict(side_probabilities),
+        )
+
+    @staticmethod
+    def _draw_tangent_angle_diagram_with_retry(
+        *,
+        instance_seed: int,
+        task_params: Mapping[str, Any],
+        selected_query: str,
+        problem: _AngleTransferProblem,
+        max_attempts: int,
+    ) -> tuple[Any, RenderedAngleScene]:
+        """Retry only stochastic layout while preserving the selected angle answer."""
+
+        return render_with_layout_retry(
+            instance_seed=int(instance_seed),
+            task_params=task_params,
+            max_attempts=int(max_attempts),
+            build_context=lambda attempt_seed, attempt_params: create_circle_polygon_render_context(
+                instance_seed=int(attempt_seed),
+                params=attempt_params,
+                rendering_defaults=_RENDER_DEFAULTS,
+                fill_namespace=f"{TASK_ID}.{selected_query}.fill_palette",
+            ),
+            draw_scene=lambda render_context, attempt_seed: render_angle_scene(
+                render_context,
+                problem.diagram_spec,
+                instance_seed=int(attempt_seed),
+                render_namespace=f"{TASK_ID}.{selected_query}.render.scene",
+            ),
+        )
+
+    @staticmethod
+    def _serialize_tangent_angle_trace_payload(
+        *,
+        rendered: RenderedAngleScene,
+        image_size: tuple[int, int],
+        render_context: Any,
+        noise_meta: Mapping[str, Any],
+        selected_query: str,
+        query_probabilities: Mapping[str, float],
+        prompt_artifacts: Any,
+        problem: _AngleTransferProblem,
+        annotation_value: Mapping[str, list[float]],
+    ) -> dict[str, Any]:
+        """Serialize task-owned tangent-angle facts into trace metadata."""
+
+        spec = problem.diagram_spec
+        query = str(selected_query)
+        construction = str(spec.construction_kind)
+        answer_degrees = int(problem.answer)
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=query,
+            params={
+                "query_id": query,
+                "query_id_probabilities": dict(query_probabilities),
+                "answer_support_probabilities": dict(problem.angle_probabilities),
+                "side_probabilities": dict(problem.side_probabilities),
+                "construction_kind": construction,
+            },
+        )
+        query_spec["scene_id"] = SCENE_ID
+        query_spec["task_id"] = TASK_ID
+
+        scene_ir = {
+            "domain": "geometry",
+            "scene_id": SCENE_ID,
+            "task_id": TASK_ID,
+            "query_id": query,
+            "entities": {
+                "shape_corners": dict(rendered.render_map["shape_corners"]),
+                "circle_center": list(rendered.render_map["circle_center"]),
+                "tangent_point": list(rendered.render_map["tangent_point"]),
+            },
+            "relations": {
+                "type": "square_circle_tangent_angle_transfer",
+                "construction_kind": construction,
+                "known_angle_degrees": answer_degrees,
+                "target_angle_degrees": answer_degrees,
+            },
+        }
+        render_spec = render_spec_payload(
+            scene_id=SCENE_ID,
+            task_id=TASK_ID,
+            query_id=query,
+            image_size=image_size,
+            render_context=render_context,
+            noise_meta=noise_meta,
+            prompt_artifacts=prompt_artifacts,
+        )
+        execution_trace = {
+            "task_id": TASK_ID,
+            "scene_id": SCENE_ID,
+            "query_id": query,
+            "answer": answer_degrees,
+            "known_angle_degrees": answer_degrees,
+            "target_angle_degrees": answer_degrees,
+            "side_sign": int(spec.side_sign),
+            "construction_kind": construction,
+            "annotation_roles": list(rendered.annotation_roles),
+        }
+        payload: dict[str, Any] = {
+            "scene_ir": scene_ir,
+            "query_spec": query_spec,
+            "render_spec": render_spec,
+            "render_map": dict(rendered.render_map),
+            "execution_trace": execution_trace,
+        }
+        payload["witness_symbolic"] = dict(
+            task_id=TASK_ID,
+            scene_id=SCENE_ID,
+            query_id=query,
+            formula_family="tangent_radius_perpendicular_angle_transfer",
+            construction_kind=construction,
+            known_angle_degrees=answer_degrees,
+            target_angle_degrees=answer_degrees,
+            answer_value=answer_degrees,
+        )
+        payload["projected_annotation"] = projected_keyed_point_payload(annotation_value)
+        return payload
+
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Select a tangent-angle query and bind answer/annotation in this public task."""
+
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -107,130 +219,44 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
             default_query_id=QUERY_ID_INCIRCLE,
             task_id=TASK_ID,
         )
-        construction_kind = _CONSTRUCTION_BY_QUERY[str(selected_query)]
-        problem = resolve_angle_problem(
+        problem = self._prepare_tangent_angle_problem(
             instance_seed=int(instance_seed),
             params=task_params,
-            construction_kind=str(construction_kind),
-            angle_namespace=f"{TASK_ID}.{selected_query}.target_angle",
-            side_namespace=f"{TASK_ID}.{selected_query}.side_sign",
+            selected_query=str(selected_query),
         )
-
-        rendered: RenderedAngleScene | None = None
-        ctx = None
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_params = dict(task_params)
-            attempt_params["_render_attempt"] = int(attempt)
-            try:
-                ctx = make_render_context(
-                    instance_seed=int(instance_seed) + int(attempt),
-                    params=attempt_params,
-                    rendering_defaults=_RENDER_DEFAULTS,
-                    fill_namespace=f"{TASK_ID}.{selected_query}.fill_palette",
-                )
-                rendered = render_angle_scene(
-                    ctx,
-                    problem,
-                    instance_seed=int(instance_seed) + int(attempt),
-                    render_namespace=f"{TASK_ID}.{selected_query}.render.scene",
-                )
-                break
-            except Exception as exc:
-                last_error = exc
-                continue
-        if rendered is None or ctx is None:
-            raise RuntimeError(f"failed to generate {TASK_ID}") from last_error
-
+        render_context, rendered = self._draw_tangent_angle_diagram_with_retry(
+            instance_seed=int(instance_seed),
+            task_params=task_params,
+            selected_query=str(selected_query),
+            problem=problem,
+            max_attempts=int(max_attempts),
+        )
         image, noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
             params=task_params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        prompt_defaults, prompt_artifacts = _prompt_artifacts(
-            selected_query=str(selected_query),
+        _prompt_defaults, prompt_artifacts = tangent_angle_prompt_artifacts(
+            prompt_defaults=_PROMPT_DEFAULTS,
+            prompt_query_key=str(selected_query),
+            answer_value=int(problem.answer),
+            annotation_keys=ANGLE_ANNOTATION_KEYS,
             instance_seed=int(instance_seed),
         )
-        annotation_value = _annotation_value(rendered)
-        query_spec = build_prompt_query_spec(
+        annotation_value = keyed_point_annotation(rendered)
+        trace_payload = self._serialize_tangent_angle_trace_payload(
+            rendered=rendered,
+            image_size=image.size,
+            render_context=render_context,
+            noise_meta=dict(noise_meta),
+            selected_query=str(selected_query),
+            query_probabilities=query_probabilities,
             prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query),
-            params={
-                "query_id": str(selected_query),
-                "query_id_probabilities": dict(query_probabilities),
-                "answer_support_probabilities": dict(problem.angle_probabilities),
-                "side_probabilities": dict(problem.side_probabilities),
-                "construction_kind": str(problem.construction_kind),
-            },
+            problem=problem,
+            annotation_value=annotation_value,
         )
-        query_spec["scene_id"] = SCENE_ID
-        query_spec["task_id"] = TASK_ID
-        trace_payload: Dict[str, Any] = {
-            "scene_ir": {
-                "domain": self.domain,
-                "scene_id": SCENE_ID,
-                "task_id": TASK_ID,
-                "query_id": str(selected_query),
-                "entities": {
-                    "shape_corners": dict(rendered.render_map["shape_corners"]),
-                    "circle_center": list(rendered.render_map["circle_center"]),
-                    "tangent_point": list(rendered.render_map["tangent_point"]),
-                },
-                "relations": {
-                    "type": "square_circle_tangent_angle_transfer",
-                    "construction_kind": str(problem.construction_kind),
-                    "known_angle_degrees": int(problem.answer),
-                    "target_angle_degrees": int(problem.answer),
-                },
-            },
-            "query_spec": query_spec,
-            "render_spec": {
-                "task_id": TASK_ID,
-                "scene_id": SCENE_ID,
-                "query_id": str(selected_query),
-                "canvas": {"width": int(ctx.width), "height": int(ctx.height)},
-                "single_object_scene_rotation": ctx.scene_transform.metadata(),
-                "style": {
-                    "technical_diagram": dict(ctx.diagram_style_meta),
-                    "background": dict(ctx.background_meta),
-                    "post_image_noise": dict(noise_meta),
-                },
-                "prompt": {
-                    "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                    "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                    "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                },
-            },
-            "render_map": dict(rendered.render_map),
-            "execution_trace": {
-                "task_id": TASK_ID,
-                "scene_id": SCENE_ID,
-                "query_id": str(selected_query),
-                "answer": int(problem.answer),
-                "known_angle_degrees": int(problem.answer),
-                "target_angle_degrees": int(problem.answer),
-                "side_sign": int(problem.side_sign),
-                "construction_kind": str(problem.construction_kind),
-                "annotation_roles": list(rendered.annotation_roles),
-            },
-            "witness_symbolic": {
-                "task_id": TASK_ID,
-                "scene_id": SCENE_ID,
-                "query_id": str(selected_query),
-                "formula_family": "tangent_radius_perpendicular_angle_transfer",
-                "construction_kind": str(problem.construction_kind),
-                "known_angle_degrees": int(problem.answer),
-                "target_angle_degrees": int(problem.answer),
-                "answer_value": int(problem.answer),
-            },
-            "projected_annotation": {
-                "type": "keyed_point_map",
-                "keyed_point_map": dict(annotation_value),
-                "pixel_keyed_point_map": dict(annotation_value),
-            },
-        }
-        return TaskOutput(
+        output_fields = dict(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(problem.answer)),
             annotation_gt=TypedValue(type="keyed_point_map", value=dict(annotation_value)),
@@ -242,6 +268,7 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
             query_id=str(selected_query),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
+        return TaskOutput(**output_fields)
 
 
 __all__ = [

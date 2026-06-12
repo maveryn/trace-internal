@@ -6,9 +6,9 @@ from pathlib import Path
 import json
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.mancala_pit_board.board_tasks import (
+from trace.tasks.games.mancala_pit_board.sowing_landing_pit_label import (
     LABELS,
     POST_SOW_COUNT_TASK_ID,
     SOWING_LANDING_TASK_ID,
@@ -21,7 +21,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_games_mancala_pit_board_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "mancala_pit_board")
+    cfg = get_scene_defaults("games", "mancala_pit_board")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["scene_variant_weights"].keys()) == {"low_seed", "mixed_seed", "busy_seed"}
@@ -69,7 +69,7 @@ def test_games_mancala_pit_board_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "mancala_pit_board"
-        assert taxonomy.source_task_group == "mancala_pit_board"
+        assert taxonomy.source_scene_id == "mancala_pit_board"
 
 
 def test_games_mancala_pit_board_landing_answer_matches_trace() -> None:

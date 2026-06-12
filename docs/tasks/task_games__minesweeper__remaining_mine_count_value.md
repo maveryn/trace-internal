@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `minesweeper`
-3. Scene id: `minesweeper`
-4. Public task id: `task_games__minesweeper__remaining_mine_count_value`
-5. Supported `query_id` values: `remaining_mine_count`
-6. Answer schema: `integer_value`
-7. Annotation schema: `bbox_set`
-8. Program schema: `clue_value(marked_clue)-adjacent_flag_count(marked_clue); scene=minesweeper; scope=marked_clue_remaining_mine_count`
+2. Scene id: `minesweeper`
+3. Public task id: `task_games__minesweeper__remaining_mine_count_value`
+4. Supported `query_id` values: `remaining_mine_count`
+5. Answer schema: `integer_value`
+6. Annotation schema: `bbox_set`
+7. Program schema: `clue_value(marked_clue)-adjacent_flag_count(marked_clue); scene=minesweeper; scope=marked_clue_remaining_mine_count`
 
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.

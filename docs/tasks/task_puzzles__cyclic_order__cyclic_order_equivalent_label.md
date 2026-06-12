@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `puzzles`
-2. Task group: `topology`
+2. Scene: `topology`
 3. Scene id: `cyclic_order`
 4. Task id: `task_puzzles__cyclic_order__cyclic_order_equivalent_label`
 5. Objective: identify the unique option loop with the same cyclic token order as a reference loop when rotation and smooth deformation are allowed but reflection is not.

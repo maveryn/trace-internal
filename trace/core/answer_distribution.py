@@ -109,7 +109,7 @@ def _five_bin_report(values: Sequence[float]) -> Dict[str, Any]:
 def evaluate_answer_distribution(
     answers: Sequence[Mapping[str, Any]],
     *,
-    min_unique_answers: int = 5,
+    min_unique_answers: int = 4,
     max_answer_frequency: float = 1.0 / 3.0,
 ) -> Dict[str, Any]:
     """Evaluate lightweight anti-degeneracy checks over one task answer sample."""

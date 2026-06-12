@@ -1,2 +1,1 @@
-"""Bingo task-group package for the games domain."""
-
+"""Bingo scene package for the games domain."""

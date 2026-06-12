@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `spring`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/spring_extension.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__spring__spring_missing_value` -> `task_physics__spring__spring_missing_value`

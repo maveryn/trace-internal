@@ -27,7 +27,6 @@ def resolve_graph_information_style(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     scene_id: str,
-    task_group: str,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
 ) -> tuple[GraphInformationStyle, dict[str, Any]]:
@@ -39,7 +38,7 @@ def resolve_graph_information_style(
         default_treatments = NODE_LINK_INFORMATION_SCENE_TREATMENTS
     return resolve_information_scene_style(
         instance_seed=int(instance_seed),
-        namespace=f"graph.{str(task_group)}.{str(scene_id)}.information_scene_style",
+        namespace=f"graph.{str(scene_id)}.information_scene_style",
         treatments=resolved_params.get("information_scene_treatments", default_treatments),
         treatment_weights=resolved_params.get("information_scene_treatment_weights", {}),
         palettes=resolved_params.get("information_scene_palettes"),

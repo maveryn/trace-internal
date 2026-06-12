@@ -7,28 +7,30 @@ generation:
     value_step: 5
     answer_count_min: 1
     answer_count_max: 5
-    threshold_values: [30, 40, 50, 60, 70]
+    threshold_values:
+    - 30
+    - 40
+    - 50
+    - 60
+    - 70
     range_pairs:
-      - [20, 50]
-      - [25, 55]
-      - [30, 60]
-      - [35, 65]
-      - [40, 70]
-      - [45, 75]
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
-    query_id_weights:
-      at_least_threshold_count: 1.0
-      below_threshold_count: 1.0
-      within_range_count: 1.0
-      remaining_at_least_threshold_count: 1.0
-      highest_remaining_label: 1.0
-      lowest_remaining_label: 1.0
+    - - 20
+      - 50
+    - - 25
+      - 55
+    - - 30
+      - 60
+    - - 35
+      - 65
+    - - 40
+      - 70
+    - - 45
+      - 75
     scene_variant_weights:
       full_progress_rings: 1.0
       semicircle_gauges: 1.0
       segmented_radial_bars: 1.0
-
+    balanced_scene_variant_sampling: true
 rendering:
   shared:
     canvas_width: 1320
@@ -46,92 +48,162 @@ rendering:
     segment_width_px: 18
     tick_length_px: 8
     title_options:
-      - Progress Overview
-      - Completion Summary
-      - Target Progress Panel
-      - Status Gauge Report
-      - Milestone Progress
+    - Progress Overview
+    - Completion Summary
+    - Target Progress Panel
+    - Status Gauge Report
+    - Milestone Progress
     progress_palette_rgb:
-      - [37, 99, 235]
-      - [220, 84, 45]
-      - [16, 132, 96]
-      - [139, 92, 246]
-      - [202, 138, 4]
-      - [14, 116, 144]
-      - [190, 58, 90]
-      - [86, 105, 38]
-      - [91, 76, 181]
-      - [181, 94, 36]
+    - - 37
+      - 99
+      - 235
+    - - 220
+      - 84
+      - 45
+    - - 16
+      - 132
+      - 96
+    - - 139
+      - 92
+      - 246
+    - - 202
+      - 138
+      - 4
+    - - 14
+      - 116
+      - 144
+    - - 190
+      - 58
+      - 90
+    - - 86
+      - 105
+      - 38
+    - - 91
+      - 76
+      - 181
+    - - 181
+      - 94
+      - 36
     card_fill_rgb_options:
-      - [255, 255, 255]
-      - [252, 254, 255]
-      - [255, 253, 248]
-      - [249, 252, 249]
-      - [252, 250, 255]
+    - - 255
+      - 255
+      - 255
+    - - 252
+      - 254
+      - 255
+    - - 255
+      - 253
+      - 248
+    - - 249
+      - 252
+      - 249
+    - - 252
+      - 250
+      - 255
     card_alt_fill_rgb_options:
-      - [248, 250, 252]
-      - [245, 249, 251]
-      - [251, 248, 242]
-      - [245, 250, 247]
-      - [249, 247, 253]
+    - - 248
+      - 250
+      - 252
+    - - 245
+      - 249
+      - 251
+    - - 251
+      - 248
+      - 242
+    - - 245
+      - 250
+      - 247
+    - - 249
+      - 247
+      - 253
     card_outline_rgb_options:
-      - [194, 202, 214]
-      - [187, 201, 214]
-      - [206, 198, 187]
-      - [190, 207, 198]
-      - [201, 194, 216]
+    - - 194
+      - 202
+      - 214
+    - - 187
+      - 201
+      - 214
+    - - 206
+      - 198
+      - 187
+    - - 190
+      - 207
+      - 198
+    - - 201
+      - 194
+      - 216
     track_rgb_options:
-      - [225, 230, 238]
-      - [232, 227, 219]
-      - [222, 233, 230]
-      - [229, 226, 238]
+    - - 225
+      - 230
+      - 238
+    - - 232
+      - 227
+      - 219
+    - - 222
+      - 233
+      - 230
+    - - 229
+      - 226
+      - 238
     tick_rgb_options:
-      - [86, 95, 108]
-      - [96, 91, 82]
-      - [74, 100, 94]
-      - [96, 88, 112]
+    - - 86
+      - 95
+      - 108
+    - - 96
+      - 91
+      - 82
+    - - 74
+      - 100
+      - 94
+    - - 96
+      - 88
+      - 112
     needle_rgb_options:
-      - [44, 52, 64]
-      - [72, 57, 48]
-      - [45, 72, 66]
-      - [63, 55, 82]
+    - - 44
+      - 52
+      - 64
+    - - 72
+      - 57
+      - 48
+    - - 45
+      - 72
+      - 66
+    - - 63
+      - 55
+      - 82
     text_rgb_options:
-      - [36, 42, 52]
-      - [42, 47, 58]
-      - [48, 44, 38]
-      - [36, 48, 46]
+    - - 36
+      - 42
+      - 52
+    - - 42
+      - 47
+      - 58
+    - - 48
+      - 44
+      - 38
+    - - 36
+      - 48
+      - 46
     muted_text_rgb_options:
-      - [86, 95, 108]
-      - [82, 98, 110]
-      - [100, 91, 82]
-      - [84, 92, 108]
+    - - 86
+      - 95
+      - 108
+    - - 82
+      - 98
+      - 110
+    - - 100
+      - 91
+      - 82
+    - - 84
+      - 92
+      - 108
     text_stroke_rgb_options:
-      - [255, 255, 255]
-      - [252, 254, 255]
-
+    - - 255
+      - 255
+      - 255
+    - - 252
+      - 254
+      - 255
 prompt:
   shared:
-    bundle_id: charts_radial_progress_v0
-    scene_key: radial_progress_scene
-    task_key: radial_progress_condition_count_query
-    task_key_remaining_extremum: radial_progress_remaining_extremum_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_full_progress_rings: labeled circular progress rings on a 0 to 100 percent scale
-    object_description_semicircle_gauges: labeled semicircular progress gauges on a 0 to 100 percent scale
-    object_description_segmented_radial_bars: labeled segmented radial progress bars on a 0 to 100 percent scale
-    annotation_hint: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the progress widget or widgets counted for the answer
-    answer_hint: set "answer" to the requested integer count
-    annotation_hint_label: set "annotation" to an array containing one [x0, y0, x1, y1] bounding box around the progress widget for the answer label
-    answer_hint_label: set "answer" to the exact visible label as a string
-    json_example_condition_count: '{"annotation":[[96,150,310,405],[340,150,554,405]],"answer":2}'
-    json_example_answer_only_condition_count: '{"answer":2}'
-    json_example_remaining_extremum_label: '{"annotation":[[96,150,310,405]],"answer":"AB"}'
-    json_example_answer_only_remaining_extremum_label: '{"answer":"AB"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.36
-      reasoning_load: 0.44
-      scene_variant_load: 0.20
+    bundle_id: charts_radial_progress_v1

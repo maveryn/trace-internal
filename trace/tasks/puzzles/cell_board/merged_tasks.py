@@ -95,7 +95,7 @@ def _rewrite_fixed_tile_output(
     query_id: str,
     source_domain: str,
     source_task_id: str,
-    source_task_group: str,
+    source_scene_id: str,
     query_id_probabilities: Mapping[str, float] | None = None,
 ) -> TaskOutput:
     """Rewrite an internal Tile output to a narrow public task contract."""
@@ -120,11 +120,11 @@ def _rewrite_fixed_tile_output(
         extra_fields={
             "public_task_id": str(public_task_id),
             "source_task_id": str(source_task_id),
-            "source_task_group": str(source_task_group),
+            "source_scene_id": str(source_scene_id),
         },
         prompt_metadata={
             "prompt_domain": str(source_domain),
-            "prompt_task_group": str(source_task_group),
+            "prompt_scene_id": str(source_scene_id),
         },
     )
     return replace(
@@ -137,7 +137,7 @@ class _CellBoardQueryTask:
     """Shared implementation for public cell-board puzzle query tasks."""
 
     domain = "puzzles"
-    task_group = "cell_board"
+    scene_id = "cell_board"
     query_specs: Sequence[_TileQuerySpec]
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -162,7 +162,7 @@ class _CellBoardQueryTask:
             query_id=str(query_id),
             source_domain=str(getattr(source_task, "domain")),
             source_task_id=str(getattr(source_task, "task_id")),
-            source_task_group=str(getattr(source_task, "task_group")),
+            source_scene_id=str(getattr(source_task, "scene_id")),
             query_id_probabilities=query_probabilities,
         )
 

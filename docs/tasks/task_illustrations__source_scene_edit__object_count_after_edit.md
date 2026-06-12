@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `source_scene_edit`
-- Implementation task group: `counterfactual`
-- Implementation source: `trace/tasks/illustrations/counterfactual/object_count_after_edit.py`
+- Implementation scene package: `source_scene_edit`
+- Implementation source: `trace/tasks/illustrations/source_scene_edit/object_count_after_edit.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__source_scene_edit__object_count_after_edit` -> `task_illustrations__source_scene_edit__object_count_after_edit`
 - Status: `pending_v0_manual_review_and_solve_rate`

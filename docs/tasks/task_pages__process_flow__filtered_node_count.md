@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `pages`
 2. Scene: `process_flow`
-3. Task group: `process_flow`
+3. Scene: `process_flow`
 4. Task id: `task_pages__process_flow__filtered_node_count`
 5. Objective: count process-flow steps selected by one visible diagram-level include/exclude filter.
 

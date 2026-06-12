@@ -9,7 +9,8 @@ taxonomy-audit package.
 - Review all active domains in reverse alphabetical order:
   `three_d`, `puzzles`, `physics`, `pages`, `misc`, `illustrations`, `icons`,
   `graph`, `geometry`, `games`, `charts`.
-- Use `docs/core/TRACE_TAXONOMY_DESIGN.md` as the taxonomy policy source.
+- Use `docs/core/TAXONOMY.md` and `docs/core/TASK_UNIT_POLICY.md` as the
+  taxonomy policy sources.
 - Use active code, configs, prompts, docs, review artifacts, and open issue
   threads as factual inputs, not as policy authorities.
 - Do not run solve-rate calibration in this pass.
@@ -25,8 +26,8 @@ For each domain:
    - `defer_discussion`: asks a broad task-boundary policy question, requests
      discussion, or affects multiple scenes/domains in a way that needs human
      confirmation before changing task boundaries.
-   - `no_change_needed`: already consistent with
-     `TRACE_TAXONOMY_DESIGN.md`; add a repair note explaining why.
+   - `no_change_needed`: already consistent with the core taxonomy and
+     task-unit policy; add a repair note explaining why.
 3. Inspect the domain rows in:
    - `task_query_analysis.csv`
    - `proposed_task_summary.csv`

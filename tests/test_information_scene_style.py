@@ -104,7 +104,7 @@ def test_information_scene_request_records_policy_and_can_enable_dark() -> None:
     request = build_visual_style_request(
         domain="charts",
         scene_id="histogram",
-        task_group="distribution",
+        routing_key="distribution",
         instance_seed=42,
         params={},
         style_family="information_scene",
@@ -130,7 +130,6 @@ def test_chart_information_style_reads_group_defaults() -> None:
         instance_seed=91,
         params={},
         scene_id="histogram",
-        task_group="distribution",
     )
     assert meta["style_request"]["domain"] == "charts"
     assert meta["style_request"]["allow_dark"] is True

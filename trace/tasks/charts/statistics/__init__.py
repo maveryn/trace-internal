@@ -1,2 +1,0 @@
-"""Chart statistics task group."""
-

@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `record_table`
 4. Task id: `task_pages__record_table__enabled_action_for_type_count`
 5. Objective: Count record-table rows of one visible type whose visible action is enabled.

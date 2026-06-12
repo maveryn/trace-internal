@@ -699,7 +699,7 @@ def load_trace_inventory(path: Path) -> tuple[list[dict[str, Any]], list[dict[st
             "domain": row["domain"],
             "scene_id": row["scene_id"],
             "task_id": row["task_id"],
-            "source_task_group": row.get("source_task_group", ""),
+            "source_scene_id": row.get("source_scene_id", ""),
             "audit_status": row.get("audit_status", ""),
         }
         for row in sorted(tasks, key=lambda item: (item["domain"], item["scene_id"], item["task_id"]))

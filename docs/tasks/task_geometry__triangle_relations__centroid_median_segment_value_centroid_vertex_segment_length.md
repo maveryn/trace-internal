@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `triangle_relations`
 3. Scene id: `triangle_relations`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `centroid_vertex_segment_length`
@@ -13,7 +13,7 @@
 - `summary_statistic(values(visible_triangle_relations_support), statistic_schema=centroid_vertex_segment_length); scene=triangle_relations; scope=centroid_median_segment_value_centroid_vertex_segment_length`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/composite_measurement.py`
+- Config: `configs/domains/geometry/triangle_relations.yaml`
+- Task module: `trace/tasks/geometry/triangle_relations/centroid_median_segment_value_centroid_vertex_segment_length.py`

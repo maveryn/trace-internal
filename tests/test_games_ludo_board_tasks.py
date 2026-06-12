@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.ludo_board.board_tasks import (
+from trace.tasks.games.ludo_board.winning_roll_value import (
     CAPTURE_ROLL_QUERY_ID,
     CAPTURE_ROLL_TASK_ID,
     FLOW_ARROW_CELLS,
@@ -31,7 +31,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_games_ludo_board_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "ludo_board")
+    cfg = get_scene_defaults("games", "ludo_board")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["style_variant_weights"].keys()) == {
@@ -117,7 +117,7 @@ def test_games_ludo_board_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "ludo_board"
-        assert taxonomy.source_task_group == "ludo_board"
+        assert taxonomy.source_scene_id == "ludo_board"
 
 
 def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:

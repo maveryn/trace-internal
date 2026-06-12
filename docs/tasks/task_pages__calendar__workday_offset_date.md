@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `calendar`
-3. Source task group: `calendar`
+3. Source scene: `calendar`
 4. Task id: `task_pages__calendar__workday_offset_date`
 
 ## Contract

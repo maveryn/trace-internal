@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -26,7 +26,6 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.icon_assets import resolve_icon_pool
-from ..shared.complexity import build_icons_relation_occlusion_order_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_overlap_grid_scene import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
 from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
@@ -106,7 +105,7 @@ class _ScenePayload:
 
 _DEFAULTS = _TaskDefaults()
 _REVIEW_TARGET_COUNT_BALANCE_NAMESPACE = "task_icons__overlap_grid__occlusion_order_count:target_count_balance"
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__overlap_grid__occlusion_order_count",
@@ -535,7 +534,7 @@ class IconsRelationOcclusionOrderTask:
 
     task_id = "task_icons__overlap_grid__occlusion_order_count"
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon occlusion-order instance."""
@@ -603,7 +602,7 @@ class IconsRelationOcclusionOrderTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -702,19 +701,6 @@ class IconsRelationOcclusionOrderTask:
             },
             "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
-        complexity = build_icons_relation_occlusion_order_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            object_count=int(scene_payload.object_count),
-            target_count=int(scene_payload.target_count),
-            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
-            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
-            scene_cells=scene_payload.scene_cells,
-            pair_min_color_distance=float(render_params["pair_min_color_distance"]),
-            color_distance_space=str(render_params["color_distance_space"]),
-            overlap_ratio_range=group_default(_RENDER_DEFAULTS, "overlap_ratio_range", list(_DEFAULTS.overlap_ratio_range)),
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -722,7 +708,6 @@ class IconsRelationOcclusionOrderTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=_ORDER_MATCH_VARIANT,
             prompt_variants=dict(prompt_artifacts.prompt_variants),

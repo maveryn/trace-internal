@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.container_volume_transfer import (
+from trace.tasks.geometry.container_volume_transfer.fill_count_value import (
     ANNOTATION_KEYS,
     RESULTING_HEIGHT_ANNOTATION_KEYS,
     TARGET_CAPACITY_ANNOTATION_KEYS,
@@ -26,10 +26,10 @@ from trace.tasks.geometry.measurement.container_volume_transfer import (
     TASK_ID_TARGET_CAPACITY,
     TASK_ID_TRANSFERRED_VOLUME,
     GeometryContainerVolumeTransferFillCountValueTask,
-    GeometryContainerVolumeTransferResultingHeightValueTask,
-    GeometryContainerVolumeTransferTargetCapacityValueTask,
-    GeometryContainerVolumeTransferTransferredVolumeValueTask,
 )
+from trace.tasks.geometry.container_volume_transfer.resulting_height_value import GeometryContainerVolumeTransferResultingHeightValueTask
+from trace.tasks.geometry.container_volume_transfer.target_capacity_value import GeometryContainerVolumeTransferTargetCapacityValueTask
+from trace.tasks.geometry.container_volume_transfer.transferred_volume_value import GeometryContainerVolumeTransferTransferredVolumeValueTask
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_FILL_COUNT, **params):
@@ -51,22 +51,22 @@ def test_container_volume_transfer_fill_count_registered() -> None:
     assert taxonomy is not None
     assert taxonomy.domain == "geometry"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "measurement"
+    assert taxonomy.source_scene_id == "measurement"
     height_taxonomy = lookup_task_taxonomy(TASK_ID_RESULTING_HEIGHT)
     assert height_taxonomy is not None
     assert height_taxonomy.domain == "geometry"
     assert height_taxonomy.scene_id == SCENE_ID
-    assert height_taxonomy.source_task_group == "measurement"
+    assert height_taxonomy.source_scene_id == "measurement"
     capacity_taxonomy = lookup_task_taxonomy(TASK_ID_TARGET_CAPACITY)
     assert capacity_taxonomy is not None
     assert capacity_taxonomy.domain == "geometry"
     assert capacity_taxonomy.scene_id == SCENE_ID
-    assert capacity_taxonomy.source_task_group == "measurement"
+    assert capacity_taxonomy.source_scene_id == "measurement"
     transferred_taxonomy = lookup_task_taxonomy(TASK_ID_TRANSFERRED_VOLUME)
     assert transferred_taxonomy is not None
     assert transferred_taxonomy.domain == "geometry"
     assert transferred_taxonomy.scene_id == SCENE_ID
-    assert transferred_taxonomy.source_task_group == "measurement"
+    assert transferred_taxonomy.source_scene_id == "measurement"
 
 
 def test_cone_to_cylinder_fill_count_formula_and_annotation() -> None:

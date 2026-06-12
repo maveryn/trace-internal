@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -25,13 +25,13 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_fluids_graduated_cylinder_family"
+TASK_NAMESPACE = "physics_fluids_graduated_cylinder"
 SCENE_ID = "graduated_cylinder"
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="fluids", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "fluids")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="fluids", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "fluids")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -160,18 +160,18 @@ def _choose_scale(instance_seed: int) -> _CylinderScale:
         _CylinderScale(100, 20, 5),
         _CylinderScale(120, 20, 10),
     )
-    return options[int(hash64(int(instance_seed), f"{FAMILY_ID}.scale", 0) % len(options))]
+    return options[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.scale", 0) % len(options))]
 
 
 def _choose_volume(instance_seed: int, scale: _CylinderScale, *, min_ml: int = 10, max_margin_ml: int = 10) -> int:
     support = [v for v in range(int(min_ml), int(scale.capacity_ml - max_margin_ml) + 1, int(scale.minor_tick_ml))]
     support = [v for v in support if v % int(scale.major_tick_ml) != 0 or len(support) < 8]
-    return int(support[int(hash64(int(instance_seed), f"{FAMILY_ID}.volume", 0) % len(support))])
+    return int(support[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.volume", 0) % len(support))])
 
 
 class _PhysicsGraduatedCylinderBaseTask:
     domain = "physics"
-    task_group = "fluids"
+    scene_id = "fluids"
     default_dataset_enabled = True
     fixed_query_id: str
 
@@ -185,23 +185,22 @@ class _PhysicsGraduatedCylinderBaseTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
         )
         draw = ImageDraw.Draw(background)
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene")
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
         scale = _choose_scale(int(instance_seed))
         liquid_palette = [(93, 168, 218), (72, 181, 154), (146, 183, 77), (120, 148, 226)]
-        liquid_rgb = liquid_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.liquid", 0) % len(liquid_palette))]
+        liquid_rgb = liquid_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.liquid", 0) % len(liquid_palette))]
         draw.rounded_rectangle((54, 52, canvas_width - 54, canvas_height - 58), radius=18, fill=tuple(diagram_style.panel_fill_rgb), outline=tuple(diagram_style.panel_border_rgb), width=3)
 
         if query_id == "single_cylinder_volume_readout":
@@ -212,7 +211,7 @@ class _PhysicsGraduatedCylinderBaseTask:
                 width=170.0,
                 height=420.0,
                 bottom=570.0 + rng.randint(-8, 8),
-                scale_left=bool(hash64(int(instance_seed), f"{FAMILY_ID}.scale_side", 0) % 2),
+                scale_left=bool(hash64(int(instance_seed), f"{TASK_NAMESPACE}.scale_side", 0) % 2),
             )
             rendered = _draw_cylinder(
                 draw,
@@ -237,7 +236,7 @@ class _PhysicsGraduatedCylinderBaseTask:
                 for v in range(int(scale.minor_tick_ml), 41, int(scale.minor_tick_ml))
                 if before + v <= scale.capacity_ml - 8
             ]
-            displacement = int(displacement_support[int(hash64(int(instance_seed), f"{FAMILY_ID}.displacement", 0) % len(displacement_support))])
+            displacement = int(displacement_support[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.displacement", 0) % len(displacement_support))])
             after = int(before + displacement)
             left_geometry = _CylinderGeometry(210.0, 158.0, 155.0, 405.0, 565.0, True)
             right_geometry = _CylinderGeometry(650.0, 158.0, 155.0, 405.0, 565.0, False)
@@ -309,7 +308,7 @@ class _PhysicsGraduatedCylinderBaseTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -388,15 +387,6 @@ class _PhysicsGraduatedCylinderBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.36 if query_id == "single_cylinder_volume_readout" else 0.48,
-                complexity_components={
-                    "visual_readout": 0.46,
-                    "arithmetic": 0.12 if query_id == "before_after_displacement_volume" else 0.0,
-                    "ambiguity": 0.12,
-                    "output_burden": 0.10,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

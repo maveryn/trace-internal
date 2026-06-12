@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `image_cutout_board`
-- Implementation task group: `visual`
-- Implementation source: `trace/tasks/illustrations/visual/jigsaw_piece_order.py`
+- Implementation scene package: `image_cutout_board`
+- Implementation source: `trace/tasks/illustrations/image_cutout_board/jigsaw_piece_order.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__image_cutout_board__jigsaw_piece_order` -> `task_illustrations__image_cutout_board__jigsaw_piece_order`
 - Status: `pending_v0_manual_review_and_solve_rate`

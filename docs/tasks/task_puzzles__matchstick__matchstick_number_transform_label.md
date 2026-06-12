@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `puzzles`
 2. Scene id: `matchstick`
-3. Task group: `logic`
+3. Scene: `logic`
 4. Query ids: `add_one_stick`, `remove_one_stick`
 5. Objective: choose the labeled candidate number reachable from the Source number by adding or removing exactly one matchstick.
 

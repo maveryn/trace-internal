@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.physics.optics.lens_optics import (
     CASE_TO_PROPERTY,
     OBJECT_POSITION_CASES,
@@ -104,7 +104,7 @@ def test_lens_optics_balanced_sampling_exposes_cases_and_letters() -> None:
 
 
 def test_lens_optics_defaults_expose_prompt_and_rendering_contract() -> None:
-    optics = get_task_group_defaults("physics", "optics")
+    optics = get_scene_defaults("physics", "optics")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         optics,
         task_id="physics_optics_lens_optics_family",

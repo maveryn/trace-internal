@@ -102,7 +102,7 @@ def test_warehouse_shelf_level_count_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "warehouse"
+    assert taxonomy.source_scene_id == "warehouse"
     assert SUPPORTED_QUERY_IDS == (
         "top_shelf_item_count",
         "middle_shelf_item_count",

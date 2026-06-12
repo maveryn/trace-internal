@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -23,13 +23,12 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__shadow_cause__light_source_label"
-FAMILY_ID = "physics_optics_shadow_cause_family"
+TASK_NAMESPACE = "physics_optics_shadow_cause"
 SCENE_ID = "shadow_cause"
 QUERY_ID = "source_from_shadow_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
@@ -66,12 +65,12 @@ OPPOSITE_DIRECTION: Dict[str, str] = {
     "southeast": "northwest",
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "optics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "optics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="optics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -236,7 +235,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="query_id",
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
-        namespace=f"{FAMILY_ID}.query_id",
+        namespace=f"{TASK_NAMESPACE}.query_id",
     )
     correct_option_letter, letter_probs = _resolve_variant_axis(
         instance_seed=int(instance_seed),
@@ -245,7 +244,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
         balance_flag_key="balanced_correct_option_letter_sampling",
-        namespace=f"{FAMILY_ID}.correct_option_letter",
+        namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     shadow_direction, shadow_probs = _resolve_variant_axis(
         instance_seed=int(instance_seed),
@@ -254,7 +253,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="shadow_direction",
         weights_key="shadow_direction_weights",
         balance_flag_key="balanced_shadow_direction_sampling",
-        namespace=f"{FAMILY_ID}.shadow_direction",
+        namespace=f"{TASK_NAMESPACE}.shadow_direction",
     )
     object_shape, shape_probs = _resolve_variant_axis(
         instance_seed=int(instance_seed),
@@ -263,7 +262,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="object_shape",
         weights_key="object_shape_weights",
         balance_flag_key="balanced_object_shape_sampling",
-        namespace=f"{FAMILY_ID}.object_shape",
+        namespace=f"{TASK_NAMESPACE}.object_shape",
     )
     return _ResolvedAxes(
         query_id=str(query_id),
@@ -303,7 +302,7 @@ def _resolve_render_defaults(params: Mapping[str, Any], *, instance_seed: int) -
             key,
             int(getattr(_DEFAULTS, key)),
             instance_seed=int(instance_seed),
-            namespace=FAMILY_ID,
+            namespace=TASK_NAMESPACE,
         )
         for key in keys
     }
@@ -315,7 +314,7 @@ def _make_scene_spec(
     axes: _ResolvedAxes,
     render_defaults: Mapping[str, int],
 ) -> _ShadowSceneSpec:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene")
     source_direction = OPPOSITE_DIRECTION[str(axes.shadow_direction)]
     distractor_directions = [direction for direction in SHADOW_DIRECTIONS if str(direction) != str(source_direction)]
     if str(axes.shadow_direction) in distractor_directions:
@@ -731,18 +730,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(*, spec: _ShadowSceneSpec) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    diagonal = 1.0 if str(spec.shadow_direction) in {"northeast", "northwest", "southwest", "southeast"} else 0.0
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": 0.44,
-            "light_shadow_reasoning": 0.46 + (0.06 * diagonal),
-            "ambiguity": 0.18,
-            "output_burden": 0.20,
-        },
-    )
 
 
 @register_task
@@ -751,7 +738,7 @@ class PhysicsShadowCauseLightSourceLabelTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "optics"
+    scene_id = "optics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -777,7 +764,6 @@ class PhysicsShadowCauseLightSourceLabelTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=canvas_width,
                 canvas_height=canvas_height,
                 require_grid=True,
@@ -785,7 +771,7 @@ class PhysicsShadowCauseLightSourceLabelTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -825,7 +811,7 @@ class PhysicsShadowCauseLightSourceLabelTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -843,7 +829,6 @@ class PhysicsShadowCauseLightSourceLabelTask:
                 answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-            complexity = _build_complexity(spec=spec)
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": "physics_shadow_cause_light_source_candidates",
@@ -926,7 +911,6 @@ class PhysicsShadowCauseLightSourceLabelTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=QUERY_ID,

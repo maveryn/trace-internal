@@ -2,20 +2,34 @@
 
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.bowling.lane_tasks import (
+from trace.tasks.games.bowling.first_pin_hit_label import (
     GamesBowlingFirstPinHitLabelTask,
-    GamesBowlingLaneTask,
-    GamesBowlingSparePathLabelTask,
-    _first_intersected_pin_id,
 )
-from trace.tasks.games.shared.bowling_common import BowlingPin
+from trace.tasks.games.bowling.shared.common import BowlingPin
+from trace.tasks.games.bowling.shared.mechanics import first_intersected_pin_id
+from trace.tasks.games.bowling.spare_path_label import GamesBowlingSparePathLabelTask
 from tests.helpers import read_jsonl
+
+
+def test_games_bowling_scene_package_source_layout() -> None:
+    expected_sources = {
+        GamesBowlingFirstPinHitLabelTask: Path("trace/tasks/games/bowling/first_pin_hit_label.py"),
+        GamesBowlingSparePathLabelTask: Path("trace/tasks/games/bowling/spare_path_label.py"),
+    }
+
+    for task_cls, relative_path in expected_sources.items():
+        source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
+        assert source_path == (Path.cwd() / relative_path).resolve()
+        assert getattr(task_cls, "scene_id", "")
+        assert getattr(task_cls, "scene_id") == "bowling"
 
 
 @pytest.mark.parametrize(
@@ -34,7 +48,7 @@ from tests.helpers import read_jsonl
     ),
 )
 def test_games_bowling_public_tasks_emit_expected_contract(
-    task_cls: type[GamesBowlingLaneTask],
+    task_cls: type[Any],
     params: dict[str, int | str],
     expected_query: str,
 ) -> None:
@@ -96,7 +110,7 @@ def test_games_bowling_first_pin_hit_label_matches_target_pin() -> None:
         )
         for pin in execution["pins"]
     )
-    first_hit = _first_intersected_pin_id(
+    first_hit = first_intersected_pin_id(
         pins=pins,
         ball_x_norm=float(execution["ball_x_norm"]),
         aim_x_norm=float(target_pin["x_norm"]),
@@ -153,4 +167,5 @@ def test_games_bowling_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "bowling" for row in rows)
+    assert all(row["scene_id"] == "bowling" for row in rows)
+    assert all(row.get("scene_id") for row in rows)

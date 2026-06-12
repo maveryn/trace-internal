@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -22,30 +22,24 @@ from ...shared.named_colors import named_color
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ..shared.complexity import (
-    build_physics_complexity,
-    clamp_unit_interval,
-    normalize_linear,
-    resolve_physics_complexity_weights,
-)
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_circuits_bulb_brightness_family"
+TASK_NAMESPACE = "physics_circuits_bulb_brightness"
 SCENE_ID = "bulb_circuit"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("brightest_bulb_label", "dimmest_bulb_label")
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("series_unequal", "parallel_unequal", "mixed_branch")
 BULB_LABELS: Tuple[str, ...] = ("B1", "B2", "B3", "B4", "B5")
 DEFAULT_RESISTANCE_OPTIONS: Tuple[int, ...] = (2, 3, 4, 5, 6, 8, 10, 12)
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -136,13 +130,13 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
     explicit = str(params.get("query_id") or "").strip()
     if explicit:
         if explicit not in set(SUPPORTED_QUERY_IDS):
-            raise ValueError(f"unsupported query_id for {FAMILY_ID}: {explicit}")
+            raise ValueError(f"unsupported query_id for {TASK_NAMESPACE}: {explicit}")
         return explicit, {str(query_id): (1.0 if str(query_id) == explicit else 0.0) for query_id in SUPPORTED_QUERY_IDS}
     return _weighted_choice(
         SUPPORTED_QUERY_IDS,
         _GEN_DEFAULTS.get("query_id_weights", {}),
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.query_id",
+        namespace=f"{TASK_NAMESPACE}.query_id",
     )
 
 
@@ -150,13 +144,13 @@ def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tup
     explicit = str(params.get("scene_variant") or params.get("topology_variant") or "").strip()
     if explicit:
         if explicit not in set(SUPPORTED_SCENE_VARIANTS):
-            raise ValueError(f"unsupported scene_variant for {FAMILY_ID}: {explicit}")
+            raise ValueError(f"unsupported scene_variant for {TASK_NAMESPACE}: {explicit}")
         return explicit, {str(variant): (1.0 if str(variant) == explicit else 0.0) for variant in SUPPORTED_SCENE_VARIANTS}
     return _weighted_choice(
         SUPPORTED_SCENE_VARIANTS,
         _GEN_DEFAULTS.get("scene_variant_weights", {}),
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.scene_variant",
+        namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
 
 
@@ -164,13 +158,13 @@ def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tupl
     explicit = str(params.get("accent_color_name") or "").strip()
     if explicit:
         if explicit not in set(SUPPORTED_PHYSICS_COLOR_NAMES):
-            raise ValueError(f"unsupported accent_color_name for {FAMILY_ID}: {explicit}")
+            raise ValueError(f"unsupported accent_color_name for {TASK_NAMESPACE}: {explicit}")
         return explicit, {str(name): (1.0 if str(name) == explicit else 0.0) for name in SUPPORTED_PHYSICS_COLOR_NAMES}
     return _weighted_choice(
         SUPPORTED_PHYSICS_COLOR_NAMES,
         _GEN_DEFAULTS.get("accent_color_name_weights", {}),
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.accent_color_name",
+        namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
 
 
@@ -180,7 +174,7 @@ def _resolve_target_label(instance_seed: int, params: Mapping[str, Any]) -> str:
         if explicit not in set(BULB_LABELS):
             raise ValueError(f"target label must be one of {BULB_LABELS}")
         return explicit
-    index = int(hash64(int(instance_seed), f"{FAMILY_ID}.target_label", 0) % len(BULB_LABELS))
+    index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.target_label", 0) % len(BULB_LABELS))
     return str(BULB_LABELS[index])
 
 
@@ -233,7 +227,7 @@ def _resolve_resistances(instance_seed: int, *, params: Mapping[str, Any], scene
         return values
 
     options = list(_resistance_options(params))
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.resistances.{str(scene_variant)}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.resistances.{str(scene_variant)}")
     for _ in range(200):
         values = tuple(int(value) for value in rng.sample(options, k=len(BULB_LABELS)))
         if _has_unique_powers(_power_values(str(scene_variant), values)):
@@ -257,7 +251,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _BulbScenar
     label_by_slot: Dict[str, str] = {str(target_slot): str(target_label)}
     remaining_slots = [slot for slot in slots if str(slot) != str(target_slot)]
     remaining_labels = [label for label in BULB_LABELS if str(label) != str(target_label)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.label_assignment")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.label_assignment")
     rng.shuffle(remaining_slots)
     rng.shuffle(remaining_labels)
     for slot, label in zip(remaining_slots, remaining_labels):
@@ -275,7 +269,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _BulbScenar
     label_by_power = {str(spec.label): float(spec.relative_power) for spec in bulbs}
     brightest_label = max(label_by_power, key=label_by_power.get)
     dimmest_label = min(label_by_power, key=label_by_power.get)
-    branch_single_position = "top" if int(hash64(int(instance_seed), f"{FAMILY_ID}.single_branch_position", 0) % 2) == 0 else "bottom"
+    branch_single_position = "top" if int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.single_branch_position", 0) % 2) == 0 else "bottom"
     if params.get("branch_single_position") in {"top", "bottom"}:
         branch_single_position = str(params["branch_single_position"])
     return _BulbScenario(
@@ -632,24 +626,6 @@ def _build_prompt_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(*, scenario: _BulbScenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    powers = [float(spec.relative_power) for spec in scenario.bulbs]
-    sorted_powers = sorted(powers)
-    min_gap = min(abs(sorted_powers[idx + 1] - sorted_powers[idx]) for idx in range(len(sorted_powers) - 1))
-    topology_load = {"series_unequal": 0.38, "parallel_unequal": 0.48, "mixed_branch": 0.72}[str(scenario.scene_variant)]
-    visual_scan = clamp_unit_interval(0.34 + (0.12 if scenario.scene_variant == "mixed_branch" else 0.0))
-    brightness_reasoning = clamp_unit_interval(float(topology_load) + (0.06 if scenario.query_id == "dimmest_bulb_label" else 0.0))
-    ambiguity = clamp_unit_interval(0.24 - (0.10 * normalize_linear(float(min_gap), min_value=0.005, max_value=0.08)))
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "brightness_reasoning": float(brightness_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": 0.18,
-        },
-    )
 
 
 @register_task
@@ -658,7 +634,7 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
 
     task_id = "task_physics__bulb_circuit__brightness_extremum_label"
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -670,7 +646,6 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -678,7 +653,7 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -716,7 +691,7 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
         json_example, json_example_answer_only = _build_prompt_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -739,7 +714,6 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
             "keyed_bbox_map": dict(annotation_gt.value),
             "pixel_keyed_bbox_map": dict(annotation_gt.value),
         }
-        complexity = _build_complexity(scenario=scenario)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"physics_bulb_circuit_{str(scenario.scene_variant)}",
@@ -834,7 +808,6 @@ class PhysicsBulbCircuitBrightnessExtremumLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(scenario.query_id),
             scene_id=SCENE_ID,

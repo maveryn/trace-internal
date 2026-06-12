@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -32,7 +32,6 @@ from ..shared.icon_scene import (
     single_panel_geometry_to_trace,
     sort_bboxes_reading_order,
 )
-from ..shared.complexity import build_icons_sequence_missing_count_complexity
 from ..shared.icon_sequence_scene import (
     IconSequenceCellSpec,
     render_icon_sequence_scene,
@@ -130,7 +129,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "sequence")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "sequence")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__sequence_strip__missing_count_value",
@@ -395,7 +394,7 @@ class IconsSequenceMissingCountTask:
 
     task_id = "task_icons__sequence_strip__missing_count_value"
     domain = "icons"
-    task_group = "sequence"
+    scene_id = "sequence"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon sequence missing-count instance."""
@@ -454,7 +453,7 @@ class IconsSequenceMissingCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -577,19 +576,6 @@ class IconsSequenceMissingCountTask:
             },
             "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
-        complexity = build_icons_sequence_missing_count_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            sequence_length=int(scene_payload.sequence_length),
-            sequence_length_min=int(group_default(_GEN_DEFAULTS, "sequence_length_min", _DEFAULTS.sequence_length_min)),
-            sequence_length_max=int(group_default(_GEN_DEFAULTS, "sequence_length_max", _DEFAULTS.sequence_length_max)),
-            target_count=int(scene_payload.target_count),
-            target_count_max=int(group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max)),
-            missing_cell_index=int(scene_payload.missing_cell_index),
-            step_delta=int(scene_payload.step_delta),
-            scene_icon_instances=scene_payload.scene_icon_instances,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -597,7 +583,6 @@ class IconsSequenceMissingCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

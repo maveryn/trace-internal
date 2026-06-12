@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
@@ -17,7 +17,7 @@ AHEAD_TASK_ID = "task_games__racing_track__ahead_object_count"
 
 
 def test_games_racing_track_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "racing_track")
+    cfg = get_scene_defaults("games", "racing_track")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id=TASK_ID,
@@ -100,13 +100,13 @@ def test_games_racing_track_taxonomy_mapping() -> None:
     assert taxonomy.domain == "games"
     assert taxonomy.scene_id == "racing_track"
     assert taxonomy.source_domain == "games"
-    assert taxonomy.source_task_group == "racing_track"
+    assert taxonomy.source_scene_id == "racing_track"
 
     ahead_taxonomy = resolve_task_taxonomy(AHEAD_TASK_ID)
     assert ahead_taxonomy.domain == "games"
     assert ahead_taxonomy.scene_id == "racing_track"
     assert ahead_taxonomy.source_domain == "games"
-    assert ahead_taxonomy.source_task_group == "racing_track"
+    assert ahead_taxonomy.source_scene_id == "racing_track"
 
 
 def _ahead_expected_ids(out) -> list[str]:

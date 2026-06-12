@@ -354,7 +354,8 @@ def _draw_room_floor_object(context: ThreeDRenderContext, spec: Mapping[str, Any
 def _draw_street_object(context: ThreeDRenderContext, spec: Mapping[str, Any]) -> BBox:
     from .street_object_rendering import _draw_candidate_object, _draw_context_object
 
-    if bool(spec.get("is_answer_candidate", False)) or str(spec.get("object_role", "")) == "street_reference":
+    object_role = str(spec.get("object_role", ""))
+    if bool(spec.get("is_answer_candidate", False)) or object_role in {"street_candidate", "street_reference"}:
         bbox = _draw_candidate_object(context.draw, spec, camera=context.camera, frame=context.frame)
     else:
         bbox = _draw_context_object(context.draw, spec, camera=context.camera, frame=context.frame)

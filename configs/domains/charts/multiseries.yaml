@@ -13,125 +13,27 @@ generation:
       grouped_horizontal_bar: 1.0
       multi_line: 1.0
       grouped_lollipop: 1.0
-    balanced_query_id_sampling: true
+    change_measure_weights:
+      directional_change: 1.0
+      absolute_gap: 1.0
+    ratio_measure_weights:
+      series_share: 1.0
+      pair_ratio: 1.0
+    change_direction_weights:
+      increase: 1.0
+      decrease: 1.0
+    extremum_direction_weights:
+      largest: 1.0
+      smallest: 1.0
+    comparison_weights:
+      greater_than: 1.0
+      less_than: 1.0
     balanced_scene_variant_sampling: true
-  task_overrides:
-    charts_multiseries_comparison_query_base:
-      value_window_span_min: 24
-      value_window_span_max: 25
-      delta_category_count_min: 10
-      delta_category_count_max: 15
-      delta_series_count_min: 3
-      delta_series_count_max: 4
-      delta_value_min: 1
-      delta_value_max: 30
-      ratio_category_count_min: 5
-      ratio_category_count_max: 10
-      ratio_series_count_min: 3
-      ratio_series_count_max: 4
-      ratio_value_min: 1
-      ratio_value_max: 80
-      rank_min: 1
-      rank_max: 3
-      derived_score_min: 4
-      derived_score_max: 24
-      score_spread_extra_min: 0
-      score_spread_extra_max: 4
-      share_percent_min: 10
-      share_percent_max: 75
-      pair_ratio_percent_min: 40
-      pair_ratio_percent_max: 260
-      category_total_min: 35
-      category_total_max: 160
-      ratio_score_spread_extra_min: 0
-      ratio_score_spread_extra_max: 6
-      category_total_category_count_min: 6
-      category_total_category_count_max: 10
-      category_total_series_count_min: 3
-      category_total_series_count_max: 5
-      category_total_rank_min: 1
-      category_total_rank_max: 2
-      series_rank_category_count_min: 6
-      series_rank_category_count_max: 12
-      series_rank_series_count_min: 3
-      series_rank_series_count_max: 5
-      series_rank_rank_min: 1
-      series_rank_rank_max: 3
-      equality_category_count_min: 6
-      equality_category_count_max: 12
-      equality_series_count_min: 3
-      equality_series_count_max: 5
-      equality_value_min: 1
-      equality_value_max: 99
-      category_count_min: 8
-      category_count_max: 12
-      series_count_min: 4
-      series_count_max: 5
-      value_min: 1
-      value_max: 99
-      filtered_category_count_min: 3
-      filtered_category_count_max: 6
-      target_gap_min: 2
-      target_gap_max: 18
-      sum_answer_min: 12
-      sum_answer_max: 84
-      mean_answer_min: 2
-      mean_answer_max: 18
-      range_answer_min: 2
-      range_answer_max: 16
-      extremum_answer_min: 4
-      extremum_answer_max: 18
-      query_id_weights:
-        ranked_change_extremum: 1.0
-        ranked_ratio_extremum: 1.0
-        series_comparison_count: 1.0
-        conditional_gap_aggregate_value: 1.0
-        conditional_gap_extremum_value: 1.0
-        category_total_extremum_label: 1.0
-        pair_equality_label: 1.0
-        series_rank_at_category_label: 1.0
-      conditional_gap_aggregate_kind_weights:
-        mean: 1.0
-        range: 1.0
-      balanced_conditional_gap_aggregate_kind_sampling: true
-      change_measure_weights:
-        directional_change: 1.0
-        absolute_gap: 1.0
-      ratio_measure_weights:
-        series_share: 1.0
-        pair_ratio: 1.0
-      balanced_change_measure_sampling: true
-      balanced_ratio_measure_sampling: true
-      change_direction_weights:
-        increase: 1.0
-        decrease: 1.0
-      extremum_direction_weights:
-        largest: 1.0
-        smallest: 1.0
-      comparison_weights:
-        greater_than: 1.0
-        less_than: 1.0
-      condition_comparison_weights:
-        greater_than: 1.0
-        less_than: 1.0
-      balanced_condition_comparison_sampling: true
-    task_charts__multiseries__pair_equality_label:
-      category_count_min: 6
-      category_count_max: 12
-      series_count_min: 3
-      series_count_max: 5
-      query_id_weights:
-        pair_equality_label: 1.0
-    task_charts__multiseries__series_rank_at_category_label:
-      category_count_min: 6
-      category_count_max: 12
-      series_count_min: 3
-      series_count_max: 5
-      series_rank_rank_min: 1
-      series_rank_rank_max: 3
-      query_id_weights:
-        series_rank_at_category_label: 1.0
-
+    balanced_change_measure_sampling: true
+    balanced_ratio_measure_sampling: true
+    balanced_change_direction_sampling: true
+    balanced_extremum_direction_sampling: true
+    balanced_comparison_sampling: true
 rendering:
   shared:
     canvas_width: 1280
@@ -157,68 +59,8 @@ rendering:
     mark_color_channel_max: 220
     mark_color_min_distance: 40.0
     mark_color_distance_space: lab
-  task_overrides:
-    charts_multiseries_comparison_query_base:
-      guide_line_mode: variant
-      guide_line_prob: 0.75
-
-complexity:
-  task_overrides:
-    charts_multiseries_comparison_query_base:
-      criteria_weights:
-        visual_scan: 0.62
-        reasoning_load: 0.22
-        scene_variant_load: 0.16
-
+    guide_line_mode: variant
+    guide_line_prob: 0.75
 prompt:
   shared:
-    bundle_id: charts_multiseries_v0
-    scene_key: multiseries_chart_comparison
-    task_key: pairwise_comparison_count_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint: set "answer" to the number of category labels satisfying the requested series comparison as an integer
-    object_description_grouped_bar: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category
-    object_description_grouped_horizontal_bar: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category
-    object_description_multi_line: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis
-    object_description_grouped_lollipop: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis
-    annotation_hint_series_comparison_count: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the two queried series marks in each category matching the requested strict comparison
-    json_example_series_comparison_count: '{"annotation":{"Q:Orly":[180,260],"Q:Vega":[180,190],"M:Orly":[360,320],"M:Vega":[360,240],"Z:Orly":[540,210],"Z:Vega":[540,280]},"answer":3}'
-    json_example_answer_only_series_comparison_count: '{"answer":3}'
-  task_overrides:
-    charts_multiseries_comparison_query_base:
-      task_key_pairwise: pairwise_comparison_count_query
-      task_key_delta: delta_extremum_label_query
-      task_key_ratio: ratio_extremum_label_query
-      task_key_category_total: category_total_extremum_label_query
-      task_key_equality: pair_equality_label_query
-      task_key_series_rank: series_rank_at_category_label_query
-      answer_hint: set "answer" to the category label with the requested extremum as a string
-      answer_hint_count: set "answer" to the number of category labels satisfying the requested series comparison as an integer
-      answer_hint_label: set "answer" to the requested label as a string
-      annotation_hint_ranked_directional_change: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's two queried series marks
-      annotation_hint_ranked_absolute_gap: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's two queried series marks
-      annotation_hint_ranked_series_share: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for every series mark in the answer category
-      annotation_hint_ranked_pair_ratio: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the answer category's numerator and denominator series marks
-      annotation_hint_category_total_extremum: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for every series mark in the answer category
-      annotation_hint_pair_equality: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the two equal-valued queried series marks in the answer category
-      annotation_hint_series_rank_at_category: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for every series mark at the queried category
-      json_example_ranked_directional_change: '{"annotation":{"K4M8:Orly":[260,320],"K4M8:Vega":[260,180]},"answer":"K4M8"}'
-      json_example_ranked_absolute_gap: '{"annotation":{"M7P2:Orly":[260,340],"M7P2:Vega":[260,160]},"answer":"M7P2"}'
-      json_example_ranked_series_share: '{"annotation":{"K4M8:Orly":[300,240],"K4M8:Vega":[300,320],"K4M8:Tana":[300,400]},"answer":"K4M8"}'
-      json_example_ranked_pair_ratio: '{"annotation":{"M7P2:Orly":[300,180],"M7P2:Vega":[300,300]},"answer":"M7P2"}'
-      json_example_category_total_extremum: '{"annotation":{"K4M8:Orly":[300,220],"K4M8:Vega":[300,310],"K4M8:Tana":[300,390]},"answer":"K4M8"}'
-      json_example_pair_equality: '{"annotation":{"M7P2:Orly":[260,240],"M7P2:Vega":[260,240]},"answer":"M7P2"}'
-      json_example_series_rank_at_category: '{"annotation":{"K4M8:Orly":[300,240],"K4M8:Vega":[300,320],"K4M8:Tana":[300,400]},"answer":"Vega"}'
-      json_example_answer_only_ranked_directional_change: '{"answer":"K4M8"}'
-      json_example_answer_only_ranked_absolute_gap: '{"answer":"M7P2"}'
-      json_example_answer_only_ranked_series_share: '{"answer":"K4M8"}'
-      json_example_answer_only_ranked_pair_ratio: '{"answer":"M7P2"}'
-      json_example_answer_only_category_total_extremum: '{"answer":"K4M8"}'
-      json_example_answer_only_pair_equality: '{"answer":"M7P2"}'
-      json_example_answer_only_series_rank_at_category: '{"answer":"Vega"}'
-      task_key_conditional_gap: conditional_gap_value_query
-      answer_hint_conditional_gap_value: set "answer" to the requested filtered absolute-gap value as an integer
-      annotation_hint_conditional_gap_value: set "annotation" to an object mapping each "<category>:<series>" mark key to an [x,y] pixel point for the condition-pair marks and target-gap marks in every category included by the condition
-      json_example_conditional_gap_value: '{"annotation":{"Q:Orly":[160,310],"Q:Vega":[160,250],"Q:Tana":[160,190],"Q:Mira":[160,280],"M:Orly":[300,330],"M:Vega":[300,260],"M:Tana":[300,210],"M:Mira":[300,300]},"answer":24}'
-      json_example_answer_only_conditional_gap_value: '{"answer":24}'
+    bundle_id: charts_multiseries_v1

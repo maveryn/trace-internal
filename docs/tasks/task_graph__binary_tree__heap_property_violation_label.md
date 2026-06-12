@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_graph__binary_tree__heap_property_violation_label`
 5. Objective: find the child node that violates a min-heap property.
 

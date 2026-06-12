@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `timeline`
-3. Source task group: `timeline`
+3. Source scene: `timeline`
 4. Task id: `task_pages__timeline__interval_membership_count`
 
 ## Contract

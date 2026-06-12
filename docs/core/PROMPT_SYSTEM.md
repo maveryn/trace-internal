@@ -1,97 +1,108 @@
 # TRACE Prompt System
 
-Prompt text is externalized and deterministic.
+Prompt text is externalized, deterministic, and traceable.
 
-## 1) Core contract
-1. Task modules must not hardcode user-facing prompt strings.
-2. Bundles live under `prompts/<domain>/<task_group>/<bundle_id>.json`.
-3. Composition layers:
+## 1) Core Contract
+1. Task modules must not hardcode user-facing prompt text.
+2. Review-candidate scene packages use prompt bundles under
+   `prompts/<domain>/<scene_id>/<bundle_id>.json`.
+3. Legacy scene prompt bundles may remain only for unmigrated scenes.
+4. Composition layers are:
    - scene,
    - task,
    - optional query,
    - output mode (`answer_only`, `answer_and_annotation`).
-4. Selection is deterministic from seed namespaces.
-5. Each required template list must contain exactly 5 high-quality variants.
-6. All active tasks must provide task-specific JSON-format guidance in both output modes:
+5. Selection is deterministic from seed namespaces.
+6. Required template lists contain exactly 5 high-quality variants unless the
+   schema declares an approved exception.
+7. All active tasks must provide task-specific JSON-format guidance in both
+   output modes:
    - `answer_only` uses `{"answer": ...}`
    - `answer_and_annotation` uses `{"answer": ..., "annotation": ...}`
-   - the final JSON-object instruction is supplied by RLVR system prompts and the generic schema sentence is stripped from rendered user prompts
-   - rendered output-mode instructions should keep task-specific `annotation_hint` / `answer_hint` lines and JSON examples, not tell the model to respond with only that object or suppress intermediate reasoning
-7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config for compatibility, with task-level `annotation_hint`/`answer_hint`/example overrides).
-8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, annotation/answer hint families).
-9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
-10. For reference-panel tasks, keep the scene layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
-11. When only some query branches need a slot, declare it under `required_slots_by_key["query:<query_key>"]` rather than under the shared `task:<task_key>` entry.
-12. Scene templates should read like ordinary visual framing: use stems such as `The image shows ...`, `The chart shows ...`, `The table shows ...`, `The diagram shows ...`, or `The board shows ...`.
-13. Do not use telegraphic or imperative scene stems such as `Shown is`, `Displayed is`, `Use this`, `Read this`, `Look at`, `The image contains`, or `The chart is`.
-14. If the query layer already contains the complete question, set the task layer to empty templates with `allow_empty_task_templates: true` instead of adding filler like `Use the visual to answer`.
+8. Output-mode instructions should keep task-specific `answer_hint`,
+   `annotation_hint`, and JSON examples. The generic final JSON-object
+   instruction belongs in the RLVR system prompt layer.
+9. For named colors, include the canonical hex code in the prompt-facing color
+   label using `<color_name> [#RRGGBB]`.
+10. If the query layer already contains the full question, the task layer may be
+    empty only when the bundle declares `allow_empty_task_templates: true`.
 
-## 2) Bundle schema (v0)
+## 2) Bundle Schema
 Required fields:
+
 1. `bundle_id`
 2. `schema_version`
 3. `scene_templates`
 4. `task_templates`
 5. `answer_or_annotation_templates`
 6. `required_slots_by_key`
-7. Optional: `query_templates`
-8. Optional: `allow_empty_task_templates`; use only when the query layer is the full question and any visible task-layer text would be redundant. The bundle must still provide exactly 5 task-template entries so deterministic variant metadata stays stable.
 
-## 3) Metadata requirements
+Optional fields:
+
+1. `query_templates`
+2. `allow_empty_task_templates`
+
+Required slots should be declared at the narrowest layer that needs them:
+
+- `scene:<scene_key>` for scene-wide visual framing slots;
+- `task:<task_key>` for objective-level slots;
+- `query:<query_key>` for branch-specific wording slots;
+- output-mode keys for answer/annotation examples and hints.
+
+## 3) Metadata Requirements
 Trace `query_spec.prompt_variant` should include:
-1. bundle/key identifiers (`scene_key`, `task_key`, optional `query_key`),
-2. selected variant indices,
-3. query-id counts,
-4. slot values for declared required slots,
-5. output-mode key/index when mode templates exist.
 
-For wrapper tasks that reuse another task group's prompt bundle, `query_spec.prompt_variant` may also include `prompt_domain` and `prompt_task_group`. Validation uses those optional fields to locate the prompt bundle while the train record keeps the wrapper task's own `domain` and `task_group`.
+1. bundle id and layer keys;
+2. selected variant indices;
+3. query id and query-id count when applicable;
+4. slot values for declared required slots;
+5. output-mode key/index;
+6. prompt asset version when available.
 
-Train records should store:
-1. active `prompt`,
-2. all rendered mode variants in `prompt_variants`.
+Train records should store the active `prompt` and generated `prompt_variants`
+when both output modes are materialized.
 
-## 4) Shared implementation
+## 4) Shared Implementation
 1. `trace/core/prompts/assets.py` — bundle loading/cache.
 2. `trace/core/prompts/schema.py` — schema validation.
 3. `trace/core/prompts/select.py` — deterministic variant selection.
-4. `trace/core/prompts/render.py` — strict rendering and composition.
+4. `trace/core/prompts/render.py` — strict rendering and metadata.
 5. `trace/tasks/shared/prompt_variants.py` — task-level dual-mode orchestration.
+6. `trace/tasks/shared/prompt_examples.py` — deterministic JSON-example helpers.
+7. `trace/tasks/shared/prompt_slots.py` — shared prompt trace/spec helpers.
 
-## 4.1 Prompt-quality policy
-1. Prefer 5 strong variants over larger padded lists.
-2. Keep stems natural and image-focused; avoid awkward scaffolding such as “single/exactly one object” unless the distinction is semantically necessary.
-3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
-4. Keep task/query wording focused on the semantic query; format instructions belong in the output-mode layer.
-5. Keep layer responsibilities non-overlapping:
-   - scene layer: visual context only,
-   - task layer: operation hint only when needed,
-   - query layer or `question_text`: the actual question,
-   - output-mode layer: field hints and JSON examples only.
-6. Avoid repeating broad nouns such as image, chart, table, diagram, board, question, or answer across adjacent prompt layers.
-7. Scene-layer wording should establish only the visible scaffold; it should not restate the task operation or tell the model how to answer.
-8. Task templates that wrap `{question_text}` should stay short, for example `{question_text}` or `Question: {question_text}`. Avoid wrappers that repeat the scene noun unless the task genuinely needs that extra context.
-9. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-query-id 1 --include-all-prompts` so observed query branches are sampled and written to `samples/prompt_concision_audit_all.md`.
+## 5) Prompt Quality Policy
+1. Keep stems natural and image-focused.
+2. Scene layer describes the visible scaffold only.
+3. Task layer states the operation only when needed.
+4. Query layer or `question_text` owns the actual question.
+5. Output-mode layer owns field hints and JSON examples.
+6. Avoid repeating broad nouns such as image, chart, table, diagram, board,
+   question, or answer across adjacent layers.
+7. Template examples show valid output format for the active answer and
+   annotation contract, not the sampled instance's actual answer.
+8. Use `annotation` terminology in prompts.
 
-## 5) Active bundles/tasks
-Active prompt bundle usage is derived from `configs/domains/**/*.yaml`
-`bundle_id` references. Do not maintain an exhaustive task-to-bundle map in
-this document; that map drifts quickly as tasks are split, merged, or moved.
+## 6) Source Of Truth
+Do not maintain exhaustive task-to-bundle maps in this document. They drift.
 
-Use these source-of-truth surfaces instead:
-1. Config references in `configs/domains/<domain>/<task_group>.yaml`.
-2. Prompt assets in `prompts/<domain>/<task_group>/<bundle_id>.json`.
-3. Runtime prompt metadata in `query_spec.prompt_variant`.
-4. Active task inventory in `docs/ACTIVE_TASK_INVENTORY.md`.
-5. Task-level contracts in `docs/tasks/<task_id>.md`.
+Use:
+
+1. config references under `configs/domains/`;
+2. prompt assets under `prompts/`;
+3. runtime prompt metadata in `query_spec.prompt_variant`;
+4. generated task inventory in `docs/ACTIVE_TASK_INVENTORY.md`;
+5. task-level contracts in `docs/tasks/`.
 
 Validation:
+
 ```bash
 PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_prompt_system.py tests/test_docs_consistency.py
 ```
 
-For prompt wording reviews, use:
+Prompt wording audit:
+
 ```bash
 PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-query-id 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
 ```

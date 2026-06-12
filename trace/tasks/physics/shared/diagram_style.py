@@ -31,7 +31,6 @@ def resolve_physics_diagram_style(
     instance_seed: int,
     params: Mapping[str, Any] | None = None,
     scene_id: str,
-    task_group: str,
     treatments: Sequence[str] | None = None,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
@@ -42,7 +41,7 @@ def resolve_physics_diagram_style(
     resolved_params = params or {}
     return resolve_technical_diagram_style(
         instance_seed=int(instance_seed),
-        namespace=f"physics.{str(task_group)}.{str(scene_id)}.technical_diagram_style",
+        namespace=f"physics.{str(scene_id)}.{str(scene_id)}.technical_diagram_style",
         treatments=treatments or resolved_params.get("technical_diagram_treatments"),
         treatment_weights=resolved_params.get("technical_diagram_treatment_weights", {}),
         palettes=resolved_params.get("technical_diagram_palettes"),
@@ -79,7 +78,6 @@ def prepare_physics_diagram_style_and_background(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     scene_id: str,
-    task_group: str,
     canvas_width: int,
     canvas_height: int,
     protected_colors: Sequence[Color] | None = None,
@@ -94,7 +92,6 @@ def prepare_physics_diagram_style_and_background(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=str(scene_id),
-        task_group=str(task_group),
         treatments=treatments,
         protected_colors=protected_colors or (),
         allow_dark=bool(allow_dark),
@@ -105,7 +102,7 @@ def prepare_physics_diagram_style_and_background(
         canvas_height=int(canvas_height),
         style=diagram_style,
         instance_seed=int(instance_seed),
-        namespace=f"physics.{str(task_group)}.{str(scene_id)}.{str(namespace_suffix)}",
+        namespace=f"physics.{str(scene_id)}.{str(scene_id)}.{str(namespace_suffix)}",
     )
     return background, background_meta, diagram_style, diagram_style_meta
 

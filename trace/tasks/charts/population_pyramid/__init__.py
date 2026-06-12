@@ -1,5 +1,9 @@
-"""Population-pyramid chart tasks."""
+"""Chart scene package tasks."""
 
-from . import pyramid_query
+from .age_group_threshold_count import ChartsPopulationPyramidAgeGroupThresholdCountTask
+from .side_gap_extremum_label import ChartsPopulationPyramidSideGapExtremumLabelTask
 
-__all__ = ["pyramid_query"]
+__all__ = [
+    "ChartsPopulationPyramidAgeGroupThresholdCountTask",
+    "ChartsPopulationPyramidSideGapExtremumLabelTask",
+]

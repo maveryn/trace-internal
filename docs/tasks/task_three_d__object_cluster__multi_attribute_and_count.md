@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_cluster`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_cluster/`
 - Query id: `type_and_color_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
@@ -20,7 +20,7 @@ The answer is the integer count of finalized objects whose `shape_type` and `col
 Annotation is a `bbox_set` containing one whole-object bounding box for each counted object matching both the requested type and color. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing object names, semantic colors, target type/color, target object ids, per-shape counts, per-color counts, per-property counts, projected object boxes, and the solver count predicate.
+The prompt bundle is `three_d_object_cluster_v0` under `prompts/three_d/object_cluster/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing object names, semantic colors, target type/color, target object ids, per-shape counts, per-color counts, per-property counts, projected object boxes, and the solver count predicate.
 
 ## Calibration
 Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance annotation.

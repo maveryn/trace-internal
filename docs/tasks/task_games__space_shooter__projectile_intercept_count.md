@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `space_shooter`
+2. Scene: `space_shooter`
 3. Scene id: `space_shooter`
 4. Public task id: `task_games__space_shooter__projectile_intercept_count`
 5. Supported `query_id` values: `projectile_intercept_count`

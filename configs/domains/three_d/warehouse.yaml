@@ -60,7 +60,6 @@ generation:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_aisle_heading_sampling: true
-
 rendering:
   task_overrides:
     task_three_d__warehouse__robot_forward_path_label:
@@ -75,13 +74,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb: [221, 226, 220]
-      grid_rgb: [174, 184, 179]
-      aisle_rgb: [207, 215, 211]
-      shelf_zone_rgb: [190, 196, 194]
-      path_rgb: [236, 195, 72]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
+      floor_rgb:
+      - 221
+      - 226
+      - 220
+      grid_rgb:
+      - 174
+      - 184
+      - 179
+      aisle_rgb:
+      - 207
+      - 215
+      - 211
+      shelf_zone_rgb:
+      - 190
+      - 196
+      - 194
+      path_rgb:
+      - 236
+      - 195
+      - 72
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__warehouse__nearest_candidate_to_reference_label:
       canvas_width: 1180
       canvas_height: 920
@@ -94,13 +114,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb: [221, 226, 220]
-      grid_rgb: [174, 184, 179]
-      aisle_rgb: [207, 215, 211]
-      shelf_zone_rgb: [190, 196, 194]
-      path_rgb: [236, 195, 72]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
+      floor_rgb:
+      - 221
+      - 226
+      - 220
+      grid_rgb:
+      - 174
+      - 184
+      - 179
+      aisle_rgb:
+      - 207
+      - 215
+      - 211
+      shelf_zone_rgb:
+      - 190
+      - 196
+      - 194
+      path_rgb:
+      - 236
+      - 195
+      - 72
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__warehouse__scoped_attribute_count:
       canvas_width: 1180
       canvas_height: 920
@@ -113,35 +154,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb: [221, 226, 220]
-      grid_rgb: [174, 184, 179]
-      aisle_rgb: [207, 215, 211]
-      shelf_zone_rgb: [190, 196, 194]
-      path_rgb: [236, 195, 72]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
-
-complexity:
-  task_overrides:
-    task_three_d__warehouse__robot_forward_path_label:
-      criteria_weights:
-        visual_scan: 0.30
-        movement_projection: 0.36
-        corridor_filtering: 0.22
-        distractor_load: 0.12
-    task_three_d__warehouse__nearest_candidate_to_reference_label:
-      criteria_weights:
-        robot_scan: 0.34
-        reference_grounding: 0.22
-        depth_distance_reasoning: 0.28
-        distractor_load: 0.16
-    task_three_d__warehouse__scoped_attribute_count:
-      criteria_weights:
-        rack_color_binding: 0.28
-        shelf_level_binding: 0.30
-        visual_counting: 0.28
-        distractor_load: 0.14
-
+      floor_rgb:
+      - 221
+      - 226
+      - 220
+      grid_rgb:
+      - 174
+      - 184
+      - 179
+      aisle_rgb:
+      - 207
+      - 215
+      - 211
+      shelf_zone_rgb:
+      - 190
+      - 196
+      - 194
+      path_rgb:
+      - 236
+      - 195
+      - 72
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
 prompt:
   shared:
     bundle_id: three_d_warehouse_v0
@@ -149,30 +189,48 @@ prompt:
     task_three_d__warehouse__robot_forward_path_label:
       scene_key: warehouse
       task_key: warehouse_robot_forward_path_query
-      object_description: a perspective warehouse aisle with shelf racks, pallets, crate stacks, barrels, carts, forklifts, workbenches, bins, safety equipment, one red-boxed robot with a red travel-direction arrow, a highlighted forward path corridor, candidate warehouse objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected warehouse object in the scene
+      object_description: a perspective warehouse aisle with shelf racks, pallets,
+        crate stacks, barrels, carts, forklifts, workbenches, bins, safety equipment,
+        one red-boxed robot with a red travel-direction arrow, a highlighted forward
+        path corridor, candidate warehouse objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected warehouse
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__warehouse__nearest_candidate_to_reference_label:
       scene_key: warehouse
       task_key: warehouse_robot_nearest_object_query
-      object_description: a perspective warehouse aisle with shelf racks, warehouse equipment, one reference object, candidate items, and an option list below the scene
-      object_description_closest_robot_to_reference: a perspective warehouse aisle with shelf racks, warehouse equipment, one red sphere reference object, five candidate robots, and an option list below the scene
-      object_description_closest_object_to_robot: a perspective warehouse aisle with shelf racks, warehouse equipment, one robot, five candidate warehouse objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected candidate in the scene
-      annotation_hint_closest_robot_to_reference: set "annotation" to one bounding box around the selected robot in the scene
-      annotation_hint_closest_object_to_robot: set "annotation" to one bounding box around the selected warehouse object in the scene
+      object_description: a perspective warehouse aisle with shelf racks, warehouse
+        equipment, one reference object, candidate items, and an option list below
+        the scene
+      object_description_closest_robot_to_reference: a perspective warehouse aisle
+        with shelf racks, warehouse equipment, one red sphere reference object, five
+        candidate robots, and an option list below the scene
+      object_description_closest_object_to_robot: a perspective warehouse aisle with
+        shelf racks, warehouse equipment, one robot, five candidate warehouse objects,
+        and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected candidate
+        in the scene
+      annotation_hint_closest_robot_to_reference: set "annotation" to one bounding
+        box around the selected robot in the scene
+      annotation_hint_closest_object_to_robot: set "annotation" to one bounding box
+        around the selected warehouse object in the scene
       answer_hint: set "answer" to the selected option letter
-      answer_hint_closest_robot_to_reference: set "answer" to the selected option letter
+      answer_hint_closest_robot_to_reference: set "answer" to the selected option
+        letter
       answer_hint_closest_object_to_robot: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__warehouse__scoped_attribute_count:
       scene_key: warehouse
       task_key: warehouse_shelf_level_object_count_query
-      object_description: a warehouse shelf area with a gridded floor, two to four distinctly colored shelf racks, and visible items on bottom, middle, and top shelf levels
-      annotation_hint: set "annotation" to an array containing one bounding box [x0,y0,x1,y1] around each counted shelf item; use [] if the count is zero
-      answer_hint: set "answer" to the number of shelf items on the queried shelf level of the queried colored rack
+      object_description: a warehouse shelf area with a gridded floor, two to four
+        distinctly colored shelf racks, and visible items on bottom, middle, and top
+        shelf levels
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,y0,x1,y1]
+        around each counted shelf item; use [] if the count is zero
+      answer_hint: set "answer" to the number of shelf items on the queried shelf
+        level of the queried colored rack
       json_example: '{"annotation":[[142,118,238,178],[260,119,338,179]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tower_draughts_board`
+2. Scene: `tower_draughts_board`
 3. Scene id: `tower_draughts_board`
 4. Public task id: `task_games__tower_draughts_board__marked_stack_destination_count`
 5. Supported `query_id` values: `marked_stack_destination_count`

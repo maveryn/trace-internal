@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `library`
-- Implementation task group: `counting`
+- Implementation scene: `counting`
 - Implementation source: `trace/tasks/illustrations/counting/library_book_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__library__filtered_book_in_section_count` -> `task_illustrations__library__filtered_book_in_section_count`

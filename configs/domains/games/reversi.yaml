@@ -3,12 +3,6 @@ generation:
     scene_variant_weights:
       compact_board: 1.0
       classic_board: 1.0
-    query_id_weights:
-      legal_move_count: 1.0
-      corner_move_count: 1.0
-      flip_count_for_marked_move: 1.0
-      black_frontier_disc_count: 1.0
-      white_frontier_disc_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -17,7 +11,6 @@ generation:
       slate_board: 1.0
       blue_board: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     legal_move_count_support:
@@ -69,44 +62,8 @@ rendering:
     marked_square_outline_width_px: 6
     disc_inset_fraction: 0.14
     player_badge_font_size_px: 22
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.3
-      card_reasoning: 0.42
-      ambiguity: 0.16
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_reversi_v0
+    bundle_id: games_reversi_v1
     scene_key: visible_reversi_board
     task_key: reversi_move_query
-    object_description_compact_board: a 6 by 6 Reversi board with black and white
-      discs
-    object_description_classic_board: an 8 by 8 Reversi board with black and white
-      discs
-    legal_move_rule_text: A legal move is an empty square that brackets one or
-      more opponent discs in at least one straight line.
-    corner_rule_text: The corner squares are the four outermost corners.
-    marked_move_rule_text: The red marked empty square is the marked move.
-    flip_rule_text: The marked move flips every bracketed opponent disc.
-    frontier_rule_text: A frontier disc touches at least one empty square horizontally,
-      vertically, or diagonally.
-    annotation_hint_legal_move_count: set "annotation" to bounding boxes [x0, y0, x1,
-      y1] for every legal move square
-    annotation_hint_corner_move_count: set "annotation" to bounding boxes [x0, y0, x1,
-      y1] for every legal corner square
-    annotation_hint_flip_count_for_marked_move: set "annotation" to one pixel point
-      [x,y] at the center of every disc flipped by the marked move
-    annotation_hint_black_frontier_disc_count: set "annotation" to one pixel point
-      [x,y] at the center of every counted black frontier disc
-    annotation_hint_white_frontier_disc_count: set "annotation" to one pixel point
-      [x,y] at the center of every counted white frontier disc
-    answer_hint_legal_move_count: set "answer" to the count of legal moves
-    answer_hint_corner_move_count: set "answer" to the count of legal corner moves
-    answer_hint_flip_count_for_marked_move: set "answer" to the count of discs flipped
-      by the marked move
-    answer_hint_black_frontier_disc_count: set "answer" to the count of black frontier
-      discs
-    answer_hint_white_frontier_disc_count: set "answer" to the count of white frontier
-      discs

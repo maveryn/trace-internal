@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `cycle`
+2. Scene: `cycle`
 3. Task id: `task_pages__cycle__offset_stage_label`
 4. Objective: read one directed cycle diagram and return the exact visible stage label that is `k` steps before or after a queried stage.
 

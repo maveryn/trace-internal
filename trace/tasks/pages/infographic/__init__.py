@@ -1,1 +1,1 @@
-"""Pages infographic task group."""
+"""Pages infographic scene."""

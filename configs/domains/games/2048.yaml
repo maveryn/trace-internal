@@ -2,11 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       standard_board: 1.0
-    query_id_weights:
-      merge_count: 1.0
-      score_value: 1.0
-      max_tile_value: 1.0
-      move_result_board_label: 1.0
     style_variant_weights:
       classic: 1.0
       dark: 1.0
@@ -19,43 +14,49 @@ generation:
       left: 1.0
       right: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_move_direction_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_target_label_sampling: true
-    balanced_result_board_option_count_sampling: true
-    merge_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-    score_value_support:
-      - 0
-      - 4
-      - 8
-      - 12
-      - 16
-      - 24
-      - 32
-      - 40
-    max_tile_value_support:
-      - 16
-      - 32
-      - 64
-      - 128
-      - 256
-    result_board_label_support:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    result_board_option_count_support:
-      - 4
-      - 6
+  task_overrides:
+    task_games__2048__merge_count:
+      balanced_target_answer_sampling: true
+      merge_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    task_games__2048__score_value:
+      balanced_target_answer_sampling: true
+      score_value_support:
+        - 0
+        - 4
+        - 8
+        - 12
+        - 16
+        - 24
+        - 32
+        - 40
+    task_games__2048__max_tile_value:
+      balanced_target_answer_sampling: true
+      max_tile_value_support:
+        - 16
+        - 32
+        - 64
+        - 128
+        - 256
+    task_games__2048__move_result_board_label:
+      balanced_target_label_sampling: true
+      balanced_result_board_option_count_sampling: true
+      result_board_label_support:
+        - A
+        - B
+        - C
+        - D
+        - E
+        - F
+      result_board_option_count_support:
+        - 4
+        - 6
 rendering:
   shared:
     canvas_width: 900
@@ -74,27 +75,8 @@ rendering:
     tile_font_size_px: 46
     arrow_width_px: 9
     label_font_size_px: 24
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.28
-      rule_simulation: 0.40
-      comparison_load: 0.20
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_2048_v0
+    bundle_id: games_2048_v1
     scene_key: visible_2048_board
     task_key: twenty_forty_eight_query
-    object_description_standard_board: a 4 x 4 2048 board with numbered tiles and move arrows
-    move_rule_text: In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.
-    score_rule_text: The move score is the sum of the newly created merged tile values.
-    result_board_rule_text: Labeled candidate boards are shown below. Use only the slide-and-merge result before any new tile is added.
-    annotation_hint_merge_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the original tile cells that participate in the merges; use an empty list if no merge occurs
-    answer_hint_merge_count: set "answer" to the number of merges made by the shown move
-    annotation_hint_score_value: set "annotation" to bounding boxes [x0, y0, x1, y1] around the original tile cells that participate in the merges used for the score; use an empty list if the score is zero
-    answer_hint_score_value: set "answer" to the move score
-    annotation_hint_max_tile_value: set "annotation" to bounding boxes [x0, y0, x1, y1] around the original tile cell or cells that form the largest tile after the shown move
-    answer_hint_max_tile_value: set "answer" to the largest tile value after the shown move
-    annotation_hint_move_result_board_label: set "annotation" to a JSON array containing the bounding box [x0, y0, x1, y1] around the selected candidate result board
-    answer_hint_move_result_board_label: set "answer" to the single option letter of the candidate board that matches the result after the shown move

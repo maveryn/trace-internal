@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,8 +18,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.common import projected_puzzle_bbox_annotation
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
-from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
+from trace.tasks.shared.fixed_query import rewrite_fixed_puzzle_query_output
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.string_topology_common import (
     PuzzleStringTopologyDefaults,
@@ -47,13 +46,12 @@ _SCENE_LOAD_BY_VARIANT = {
 }
 
 _DEFAULTS = PuzzleStringTopologyDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "topology")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="topology", apply_prob=0.0)
 
 
 def _advance_sampling(params: Mapping[str, Any], axis_size: int) -> Mapping[str, Any]:
@@ -68,7 +66,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "topology"
+    scene_id = "topology"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -167,7 +165,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -204,14 +202,6 @@ class _PuzzlesTopologyStringComponentBaseTask:
         answer_bounds = [min(answer_support), max(answer_support)]
         answer_load = float(normalize_int_with_bounds(int(answer_value), answer_bounds)) if len(set(answer_support)) > 1 else 0.0
         reasoning_load = min(1.0, float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]) + (0.18 * answer_load))
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
 
         annotation_source_name = "component_bboxes_px"
         trace_payload = {
@@ -322,7 +312,6 @@ class _PuzzlesTopologyStringComponentBaseTask:
             "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
 
         component_specs = [dict(component) for component in dataset["component_specs"]]
@@ -342,7 +331,6 @@ class _PuzzlesTopologyStringComponentBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

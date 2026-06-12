@@ -26,7 +26,7 @@ def test_combo_tasks_are_default_and_taxonomy_aligned() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "charts"
         assert taxonomy.scene_id == "combo_mark"
-        assert taxonomy.source_task_group == "combo"
+        assert not taxonomy.source_scene_id
 
 
 def test_combo_tasks_generate_default_public_variant() -> None:

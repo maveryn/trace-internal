@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults, resolve_task_group_section_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults, resolve_scene_section_defaults
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -184,22 +184,14 @@ _DEFAULTS = _TaskDefaults()
 
 
 def _relation_defaults(task_id: str) -> Tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Dict[str, float]]:
-    task_group_defaults = get_task_group_defaults("pages", "relation")
+    scene_id_defaults = get_scene_defaults("pages", "relation")
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
-        task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
+        scene_id_defaults if isinstance(scene_id_defaults, Mapping) else {},
         task_id=str(task_id),
     )
-    visual_defaults = task_group_defaults.get("visual", {}) if isinstance(task_group_defaults, Mapping) else {}
+    visual_defaults = scene_id_defaults.get("visual", {}) if isinstance(scene_id_defaults, Mapping) else {}
     background_defaults = dict(visual_defaults.get("background", {})) if isinstance(visual_defaults.get("background"), Mapping) else {}
     noise_defaults = dict(visual_defaults.get("noise", {})) if isinstance(visual_defaults.get("noise"), Mapping) else {}
-    complexity_weights = {
-        str(key): float(value)
-        for key, value in resolve_task_group_section_defaults(task_group_defaults, "complexity", task_id=str(task_id))
-        .get("criteria_weights", {})
-        .items()
-        if float(value) > 0.0
-    }
-    return gen_defaults, render_defaults, prompt_defaults, background_defaults, noise_defaults, complexity_weights
 
 
 def _normalize_support(
@@ -343,7 +335,6 @@ def _resolve_render_params(
 
 def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     task_id = str(definition.task_id)
-    gen_defaults, _render_defaults, _prompt_defaults, _bg_defaults, _noise_defaults, _complexity_weights = _relation_defaults(task_id)
     rng = spawn_rng(int(instance_seed), f"{task_id}.query")
     query_id, query_id_probabilities = _resolve_named_axis(
         rng,
@@ -767,45 +758,19 @@ def _prompt_json_examples(query: _ResolvedQuery) -> Tuple[str, str]:
     )
 
 
-def _build_complexity(query: _ResolvedQuery, complexity_weights: Mapping[str, float]) -> TaskComplexity:
-    if not complexity_weights:
-        raise ValueError(f"missing positive complexity criteria weights for {query.task_id}")
-    layout_base = {
-        "toolbar_palette": 0.84,
-        "property_panel": 0.88,
-        "canvas_tool": 0.92,
-        "code_workspace": 0.90,
-        "file_dialog": 0.86,
-    }.get(str(query.variant_spec.layout), 0.86)
-    components = {
-        "visual_scan": _clamp_unit((float(len(query.controls)) - 16.0) / 9.0),
-        "relational_grounding": 0.98,
-        "layout_complexity": float(layout_base),
-        "output_burden": 0.48,
-    }
-    missing = [key for key in complexity_weights if key not in components]
-    if missing:
-        raise ValueError(f"GUI professional target complexity is missing active criteria: {missing}")
-    total_weight = sum(float(value) for value in complexity_weights.values())
-    score = sum(float(complexity_weights[key]) * float(components[key]) for key in complexity_weights) / float(total_weight)
-    return TaskComplexity(
-        complexity_score=_clamp_unit(score),
-        complexity_components={str(key): float(_clamp_unit(components[str(key)])) for key in complexity_weights},
-    )
 
 
 class ProfessionalGuiRelationTaskBase:
     """Base class for ScreenSpot-style GUI target grounding tasks."""
 
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     definition: ProfessionalTaskDefinition
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         definition = self.definition
         task_id = str(definition.task_id)
-        gen_defaults, render_defaults, prompt_defaults, background_defaults, noise_defaults, complexity_weights = _relation_defaults(task_id)
         del gen_defaults
         query = _resolve_query(definition, int(instance_seed), params=params)
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
@@ -866,7 +831,7 @@ class ProfessionalGuiRelationTaskBase:
         json_example, json_example_answer_only = _prompt_json_examples(query)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults_required["bundle_id"]),
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required["task_key"]),
@@ -1035,7 +1000,6 @@ class ProfessionalGuiRelationTaskBase:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(query, complexity_weights),
             task_versions=default_task_versions(),
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

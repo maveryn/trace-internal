@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `battleship`
-3. Scene id: `battleship`
-4. Public task id: `task_games__battleship__last_ship_cell_label`
-5. Supported `query_id` values: `last_ship_cell_label`
-6. Answer schema: `option_label`
-7. Annotation schema: `point_set`
-8. Program schema: `label(select(candidate_cells, completes_only_not_sunk_ship)); scene=battleship; scope=last_ship_cell_label`
+2. Scene id: `battleship`
+3. Public task id: `task_games__battleship__last_ship_cell_label`
+4. Supported `query_id` values: `last_ship_cell_label`
+5. Answer schema: `option_label`
+6. Annotation schema: `point_set`
+7. Program schema: `label(select(candidate_cells, completes_only_not_sunk_ship)); scene=battleship; scope=last_ship_cell_label`
 
 ## Generation Notes
 1. The Battleship scene uses five fleet shapes: `Line 5`, `Line 4`, `Line 3`, `Square 2x2`, and `L 3`.

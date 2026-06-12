@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `color_gradient`
-3. Task group: `visual`
+3. Scene: `visual`
 4. Task id: `task_puzzles__color_gradient__color_gradient_completion_label`
 
 ## Query Contract

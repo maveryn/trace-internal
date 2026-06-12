@@ -39,7 +39,6 @@ generation:
     extremum_direction_weights:
       largest: 1.0
       smallest: 1.0
-
 rendering:
   shared:
     canvas_width: 1320
@@ -62,38 +61,51 @@ rendering:
     word_text_stroke_width_px: 1
     bubble_label_stroke_width_px: 1
     category_palette_rgb:
-      - [34, 92, 170]
-      - [180, 73, 38]
-      - [38, 126, 70]
-      - [125, 73, 165]
-      - [176, 126, 18]
-      - [31, 132, 145]
-
+    - - 34
+      - 92
+      - 170
+    - - 180
+      - 73
+      - 38
+    - - 38
+      - 126
+      - 70
+    - - 125
+      - 73
+      - 165
+    - - 176
+      - 126
+      - 18
+    - - 31
+      - 132
+      - 145
 prompt:
   shared:
-    bundle_id: charts_size_encoding_v0
+    bundle_id: charts_size_encoding_v1
     scene_key: size_encoded_chart_scene
     task_key: size_comparison_label_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     answer_hint: set "answer" to the exact visible item or category label as a string
-    object_description_rect_word_cloud: a rectangular word cloud where item text size indicates value and a colored marker beside each word indicates category
-    object_description_circle_word_cloud: a circular word cloud where item text size indicates value and a colored marker beside each word indicates category
-    object_description_packed_bubble_cloud: a packed bubble chart where bubble size indicates value and color indicates category
-    object_description_small_multiple_bubble_cloud: multiple packed bubble-chart panels where bubble size indicates value and color indicates category
-    annotation_hint_filtered_item_extremum_label: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] around the answer item
-    annotation_hint_reference_size_neighbor_label: set "annotation" to an object mapping "reference_item" and "answer_item" to their [x0, y0, x1, y1] pixel boxes
-    annotation_hint_category_total_extremum_label: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the items in the answer category
+    object_description_rect_word_cloud: a rectangular word cloud where item text size
+      indicates value and a colored marker beside each word indicates category
+    object_description_circle_word_cloud: a circular word cloud where item text size
+      indicates value and a colored marker beside each word indicates category
+    object_description_packed_bubble_cloud: a packed bubble chart where bubble size
+      indicates value and color indicates category
+    object_description_small_multiple_bubble_cloud: multiple packed bubble-chart panels
+      where bubble size indicates value and color indicates category
+    annotation_hint_filtered_item_extremum_label: set "annotation" to an array containing
+      exactly one bounding box [x0, y0, x1, y1] around the answer item
+    annotation_hint_reference_size_neighbor_label: set "annotation" to an object mapping
+      "reference_item" and "answer_item" to their [x0, y0, x1, y1] pixel boxes
+    annotation_hint_category_total_extremum_label: set "annotation" to an array of
+      bounding boxes [x0, y0, x1, y1] for the items in the answer category
     json_example_filtered_item_extremum_label: '{"annotation":[[410,235,548,292]],"answer":"Aero"}'
     json_example_reference_size_neighbor_label: '{"annotation":{"reference_item":[238,460,322,544],"answer_item":[628,306,710,388]},"answer":"Cair"}'
     json_example_category_total_extremum_label: '{"annotation":[[118,250,236,318],[330,410,470,485],[710,205,842,280]],"answer":"Coastal"}'
     json_example_answer_only_filtered_item_extremum_label: '{"answer":"Aero"}'
     json_example_answer_only_reference_size_neighbor_label: '{"answer":"Cair"}'
     json_example_answer_only_category_total_extremum_label: '{"answer":"Coastal"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.36
-      reasoning_load: 0.36
-      scene_variant_load: 0.28

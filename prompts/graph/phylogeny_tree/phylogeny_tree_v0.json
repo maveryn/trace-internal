@@ -1,0 +1,125 @@
+{
+  "bundle_id": "phylogeny_tree_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "clade_leaf_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "sister_leaf_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "mrca_clade_membership_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "topology_outlier_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:phylogeny_tree": [
+      "object_description"
+    ],
+    "scene:phylogeny_tree_options": [
+      "object_description"
+    ],
+    "query:marked_clade_leaf_count": [],
+    "query:sister_leaf_label": [
+      "query_label"
+    ],
+    "query:mrca_leaf_count": [
+      "query_label_a",
+      "query_label_b"
+    ],
+    "query:topology_outlier_label": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "phylogeny_tree": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ],
+    "phylogeny_tree_options": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "marked_clade_leaf_count": [
+      "How many taxa are in the marked clade?",
+      "Count the descendant taxa inside the marked clade.",
+      "What is the number of labeled taxa descending from the marked clade?",
+      "The highlighted branch marks one clade. How many terminal taxa does that clade contain?",
+      "Find the marked clade and count its descendant taxon labels. How many are there?"
+    ],
+    "sister_leaf_label": [
+      "Which taxon label is the sister taxon of \"{query_label}\"?",
+      "Find the leaf that shares the most recent parent branch with \"{query_label}\". What is its label?",
+      "What is the label of the sister taxon paired with \"{query_label}\"?",
+      "In the cladogram, which terminal taxon shares an immediate parent with \"{query_label}\"?",
+      "Identify the sister leaf of \"{query_label}\"."
+    ],
+    "mrca_leaf_count": [
+      "How many taxa descend from the most recent common ancestor of \"{query_label_a}\" and \"{query_label_b}\"?",
+      "Find the smallest clade containing \"{query_label_a}\" and \"{query_label_b}\". How many terminal taxa are in it?",
+      "What is the number of taxa in the clade rooted at the most recent common ancestor of \"{query_label_a}\" and \"{query_label_b}\"?",
+      "Trace back from \"{query_label_a}\" and \"{query_label_b}\" to their most recent common ancestor. How many descendant taxa does that ancestor have?",
+      "Count the terminal taxa in the MRCA clade for \"{query_label_a}\" and \"{query_label_b}\"."
+    ],
+    "topology_outlier_label": [
+      "Five options have the same rooted topology, ignoring branch order and layout. Which option is the outlier?",
+      "Which option has a different rooted clade structure from the other five options?",
+      "Ignoring rotations and drawing layout, select the one cladogram whose topology differs.",
+      "Find the option whose set of nested clades is not the same as the other options.",
+      "Which labeled option is the topology outlier?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

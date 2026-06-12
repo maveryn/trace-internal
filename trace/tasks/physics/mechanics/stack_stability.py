@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -27,7 +27,7 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_mechanics_stack_stability_family"
+TASK_NAMESPACE = "physics_mechanics_stack_stability"
 SCENE_ID = "stack_stability"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("stable_stack_label", "tipping_stack_label")
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
@@ -35,12 +35,12 @@ STATUS_STABLE = "stable"
 STATUS_TIPPING = "tipping"
 TIP_DIRECTIONS: Tuple[str, ...] = ("left", "right")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -170,7 +170,7 @@ def _expand_bbox(bbox: Sequence[float], padding: float) -> List[float]:
 
 def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_QUERY_IDS,
@@ -187,14 +187,14 @@ def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_correct_option_letter(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.correct_option_letter"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.correct_option_letter"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=OPTION_LETTERS,
@@ -211,7 +211,7 @@ def _resolve_correct_option_letter(instance_seed: int, *, params: Mapping[str, A
         balance_flag_key="balanced_correct_option_letter_sampling",
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
-        sampling_namespace=f"{FAMILY_ID}.correct_option_letter",
+        sampling_namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -240,7 +240,7 @@ def _profile_for_status(rng, *, status: str, forced_tip_direction: str | None = 
 
 def _make_scene_spec(instance_seed: int, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _StackSceneSpec:
     _ = params
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene")
     correct_status = STATUS_STABLE if str(axes.query_id) == "stable_stack_label" else STATUS_TIPPING
     distractor_status = STATUS_TIPPING if correct_status == STATUS_STABLE else STATUS_STABLE
     palettes = list(_BRICK_PALETTES)
@@ -308,7 +308,7 @@ def _render_candidate(
     brick_width = float(render_defaults["brick_width_px"])
     brick_height = float(render_defaults["brick_height_px"])
     brick_gap = float(render_defaults["brick_gap_px"])
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.candidate.{candidate.label}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.candidate.{candidate.label}")
     base_x = float((cell_left + cell_right) / 2.0 + rng.randint(-10, 10))
     ground_y = float(cell_bottom - 34.0 + rng.randint(-3, 4))
     top_margin = float(cell_top + 54.0)
@@ -486,7 +486,7 @@ def _resolve_render_defaults(params: Mapping[str, Any], *, instance_seed: int) -
             str(key),
             int(getattr(_DEFAULTS, str(key))),
             instance_seed=int(instance_seed),
-            namespace=FAMILY_ID,
+            namespace=TASK_NAMESPACE,
         )
         for key in keys
     }
@@ -626,7 +626,7 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
 
     task_id = "task_physics__stack_stability__stability_status_label"
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -647,7 +647,6 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 require_grid=True,
@@ -655,7 +654,7 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -697,7 +696,7 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -715,15 +714,6 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
                 answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-            complexity = TaskComplexity(
-                complexity_score=0.42,
-                complexity_components={
-                    "visual_scan": 0.34,
-                    "center_of_mass_reasoning": 0.38,
-                    "ambiguity": 0.16,
-                    "output_burden": 0.12,
-                },
-            )
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": "physics_stack_stability_brick_stacks",
@@ -793,7 +783,6 @@ class PhysicsMechanicsStackStabilityStatusLabelTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=str(spec.query_id),

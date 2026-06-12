@@ -2,10 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       traffic_crossing: 1.0
-    query_id_weights:
-      moving_object_count: 1.0
-      left_moving_object_count: 1.0
-      right_moving_object_count: 1.0
     style_variant_weights:
       day: 1.0
       night: 1.0
@@ -13,41 +9,43 @@ generation:
       paper: 1.0
       construction: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_lane_count_sampling: true
     balanced_row_count_sampling: true
     balanced_target_answer_sampling: true
     lane_count_support:
-      - 5
-      - 6
-      - 7
-      - 8
+    - 5
+    - 6
+    - 7
+    - 8
     row_count_support:
-      - 5
-      - 6
-      - 7
-    moving_object_count_support:
+    - 5
+    - 6
+    - 7
+  task_overrides:
+    task_games__crossing__moving_object_count:
+      moving_object_count_support:
       - 1
       - 2
       - 3
       - 4
       - 5
-    left_moving_object_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-    right_moving_object_count_support:
+      moving_object_max_extra_per_row: 1
+    task_games__crossing__moving_object_direction_count:
+      left_moving_object_count_support:
       - 1
       - 2
       - 3
       - 4
       - 5
       - 6
-    moving_object_max_extra_per_row: 1
+      right_moving_object_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
 rendering:
   shared:
     canvas_width: 1000
@@ -61,24 +59,8 @@ rendering:
     vehicle_height_px: 42
     path_width_px: 5
     label_font_size_px: 24
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      motion_reasoning: 0.34
-      route_reasoning: 0.22
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_crossing_v0
+    bundle_id: games_crossing_v1
     scene_key: visible_crossing_lane
     task_key: crossing_query
-    object_description_traffic_crossing: a lane-crossing game board with moving objects, direction arrows, start pads, and one marked route line
-    object_description_traffic_crossing_no_route: a lane-crossing game board with moving objects, direction arrows, start pads, and a goal band
-    crossing_motion_rule_text: At tick 1, the runner enters the bottom traffic row; at each next tick, the runner moves one row upward. Each moving object shifts one lane cell per tick in its arrow direction. Objects that reach an edge leave the board.
-    annotation_hint_moving_object_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for the moving objects that intersect the marked route
-    annotation_hint_left_moving_object_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for every moving object whose arrow points left
-    annotation_hint_right_moving_object_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for every moving object whose arrow points right
-    answer_hint_moving_object_count: set "answer" to the number of moving objects that intersect the marked route; the value is between 1 and 5
-    answer_hint_left_moving_object_count: set "answer" to the number of moving objects whose arrow points left; the value is between 1 and 6
-    answer_hint_right_moving_object_count: set "answer" to the number of moving objects whose arrow points right; the value is between 1 and 6

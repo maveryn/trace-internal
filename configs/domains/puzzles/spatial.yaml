@@ -129,8 +129,8 @@ generation:
         paper_fold_cut_result: 1.0
         overlay_result: 1.0
       fold_count_weights:
-        "1": 1.0
-        "2": 1.0
+        '1': 1.0
+        '2': 1.0
       fold_axis_weights:
         vertical: 1.0
         horizontal: 1.0
@@ -162,28 +162,33 @@ generation:
       cuboid_height_max: 3
       original_max_height_min: 2
       original_max_height_max: 5
-      total_cubes_max: 12
+      total_cubes_max: 9
       removed_cube_count_min: 1
       removed_cube_count_max: 6
       missing_cube_count_min: 1
       missing_cube_count_max: 6
-      painted_face_target_k_support: [2, 3, 4, 5]
+      painted_face_target_k_support:
+      - 2
+      - 3
+      - 4
+      - 5
       exact_k_painted_cube_count_min: 0
       exact_k_painted_cube_count_max: 8
-      cube_color_name_support: [orange, blue, green, purple, cyan, magenta, brown]
+      cube_color_name_support:
+      - orange
+      - blue
+      - green
+      - purple
+      - cyan
+      - magenta
+      - brown
       balanced_query_id_sampling: true
       balanced_change_type_sampling: true
       balanced_painted_query_sampling: true
-      balanced_query_id_sampling: true
       balanced_view_direction_sampling: true
       balanced_scene_variant_sampling: true
       query_id_weights:
-        cube_count: 1.0
-        cube_structure_change_count: 1.0
-        painted_face_count: 1.0
         visible_cube_count: 1.0
-        projection_match_label: 1.0
-        projection_consistency_label: 1.0
       change_type_weights:
         missing_to_complete: 1.0
         removed: 1.0
@@ -203,26 +208,26 @@ generation:
       footprint_depth_min: 2
       footprint_depth_max: 4
       total_cubes_min: 4
-      total_cubes_max: 9
       max_height: 3
-      target_count_support: [3, 4, 5, 6, 7]
+      target_count_support:
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
       projection_match_option_count_min: 5
       projection_match_option_count_max: 6
       projection_consistency_option_count_min: 5
       projection_consistency_option_count_max: 5
       min_distinct_view_counts: 2
       allow_full_query_projection: false
-      query_id_weights:
-        visible_cube_count: 1.0
       view_direction_weights:
         top: 1.0
         front: 1.0
         right: 1.0
-
 visual:
   noise:
     apply_prob: 0.0
-
 rendering:
   task_overrides:
     puzzles_spatial_polyomino_arrangement_internal:
@@ -256,40 +261,112 @@ rendering:
       border_width_px_min: 2
       border_width_px_max: 4
       option_label_font_size_px: 30
-      panel_fill_rgb: [248, 249, 252]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
       panel_fill_rgb_options:
-        - [248, 249, 252]
-        - [244, 250, 248]
-        - [252, 248, 240]
-      piece_card_fill_rgb: [252, 252, 255]
+      - - 248
+        - 249
+        - 252
+      - - 244
+        - 250
+        - 248
+      - - 252
+        - 248
+        - 240
+      piece_card_fill_rgb:
+      - 252
+      - 252
+      - 255
       piece_card_fill_rgb_options:
-        - [252, 252, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      option_panel_fill_rgb: [251, 251, 255]
+      - - 252
+        - 252
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      option_panel_fill_rgb:
+      - 251
+      - 251
+      - 255
       option_panel_fill_rgb_options:
-        - [251, 251, 255]
-        - [247, 251, 250]
-        - [253, 249, 241]
-      option_shape_fill_rgb: [252, 252, 255]
-      shape_fill_rgb: [66, 97, 148]
+      - - 251
+        - 251
+        - 255
+      - - 247
+        - 251
+        - 250
+      - - 253
+        - 249
+        - 241
+      option_shape_fill_rgb:
+      - 252
+      - 252
+      - 255
+      shape_fill_rgb:
+      - 66
+      - 97
+      - 148
       shape_fill_rgb_options:
-        - [66, 97, 148]
-        - [54, 121, 112]
-        - [133, 84, 64]
-      target_cell_rgb: [207, 219, 236]
-      highlight_fill_rgb: [255, 239, 164]
-      empty_cell_rgb: [251, 252, 255]
-      board_grid_rgb: [92, 101, 116]
-      marked_cell_rgb: [236, 96, 78]
-      missing_cell_rgb: [22, 24, 28]
-      border_color_rgb: [86, 94, 108]
+      - - 66
+        - 97
+        - 148
+      - - 54
+        - 121
+        - 112
+      - - 133
+        - 84
+        - 64
+      target_cell_rgb:
+      - 207
+      - 219
+      - 236
+      highlight_fill_rgb:
+      - 255
+      - 239
+      - 164
+      empty_cell_rgb:
+      - 251
+      - 252
+      - 255
+      board_grid_rgb:
+      - 92
+      - 101
+      - 116
+      marked_cell_rgb:
+      - 236
+      - 96
+      - 78
+      missing_cell_rgb:
+      - 22
+      - 24
+      - 28
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
       border_color_rgb_options:
-        - [86, 94, 108]
-        - [78, 105, 107]
-        - [113, 97, 82]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
+      - - 86
+        - 94
+        - 108
+      - - 78
+        - 105
+        - 107
+      - - 113
+        - 97
+        - 82
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     puzzles_spatial_tangram_assembly_internal:
       canvas_width: 1160
       canvas_height: 1040
@@ -317,16 +394,46 @@ rendering:
       seam_width_px_max: 4
       highlight_width_px: 8
       option_label_font_size_px: 29
-      panel_fill_rgb: [248, 249, 252]
-      assembly_panel_fill_rgb: [252, 252, 255]
-      option_panel_fill_rgb: [251, 251, 255]
-      option_shape_fill_rgb: [238, 243, 249]
-      missing_fill_rgb: [18, 20, 24]
-      marked_outline_rgb: [18, 20, 24]
-      border_color_rgb: [86, 94, 108]
-      seam_color_rgb: [42, 49, 59]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
+      assembly_panel_fill_rgb:
+      - 252
+      - 252
+      - 255
+      option_panel_fill_rgb:
+      - 251
+      - 251
+      - 255
+      option_shape_fill_rgb:
+      - 238
+      - 243
+      - 249
+      missing_fill_rgb:
+      - 18
+      - 20
+      - 24
+      marked_outline_rgb:
+      - 18
+      - 20
+      - 24
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
+      seam_color_rgb:
+      - 42
+      - 49
+      - 59
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     puzzles_spatial_rubiks_cube_internal:
       canvas_width: 1480
       canvas_height: 940
@@ -353,16 +460,46 @@ rendering:
       face_label_font_size_px: 22
       small_label_font_size_px: 18
       number_font_size_px: 40
-      panel_fill_rgb: [248, 249, 252]
-      net_panel_fill_rgb: [252, 252, 255]
-      option_panel_fill_rgb: [251, 251, 255]
-      target_swatch_panel_fill_rgb: [248, 249, 252]
-      sticker_outline_rgb: [52, 58, 68]
-      border_color_rgb: [86, 94, 108]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
-      coordinate_fill_rgb: [255, 246, 248]
-      coordinate_grid_rgb: [176, 124, 138]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
+      net_panel_fill_rgb:
+      - 252
+      - 252
+      - 255
+      option_panel_fill_rgb:
+      - 251
+      - 251
+      - 255
+      target_swatch_panel_fill_rgb:
+      - 248
+      - 249
+      - 252
+      sticker_outline_rgb:
+      - 52
+      - 58
+      - 68
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      coordinate_fill_rgb:
+      - 255
+      - 246
+      - 248
+      coordinate_grid_rgb:
+      - 176
+      - 124
+      - 138
     puzzles_spatial_transform_result_internal:
       canvas_width: 1200
       canvas_height: 940
@@ -388,56 +525,134 @@ rendering:
       border_width_px_max: 4
       option_label_font_size_px: 28
       combine_symbol_font_size_px: 46
-      panel_fill_rgb: [248, 249, 252]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
       panel_fill_rgb_options:
-        - [248, 249, 252]
-        - [244, 250, 248]
-        - [252, 248, 240]
-      paper_fill_rgb: [255, 252, 245]
+      - - 248
+        - 249
+        - 252
+      - - 244
+        - 250
+        - 248
+      - - 252
+        - 248
+        - 240
+      paper_fill_rgb:
+      - 255
+      - 252
+      - 245
       paper_fill_rgb_options:
-        - [255, 252, 245]
-        - [249, 253, 252]
-        - [253, 249, 239]
-      paper_shadow_rgb: [236, 230, 215]
-      border_color_rgb: [86, 94, 108]
+      - - 255
+        - 252
+        - 245
+      - - 249
+        - 253
+        - 252
+      - - 253
+        - 249
+        - 239
+      paper_shadow_rgb:
+      - 236
+      - 230
+      - 215
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
       border_color_rgb_options:
-        - [86, 94, 108]
-        - [78, 105, 107]
-        - [113, 97, 82]
-      text_color_rgb: [30, 34, 40]
-      text_stroke_rgb: [255, 255, 255]
-      mark_fill_rgb: [53, 96, 164]
+      - - 86
+        - 94
+        - 108
+      - - 78
+        - 105
+        - 107
+      - - 113
+        - 97
+        - 82
+      text_color_rgb:
+      - 30
+      - 34
+      - 40
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      mark_fill_rgb:
+      - 53
+      - 96
+      - 164
       mark_fill_rgb_options:
-        - [53, 96, 164]
-        - [47, 128, 117]
-        - [161, 94, 68]
-      mark_outline_rgb: [36, 48, 66]
+      - - 53
+        - 96
+        - 164
+      - - 47
+        - 128
+        - 117
+      - - 161
+        - 94
+        - 68
+      mark_outline_rgb:
+      - 36
+      - 48
+      - 66
       mark_shape: circle
       mark_shape_options:
-        - circle
-        - square
-        - diamond
-        - rounded_square
-      cut_hole_fill_rgb: [38, 45, 56]
+      - circle
+      - square
+      - diamond
+      - rounded_square
+      cut_hole_fill_rgb:
+      - 38
+      - 45
+      - 56
       cut_hole_fill_rgb_options:
-        - [38, 45, 56]
-        - [40, 74, 92]
-        - [101, 67, 86]
-      cut_hole_outline_rgb: [255, 255, 255]
+      - - 38
+        - 45
+        - 56
+      - - 40
+        - 74
+        - 92
+      - - 101
+        - 67
+        - 86
+      cut_hole_outline_rgb:
+      - 255
+      - 255
+      - 255
       cut_hole_shape: circle
       cut_hole_shape_options:
-        - circle
-        - square
-        - diamond
-        - rounded_square
-      fold_line_rgb: [100, 116, 145]
-      grid_line_rgb: [209, 214, 223]
+      - circle
+      - square
+      - diamond
+      - rounded_square
+      fold_line_rgb:
+      - 100
+      - 116
+      - 145
+      grid_line_rgb:
+      - 209
+      - 214
+      - 223
       grid_line_rgb_options:
-        - [209, 214, 223]
-        - [203, 218, 215]
-        - [221, 212, 198]
-      arrow_rgb: [54, 102, 180]
-      instruction_fill_rgb: [238, 243, 250]
+      - - 209
+        - 214
+        - 223
+      - - 203
+        - 218
+        - 215
+      - - 221
+        - 212
+        - 198
+      arrow_rgb:
+      - 54
+      - 102
+      - 180
+      instruction_fill_rgb:
+      - 238
+      - 243
+      - 250
     puzzles_spatial_cube_structure_internal:
       canvas_width: 1200
       canvas_height: 820
@@ -460,32 +675,74 @@ rendering:
       arrow_head_width_px: 18
       view_orientation_index_min: 0
       view_orientation_index_max: 1
-      panel_fill_rgb: [248, 249, 252]
+      panel_fill_rgb:
+      - 248
+      - 249
+      - 252
       panel_fill_rgb_options:
-        - [248, 249, 252]
-        - [244, 250, 248]
-        - [252, 248, 240]
-      border_color_rgb: [86, 94, 108]
+      - - 248
+        - 249
+        - 252
+      - - 244
+        - 250
+        - 248
+      - - 252
+        - 248
+        - 240
+      border_color_rgb:
+      - 86
+      - 94
+      - 108
       border_color_rgb_options:
-        - [86, 94, 108]
-        - [78, 105, 107]
-        - [113, 97, 82]
-      face_top_rgb: [240, 194, 108]
-      face_right_rgb: [213, 161, 73]
-      face_left_rgb: [187, 136, 56]
-      face_shadow_rgb: [150, 104, 38]
-      instruction_fill_rgb: [238, 243, 250]
-      caption_fill_rgb: [32, 38, 46]
-      caption_stroke_rgb: [255, 255, 255]
-      arrow_rgb: [75, 88, 107]
+      - - 86
+        - 94
+        - 108
+      - - 78
+        - 105
+        - 107
+      - - 113
+        - 97
+        - 82
+      face_top_rgb:
+      - 240
+      - 194
+      - 108
+      face_right_rgb:
+      - 213
+      - 161
+      - 73
+      face_left_rgb:
+      - 187
+      - 136
+      - 56
+      face_shadow_rgb:
+      - 150
+      - 104
+      - 38
+      instruction_fill_rgb:
+      - 238
+      - 243
+      - 250
+      caption_fill_rgb:
+      - 32
+      - 38
+      - 46
+      caption_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      arrow_rgb:
+      - 75
+      - 88
+      - 107
       canvas_size_min: 720
       canvas_size_max: 800
       projection_match_canvas_width: 1120
       projection_match_canvas_height: 860
       projection_consistency_canvas_width: 1120
       projection_consistency_canvas_height: 900
-      voxel_scale_min: 0.50
-      voxel_scale_max: 1.00
+      voxel_scale_min: 0.5
+      voxel_scale_max: 1.0
       voxel_scale_percent_min: 50
       voxel_scale_percent_max: 100
       scene_supersample_scale: 2
@@ -505,11 +762,18 @@ prompt:
     puzzles_spatial_polyomino_arrangement_internal:
       scene_key: spatial_polyomino_arrangement_puzzle
       task_key: polyomino_arrangement_label_query
-      object_description_polyomino_strip: a polyomino puzzle with shown pieces, a target or board area, and labeled options
-      object_description_polyomino_card: a card-style polyomino puzzle with shown pieces, a target or board area, and labeled options
-      object_description_polyomino_outline: an outline-style polyomino puzzle with shown pieces, a target or board area, and labeled options
-      annotation_hint_marked_region_piece_label: set "annotation" to an array containing the correct piece option panel box and black missing-region box as [x0, y0, x1, y1] pixel boxes
-      annotation_hint_rectangle_complement_piece: set "annotation" to an array containing the correct piece option panel box and rectangular target missing-region box as [x0, y0, x1, y1] pixel boxes
+      object_description_polyomino_strip: a polyomino puzzle with shown pieces, a
+        target or board area, and labeled options
+      object_description_polyomino_card: a card-style polyomino puzzle with shown
+        pieces, a target or board area, and labeled options
+      object_description_polyomino_outline: an outline-style polyomino puzzle with
+        shown pieces, a target or board area, and labeled options
+      annotation_hint_marked_region_piece_label: set "annotation" to an array containing
+        the correct piece option panel box and black missing-region box as [x0, y0,
+        x1, y1] pixel boxes
+      annotation_hint_rectangle_complement_piece: set "annotation" to an array containing
+        the correct piece option panel box and rectangular target missing-region box
+        as [x0, y0, x1, y1] pixel boxes
       json_example_marked_region_piece_label: '{"annotation":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
       json_example_rectangle_complement_piece: '{"annotation":[[416,604,592,808],[580,218,618,256]],"answer":"C"}'
       json_example_answer_only_marked_region_piece_label: '{"answer":"C"}'
@@ -517,12 +781,19 @@ prompt:
     puzzles_spatial_tangram_assembly_internal:
       scene_key: spatial_tangram_assembly_puzzle
       task_key: tangram_assembly_query
-      object_description_missing_piece_label: a tangram-style assembly with one black missing region and labeled piece options
-      object_description_contact_count: a tangram-style assembly with one or two marked pieces
-      answer_hint_option_letter: set "answer" to the exact option letter of the matching option
+      object_description_missing_piece_label: a tangram-style assembly with one black
+        missing region and labeled piece options
+      object_description_contact_count: a tangram-style assembly with one or two marked
+        pieces
+      answer_hint_option_letter: set "answer" to the exact option letter of the matching
+        option
       answer_hint_integer: set "answer" to the exact count as an integer
-      annotation_hint_missing_piece_label: set "annotation" to an array containing the correct option panel box followed by the black missing-region box, each as [x0, y0, x1, y1] pixel boxes
-      annotation_hint_contact_count: 'set "annotation" to an array of pixel bounding boxes [x0, y0, x1, y1] around the counted pieces: marked piece boxes first, then boxes for unmarked pieces that share an edge with a marked piece'
+      annotation_hint_missing_piece_label: set "annotation" to an array containing
+        the correct option panel box followed by the black missing-region box, each
+        as [x0, y0, x1, y1] pixel boxes
+      annotation_hint_contact_count: 'set "annotation" to an array of pixel bounding
+        boxes [x0, y0, x1, y1] around the counted pieces: marked piece boxes first,
+        then boxes for unmarked pieces that share an edge with a marked piece'
       json_example_missing_piece_label: '{"annotation":[[505,612,655,790],[426,196,566,335]],"answer":"C"}'
       json_example_contact_count: '{"annotation":[[426,196,566,335],[288,196,428,335],[565,196,704,335]],"answer":3}'
       json_example_answer_only_missing_piece_label: '{"answer":"C"}'
@@ -530,23 +801,40 @@ prompt:
     puzzles_spatial_rubiks_cube_internal:
       scene_key: spatial_rubiks_cube_net_puzzle
       task_key: rubiks_cube_query
-      object_description_sticker_color_label: a Rubik-style cube net with face labels, a (column,row) coordinate reference, and labeled color-swatch options; a prime mark in a move sequence means counterclockwise
-      object_description_face_color_count_label: a Rubik-style cube net with face labels, a (column,row) coordinate reference, a target color swatch, and labeled number options; a prime mark in a move sequence means counterclockwise
-      object_description_move_result_label: a Rubik-style starting cube net with face labels, a (column,row) coordinate reference, and labeled candidate result nets; a prime mark in a move sequence means counterclockwise
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      annotation_hint_option_panel: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected option panel
+      object_description_sticker_color_label: a Rubik-style cube net with face labels,
+        a (column,row) coordinate reference, and labeled color-swatch options; a prime
+        mark in a move sequence means counterclockwise
+      object_description_face_color_count_label: a Rubik-style cube net with face
+        labels, a (column,row) coordinate reference, a target color swatch, and labeled
+        number options; a prime mark in a move sequence means counterclockwise
+      object_description_move_result_label: a Rubik-style starting cube net with face
+        labels, a (column,row) coordinate reference, and labeled candidate result
+        nets; a prime mark in a move sequence means counterclockwise
+      answer_hint_option_letter: set "answer" to the single option label as a capital
+        letter
+      annotation_hint_option_panel: set "annotation" to an array containing exactly
+        one bounding box [x0, y0, x1, y1] for the selected option panel
       json_example_option_label: '{"annotation":[[836,312,972,466]],"answer":"D"}'
       json_example_answer_only_option_label: '{"answer":"D"}'
     puzzles_spatial_cube_surface_net_internal:
       scene_key: spatial_cube_surface_net_puzzle
       task_key: cube_surface_net_query
-      object_description_face_relation_label: a labeled cube net with one marked reference face and labeled face options
-      object_description_rolling_result_label: a labeled start cube, an arrow path showing cube rolls, and labeled face options
-      object_description_surface_path_label: a labeled cube net with a marked start face, numbered folded-edge move instructions, and labeled answer options
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      annotation_hint_face_relation: set "annotation" to an object with keys "marked_face" and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
-      annotation_hint_rolling_result: set "annotation" to an object with keys "start_cube", "roll_path", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
-      annotation_hint_surface_path: set "annotation" to an object with keys "start_face", "move_instructions", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      object_description_face_relation_label: a labeled cube net with one marked reference
+        face and labeled face options
+      object_description_rolling_result_label: a labeled start cube, an arrow path
+        showing cube rolls, and labeled face options
+      object_description_surface_path_label: a labeled cube net with a marked start
+        face, numbered folded-edge move instructions, and labeled answer options
+      answer_hint_option_letter: set "answer" to the single option label as a capital
+        letter
+      annotation_hint_face_relation: set "annotation" to an object with keys "marked_face"
+        and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      annotation_hint_rolling_result: set "annotation" to an object with keys "start_cube",
+        "roll_path", and "selected_option", each mapped to a pixel bounding box [x0,
+        y0, x1, y1]
+      annotation_hint_surface_path: set "annotation" to an object with keys "start_face",
+        "move_instructions", and "selected_option", each mapped to a pixel bounding
+        box [x0, y0, x1, y1]
       json_example_face_relation: '{"annotation":{"marked_face":[320,220,406,306],"selected_option":[812,220,966,326]},"answer":"D"}'
       json_example_rolling_result: '{"annotation":{"start_cube":[54,54,384,438],"roll_path":[420,54,1046,438],"selected_option":[428,610,650,716]},"answer":"B"}'
       json_example_surface_path: '{"annotation":{"start_face":[210,216,296,302],"move_instructions":[558,54,1046,482],"selected_option":[428,610,650,716]},"answer":"B"}'
@@ -554,15 +842,25 @@ prompt:
     puzzles_spatial_transform_result_internal:
       scene_key: spatial_transform_result_puzzle
       task_key: transform_result_query
-      object_description_overlay_strip: a transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
-      object_description_overlay_card: a card-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
-      object_description_overlay_outline: an outline-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
-      object_description_fold_strip: a paper-folding puzzle with a fold diagram above labeled result options
-      object_description_fold_card: a card-style paper-folding puzzle with a fold diagram above labeled result options
-      object_description_fold_outline: an outline-style paper-folding puzzle with a fold diagram above labeled result options
-      annotation_hint_overlay_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option image
-      annotation_hint_paper_fold_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct folded-result option image
-      annotation_hint_paper_fold_cut_result: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct unfolded-result option image
+      object_description_overlay_strip: a transparent-sheet overlay puzzle with two
+        aligned source sheets above labeled result options
+      object_description_overlay_card: a card-style transparent-sheet overlay puzzle
+        with two aligned source sheets above labeled result options
+      object_description_overlay_outline: an outline-style transparent-sheet overlay
+        puzzle with two aligned source sheets above labeled result options
+      object_description_fold_strip: a paper-folding puzzle with a fold diagram above
+        labeled result options
+      object_description_fold_card: a card-style paper-folding puzzle with a fold
+        diagram above labeled result options
+      object_description_fold_outline: an outline-style paper-folding puzzle with
+        a fold diagram above labeled result options
+      annotation_hint_overlay_result: set "annotation" to an array containing exactly
+        one bounding box [x0, y0, x1, y1] for the correct option image
+      annotation_hint_paper_fold_result: set "annotation" to an array containing exactly
+        one bounding box [x0, y0, x1, y1] for the correct folded-result option image
+      annotation_hint_paper_fold_cut_result: set "annotation" to an array containing
+        exactly one bounding box [x0, y0, x1, y1] for the correct unfolded-result
+        option image
       json_example_overlay_result: '{"annotation":[[521,384,679,542]],"answer":"B"}'
       json_example_paper_fold_result: '{"annotation":[[206,388,324,613]],"answer":"A"}'
       json_example_paper_fold_cut_result: '{"annotation":[[134,420,312,598]],"answer":"A"}'
@@ -573,27 +871,53 @@ prompt:
       scene_key: spatial_cube_structure_puzzle
       task_key: cube_structure_count_query
       answer_hint_integer: set "answer" to the exact count as an integer
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      object_description_stack_strip: a cube-structure counting puzzle with one isometric cube stack or two same-view cube structures
-      object_description_stack_card: a card-style cube-structure counting puzzle with one isometric cube stack or two same-view cube structures
-      object_description_stack_outline: an outline-style cube-structure counting puzzle with one isometric cube stack or two same-view cube structures
-      object_description_single_stack_stack_strip: a cube-structure counting puzzle with one isometric cube stack
-      object_description_single_stack_stack_card: a card-style cube-structure counting puzzle with one isometric cube stack
-      object_description_single_stack_stack_outline: an outline-style cube-structure counting puzzle with one isometric cube stack
-      object_description_change_pair_stack_strip: a cube-structure comparison puzzle with two same-view isometric cube structures
-      object_description_change_pair_stack_card: a card-style cube-structure comparison puzzle with two same-view isometric cube structures
-      object_description_change_pair_stack_outline: an outline-style cube-structure comparison puzzle with two same-view isometric cube structures
-      object_description_visible_cube_count: a cube-stack projection puzzle with an isometric cube stack on the left and one empty orthographic query grid on the right
-      object_description_projection_match_label: a cube-stack projection puzzle with an isometric cube stack and labeled orthographic projection options
-      object_description_projection_consistency_label: a cube-stack consistency puzzle with orthographic projection panels and labeled answer options
-      annotation_hint_total_cube_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      annotation_hint_missing_to_complete_cuboid_count: set "annotation" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the complete block on the left and the partial block on the right
-      annotation_hint_removed_cube_count: set "annotation" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the before structure on the left and the after structure on the right
-      annotation_hint_painted_exterior_face_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      annotation_hint_exact_k_painted_faces_cube_count: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
-      annotation_hint_visible_cube_count: set "annotation" to a JSON array of bounding boxes [x0, y0, x1, y1] for all query-grid cells that should be filled
-      annotation_hint_projection_match_label: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected projection option panel
-      annotation_hint_projection_consistency_label: set "annotation" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected labeled option panel
+      answer_hint_option_letter: set "answer" to the single option label as a capital
+        letter
+      object_description_stack_strip: a cube-structure counting puzzle with one isometric
+        cube stack or two same-view cube structures
+      object_description_stack_card: a card-style cube-structure counting puzzle with
+        one isometric cube stack or two same-view cube structures
+      object_description_stack_outline: an outline-style cube-structure counting puzzle
+        with one isometric cube stack or two same-view cube structures
+      object_description_single_stack_stack_strip: a cube-structure counting puzzle
+        with one isometric cube stack
+      object_description_single_stack_stack_card: a card-style cube-structure counting
+        puzzle with one isometric cube stack
+      object_description_single_stack_stack_outline: an outline-style cube-structure
+        counting puzzle with one isometric cube stack
+      object_description_change_pair_stack_strip: a cube-structure comparison puzzle
+        with two same-view isometric cube structures
+      object_description_change_pair_stack_card: a card-style cube-structure comparison
+        puzzle with two same-view isometric cube structures
+      object_description_change_pair_stack_outline: an outline-style cube-structure
+        comparison puzzle with two same-view isometric cube structures
+      object_description_visible_cube_count: an isometric cube stack beside an empty
+        orthographic query grid
+      object_description_projection_match_label: a cube-stack projection puzzle with
+        an isometric cube stack and labeled orthographic projection options
+      object_description_projection_consistency_label: a cube-stack consistency puzzle
+        with orthographic projection panels and labeled answer options
+      annotation_hint_total_cube_count: set "annotation" to an array containing exactly
+        one bounding box [x0, y0, x1, y1] for the visible cube structure
+      annotation_hint_missing_to_complete_cuboid_count: set "annotation" to an array
+        containing exactly two bounding boxes [x0, y0, x1, y1] for the complete block
+        on the left and the partial block on the right
+      annotation_hint_removed_cube_count: set "annotation" to an array containing
+        exactly two bounding boxes [x0, y0, x1, y1] for the before structure on the
+        left and the after structure on the right
+      annotation_hint_painted_exterior_face_count: set "annotation" to an array containing
+        exactly one bounding box [x0, y0, x1, y1] for the visible cube structure
+      annotation_hint_exact_k_painted_faces_cube_count: set "annotation" to an array
+        containing exactly one bounding box [x0, y0, x1, y1] for the visible cube
+        structure
+      annotation_hint_visible_cube_count: set "annotation" to bboxes for all query-grid
+        cells that should be filled
+      annotation_hint_projection_match_label: set "annotation" to an array containing
+        exactly one bounding box [x0, y0, x1, y1] for the selected projection option
+        panel
+      annotation_hint_projection_consistency_label: set "annotation" to an array containing
+        exactly one bounding box [x0, y0, x1, y1] for the selected labeled option
+        panel
       json_example_total_cube_count: '{"annotation":[[310,170,890,700]],"answer":14}'
       json_example_missing_to_complete_cuboid_count: '{"annotation":[[132,175,459,700],[750,207,1080,700]],"answer":5}'
       json_example_removed_cube_count: '{"annotation":[[132,175,459,700],[750,207,1080,700]],"answer":4}'
@@ -604,35 +928,3 @@ prompt:
       json_example_answer_only_removed_cube_count: '{"answer":4}'
       json_example_answer_only_painted_exterior_face_count: '{"answer":42}'
       json_example_answer_only_exact_k_painted_faces_cube_count: '{"answer":3}'
-complexity:
-  task_overrides:
-    puzzles_spatial_polyomino_arrangement_internal:
-      criteria_weights:
-        visual_scan: 0.38
-        reasoning_load: 0.42
-        scene_variant_load: 0.20
-    puzzles_spatial_tangram_assembly_internal:
-      criteria_weights:
-        visual_scan: 0.36
-        reasoning_load: 0.44
-        scene_variant_load: 0.20
-    puzzles_spatial_rubiks_cube_internal:
-      criteria_weights:
-        visual_scan: 0.38
-        reasoning_load: 0.44
-        scene_variant_load: 0.18
-    puzzles_spatial_cube_surface_net_internal:
-      criteria_weights:
-        visual_scan: 0.40
-        reasoning_load: 0.42
-        scene_variant_load: 0.18
-    puzzles_spatial_transform_result_internal:
-      criteria_weights:
-        visual_scan: 0.38
-        reasoning_load: 0.42
-        scene_variant_load: 0.20
-    puzzles_spatial_cube_structure_internal:
-      criteria_weights:
-        visual_scan: 0.45
-        reasoning_load: 0.4
-        scene_variant_load: 0.15

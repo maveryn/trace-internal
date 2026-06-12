@@ -14,15 +14,6 @@ generation:
     overlap_answer_count_max: 4
     x_label_min_chars: 2
     x_label_max_chars: 6
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
-    query_id_weights:
-      entirely_above_threshold_count: 1.0
-      entirely_below_threshold_count: 1.0
-      contains_threshold_count: 1.0
-      highest_upper_bound_x_label: 1.0
-      lowest_lower_bound_x_label: 1.0
-      overlap_target_errorbar_at_x_count: 1.0
     scene_variant_weights:
       marker_errorbar: 1.0
       line_marker_errorbar: 1.0
@@ -34,7 +25,6 @@ generation:
       places_cities: 0.35
       organizations_tickers: 0.35
       mixed_compact: 0.35
-
 rendering:
   shared:
     canvas_width: 1280
@@ -115,30 +105,8 @@ rendering:
     text_stroke_rgb_options:
       - [255, 255, 255]
       - [252, 254, 255]
-
 prompt:
   shared:
-    bundle_id: charts_errorbar_series_v0
+    bundle_id: charts_errorbar_series_v1
     scene_key: errorbar_series_scene
     task_key: errorbar_series_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description: a scientific chart with labeled series, ordered x-axis labels, central point markers, and vertical error bars
-    answer_hint_count: set "answer" to the requested integer count
-    answer_hint_label: set "answer" to the exact visible x-axis label as a string
-    annotation_hint_threshold_support_count: set "annotation" to an array of [x0,y0,x1,y1] boxes around each counted error-bar mark for the named series
-    annotation_hint_bound_extremum_x_label: set "annotation" to an object mapping "selected_bound_endpoint" to the [x,y] pixel point on the selected error-bar endpoint
-    annotation_hint_same_x_interval_overlap_count: set "annotation" to an object mapping "target_errorbar" to the [x0,y0,x1,y1] box around the target error bar and each counted series label to its overlapping error-bar box
-    json_example_threshold_support_count: '{"annotation":[[244,250,268,390],[518,210,542,360],[792,280,816,430]],"answer":3}'
-    json_example_bound_extremum_x_label: '{"annotation":{"selected_bound_endpoint":[612,188]},"answer":"FY24"}'
-    json_example_same_x_interval_overlap_count: '{"annotation":{"target_errorbar":[508,260,532,402],"Vega":[536,280,560,420],"Orly":[564,248,588,392]},"answer":2}'
-    json_example_answer_only_threshold_support_count: '{"answer":3}'
-    json_example_answer_only_bound_extremum_x_label: '{"answer":"FY24"}'
-    json_example_answer_only_same_x_interval_overlap_count: '{"answer":2}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.36
-      reasoning_load: 0.44
-      scene_variant_load: 0.20

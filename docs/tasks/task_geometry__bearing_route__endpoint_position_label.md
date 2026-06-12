@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `bearing_route`
 3. Scene id: `bearing_route`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `endpoint_position_label`
@@ -10,10 +10,12 @@
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `solve_formula(visible_bearing_route_measurements, unknown_role=selected_label, formula_schema=endpoint_position_label); scene=bearing_route; scope=endpoint_position_label`
+- `follow_cardinal_bearing_steps_on_graph_paper(route_steps, candidate_endpoint_labels, unknown_role=selected_label); scene=bearing_route; scope=endpoint_position_label`
+- The candidate panel is rendered as graph paper; each square is one visible step.
+- Route instructions show bearing plus step count, and candidate endpoints sit on grid intersections.
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the geometry prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +25,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/bearing_route.py`
+- Config: `configs/domains/geometry/bearing_route.yaml`
+- Task module: `trace/tasks/geometry/bearing_route/endpoint_position_label.py`

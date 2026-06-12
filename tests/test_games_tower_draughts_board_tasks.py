@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.tower_draughts_board.board_tasks import (
+from trace.tasks.games.tower_draughts_board.marked_stack_destination_count import (
     BLACK,
     CONTROLLED_STACK_TASK_ID,
     MARKED_CAPTURE_TASK_ID,
@@ -63,7 +63,7 @@ def _generate_with_seed_search(task_id: str, *, target_answer: int, board_size: 
 
 
 def test_games_tower_draughts_board_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "tower_draughts_board")
+    cfg = get_scene_defaults("games", "tower_draughts_board")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["style_variant_weights"].keys()) == {
@@ -107,7 +107,7 @@ def test_games_tower_draughts_board_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "tower_draughts_board"
-        assert taxonomy.source_task_group == "tower_draughts_board"
+        assert taxonomy.source_scene_id == "tower_draughts_board"
 
 
 def test_games_tower_draughts_board_playable_square_counts() -> None:

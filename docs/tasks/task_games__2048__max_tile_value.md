@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `2048`
+2. Scene package: `trace/tasks/games/2048/`
 3. Scene id: `2048`
 4. Public task id: `task_games__2048__max_tile_value`
 5. Supported `query_id` values: `max_tile_value`

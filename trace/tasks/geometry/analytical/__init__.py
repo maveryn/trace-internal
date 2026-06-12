@@ -1,1 +1,0 @@
-"""Geometry analytical task implementations."""

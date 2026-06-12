@@ -121,4 +121,17 @@ def normalize_source_geometry_output(
     scene_ir["relations"] = relations
     trace_payload["scene_ir"] = scene_ir
 
-    return replace(output, trace_payload=trace_payload, query_id=str(query_id))
+    normalized = replace(output, trace_payload=trace_payload, query_id=str(query_id))
+    if isinstance(normalized, TaskOutput):
+        return normalized
+    return TaskOutput(
+        prompt=str(normalized.prompt),
+        answer_gt=normalized.answer_gt,
+        annotation_gt=normalized.annotation_gt,
+        image=normalized.image,
+        image_id=str(normalized.image_id),
+        trace_payload=dict(normalized.trace_payload),
+        task_versions=dict(normalized.task_versions),
+        query_id=str(normalized.query_id) if normalized.query_id is not None else str(query_id),
+        prompt_variants=dict(normalized.prompt_variants),
+    )

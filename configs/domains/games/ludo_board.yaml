@@ -16,27 +16,76 @@ generation:
       green: 1.0
       blue: 1.0
       yellow: 1.0
-    answer_option_label_weights:
-      A: 1.0
-      B: 1.0
-      C: 1.0
-      D: 1.0
-      E: 1.0
-      F: 1.0
-    winning_roll_support: [1, 2, 3, 4, 5]
-    capture_distance_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-    move_roll_total_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
-    capture_option_count_support: [4, 6]
-    move_result_option_count_support: [4, 5, 6]
     balanced_style_variant_sampling: true
     balanced_query_color_sampling: true
     balanced_target_color_sampling: true
-    balanced_answer_option_label_sampling: true
-    balanced_capture_option_count_sampling: true
-    balanced_move_result_option_count_sampling: true
-    balanced_winning_roll_sampling: true
-    balanced_capture_distance_sampling: true
-    balanced_move_roll_total_sampling: true
+  task_overrides:
+    task_games__ludo_board__winning_roll_value:
+      winning_roll_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      balanced_winning_roll_sampling: true
+    task_games__ludo_board__capture_roll_option_label:
+      answer_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      capture_distance_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      capture_option_count_support:
+      - 4
+      - 6
+      balanced_answer_option_label_sampling: true
+      balanced_capture_option_count_sampling: true
+      balanced_capture_distance_sampling: true
+    task_games__ludo_board__move_result_option_label:
+      answer_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      move_roll_total_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      move_result_option_count_support:
+      - 4
+      - 5
+      - 6
+      balanced_answer_option_label_sampling: true
+      balanced_move_result_option_count_sampling: true
+      balanced_move_roll_total_sampling: true
 rendering:
   shared:
     canvas_width: 920
@@ -53,38 +102,31 @@ rendering:
     option_card_width_px: 112
     option_card_height_px: 54
     option_card_gap_px: 10
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      movement_reasoning: 0.38
-      ambiguity: 0.14
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_ludo_board_v0
+    bundle_id: games_ludo_board_v1
     scene_key: ludo_board
     task_key: ludo_board_query
-    object_description: a Ludo-style cross board with one visible token for each player color and twelve two-cell arrows showing the clockwise track direction
-    exact_finish_rule_text: A token must land exactly on finish.
-    capture_option_rule_text: Move clockwise along the track. A "6 then k" option means move 6 spaces, then k more spaces.
-    move_sequence_rule_text: Use the dice sequence shown below the board and move clockwise along the track.
-    annotation_hint_winning_roll_value: set "annotation" to an object with keys "token" and "finish", each mapped to a bounding box as [x0,y0,x1,y1] in pixels
-    answer_hint_winning_roll_value: set "answer" to the integer die roll
-    annotation_hint_capture_roll_option_label: set "annotation" to an object with keys "mover_token" and "target_token", each mapped to a bounding box as [x0,y0,x1,y1] in pixels
-    answer_hint_capture_roll_option_label: set "answer" to the selected shown option label
-    annotation_hint_move_result_option_label: set "annotation" to an object with keys "moving_token", "roll_sequence", and "destination_cell", each mapped to a bounding box as [x0,y0,x1,y1] in pixels
-    answer_hint_move_result_option_label: set "answer" to the selected shown destination label
 visual:
   noise:
     apply_prob: 0.5
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.15, 0.4]
+        radius:
+        - 0.15
+        - 0.4
       downsample:
-        scale: [0.9, 0.97]
+        scale:
+        - 0.9
+        - 0.97
       jpeg:
-        quality: [78.0, 94.0]
+        quality:
+        - 78.0
+        - 94.0
       noise:
-        alpha: [0.015, 0.045]
+        alpha:
+        - 0.015
+        - 0.045

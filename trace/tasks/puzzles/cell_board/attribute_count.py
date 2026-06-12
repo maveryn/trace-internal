@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -31,11 +31,6 @@ from .shared.color_board_common import (
     build_rectangular_color_board_render_spec,
     build_rectangular_color_board_scene,
 )
-from .shared.complexity import (
-    build_tile_complexity,
-    normalize_int_with_bounds,
-    resolve_tile_complexity_weights,
-)
 from .shared.grid_graph import cell_id
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_colors import sample_named_tile_palette
@@ -47,9 +42,9 @@ SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID = "task_puzzles__cell_board__single_at
 SCOPED_ATTRIBUTE_COUNT_TASK_ID = "task_puzzles__cell_board__scoped_attribute_count"
 PUBLIC_SCENE_ID = "cell_board"
 _DEFAULTS = RectangularColorBoardTaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_count")
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="count")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="count", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_count")
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="count")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="count", apply_prob=0.5)
 
 Coord = Tuple[int, int]
 
@@ -73,8 +68,6 @@ def _load_defaults(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any], Dict[s
         group_defaults,
         task_id=str(task_id),
     )
-    complexity_weights = resolve_tile_complexity_weights(group_defaults, task_id=str(task_id))
-    return dict(gen_defaults), dict(render_defaults), dict(prompt_defaults), dict(complexity_weights)
 
 
 def _explicit_query_id(params: Mapping[str, Any]) -> str | None:
@@ -189,12 +182,11 @@ class _CellBoardAttributeCountTask:
     """Shared implementation for public cell-board color-attribute count tasks."""
 
     domain = "puzzles"
-    task_group = "cell_board"
+    scene_id = "cell_board"
     supported_query_ids: Tuple[str, ...] = _QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         task_rng = spawn_rng(int(instance_seed), "task")
-        gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(str(self.task_id))
         query_id, query_probabilities = _resolve_query(
             params,
             task_id=str(self.task_id),
@@ -340,7 +332,7 @@ class _CellBoardAttributeCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain="puzzles",
-            task_group="cell_board_count",
+            scene_id="cell_board_count",
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(_QUERY_TEMPLATE_KEYS[str(query_id)]),
@@ -471,27 +463,6 @@ class _CellBoardAttributeCountTask:
         board_cell_count = int(scene.rows) * int(scene.cols)
         min_board_cell_count = int(rows_min) * int(cols_min)
         max_board_cell_count = int(rows_max) * int(cols_max)
-        complexity = build_tile_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": (
-                    0.70
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.30
-                    * normalize_int_with_bounds(
-                        int(scene.palette_size),
-                        (int(palette_size_min), int(palette_size_max)),
-                    )
-                ),
-                "reasoning_load": normalize_int_with_bounds(
-                    int(answer_value),
-                    (int(target_answer_support[0]), int(target_answer_support[-1])),
-                ),
-            },
-        )
 
         versions = default_task_versions()
         versions["cell_board_attribute_count_version"] = "v0"
@@ -505,7 +476,6 @@ class _CellBoardAttributeCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=versions,
             scene_id=PUBLIC_SCENE_ID,
             query_id=str(query_id),

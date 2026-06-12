@@ -3,19 +3,25 @@
   "schema_version": "v0",
   "task_templates": {
     "map_navigation_query": [
-      "{question_text}",
-      "Question: {question_text}",
-      "Use the displayed information to answer: {question_text}",
-      "Determine the answer: {question_text}",
-      "Answer based on the displayed information: {question_text}"
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:printed_map": [
       "object_description"
     ],
-    "task:map_navigation_query": [
-      "question_text"
+    "query:destination_after_directions": [
+      "start_label",
+      "direction_text"
+    ],
+    "query:landmark_after_route_step": [
+      "route_start_label",
+      "route_end_label",
+      "step_ordinal"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -56,18 +62,19 @@
   },
   "query_templates": {
     "destination_after_directions": [
-      "Follow each direction step on the map.",
-      "Use the compass and the visible paths.",
-      "Move to the next labeled landmark at each step.",
-      "Use the label exactly as it appears.",
-      "Do not skip a direction step."
+      "Starting at \"{start_label}\", follow the map directions to the next labeled landmark each time: {direction_text}. What landmark do you reach?",
+      "Begin at \"{start_label}\" and follow these directions one step at a time: {direction_text}. Which landmark is reached?",
+      "From \"{start_label}\", move to the next labeled landmark for each direction: {direction_text}. What is the destination landmark?",
+      "Use the map paths from \"{start_label}\" and apply this direction sequence: {direction_text}. Which landmark do you end at?",
+      "Trace the route beginning at \"{start_label}\": {direction_text}. What labeled landmark is the final stop?"
     ],
     "landmark_after_route_step": [
-      "Use the highlighted route only.",
-      "Count landmarks reached after the starting landmark.",
-      "Use the label exactly as it appears.",
-      "Follow the orange route in order.",
-      "Do not count the starting landmark as a reached landmark."
+      "On the highlighted orange route from \"{route_start_label}\" to \"{route_end_label}\", what is the {step_ordinal} landmark reached after \"{route_start_label}\"?",
+      "Follow the highlighted route from \"{route_start_label}\" toward \"{route_end_label}\". Which landmark is reached {step_ordinal} after the start?",
+      "Using only the orange route, count landmarks after \"{route_start_label}\". What is the {step_ordinal} reached landmark?",
+      "Trace the highlighted path from \"{route_start_label}\" to \"{route_end_label}\". Which label is at the {step_ordinal} reached landmark?",
+      "Starting at \"{route_start_label}\", follow the orange route in order. What landmark is reached {step_ordinal}?"
     ]
-  }
+  },
+  "allow_empty_task_templates": true
 }

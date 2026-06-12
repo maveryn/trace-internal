@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.bbox_projection import pixel_anchor_map_from_bboxes
@@ -25,12 +25,6 @@ from trace.tasks.shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from .shared.grid_graph import cell_id
-from .shared.complexity import (
-    build_tile_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_tile_complexity_weights,
-)
 from .shared.named_color_board import (
     Coord,
     RectangularNamedColorBoardTaskDefaults,
@@ -59,17 +53,13 @@ class _TaskDefaults(RectangularNamedColorBoardTaskDefaults):
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_symmetry")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_symmetry")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_symmetry_violation_count_internal",
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="symmetry")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="symmetry", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="cell_board_symmetry_violation_count_internal",
-)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="symmetry")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="symmetry", apply_prob=0.5)
 
 
 def _resolve_query_id(
@@ -245,7 +235,7 @@ class TileSymmetryViolationCountTask:
 
     task_id = "cell_board_symmetry_violation_count_internal"
     domain = "puzzles"
-    task_group = "cell_board_symmetry"
+    scene_id = "cell_board_symmetry"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -392,7 +382,7 @@ class TileSymmetryViolationCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -519,34 +509,6 @@ class TileSymmetryViolationCountTask:
         board_cell_count = int(scene.rows) * int(scene.cols)
         min_board_cell_count = int(rows_min) * int(cols_min)
         max_board_cell_count = int(rows_max) * int(cols_max)
-        complexity = build_tile_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": (
-                    0.60
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.40
-                    * normalize_int_with_bounds(
-                        int(scene.palette_size),
-                        (int(palette_size_min), int(palette_size_max)),
-                    )
-                ),
-                "reasoning_load": (
-                    0.70
-                    * normalize_int_with_bounds(
-                        int(answer_value),
-                        (int(target_violation_count_min), int(target_violation_count_max)),
-                    )
-                    + 0.30
-                    * clamp_unit_interval(
-                        float(answer_value) / float(max(1, len(pairs)))
-                    )
-                ),
-            },
-        )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -558,7 +520,6 @@ class TileSymmetryViolationCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

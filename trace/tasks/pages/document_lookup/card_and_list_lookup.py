@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -26,8 +26,7 @@ from ...shared.prompt_variants import (
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
-from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
 from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
@@ -152,14 +151,13 @@ class _RenderedDocument:
     layout_meta: Dict[str, Any]
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", TASK_GROUP)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", TASK_GROUP)
 _RANKED_GEN_DEFAULTS, _RANKED_RENDER_DEFAULTS, _RANKED_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=RANKED_TASK_ID,
 )
-_RANKED_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=RANKED_TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group=TASK_GROUP)
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group=TASK_GROUP, apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id=TASK_GROUP)
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id=TASK_GROUP, apply_prob=0.0)
 
 
 def _resolve_profile_defaults(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
@@ -167,8 +165,6 @@ def _resolve_profile_defaults(task_id: str) -> tuple[Dict[str, Any], Dict[str, A
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
-    complexity_weights = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
-    return gen_defaults, render_defaults, prompt_defaults, complexity_weights
 
 
 def _resolve_named_variant(
@@ -1020,14 +1016,11 @@ class _PagesProfileCardGridAttributeLookupBaseTask:
     task_id: str
     allowed_query_ids: Tuple[str, ...] = PROFILE_QUERY_IDS
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        profile_gen_defaults, profile_render_defaults, profile_prompt_defaults, profile_complexity_weights = (
-            _resolve_profile_defaults(str(self.task_id))
-        )
         query_id, query_id_probabilities = _resolve_named_variant(
             task_id=self.task_id,
             gen_defaults=profile_gen_defaults,
@@ -1226,7 +1219,7 @@ class _PagesProfileCardGridAttributeLookupBaseTask:
         rank_ordinal = _profile_rank_ordinal(int(rank_position)) if bool(is_ranked_query) else ""
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1374,25 +1367,6 @@ class _PagesProfileCardGridAttributeLookupBaseTask:
                 "rank_ordinal": str(rank_ordinal),
             },
         }
-        complexity = build_pages_complexity(
-            weights=profile_complexity_weights,
-            components={
-                "lookup_reasoning": (
-                    0.72
-                    if bool(is_ranked_query)
-                    else (
-                        0.64
-                        if bool(is_extremum_query)
-                        else (0.52 if str(query_id) == "profile_for_field_value" else 0.42)
-                    )
-                ),
-                "visual_scan": normalize_int_with_bounds(
-                    int(card_count),
-                    [min(card_count_support), max(card_count_support)],
-                ),
-                "layout_load": 0.48 if str(scene_variant) == "compact_cards" else 0.42,
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="string", value=str(answer_value)),
@@ -1400,7 +1374,6 @@ class _PagesProfileCardGridAttributeLookupBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1444,7 +1417,7 @@ class _PagesRankedListEntryLabelSourceTask:
 
     task_id = RANKED_TASK_ID
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1632,7 +1605,7 @@ class _PagesRankedListEntryLabelSourceTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1746,20 +1719,6 @@ class _PagesRankedListEntryLabelSourceTask:
                 "target_item_id": str(target_item_id),
             },
         }
-        complexity = build_pages_complexity(
-            weights=_RANKED_COMPLEXITY_WEIGHTS,
-            components={
-                "lookup_reasoning": 0.58 if str(query_id) == "entry_after_named_entry" else 0.45,
-                "visual_scan": normalize_int_with_bounds(
-                    int(section_count) * int(item_count),
-                    [
-                        min(section_count_support) * min(item_count_support),
-                        max(section_count_support) * max(item_count_support),
-                    ],
-                ),
-                "layout_load": 0.50 if str(scene_variant) == "two_column_lists" else 0.43,
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="string", value=str(answer_value)),
@@ -1767,7 +1726,6 @@ class _PagesRankedListEntryLabelSourceTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1780,7 +1738,7 @@ class PagesRankedListOrdinalEntryLabelTask(MergedPagesQueryTaskMixin):
 
     task_id = RANKED_TASK_ID
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     public_scene_id = RANKED_SCENE_ID
     allowed_query_ids = (
         "nth_entry_label",
@@ -1795,7 +1753,7 @@ class PagesRankedListEntryAfterNamedEntryLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__ranked_list__entry_after_named_entry_label"
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     public_scene_id = RANKED_SCENE_ID
     fixed_query_id = "entry_after_named_entry"
     source_task_cls = _PagesRankedListEntryLabelSourceTask

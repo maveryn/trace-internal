@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,17 +29,17 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__fluid_flow__continuity_speed_value"
-FAMILY_ID = "physics_fluids_fluid_flow_family"
+TASK_NAMESPACE = "physics_fluids_fluid_flow"
 SCENE_ID = "fluid_flow"
 QUERY_ID = "continuity_missing_speed"
 SUPPORTED_ORIENTATIONS: Tuple[str, ...] = ("horizontal_pipe", "vertical_pipe")
 SUPPORTED_MISSING_STATIONS: Tuple[str, ...] = ("v1", "v2")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="fluids", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "fluids")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="fluids", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "fluids")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -134,7 +134,7 @@ def _resolve_orientation(instance_seed: int, params: Mapping[str, Any]) -> Tuple
         if explicit not in SUPPORTED_ORIENTATIONS:
             raise ValueError(f"unsupported orientation for {TASK_ID}: {explicit}")
         return explicit, _probability_map(SUPPORTED_ORIENTATIONS, selected=explicit)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.orientation")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.orientation")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -153,7 +153,7 @@ def _resolve_orientation(instance_seed: int, params: Mapping[str, Any]) -> Tuple
         balance_flag_key="balanced_orientation_sampling",
         explicit_key="orientation",
         weights_key="orientation_weights",
-        sampling_namespace=f"{FAMILY_ID}.orientation",
+        sampling_namespace=f"{TASK_NAMESPACE}.orientation",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -245,7 +245,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _FlowSce
             missing_index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.missing_station",
+                namespace=f"{TASK_NAMESPACE}.missing_station",
             )
             selected_missing = str(missing_values[int(missing_index) % len(missing_values)])
             candidates = [item for item in candidates if str(item[0]) == selected_missing]
@@ -257,19 +257,19 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _FlowSce
             answer_index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.target_answer",
+                namespace=f"{TASK_NAMESPACE}.target_answer",
             )
             selected_answer = int(answers[int(answer_index) % len(answers)])
             candidates = [item for item in candidates if int(item[5]) == int(selected_answer)]
         elif explicit_answer is None:
-            rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.target_answer")
+            rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.target_answer")
             selected_answer = int(answers[int(rng.randrange(len(answers)))])
             candidates = [item for item in candidates if int(item[5]) == int(selected_answer)]
 
         tuple_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.scenario_tuple",
+            namespace=f"{TASK_NAMESPACE}.scenario_tuple",
         )
         selected_tuple = candidates[int(tuple_index) % len(candidates)]
 
@@ -486,7 +486,6 @@ def _render_fluid_flow(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="fluids",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
@@ -495,7 +494,7 @@ def _render_fluid_flow(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     label_font = load_font(int(_RENDER_DEFAULTS.get("label_font_size_px", _DEFAULTS.label_font_size_px)), bold=True, font_family=str(font_family))
@@ -528,7 +527,7 @@ def _render_fluid_flow(
         (213, 143, 77),
         (153, 123, 196),
     )
-    fluid_rgb = fluid_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.fluid_color", 0) % len(fluid_palette))]
+    fluid_rgb = fluid_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.fluid_color", 0) % len(fluid_palette))]
     if str(scenario.orientation) == "vertical_pipe":
         annotation_map, render_geometry = _draw_vertical_flow(
             draw,
@@ -595,7 +594,7 @@ class PhysicsFluidFlowContinuitySpeedValueTask:
     """Compute a missing steady-flow speed from continuity."""
 
     domain = "physics"
-    task_group = "fluids"
+    scene_id = "fluids"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -630,7 +629,7 @@ class PhysicsFluidFlowContinuitySpeedValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -651,7 +650,7 @@ class PhysicsFluidFlowContinuitySpeedValueTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -739,16 +738,6 @@ class PhysicsFluidFlowContinuitySpeedValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.38,
-                complexity_components={
-                    "station_readout": 0.34,
-                    "continuity_relation": 0.32,
-                    "arithmetic": 0.14,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.12,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

@@ -6,12 +6,12 @@ from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import (
+from ....core.scene_config import (
     get_domain_defaults,
-    get_task_group_defaults,
-    resolve_task_group_section_defaults,
+    get_scene_defaults,
+    resolve_scene_section_defaults,
 )
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -543,44 +543,11 @@ def _build_dataset(
     raise ValueError("could not construct a visible warehouse shelf-count scene")
 
 
-def _build_complexity(
-    *,
-    rack_count: int,
-    target_count: int,
-    shelf_item_count: int,
-    complexity_defaults: Mapping[str, Any],
-) -> TaskComplexity:
-    raw_weights = complexity_defaults.get("criteria_weights", {})
-    if not isinstance(raw_weights, Mapping):
-        raw_weights = {}
-    weights = {
-        "rack_color_binding": float(raw_weights.get("rack_color_binding", 0.28)),
-        "shelf_level_binding": float(raw_weights.get("shelf_level_binding", 0.30)),
-        "visual_counting": float(raw_weights.get("visual_counting", 0.28)),
-        "distractor_load": float(raw_weights.get("distractor_load", 0.14)),
-    }
-    total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
-    components = {
-        "rack_color_binding": _normalize_unit(float(rack_count), 2.0, 4.0),
-        "shelf_level_binding": 0.72,
-        "visual_counting": _normalize_unit(float(target_count), 0.0, 5.0),
-        "distractor_load": _normalize_unit(float(shelf_item_count), 8.0, 28.0),
-    }
-    score = sum(float(components[key]) * max(0.0, float(weights[key])) for key in weights) / float(total)
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={key: round(float(value), 6) for key, value in components.items()},
-    )
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "warehouse")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("three_d", "warehouse")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
     task_id=TASK_ID,
 )
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -671,7 +638,7 @@ class ThreeDWarehouseScopedAttributeCountTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    task_group = "warehouse"
+    scene_id = "warehouse"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -796,7 +763,7 @@ class ThreeDWarehouseScopedAttributeCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -822,12 +789,6 @@ class ThreeDWarehouseScopedAttributeCountTask:
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         solver_trace = dict(dataset["solver_trace"])
-        complexity = _build_complexity(
-            rack_count=int(dataset["rack_count"]),
-            target_count=int(answer_value),
-            shelf_item_count=len(dataset["shelf_item_specs"]),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
-        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "three_d_warehouse_shelf_level_count",
@@ -957,7 +918,6 @@ class ThreeDWarehouseScopedAttributeCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

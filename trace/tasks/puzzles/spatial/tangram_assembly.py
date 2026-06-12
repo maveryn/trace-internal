@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,12 +18,6 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import (
-    build_puzzle_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_puzzle_complexity_weights,
-)
 from ..shared.tangram_scene import (
     SUPPORTED_TANGRAM_QUERY_IDS,
     SUPPORTED_TANGRAM_SCENE_VARIANTS,
@@ -56,13 +50,12 @@ _SCENE_LOAD = {
     "tangram_tilted": 0.23,
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=INTERNAL_TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=INTERNAL_TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.0)
 
 
 def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -85,7 +78,7 @@ class _TangramAssemblyBaseTask:
     """Base generator for public tangram scene tasks."""
 
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
     default_dataset_enabled = True
     fixed_query_id: str
 
@@ -163,7 +156,7 @@ class _TangramAssemblyBaseTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -232,14 +225,6 @@ class _TangramAssemblyBaseTask:
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BY_QUERY[str(query_id)])
             + 0.12 * normalize_int_with_bounds(int(dataset["contact_count"]), [1, 4])
-        )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -340,7 +325,6 @@ class _TangramAssemblyBaseTask:
             },
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
 
         return TaskOutput(
@@ -350,7 +334,6 @@ class _TangramAssemblyBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=TANGRAM_SCENE_ID,
             query_id=str(query_id),

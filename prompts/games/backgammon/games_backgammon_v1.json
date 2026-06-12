@@ -1,0 +1,144 @@
+{
+  "bundle_id": "games_backgammon_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "visible_backgammon_board": [
+        "The image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This scene shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "backgammon_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "legal_move_count": [
+        "{backgammon_rule_text} How many distinct destination points can the active player legally move to?",
+        "{backgammon_rule_text} Count the distinct numbered points that the active player can legally reach with one die.",
+        "Using the shown dice, count the distinct legal destination points for the active player. {backgammon_rule_text}",
+        "{backgammon_rule_text} What is the number of distinct legal move destinations for the active player?",
+        "For the active player's single-die moves, how many distinct destination points are legal? {backgammon_rule_text}"
+      ],
+      "hit_move_count": [
+        "{backgammon_rule_text} How many distinct destination points would let the active player hit exactly one opposing checker?",
+        "Using the shown dice, count active-player destinations that contain exactly one opposing checker. {backgammon_rule_text}",
+        "{backgammon_rule_text} How many distinct single-die destinations are hit moves for the active player?",
+        "{backgammon_rule_text} Count the destination points where the active player would land on a lone opposing checker.",
+        "For the active player's single-die moves, how many distinct destinations would hit an opposing blot? {backgammon_rule_text}"
+      ],
+      "blocked_destination_count": [
+        "{backgammon_rule_text} Considering the active player's possible single-die destinations, how many distinct destination points are blocked?",
+        "Using the shown dice, count active-player destination points blocked by two or more opposing checkers. {backgammon_rule_text}",
+        "{backgammon_rule_text} How many distinct possible active-player destinations cannot be used because they are blocked?",
+        "{backgammon_rule_text} Count the blocked destination points among the active player's single-die destination candidates.",
+        "For the active player's single-die moves, how many distinct destination points have two or more opposing checkers? {backgammon_rule_text}"
+      ],
+      "black_single_checker_point_count": [
+        "How many numbered points contain exactly one black checker?",
+        "Count the numbered points with exactly one black checker.",
+        "What is the number of points that have a single black checker?",
+        "How many board points show one black checker and no other checker on that point?",
+        "Count all numbered points occupied by exactly one black checker."
+      ],
+      "white_single_checker_point_count": [
+        "How many numbered points contain exactly one white checker?",
+        "Count the numbered points with exactly one white checker.",
+        "What is the number of points that have a single white checker?",
+        "How many board points show one white checker and no other checker on that point?",
+        "Count all numbered points occupied by exactly one white checker."
+      ],
+      "black_two_or_more_checker_point_count": [
+        "How many numbered points contain two or more black checkers?",
+        "Count the numbered points with at least two black checkers.",
+        "What is the number of points that have two or more black checkers?",
+        "How many board points show a stack of at least two black checkers?",
+        "Count all numbered points occupied by two or more black checkers."
+      ],
+      "white_two_or_more_checker_point_count": [
+        "How many numbered points contain two or more white checkers?",
+        "Count the numbered points with at least two white checkers.",
+        "What is the number of points that have two or more white checkers?",
+        "How many board points show a stack of at least two white checkers?",
+        "Count all numbered points occupied by two or more white checkers."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:visible_backgammon_board": {
+      "object_description": "a numbered backgammon board with black and white checker stacks and two dice"
+    },
+    "query:legal_move_count": {
+      "backgammon_rule_text": "The board header shows which player moves and whether that player moves 24 to 1 or 1 to 24. For each occupied active-player point, use either shown die in that direction to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more opposing checkers is blocked.",
+      "answer_hint": "set \"answer\" to the number of distinct legal destination points",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player can legally move",
+      "json_example": "{\"annotation\":[[144,104,209,316],[210,104,275,316],[608,104,673,316]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:hit_move_count": {
+      "backgammon_rule_text": "The board header shows which player moves and whether that player moves 24 to 1 or 1 to 24. For each occupied active-player point, use either shown die in that direction to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more opposing checkers is blocked.",
+      "answer_hint": "set \"answer\" to the number of distinct hit destination points",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player would hit exactly one opposing checker",
+      "json_example": "{\"annotation\":[[410,104,475,316],[608,104,673,316]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:blocked_destination_count": {
+      "backgammon_rule_text": "The board header shows which player moves and whether that player moves 24 to 1 or 1 to 24. For each occupied active-player point, use either shown die in that direction to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more opposing checkers is blocked.",
+      "answer_hint": "set \"answer\" to the number of distinct blocked destination points",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the distinct possible destination points blocked by two or more opposing checkers",
+      "json_example": "{\"annotation\":[[276,400,341,612],[342,400,407,612],[608,400,673,612]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:black_single_checker_point_count": {
+      "answer_hint": "set \"answer\" to the number of numbered points that contain exactly one black checker",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain exactly one black checker",
+      "json_example": "{\"annotation\":[[144,104,209,316],[342,104,407,316],[608,400,673,612]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:white_single_checker_point_count": {
+      "answer_hint": "set \"answer\" to the number of numbered points that contain exactly one white checker",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain exactly one white checker",
+      "json_example": "{\"annotation\":[[144,104,209,316],[342,104,407,316],[608,400,673,612]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:black_two_or_more_checker_point_count": {
+      "answer_hint": "set \"answer\" to the number of numbered points that contain two or more black checkers",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain two or more black checkers",
+      "json_example": "{\"annotation\":[[144,104,209,316],[342,104,407,316],[608,400,673,612]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:white_two_or_more_checker_point_count": {
+      "answer_hint": "set \"answer\" to the number of numbered points that contain two or more white checkers",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain two or more white checkers",
+      "json_example": "{\"annotation\":[[144,104,209,316],[342,104,407,316],[608,400,673,612]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    }
+  },
+  "dynamic_slots": {},
+  "required_slots_by_key": {}
+}

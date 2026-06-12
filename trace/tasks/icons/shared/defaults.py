@@ -1,4 +1,4 @@
-"""Fallback defaults shared across icon task groups."""
+"""Fallback defaults shared across icon scenes."""
 
 from __future__ import annotations
 

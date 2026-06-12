@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.types import TaskComplexity
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.object_resources import (
     ROOM_EXTRA_WALL_TYPES,
@@ -433,89 +432,4 @@ def _wall_object_visible_size_ok(
             return False
     return True
 
-def _build_complexity(
-    *,
-    target_count: int,
-    wall_object_count: int,
-    floor_object_count: int,
-    same_type_floor_distractor_count: int,
-    complexity_defaults: Mapping[str, Any],
-) -> TaskComplexity:
-    raw_weights = complexity_defaults.get("criteria_weights", {})
-    if not isinstance(raw_weights, Mapping):
-        raw_weights = {}
-    weights = {
-        "visual_scan": float(raw_weights.get("visual_scan", 0.38)),
-        "wall_relation": float(raw_weights.get("wall_relation", 0.34)),
-        "distractor_binding": float(raw_weights.get("distractor_binding", 0.18)),
-        "answer_load": float(raw_weights.get("answer_load", 0.10)),
-    }
-    total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
-    components = {
-        "visual_scan": _normalize_unit(float(wall_object_count + floor_object_count), 10.0, 19.0),
-        "wall_relation": 0.72,
-        "distractor_binding": _normalize_unit(float(same_type_floor_distractor_count), 1.0, 3.0),
-        "answer_load": _normalize_unit(float(target_count), 0.0, 4.0),
-    }
-    score = sum(float(components[key]) * max(0.0, float(weights[key])) for key in weights) / float(total)
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={key: round(float(value), 6) for key, value in components.items()},
-    )
 
-__all__ = [
-    "TASK_ID",
-    "SCENE_ID",
-    "SUPPORTED_QUERY_IDS",
-    "SUPPORTED_SCENE_VARIANTS",
-    "QUERY_OBJECT_TYPE_BY_VARIANT",
-    "OBJECT_PROMPT_NAMES",
-    "QUERY_TARGET_TYPES",
-    "EXTRA_WALL_TYPES",
-    "FLOOR_DISTRACTOR_TYPES",
-    "SURFACE_DISTRACTOR_TYPES",
-    "SURFACE_PROP_SHAPES_BY_SCENE",
-    "SURFACE_PROP_TYPES",
-    "FLOOR_PROP_SHAPES",
-    "PICTURE_SCENERY_VARIANTS",
-    "WALL_X",
-    "WALL_BACK_Y",
-    "ROOM_FRONT_Y",
-    "ROOM_HEIGHT",
-    "ROOM_RENDER_FRONT_MIN_EXTENSION",
-    "ROOM_RENDER_FRONT_MAX_EXTENSION",
-    "ROOM_RENDER_SIDE_WALL_MAX_EXTENSION",
-    "ROOM_CAMERA_PITCH_DEGREES",
-    "ROOM_CAMERA_DISTANCE_RANGE",
-    "ROOM_CAMERA_TARGET_Z",
-    "FRONT_FLOOR_PROP_SLOTS",
-    "FRONT_FLOOR_PROP_SHAPES",
-    "ROOM_VIEW_YAW_BANDS",
-    "_object_name",
-    "_object_plural",
-    "_sample_room_camera",
-    "_wall_center",
-    "_wall_axes",
-    "_add_vec",
-    "_wall_rect_points",
-    "_project_points",
-    "_points_bbox",
-    "_projected_polygon_bbox",
-    "_wall_reference_points",
-    "_floor_spec",
-    "_wall_spec",
-    "_with_picture_scenery",
-    "_top_z",
-    "_support_can_hold",
-    "_surface_xy",
-    "_surface_distractor_for_type",
-    "_floor_distractor_for_type",
-    "_make_floor_prop",
-    "_finalize_specs",
-    "_slot_is_compatible",
-    "_wall_dimensions_for_type",
-    "_room_object_bbox",
-    "_wall_object_visible_bbox",
-    "_wall_object_visible_size_ok",
-    "_build_complexity",
-]

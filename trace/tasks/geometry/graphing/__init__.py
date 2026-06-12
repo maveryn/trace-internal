@@ -1,2 +1,0 @@
-"""Graphing-family geometry tasks."""
-

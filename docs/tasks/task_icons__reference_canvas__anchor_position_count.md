@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `reference_canvas`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_icons__reference_canvas__anchor_position_count`
 5. Objective: count how many Scene icons match the Reference type and lie on one requested side of the marked Anchor.
 
@@ -48,7 +48,7 @@
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_relative_position_type_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_relative_position_type_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`
 
 ## Current Review Status
 Current browser-review sidecars live under

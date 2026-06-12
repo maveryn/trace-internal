@@ -18,8 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds
-from ..shared.fixed_query_task import rewrite_pages_public_task_output
+from trace.tasks.shared.fixed_query import rewrite_pages_public_task_output
 from ..shared.page_semantic_assets import page_semantic_asset_label, page_semantic_asset_manifest_metadata
 from ..shared.public_query_task import rewrite_pages_query_output
 from .metric_common import (
@@ -34,7 +33,6 @@ from .metric_common import (
     SECTION_RANKED_TOTAL_VARIANTS,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
-    _COMPLEXITY_WEIGHTS,
     _PROMPT_DEFAULTS,
     _REASONING_LOAD_BY_VARIANT,
     _RENDER_DEFAULTS,
@@ -157,7 +155,7 @@ class PagesInfographicMetricArithmeticValueTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "infographic"
+    scene_id = "infographic"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -276,7 +274,7 @@ class PagesInfographicMetricArithmeticValueTask:
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -516,14 +514,6 @@ class PagesInfographicMetricArithmeticValueTask:
                 reasoning_load
                 + (0.14 * normalize_int_with_bounds(int(dataset["target_operand_count"]), dataset["target_operand_count_range"])),
             )
-        complexity = build_pages_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": normalize_int_with_bounds(int(dataset["card_count"]), dataset["card_count_range"]),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": normalize_int_with_bounds(int(dataset["section_count"]), dataset["section_count_range"]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -531,7 +521,6 @@ class PagesInfographicMetricArithmeticValueTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

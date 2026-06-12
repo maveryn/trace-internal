@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `puzzles`
 2. Scene id: `matchstick`
-3. Task group: `logic`
+3. Scene: `logic`
 4. Query ids: `most_loose_endpoints`, `fewest_loose_endpoints`
 5. Objective: choose the labeled stick arrangement with the unique largest or smallest loose-endpoint count.
 

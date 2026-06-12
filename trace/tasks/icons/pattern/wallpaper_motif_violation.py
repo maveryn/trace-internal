@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.taxonomy import resolve_task_taxonomy
 from ....core.types import TypedValue
 from ...base import TaskOutput
@@ -28,11 +28,6 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_legibility import draw_centered_traced_text
 from ...shared.text_rendering import load_font
-from ..shared.complexity import (
-    build_icon_task_complexity,
-    icon_scene_clutter_score,
-    icon_visual_scan_score,
-)
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_grid_scene import resolve_fixed_grid_cell_slots
@@ -157,7 +152,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "pattern")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "pattern")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -484,44 +479,6 @@ def _render_wallpaper_scene(
     )
 
 
-def _build_complexity(*, scene_payload: _ScenePayload, render_params: Mapping[str, Any]) -> Any:
-    group_load = {
-        "p1": 0.25,
-        "p2": 0.40,
-        "pm": 0.44,
-        "pg": 0.52,
-        "cm": 0.55,
-        "pmm": 0.64,
-        "p4": 0.68,
-        "p3": 0.70,
-    }
-    rule_inference = max(
-        group_load.get(str(scene_payload.shared_wallpaper_group_id), 0.55),
-        group_load.get(str(scene_payload.odd_wallpaper_group_id), 0.55),
-    )
-    visual_scan = icon_visual_scan_score(
-        object_count=len(scene_payload.scene_icon_instances),
-        object_count_min=6 * 16,
-        object_count_max=6 * 64,
-    )
-    ambiguity = min(1.0, 0.18 + (0.16 * float(rule_inference)))
-    clutter = icon_scene_clutter_score(
-        scene_instances=scene_payload.scene_icon_instances,
-        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
-        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
-        scene_max_overlap_fraction=max(0.01, float(render_params["scene_max_overlap_fraction"])),
-        noise_edit_count_range=tuple(render_params["icon_noise_edit_count_range"]),
-    )
-    return build_icon_task_complexity(
-        task_group_defaults=_TASK_GROUP_DEFAULTS,
-        task_id=TASK_ID,
-        criterion_values={
-            "rule_inference": float(rule_inference),
-            "visual_scan": float(visual_scan),
-            "ambiguity": float(ambiguity),
-            "clutter": float(clutter),
-        },
-    )
 
 
 @register_task
@@ -530,7 +487,7 @@ class IconsPatternWallpaperMotifViolationTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "pattern"
+    scene_id = "pattern"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         scene_rng = spawn_rng(int(instance_seed), "scene")
@@ -580,7 +537,7 @@ class IconsPatternWallpaperMotifViolationTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -621,7 +578,7 @@ class IconsPatternWallpaperMotifViolationTask:
                 "scene_id": taxonomy.scene_id,
                 "task_id": str(self.task_id),
                 "source_domain": taxonomy.source_domain,
-                "source_task_group": taxonomy.source_task_group,
+                "source_scene_id": taxonomy.source_scene_id,
                 "query_id": QUERY_ID,
             },
             "scene_ir": {
@@ -729,7 +686,6 @@ class IconsPatternWallpaperMotifViolationTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scene_payload=scene_payload, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=taxonomy.scene_id,
             query_id=QUERY_ID,

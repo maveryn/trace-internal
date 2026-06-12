@@ -22,13 +22,6 @@ generation:
       temporal_sequence: 0.25
     min_condition_metric_count_min: 2
     min_condition_metric_count_max: 4
-    query_id_weights:
-      highlighted_metric_threshold_panel_count: 1.0
-      threshold_metric_count_for_panel: 1.0
-      profile_advantage_count: 1.0
-      matching_condition_panel_count: 1.0
-    balanced_query_id_sampling: true
-
 rendering:
   shared:
     canvas_width: 1424
@@ -50,56 +43,66 @@ rendering:
     metric_font_size_px: 14
     tick_font_size_px: 12
     legend_font_size_px: 16
-    query_spoke_rgb: [70, 91, 118]
+    query_spoke_rgb:
+    - 70
+    - 91
+    - 118
     query_spoke_width_px: 3
-    query_metric_label_rgb: [26, 54, 93]
+    query_metric_label_rgb:
+    - 26
+    - 54
+    - 93
     grid_rgb_options:
-      - [207, 214, 225]
-      - [198, 213, 224]
-      - [218, 209, 196]
-      - [202, 218, 210]
+    - - 207
+      - 214
+      - 225
+    - - 198
+      - 213
+      - 224
+    - - 218
+      - 209
+      - 196
+    - - 202
+      - 218
+      - 210
     spoke_rgb_options:
-      - [186, 196, 210]
-      - [178, 194, 206]
-      - [198, 188, 176]
-      - [184, 202, 194]
+    - - 186
+      - 196
+      - 210
+    - - 178
+      - 194
+      - 206
+    - - 198
+      - 188
+      - 176
+    - - 184
+      - 202
+      - 194
     profile_palette_rgb:
-      - [41, 108, 179]
-      - [205, 82, 74]
-      - [55, 148, 104]
-      - [139, 92, 186]
-      - [214, 139, 44]
-      - [54, 148, 168]
-      - [185, 73, 134]
-      - [102, 119, 145]
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.44
-      scene_variant_load: 0.14
-
+    - - 41
+      - 108
+      - 179
+    - - 205
+      - 82
+      - 74
+    - - 55
+      - 148
+      - 104
+    - - 139
+      - 92
+      - 186
+    - - 214
+      - 139
+      - 44
+    - - 54
+      - 148
+      - 168
+    - - 185
+      - 73
+      - 134
+    - - 102
+      - 119
+      - 145
 prompt:
   shared:
-    bundle_id: charts_radar_v0
-    scene_key: radar_profile_charts
-    task_key: radar_profile_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_small_multiple_radar: small multiple radar charts. Each panel has the same metric spokes and one colored profile polygon; panel labels identify the separate radar charts
-    object_description_single_radar_multi_profile: one radar chart with the same metric spokes for two colored profile polygons. The legend names the two profiles
-    answer_hint_label: set "answer" to the exact visible panel label as a string
-    answer_hint_count: set "answer" to the count as an integer
-    annotation_hint_highlighted_metric_threshold_panel_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel whose highlighted metric is above the threshold
-    annotation_hint_threshold_metric_count_for_panel: set "annotation" to an array of [x,y] pixel points, one at each counted vertex in the queried panel
-    annotation_hint_profile_advantage_count: set "annotation" to an array of pixel-space point pairs [[x, y], [x, y]], one pair for each counted metric; put the first named profile point first in each pair
-    annotation_hint_matching_condition_panel_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes, one around each radar panel satisfying the condition
-    json_example_highlighted_metric_threshold_panel_count: '{"annotation":[[160,130,432,390],[516,130,788,390],[872,130,1144,390]],"answer":3}'
-    json_example_threshold_metric_count_for_panel: '{"annotation":[[512,356],[588,420],[474,488]],"answer":3}'
-    json_example_profile_advantage_count: '{"annotation":[[[650,244],[622,270]],[[744,430],[708,408]]],"answer":2}'
-    json_example_matching_condition_panel_count: '{"annotation":[[160,130,432,390],[516,130,788,390]],"answer":2}'
-    json_example_answer_only_highlighted_metric_threshold_panel_count: '{"answer":3}'
-    json_example_answer_only_threshold_metric_count_for_panel: '{"answer":3}'
-    json_example_answer_only_profile_advantage_count: '{"answer":2}'
-    json_example_answer_only_matching_condition_panel_count: '{"answer":2}'
+    bundle_id: charts_radar_v1

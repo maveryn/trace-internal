@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence
 
 from ...shared.font_assets import font_asset_version, sample_font_family
-from ...shared.visual_defaults import default_noise_fallback, load_task_group_background_defaults, load_task_group_noise_defaults
+from ...shared.visual_defaults import (
+    default_noise_fallback,
+    load_scene_background_defaults,
+    load_scene_noise_defaults,
+)
 
 
 def solid_light_background_fallback() -> Dict[str, Any]:
@@ -23,23 +27,23 @@ def solid_light_background_fallback() -> Dict[str, Any]:
     }
 
 
-def load_chart_background_defaults(*, task_group: str) -> Dict[str, Any]:
-    """Load chart-task background config with the canonical fallback."""
+def load_chart_scene_background_defaults(*, scene_id: str) -> Dict[str, Any]:
+    """Load chart-scene background config with the canonical fallback."""
 
-    return load_task_group_background_defaults(
+    return load_scene_background_defaults(
         domain="charts",
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         fallback=solid_light_background_fallback(),
         merge_with_fallback=True,
     )
 
 
-def load_chart_noise_defaults(*, task_group: str, apply_prob: float) -> Dict[str, Any]:
-    """Load chart-task post-image noise config with the canonical fallback."""
+def load_chart_scene_noise_defaults(*, scene_id: str, apply_prob: float) -> Dict[str, Any]:
+    """Load chart-scene post-image noise config with the canonical fallback."""
 
-    return load_task_group_noise_defaults(
+    return load_scene_noise_defaults(
         domain="charts",
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         fallback=default_noise_fallback(apply_prob=float(apply_prob)),
         merge_with_fallback=False,
     )
@@ -78,8 +82,8 @@ def chart_font_asset_metadata(chart_font_family: str) -> Dict[str, str]:
 
 __all__ = [
     "chart_font_asset_metadata",
-    "load_chart_background_defaults",
-    "load_chart_noise_defaults",
+    "load_chart_scene_background_defaults",
+    "load_chart_scene_noise_defaults",
     "sample_chart_font_family",
     "solid_light_background_fallback",
 ]

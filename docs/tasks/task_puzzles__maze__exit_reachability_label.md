@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `maze`
-3. Task group: `topology`
+3. Scene: `topology`
 4. Task id: `task_puzzles__maze__exit_reachability_label`
 
 ## Query Contract

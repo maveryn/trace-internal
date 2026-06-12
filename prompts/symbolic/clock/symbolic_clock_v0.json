@@ -1,0 +1,130 @@
+{
+  "bundle_id": "symbolic_clock_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "clock_readout_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "clock_compare_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "clock_match_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:analog_clock": [
+      "object_description"
+    ],
+    "query:offset_time": [
+      "delta_value",
+      "offset_unit",
+      "offset_direction",
+      "answer_format"
+    ],
+    "query:time_extremum_label": [
+      "extremum_direction"
+    ],
+    "query:analog_reference_digital_options": [],
+    "query:digital_reference_analog_options": [],
+    "scene:multi_analog_clock": [
+      "object_description"
+    ],
+    "scene:clock_match_panel": [
+      "object_description"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "analog_clock": [
+      "The image shows {object_description}.",
+      "The clock display shows {object_description}.",
+      "This clock display shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "multi_analog_clock": [
+      "The image shows {object_description}.",
+      "The clock display shows {object_description}.",
+      "This clock display shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "clock_match_panel": [
+      "The image shows {object_description}.",
+      "The clock panel shows {object_description}.",
+      "This clock panel shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "offset_time": [
+      "What time will it be {delta_value} {offset_unit} {offset_direction} the shown time? Answer in {answer_format} 12-hour format with leading zeros.",
+      "Starting from the displayed time, what time is {delta_value} {offset_unit} {offset_direction}? Answer in {answer_format} 12-hour format with leading zeros.",
+      "Shift the shown time {offset_direction} by {delta_value} {offset_unit}. What time do you get? Answer in {answer_format} 12-hour format with leading zeros.",
+      "Use a {delta_value} {offset_unit} offset {offset_direction} the displayed time. What time is it? Answer in {answer_format} 12-hour format with leading zeros.",
+      "Apply an offset {offset_direction} the shown time by {delta_value} {offset_unit}. What is the result? Answer in {answer_format} 12-hour format with leading zeros."
+    ],
+    "time_extremum_label": [
+      "Which labeled clock shows the {extremum_direction} time?",
+      "Identify the labeled clock with the {extremum_direction} shown time.",
+      "Among the labeled clocks, which one shows the {extremum_direction} time?",
+      "Find the clock showing the {extremum_direction} time.",
+      "Which labeled clock shows the {extremum_direction} time among the clocks shown?"
+    ],
+    "analog_reference_digital_options": [
+      "Which labeled digital display shows the same time as the reference clock?",
+      "Choose the digital-display option that matches the reference clock time.",
+      "Which labeled digital option is equivalent to the reference analog clock?",
+      "Find the labeled digital display with the same time as the reference clock.",
+      "Which digital option matches the time shown by the reference clock?"
+    ],
+    "digital_reference_analog_options": [
+      "Which labeled analog clock shows the same time as the reference display?",
+      "Choose the analog-clock option that matches the reference digital time.",
+      "Which labeled analog option is equivalent to the reference digital display?",
+      "Find the labeled analog clock with the same time as the reference display.",
+      "Which analog option matches the time shown by the reference display?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

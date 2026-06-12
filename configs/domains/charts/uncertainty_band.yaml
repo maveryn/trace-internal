@@ -9,7 +9,6 @@ generation:
       band_overlap_count: 1.0
       widest_band_x_label: 1.0
       narrowest_band_x_label: 1.0
-
 rendering:
   shared:
     canvas_width: 1180
@@ -45,38 +44,48 @@ rendering:
     layout_jitter_y_px_max: 12
     layout_jitter_min_margin_px: 22
     title_options:
-      - Uncertainty Band Comparison
-      - Forecast Range Bands
-      - Estimate Band Profile
-      - Confidence Band View
+    - Uncertainty Band Comparison
+    - Forecast Range Bands
+    - Estimate Band Profile
+    - Confidence Band View
     series_palette_rgb:
-      - [47, 111, 196]
-      - [216, 104, 62]
-      - [42, 147, 112]
-      - [126, 93, 190]
-      - [196, 145, 34]
-      - [32, 132, 158]
-
+    - - 47
+      - 111
+      - 196
+    - - 216
+      - 104
+      - 62
+    - - 42
+      - 147
+      - 112
+    - - 126
+      - 93
+      - 190
+    - - 196
+      - 145
+      - 34
+    - - 32
+      - 132
+      - 158
 prompt:
   shared:
-    bundle_id: charts_uncertainty_band_v0
+    bundle_id: charts_uncertainty_band_v1
     scene_key: uncertainty_band_scene
     task_key: uncertainty_band_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description: a line chart with two labeled series, each shown with a central line and a shaded upper-to-lower uncertainty band
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
+    object_description: a line chart with two labeled series, each shown with a central
+      line and a shaded upper-to-lower uncertainty band
     answer_hint_count: set "answer" to the requested integer count
     answer_hint_label: set "answer" to the exact visible x-axis label as a string
-    annotation_hint_band_overlap_count: set "annotation" to an array of [x,y] pixel points, one centered inside each counted overlap region
-    annotation_hint_band_width_extremum_x_label: set "annotation" to an object mapping "upper_bound" and "lower_bound" to [x,y] pixel points on the target series band at the answer x-axis label
+    annotation_hint_band_overlap_count: set "annotation" to an array of [x,y] pixel
+      points, one centered inside each counted overlap region
+    annotation_hint_band_width_extremum_x_label: set "annotation" to an object mapping
+      "upper_bound" and "lower_bound" to [x,y] pixel points on the target series band
+      at the answer x-axis label
     json_example_band_overlap_count: '{"annotation":[[345,318],[512,286],[679,302]],"answer":3}'
     json_example_band_width_extremum_x_label: '{"annotation":{"upper_bound":[612,214],"lower_bound":[612,382]},"answer":"FY24"}'
     json_example_answer_only_band_overlap_count: '{"answer":3}'
     json_example_answer_only_band_width_extremum_x_label: '{"answer":"FY24"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.36
-      reasoning_load: 0.44
-      scene_variant_load: 0.20

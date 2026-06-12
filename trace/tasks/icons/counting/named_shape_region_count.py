@@ -10,8 +10,8 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image, ImageChops, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -182,7 +182,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -928,43 +928,6 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
     )
 
 
-def _complexity(scene: _ScenePayload, *, render_params: Mapping[str, Any]) -> TaskComplexity:
-    answer_load = (int(scene.target_count) - _DEFAULTS.target_count_min) / max(1, _DEFAULTS.target_count_max - _DEFAULTS.target_count_min)
-    object_load = (int(scene.object_count) - _DEFAULTS.object_count_min) / max(1, _DEFAULTS.object_count_max - _DEFAULTS.object_count_min)
-    region_difficulty = {
-        "shape": 0.45 if str(scene.region.shape_kind) == "rectangle" else 0.55,
-        "band": 0.62 if str(scene.region.band_kind) in {"vertical", "horizontal"} else 0.76,
-        "quadrant": 0.42,
-        "shelf": 0.36,
-    }[str(scene.region.region_kind)]
-    outside_bonus = 0.12 if not bool(scene.region.counts_inside) else 0.0
-    shape_diversity = len(set(instance.shape_id for instance in scene.instances)) / max(1.0, float(scene.object_count))
-    score = (
-        0.24 * max(0.0, min(1.0, answer_load))
-        + 0.22 * max(0.0, min(1.0, object_load))
-        + 0.28 * float(region_difficulty)
-        + 0.16 * max(0.0, min(1.0, shape_diversity))
-        + 0.10 * float(outside_bonus)
-    )
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "answer_load": round(float(answer_load), 6),
-            "object_load": round(float(object_load), 6),
-            "region_difficulty": round(float(region_difficulty), 6),
-            "outside_bonus": round(float(outside_bonus), 6),
-            "shape_diversity": round(float(shape_diversity), 6),
-            "query_id": str(scene.region.query_id),
-            "target_shape_id": str(scene.target_shape_id),
-            "target_count": int(scene.target_count),
-            "object_count": int(scene.object_count),
-            "region_kind": str(scene.region.region_kind),
-            "region_shape_kind": str(scene.region.shape_kind),
-            "band_kind": str(scene.region.band_kind),
-            "scene_icon_size_min_px": int(render_params["scene_icon_size_min_px"]),
-            "scene_icon_size_max_px": int(render_params["scene_icon_size_max_px"]),
-        },
-    )
 
 
 @register_task
@@ -973,7 +936,7 @@ class IconsCountingNamedShapeRegionCountTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = resolve_icon_render_params(
@@ -1050,7 +1013,7 @@ class IconsCountingNamedShapeRegionCountTask:
         question_key = f"question_text_{scene.region.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1181,7 +1144,6 @@ class IconsCountingNamedShapeRegionCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(scene, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(scene.region.query_id),

@@ -4,24 +4,22 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 from PIL import Image, ImageDraw
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.chess.board_tasks import (
-    GamesChessBoardTask,
-    GamesChessCheckmateMoveLabelTask,
-    GamesChessColoredPieceKindCountTask,
-    GamesChessKingEscapeSquareCountTask,
-    GamesChessMarkedPieceBlockerCountTask,
-    GamesChessMarkedPieceDestinationCountTask,
-    GamesChessPieceKindCountTask,
-    GamesChessPlayerCapturePieceCountTask,
-    GamesChessTargetSquareAttackerCountTask,
-)
-from trace.tasks.games.shared.chess_common import (
+from trace.tasks.games.chess.checkmate_move_label import GamesChessCheckmateMoveLabelTask
+from trace.tasks.games.chess.colored_piece_kind_count import GamesChessColoredPieceKindCountTask
+from trace.tasks.games.chess.king_escape_square_count import GamesChessKingEscapeSquareCountTask
+from trace.tasks.games.chess.marked_piece_blocker_count import GamesChessMarkedPieceBlockerCountTask
+from trace.tasks.games.chess.marked_piece_destination_count import GamesChessMarkedPieceDestinationCountTask
+from trace.tasks.games.chess.piece_kind_count import GamesChessPieceKindCountTask
+from trace.tasks.games.chess.player_capture_piece_count import GamesChessPlayerCapturePieceCountTask
+from trace.tasks.games.chess.target_square_attacker_count import GamesChessTargetSquareAttackerCountTask
+from trace.tasks.games.shared.piece_board_rules import (
     ChessPiece,
     attackers_to_square,
     capturable_opponent_coords,
@@ -36,7 +34,7 @@ from trace.tasks.games.shared.chess_common import (
     piece_to_entity_id,
     validate_square_chess_material,
 )
-from trace.tasks.games.shared.chess_scene import _FILLED_PIECE_CODEPOINTS, _fit_chess_symbol_font
+from trace.tasks.games.shared.piece_board_renderer import _FILLED_PIECE_CODEPOINTS, _fit_chess_symbol_font
 from trace.tasks.shared.text_rendering import temporary_default_font_family
 from tests.helpers import read_jsonl
 
@@ -92,7 +90,7 @@ from tests.helpers import read_jsonl
     ),
 )
 def test_games_chess_board_emits_expected_contract(
-    task_cls: type[GamesChessBoardTask],
+    task_cls: type[Any],
     params: dict[str, int | str],
     expected_query: str,
 ) -> None:
@@ -405,7 +403,7 @@ def test_games_chess_checkmate_move_label_has_unique_mating_option() -> None:
     ),
 )
 def test_games_chess_movement_rule_boards_are_material_plausible(
-    task_cls: type[GamesChessBoardTask],
+    task_cls: type[Any],
     params: dict[str, int | str],
 ) -> None:
     for offset in range(8):
@@ -425,54 +423,42 @@ def test_games_chess_checkmate_board_is_material_plausible() -> None:
         assert validate_square_chess_material(board)
 
 
-def test_games_chess_board_query_cycle_covers_answer_scene_and_style_support() -> None:
-    task = GamesChessBoardTask()
-    answers_by_query = {query: set() for query in (
-        "marked_piece_move_count",
-        "marked_piece_capture_count",
-        "player_capture_piece_count",
-        "king_square_attacker_count",
-        "white_piece_attacks_target_square_count",
-        "black_piece_attacks_target_square_count",
-        "rook_line_blocker_count",
-        "bishop_diagonal_blocker_count",
-        "queen_line_blocker_count",
-        "king_escape_square_count",
-        "piece_kind_count",
-        "colored_piece_kind_count",
-    )}
-    scenes_by_query = {query: set() for query in answers_by_query}
-    styles_by_query = {query: set() for query in answers_by_query}
+@pytest.mark.parametrize(
+    ("task_cls", "query_id", "support"),
+    (
+        (GamesChessMarkedPieceDestinationCountTask, "marked_piece_move_count", (1, 2, 3, 4, 5, 6, 7, 8)),
+        (GamesChessMarkedPieceDestinationCountTask, "marked_piece_capture_count", (0, 1, 2, 3, 4)),
+        (GamesChessPlayerCapturePieceCountTask, "player_capture_piece_count", (1, 2, 3, 4, 5, 6)),
+        (GamesChessTargetSquareAttackerCountTask, "king_square_attacker_count", (0, 1, 2, 3, 4)),
+        (GamesChessTargetSquareAttackerCountTask, "white_piece_attacks_target_square_count", (0, 1, 2, 3, 4)),
+        (GamesChessTargetSquareAttackerCountTask, "black_piece_attacks_target_square_count", (0, 1, 2, 3, 4)),
+        (GamesChessMarkedPieceBlockerCountTask, "rook_line_blocker_count", (0, 1, 2, 3, 4)),
+        (GamesChessMarkedPieceBlockerCountTask, "bishop_diagonal_blocker_count", (0, 1, 2, 3, 4)),
+        (GamesChessMarkedPieceBlockerCountTask, "queen_line_blocker_count", (0, 1, 2, 3, 4)),
+        (GamesChessKingEscapeSquareCountTask, "king_escape_square_count", (0, 1, 2, 3, 4, 5)),
+        (GamesChessPieceKindCountTask, "piece_kind_count", (0, 1, 2, 3, 4, 5, 6)),
+        (GamesChessColoredPieceKindCountTask, "colored_piece_kind_count", (0, 1, 2, 3, 4, 5, 6)),
+    ),
+)
+def test_games_chess_public_tasks_cover_declared_integer_answer_support(
+    task_cls: type[Any],
+    query_id: str,
+    support: tuple[int, ...],
+) -> None:
+    seen = set()
+    for index, target_answer in enumerate(support):
+        params: dict[str, Any] = {"query_id": str(query_id), "target_answer": int(target_answer)}
+        if str(query_id) == "piece_kind_count":
+            params["target_piece_kind"] = "pawn"
+        if str(query_id) == "colored_piece_kind_count":
+            params["target_piece_kind"] = "bishop"
+            params["target_piece_color"] = "white"
+        out = task_cls().generate(50301 + (37 * int(index)), params=params, max_attempts=256)
+        assert out.query_id == str(query_id)
+        assert out.trace_payload["query_spec"]["params"]["query_id"] == str(query_id)
+        seen.add(int(out.answer_gt.value))
 
-    for sampling_index in range(720):
-        out = task.generate(
-            50301 + int(sampling_index),
-            params={},
-            max_attempts=256,
-        )
-        execution = out.trace_payload["execution_trace"]
-        query = str(out.query_id or out.query_id)
-        answers_by_query[query].add(int(out.answer_gt.value))
-        scenes_by_query[query].add(str(execution["scene_variant"]))
-        styles_by_query[query].add(str(execution["style_variant"]))
-
-    assert answers_by_query["marked_piece_move_count"] == {1, 2, 3, 4, 5, 6, 7, 8}
-    assert answers_by_query["marked_piece_capture_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["player_capture_piece_count"] == {1, 2, 3, 4, 5, 6}
-    assert answers_by_query["king_square_attacker_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["white_piece_attacks_target_square_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["black_piece_attacks_target_square_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["rook_line_blocker_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["bishop_diagonal_blocker_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["queen_line_blocker_count"] == {0, 1, 2, 3, 4}
-    assert answers_by_query["king_escape_square_count"] == {0, 1, 2, 3, 4, 5}
-    assert answers_by_query["piece_kind_count"] == {0, 1, 2, 3, 4, 5, 6}
-    assert answers_by_query["colored_piece_kind_count"] == {0, 1, 2, 3, 4, 5, 6}
-    assert all(values == {"sparse_board", "crowded_board"} for values in scenes_by_query.values())
-    assert all(
-        values == {"classic", "soft", "outlined", "wood_token", "blue_glyph", "monochrome_glyph"}
-        for values in styles_by_query.values()
-    )
+    assert seen == set(int(value) for value in support)
 
 
 def test_games_chess_board_is_deterministic() -> None:
@@ -482,7 +468,7 @@ def test_games_chess_board_is_deterministic() -> None:
         "scene_variant": "crowded_board",
         "style_variant": "outlined",
     }
-    task = GamesChessBoardTask()
+    task = GamesChessTargetSquareAttackerCountTask()
     out_a = task.generate(50251, params=params, max_attempts=96)
     out_b = task.generate(50251, params=params, max_attempts=96)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -522,38 +508,23 @@ def test_games_chess_uses_filled_piece_symbol_set_for_both_sides() -> None:
 
 
 def test_games_chess_board_prompt_bundle_requires_rule_texts() -> None:
-    bundle = json.loads(Path("prompts/games/chess/games_chess_v0.json").read_text(encoding="utf-8"))
-    required = bundle["required_slots_by_key"]
-    assert required["query:marked_piece_move_count"] == ["standard_rule_text", "marked_piece_rule_text"]
-    assert required["query:player_capture_piece_count"] == ["standard_rule_text", "player_rule_text", "player_color_name"]
-    assert required["query:king_square_attacker_count"] == ["standard_rule_text", "king_square_attacker_rule_text"]
-    assert required["query:white_piece_attacks_target_square_count"] == [
-        "standard_rule_text",
-        "target_square_rule_text",
+    bundle = json.loads(Path("prompts/games/chess/games_chess_v1.json").read_text(encoding="utf-8"))
+    assert bundle["schema_version"] == "v1"
+    assert bundle["required_slots_by_key"] == {}
+    static = bundle["static_slots_by_key"]
+    assert "normal chess" in static["query:marked_piece_move_count"]["standard_rule_text"].lower()
+    assert "red outlined square" in static["query:marked_piece_move_count"]["marked_piece_rule_text"].lower()
+    assert "blue outlined square" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
+    assert "from" in static["query:checkmate_move_label"]["annotation_hint"]
+    dynamic = bundle["dynamic_slots"]
+    assert set(dynamic) >= {
         "player_color_name",
-    ]
-    assert required["query:black_piece_attacks_target_square_count"] == [
-        "standard_rule_text",
-        "target_square_rule_text",
-        "player_color_name",
-    ]
-    assert required["query:rook_line_blocker_count"] == ["blocker_rule_text"]
-    assert required["query:bishop_diagonal_blocker_count"] == ["blocker_rule_text"]
-    assert required["query:queen_line_blocker_count"] == ["blocker_rule_text"]
-    assert required["query:king_escape_square_count"] == ["standard_rule_text", "king_escape_rule_text"]
-    assert required["query:piece_kind_count"] == ["target_piece_kind", "target_piece_kind_plural"]
-    assert required["query:colored_piece_kind_count"] == [
+        "opponent_color_name",
+        "defender_color_name",
         "target_color_name",
         "target_piece_kind",
         "target_piece_kind_plural",
-    ]
-    assert required["query:checkmate_move_label"] == [
-        "standard_rule_text",
-        "coordinate_rule_text",
-        "checkmate_rule_text",
-        "player_color_name",
-        "defender_color_name",
-    ]
+    }
 
 
 def test_games_chess_board_build_smoke(tmp_path: Path) -> None:
@@ -580,11 +551,36 @@ def test_games_chess_board_build_smoke(tmp_path: Path) -> None:
     assert int(report["accepted_counts_by_task"]["task_games__chess__marked_piece_destination_count"]) == 4
     assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "chess" for row in rows)
+    assert all(row.get("scene_id") == "chess" for row in rows)
+
+
+def test_games_chess_retries_transient_construction_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    import trace.tasks.games.chess.marked_piece_destination_count as task_module
+
+    real_sampler = task_module.sample_marked_piece_destination_scene
+    calls = {"count": 0}
+
+    def flaky_sampler(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise ValueError("forced transient construction failure")
+        return real_sampler(*args, **kwargs)
+
+    monkeypatch.setattr(task_module, "sample_marked_piece_destination_scene", flaky_sampler)
+
+    out = task_module.GamesChessMarkedPieceDestinationCountTask().generate(
+        50201,
+        params={"query_id": "marked_piece_move_count", "target_answer": 4, "scene_variant": "sparse_board"},
+        max_attempts=96,
+    )
+
+    assert calls["count"] >= 2
+    assert out.answer_gt.type == "integer"
+    assert out.query_id == "marked_piece_move_count"
 
 
 def _board_from_execution(execution: dict):
-    from trace.tasks.games.shared.chess_common import ChessPiece
+    from trace.tasks.games.shared.piece_board_rules import ChessPiece
 
     rows = []
     for row in execution["board_rows"]:

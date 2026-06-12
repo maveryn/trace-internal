@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Task id: `task_graph__node_link__unique_cycle_size`
 4. Objective: count how many labeled nodes lie on the unique cycle of one graph.
 
@@ -102,4 +102,4 @@
 1. Complexity definition/components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
 2. Determinism/build tests: `tests/test_graph_relation_unique_cycle_size_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_graph_relation_unique_cycle_size_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

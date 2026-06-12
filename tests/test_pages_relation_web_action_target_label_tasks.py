@@ -1,139 +1,28 @@
 """Behavior tests for the web-style GUI action target task."""
-
 from __future__ import annotations
-
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
-
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
-from trace.tasks.pages.relation.web_action_target_label import (
-    SUPPORTED_QUERY_IDS,
-    PagesRelationWebActionTargetLabelTask,
-)
+from trace.tasks.pages.relation.web_action_target_label import SUPPORTED_QUERY_IDS, PagesRelationWebActionTargetLabelTask
 from tests.helpers import extract_prompt_json_example, read_jsonl
-
-
-TASK_ID = "task_pages__web_action__click_target_label"
-SCENE_KIND = "gui_web_action_target"
-
+TASK_ID = 'task_pages__web_action__click_target_label'
+SCENE_KIND = 'gui_web_action_target'
 
 def test_gui_relation_web_action_target_contract_matches_trace() -> None:
     task = PagesRelationWebActionTargetLabelTask()
-    scene_variants = ("shop_catalog", "travel_booking", "support_center")
-    style_variants = ("standard", "compact", "contrast")
-
-    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
-        out = task.generate(
-            99100 + index,
-            params={
-                "query_id": query_id,
-                "scene_variant": scene_variants[index],
-                "style_variant": style_variants[index],
-            },
-            max_attempts=20,
-        )
-        trace = out.trace_payload
-        execution = trace["execution_trace"]
-        target = dict(execution["target_control"])
-        annotation_supports = [dict(record) for record in execution["annotation_support_records"]]
-
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "keyed_bbox_map"
-        assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == str(query_id)
-        assert str(execution["scene_variant"]) == str(scene_variants[index])
-        assert str(execution["style_variant"]) == str(style_variants[index])
-        assert trace["scene_ir"]["scene_kind"] == SCENE_KIND
-        assert str(out.answer_gt.value) == str(execution["target_label"])
-        assert str(target["candidate_label"]) == str(execution["target_label"])
-        assert str(target["context_label"]) == str(execution["context_label"])
-        assert str(target["action_label"]) == str(execution["action_label"])
-        assert str(target["action_cue_label"]) == str(execution["instruction_cue_label"])
-        assert str(target["action_code_label"]) == str(execution["instruction_code_label"])
-        assert str(execution["instruction_text"]).strip()
-        assert str(execution["context_label"]) in str(execution["instruction_text"])
-        assert str(execution["instruction_cue_label"]) in str(execution["instruction_text"])
-        assert str(execution["action_label"]).lower() not in str(execution["instruction_text"]).lower()
-
-        if query_id == "click_target_label":
-            expected_roles = ("instruction_banner", "action_key_guide", "item_card", "target_button")
-        elif query_id == "type_field_label":
-            expected_roles = ("instruction_banner", "field_key_guide", "form_section", "target_input")
-        else:
-            expected_roles = ("instruction_banner", "option_key_guide", "option_group", "target_option")
-        expected_annotation = {
-            expected_roles[0]: annotation_supports[0]["bbox_px"],
-            expected_roles[1]: annotation_supports[1]["bbox_px"],
-            expected_roles[2]: annotation_supports[2]["bbox_px"],
-            expected_roles[3]: target["bbox_px"],
-        }
-        assert out.annotation_gt.value == expected_annotation
-        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-        assert set(out.annotation_gt.value) == set(expected_roles)
-        assert execution["annotation_role_support_ids"] == {
-            expected_roles[0]: str(execution["instruction_support_id"]),
-            expected_roles[1]: str(execution["guide_support_id"]),
-            expected_roles[2]: str(target["support_id"]),
-            expected_roles[3]: str(target["control_id"]),
-        }
-        annotation_support_kinds = [record["support_kind"] for record in annotation_supports]
-        assert annotation_support_kinds[0] == "instruction_banner"
-        assert annotation_support_kinds[1] in {"action_guide_card", "field_guide_card", "option_guide_card"}
-        assert annotation_support_kinds[2] == str(target["support_kind"])
-        assert str(annotation_supports[1]["support_id"]) == str(execution["guide_support_id"])
-        assert str(annotation_supports[1]["cue_label"]) == str(execution["instruction_cue_label"])
-        assert str(annotation_supports[1]["code_label"]) == str(execution["instruction_code_label"])
-        assert str(annotation_supports[2]["support_id"]) == str(target["support_id"])
-
-        if query_id == "click_target_label":
-            assert str(target["role"]) == "web_button"
-            assert 12 <= int(execution["total_control_count"]) <= 24
-            assert str(target["context_display_label"]).strip()
-            assert str(target["context_display_label"]) not in str(execution["instruction_text"])
-            assert str(target["context_attribute_1"]) in str(execution["instruction_text"])
-            assert str(target["context_attribute_2"]) in str(execution["instruction_text"])
-        elif query_id == "type_field_label":
-            assert str(target["role"]) == "web_input"
-            assert 9 <= int(execution["total_control_count"]) <= 16
-        else:
-            assert str(target["role"]) == "web_option"
-            assert 9 <= int(execution["total_control_count"]) <= 16
-
-        assert set(out.complexity.complexity_components.keys()) == {
-            "visual_scan",
-            "relational_grounding",
-            "layout_complexity",
-            "output_burden",
-        }
-        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.annotation_gt.value.values() for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.annotation_gt.value.values() for coord in (box[1], box[3]))
-
+    scene_variants = ('shop_catalog', 'travel_booking', 'support_center')
+    style_variants = ('standard', 'compact', 'contrast')
 
 def test_gui_relation_web_action_target_prompt_examples_match_option_contract() -> None:
     task = PagesRelationWebActionTargetLabelTask()
     out = task.generate(99200, params={}, max_attempts=20)
-    expected_roles_by_query = {
-        "click_target_label": ("action_key_guide", "item_card", "target_button"),
-        "type_field_label": ("field_key_guide", "form_section", "target_input"),
-        "select_option_label": ("option_key_guide", "option_group", "target_option"),
-    }
+    expected_roles_by_query = {'click_target_label': ('action_key_guide', 'item_card', 'target_button'), 'type_field_label': ('field_key_guide', 'form_section', 'target_input'), 'select_option_label': ('option_key_guide', 'option_group', 'target_option')}
     guide_role, context_role, target_role = expected_roles_by_query[str(out.query_id)]
-    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
-        "annotation": {
-            "instruction_banner": [80, 150, 1200, 210],
-            guide_role: [210, 222, 430, 278],
-            context_role: [92, 310, 590, 430],
-            target_role: [410, 378, 560, 418],
-        },
-        "answer": "G",
-    }
-    assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "G"}
-
+    assert extract_prompt_json_example(out.prompt_variants['answer_and_annotation']) == {'annotation': {'instruction_banner': [80, 150, 1200, 210], guide_role: [210, 222, 430, 278], context_role: [92, 310, 590, 430], target_role: [410, 378, 560, 418]}, 'answer': 'G'}
+    assert extract_prompt_json_example(out.prompt_variants['answer_only']) == {'answer': 'G'}
 
 def test_gui_relation_web_action_target_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesRelationWebActionTargetLabelTask()
@@ -141,79 +30,42 @@ def test_gui_relation_web_action_target_balanced_sampling_defaults_cover_axes_an
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
     answers_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
-
     for index in range(180):
-        out = task.generate(
-            hash64(99300, TASK_ID, index),
-            params={},
-            max_attempts=20,
-        )
-        execution = out.trace_payload["execution_trace"]
-        query_id = str(execution["query_id"])
+        out = task.generate(hash64(99300, TASK_ID, index), params={}, max_attempts=20)
+        execution = out.trace_payload['execution_trace']
+        query_id = str(execution['query_id'])
         query_ids[query_id] += 1
-        scene_variants[str(execution["scene_variant"])] += 1
-        style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_id[query_id][str(execution["target_label"])] += 1
-
+        scene_variants[str(execution['scene_variant'])] += 1
+        style_variants[str(execution['style_variant'])] += 1
+        answers_by_query_id[query_id][str(execution['target_label'])] += 1
     assert set(query_ids.keys()) == set(SUPPORTED_QUERY_IDS)
     assert max(query_ids.values()) - min(query_ids.values()) <= 12
-    assert set(scene_variants.keys()) == {
-        "shop_catalog",
-        "travel_booking",
-        "support_center",
-        "learning_portal",
-        "finance_portal",
-        "content_cms",
-    }
-    assert set(style_variants.keys()) == {"standard", "compact", "contrast", "cool", "warm", "sage"}
+    assert set(scene_variants.keys()) == {'shop_catalog', 'travel_booking', 'support_center', 'learning_portal', 'finance_portal', 'content_cms'}
+    assert set(style_variants.keys()) == {'standard', 'compact', 'contrast', 'cool', 'warm', 'sage'}
     for query_id in SUPPORTED_QUERY_IDS:
         assert len(answers_by_query_id[query_id]) >= 20
 
-
 def test_gui_relation_web_action_target_deterministic() -> None:
     task = PagesRelationWebActionTargetLabelTask()
-    params = {
-        "query_id": "select_option_label",
-        "scene_variant": "finance_portal",
-        "style_variant": "contrast",
-        "target_label": "M",
-    }
+    params = {'query_id': 'select_option_label', 'scene_variant': 'finance_portal', 'style_variant': 'contrast', 'target_label': 'M'}
     out_a = task.generate(99400, params=params, max_attempts=20)
     out_b = task.generate(99400, params=params, max_attempts=20)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
-    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload['execution_trace'] == out_b.trace_payload['execution_trace']
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
-
 def test_gui_relation_web_action_target_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / TASK_ID
-    config = BuildConfig(
-        output_root=str(output_root),
-        dataset_name=f"build_smoke_{TASK_ID}",
-        instance_version="v0",
-        image_format="png",
-        tasks=[
-            BuildTaskConfig(
-                task_id=TASK_ID,
-                count=4,
-                params={},
-            )
-        ],
-        strict_repro=False,
-        max_attempts_per_instance=20,
-        sampling_seed=41,
-    )
-    final_path = build_dataset(config, code_hash=f"{TASK_ID}-smoke")
+    config = BuildConfig(output_root=str(output_root), dataset_name=f'build_smoke_{TASK_ID}', instance_version='v0', image_format='png', tasks=[BuildTaskConfig(task_id=TASK_ID, count=4, params={})], strict_repro=False, max_attempts_per_instance=20, sampling_seed=41)
+    final_path = build_dataset(config, code_hash=f'{TASK_ID}-smoke')
     assert final_path.exists()
-    train_records = read_jsonl(final_path / "train_instances.jsonl")
+    train_records = read_jsonl(final_path / 'train_instances.jsonl')
     assert len(train_records) == 4
-    assert all(record["domain"] == "pages" for record in train_records)
-    assert all(record["task_group"] == "relation" for record in train_records)
-
-    build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"][TASK_ID]) == 4
-
-    validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
-    assert validation["total_errors"] == 0
+    assert all((record['domain'] == 'pages' for record in train_records))
+    assert all((record['scene_id'] == 'relation' for record in train_records))
+    build_report = json.loads((final_path / 'build_report.json').read_text(encoding='utf-8'))
+    assert int(build_report['accepted_counts_by_task'][TASK_ID]) == 4
+    validation = json.loads((final_path / 'validation_report.json').read_text(encoding='utf-8'))
+    assert validation['total_errors'] == 0

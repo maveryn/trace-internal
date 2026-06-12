@@ -28,7 +28,7 @@ def test_puzzles_spatial_visible_cube_count_is_registered_under_split_task() -> 
     assert task_cls is PuzzlesSpatialCubeVisibleProjectionCountTask
     task = task_cls()
     assert task.domain == "puzzles"
-    assert task.task_group == "spatial"
+    assert task.scene_id == "spatial"
 
 
 def test_puzzles_spatial_projection_match_is_registered_under_cube_voxel_scene() -> None:
@@ -36,7 +36,7 @@ def test_puzzles_spatial_projection_match_is_registered_under_cube_voxel_scene()
     assert task_cls is PuzzlesSpatialCubeProjectionMatchLabelTask
     task = task_cls()
     assert task.domain == "puzzles"
-    assert task.task_group == "spatial"
+    assert task.scene_id == "spatial"
 
 
 def test_puzzles_spatial_projection_consistency_is_registered_under_cube_voxel_scene() -> None:
@@ -44,7 +44,7 @@ def test_puzzles_spatial_projection_consistency_is_registered_under_cube_voxel_s
     assert task_cls is PuzzlesSpatialCubeProjectionConsistencyLabelTask
     task = task_cls()
     assert task.domain == "puzzles"
-    assert task.task_group == "spatial"
+    assert task.scene_id == "spatial"
 
 
 def test_puzzles_spatial_visible_cube_count_split_wrapper_rewrites_public_contract() -> None:

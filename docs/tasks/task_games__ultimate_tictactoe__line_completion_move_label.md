@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `ultimate_tictactoe`
+2. Scene: `ultimate_tictactoe`
 3. Scene id: `ultimate_tictactoe`
 4. Public task id: `task_games__ultimate_tictactoe__line_completion_move_label`
 5. Supported `query_id` values: `o_blocking_move_label`, `o_winning_move_label`, `x_blocking_move_label`, `x_winning_move_label`

@@ -9,18 +9,18 @@ from .labeled_chart_core import resolve_chart_axis_variant
 
 
 def public_task_param_overrides(
-    task_group_defaults: Mapping[str, Any],
+    defaults: Mapping[str, Any],
     task_id: str,
     *,
     sections: Sequence[str] = ("generation", "rendering"),
 ) -> Dict[str, Any]:
-    """Return shallow task-id-specific params from task-group defaults."""
+    """Return shallow task-id-specific params from scene defaults."""
 
     overrides: Dict[str, Any] = {}
-    if not isinstance(task_group_defaults, Mapping):
+    if not isinstance(defaults, Mapping):
         return overrides
     for section in sections:
-        section_cfg = task_group_defaults.get(str(section))
+        section_cfg = defaults.get(str(section))
         if not isinstance(section_cfg, Mapping):
             continue
         task_overrides = section_cfg.get("task_overrides")

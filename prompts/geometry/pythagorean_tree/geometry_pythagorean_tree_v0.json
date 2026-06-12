@@ -1,0 +1,83 @@
+{
+  "bundle_id": "geometry_pythagorean_tree_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pythagorean_tree_square_area_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:pythagorean_tree_scene": [
+      "object_description"
+    ],
+    "query:hypotenuse_square_area": [],
+    "query:leg_square_area": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "pythagorean_tree_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "hypotenuse_square_area": [
+      "Use the two visible leg-square area labels. What is the missing area of the square on the hypotenuse?",
+      "Use the attached-square relationship for the right triangle. What is the missing hypotenuse-square area?",
+      "The two leg-square areas are visible. What area belongs in the square on the hypotenuse?",
+      "Find the missing square area on the hypotenuse using the two visible leg-square areas.",
+      "Based on the right triangle and its attached squares, what is the area of the hypotenuse square marked as missing?"
+    ],
+    "leg_square_area": [
+      "Use the visible hypotenuse-square area and the other leg-square area. What is the missing area of the marked leg square?",
+      "Use the attached-square relationship for the right triangle. What is the missing leg-square area?",
+      "The hypotenuse-square area and one leg-square area are visible. What area belongs in the other leg square?",
+      "Find the missing square area on the marked leg using the visible square-area labels.",
+      "Based on the right triangle and its attached squares, what is the area of the leg square marked as missing?"
+    ]
+  },
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description": "a right triangle with a square attached to each side, two square area labels, and one square marked with a missing area",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly the query-specific square-region keys requested by the task; each value must be the pixel bounding box [x0,y0,x1,y1] around that square region",
+    "annotation_hint_hypotenuse_square_area": "set \"annotation\" to a JSON object with exactly these keys: \"unknown_hypotenuse_square\", \"known_leg_square_1\", and \"known_leg_square_2\"; each value must be the pixel bounding box [x0,y0,x1,y1] around that square region",
+    "annotation_hint_leg_square_area": "set \"annotation\" to a JSON object with exactly these keys: \"unknown_leg_square\", \"known_leg_square\", and \"known_hypotenuse_square\"; each value must be the pixel bounding box [x0,y0,x1,y1] around that square region",
+    "answer_hint_integer": "set \"answer\" to the missing square area as an integer",
+    "json_example_hypotenuse_square_area": "{\"annotation\":{\"unknown_hypotenuse_square\":[380,120,520,260],\"known_leg_square_1\":[160,180,270,290],\"known_leg_square_2\":[270,320,410,460]},\"answer\":25}",
+    "json_example_leg_square_area": "{\"annotation\":{\"unknown_leg_square\":[160,180,270,290],\"known_leg_square\":[270,320,410,460],\"known_hypotenuse_square\":[380,120,520,260]},\"answer\":9}",
+    "json_example_answer_only": "{\"answer\":25}"
+  }
+}

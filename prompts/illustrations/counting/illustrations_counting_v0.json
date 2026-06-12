@@ -30,13 +30,6 @@
       "",
       ""
     ],
-    "object_type_on_surface_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "library_book_count_task": [
       "",
       "",
@@ -52,34 +45,6 @@
       ""
     ],
     "playground_equipment_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "pixel_village_object_type_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "pixel_village_person_path_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "pixel_village_territory_object_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "pixel_village_building_near_path_count_task": [
       "",
       "",
       "",
@@ -143,16 +108,12 @@
     "scene:environment_object_canvas": [
       "environment_setting"
     ],
-    "scene:indoor_room_canvas": [
-      "room_setting"
-    ],
     "scene:library_canvas": [
       "section_count"
     ],
     "scene:park_playground_canvas": [
       "person_count"
     ],
-    "scene:pixel_village_canvas": [],
     "scene:transit_terminal_canvas": [
       "person_count"
     ],
@@ -178,10 +139,6 @@
     ],
     "query:building_window_count": [
       "window_phrase"
-    ],
-    "query:object_type_on_surface_count": [
-      "object_name",
-      "surface_name"
     ],
     "query:books_in_section_count": [
       "section_name"
@@ -222,17 +179,6 @@
     "query:climbing_frame_count": [
       "equipment_name"
     ],
-    "query:object_type_count": [
-      "target_plural",
-      "target_unit"
-    ],
-    "query:people_on_path_count": [],
-    "query:territory_object_count": [
-      "territory_name",
-      "target_plural",
-      "target_unit"
-    ],
-    "query:building_near_path_count": [],
     "query:person_using_slide_count": [
       "equipment_name"
     ],
@@ -317,13 +263,6 @@
       "The canvas shows {environment_setting}.",
       "This outdoor illustration shows {environment_setting}."
     ],
-    "indoor_room_canvas": [
-      "The image shows {room_setting}.",
-      "The scene shows {room_setting} with small objects.",
-      "The picture shows {room_setting} with small objects.",
-      "The canvas shows {room_setting}.",
-      "This indoor illustration shows {room_setting}."
-    ],
     "library_canvas": [
       "The image shows an illustrated library with {section_count} labeled shelf sections.",
       "The scene shows a library room containing {section_count} labeled book sections.",
@@ -337,13 +276,6 @@
       "The picture shows a synthetic park scene with {person_count} people.",
       "The canvas contains an illustrated playground park with {person_count} people.",
       "This park playground scene contains {person_count} people."
-    ],
-    "pixel_village_canvas": [
-      "The image shows a top-down pixel village.",
-      "The scene shows a top-down pixel village.",
-      "The picture shows a pixel village map.",
-      "The canvas contains a top-down pixel village scene.",
-      "This illustration shows a pixel village from above."
     ],
     "transit_terminal_canvas": [
       "The image shows an illustrated transit terminal with {person_count} people and labeled boarding areas.",
@@ -402,13 +334,6 @@
       "What is the total number of lit building windows?",
       "How many lit windows can be seen across the buildings?",
       "Find every lit building window. What is the count?"
-    ],
-    "object_type_on_surface_count": [
-      "How many {object_name} objects are on the {surface_name}?",
-      "Count the {object_name} objects on the {surface_name}.",
-      "What is the number of {object_name} objects on the {surface_name}?",
-      "How many drawn {object_name} objects are placed on the {surface_name}?",
-      "Find every {object_name} on the {surface_name}. What is the count?"
     ],
     "books_in_section_count": [
       "How many books are in the {section_name} section?",
@@ -493,34 +418,6 @@
       "What is the number of climbing frames?",
       "How many playground climbing frames can be seen?",
       "Find every climbing frame. What is the count?"
-    ],
-    "object_type_count": [
-      "How many {target_plural} are visible?",
-      "Count the visible {target_plural}.",
-      "What is the number of visible {target_plural}?",
-      "How many {target_plural} can be seen?",
-      "Find every visible {target_unit}. What is the count?"
-    ],
-    "people_on_path_count": [
-      "How many people are on the paths?",
-      "Count the people on the paths.",
-      "What is the number of people on the paths?",
-      "How many people can be seen on the paths?",
-      "Find every person on a path. What is the count?"
-    ],
-    "territory_object_count": [
-      "How many {target_plural} are in the {territory_name}?",
-      "Count the {target_plural} in the {territory_name}.",
-      "What is the number of {target_plural} in the {territory_name}?",
-      "How many {target_plural} can be seen inside the {territory_name}?",
-      "Find every {target_unit} in the {territory_name}. What is the count?"
-    ],
-    "building_near_path_count": [
-      "How many buildings are near a path?",
-      "Count the buildings near a path.",
-      "What is the number of buildings near a path?",
-      "How many buildings can be seen near the paths?",
-      "Find every building near a path. What is the count?"
     ],
     "person_using_slide_count": [
       "How many people are using the slides?",

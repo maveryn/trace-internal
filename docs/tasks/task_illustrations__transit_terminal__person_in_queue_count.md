@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `transit_terminal`
-- Implementation task group: `counting`
+- Implementation scene: `counting`
 - Implementation source: `trace/tasks/illustrations/counting/terminal_entity_location_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__transit_terminal__person_in_queue_count` -> `task_illustrations__transit_terminal__person_in_queue_count`

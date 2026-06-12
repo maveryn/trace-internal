@@ -3,13 +3,13 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `area`
-3. Source implementation domain/group: `charts/area`
-4. Query id: `stacked_dominance_label`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source scene package: `charts/area`
+4. Query id: `default`
+5. Semantic query details are recorded in trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.area.panel_query.ChartsAreaStackedDominanceLabelTask`
-2. Prompt lookup domain/group: `charts/area`
+1. Registered class: `trace.tasks.charts.area.stacked_band_dominance_label.ChartsAreaStackedDominanceLabelTask`
+2. Prompt lookup scene: `charts/area`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `stacked_dominance_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
+| `default` | `selection.extreme_metric_label` | `string_label` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

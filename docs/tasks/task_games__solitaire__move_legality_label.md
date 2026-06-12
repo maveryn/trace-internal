@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `solitaire`
+2. Scene: `solitaire`
 3. Scene id: `solitaire`
 4. Public task id: `task_games__solitaire__move_legality_label`
 5. Supported `query_id` values: `move_legality_label`

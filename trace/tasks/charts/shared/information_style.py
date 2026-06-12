@@ -6,8 +6,8 @@ from dataclasses import replace
 from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
-from ....core.task_group_config import get_task_group_defaults
-from ...shared.config_defaults import split_generation_rendering_prompt_defaults
+from ....core.scene_config import get_scene_defaults
+from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from ...shared.visual_style.information_scene import (
     Color,
     InformationSceneStyle,
@@ -25,18 +25,18 @@ ChartInformationStyle = InformationSceneStyle
 
 
 @lru_cache(maxsize=64)
-def _chart_task_group_render_defaults(task_group: str) -> dict[str, Any]:
-    """Return shared chart rendering defaults for style resolution."""
+def _chart_scene_render_defaults(scene_id: str) -> dict[str, Any]:
+    """Return shared chart rendering defaults for scene-style resolution."""
 
     try:
-        defaults = get_task_group_defaults("charts", str(task_group))
+        defaults = get_scene_defaults("charts", str(scene_id))
     except Exception:
         return {}
     if not isinstance(defaults, Mapping):
         return {}
-    _gen, rendering, _prompt = split_generation_rendering_prompt_defaults(
+    _gen, rendering, _prompt = split_scene_generation_rendering_prompt_defaults(
         defaults,
-        task_id=f"charts_{str(task_group)}_style_defaults",
+        task_id=f"charts_{str(scene_id)}_style_defaults",
     )
     return dict(rendering)
 
@@ -46,17 +46,15 @@ def resolve_chart_information_style(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     scene_id: str,
-    task_group: str,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool | None = None,
     allow_colored_surface: bool | None = None,
 ) -> tuple[ChartInformationStyle, dict[str, Any]]:
     """Resolve one chart presentation style without changing semantic marks."""
 
-    resolved_params = {
-        **_chart_task_group_render_defaults(str(task_group)),
-        **dict(params or {}),
-    }
+    routing_key = str(scene_id)
+    default_params = _chart_scene_render_defaults(str(scene_id))
+    resolved_params = {**default_params, **dict(params or {})}
     resolved_allow_dark = (
         resolve_style_bool(resolved_params, "information_scene_allow_dark", False)
         if allow_dark is None
@@ -70,7 +68,7 @@ def resolve_chart_information_style(
     request = build_visual_style_request(
         domain="charts",
         scene_id=str(scene_id),
-        task_group=str(task_group),
+        routing_key=str(routing_key),
         instance_seed=int(instance_seed),
         params=resolved_params,
         style_family="information_scene",
@@ -131,7 +129,6 @@ def prepare_chart_information_scene(
     instance_seed: int,
     params: Mapping[str, Any],
     scene_id: str,
-    task_group: str,
     render_params: ChartRenderParams,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool | None = None,
@@ -143,7 +140,6 @@ def prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=str(scene_id),
-        task_group=str(task_group),
         protected_colors=protected_colors or (),
         allow_dark=allow_dark,
         allow_colored_surface=allow_colored_surface,
@@ -154,7 +150,7 @@ def prepare_chart_information_scene(
         canvas_height=int(styled_render_params.canvas_height),
         style=style,
         instance_seed=int(instance_seed),
-        namespace=f"charts.{str(task_group)}.{str(scene_id)}.information_scene_background",
+        namespace=f"charts.{str(scene_id)}.information_scene_background",
     )
     return styled_render_params, background, background_meta, style_meta
 

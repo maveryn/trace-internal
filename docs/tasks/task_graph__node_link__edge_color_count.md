@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `node_link`
 4. Task id: `task_graph__node_link__edge_color_count`
 5. Objective: count how many graph edges use one queried semantic edge color.
@@ -59,4 +59,4 @@
 
 ## 7) Complexity + tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
-2. Tests: `tests/test_graph_counting_edge_color_count_tasks.py`, `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+2. Tests: `tests/test_graph_counting_edge_color_count_tasks.py`, `tests/test_prompt_system.py`, `tests/test_scene_config.py`

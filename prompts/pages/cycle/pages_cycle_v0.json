@@ -3,19 +3,22 @@
   "schema_version": "v0",
   "task_templates": {
     "offset_stage_query": [
-      "{question_text}",
-      "Question: {question_text}",
-      "Use the displayed information to answer: {question_text}",
-      "Determine the answer: {question_text}",
-      "Answer based on the displayed information: {question_text}"
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:cycle_diagram": [
       "object_description"
     ],
-    "task:offset_stage_query": [
-      "question_text"
+    "query:offset_stage_label": [
+      "step_count",
+      "step_noun",
+      "query_relationship",
+      "query_stage_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -56,11 +59,12 @@
   },
   "query_templates": {
     "offset_stage_label": [
-      "Count along the arrow direction.",
-      "Use the displayed arrows to determine the offset.",
-      "Do not skip any stage while counting.",
-      "Select the destination stage after the requested number of steps.",
-      "Use the stage label exactly as printed."
+      "Following the arrows around the cycle, what stage is {step_count} {step_noun} {query_relationship} \"{query_stage_label}\"?",
+      "Use the arrows and count {step_count} {step_noun} {query_relationship} \"{query_stage_label}\". What stage do you reach?",
+      "Starting from \"{query_stage_label}\", move {step_count} {step_noun} {query_relationship} along the arrows. Which stage is reached?",
+      "Count {step_count} {step_noun} {query_relationship} \"{query_stage_label}\" around the cycle. What is the destination stage?",
+      "Trace the cycle arrows from \"{query_stage_label}\" for {step_count} {step_noun} {query_relationship}. Which stage label is the result?"
     ]
-  }
+  },
+  "allow_empty_task_templates": true
 }

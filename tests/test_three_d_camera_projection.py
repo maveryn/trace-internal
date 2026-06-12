@@ -4,7 +4,7 @@ import random
 from types import SimpleNamespace
 
 from trace.tasks.three_d.shared import camera_projection
-from trace.tasks.three_d.spatial import camera_distance
+from trace.tasks.three_d.object_scene import camera_distance_extremum_label as camera_distance
 
 
 def test_camera_distance_reexports_shared_projection_helpers() -> None:

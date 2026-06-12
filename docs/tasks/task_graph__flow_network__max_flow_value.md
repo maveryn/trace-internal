@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `optimization`
+2. Scene: `optimization`
 3. Scene id: `flow_network`
 4. Task id: `task_graph__flow_network__max_flow_value`
 5. Objective: compute the maximum flow value on a directed capacity network.

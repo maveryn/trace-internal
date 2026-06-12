@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from trace.core.seed import hash64
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
 
 
@@ -39,8 +40,11 @@ def _prompt_strings(value: Any) -> list[str]:
 
 
 def test_icons_prompt_defaults_avoid_generator_facing_scene_phrases() -> None:
-    for group in ("counting", "relation", "pattern", "sequence", "transformation"):
-        cfg = get_task_group_defaults("icons", group)
+    configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "sequence")]
+    configs.append(get_scene_defaults("icons", "paired_canvas"))
+    configs.append(get_scene_defaults("icons", "pair_grid"))
+    configs.append(get_scene_defaults("icons", "single_transform_options"))
+    for cfg in configs:
         prompt_overrides = dict(cfg["prompt"]["task_overrides"])
         for task_id, values in prompt_overrides.items():
             prompt_strings = [

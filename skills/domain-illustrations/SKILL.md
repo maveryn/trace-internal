@@ -8,14 +8,13 @@ description: Use when designing, implementing, or reviewing TRACE illustration-d
 Use this whenever the task lives under `domain=illustrations`.
 
 ## Read first
-1. `docs/domains/ILLUSTRATIONS_TASK_SETUP.md`
+1. `docs/domains/illustrations.md`
 2. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/ILLUSTRATIONS_TASK_SETUP.md` owns the active illustrations contract and object-part annotation policy.
+- `docs/domains/illustrations.md` owns the active illustrations contract and object-part annotation policy.
 - Illustrations use synthetic drawings of recognizable objects, not natural images, icon silhouettes, or free-form captions.
 - Reuse object drawers and scene helpers under `trace/tasks/illustrations/shared/` before adding task-local rendering.
 - Each rendered object should expose object bboxes plus semantic part bboxes from the same drawing trace.

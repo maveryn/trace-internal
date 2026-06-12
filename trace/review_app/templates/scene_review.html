@@ -37,8 +37,19 @@
   <div class="metric"><span>{{ scene_review.summary.requested_card_count }}</span><label>preview cards</label></div>
   <div class="metric"><span>{{ scene_review.summary.sample_card_count }}</span><label>available samples</label></div>
   <div class="metric"><span>{{ scene_review.summary.missing_card_count }}</span><label>missing samples</label></div>
+  <div class="metric">
+    <span>{% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>code audit</label>
+  </div>
   <div class="metric"><span>{{ scene_open_feedback|length }}</span><label>open scene issues</label></div>
 </section>
+
+{% if not scene.manual_code_audit_pass %}
+  <section class="notice warn">
+    <strong>Manual code audit is not passing.</strong>
+    <span class="muted">Do not treat these task-review artifacts as review-ready until the scene has a passing role-boundary audit.</span>
+  </section>
+{% endif %}
 
 <section class="table-panel compact scene-feedback-panel" id="scene-feedback">
   <div class="scene-feedback-header">
@@ -103,18 +114,18 @@
 </section>
 
 <section class="scene-review-task-list">
-  {% for task_group in scene_review.task_groups %}
-    {% set task = task_group.task %}
+  {% for scene_id in scene_review.scene_ids %}
+    {% set task = scene_id.task %}
     <article class="scene-review-task">
       <header class="scene-review-task-header">
         <div>
           <h2>{{ task.task_id }}</h2>
           <p class="muted">{{ task.sample_count }} sample(s), {{ task.query_counts|length }} query id(s)</p>
         </div>
-        <a class="button-link" href="{{ app_path(task_group.task_path ~ '?view=images') }}">Open Task Images</a>
+        <a class="button-link" href="{{ app_path(scene_id.task_path ~ '?view=images') }}">Open Task Images</a>
       </header>
 
-      {% for query_group in task_group.query_groups %}
+      {% for query_group in scene_id.query_groups %}
         <section class="scene-review-query">
           <header class="scene-review-query-header">
             <div>

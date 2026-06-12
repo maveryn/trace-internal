@@ -1,0 +1,421 @@
+"""Runtime assembly for coordinate-plane relation-count tasks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Mapping
+
+from .....shared.config_defaults import group_default, required_group_defaults
+from .....shared.output_metadata import default_task_versions
+from .....shared.prompt_json_example import build_prompt_json_examples
+from .....shared.prompt_variants import (
+    PROMPT_OUTPUT_MODES,
+    build_prompt_trace_artifacts,
+    render_scene_prompt_variants,
+)
+from .....shared.text_rendering import resolve_scene_label_font_size_px
+from ....shared.graph_rendering import graph_paper_grid_from_frame
+from ....shared.render_variation import sample_int_render_param
+from ....shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
+from ....shared.single_object_scene import (
+    finalize_graph_scene_image,
+    make_graph_scene_canvas,
+    resolve_graph_scene_context,
+)
+from ......core.seed import spawn_rng
+
+from .relation_common import (
+    COUNT_QUERY_IDS,
+    SEGMENT_COUNT_QUERY_IDS,
+    _DEFAULTS,
+    _GEN_DEFAULTS,
+    _PROMPT_DEFAULTS,
+    _RENDER_DEFAULTS,
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    _ResolvedQuery,
+    _RenderedCoordinateScene,
+)
+from .relation_scene import (
+    _execution_trace_for_trace,
+    _query_params_for_trace,
+    _resolve_count_target,
+    _resolve_scene_render_params,
+    _sample_collinear_count_scene,
+    _sample_point_in_shape_scene,
+    _sample_quadrant_count_scene,
+    _sample_segment_count_scene,
+    _scene_relations_for_trace,
+)
+
+
+@dataclass(frozen=True)
+class RelationArtifacts:
+    """Prompt/render/trace artifacts before final public task binding."""
+
+    query: _ResolvedQuery
+    rendered_scene: _RenderedCoordinateScene
+    prompt_artifacts: Any
+    image: Any
+    trace_payload: Dict[str, Any]
+    task_versions: Dict[str, str]
+    text_style: Dict[str, int]
+    point_style: Dict[str, int]
+
+
+def relation_query(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
+    scene_variant: str,
+    scene_variant_probabilities: Mapping[str, float],
+) -> _ResolvedQuery:
+    """Resolve the count target and scene-local query state."""
+
+    count_rng = spawn_rng(int(instance_seed), f"coordinate_plane_relation.{scene_variant}.target_count")
+    target_count, target_probabilities = _resolve_count_target(
+        count_rng,
+        instance_seed=int(instance_seed),
+        scene_variant=str(scene_variant),
+        query_id=str(query_id),
+        params=params,
+    )
+    label_pool = tuple()
+    if str(scene_variant) == "quadrant_points":
+        label_pool = tuple(
+            str(value).upper()
+            for value in params.get(
+                "quadrant_candidate_labels",
+                group_default(_GEN_DEFAULTS, "quadrant_candidate_labels", _DEFAULTS.quadrant_candidate_labels),
+            )
+        )
+    return _ResolvedQuery(
+        scene_variant=str(scene_variant),
+        query_id=str(query_id),
+        scene_variant_probabilities={str(key): float(value) for key, value in scene_variant_probabilities.items()},
+        query_id_probabilities={str(key): float(value) for key, value in query_id_probabilities.items()},
+        target_count=int(target_count),
+        target_count_probabilities=dict(target_probabilities),
+        label_pool=tuple(label_pool),
+    )
+
+
+def _render_relation_scene(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query: _ResolvedQuery,
+    max_attempts: int,
+) -> tuple[Any, Any, Dict[str, Any], Dict[str, Any], Any, _RenderedCoordinateScene, int, int, int, int]:
+    scene_rng = spawn_rng(int(instance_seed), f"coordinate_plane_relation.{query.scene_variant}.scene")
+    last_error: Exception | None = None
+
+    for _ in range(max(1, int(max_attempts))):
+        scene_render_params = _resolve_scene_render_params(str(query.scene_variant), params=params)
+        context = resolve_graph_scene_context(
+            scene_rng,
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_canvas_min=int(scene_render_params["canvas_size_min"]),
+            fallback_canvas_max=int(scene_render_params["canvas_size_max"]),
+            fallback_cells_min=int(scene_render_params["graph_cells_min"]),
+            fallback_cells_max=int(scene_render_params["graph_cells_max"]),
+            graph_style_overrides={
+                "origin_fraction_x": float(scene_render_params.get("graph_origin_fraction_x", 0.5)),
+                "origin_fraction_y": float(scene_render_params.get("graph_origin_fraction_y", 0.5)),
+            },
+        )
+        line_width = sample_int_render_param(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="line_width",
+            fallback=_DEFAULTS.line_width,
+            minimum_value=1,
+        )
+        point_radius_px = sample_int_render_param(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="point_radius_px",
+            fallback=_DEFAULTS.point_radius_px,
+            minimum_value=1,
+        )
+        label_font_size_px = int(
+            params.get(
+                "label_font_size_px",
+                resolve_scene_label_font_size_px(
+                    canvas_size=int(context.canvas_size),
+                    graph_spacing=int(context.graph_spacing),
+                    scene_scale=int(context.scene_scale),
+                    min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
+                    max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
+                ),
+            )
+        )
+        label_stroke_width = sample_int_render_param(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="label_stroke_width",
+            fallback=_DEFAULTS.label_stroke_width,
+            minimum_value=1,
+        )
+        label_stroke_width_scene = max(1, int(label_stroke_width) * int(context.scene_scale))
+        image, draw, background_meta = make_graph_scene_canvas(
+            instance_seed=int(instance_seed),
+            context=context,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+        )
+        shape_style = sample_geometry_shape_style(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            anchor_colors=extract_background_anchor_colors(background_meta),
+        )
+        try:
+            if str(query.scene_variant) == "segment_set":
+                rendered_scene = _sample_segment_count_scene(
+                    scene_rng,
+                    query=query,
+                    context=context,
+                    draw=draw,
+                    line_width=int(line_width) * int(context.scene_scale),
+                    point_radius_px=int(point_radius_px) * int(context.scene_scale),
+                    label_font_size_px=int(label_font_size_px),
+                    label_stroke_width=int(label_stroke_width_scene),
+                    label_offset_px=float(params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))),
+                    shape_style=shape_style,
+                    params=params,
+                    render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                )
+            elif str(query.scene_variant) == "line_points":
+                rendered_scene = _sample_collinear_count_scene(
+                    scene_rng,
+                    query=query,
+                    context=context,
+                    draw=draw,
+                    point_radius_px=int(point_radius_px) * int(context.scene_scale),
+                    label_font_size_px=int(label_font_size_px),
+                    label_stroke_width=int(label_stroke_width_scene),
+                    label_offset_px=float(params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))),
+                    point_radius_scale=float(scene_render_params.get("point_radius_scale", 1.4)),
+                    shape_style=shape_style,
+                    params=params,
+                    render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                )
+            elif str(query.scene_variant) == "quadrant_points":
+                rendered_scene = _sample_quadrant_count_scene(
+                    scene_rng,
+                    query=query,
+                    context=context,
+                    draw=draw,
+                    point_radius_px=int(point_radius_px) * int(context.scene_scale),
+                    label_font_size_px=int(label_font_size_px),
+                    label_stroke_width=int(label_stroke_width_scene),
+                    label_offset_px=float(params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))),
+                    point_radius_scale=float(scene_render_params.get("point_radius_scale", 1.5)),
+                    reference_cross_scale=float(scene_render_params.get("reference_cross_scale", 2.6)),
+                    shape_style=shape_style,
+                    render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                )
+            elif str(query.scene_variant) == "polygon_lattice":
+                rendered_scene = _sample_point_in_shape_scene(
+                    scene_rng,
+                    query=query,
+                    context=context,
+                    draw=draw,
+                    line_width=int(line_width) * int(context.scene_scale),
+                    point_radius_px=int(point_radius_px) * int(context.scene_scale),
+                    label_font_size_px=int(label_font_size_px),
+                    label_stroke_width=int(label_stroke_width_scene),
+                    label_offset_px=float(params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))),
+                    shape_style=shape_style,
+                    params=params,
+                    render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                )
+            else:
+                raise ValueError(f"unsupported coordinate scene_variant: {query.scene_variant}")
+            return (
+                image,
+                context,
+                background_meta,
+                shape_style.to_trace_dict(),
+                rendered_scene,
+                rendered_scene,
+                int(line_width),
+                int(point_radius_px),
+                int(label_font_size_px),
+                int(label_stroke_width_scene),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+
+    raise RuntimeError("failed to generate coordinate-plane relation scene") from last_error
+
+
+def build_relation_artifacts(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query: _ResolvedQuery,
+    max_attempts: int,
+) -> RelationArtifacts:
+    """Render one relation-count scene and build prompt/trace artifacts."""
+
+    (
+        image,
+        context,
+        background_meta,
+        shape_style_trace,
+        rendered_scene,
+        _,
+        line_width,
+        point_radius_px,
+        label_font_size_px,
+        label_stroke_width_scene,
+    ) = _render_relation_scene(
+        instance_seed=int(instance_seed),
+        params=params,
+        query=query,
+        max_attempts=int(max_attempts),
+    )
+    image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
+        image,
+        instance_seed=int(instance_seed),
+        context=context,
+        background_meta=background_meta,
+        noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+    )
+
+    prompt_defaults = required_group_defaults(
+        _PROMPT_DEFAULTS,
+        (
+            "bundle_id",
+            "scene_key",
+            "task_key",
+            "json_output_contract",
+            "json_output_contract_answer_only",
+            "answer_hint_integer",
+            "annotation_hint_segment_endpoints",
+            "annotation_hint_collinear_pixel_point_set",
+            "annotation_hint_quadrant_pixel_point_set",
+            "annotation_hint_pixel_point_set",
+            "json_example_segment_count",
+            "json_example_segment_count_answer_only",
+            "object_description_segment_set",
+            "object_description_line_points",
+            "object_description_quadrant_points",
+            "object_description_polygon_lattice",
+        ),
+        context="prompt defaults for coordinate-plane relation count",
+    )
+
+    object_description = {
+        "segment_set": str(prompt_defaults["object_description_segment_set"]),
+        "line_points": str(prompt_defaults["object_description_line_points"]),
+        "quadrant_points": str(prompt_defaults["object_description_quadrant_points"]),
+        "polygon_lattice": str(prompt_defaults["object_description_polygon_lattice"]),
+    }[str(query.scene_variant)]
+    if str(query.query_id) in SEGMENT_COUNT_QUERY_IDS:
+        annotation_hint = str(prompt_defaults["annotation_hint_segment_endpoints"])
+    elif str(query.query_id) == "collinear_count":
+        annotation_hint = str(prompt_defaults["annotation_hint_collinear_pixel_point_set"])
+    elif str(query.query_id) == "same_quadrant_count":
+        annotation_hint = str(prompt_defaults["annotation_hint_quadrant_pixel_point_set"])
+    else:
+        annotation_hint = str(prompt_defaults["annotation_hint_pixel_point_set"])
+
+    json_example, json_example_answer_only = build_prompt_json_examples(
+        annotation_value=rendered_scene.annotation_value,
+        answer_type="integer",
+    )
+    if str(query.scene_variant) == "segment_set":
+        configured_json_example = prompt_defaults.get("json_example_segment_count")
+        configured_answer_only_example = prompt_defaults.get("json_example_segment_count_answer_only")
+        if isinstance(configured_json_example, str) and configured_json_example.strip():
+            json_example = str(configured_json_example)
+        if isinstance(configured_answer_only_example, str) and configured_answer_only_example.strip():
+            json_example_answer_only = str(configured_answer_only_example)
+    prompt_selection = render_scene_prompt_variants(
+        domain="geometry",
+        scene_id="coordinate_plane",
+        bundle_id=str(prompt_defaults["bundle_id"]),
+        scene_key=str(prompt_defaults["scene_key"]),
+        task_key=str(prompt_defaults["task_key"]),
+        query_key=str(query.query_id),
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+        slots={
+            "object_description": str(object_description),
+            "json_output_contract": str(prompt_defaults["json_output_contract"]),
+            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+            "annotation_hint": str(annotation_hint),
+            "answer_hint": str(prompt_defaults["answer_hint_integer"]),
+            "json_example": str(json_example),
+            "json_example_answer_only": str(json_example_answer_only),
+        },
+        instance_seed=int(instance_seed),
+    )
+    prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+
+    query_params = _query_params_for_trace(query)
+    execution_trace = _execution_trace_for_trace(query, rendered_scene)
+    scene_relations = _scene_relations_for_trace(query, rendered_scene)
+    trace_payload = {
+        "scene_ir": {
+            "scene_kind": "geometry_coordinate_relation",
+            "entities": [dict(entity) for entity in rendered_scene.scene_entities],
+            "relations": dict(scene_relations),
+        },
+        "query_spec": {
+            "query_id": str(query.query_id),
+            "template_id": str(prompt_defaults["bundle_id"]),
+            "prompt_variant": dict(prompt_artifacts.prompt_variant),
+            "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            "params": dict(query_params),
+        },
+        "render_spec": {
+            "canvas_size": int(context.canvas_size),
+            "coord_space": "pixel",
+            "background_style": dict(background_meta_final),
+            "post_image_noise": dict(post_noise_meta),
+            "shape_style": dict(shape_style_trace),
+            "text_style": {
+                "font_size_px": int(label_font_size_px),
+                "stroke_width_px": int(label_stroke_width_scene),
+            },
+            "point_style": {
+                "radius_px": int(point_radius_px),
+            },
+            "graph_coordinate_frame": dict(context.graph_frame),
+            "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+            **dict(context.graph_layout_metadata),
+            "scene_variant": str(query.scene_variant),
+        },
+        "render_map": dict(rendered_scene.render_map),
+        "execution_trace": dict(execution_trace),
+        "witness_symbolic": dict(rendered_scene.witness_symbolic),
+        "projected_annotation": dict(rendered_scene.projected_annotation),
+    }
+    return RelationArtifacts(
+        query=query,
+        rendered_scene=rendered_scene,
+        prompt_artifacts=prompt_artifacts,
+        image=image,
+        trace_payload=trace_payload,
+        task_versions=default_task_versions(),
+        text_style={
+            "font_size_px": int(label_font_size_px),
+            "stroke_width_px": int(label_stroke_width_scene),
+        },
+        point_style={"radius_px": int(point_radius_px)},
+    )
+
+
+__all__ = ["RelationArtifacts", "build_relation_artifacts", "relation_query"]

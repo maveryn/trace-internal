@@ -1,52 +1,54 @@
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.40
-      ambiguity: 0.35
-      clutter: 0.25
-
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
 visual:
   background:
     enabled: true
     styles:
       solid_offwhite:
         kind: solid
-        color: [247, 248, 251]
+        color:
+        - 247
+        - 248
+        - 251
       solid_cool:
         kind: solid
-        color: [243, 246, 252]
+        color:
+        - 243
+        - 246
+        - 252
       solid_warm:
         kind: solid
-        color: [250, 247, 242]
+        color:
+        - 250
+        - 247
+        - 242
     weights:
       solid_offwhite: 0.5
       solid_cool: 0.25
       solid_warm: 0.25
-
 rendering:
   shared:
     icon_canvas_style_enabled: true
     icon_canvas_treatments:
-      - bare_canvas
-      - plain_sheet
-      - matte_sheet
-      - thin_frame
-      - soft_panel
-      - margin_sheet
-      - dot_sheet
-      - worksheet_panel
-      - index_card
-      - printout_panel
+    - bare_canvas
+    - plain_sheet
+    - matte_sheet
+    - thin_frame
+    - soft_panel
+    - margin_sheet
+    - dot_sheet
+    - worksheet_panel
+    - index_card
+    - printout_panel
     icon_canvas_treatment_weights:
       bare_canvas: 0.12
       plain_sheet: 0.18
       matte_sheet: 0.12
-      thin_frame: 0.10
+      thin_frame: 0.1
       soft_panel: 0.12
       margin_sheet: 0.09
       dot_sheet: 0.09
@@ -59,4 +61,4 @@ rendering:
       mint_green: 0.16
       cyan_lab: 0.14
       warm_paper: 0.14
-      teal_card: 0.10
+      teal_card: 0.1

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.icons.relation.named_original_attribute_label import (
+from trace.tasks.icons.paired_canvas.original_attribute_label import (
     QUERY_IDS,
     TASK_ID,
     IconsRelationNamedOriginalAttributeLabelTask,
@@ -60,4 +60,4 @@ def test_icons_relation_named_original_attribute_taxonomy() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
     assert taxonomy.domain == "icons"
     assert taxonomy.scene_id == "paired_canvas"
-    assert taxonomy.source_task_group == "relation"
+    assert taxonomy.source_scene_id == "paired_canvas"

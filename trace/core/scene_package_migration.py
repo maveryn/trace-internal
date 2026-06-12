@@ -1,172 +1,40 @@
 """Scene-package migration rollout helpers.
 
-This module centralizes temporary per-domain, per-scene, and first-slice
-switches used while TRACE retires legacy routing. The migrated scene/domain
-switches are runtime structural switches: they allow active tasks that have
-moved to scene-package source paths to omit legacy routing metadata.
-
-A scene-package migration is not objective-complete until the scene is listed
-in ``SCENE_PACKAGE_OBJECTIVE_OWNERSHIP_COMPLETE_SCENES``. Pending-scene
-tracking is only an in-progress marker for structurally routed scenes that
-still need the final source/config/prompt/docs audit.
+This module tracks source-routed scene-package candidates. It deliberately does
+not expose a source-code "complete" registry: human review status belongs in the
+review workspace, not in a Python allowlist that can be mistaken for acceptance.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 import re
 
 
-MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset({"charts", "graph"})
+MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
+    "charts": frozenset({"annotated_series", "area", "bar_3d"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo"}),
     "geometry": frozenset(
-        {
-            "angle_relations",
-            "area_partition",
-            "bearing_route",
-            "circle_centerline_overlap",
-            "circle_pair_tangents",
-            "circle_polygon_composite",
-            "circle_theorem",
-            "composite_shape",
-            "concentric_chord",
-            "cone_net",
-            "container_volume_transfer",
-            "coordinate_composite",
-            "coordinate_panels",
-            "coordinate_plane",
-            "cuboid_views",
-            "cylinder_wrap",
-            "function_graph",
-            "function_panels",
-            "graph_paper",
-            "incircle_tangents",
-            "marked_polygon_equation",
-            "measuring_tools",
-            "paper_fold",
-            "parallel_segment_proportion",
-            "polygon_angle_chase",
-            "pythagorean_dissection",
-            "pythagorean_tree",
-            "rectangular_solid",
-            "regular_polygon_decomposition",
-            "right_triangle_altitude_theorem",
-            "sector",
-            "shape_gallery",
-            "similar_figure_measure_transfer",
-            "solid_cross_section",
-            "solid_formula",
-            "solid_revolution",
-            "special_quadrilateral",
-            "split_triangle_angle_chase",
-            "split_triangle_trig_chain",
-            "survey_traverse",
-            "tangent_packing",
-            "trapezoid_extension",
-            "triangle_congruence_correspondence",
-            "triangle_relations",
-            "volume_equivalence_conversion",
-            "wire_shape_conversion",
-        }
+        {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
     ),
-    "games": frozenset(
-        {
-            "2048",
-            "backgammon",
-            "battleship",
-            "bingo",
-            "bowling",
-            "brick_breaker",
-            "bubble_shooter",
-            "cards",
-            "checkers",
-            "chess",
-            "chess_variant",
-            "circular_chess",
-            "connect_four",
-            "crossing",
-            "darts",
-            "dominoes",
-            "dots_and_boxes",
-            "go",
-            "hex",
-            "irregular_link_board",
-            "lane_runner",
-            "ludo_board",
-            "mancala_pit_board",
-            "marble_chain",
-            "match3",
-            "minecraft",
-            "minesweeper",
-            "minigolf",
-            "nine_mens_morris",
-            "pacman",
-            "pinball_table",
-            "platformer",
-            "pool",
-            "racing_track",
-            "radial_hunt_board",
-            "reversi",
-            "rhythm",
-            "rule_override_board",
-            "sixteen_soldiers",
-            "sliding_block",
-            "snake",
-            "snakes_ladders",
-            "sokoban",
-            "solitaire",
-            "space_shooter",
-            "tetris",
-            "tic_tac_toe_3d",
-            "tower_defense",
-            "tower_draughts_board",
-            "ultimate_tictactoe",
-        }
-    ),
-    "icons": frozenset({"pair_grid", "paired_canvas", "reference_canvas", "single_transform_options"}),
-    "illustrations": frozenset(
-        {
-            "image_cutout_board",
-            "indoor_room",
-            "missing_patch",
-            "pixel_village",
-            "single_object_figure",
-            "source_scene_edit",
-        }
-    ),
-    "pages": frozenset({"mixed_infographic_page"}),
-    "three_d": frozenset({"object_cluster", "object_scene", "surface_fixture"}),
+    "graph": frozenset({"adjacency", "automaton", "node_link"}),
 }
-
-SCENE_PACKAGE_OBJECTIVE_OWNERSHIP_PENDING_SCENES: dict[str, frozenset[str]] = {
-    "games": MIGRATED_SCENE_PACKAGE_SCENES["games"],
-    "geometry": MIGRATED_SCENE_PACKAGE_SCENES["geometry"],
+SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
+    "charts": frozenset({"annotated_series", "area", "bar_3d"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo"}),
+    "geometry": frozenset(
+        {"angle_relations", "area_partition", "bearing_route", "circle_centerline_overlap", "circle_pair_tangents"}
+    ),
+    "graph": frozenset({"adjacency", "automaton", "node_link"}),
 }
-
-# Explicit registry for scenes that have passed the final objective-ownership
-# migration audit. Start empty: scenes completed under older, weaker migration
-# policy must be re-audited before entering this registry.
-SCENE_PACKAGE_OBJECTIVE_OWNERSHIP_COMPLETE_SCENES: dict[str, frozenset[str]] = {}
-
-# Temporary first-slice rollout: allow individual pilot tasks to exercise the
-# scene-package path before their whole domains are migrated.
-SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset(
-    {
-        "task_pages__calendar_event_grid__category_slot_day_count",
-        "task_pages__calendar_event_grid__date_for_category_slot_label",
-        "task_pages__calendar_event_grid__date_slot_category_label",
-        "task_pages__category_grid__category_item_count",
-        "task_pages__category_grid__category_slot_item_label",
-        "task_pages__comparison_panel__side_attribute_value_label",
-        "task_pages__cycle__offset_stage_label",
-        "task_pages__map__destination_after_directions_label",
-        "task_pages__map__landmark_after_route_step_label",
-    }
-)
+SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 
 _V0_TASK_ID_PATTERN = re.compile(
     r"^task_(?P<domain>[a-z0-9_]+)__(?P<scene_id>[a-z0-9_]+)__(?P<objective_contract>[a-z0-9_]+)$"
 )
+_REVIEW_SCENE_ENV = "TRACE_SCENE_PACKAGE_REVIEW_SCENE"
 
 
 @dataclass(frozen=True)
@@ -190,10 +58,33 @@ def is_scene_package_migrated_scene(domain: str, scene_id: str) -> bool:
     return str(scene_id) in MIGRATED_SCENE_PACKAGE_SCENES.get(str(domain), frozenset())
 
 
-def is_scene_package_objective_ownership_complete_scene(domain: str, scene_id: str) -> bool:
-    """Return whether one domain/scene pair passed final objective-ownership gates."""
+def is_scene_package_review_target_scene(domain: str, scene_id: str) -> bool:
+    """Return whether one scene may appear in the migration review app."""
 
-    return str(scene_id) in SCENE_PACKAGE_OBJECTIVE_OWNERSHIP_COMPLETE_SCENES.get(str(domain), frozenset())
+    resolved_domain = str(domain)
+    resolved_scene = str(scene_id)
+    return resolved_scene in SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.get(resolved_domain, frozenset())
+
+
+def scene_package_review_target_scenes() -> dict[str, frozenset[str]]:
+    """Return centrally registered review-candidate scenes visible to reviewers."""
+
+    selected = os.environ.get(_REVIEW_SCENE_ENV, "").strip()
+    if selected:
+        if "/" not in selected:
+            raise ValueError(f"{_REVIEW_SCENE_ENV} must use '<domain>/<scene_id>'")
+        domain, scene_id = (part.strip() for part in selected.split("/", 1))
+        if not domain or not scene_id:
+            raise ValueError(f"{_REVIEW_SCENE_ENV} must use '<domain>/<scene_id>'")
+        registered = SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.get(str(domain), frozenset())
+        if str(scene_id) not in registered:
+            raise ValueError(f"{_REVIEW_SCENE_ENV}={selected!r} is not a registered review-candidate scene")
+        return {str(domain): frozenset({str(scene_id)})}
+
+    return {
+        str(domain): frozenset(sorted(str(scene_id) for scene_id in scene_ids))
+        for domain, scene_ids in sorted(SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.items())
+    }
 
 
 def is_scene_package_task(task_id: str, *, domain: str | None = None) -> bool:

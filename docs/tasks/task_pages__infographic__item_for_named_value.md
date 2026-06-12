@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `infographic`
+2. Scene: `infographic`
 3. Scene id: `infographic`
 4. Task id: `task_pages__infographic__item_for_named_value`
 5. Objective: Find the item label associated with a requested visible metric value.

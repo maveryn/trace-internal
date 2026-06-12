@@ -4,7 +4,7 @@ Status: accepted active default cell-board puzzle task.
 
 ## Identity
 1. Domain: `puzzles`
-2. Task group: `cell_board`
+2. Scene: `cell_board`
 3. Scene id: `cell_board`
 4. Public query id: `default`
 5. Query id: `symmetry_violation_count`

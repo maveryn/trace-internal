@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `process_flow`
+2. Scene: `process_flow`
 3. Scene id: `process_flow`
 4. Task id: `task_pages__process_flow__all_cross_lane_handoff_count`
 5. Objective: Count all visible arrows that cross from one process-flow lane to another.

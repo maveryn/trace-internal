@@ -8,14 +8,14 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.pacman.maze_tasks import (
+from trace.tasks.games.pacman.path_pellet_count import (
     GamesPacmanMazeTask,
     GamesPacmanNextItemLabelTask,
     GamesPacmanPathPelletCountTask,
     GamesPacmanPelletCountBeforeGhostTask,
     GamesPacmanRouteScoreValueTask,
 )
-from trace.tasks.games.shared.pacman_common import (
+from trace.tasks.games.pacman.shared.common import (
     PACMAN_ITEM_LABELS,
     coord_from_entity_id,
     item_entity_id,
@@ -220,4 +220,4 @@ def test_games_pacman_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "pacman" for row in rows)
+    assert all(row.get("scene_id") == "pacman" for row in rows)

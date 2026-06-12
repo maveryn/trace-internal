@@ -1,1 +1,0 @@
-"""Combo chart panel tasks."""

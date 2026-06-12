@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -18,12 +18,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import (
-    build_pages_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_pages_complexity_weights,
-)
 from ..shared.reconciliation_common import (
     ReconciliationDefaults,
     SUPPORTED_DOCUMENT_RECONCILIATION_SCENE_VARIANTS,
@@ -34,7 +28,7 @@ from ..shared.reconciliation_common import (
     resolve_reconciliation_query_id,
 )
 from ..shared.reconciliation_scene import render_reconciliation_scene
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
@@ -50,14 +44,13 @@ _REASONING_LOAD_BASE_BY_VARIANT = {
 _SCENE_LOAD_BY_VARIANT = {"purchase_receipt_pair": 0.34}
 
 _DEFAULTS = ReconciliationDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "cross_form")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "cross_form")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="cross_form")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="cross_form", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="cross_form")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="cross_form", apply_prob=0.0)
 
 
 def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
@@ -90,7 +83,7 @@ class PagesCrossFormReconciliationValueTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "cross_form"
+    scene_id = "cross_form"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -158,9 +151,10 @@ class PagesCrossFormReconciliationValueTask:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
+        query_prompt_slots = dict(dataset["query_prompt_slots"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -168,7 +162,7 @@ class PagesCrossFormReconciliationValueTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_purchase_receipt_pair"]),
-                "question_text": str(dataset["question_text"]),
+                **query_prompt_slots,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
@@ -197,14 +191,6 @@ class PagesCrossFormReconciliationValueTask:
             (0.60 * float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]))
             + (0.25 * float(annotation_scan))
             + (0.15 * float(mismatch_scan))
-        )
-        complexity = build_pages_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(item_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -261,7 +247,7 @@ class PagesCrossFormReconciliationValueTask:
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
                 "scene_title": str(dataset["scene_title"]),
-                "question_text": str(dataset["question_text"]),
+                "query_prompt_slots": dict(query_prompt_slots),
                 "purchase_title": str(dataset["purchase_title"]),
                 "receiving_title": str(dataset["receiving_title"]),
                 "purchase_header_specs": [dict(spec) for spec in dataset["purchase_header_specs"]],
@@ -309,7 +295,6 @@ class PagesCrossFormReconciliationValueTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
         )
@@ -327,7 +312,7 @@ class PagesPairedFormsTotalAmountDeltaValueTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__paired_forms__total_amount_delta_value"
     domain = "pages"
-    task_group = "cross_form"
+    scene_id = "cross_form"
     public_scene_id = "paired_forms"
     fixed_query_id = "total_amount_delta"
     source_task_cls = PagesCrossFormReconciliationValueTask
@@ -339,7 +324,7 @@ class PagesPairedFormsShortfallMinusOverageValueTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__paired_forms__shortfall_minus_overage_value"
     domain = "pages"
-    task_group = "cross_form"
+    scene_id = "cross_form"
     public_scene_id = "paired_forms"
     fixed_query_id = "shortfall_minus_overage_value"
     source_task_cls = PagesCrossFormReconciliationValueTask
@@ -351,7 +336,7 @@ class PagesPairedFormsSumAbsoluteQuantityDifferencesValueTask(FixedPagesQueryTas
 
     task_id = "task_pages__paired_forms__sum_absolute_quantity_differences_value"
     domain = "pages"
-    task_group = "cross_form"
+    scene_id = "cross_form"
     public_scene_id = "paired_forms"
     fixed_query_id = "sum_absolute_quantity_differences"
     source_task_cls = PagesCrossFormReconciliationValueTask

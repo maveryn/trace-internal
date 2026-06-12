@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.bbox_projection import pixel_anchor_map_from_bboxes
@@ -31,11 +31,6 @@ from .shared.color_board_common import (
     build_rectangular_color_board_render_spec,
     build_rectangular_color_board_scene,
 )
-from .shared.complexity import (
-    build_tile_complexity,
-    normalize_int_with_bounds,
-    resolve_tile_complexity_weights,
-)
 from .shared.grid_graph import cell_id
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_annotation import coordinate_set_annotation_artifacts
@@ -45,17 +40,13 @@ from .shared.visual_defaults import load_tile_background_defaults, load_tile_noi
 
 Coord = Tuple[int, int]
 _DEFAULTS = RectangularColorBoardTaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_count")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_count")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_largest_component_size_internal",
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="count")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="count", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="cell_board_largest_component_size_internal",
-)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="count")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="count", apply_prob=0.5)
 
 
 def _connected_prefix_coords(
@@ -201,7 +192,7 @@ class TileLargestComponentSizeTask:
 
     task_id = "cell_board_largest_component_size_internal"
     domain = "puzzles"
-    task_group = "cell_board_count"
+    scene_id = "cell_board_count"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -394,7 +385,7 @@ class TileLargestComponentSizeTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -533,54 +524,6 @@ class TileLargestComponentSizeTask:
         configured_target_largest_component_size_max = int(
             group_default(_GEN_DEFAULTS, "target_largest_component_size_max", 10)
         )
-        complexity_target_largest_component_size_min = min(
-            int(configured_target_largest_component_size_min),
-            int(target_largest_component_size_min),
-        )
-        complexity_target_largest_component_size_max = min(
-            int(feasible_target_max),
-            max(
-                int(configured_target_largest_component_size_max),
-                int(effective_target_largest_component_size_max),
-            ),
-        )
-        complexity = build_tile_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": (
-                    0.55
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.25
-                    * normalize_int_with_bounds(
-                        int(matched_cell_count),
-                        (1, int(max_board_cell_count)),
-                    )
-                    + 0.20
-                    * normalize_int_with_bounds(
-                        int(scene.palette_size),
-                        (int(palette_size_min), int(_palette_size_max)),
-                    )
-                ),
-                "reasoning_load": (
-                    0.40
-                    * normalize_int_with_bounds(
-                        int(answer_value),
-                        (
-                            int(complexity_target_largest_component_size_min),
-                            int(complexity_target_largest_component_size_max),
-                        ),
-                    )
-                    + 0.60
-                    * normalize_int_with_bounds(
-                        int(len(component_coords)),
-                        (2, int(max_board_cell_count)),
-                    )
-                ),
-            },
-        )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -592,7 +535,6 @@ class TileLargestComponentSizeTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id="largest_component_size",
             prompt_variants=dict(prompt_artifacts.prompt_variants),

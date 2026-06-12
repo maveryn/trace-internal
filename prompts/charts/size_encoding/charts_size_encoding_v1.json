@@ -1,0 +1,126 @@
+{
+  "bundle_id": "charts_size_encoding_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "size_encoded_chart_scene": [
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}."
+      ]
+    },
+    "task": {
+      "size_comparison_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "filtered_item_extremum_label": [
+        "Within category \"{category_label}\", which item has the {extremum_phrase} size?",
+        "Looking only at category \"{category_label}\", what item is visually {extremum_phrase}?",
+        "Among the \"{category_label}\" items, which label corresponds to the {extremum_phrase} item?",
+        "Filter to category \"{category_label}\". Which item has the {extremum_phrase} displayed value?",
+        "For category \"{category_label}\", name the item with the {extremum_phrase} visible size."
+      ],
+      "reference_size_neighbor_label": [
+        "Among other items in category \"{category_label}\", which item is closest in size to \"{reference_label}\"?",
+        "Within category \"{category_label}\", which other item is closest in size to \"{reference_label}\"?",
+        "Which other \"{category_label}\" item is nearest in displayed size to \"{reference_label}\"?",
+        "Compare \"{reference_label}\" with the other items in category \"{category_label}\". Which one is closest in size?",
+        "In category \"{category_label}\", find the item whose visible size most closely matches \"{reference_label}\"."
+      ],
+      "category_total_extremum_label": [
+        "Which category has the {extremum_phrase} total displayed size across all its items?",
+        "By combining the visible item sizes within each category, which category is {extremum_phrase} overall?",
+        "Compare the categories by their total displayed size. Which category is {extremum_phrase}?",
+        "Across all items, which category has the {extremum_phrase} combined size?",
+        "Using all items in each category, name the category with the {extremum_phrase} total size."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "category_label": {
+      "type": "string"
+    },
+    "extremum_phrase": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "panel_label": {
+      "type": "string"
+    },
+    "reference_label": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:size_encoded_chart_scene": [
+      "object_description"
+    ],
+    "query:filtered_item_extremum_label": [
+      "category_label",
+      "extremum_phrase"
+    ],
+    "query:reference_size_neighbor_label": [
+      "category_label",
+      "reference_label"
+    ],
+    "query:category_total_extremum_label": [
+      "extremum_phrase"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

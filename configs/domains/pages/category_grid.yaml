@@ -1,0 +1,80 @@
+generation:
+  shared:
+    balanced_query_id_sampling: true
+    balanced_scene_variant_sampling: true
+    category_count_support:
+    - 3
+    - 4
+    subcategory_count_support:
+    - 2
+    - 3
+    item_count_support:
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    scene_variant_weights:
+      card_grid: 1.0
+      column_groups: 1.0
+      compact_index: 1.0
+  task_overrides:
+    task_pages__category_grid__category_slot_item_label:
+      query_id_weights:
+        category_slot_item_label: 1.0
+    task_pages__category_grid__category_item_count:
+      query_id_weights:
+        category_item_count: 1.0
+rendering:
+  shared:
+    canvas_width: 1120
+    canvas_height: 900
+    outer_margin_px: 34
+    header_height_px: 88
+    gap_px: 14
+    corner_radius_px: 14
+    outline_width_px: 2
+    title_font_size_px: 30
+    subtitle_font_size_px: 17
+    category_title_font_size_px: 21
+    subcategory_title_font_size_px: 15
+    item_font_size_px: 14
+prompt:
+  shared:
+    bundle_id: pages_category_grid_v0
+    scene_key: category_grid
+    task_key: category_grid_lookup_query
+    object_description: a category grid page with category headers, subcategory headers,
+      and short item rows
+  task_overrides:
+    task_pages__category_grid__category_slot_item_label:
+      annotation_hint: set "annotation" to an object mapping category_header, subcategory_header,
+        and target_item to [x0,y0,x1,y1] pixel bounding boxes for the requested item
+      answer_hint: set "answer" to the exact visible item label requested by the question
+    task_pages__category_grid__category_item_count:
+      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding
+        boxes for the counted item rows
+      answer_hint: set "answer" to the integer count requested by the question
+visual:
+  noise:
+    apply_prob: 0.4
+    edit_count_range:
+    - 1
+    - 1
+    value_ranges:
+      blur:
+        radius:
+        - 0.05
+        - 0.18
+      downsample:
+        scale:
+        - 0.96
+        - 0.99
+      jpeg:
+        quality:
+        - 90.0
+        - 97.0
+      noise:
+        alpha:
+        - 0.004
+        - 0.012

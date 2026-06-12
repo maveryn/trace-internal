@@ -467,7 +467,7 @@ def resolve_information_scene_style_from_request(
         )
     style, metadata = resolve_information_scene_style(
         instance_seed=int(request.instance_seed),
-        namespace=f"{request.domain}.{request.task_group}.{request.scene_id}.information_scene_style",
+        namespace=f"{request.domain}.{request.routing_key}.{request.scene_id}.information_scene_style",
         treatments=treatments,
         treatment_weights=treatment_weights,
         palettes=palettes,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks import create_task
-from trace.tasks.geometry.coordinate.algebra import (
+from trace.tasks.geometry.coordinate_plane.missing_endpoint_label import (
     MISSING_ENDPOINT_QUERY_IDS,
     MISSING_ENDPOINT_TASK_ID,
     REFLECTED_POINT_TASK_ID,

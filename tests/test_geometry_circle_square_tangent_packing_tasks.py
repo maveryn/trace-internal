@@ -6,15 +6,15 @@ import math
 
 import pytest
 
-from trace.tasks.geometry.measurement.circle_square_tangent_packing import (
+from trace.tasks.geometry.tangent_packing.circle_in_square_gap_area import (
     SCENE_ID,
     GeometryCircleInSquareGapAreaTask,
-    GeometryCircleInSquareRadiusFromGapAreaTask,
-    GeometrySquareInCircleGapAreaTask,
-    GeometrySquareInCircleSideFromGapAreaTask,
-    GeometryTwoCirclesInRectangleGapAreaTask,
-    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask,
 )
+from trace.tasks.geometry.tangent_packing.circle_in_square_radius_from_gap_area import GeometryCircleInSquareRadiusFromGapAreaTask
+from trace.tasks.geometry.tangent_packing.square_in_circle_gap_area import GeometrySquareInCircleGapAreaTask
+from trace.tasks.geometry.tangent_packing.square_in_circle_side_from_gap_area import GeometrySquareInCircleSideFromGapAreaTask
+from trace.tasks.geometry.tangent_packing.two_circles_in_rectangle_gap_area import GeometryTwoCirclesInRectangleGapAreaTask
+from trace.tasks.geometry.tangent_packing.two_circles_in_rectangle_radius_from_gap_area import GeometryTwoCirclesInRectangleRadiusFromGapAreaTask
 
 TASK_CLASSES = (
     GeometryCircleInSquareRadiusFromGapAreaTask,

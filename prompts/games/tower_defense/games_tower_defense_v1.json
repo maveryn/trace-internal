@@ -1,0 +1,117 @@
+{
+  "bundle_id": "games_tower_defense_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "tower_defense_map": [
+        "The image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This scene shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The figure shows {object_description}."
+      ]
+    },
+    "task": {
+      "tower_defense_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "marked_enemy_covered_by_tower_count": [
+        "{coverage_rule_text} How many towers cover the marked enemy?",
+        "{coverage_rule_text} Count the towers whose range rings include the marked enemy.",
+        "{coverage_rule_text} What is the number of towers covering the marked enemy?",
+        "{coverage_rule_text} Report how many tower range rings contain the marked enemy.",
+        "{coverage_rule_text} Count only the towers that cover the marked enemy."
+      ],
+      "covered_path_segment_count": [
+        "{coverage_rule_text} How many path nodes are covered?",
+        "{coverage_rule_text} Count the path nodes covered by one or more towers.",
+        "{coverage_rule_text} What is the number of covered path nodes?",
+        "{coverage_rule_text} Report how many path nodes lie inside at least one tower range ring.",
+        "{coverage_rule_text} Count only the path nodes covered by at least one tower."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:tower_defense_map": [
+      "object_description"
+    ],
+    "query:marked_enemy_covered_by_tower_count": [
+      "coverage_rule_text"
+    ],
+    "query:covered_path_segment_count": [
+      "coverage_rule_text"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "coverage_rule_text": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_winding_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a winding path, circular tower range rings, and one marked enemy on the path",
+    "object_description_switchback_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a switchback path, circular tower range rings, and one marked enemy on the path",
+    "object_description_winding_path_covered_path_segment_count": "a tower-defense map with a winding path, circular tower range rings, and discrete path nodes",
+    "object_description_switchback_path_covered_path_segment_count": "a tower-defense map with a switchback path, circular tower range rings, and discrete path nodes",
+    "coverage_rule_text_marked_enemy_covered_by_tower_count": "A tower covers the marked enemy when the enemy is inside that tower's visible range ring.",
+    "coverage_rule_text_covered_path_segment_count": "A path node is covered when its center is inside at least one visible tower range ring.",
+    "annotation_hint_marked_enemy_covered_by_tower_count": "set \"annotation\" to [x, y] pixel points at the centers of every tower whose range ring covers the marked enemy; use an empty array when none do",
+    "answer_hint_marked_enemy_covered_by_tower_count": "set \"answer\" to the number of towers whose range rings cover the marked enemy",
+    "annotation_hint_covered_path_segment_count": "set \"annotation\" to [x, y] pixel points at the centers of every covered path node",
+    "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path nodes covered by at least one tower range ring"
+  }
+}

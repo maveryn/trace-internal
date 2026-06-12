@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -25,7 +25,7 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_magnetism_electromagnetic_induction_family"
+TASK_NAMESPACE = "physics_magnetism_electromagnetic_induction"
 TASK_ID = "task_physics__electromagnetic_induction__induced_current_direction_count"
 SCENE_ID = "electromagnetic_induction"
 QUERY_IDS: Tuple[str, ...] = (
@@ -48,11 +48,11 @@ PANEL_MECHANISMS_BY_FLUX_CHANGE: Dict[str, Tuple[str, ...]] = {
     "none": ("loop_slides_inside_uniform_field", "stationary_constant_field"),
 }
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="magnetism", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "magnetism")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="magnetism", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "magnetism")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -99,7 +99,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         if query_id not in QUERY_IDS:
             raise ValueError(f"unsupported query_id for {TASK_ID}: {query_id}")
         return query_id, _selected_probability_map(query_id)
-    index = int(hash64(int(instance_seed), f"{FAMILY_ID}.query_id", 0) % len(QUERY_IDS))
+    index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.query_id", 0) % len(QUERY_IDS))
     return str(QUERY_IDS[index]), _uniform_probability_map(QUERY_IDS)
 
 
@@ -117,7 +117,7 @@ def _resolve_target_answer(instance_seed: int, params: Mapping[str, Any]) -> Tup
         if target_answer not in set(support):
             raise ValueError(f"target_answer for {TASK_ID} must be in configured support {sorted(support)}")
         return int(target_answer), _selected_probability_map(target_answer)
-    index = int(hash64(int(instance_seed), f"{FAMILY_ID}.target_answer", 0) % len(support))
+    index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.target_answer", 0) % len(support))
     return int(support[index]), {str(value): 1.0 / float(len(support)) for value in support}
 
 
@@ -161,7 +161,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _InductionS
     target_answer, answer_probs = _resolve_target_answer(int(instance_seed), params)
     target_class = str(QUERY_TO_CURRENT_CLASS[str(query_id)])
     distractor_classes = [value for value in CURRENT_CLASSES if str(value) != target_class]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.panel_classes")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.panel_classes")
     panel_classes = [target_class for _ in range(int(target_answer))]
     panel_classes.extend(str(rng.choice(distractor_classes)) for _ in range(PANEL_COUNT - int(target_answer)))
     rng.shuffle(panel_classes)
@@ -172,7 +172,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _InductionS
     )
     panels: List[_PanelSpec] = []
     for index, current_class in enumerate(panel_classes):
-        panel_rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.panel_spec", index)
+        panel_rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.panel_spec", index)
         panels.append(
             _make_panel_spec(
                 panel_id=f"panel_{index + 1}",
@@ -504,7 +504,7 @@ class PhysicsElectromagneticInductionDirectionCountTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "magnetism"
+    scene_id = "magnetism"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -517,7 +517,6 @@ class PhysicsElectromagneticInductionDirectionCountTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -525,7 +524,7 @@ class PhysicsElectromagneticInductionDirectionCountTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -560,7 +559,7 @@ class PhysicsElectromagneticInductionDirectionCountTask:
         json_example, json_example_answer_only = _prompt_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -671,15 +670,6 @@ class PhysicsElectromagneticInductionDirectionCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.56,
-                complexity_components={
-                    "visual_scan": 0.36,
-                    "lenz_law_reasoning": 0.42,
-                    "counting": 0.14,
-                    "output_burden": 0.08,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(scenario.query_id),

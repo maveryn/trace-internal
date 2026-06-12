@@ -18,23 +18,27 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --o
 
 Then use this review loop:
 
-1. Generate review artifacts under `review/task-reviews` as usual.
-2. If anything under `review/task-reviews` changed, click **Reload Index** in
+1. For scene-package migration scenes, generate review artifacts only after
+   `manual_code_audit_status.json` exists for the scene and has `passed: true`.
+   This file records the agent-side manual source audit for role boundaries and
+   the app shows it as the scene-level code audit status.
+2. Generate review artifacts under `review/task-reviews` as usual.
+3. If anything under `review/task-reviews` changed, click **Reload Index** in
    the app or call `POST /api/reload`.
-3. Inspect through the browser app by domain, scene, task, and query id.
-4. Use scene, task, and sample pages to review image, prompt, answer, annotation,
+4. Inspect through the browser app by domain, scene, task, and query id.
+5. Use scene, task, and sample pages to review image, prompt, answer, annotation,
    distribution status, review status, and solve-rate status.
-5. Save sample-specific issues in the app so comments are keyed to the exact
+6. Save sample-specific issues in the app so comments are keyed to the exact
    sample identity; do not use Excel notes as the default issue channel.
-6. Mark the review checkboxes only after prompt, image, annotation, and
-   distribution are acceptable. This is the non-solve-rate review completion
-   status shown in domain and scene views.
-7. Mark the solve-rate checkbox separately after solve-rate artifacts have been
+7. Mark the review checkboxes only after prompt, image, annotation,
+   distribution, and code review are acceptable. This is the non-solve-rate
+   review completion status shown in domain and scene views.
+8. Mark the solve-rate checkbox separately after solve-rate artifacts have been
    inspected. Domain and scene views show solve-rate completion separately
    because solve-rate review often happens after visual/manual review.
-8. Use Excel workbooks only as optional static exports for archival, sharing
+9. Use Excel workbooks only as optional static exports for archival, sharing
    outside the app, or fallback debugging.
-9. If web-app code, templates, CSS, JavaScript, indexer logic, resource
+10. If web-app code, templates, CSS, JavaScript, indexer logic, resource
    indexing, feedback storage, or schemas changed, restart the app instead of
    only reloading the index.
 10. After reload or restart, verify the affected domain/scene/task/sample page
@@ -120,8 +124,8 @@ and do not affect domain, scene, task, sample, or default search counts.
 
 The separate **Resources** link opens `/resources`, which scans
 `review/task-reviews/assets` for review-only images and JSON manifests such as
-font contact sheets, icon sheets, illustration object sheets, and other support
-assets. Resource files are served only through stable indexed ids under
+font contact sheets, icon sheets, illustration object sheets, 3D object inventory
+sheets, and other support assets. Resource files are served only through stable indexed ids under
 `/resources/media/<asset_id>`; they are not task samples and do not use sample
 issue threads.
 
@@ -211,6 +215,7 @@ These write into:
 - `review/task-reviews/assets/icons/curated_non_symmetry/`
 - `review/task-reviews/assets/illustrations/object_spritesheets/`
 - `review/task-reviews/assets/three_d/object_spritesheets/`
+- `review/task-reviews/assets/three_d/named_object_inventory/`
 
 Excel files remain useful for download or archival inspection, but the browser
 app does not scrape them. If review sidecars are regenerated, press **Reload
@@ -240,11 +245,12 @@ review status passes when the reviewer has checked all non-solve-rate gates:
 - image
 - annotation
 - distribution check
+- code review
 
 The solve-rate review checkbox records that a human has inspected the displayed
 solve-rate status and accepted it as operationally sufficient for the task. It
 does not replace the generated solve-rate artifact. Domain and scene pages show
-two completion counts: review completion from the four non-solve-rate gates,
+two completion counts: review completion from the five non-solve-rate gates,
 and solve-rate completion from the separate solve-rate checkbox. Reviewers can
 uncheck either status later; the affected completion count immediately becomes
 pending again.
@@ -283,7 +289,8 @@ Issue fields:
 The `/issues` page is the minimal issue work queue. It groups actionable
 tasks by domain, scene, and task, and shows only these blockers:
 
-- missing manual audit gates for prompt, image, annotation, or distribution;
+- missing manual audit gates for prompt, image, annotation, distribution, or
+  code review;
 - solve-rate manual checkbox not checked;
 - automated solve-rate artifact missing;
 - automated solve-rate artifact present but not accepted;

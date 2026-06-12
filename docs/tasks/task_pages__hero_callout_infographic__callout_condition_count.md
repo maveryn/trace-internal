@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `hero_callout_infographic`
-3. Source task group: `infographic`
+3. Source scene: `infographic`
 4. Task id: `task_pages__hero_callout_infographic__callout_condition_count`
 
 ## Contract

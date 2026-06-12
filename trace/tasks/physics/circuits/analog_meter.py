@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,15 +29,15 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__analog_meter__meter_readout_value"
-FAMILY_ID = "physics_circuits_analog_meter_family"
+TASK_NAMESPACE = "physics_circuits_analog_meter"
 SCENE_ID = "analog_meter"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("ammeter_readout", "voltmeter_readout")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -168,7 +168,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         if explicit not in SUPPORTED_QUERY_IDS:
             raise ValueError(f"unsupported query_id for {TASK_ID}: {explicit}")
         return explicit, _probability_map(SUPPORTED_QUERY_IDS, selected=explicit)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -187,7 +187,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -214,7 +214,7 @@ def _resolve_meter_profile(instance_seed: int, params: Mapping[str, Any], query_
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.meter_profile.{query_id}",
+            namespace=f"{TASK_NAMESPACE}.meter_profile.{query_id}",
         )
         selected = supported[int(index) % len(supported)]
     else:
@@ -224,7 +224,7 @@ def _resolve_meter_profile(instance_seed: int, params: Mapping[str, Any], query_
             weighted.extend([profile_id] * max(0, int(round(weight))))
         if not weighted:
             weighted = list(supported)
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.meter_profile.{query_id}")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.meter_profile.{query_id}")
         selected = weighted[int(rng.randrange(len(weighted)))]
     return _PROFILES[str(selected)], _probability_map(supported)
 
@@ -241,11 +241,11 @@ def _resolve_readout_value(instance_seed: int, params: Mapping[str, Any], profil
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer.{profile.profile_id}",
+            namespace=f"{TASK_NAMESPACE}.target_answer.{profile.profile_id}",
         )
         selected = int(support[int(index) % len(support)])
     else:
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.target_answer.{profile.profile_id}")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.target_answer.{profile.profile_id}")
         selected = int(support[int(rng.randrange(len(support)))])
     return int(selected), uniform_probability_map(support)
 
@@ -400,17 +400,16 @@ def _render_analog_meter(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="circuits",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
     )
     draw = ImageDraw.Draw(background)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.render")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.render")
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     panel = (
@@ -437,7 +436,7 @@ def _render_analog_meter(
         (173, 94, 35),
         (132, 78, 171),
     )
-    accent_rgb = accent_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.needle_color", 0) % len(accent_palette))]
+    accent_rgb = accent_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.needle_color", 0) % len(accent_palette))]
     annotation_map, render_map = _draw_meter_face(
         draw,
         center=center,
@@ -480,7 +479,7 @@ class PhysicsAnalogMeterReadoutValueTask:
     """Read an analog ammeter or voltmeter needle value."""
 
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -516,7 +515,7 @@ class PhysicsAnalogMeterReadoutValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -537,7 +536,7 @@ class PhysicsAnalogMeterReadoutValueTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -611,15 +610,6 @@ class PhysicsAnalogMeterReadoutValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.33,
-                complexity_components={
-                    "visual_readout": 0.58,
-                    "scale_mapping": 0.16,
-                    "ambiguity": 0.12,
-                    "output_burden": 0.14,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

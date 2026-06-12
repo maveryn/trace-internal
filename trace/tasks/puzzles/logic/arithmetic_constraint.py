@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -28,7 +28,6 @@ from ..shared.common import (
     projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
 from ..shared.drawing import draw_centered_text, draw_rounded_rect
 from ..shared.scene_style import draw_puzzle_panel_chrome, make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -98,8 +97,8 @@ _SCENE_LOAD_BY_VARIANT = {
     "constraint_card": 0.24,
     "constraint_outline": 0.21,
 }
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "logic")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.15)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "logic")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="logic", apply_prob=0.15)
 
 
 @dataclass(frozen=True)
@@ -2122,7 +2121,7 @@ def _build_prompt(
     )
     selection = render_task_prompt_variants(
         domain="puzzles",
-        task_group="logic",
+        scene_id="logic",
         bundle_id=str(prompt_config["bundle_id"]),
         scene_key=str(prompt_config["scene_key"]),
         task_key=str(prompt_config["task_key"]),
@@ -2153,14 +2152,13 @@ class _ArithmeticConstraintSceneTask:
 
     task_id = INTERNAL_TASK_ID
     domain = "puzzles"
-    task_group = "logic"
+    scene_id = "logic"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         task_id = str(self.task_id)
         supported_query_ids = tuple(str(item) for item in self.supported_query_ids)
-        gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(task_id=task_id)
         query_id, query_id_probabilities = _resolve_query_id(
             params,
             gen_defaults=gen_defaults,
@@ -2338,14 +2336,6 @@ class _ArithmeticConstraintSceneTask:
             "difference_wall_missing_value": sum(len(row) for row in dataset.get("levels", [])),
             "multiplication_pyramid_value": sum(len(row) for row in dataset.get("levels", [])),
         }[str(query_id)]
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": normalize_int_with_bounds(int(visual_scan_units), [6, 12]),
-                "reasoning_load": float(_REASONING_LOAD_BY_QUERY[str(query_id)]),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -2353,7 +2343,6 @@ class _ArithmeticConstraintSceneTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

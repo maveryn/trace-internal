@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query id: `closest_marked_point|farthest_marked_point`
 - Answer type: `option_letter`
 - Annotation type: role-keyed `keyed_point_map`
@@ -23,7 +23,7 @@ Annotation is a `keyed_point_map` with:
 The marker label text, context objects, floor grid, shadows, and background geometry are not annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, context object metadata, marked-point world coordinates, projected marker centers, camera distances by point label, and the near-to-far marker-label order used by the verifier.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records camera pose, projection frame, context object metadata, marked-point world coordinates, projected marker centers, camera distances by point label, and the near-to-far marker-label order used by the verifier.
 
 ## Calibration
 Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance annotation.

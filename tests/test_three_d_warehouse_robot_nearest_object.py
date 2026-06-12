@@ -210,6 +210,6 @@ def test_warehouse_robot_nearest_object_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "warehouse"
+    assert taxonomy.source_scene_id == "warehouse"
     assert SUPPORTED_QUERY_IDS == ("closest_robot_to_reference", "closest_object_to_robot")
     assert SUPPORTED_AISLE_HEADINGS == ("east", "north", "west", "south")

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -24,14 +24,13 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, clamp_unit_interval, normalize_linear, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.label_tags import draw_text_tag
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES, build_physics_collision_theme
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_mechanics_collision_aftermath_family"
+TASK_NAMESPACE = "physics_mechanics_collision_aftermath"
 TASK_ID = "task_physics__collision__incoming_path_cause_choice"
 SCENE_ID = "collision"
 QUERY_ID = "incoming_path_cause_choice"
@@ -63,12 +62,12 @@ DIRECTION_ANGLE_DEGREES: Dict[str, float] = {
     "southeast": 315.0,
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -219,7 +218,7 @@ def _draw_puck(
 
 def _resolve_scene_variant(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene_variant"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene_variant"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_SCENE_VARIANTS,
@@ -236,14 +235,14 @@ def _resolve_scene_variant(instance_seed: int, *, params: Mapping[str, Any]) -> 
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{FAMILY_ID}.scene_variant",
+        sampling_namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_QUERY_IDS,
@@ -260,7 +259,7 @@ def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -270,7 +269,7 @@ def _resolve_final_motion_direction(instance_seed: int, *, params: Mapping[str, 
     if params.get("aftermath_direction") is not None and params.get("final_motion_direction") is None:
         direction_params["final_motion_direction"] = str(params["aftermath_direction"])
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.final_motion_direction"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.final_motion_direction"),
         params=direction_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=DIRECTION_NAMES,
@@ -287,7 +286,7 @@ def _resolve_final_motion_direction(instance_seed: int, *, params: Mapping[str, 
         balance_flag_key="balanced_final_motion_direction_sampling",
         explicit_key="final_motion_direction",
         weights_key="final_motion_direction_weights",
-        sampling_namespace=f"{FAMILY_ID}.final_motion_direction",
+        sampling_namespace=f"{TASK_NAMESPACE}.final_motion_direction",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -297,7 +296,7 @@ def _resolve_correct_option_letter(instance_seed: int, *, params: Mapping[str, A
     if params.get("target_answer") is not None and params.get("correct_option_letter") is None:
         answer_params["correct_option_letter"] = str(params["target_answer"])
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.correct_option_letter"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.correct_option_letter"),
         params=answer_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=OPTION_LETTERS,
@@ -314,14 +313,14 @@ def _resolve_correct_option_letter(instance_seed: int, *, params: Mapping[str, A
         balance_flag_key="balanced_correct_option_letter_sampling",
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
-        sampling_namespace=f"{FAMILY_ID}.correct_option_letter",
+        sampling_namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_accent_color(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.accent_color_name"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.accent_color_name"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_PHYSICS_COLOR_NAMES,
@@ -338,7 +337,7 @@ def _resolve_accent_color(instance_seed: int, *, params: Mapping[str, Any]) -> T
         balance_flag_key="balanced_accent_color_name_sampling",
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
-        sampling_namespace=f"{FAMILY_ID}.accent_color_name",
+        sampling_namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -377,7 +376,7 @@ def _option_directions(
     ]
     if len(distractors) != len(OPTION_LETTERS) - 1:
         raise ValueError("collision aftermath distractor construction requires exactly five distractors")
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_directions")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_directions")
     shuffled = list(distractors)
     rng.shuffle(shuffled)
     out: Dict[str, str] = {str(correct_option_letter): str(final_motion_direction)}
@@ -442,7 +441,7 @@ def _resolve_render_defaults(params: Mapping[str, Any], *, instance_seed: int) -
             key,
             int(getattr(_DEFAULTS, key)),
             instance_seed=int(instance_seed),
-            namespace=FAMILY_ID,
+            namespace=TASK_NAMESPACE,
         )
         for key in keys
     }
@@ -467,7 +466,7 @@ def _resolve_layout_placement(
         params,
         _RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.layout",
+        namespace=f"{TASK_NAMESPACE}.layout",
     )
     min_margin = int(jitter.get("min_margin_px", 24))
     requested_dx = int(jitter.get("requested_dx_px", 0))
@@ -738,27 +737,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(*, spec: _CollisionAftermathSpec, render_map: Mapping[str, Any]) -> Any:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    visual_scan = clamp_unit_interval(
-        0.36
-        + (0.06 if str(spec.scene_variant) == "aftermath_compact_table" else 0.0)
-        + (0.07 if str(spec.scene_variant) == "aftermath_gridded_table" else 0.0)
-        + 0.08 * normalize_linear(float(len(OPTION_LETTERS)), min_value=4.0, max_value=6.0)
-    )
-    causal_reasoning = 0.58
-    ambiguity = clamp_unit_interval(0.18 + 0.04 * normalize_linear(float(len(OPTION_LETTERS)), min_value=4.0, max_value=6.0))
-    output_burden = 0.18
-    _ = render_map
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "causal_reasoning": float(causal_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 @register_task
@@ -767,7 +745,7 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -777,7 +755,6 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
         background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),
             instance_seed=int(instance_seed),
@@ -786,7 +763,7 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.render.font_family",
+            namespace=f"{TASK_NAMESPACE}.render.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -834,7 +811,7 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -858,7 +835,6 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
             type="keyed_bbox_map",
             value={str(key): list(value) for key, value in rendered_scene.annotation_bbox_map.items()},
         )
-        complexity = _build_complexity(spec=spec, render_map=rendered_scene.render_map)
         scenario_payload = {
             "final_motion_direction": str(spec.final_motion_direction),
             "final_motion_angle_degrees": float(DIRECTION_ANGLE_DEGREES[str(spec.final_motion_direction)]),
@@ -954,7 +930,6 @@ class PhysicsCollisionIncomingPathCauseChoiceTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=QUERY_ID,
             scene_id=SCENE_ID,

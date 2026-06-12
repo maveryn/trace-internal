@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `rule_override_board`
+2. Scene: `rule_override_board`
 3. Scene id: `rule_override_board`
 4. Public task id: `task_games__rule_override_board__piece_result_count`
 5. Supported `query_id` values: `piece_override_loss_count`, `piece_override_win_count`

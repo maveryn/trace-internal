@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...shared.config_defaults import (
@@ -24,7 +24,6 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_icons_counting_singleton_type_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
@@ -168,7 +167,7 @@ _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "singleton_type_count",
 )
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -568,7 +567,7 @@ class IconsCountingSingletonTypeTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic singleton-type counting instance."""
@@ -628,7 +627,7 @@ class IconsCountingSingletonTypeTask:
         annotation_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "annotation_hint", query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -740,22 +739,6 @@ class IconsCountingSingletonTypeTask:
                 "bbox_set": list(annotation_bboxes),
             },
         }
-        complexity = build_icons_counting_singleton_type_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            object_count=int(scene_payload.object_count),
-            target_count=int(answer_value),
-            repeated_type_count=int(scene_payload.repeated_type_count),
-            distinct_type_count=int(scene_payload.distinct_type_count),
-            object_count_min=int(
-                params.get("object_count_min", group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min))
-            ),
-            object_count_max=int(
-                params.get("object_count_max", group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max))
-            ),
-            scene_instances=scene_payload.scene_instances,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -763,7 +746,6 @@ class IconsCountingSingletonTypeTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

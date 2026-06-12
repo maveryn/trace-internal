@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `record_table`
 4. Task id: `task_pages__record_table__selected_rows_with_status_count`
 5. Objective: Count selected record-table rows with a requested visible status.

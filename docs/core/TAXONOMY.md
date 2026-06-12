@@ -2,84 +2,77 @@
 
 TRACE public metadata uses:
 
-`domain -> scene_id -> task_id`
+```text
+domain -> scene_id -> task_id
+```
 
-## Public Fields
-1. `domain` is the broad public domain used for balancing and reporting.
-2. `scene_id` is the visual rendering grammar for the instance.
-3. `task_id` is the sampling unit.
-4. `query_id` is optional diagnostic metadata for the query id inside one
-   task. Use **query id** as the human-facing term and `query_id` as the
-   canonical field.
+## 1) Public Fields
+1. `domain` is the broad reporting and balancing domain.
+2. `scene_id` is the visible rendering grammar: board, chart, diagram, page,
+   instrument, object scene, or other stable visual scaffold.
+3. `task_id` is the public sampling unit and uses taxonomy-v0 form:
+   `task_<domain>__<scene_id>__<objective_contract>`.
+4. `query_id` is internal task metadata for replay, branch diagnostics, and
+   review breakdowns inside one task contract. It is not a public taxonomy
+   level and not a sampling unit.
 
-`task_group` remains an implementation/config grouping field for module layout,
-prompt bundles, and domain config defaults. It is not a public taxonomy level.
+Do not maintain active domain or task lists in this file. The generated public
+inventory lives in `docs/ACTIVE_TASK_INVENTORY.md`.
 
-## Trace Metadata Shape
+## 2) Scene And Task Identity
+The public task is the pair:
+
+```text
+scene contract + objective contract
+```
+
+The scene contract defines the visual grammar, object vocabulary, layout family,
+non-semantic style support, and any stable query-facing scaffold.
+
+The objective contract defines the answer schema, annotation schema, and concrete
+program schema. The detailed boundary rules live in
+`docs/core/TASK_UNIT_POLICY.md`.
+
+## 3) Implementation Routing
+Public taxonomy is not source layout.
+
+Target scene-package layout is:
+
+```text
+trace/tasks/<domain>/<scene_id>/<objective_contract>.py
+trace/tasks/<domain>/<scene_id>/shared/
+configs/domains/<domain>/<scene_id>.yaml
+prompts/<domain>/<scene_id>/<bundle_id>.json
+```
+
+Legacy source routing fields, including `scene_id`, may remain in older code,
+configs, prompt assets, or trace `taxonomy.source` metadata until their scene is
+migrated. They are not public taxonomy nodes. New review-candidate migrated
+scenes must not depend on scene routing.
+
+## 4) Trace Metadata Shape
 Sidecar traces store taxonomy metadata under `trace_payload["taxonomy"]`.
-The public flat keys are:
 
+Public fields:
 - `domain`
 - `scene_id`
 - `task_id`
-- `query_id`
+- optional `query_id`
 
-Routing metadata lives in explicit nested blocks:
+Routing/debug fields should live under explicit nested blocks such as
+`taxonomy.registered` and `taxonomy.source`. Trace consumers must not infer
+implementation paths, config files, or prompt bundles from public task ids.
 
-1. `taxonomy.public`
-   - `domain`, `scene_id`, `task_id`, and optional `query_id`.
-   - This is the public dataset taxonomy and reporting surface.
-2. `taxonomy.registered`
-   - `task_id`, `domain`, and `task_group` for the registered wrapper task
-     class that produced the instance.
-   - This is runtime registry metadata, not public taxonomy.
-3. `taxonomy.source`
-   - `implementation_task_id`, `implementation_domain`,
-     `implementation_task_group`.
-   - `config_domain`, `config_task_group`.
-   - `prompt_domain`, `prompt_task_group`.
-   - This records the internal implementation/config/prompt surfaces used by
-     wrappers or shared generators.
+## 5) Sampling Rule
+Equal task-level sampling is the default. Domain and scene probabilities are
+derived by aggregating active public tasks unless a build config explicitly says
+otherwise.
 
-Do not infer source/config/prompt routing from `taxonomy.public`. A public task
-may be backed by a wrapper, a shared implementation task, or a prompt bundle in a
-different implementation group.
+Query sampling happens inside the selected task. Query ids should be uniform by
+default and should not have config-level weights in review-candidate migrated
+scenes.
 
-## Active Domains
-The active public domains are:
-1. `charts`
-2. `games`
-3. `geometry`
-4. `graph`
-5. `icons`
-6. `illustrations`
-7. `pages`
-8. `physics`
-9. `puzzles` or `misc`
-10. `three_d`
-
-## Scene Rule
-A scene is a visually distinct rendering grammar. Tasks under one scene can
-share a parameterized renderer and visual annotation contract.
-
-Two tasks can share solver/helper code and even the same `scene_id` without being
-the same public task. For enumeration, apply the hard task boundary in
-`docs/core/TASK_UNIT_POLICY.md`: a stable scene contract plus a stable task
-contract (`answer_schema`, `annotation_schema`, and `program_schema`). Same
-scene, answer type, or annotation type is not sufficient to merge tasks if the
-program schema or semantic annotation structure differs.
-
-## Sampling Rule
-Equal task-level sampling remains the default. `query_id` values are diagnostics
-for query ids inside a task, not separate public sampling units.
-`query_id` is an internal replay selector, not a public sampling unit.
-
-## Implementation Layer
+## 6) Source Of Truth
 The active taxonomy mapping lives in `trace/core/taxonomy.py`. Build,
-validation, RLVR export, and task-review tools should resolve public taxonomy
-through that module instead of parsing task ids.
-
-`TaxonomyEntry.source_domain` and `TaxonomyEntry.source_task_group` describe
-current implementation/config routing. Trace consumers should prefer
-`taxonomy.registered` and `taxonomy.source` when they need to distinguish public
-identity from registry/config/prompt routing.
+validation, RLVR export, review tooling, and docs checks should resolve public
+taxonomy through that module instead of parsing task ids by string.

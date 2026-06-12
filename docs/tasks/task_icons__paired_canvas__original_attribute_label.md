@@ -3,10 +3,10 @@
 ## Identity
 - domain: `icons`
 - scene_id: `paired_canvas`
-- task_group: `relation`
 - task: `named_original_attribute_label`
-- module: `trace/tasks/icons/relation/named_original_attribute_label.py`
-- prompt bundle: `prompts/icons/relation/icons_relation_v0.json`
+- scene package: `paired_canvas`
+- module: `trace/tasks/icons/paired_canvas/original_attribute_label.py`
+- prompt bundle: `prompts/icons/paired_canvas/icons_paired_canvas_v0.json`
 
 ## Scene And Query
 The task renders two open icon panels labeled `Original` and `Right`. The
@@ -48,8 +48,8 @@ three-attribute bindings such as color+fill-style+shape.
   candidate-label text legibility.
 
 ## Prompt Contract
-- `scene_key = paired_named_original_relation`
-- `task_key = relation_query`
+- `scene_key = paired_canvas_original_attribute`
+- `task_key = paired_canvas_query`
 - answer-only and answer+annotation modes both include contract-valid JSON
   examples
 

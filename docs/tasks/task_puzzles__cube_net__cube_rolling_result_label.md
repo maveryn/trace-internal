@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Scene id: `cube_net`
 4. Goal: roll a labeled cube along a visible arrow path and choose the requested final face label.
 

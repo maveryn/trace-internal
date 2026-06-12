@@ -7,7 +7,7 @@ from typing import Any, Dict
 from ...shared.visual_defaults import (
     default_noise_fallback,
     load_domain_noise_defaults,
-    load_task_group_noise_defaults,
+    load_scene_noise_defaults,
 )
 
 
@@ -16,13 +16,13 @@ def _fallback_noise_defaults() -> Dict[str, Any]:
     return default_noise_fallback(apply_prob=0.5)
 
 
-def load_geometry_noise_defaults(*, task_group: str | None = None) -> Dict[str, Any]:
-    """Load geometry noise defaults with optional task-group override support."""
+def load_geometry_noise_defaults(*, scene_id: str | None = None) -> Dict[str, Any]:
+    """Load geometry noise defaults with optional scene-package override support."""
     fallback = _fallback_noise_defaults()
-    if task_group is not None and str(task_group).strip():
-        return load_task_group_noise_defaults(
+    if scene_id is not None and str(scene_id).strip():
+        return load_scene_noise_defaults(
             domain="geometry",
-            task_group=str(task_group),
+            scene_id=str(scene_id),
             fallback=fallback,
             merge_with_fallback=False,
         )
@@ -33,6 +33,6 @@ def load_geometry_noise_defaults(*, task_group: str | None = None) -> Dict[str, 
     )
 
 
-# Geometry measurement post-image noise defaults, sourced from domain config
-# unless a task-group override is defined.
-POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = load_geometry_noise_defaults(task_group="measurement")
+# Geometry post-image noise defaults, sourced from domain config unless a scene
+# override is provided by a caller.
+POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = load_geometry_noise_defaults()

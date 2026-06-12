@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `image_cutout_board`
-- Implementation task group: `visual`
-- Implementation source: `trace/tasks/illustrations/visual/rotated_tile_label.py`
+- Implementation scene package: `image_cutout_board`
+- Implementation source: `trace/tasks/illustrations/image_cutout_board/rotated_tile_label.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__image_cutout_board__rotated_tile_label` -> `task_illustrations__image_cutout_board__rotated_tile_label`
 - Status: `pending_v0_manual_review_and_solve_rate`

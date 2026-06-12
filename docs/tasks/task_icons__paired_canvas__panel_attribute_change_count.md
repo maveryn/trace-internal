@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `paired_canvas`
-3. Task group: `transformation`
+3. Scene package: `paired_canvas`
 4. Task id: `task_icons__paired_canvas__panel_attribute_change_count`
 5. Objective: count Right-panel icons whose queried attribute changed from the corresponding Left-panel icon.
 
@@ -18,9 +18,9 @@
 6. Unique-answer policy: only target pairs change the queried attribute; distractors either do not change or change a different attribute.
 
 ## 3) Prompt contract
-1. `prompt_bundle_id`: `icons_transformation_v0`
-2. `scene_key`: `paired_canvas_transformation`
-3. `task_key`: `transformation_query`
+1. `prompt_bundle_id`: `icons_paired_canvas_v0`
+2. `scene_key`: `paired_canvas_attribute_change`
+3. `task_key`: `paired_canvas_query`
 4. Answer+annotation JSON shape: `{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}`
 5. Prompt wording specifies whether color, size, or rotation is queried.
 

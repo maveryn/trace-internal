@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tetris`
+2. Scene: `tetris`
 3. Scene id: `tetris`
 4. Public task id: `task_games__tetris__drop_collision_time_value`
 5. Supported `query_id` values: `no_shift_collision_time`, `left_shift_collision_time`, `right_shift_collision_time`

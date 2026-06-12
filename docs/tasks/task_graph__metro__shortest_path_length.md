@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `path`
+2. Scene: `path`
 3. Scene id: `metro`
 4. Task id: `task_graph__metro__shortest_path_length`
 5. Objective: count route segments in the unique shortest station path between two labeled stations.

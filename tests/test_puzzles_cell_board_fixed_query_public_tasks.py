@@ -86,7 +86,7 @@ def test_cell_board_public_tasks_accept_explicit_query_id(
 
 
 @pytest.mark.parametrize(
-    ("task_id", "query_id", "prompt_task_group", "prompt_bundle_id"),
+    ("task_id", "query_id", "prompt_scene_id", "prompt_bundle_id"),
     [
         (
             "task_puzzles__cell_board__reachable_region_size",
@@ -111,7 +111,7 @@ def test_cell_board_public_tasks_accept_explicit_query_id(
 def test_cell_board_reachability_prompt_metadata_tracks_source_query(
     task_id: str,
     query_id: str,
-    prompt_task_group: str,
+    prompt_scene_id: str,
     prompt_bundle_id: str,
 ) -> None:
     task = TASK_REGISTRY[task_id]()
@@ -119,5 +119,5 @@ def test_cell_board_reachability_prompt_metadata_tracks_source_query(
     prompt_variant = output.trace_payload["query_spec"]["prompt_variant"]
 
     assert prompt_variant["prompt_domain"] == "puzzles"
-    assert prompt_variant["prompt_task_group"] == prompt_task_group
+    assert prompt_variant["prompt_scene_id"] == prompt_scene_id
     assert prompt_variant["prompt_bundle_id"] == prompt_bundle_id

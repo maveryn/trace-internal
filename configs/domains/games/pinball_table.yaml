@@ -2,9 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       schematic_table: 1.0
-    query_id_weights:
-      first_hit_object_label: 1.0
-      path_score_value: 1.0
     style_variant_weights:
       classic: 1.0
       blueprint: 1.0
@@ -12,22 +9,24 @@ generation:
       carnival: 1.0
       paper: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_object_count_sampling: true
-    balanced_target_object_label_sampling: true
-    balanced_path_shape_sampling: true
-    balanced_path_hit_count_sampling: true
     object_count_support:
-      - 5
-      - 6
-      - 7
-      - 8
-    path_shape_weights:
-      one_ricochet: 1.0
-      two_ricochet: 1.0
-      target_revisit: 1.0
-    path_hit_count_support:
+    - 5
+    - 6
+    - 7
+    - 8
+  task_overrides:
+    task_games__pinball_table__first_hit_object_label:
+      balanced_target_object_label_sampling: true
+    task_games__pinball_table__path_score_value:
+      balanced_path_shape_sampling: true
+      balanced_path_hit_count_sampling: true
+      path_shape_weights:
+        one_ricochet: 1.0
+        two_ricochet: 1.0
+        target_revisit: 1.0
+      path_hit_count_support:
       - 2
       - 3
       - 4
@@ -45,23 +44,8 @@ rendering:
     target_height_px: 34
     cue_width_px: 6
     label_font_size_px: 26
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      motion_reasoning: 0.38
-      ambiguity: 0.18
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_pinball_table_v0
+    bundle_id: games_pinball_table_v1
     scene_key: visible_pinball_table
     task_key: pinball_table_query
-    object_description_schematic_table: a tilted pinball playfield with a ball, a straight launch cue, flippers, bumpers, lanes, and labeled targets
-    object_description_score_path: a tilted pinball playfield with a ball, a full drawn ball path, flippers, bumpers, lanes, and scored targets
-    pinball_motion_rule_text: The arrow shows the ball's straight path; extend it in the same direction.
-    pinball_score_rule_text: Follow the full drawn ball path to the bottom edge. Add the score values for each scored-target hit; if the same target is hit twice, add it twice.
-    annotation_hint_first_hit_object_label: set "annotation" to one [x, y] pixel point at the center of the first labeled object hit by the path
-    answer_hint_first_hit_object_label: set "answer" to the selected object label as a string
-    annotation_hint_path_score_value: set "annotation" to an ordered JSON array of [x, y] pixel points at the centers of scored targets hit along the path, repeating a point for repeated hits
-    answer_hint_path_score_value: set "answer" to the integer total score

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `dominoes`
+2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__higher_sum_than_reference_count`
 5. Supported `query_id` values: `higher_sum_than_reference_count`

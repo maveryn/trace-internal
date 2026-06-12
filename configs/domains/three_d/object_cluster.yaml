@@ -1,0 +1,560 @@
+generation:
+  task_overrides:
+    task_three_d__object_cluster__total_object_count:
+      query_id_weights:
+        total_object_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      answer_count_bin_weights:
+        '6_10': 0.35
+        '11_17': 0.4
+        '18_25': 0.25
+      object_count_min: 6
+      object_count_max: 25
+      single_type_count_min: 6
+      single_type_count_max: 25
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__single_attribute_membership_count:
+      query_id_weights:
+        type_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      composition_mode_weights:
+        single_type_cluster: 0.6
+        near_homogeneous_cluster: 0.3
+        mixed_type_cluster: 0.1
+      answer_count_bin_weights:
+        '6_10': 0.35
+        '11_17': 0.4
+        '18_25': 0.25
+      target_count_min: 6
+      target_count_max: 25
+      single_type_count_min: 6
+      single_type_count_max: 25
+      near_homogeneous_target_count_min: 6
+      near_homogeneous_target_count_max: 25
+      near_homogeneous_object_count_min: 8
+      near_homogeneous_object_count_max: 29
+      near_homogeneous_distractor_count_min: 1
+      near_homogeneous_distractor_count_max: 4
+      mixed_type_target_count_min: 6
+      mixed_type_target_count_max: 18
+      mixed_type_object_count_min: 16
+      mixed_type_object_count_max: 30
+      mixed_type_distractor_count_min: 5
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__multi_attribute_and_count:
+      query_id_weights:
+        type_and_color_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 2
+      target_count_max: 8
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__color_membership_count:
+      query_id_weights:
+        color_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 3
+      target_count_max: 12
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__multi_attribute_or_count:
+      query_id_weights:
+        type_or_color_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 4
+      target_count_max: 14
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__multi_attribute_exclusion_count:
+      query_id_weights:
+        type_and_not_color_count: 1.0
+        color_and_not_type_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 3
+      target_count_max: 12
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__type_union_count:
+      query_id_weights:
+        two_type_union_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 4
+      target_count_max: 16
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__count_arithmetic:
+      query_id_weights:
+        two_type_total_count: 1.0
+        two_type_difference_count: 1.0
+        two_color_total_count: 1.0
+        two_color_difference_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      operand_count_min: 1
+      operand_count_max: 7
+      difference_answer_max: 6
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_cluster__type_frequency_count:
+      query_id_weights:
+        most_frequent_type_count: 1.0
+        singleton_type_count: 1.0
+      scene_variant_weights:
+        tabletop_pile: 1.0
+        shallow_tray: 1.0
+        cluster_mat: 1.0
+      object_count_min: 16
+      object_count_max: 30
+      target_count_min: 3
+      target_count_max: 9
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+rendering:
+  task_overrides:
+    task_three_d__object_cluster__total_object_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__single_attribute_membership_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__multi_attribute_and_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__color_membership_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__multi_attribute_or_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__multi_attribute_exclusion_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__type_union_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__count_arithmetic:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_cluster__type_frequency_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+prompt:
+  shared:
+    bundle_id: three_d_object_cluster_v0
+  task_overrides:
+    task_three_d__object_cluster__total_object_count:
+      scene_key: object_cluster
+      task_key: object_cluster_total_count_query
+      object_description: a cluster of small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__single_attribute_membership_count:
+      scene_key: object_cluster
+      task_key: object_cluster_instance_count_query
+      object_description: a cluster of small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__multi_attribute_and_count:
+      scene_key: object_cluster
+      task_key: object_cluster_multi_attribute_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted {target_property_singular}
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__color_membership_count:
+      scene_key: object_cluster
+      task_key: object_cluster_color_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__multi_attribute_or_count:
+      scene_key: object_cluster
+      task_key: object_cluster_multi_attribute_or_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__multi_attribute_exclusion_count:
+      scene_key: object_cluster
+      task_key: object_cluster_multi_attribute_exclusion_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__type_union_count:
+      scene_key: object_cluster
+      task_key: object_cluster_type_union_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__count_arithmetic:
+      scene_key: object_cluster
+      task_key: object_cluster_count_arithmetic_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an object with keys "left_operand" and
+        "right_operand"; each value is an array of bounding boxes [x0, y0, x1, y1]
+        around that operand group
+      answer_hint: set "answer" to the requested total or absolute count difference
+      json_example: '{"annotation":{"left_operand":[[118,442,176,503],[391,316,448,374]],"right_operand":[[702,521,758,579]]},"answer":1}'
+      json_example_answer_only: '{"answer":1}'
+      bundle_id: three_d_object_cluster_v0
+    task_three_d__object_cluster__type_frequency_count:
+      scene_key: object_cluster
+      task_key: object_cluster_type_frequency_count_query
+      object_description: a cluster of colored small objects on a plain surface
+      annotation_hint: set "annotation" to an array containing one bounding box [x0,
+        y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"annotation":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      bundle_id: three_d_object_cluster_v0

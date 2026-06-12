@@ -2,72 +2,90 @@
 
 Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 
-## 1) Layered structure
-1. `trace/core/` — deterministic infrastructure (types, hashing, seeds, validation, build).
-2. `trace/core/prompts/` — prompt bundle loading/rendering/selection.
-3. `trace/core/visual/` — deterministic background + post-image noise.
-4. `trace/tasks/` — task registry + concrete task implementations.
+## 1) Runtime Layers
+1. `trace/core/` — deterministic infrastructure: types, hashing, seeds,
+   taxonomy, validation, build, reward contracts, reward scoring, and export.
+2. `trace/core/prompts/` — prompt bundle loading, validation, selection, and
+   rendering.
+3. `trace/core/visual/` — deterministic shared background and post-image noise.
+4. `trace/tasks/` — task registry plus concrete task implementations.
 5. `trace/tasks/shared/` — cross-domain task helpers.
-6. `trace/tasks/<domain>/shared/` — domain/scene shared helpers.
-7. `prompts/` — external prompt assets.
-8. `configs/` — domain/task-group defaults and build configs.
+6. `trace/tasks/<domain>/shared/` — domain-wide helpers only when reused across
+   multiple scenes in that domain.
+7. `trace/tasks/<domain>/<scene_id>/` — scene-package task files and
+   scene-local `shared/` helpers for review-candidate migrated scenes.
+8. `prompts/` — external prompt assets.
+9. `configs/` — generation, rendering, prompt, and build configs.
 
-## 2) Runtime data flow
-1. Load build config + type registry.
+Legacy scene packages may remain until migrated, but new
+review-candidate work should use scene-package layout.
+
+## 2) Runtime Data Flow
+1. Load build config and type registry.
 2. Resolve deterministic `dataset_id`.
-3. Generate staged instances:
-   - task sampling,
-   - task-level parameter injection from explicit build config only,
-   - public taxonomy resolution (`domain -> scene_id -> task_id`) with source `task_group` retained for configs,
-   - prompt rendering,
-   - image rendering + visual variation,
+3. Sample a public `task_id`.
+4. Generate staged instances:
+   - explicit task params from build config,
+   - task-local query sampling,
+   - public taxonomy resolution (`domain -> scene_id -> task_id`),
+   - scene/task/query prompt rendering,
+   - image rendering and visual variation,
+   - answer and annotation binding from the same execution trace,
    - reward-contract resolution from public answer/annotation types,
-   - trace write,
+   - sidecar trace write,
    - train-record write with `trace_ref`.
-4. Optional strict-repro second pass + compare.
-5. Run pre-finalize validation.
-6. Write `validation_report.json` and `build_report.json`.
-7. Atomic finalize on success; failure bundle on error.
+5. Optionally run strict-repro second pass and compare.
+6. Run pre-finalize validation.
+7. Write `validation_report.json` and `build_report.json`.
+8. Atomically finalize on success; persist failure bundle on error.
 
-## 3) Core module responsibilities
-### Core runtime
+## 3) Core Module Responsibilities
+### Core Runtime
 1. `trace/core/types.py` — ABI dataclasses.
-2. `trace/core/canonical.py` + `trace/core/hash_utils.py` — canonical hashing.
-3. `trace/core/seed.py` — seed derivation/spawn helpers.
+2. `trace/core/canonical.py` and `trace/core/hash_utils.py` — canonical
+   hashing.
+3. `trace/core/seed.py` — seed derivation and spawn helpers.
 4. `trace/core/identity.py` — `instance_id` computation.
 5. `trace/core/type_registry.py` — answer/annotation type checks.
 6. `trace/core/trace_store.py` — sidecar trace shard I/O.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
-8. `trace/core/builder.py` — build orchestration, including deterministic multi-process generation when `BuildConfig.workers > 1`.
-9. `trace/core/build_presets.py` — reusable build recipes, including equal-split all-task configs for training datasets.
-10. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
-11. `trace/core/reward_scoring.py` — shared TRACE answer/annotation reward scoring used by RLVR adapters.
-12. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
-13. `trace/core/taxonomy.py` — public domain/scene mapping plus implementation/config/prompt routing metadata.
+8. `trace/core/builder.py` — build orchestration.
+9. `trace/core/build_presets.py` — reusable build recipes.
+10. `trace/core/reward_contracts.py` — public reward-contract resolver.
+11. `trace/core/reward_scoring.py` — shared TRACE answer/annotation scoring.
+12. `trace/core/rlvr_export.py` — TRACE-to-RLVR export helpers.
+13. `trace/core/taxonomy.py` — public taxonomy and implementation/source
+    routing metadata.
 14. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-15. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+15. `trace/core/scene_config.py` — legacy config resolver for unmigrated
+    scene packages.
 16. `trace/core/sampling.py` — shared sampling primitives.
 17. `trace/core/json_io.py` — deterministic JSON writing.
 
-### Prompt + visual
-1. `trace/core/prompts/assets.py` — bundle loading/cache.
-2. `trace/core/prompts/schema.py` — schema validation.
+### Prompt And Visual
+1. `trace/core/prompts/assets.py` — prompt bundle loading/cache.
+2. `trace/core/prompts/schema.py` — prompt schema validation.
 3. `trace/core/prompts/select.py` — deterministic variant selection.
-4. `trace/core/prompts/render.py` — strict rendering + metadata.
-5. `trace/core/visual/background.py` — background style selection/render.
-6. `trace/core/visual/noise.py` — post-image noise selection/apply.
-7. `trace/core/visual/defaults.py` — visual defaults loader.
+4. `trace/core/prompts/render.py` — strict rendering and metadata.
+5. `trace/core/visual/background.py` — background style selection/rendering.
+6. `trace/core/visual/noise.py` — post-image noise selection/application.
+7. `trace/core/visual/defaults.py` — visual defaults loading.
 
-### Task framework
+### Task Framework
 1. `trace/tasks/registry.py` — registration and creation.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
-3. `trace/tasks/shared/*` — reusable query/layout/annotation/config/prompt helpers.
-4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); `puzzles/cell_board` keeps scene-specific internals under `trace/tasks/puzzles/cell_board/`.
-5. `trace/tasks/<domain>/shared/*` — domain/scene shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/pages/shared/*` plus `trace/tasks/puzzles/shared/*` for page and puzzle scene renderers, `trace/tasks/shared/time_artifact_*.py` for reusable clock/calendar/schedule/timeline plumbing, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers/Darts rendering, rule helpers, styling, sampling, complexity, and visual defaults).
+3. `trace/tasks/shared/*` — cross-domain query, layout, annotation, config,
+   prompt, and output helpers.
+4. `trace/tasks/<domain>/<scene_id>/<objective_contract>.py` — one public task
+   file per review-candidate task.
+5. `trace/tasks/<domain>/<scene_id>/shared/*` — scene-local reusable state,
+   sampling, rendering, prompt-slot, annotation, and output helpers.
+6. `trace/tasks/<domain>/shared/*` — helpers reused by multiple scenes in one
+   domain, never a dumping ground for one scene's task routing.
 
 ## 4) Active Task Inventory
-The active public task surface is generated from the live registry and taxonomy.
-Do not enumerate current tasks or scenes in this architecture document.
+The active public task surface is generated from the live registry and
+taxonomy. Do not enumerate current tasks or scenes in this architecture doc.
 
 Use `docs/ACTIVE_TASK_INVENTORY.md` for the committed generated inventory of
 `domain -> scene_id -> task_id`. Regenerate it with:
@@ -76,20 +94,23 @@ Use `docs/ACTIVE_TASK_INVENTORY.md` for the committed generated inventory of
 PYTHONPATH=. python scripts/generate_active_task_inventory.py
 ```
 
-Architecture docs should describe module boundaries, lifecycle, and invariants.
-Task additions/removals should update task docs, taxonomy/registry, and the
-generated inventory instead of duplicating task lists here.
+## 5) Architecture Invariants
+1. Determinism from config, seeds, code versions, prompt assets, and visual
+   assets.
+2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar
+   trace.
+3. Public records expose `domain`, `scene_id`, and task identity. Source routing
+   metadata is debug/runtime metadata only.
+4. Answer, annotation, and witness metadata are consistent from one execution
+   trace.
+5. Shared helpers are reused before adding task-local utilities, but shared code
+   must stay identity-free.
+6. Public task files own objective-specific construction, answer binding,
+   annotation binding, prompt slots, trace payload, and final `TaskOutput`.
+7. Builder parallelism changes throughput only; dataset identity and finalized
+   row ordering stay invariant for fixed build-critical config.
 
-## 5) Architecture invariants
-1. Determinism from config + seeds + versions.
-2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.
-3. Public records expose `domain`, `scene_id`, and `task`; source `task_group` remains readable during the taxonomy transition.
-4. Answer/annotation/witness are consistent from one execution trace.
-5. Shared helpers are reused before adding task-local utilities.
-6. Builder parallelism changes throughput only; dataset identity and finalized row ordering stay invariant for fixed build-critical config.
-
-## 6) When to update this doc
-Update when:
-1. module boundaries move,
-2. build lifecycle flow changes,
-3. shared invariants or extension points change.
+## 6) When To Update This Doc
+Update when module boundaries, build lifecycle, shared invariants, or extension
+points change. Do not update this doc for ordinary task additions/removals; use
+the generated inventory and domain/task docs instead.

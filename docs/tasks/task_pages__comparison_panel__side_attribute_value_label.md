@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `comparison_panel`
-3. Source task group: `document_lookup`
+3. Source scene package: `comparison_panel`
 4. Task id: `task_pages__comparison_panel__side_attribute_value_label`
 
 ## Contract
@@ -15,7 +15,7 @@
 6. Query knobs: target side/category, target attribute row, side count, attribute count, and scene layout variant.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_document_lookup_v0`
+1. Prompt bundle: `pages_comparison_panel_v0`
 2. Scene key: `comparison_panel`
 3. Task key: `comparison_panel_lookup_query`
 4. Internal prompt variant key: `side_attribute_value_label`

@@ -13,6 +13,6 @@ Public taxonomy: `games -> mancala_pit_board -> task_games__mancala_pit_board__s
 
 ## Generator
 
-- Implementation: `trace/tasks/games/mancala_pit_board/board_tasks.py`
+- Implementation: `trace/tasks/games/mancala_pit_board/sowing_landing_pit_label.py`
 - Config: `configs/domains/games/mancala_pit_board.yaml`
-- Prompt bundle: `prompts/games/mancala_pit_board/games_mancala_pit_board_v0.json`
+- Prompt bundle: `prompts/games/mancala_pit_board/games_mancala_pit_board_v1.json`

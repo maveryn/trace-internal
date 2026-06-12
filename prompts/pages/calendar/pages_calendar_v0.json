@@ -8,20 +8,10 @@
       "",
       "",
       ""
-    ],
-    "calendar_event_grid_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
     "scene:month_calendar": [
-      "object_description"
-    ],
-    "scene:calendar_event_grid": [
       "object_description"
     ],
     "query:date_of_weekday_occurrence": [
@@ -37,18 +27,6 @@
     ],
     "query:workday_before_offset_date": [
       "workday_offset"
-    ],
-    "query:date_slot_category_label": [
-      "date_number",
-      "slot_label"
-    ],
-    "query:category_slot_day_count": [
-      "category_label",
-      "slot_label"
-    ],
-    "query:date_for_category_slot_label": [
-      "category_label",
-      "slot_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -85,13 +63,6 @@
       "This calendar shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
-    ],
-    "calendar_event_grid": [
-      "The image shows {object_description}.",
-      "The calendar shows {object_description}.",
-      "This calendar shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}."
     ]
   },
   "query_templates": {
@@ -122,27 +93,6 @@
       "Using the marked date as the start, find the date number {workday_offset} workdays before it, excluding Saturdays and Sundays.",
       "What date number is reached {workday_offset} workdays before the marked date if weekends are skipped?",
       "From the marked date, count backward {workday_offset} workdays while skipping Saturdays and Sundays. What date is reached?"
-    ],
-    "date_slot_category_label": [
-      "On date {date_number}, what category label appears in the {slot_label} slot?",
-      "Read the {slot_label} event slot on date {date_number}. What category label is shown there?",
-      "For date {date_number}, identify the category label in the {slot_label} slot.",
-      "What is the visible category label for the {slot_label} slot on date {date_number}?",
-      "Find date {date_number} and read its {slot_label} slot. What category label does it contain?"
-    ],
-    "category_slot_day_count": [
-      "How many dates have {category_label} in the {slot_label} slot?",
-      "Count the dates whose {slot_label} slot shows {category_label}.",
-      "In the {slot_label} event slot, how many dates show the category label {category_label}?",
-      "How many date cells contain {category_label} in their {slot_label} slot?",
-      "Count every date where the {slot_label} slot is labeled {category_label}."
-    ],
-    "date_for_category_slot_label": [
-      "Which date has {category_label} in the {slot_label} slot?",
-      "Find the date whose {slot_label} slot shows {category_label}. What date number is it?",
-      "What date number contains {category_label} in the {slot_label} event slot?",
-      "Identify the date where the {slot_label} slot is labeled {category_label}.",
-      "Look for {category_label} in the {slot_label} slot. Which date is it on?"
     ]
   },
   "allow_empty_task_templates": true

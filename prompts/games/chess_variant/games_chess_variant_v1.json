@@ -1,0 +1,192 @@
+{
+  "bundle_id": "games_chess_variant_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "chess_variant_board": [
+        "The image shows {object_description}.",
+        "The visual shows {object_description}.",
+        "You are shown {object_description}.",
+        "The figure shows {object_description}.",
+        "The scene contains {object_description}."
+      ]
+    },
+    "task": {
+      "chess_variant_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "marked_piece_move_count": [
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many legal destination squares does the marked piece have?",
+        "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the marked piece's legal destination squares.",
+        "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of legal squares the marked piece can move to?",
+        "{marked_piece_rule_text} Using the displayed movement rule, how many legal movement destinations are available to the marked piece? {landing_rule_text} {block_rule_text}",
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every legal destination square for that piece."
+      ],
+      "marked_piece_capture_count": [
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many opponent pieces can the marked piece capture?",
+        "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the opponent pieces capturable by the marked piece.",
+        "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of opponent pieces the marked piece can capture?",
+        "{marked_piece_rule_text} Using the displayed movement rule, how many opponent pieces are capturable by the marked piece? {landing_rule_text} {block_rule_text}",
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every opponent piece that the marked piece can capture."
+      ],
+      "white_piece_reaches_target_count": [
+        "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
+        "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
+        "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
+        "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
+        "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
+      ],
+      "black_piece_reaches_target_count": [
+        "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
+        "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
+        "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
+        "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
+        "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:chess_variant_board": [
+      "object_description"
+    ],
+    "query:marked_piece_move_count": [
+      "rule_text",
+      "marked_piece_rule_text",
+      "landing_rule_text",
+      "block_rule_text"
+    ],
+    "query:marked_piece_capture_count": [
+      "rule_text",
+      "marked_piece_rule_text",
+      "landing_rule_text",
+      "block_rule_text"
+    ],
+    "query:white_piece_reaches_target_count": [
+      "rule_text",
+      "target_square_rule_text",
+      "target_landing_rule_text",
+      "block_rule_text",
+      "target_color_name"
+    ],
+    "query:black_piece_reaches_target_count": [
+      "rule_text",
+      "target_square_rule_text",
+      "target_landing_rule_text",
+      "block_rule_text",
+      "target_color_name"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "block_rule_text": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "landing_rule_text": {
+      "type": "string"
+    },
+    "marked_piece_rule_text": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "rule_text": {
+      "type": "string"
+    },
+    "target_color_name": {
+      "type": "string"
+    },
+    "target_landing_rule_text": {
+      "type": "string"
+    },
+    "target_square_rule_text": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_sparse_board": "a chess-like 8 by 8 board with a small set of white and black chess pieces and a visible movement rule card",
+    "object_description_crowded_board": "a chess-like 8 by 8 board with many white and black chess pieces and a visible movement rule card",
+    "marked_piece_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The red outlined square contains the marked piece.",
+    "target_square_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The blue outlined square is the target square.",
+    "landing_rule_text": "The marked piece may land on an empty square or an opponent piece, but not on a friendly piece.",
+    "target_landing_rule_text": "A counted piece may move to the target square if the target is empty or contains an opponent piece, but not if it contains a friendly piece.",
+    "slider_block_rule_text": "For range rules, movement stops at the first occupied square in each direction and cannot pass through it.",
+    "leaper_block_rule_text": "For jump rules, the marked piece may jump over occupied squares.",
+    "target_slider_block_rule_text": "For range rules, movement stops at the first occupied square in each direction and cannot pass through it.",
+    "target_leaper_block_rule_text": "For jump rules, pieces may jump over occupied squares.",
+    "rule_text_straight_range": "The rule card says the marked piece moves horizontally or vertically up to {range_k} squares.",
+    "rule_text_diagonal_range": "The rule card says the marked piece moves diagonally up to {range_k} squares.",
+    "rule_text_straight_or_diagonal_range": "The rule card says the marked piece moves horizontally, vertically, or diagonally up to {range_k} squares.",
+    "rule_text_leaper_2_1": "The rule card says the marked piece jumps exactly 2 rows and 1 column, or 1 row and 2 columns.",
+    "rule_text_leaper_3_1": "The rule card says the marked piece jumps exactly 3 rows and 1 column, or 1 row and 3 columns.",
+    "target_rule_text_straight_range": "The rule card says pieces move horizontally or vertically up to {range_k} squares.",
+    "target_rule_text_diagonal_range": "The rule card says pieces move diagonally up to {range_k} squares.",
+    "target_rule_text_straight_or_diagonal_range": "The rule card says pieces move horizontally, vertically, or diagonally up to {range_k} squares.",
+    "target_rule_text_leaper_2_1": "The rule card says pieces jump exactly 2 rows and 1 column, or 1 row and 2 columns.",
+    "target_rule_text_leaper_3_1": "The rule card says pieces jump exactly 3 rows and 1 column, or 1 row and 3 columns.",
+    "rule_badge_straight_range": "STRAIGHT <= {range_k}",
+    "rule_badge_diagonal_range": "DIAGONAL <= {range_k}",
+    "rule_badge_straight_or_diagonal_range": "ANY LINE <= {range_k}",
+    "rule_badge_leaper_2_1": "JUMP 2+1",
+    "rule_badge_leaper_3_1": "JUMP 3+1",
+    "annotation_hint_marked_piece_move_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every legal destination square of the marked piece",
+    "answer_hint_marked_piece_move_count": "set \"answer\" to the count of legal destination squares for the marked piece",
+    "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every destination square occupied by an opponent piece that the marked piece can capture",
+    "answer_hint_marked_piece_capture_count": "set \"answer\" to the count of capture destination squares for the marked piece",
+    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every white piece that can legally move to the blue outlined target square",
+    "answer_hint_white_piece_reaches_target_count": "set \"answer\" to the number of white pieces that can legally move to the blue outlined target square",
+    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every black piece that can legally move to the blue outlined target square",
+    "answer_hint_black_piece_reaches_target_count": "set \"answer\" to the number of black pieces that can legally move to the blue outlined target square"
+  }
+}

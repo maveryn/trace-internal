@@ -1,13 +1,7 @@
-"""Annotated single-series chart tasks."""
+"""Chart scene package tasks."""
 
-from .event_window_query import (
-    ChartsAnnotatedSeriesCalloutEndpointChangeValueTask,
-    ChartsAnnotatedSeriesEventWindowExtremumLabelTask,
-    ChartsAnnotatedSeriesEventWindowThresholdCountTask,
-)
+from .callout_endpoint_change_value import ChartsAnnotatedSeriesCalloutEndpointChangeValueTask
 
 __all__ = [
     "ChartsAnnotatedSeriesCalloutEndpointChangeValueTask",
-    "ChartsAnnotatedSeriesEventWindowExtremumLabelTask",
-    "ChartsAnnotatedSeriesEventWindowThresholdCountTask",
 ]

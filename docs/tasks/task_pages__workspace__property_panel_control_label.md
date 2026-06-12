@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `workspace`
 4. Task id: `task_pages__workspace__property_panel_control_label`
 5. Objective: Identify a property-panel control from a visible setting cue.

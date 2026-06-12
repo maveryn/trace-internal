@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.color_format import format_named_color_with_hex
@@ -176,7 +176,7 @@ class _SampleSpec:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -677,54 +677,6 @@ def _annotation_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[li
     )
 
 
-def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any]) -> TaskComplexity:
-    visual_scan = (int(sample.object_count) - _DEFAULTS.object_count_min) / max(1, _DEFAULTS.object_count_max - _DEFAULTS.object_count_min)
-    answer_load = (int(sample.target_answer) - _DEFAULTS.target_count_min) / max(1, _DEFAULTS.target_count_max - _DEFAULTS.target_count_min)
-    logic_difficulty = {
-        "shape_and_color_count": 0.35,
-        "shape_and_not_color_count": 0.50,
-        "color_and_not_shape_count": 0.50,
-        "shape_or_color_count": 0.60,
-        "neither_shape_nor_color_count": 0.70,
-        "exactly_one_shape_or_color_count": 0.75,
-    }[str(sample.query_id)]
-    shape_diversity = len(set(spec.shape_id for spec in sample.semantic_specs)) / max(1.0, float(sample.object_count))
-    color_diversity = len(set(spec.color_name for spec in sample.semantic_specs)) / max(1.0, float(sample.object_count))
-    fill_style_diversity = len(set(spec.fill_style for spec in sample.semantic_specs)) / max(1.0, float(sample.object_count))
-    attribute_diversity = color_diversity if str(sample.target_attribute_axis) == "color" else fill_style_diversity
-    attribute_axis_difficulty = 0.10 if str(sample.target_attribute_axis) == "fill_style" else 0.0
-    score = (
-        0.30 * max(0.0, min(1.0, visual_scan))
-        + 0.20 * max(0.0, min(1.0, answer_load))
-        + 0.22 * float(logic_difficulty)
-        + 0.15 * max(0.0, min(1.0, shape_diversity))
-        + 0.10 * max(0.0, min(1.0, attribute_diversity))
-        + 0.03 * float(attribute_axis_difficulty)
-    )
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "logic_difficulty": round(float(logic_difficulty), 6),
-            "shape_diversity": round(float(shape_diversity), 6),
-            "color_diversity": round(float(color_diversity), 6),
-            "fill_style_diversity": round(float(fill_style_diversity), 6),
-            "attribute_diversity": round(float(attribute_diversity), 6),
-            "attribute_axis_difficulty": round(float(attribute_axis_difficulty), 6),
-            "object_count": int(sample.object_count),
-            "target_answer": int(sample.target_answer),
-            "query_id": str(sample.query_id),
-            "target_shape_id": str(sample.target_shape_id),
-            "target_attribute_axis": str(sample.target_attribute_axis),
-            "target_attribute_value": str(sample.target_attribute_value),
-            "target_color_name": str(sample.target_color.name) if sample.target_color is not None else "",
-            "target_fill_style": str(sample.target_fill_style),
-            "arrangement_mode": str(sample.arrangement_mode),
-            "scene_icon_size_min_px": int(render_params["scene_icon_size_min_px"]),
-            "scene_icon_size_max_px": int(render_params["scene_icon_size_max_px"]),
-        },
-    )
 
 
 def _attribute_phrase(sample: _SampleSpec) -> str:
@@ -772,7 +724,7 @@ class _IconsCountingNamedShapeColorBooleanCountTaskBase:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
     query_ids: Tuple[str, ...] = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -860,7 +812,7 @@ class _IconsCountingNamedShapeColorBooleanCountTaskBase:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1066,7 +1018,6 @@ class _IconsCountingNamedShapeColorBooleanCountTaskBase:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -31,8 +31,7 @@ from ..shared.bead_loop_common import (
 )
 from ..shared.bead_loop_scene import render_puzzle_bead_loop_scene
 from ..shared.common import projected_puzzle_bbox_annotation
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
-from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
 
@@ -65,14 +64,13 @@ _LOOP_PATH_STYLE_LOAD = {
 }
 
 _DEFAULTS = PuzzleBeadLoopDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "topology")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="topology")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="topology")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="topology", apply_prob=0.0)
 
 
 def _sampling_params_for_axis(
@@ -93,7 +91,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "topology"
+    scene_id = "topology"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -223,7 +221,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -280,14 +278,6 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
                 if len(set(int(value) for value in dataset["valid_option_count_range"])) > 1
                 else 0.0
             ),
-        )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -392,7 +382,6 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
 
         # Sanity-check the generated option partition once before returning.
@@ -409,7 +398,6 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

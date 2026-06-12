@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `trapezoid_extension`
 3. Scene id: `trapezoid_extension`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `trapezoid_area_from_parallelogram_area`
@@ -13,7 +13,7 @@
 - `solve_formula(visible_trapezoid_extension_measurements, unknown_role=area_measure, formula_schema=trapezoid_area_from_parallelogram_area); scene=trapezoid_extension; scope=trapezoid_area_from_parallelogram_area`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `trapezoid_extension`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/trapezoid_extension.py`
+- Config: `configs/domains/geometry/trapezoid_extension.yaml`
+- Task module: `trace/tasks/geometry/trapezoid_extension/trapezoid_area_from_parallelogram_area.py`

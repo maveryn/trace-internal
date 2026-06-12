@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.tetris.board_tasks import (
+from trace.tasks.games.tetris.line_clear_count import (
     GamesTetrisDropCollisionTimeValueTask,
     GamesTetrisDropResultLabelTask,
     GamesTetrisEdgeOccupiedRowCellCountTask,
@@ -122,6 +122,26 @@ def test_games_tetris_drop_result_contract() -> None:
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 1
     assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+
+
+def test_games_tetris_drop_result_six_option_annotation_stays_in_bounds() -> None:
+    out = GamesTetrisDropResultLabelTask().generate(
+        6227121074877783,
+        params={"query_id": "single_clear_result", "option_count": 6, "board_rows": 15, "board_cols": 11},
+        max_attempts=240,
+    )
+    width, height = out.image.size
+    option_bboxes = out.trace_payload["render_map"]["option_bboxes_px"]
+
+    assert len(option_bboxes) == 6
+    for bbox in option_bboxes.values():
+        x0, y0, x1, y1 = [float(v) for v in bbox]
+        assert 0 <= x0 < x1 <= width
+        assert 0 <= y0 < y1 <= height
+    for bbox in out.annotation_gt.value:
+        x0, y0, x1, y1 = [float(v) for v in bbox]
+        assert 0 <= x0 < x1 <= width
+        assert 0 <= y0 < y1 <= height
 
 
 def test_games_tetris_row_occupancy_status_contract_and_rule_match() -> None:

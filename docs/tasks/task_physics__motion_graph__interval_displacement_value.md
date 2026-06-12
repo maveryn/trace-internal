@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `motion_graph`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/motion_graph.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__motion_graph__interval_displacement_value` -> `task_physics__motion_graph__interval_displacement_value`

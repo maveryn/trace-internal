@@ -48,7 +48,7 @@ def test_pages_schema_tasks_are_registered_in_public_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "schema"
-        assert taxonomy.source_task_group == "schema"
+        assert taxonomy.source_scene_id == "schema"
 
 
 def test_pages_schema_field_role_count_contract() -> None:

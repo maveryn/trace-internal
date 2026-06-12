@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `darts`
+2. Scene: `darts`
 3. Scene id: `darts`
 4. Public task id: `task_games__darts__ring_count`
 5. Supported `query_id` values: `ring_count`

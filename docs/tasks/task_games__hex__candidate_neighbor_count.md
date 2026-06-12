@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `hex`
+2. Scene: `hex`
 3. Scene id: `hex`
 4. Public task id: `task_games__hex__candidate_neighbor_count`
 5. Supported `query_id` values: `red_neighbor_count`, `blue_neighbor_count`, `empty_neighbor_count`

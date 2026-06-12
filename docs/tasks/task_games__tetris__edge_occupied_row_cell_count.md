@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tetris`
+2. Scene: `tetris`
 3. Scene id: `tetris`
 4. Public task id: `task_games__tetris__edge_occupied_row_cell_count`
 5. Supported `query_id` values: `top_occupied_row_filled_cell_count`, `top_occupied_row_empty_cell_count`, `bottom_occupied_row_filled_cell_count`, `bottom_occupied_row_empty_cell_count`

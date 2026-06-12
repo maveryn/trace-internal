@@ -7,26 +7,36 @@ generation:
       cave: 1.0
       mesa: 1.0
     balanced_style_variant_sampling: true
-    balanced_grid_width_sampling: true
-    balanced_grid_depth_sampling: true
-    balanced_answer_sampling: true
-    balanced_route_option_count_sampling: true
-    grid_width_support:
+  task_overrides:
+    task_games__minecraft__top_ore_stack_count:
+      balanced_grid_width_sampling: true
+      balanced_grid_depth_sampling: true
+      balanced_answer_sampling: true
+      grid_width_support:
       - 8
       - 9
       - 10
-    grid_depth_support:
+      grid_depth_support:
       - 8
       - 9
       - 10
-    top_ore_stack_answer_support:
+      top_ore_stack_answer_support:
       - 1
       - 2
       - 3
       - 4
       - 5
       - 6
-    reachable_ore_stack_answer_support:
+      stack_height_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    task_games__minecraft__reachable_ore_stack_count:
+      balanced_answer_sampling: true
+      balanced_reachable_line_length_sampling: true
+      reachable_ore_stack_answer_support:
       - 0
       - 1
       - 2
@@ -34,59 +44,74 @@ generation:
       - 4
       - 5
       - 6
-    reachable_line_length_support:
+      reachable_line_length_support:
       - 6
       - 7
       - 8
       - 9
       - 10
-    reachable_grid_width_support:
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-    reachable_grid_depth_support:
+      stack_height_support:
+      - 1
+      - 2
+      - 3
+      - 4
       - 5
-    balanced_reachable_line_length_sampling: true
-    route_answer_support:
+    task_games__minecraft__resource_route_cost:
+      balanced_grid_width_sampling: true
+      balanced_grid_depth_sampling: true
+      balanced_answer_sampling: true
+      balanced_route_option_count_sampling: true
+      route_answer_support:
       - 0
       - 1
       - 2
       - 3
       - 4
       - 5
-    stack_height_answer_support:
+      route_grid_width_support:
+      - 11
+      route_grid_depth_support:
+      - 8
+      - 9
+      - 10
+      route_option_count_support:
+      - 2
+      - 3
+    task_games__minecraft__stack_height_condition_count:
+      balanced_grid_width_sampling: true
+      balanced_grid_depth_sampling: true
+      balanced_answer_sampling: true
+      balanced_target_stack_height_sampling: true
+      grid_width_support:
+      - 8
+      - 9
+      - 10
+      grid_depth_support:
+      - 8
+      - 9
+      - 10
+      stack_height_answer_support:
       - 1
       - 2
       - 3
       - 4
       - 5
       - 6
-    exact_target_height_support:
+      exact_target_height_support:
       - 2
       - 3
       - 4
       - 5
-    at_least_target_height_support:
+      at_least_target_height_support:
       - 2
       - 3
       - 4
-    stack_height_support:
+      stack_height_support:
       - 1
       - 2
       - 3
       - 4
       - 5
-    route_grid_width_support:
-      - 11
-    route_grid_depth_support:
-      - 8
-      - 9
-      - 10
-    route_option_count_support:
-      - 2
-      - 3
 rendering:
   shared:
     canvas_width: 840
@@ -98,41 +123,31 @@ rendering:
     unit_size_scale_max: 1.0
     outline_width_px: 2
     player_marker_size_px: 28
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      block_reasoning: 0.34
-      arithmetic_load: 0.18
-      output_burden: 0.18
 prompt:
   shared:
-    bundle_id: games_minecraft_v0
+    bundle_id: games_minecraft_v1
     scene_key: visible_block_world
     task_key: minecraft_query
-    object_description_block_world: a Minecraft-like isometric block world with cube terrain, visible cube stacks, resource blocks, and any marked paths or mining routes needed for the question
-    object_description_reachable_stack_line: a Minecraft-like isometric block world with one highlighted line of cube stacks arranged from left to right
-    minecraft_route_cost_rule_text: For the named labeled route only, each raised stone or dirt block sitting on that route costs 1, and empty route cells cost 0. Ignore all other routes.
-    annotation_hint_top_ore_stack_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack whose top cube is the named ore
-    answer_hint_top_ore_stack_count: set "answer" to the integer number of stacks whose top cube is the named ore
-    annotation_hint_reachable_ore_stack_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every reachable stack whose top cube is the named ore; use an empty array if none qualify
-    answer_hint_reachable_ore_stack_count: set "answer" to the integer number of reachable stacks whose top cube is the named ore
-    annotation_hint_resource_route_cost: set "annotation" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the named route only; use an empty array if the cost is 0
-    answer_hint_resource_route_cost: set "answer" to the integer cost of the named route
-    annotation_hint_exact_height_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack that is exactly the named height
-    answer_hint_exact_height_count: set "answer" to the integer number of stacks that are exactly the named height
-    annotation_hint_at_least_height_count: set "annotation" to [x, y] pixel points at the centers of the top cubes of every visible stack that is at least the named height
-    answer_hint_at_least_height_count: set "answer" to the integer number of stacks that are at least the named height
 visual:
   noise:
     apply_prob: 0.5
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.15, 0.4]
+        radius:
+        - 0.15
+        - 0.4
       downsample:
-        scale: [0.9, 0.97]
+        scale:
+        - 0.9
+        - 0.97
       jpeg:
-        quality: [78.0, 94.0]
+        quality:
+        - 78.0
+        - 94.0
       noise:
-        alpha: [0.015, 0.045]
+        alpha:
+        - 0.015
+        - 0.045

@@ -13,12 +13,40 @@ generation:
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true
-    balanced_target_answer_sampling: true
-    board_size_support: [4, 5, 6]
-    capture_board_size_support: [5, 6]
-    target_answer_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    board_size_support:
+    - 4
+    - 5
+    - 6
     min_total_piece_count: 4
     max_total_piece_count: 12
+  task_overrides:
+    task_games__irregular_link_board__capture_move_count:
+      balanced_target_answer_sampling: true
+      capture_board_size_support:
+      - 5
+      - 6
+      target_answer_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    task_games__irregular_link_board__marked_piece_destination_count:
+      balanced_target_answer_sampling: true
+      target_answer_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
 rendering:
   shared:
     canvas_width: 780
@@ -36,37 +64,31 @@ rendering:
     canvas_min_height_px: 540
     canvas_side_padding_px: 150
     canvas_vertical_padding_px: 150
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      movement_reasoning: 0.42
-      ambiguity: 0.10
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_irregular_link_board_v0
+    bundle_id: games_irregular_link_board_v1
     scene_key: irregular_link_board
     task_key: irregular_link_board_query
-    object_description_sparse_links: a point-and-link movement board with many missing links and several pieces
-    object_description_mixed_links: a point-and-link movement board with some missing links and several pieces
-    object_description_dense_links: a point-and-link movement board with dense drawn links and several pieces
-    movement_rule_text: A piece can move one step only along a drawn link to an adjacent empty point.
-    capture_rule_text: A capture move jumps over one adjacent opposing piece along a straight drawn line and lands on the empty point immediately beyond it.
-    annotation_hint_marked_piece_destination_count: set "annotation" to [x, y] pixel points at the centers of every empty point the X-marked piece can legally move to; use an empty array if there are none
-    answer_hint_marked_piece_destination_count: set "answer" to the number of legal destinations for the X-marked piece
-    annotation_hint_capture_move_count: set "annotation" to [x, y] pixel points at the centers of every empty point where the X-marked piece can move to capture; use an empty array if there are none
-    answer_hint_capture_move_count: set "answer" to the number of legal capture moves for the X-marked piece
 visual:
   noise:
     apply_prob: 0.5
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.15, 0.4]
+        radius:
+        - 0.15
+        - 0.4
       downsample:
-        scale: [0.9, 0.97]
+        scale:
+        - 0.9
+        - 0.97
       jpeg:
-        quality: [78.0, 94.0]
+        quality:
+        - 78.0
+        - 94.0
       noise:
-        alpha: [0.015, 0.045]
+        alpha:
+        - 0.015
+        - 0.045

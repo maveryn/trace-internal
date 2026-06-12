@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `document_lookup`
+2. Scene: `document_lookup`
 3. Scene id: `profile_card_grid`
 4. Task id: `task_pages__profile_card_grid__profile_for_field_value`
 5. Objective: Find the profile name whose visible field has a requested value.

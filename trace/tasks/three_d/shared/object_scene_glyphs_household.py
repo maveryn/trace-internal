@@ -165,13 +165,32 @@ def _draw_paint_brush_object(
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     parts = [
-        (_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.16, 0.0), dimensions_xyz=(width * 0.16, depth * 0.86, height * 0.52)), (119, 77, 42)),
-        (_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.28, 0.0), dimensions_xyz=(width * 0.26, depth * 0.24, height * 0.58)), (166, 174, 180)),
-        (_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.48, 0.0), dimensions_xyz=(width * 0.42, depth * 0.20, height * 0.62)), _shade(fill, 0.72)),
+        ("handle", _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.20, 0.0), dimensions_xyz=(width * 0.18, depth * 0.76, height * 0.46)), (119, 77, 42)),
+        ("ferrule", _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.23, 0.0), dimensions_xyz=(width * 0.38, depth * 0.22, height * 0.58)), (176, 184, 190)),
+        ("bristles", _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.45, 0.0), dimensions_xyz=(width * 0.62, depth * 0.22, height * 0.70)), _shade(fill, 0.76)),
     ]
     bboxes = []
-    for part, color in sorted(parts, key=lambda item: _distance(item[0]["world_xyz"], camera.camera_position), reverse=True):
-        bboxes.append(_draw_box_object(draw, part, camera=camera, frame=frame, fill=color))
+    rendered_by_kind: Dict[str, List[float]] = {}
+    for kind, part, color in sorted(parts, key=lambda item: _distance(item[1]["world_xyz"], camera.camera_position), reverse=True):
+        bbox = _draw_box_object(draw, part, camera=camera, frame=frame, fill=color)
+        bboxes.append(bbox)
+        rendered_by_kind[str(kind)] = bbox
+    ferrule_bbox = rendered_by_kind["ferrule"]
+    fx0, fy0, fx1, fy1 = (float(value) for value in ferrule_bbox)
+    fw = max(1.0, fx1 - fx0)
+    fh = max(1.0, fy1 - fy0)
+    for offset in (0.24, 0.50, 0.76):
+        line = [(fx0 + fw * offset, fy0 + fh * 0.12), (fx0 + fw * offset, fy1 - fh * 0.10)]
+        _draw_line(draw, line[0], line[1], fill=(92, 102, 112), width=1)
+        bboxes.append(_bbox_from_screen_points(line))
+    bristle_bbox = rendered_by_kind["bristles"]
+    bx0, by0, bx1, by1 = (float(value) for value in bristle_bbox)
+    bw = max(1.0, bx1 - bx0)
+    bh = max(1.0, by1 - by0)
+    for offset in (0.30, 0.50, 0.70):
+        line = [(bx0 + bw * offset, by0 + bh * 0.12), (bx0 + bw * (offset - 0.04), by1 - bh * 0.12)]
+        _draw_line(draw, line[0], line[1], fill=_shade(fill, 0.48), width=1)
+        bboxes.append(_bbox_from_screen_points(line))
     return _bbox_union(*bboxes)
 
 

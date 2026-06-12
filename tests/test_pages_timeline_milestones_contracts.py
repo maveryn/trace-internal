@@ -67,7 +67,7 @@ def test_pages_timeline_interval_membership_count_build_smoke(tmp_path: Path) ->
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "pages" for record in train_records)
-    assert all(record["task_group"] == "timeline" for record in train_records)
+    assert all(record["scene_id"] == "timeline" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_pages__timeline__interval_membership_count"]) == 4
@@ -99,7 +99,7 @@ def test_pages_timeline_event_date_gap_value_build_smoke(tmp_path: Path) -> None
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "pages" for record in train_records)
-    assert all(record["task_group"] == "timeline" for record in train_records)
+    assert all(record["scene_id"] == "timeline" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_pages__timeline__event_date_gap_value"]) == 4

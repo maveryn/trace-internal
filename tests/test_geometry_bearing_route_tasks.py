@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.bearing_route import (
-    GeometryBearingRouteEndpointPositionLabelTask,
-    GeometryBearingRouteFinalBearingValueTask,
-    SCENE_ID,
-)
+from trace.tasks.geometry.bearing_route.endpoint_position_label import GeometryBearingRouteEndpointPositionLabelTask
+from trace.tasks.geometry.bearing_route.final_bearing_value import GeometryBearingRouteFinalBearingValueTask
+from trace.tasks.geometry.bearing_route.shared.state import SCENE_ID
 
 
 TASK_CLASSES = (
@@ -113,8 +111,28 @@ def test_bearing_endpoint_uses_selected_candidate_label() -> None:
     assert set(out.annotation_gt.value) == {"start_point", "reached_endpoint"}
     assert "route_instructions" not in out.annotation_gt.value
     assert "instruction_panel_bbox" in out.trace_payload["render_map"]
+    assert "graph-paper candidate grid" in out.prompt
+    graph_meta = out.trace_payload["render_map"]["candidate_graph_paper"]
+    assert graph_meta["grid_unit"] == "one_square_equals_one_step"
+    assert 20.0 <= float(graph_meta["grid_cell_px"]) <= 42.0
+    assert 3 <= int(trace["leg_a"]) <= 7
+    assert 3 <= int(trace["leg_b"]) <= 7
+    assert abs(int(trace["leg_a"]) - int(trace["leg_b"])) >= 2
     selected_label_bbox = out.trace_payload["render_map"]["selected_candidate_label_bbox"]
     assert out.annotation_gt.value["reached_endpoint"] != selected_label_bbox
+
+
+def test_bearing_endpoint_candidate_labels_avoid_fixed_scene_labels() -> None:
+    task = GeometryBearingRouteEndpointPositionLabelTask()
+    reserved = {"N", "E", "S", "W", "F"}
+
+    for seed in range(78050, 78100):
+        out = task.generate(seed, params={}, max_attempts=20)
+        labels = tuple(str(label) for label in out.trace_payload["execution_trace"]["option_labels"])
+
+        assert len(labels) == len(set(labels))
+        assert not reserved.intersection(labels)
+        assert out.answer_gt.value in labels
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)

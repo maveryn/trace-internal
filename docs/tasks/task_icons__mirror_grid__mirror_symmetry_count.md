@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `mirror_grid`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_icons__mirror_grid__mirror_symmetry_count`
 5. Objective: count how many labeled Scene cells have the same mirror symmetry as the Reference cell.
 
@@ -47,4 +47,4 @@
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_mirror_symmetry_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_mirror_symmetry_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

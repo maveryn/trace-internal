@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `bowling`
+2. Scene package: `trace/tasks/games/bowling/`
 3. Scene id: `bowling`
 4. Public task id: `task_games__bowling__spare_path_label`
 5. Supported `query_id` values: `spare_path_label`

@@ -202,17 +202,24 @@ def _draw_room_bed_object(
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     parts = [
-        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.05, height * 0.08), dimensions_xyz=(width * 0.94, depth * 0.84, height * 0.38)), tint_rgb(fill, 0.28)),
-        (_room_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.47, height * 0.08), dimensions_xyz=(width, depth * 0.12, height * 0.84)), shade_rgb(fill, 0.70)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.06, 0.0), dimensions_xyz=(width * 0.96, depth * 0.86, height * 0.20)), shade_rgb(fill, 0.70)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.08, height * 0.20), dimensions_xyz=(width * 0.92, depth * 0.78, height * 0.16)), tint_rgb(fill, 0.35)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.46, height * 0.05), dimensions_xyz=(width, depth * 0.12, height * 0.90)), shade_rgb(fill, 0.66)),
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.42, -depth * 0.36, 0.0), dimensions_xyz=(width * 0.06, depth * 0.06, height * 0.18)), shade_rgb(fill, 0.48)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.42, -depth * 0.36, 0.0), dimensions_xyz=(width * 0.06, depth * 0.06, height * 0.18)), shade_rgb(fill, 0.48)),
     ]
     bbox = _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
     width_px = float(bbox[2]) - float(bbox[0])
     height_px = float(bbox[3]) - float(bbox[1])
-    pillow = [float(bbox[0]) + width_px * 0.16, float(bbox[1]) + height_px * 0.22, float(bbox[0]) + width_px * 0.46, float(bbox[1]) + height_px * 0.40]
-    blanket = [float(bbox[0]) + width_px * 0.30, float(bbox[1]) + height_px * 0.50, float(bbox[2]) - width_px * 0.10, float(bbox[3]) - height_px * 0.12]
-    draw.rounded_rectangle(tuple(pillow), radius=4, fill=(236, 232, 221), outline=(116, 107, 136), width=1)
-    draw.rounded_rectangle(tuple(blanket), radius=4, fill=(94, 128, 166), outline=(65, 82, 105), width=1)
-    return list(bbox_union(bbox, pillow, blanket))
+    pillow_left = [float(bbox[0]) + width_px * 0.14, float(bbox[1]) + height_px * 0.20, float(bbox[0]) + width_px * 0.38, float(bbox[1]) + height_px * 0.37]
+    pillow_right = [float(bbox[0]) + width_px * 0.41, float(bbox[1]) + height_px * 0.20, float(bbox[0]) + width_px * 0.65, float(bbox[1]) + height_px * 0.37]
+    blanket = [float(bbox[0]) + width_px * 0.10, float(bbox[1]) + height_px * 0.47, float(bbox[2]) - width_px * 0.08, float(bbox[3]) - height_px * 0.10]
+    foot_fold = [blanket[0], blanket[3] - height_px * 0.12, blanket[2], blanket[3] - height_px * 0.05]
+    for pillow in (pillow_left, pillow_right):
+        draw.rounded_rectangle(tuple(pillow), radius=max(4, int(min(width_px, height_px) * 0.05)), fill=(238, 234, 222), outline=(116, 107, 136), width=1)
+    draw.rounded_rectangle(tuple(blanket), radius=max(5, int(min(width_px, height_px) * 0.05)), fill=(89, 126, 170), outline=(62, 80, 106), width=1)
+    draw.rounded_rectangle(tuple(foot_fold), radius=3, fill=(73, 104, 144), outline=(62, 80, 106), width=1)
+    return list(bbox_union(bbox, pillow_left, pillow_right, blanket, foot_fold))
 
 
 def _draw_room_media_console_object(
@@ -223,17 +230,30 @@ def _draw_room_media_console_object(
     frame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    front = _inset_bbox(bbox, 0.10, 0.20)
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    parts = [
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.08), dimensions_xyz=(width, depth * 0.92, height * 0.78)), fill),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.01, height * 0.84), dimensions_xyz=(width * 1.04, depth, height * 0.10)), tint_rgb(fill, 0.12)),
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.40, -depth * 0.34, 0.0), dimensions_xyz=(width * 0.07, depth * 0.08, height * 0.16)), shade_rgb(fill, 0.48)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.40, -depth * 0.34, 0.0), dimensions_xyz=(width * 0.07, depth * 0.08, height * 0.16)), shade_rgb(fill, 0.48)),
+    ]
+    bbox = _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+    front = _inset_bbox(bbox, 0.08, 0.18)
     panel_w = (float(front[2]) - float(front[0])) / 3.0
+    panel_boxes: List[List[float]] = []
     for index in range(3):
         x1 = float(front[0]) + panel_w * index + 1.0
         x2 = float(front[0]) + panel_w * (index + 1) - 1.0
         panel = [x1, float(front[1]), x2, float(front[3])]
-        draw.rectangle(tuple(panel), fill=shade_rgb(fill, 0.74 + index * 0.04), outline=(58, 48, 40), width=1)
-        handle_y = (float(panel[1]) + float(panel[3])) * 0.52
+        draw.rectangle(tuple(panel), fill=shade_rgb(fill, 0.72 + index * 0.04), outline=(58, 48, 40), width=1)
+        shelf_y = float(panel[1]) + (float(panel[3]) - float(panel[1])) * 0.45
+        draw_line(draw, (x1 + 2.0, shelf_y), (x2 - 2.0, shelf_y), fill=(58, 48, 40), width=1)
+        handle_y = float(panel[1]) + (float(panel[3]) - float(panel[1])) * 0.68
         draw_line(draw, (x1 + panel_w * 0.28, handle_y), (x2 - panel_w * 0.28, handle_y), fill=(215, 181, 95), width=2)
-    return list(bbox_union(bbox, front))
+        panel_boxes.append(panel)
+    center_opening = [float(front[0]) + panel_w + 3.0, float(front[1]) + 3.0, float(front[0]) + panel_w * 2.0 - 3.0, float(front[1]) + (float(front[3]) - float(front[1])) * 0.42]
+    draw.rectangle(tuple(center_opening), fill=(37, 42, 49), outline=(58, 48, 40), width=1)
+    return list(bbox_union(bbox, front, center_opening, *panel_boxes))
 
 
 def _draw_room_tv_object(

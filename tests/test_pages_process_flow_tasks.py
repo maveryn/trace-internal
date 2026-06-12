@@ -48,7 +48,7 @@ def test_pages_process_flow_tasks_are_registered_in_public_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "process_flow"
-        assert taxonomy.source_task_group == "process_flow"
+        assert taxonomy.source_scene_id == "process_flow"
 
 
 def test_pages_process_flow_filtered_node_count_contract() -> None:

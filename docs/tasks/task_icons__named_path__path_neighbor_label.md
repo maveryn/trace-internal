@@ -2,7 +2,7 @@
 
 - domain: `icons`
 - scene_id: `named_path`
-- task_group: `relation`
+- scene_id: `relation`
 - task: `named_path_neighbor_label`
 - module: `trace/tasks/icons/relation/named_path_neighbor_label.py`
 

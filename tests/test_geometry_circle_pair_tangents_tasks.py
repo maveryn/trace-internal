@@ -7,17 +7,19 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.circle_pair_tangents import (
-    ANNOTATION_KEYS,
-    QUERY_ID,
+from trace.tasks.geometry.circle_pair_tangents.center_distance_value import (
+    GeometryCirclePairTangentsCenterDistanceValueTask,
     QUERY_ID_CENTER_DISTANCE,
+    TASK_ID_CENTER_DISTANCE,
+)
+from trace.tasks.geometry.circle_pair_tangents.common_tangent_length_value import (
+    ANNOTATION_KEYS,
+    GeometryCirclePairTangentsCommonTangentLengthValueTask,
+    QUERY_ID,
     QUERY_ID_COMMON_TANGENT_LENGTH,
     SCENE_ID,
     TASK_ID,
-    TASK_ID_CENTER_DISTANCE,
     TASK_ID_COMMON_TANGENT_LENGTH,
-    GeometryCirclePairTangentsCenterDistanceValueTask,
-    GeometryCirclePairTangentsCommonTangentLengthValueTask,
 )
 
 
@@ -93,7 +95,7 @@ def test_circle_pair_tangent_formula_and_annotation(
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
     assert trace["projected_annotation"]["keyed_point_map"] == annotation
     assert trace["projected_annotation"]["pixel_keyed_point_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_pair_tangents_v0"
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_pair_tangents_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)
 

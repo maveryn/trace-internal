@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `icon_cutout`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_icons__icon_cutout__partial_match_label`
 5. Objective: select the labeled full-icon option that generated the partial icon fragment.
 
@@ -43,4 +43,4 @@
 ## 5) Complexity + tests
 1. Complexity definition/components: option count, visible-fragment fraction, fragment window style, and option-cell clutter.
 2. Behavior/trace/prompt tests: `tests/test_icons_relation_partial_match_label_tasks.py`
-3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

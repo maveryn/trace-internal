@@ -127,7 +127,7 @@ Rationale templates should be external assets, not hardcoded task-module text.
 Use a structure parallel to prompt bundles:
 
 ```text
-rationales/<domain>/<task_group>/<bundle>.json
+rationales/<domain>/<scene_id>/<bundle>.json
 ```
 
 Each bundle should expose templates by:

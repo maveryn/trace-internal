@@ -17,9 +17,6 @@
     "scene:single_scene_counting": [
       "object_description"
     ],
-    "scene:paired_canvas_counting": [
-      "object_description"
-    ],
     "task:counting_query": [
       "question_text"
     ],
@@ -60,13 +57,6 @@
       "The picture shows {object_description}."
     ],
     "single_scene_counting": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "paired_canvas_counting": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

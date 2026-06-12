@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Task id: `task_graph__node_link__articulation_point_count`
 4. Objective: count how many labeled graph nodes are articulation points.
 
@@ -100,4 +100,4 @@
 1. Complexity definition/components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
 2. Determinism/build tests: `tests/test_graph_counting_articulation_point_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_graph_counting_articulation_point_count_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

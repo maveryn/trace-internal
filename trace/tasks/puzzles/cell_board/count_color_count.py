@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.bbox_projection import pixel_anchor_map_from_bboxes
@@ -33,25 +33,16 @@ from .shared.color_board_common import (
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_annotation import coordinate_set_annotation_artifacts, sort_coords_row_major
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
-from .shared.complexity import (
-    build_tile_complexity,
-    resolve_tile_complexity_weights,
-    normalize_int_with_bounds,
-)
 
 
 _DEFAULTS = RectangularColorBoardTaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_count")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_count")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_color_count_internal",
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="count")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="count", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="cell_board_color_count_internal",
-)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="count")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="count", apply_prob=0.5)
 
 
 class TileColorCountTask:
@@ -59,7 +50,7 @@ class TileColorCountTask:
 
     task_id = "cell_board_color_count_internal"
     domain = "puzzles"
-    task_group = "cell_board_count"
+    scene_id = "cell_board_count"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -238,7 +229,7 @@ class TileColorCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=prompt_bundle_id,
             scene_key=prompt_scene_key,
             task_key=prompt_task_key,
@@ -338,24 +329,6 @@ class TileColorCountTask:
         board_cell_count = int(scene.rows) * int(scene.cols)
         min_board_cell_count = int(rows_min) * int(cols_min)
         max_board_cell_count = int(rows_max) * int(cols_max)
-        complexity = build_tile_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": (
-                    0.75
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.25
-                    * normalize_int_with_bounds(
-                        int(scene.palette_size),
-                        (int(palette_size_min), int(palette_size_max)),
-                    )
-                ),
-                "reasoning_load": float(answer_value) / float(max(1, board_cell_count)),
-            },
-        )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -367,7 +340,6 @@ class TileColorCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id="color_count",
             prompt_variants=dict(prompt_artifacts.prompt_variants),

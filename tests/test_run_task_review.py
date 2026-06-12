@@ -5,14 +5,16 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from PIL import Image
+import pytest
 
 from scripts import check_task_answer_distribution as distribution_review
 from scripts import run_task_review as review
 from trace.core import task_review_distribution
 from trace.core.task_review_paths import infer_task_domain, resolve_task_review_dir
-from trace.core.types import TaskComplexity, TypedValue
+from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 
 
@@ -21,7 +23,7 @@ class _DummyVariantTask:
 
     task_id = "task_dummy__review__query"
     domain = "dummy"
-    task_group = "review"
+    scene_id = "review"
 
     def __init__(self) -> None:
         self.calls: list[tuple[int, dict[str, object]]] = []
@@ -37,7 +39,6 @@ class _DummyVariantTask:
             image=image,
             image_id=f"img_{instance_seed}",
             trace_payload={"projected_annotation": {}},
-            complexity=TaskComplexity(complexity_score=1.0, complexity_components={}),
             task_versions={},
             query_id=query_id,
             prompt_variants={
@@ -124,6 +125,104 @@ def test_review_cli_uses_shared_distribution_helpers() -> None:
     assert review._build_distribution_review_report is task_review_distribution.build_distribution_review_report
 
 
+def test_review_generation_refuses_unregistered_migration_review_scene(tmp_path: Path, monkeypatch) -> None:
+    dummy_task = _DummyVariantTask()
+    monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
+    monkeypatch.setattr(
+        review,
+        "resolve_task_taxonomy",
+        lambda *args, **kwargs: SimpleNamespace(domain="geometry", scene_id="circle_theorem"),
+    )
+
+    with pytest.raises(ValueError, match="not centrally registered"):
+        review._validate_tasks_may_write_review_artifacts(
+            task_ids=["task_geometry__circle_theorem__arc_angle_value"],
+            out_root=tmp_path / "review" / "task-reviews",
+        )
+
+
+def test_review_generation_refuses_missing_manual_code_audit_for_registered_scene(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    dummy_task = _DummyVariantTask()
+    monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
+    monkeypatch.setattr(
+        review,
+        "resolve_task_taxonomy",
+        lambda *args, **kwargs: SimpleNamespace(domain="pages", scene_id="workspace"),
+    )
+    monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
+
+    with pytest.raises(ValueError, match="manual code/role-boundary audit"):
+        review._validate_tasks_may_write_review_artifacts(
+            task_ids=["task_pages__workspace__toolbar_palette_control_label"],
+            out_root=tmp_path / "review" / "task-reviews",
+        )
+
+
+def test_review_generation_allows_passing_manual_code_audit_for_registered_scene(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    dummy_task = _DummyVariantTask()
+    monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
+    monkeypatch.setattr(
+        review,
+        "resolve_task_taxonomy",
+        lambda *args, **kwargs: SimpleNamespace(domain="pages", scene_id="workspace"),
+    )
+    monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
+    monkeypatch.setattr(
+        review,
+        "audit_scene_package_review_candidate",
+        lambda domain, scene_id: {"passed": True, "failures": []},
+    )
+    out_root = tmp_path / "review" / "task-reviews"
+    audit_path = out_root / "pages" / "workspace" / "manual_code_audit_status.json"
+    audit_path.parent.mkdir(parents=True, exist_ok=True)
+    audit_path.write_text(json.dumps({"passed": True}), encoding="utf-8")
+
+    review._validate_tasks_may_write_review_artifacts(
+        task_ids=["task_pages__workspace__toolbar_palette_control_label"],
+        out_root=out_root,
+    )
+
+
+def test_review_generation_refuses_failed_automated_scene_source_audit(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    dummy_task = _DummyVariantTask()
+    monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
+    monkeypatch.setattr(
+        review,
+        "resolve_task_taxonomy",
+        lambda *args, **kwargs: SimpleNamespace(domain="charts", scene_id="bar_3d"),
+    )
+    monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
+    monkeypatch.setattr(
+        review,
+        "audit_scene_package_review_candidate",
+        lambda domain, scene_id: {
+            "passed": False,
+            "failures": [
+                "charts/bar_3d: category_total_value.py and category_total_gap_value.py look duplicated"
+            ],
+        },
+    )
+    out_root = tmp_path / "review" / "task-reviews"
+    audit_path = out_root / "charts" / "bar_3d" / "manual_code_audit_status.json"
+    audit_path.parent.mkdir(parents=True, exist_ok=True)
+    audit_path.write_text(json.dumps({"passed": True}), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="automated scene-package source audit failed"):
+        review._validate_tasks_may_write_review_artifacts(
+            task_ids=["task_charts__bar_3d__category_total_value"],
+            out_root=out_root,
+        )
+
+
 def test_task_review_distribution_collector_records_axes_and_replay_params() -> None:
     output = TaskOutput(
         prompt="prompt",
@@ -145,7 +244,6 @@ def test_task_review_distribution_collector_records_axes_and_replay_params() -> 
                 },
             },
         },
-        complexity=TaskComplexity(complexity_score=0.2, complexity_components={}),
         task_versions={},
         scene_id="review",
         query_id="default",

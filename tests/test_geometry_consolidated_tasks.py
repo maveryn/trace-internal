@@ -9,23 +9,23 @@ from pathlib import Path
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.geometry.comparison.value import GeometryComparisonValueTask
-from trace.tasks.geometry.coordinate.relation import (
+from trace.tasks.geometry.graph_paper.angle_extremum_label import GeometryComparisonValueTask
+from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
     GeometryCoordinateRelationTask,
     _resolve_axes as _resolve_coordinate_axes,
 )
-from trace.tasks.geometry.counting.value import GeometryCountingValueTask
-from trace.tasks.geometry.graphing.count import (
+from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
+from trace.tasks.geometry.function_graph.reference_line_crossing_count import (
     GeometryGraphingCountTask,
     _resolve_axes as _resolve_graphing_axes,
 )
-from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
-from trace.tasks.geometry.similarity.count import (
+from trace.tasks.geometry.graph_paper.angle_value import GeometryMeasurementValueTask
+from trace.tasks.geometry.shape_gallery.congruent_count import (
     GeometrySimilarityCountTask,
     _resolve_axes as _resolve_similarity_axes,
 )
-from trace.tasks.geometry.shared.fixed_query_task import select_geometry_query_id
-from trace.tasks.geometry.transformation.match import (
+from trace.tasks.shared.fixed_query import select_geometry_query_id
+from trace.tasks.geometry.shape_gallery.reflection_match import (
     GeometryTransformationMatchTask,
     _resolve_axes,
 )
@@ -47,8 +47,7 @@ REQUIRED_GEOMETRY_SPLIT_TASKS = {
     "task_geometry__coordinate_plane__translated_point_label",
     "task_geometry__function_graph__extremum_count_local_extremum_count",
     "task_geometry__function_graph__extremum_count_turning_point_count",
-    "task_geometry__angle_relations__algebraic_angle_value_triangle_double_extension_expression",
-    "task_geometry__angle_relations__algebraic_angle_value_triangle_single_extension_expression",
+    "task_geometry__angle_relations__algebraic_angle_value",
     "task_geometry__angle_relations__parallel_supplement_angle",
     "task_geometry__angle_relations__triangle_exterior_angle",
     "task_geometry__shape_gallery__congruent_count",
@@ -81,7 +80,7 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
         and getattr(task_cls, "default_dataset_enabled", False)
     }
 
-    assert len(geometry_tasks) == 192
+    assert len(geometry_tasks) == 191
     assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
     assert _retired_geometry_tasks_from_audit().isdisjoint(geometry_tasks)
 

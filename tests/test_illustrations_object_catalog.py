@@ -5,12 +5,12 @@ from __future__ import annotations
 from trace.tasks.illustrations.shared import (
     construction_site_rendering as construction,
     environment_object_rendering as environment,
-    indoor_room_rendering as indoor,
     library_rendering as library,
     mixed_object_rendering as mixed,
     park_playground_rendering as park,
     transit_terminal_rendering as transit,
 )
+from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
 from trace.tasks.illustrations.shared.object_catalog import (
     catalog_entries,
     entries_with_render_layer,

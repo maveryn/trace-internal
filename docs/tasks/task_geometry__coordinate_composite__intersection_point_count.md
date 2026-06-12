@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `coordinate`
+2. Scene id: `coordinate_composite`
 3. Scene id: `coordinate_composite`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `line_circle_intersection_count`, `circle_circle_intersection_count`, `line_polygon_intersection_count`, `circle_polygon_intersection_count`, or `mixed_object_intersection_count`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is the unor
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/coordinate.yaml`
-- Task module: `trace/tasks/geometry/coordinate/composite_intersections.py`
+- Config: `configs/domains/geometry/coordinate_composite.yaml`
+- Task module: `trace/tasks/geometry/coordinate_composite/intersection_point_count.py`

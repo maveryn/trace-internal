@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `sequence_strip`
-3. Task group: `sequence`
+3. Scene: `sequence`
 4. Task id: `task_icons__sequence_strip__missing_count_value`
 5. Objective: infer how many icons should appear in one missing Scene box so the visible count sequence continues.
 
@@ -48,7 +48,7 @@
 1. Complexity definition/components: sequence length + missing answer + absolute step size.
 2. Determinism/build tests: `tests/test_icons_sequence_missing_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_sequence_missing_count_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`
 
 ## Current Review Status
 Current browser-review sidecars live under

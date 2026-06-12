@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_graph__node_link__largest_chordless_cycle_size`
 5. Objective: return the number of nodes in the largest chordless cycle of one undirected graph.
 

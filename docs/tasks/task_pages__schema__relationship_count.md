@@ -3,7 +3,7 @@
 ## Identity
 - domain: `pages`
 - scene_id: `schema`
-- task_group: `schema`
+- scene_id: `schema`
 
 ## Contract
 Counts all schema relationship lines in the rendered database schema.

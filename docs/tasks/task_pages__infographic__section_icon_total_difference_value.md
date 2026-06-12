@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `infographic`
+2. Scene: `infographic`
 3. Scene id: `infographic`
 4. Task id: `task_pages__infographic__section_icon_total_difference_value`
 5. Objective: Compute the difference between two icon-filtered section totals.

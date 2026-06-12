@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `puzzles`
-2. Task group: `sudoku`
+2. Scene: `sudoku`
 3. Scene id: `sudoku`
 4. Public task id: `task_puzzles__sudoku__marked_cell_value`
 5. Supported `query_id` values: `marked_cell_value`

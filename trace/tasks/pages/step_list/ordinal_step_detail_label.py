@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -26,8 +26,7 @@ from ...shared.prompt_variants import (
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
-from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin, MergedPagesQueryTaskMixin
 from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
@@ -108,14 +107,13 @@ class _RenderedStepList:
     layout_meta: Dict[str, Any]
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "step_list")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "step_list")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="step_list")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="step_list", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="step_list")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="step_list", apply_prob=0.0)
 
 
 def _resolve_named_variant(
@@ -659,7 +657,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "step_list"
+    scene_id = "step_list"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -757,7 +755,7 @@ class PagesStepListOrdinalStepDetailLabelTask:
         json_example, json_example_answer_only = _build_prompt_examples(query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -891,17 +889,6 @@ class PagesStepListOrdinalStepDetailLabelTask:
                 "source_step_id": str(source_step.step_id) if source_step is not None else "",
             },
         }
-        complexity = build_pages_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "order_lookup": float(_REASONING_LOAD_BY_QUERY[str(query_id)]),
-                "visual_scan": normalize_int_with_bounds(
-                    int(step_count),
-                    [min(step_count_support), max(step_count_support)],
-                ),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -909,7 +896,6 @@ class PagesStepListOrdinalStepDetailLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -922,7 +908,7 @@ class PagesStepListNthStepTitleLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__step_list__nth_step_title_label"
     domain = "pages"
-    task_group = "step_list"
+    scene_id = "step_list"
     public_scene_id = PUBLIC_SCENE_ID
     fixed_query_id = "nth_step_title"
     source_task_cls = PagesStepListOrdinalStepDetailLabelTask
@@ -934,7 +920,7 @@ class PagesStepListNthStepDetailLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__step_list__nth_step_detail_label"
     domain = "pages"
-    task_group = "step_list"
+    scene_id = "step_list"
     public_scene_id = PUBLIC_SCENE_ID
     fixed_query_id = "nth_step_detail"
     source_task_cls = PagesStepListOrdinalStepDetailLabelTask
@@ -946,7 +932,7 @@ class PagesStepListStepAfterNamedStepLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__step_list__step_after_named_step_label"
     domain = "pages"
-    task_group = "step_list"
+    scene_id = "step_list"
     public_scene_id = PUBLIC_SCENE_ID
     fixed_query_id = "step_after_named_step"
     source_task_cls = PagesStepListOrdinalStepDetailLabelTask
@@ -958,7 +944,7 @@ class PagesStepListStepForDetailLabelTask(MergedPagesQueryTaskMixin):
 
     task_id = "task_pages__step_list__step_for_detail_label"
     domain = "pages"
-    task_group = "step_list"
+    scene_id = "step_list"
     public_scene_id = PUBLIC_SCENE_ID
     allowed_query_ids = ("step_title_for_detail", "step_number_for_detail")
     source_task_cls = PagesStepListOrdinalStepDetailLabelTask

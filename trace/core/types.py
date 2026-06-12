@@ -44,20 +44,6 @@ class TraceRef:
         return asdict(self)
 
 
-@dataclass(frozen=True)
-class TaskComplexity:
-    """Task-provided complexity score and diagnostic components."""
-
-    complexity_score: float
-    complexity_components: Dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "complexity_score": float(self.complexity_score),
-            "complexity_components": dict(self.complexity_components),
-        }
-
-
 @dataclass
 class TrainInstance:
     """Training-facing dataset ABI record."""
@@ -66,7 +52,6 @@ class TrainInstance:
     instance_id: str
     instance_seed: int
     domain: str
-    task_group: str
     task: str
     scene_id: str
     query_id: str
@@ -75,18 +60,16 @@ class TrainInstance:
     answer_gt: TypedValue
     annotation_gt: TypedValue
     reward_contract: RewardContract
-    task_complexity: TaskComplexity
     trace_ref: TraceRef
     versions: Dict[str, str]
     prompt_variants: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        data = {
             "instance_version": self.instance_version,
             "instance_id": self.instance_id,
             "instance_seed": int(self.instance_seed),
             "domain": self.domain,
-            "task_group": self.task_group,
             "task": self.task,
             "scene_id": self.scene_id,
             "query_id": self.query_id,
@@ -96,10 +79,10 @@ class TrainInstance:
             "answer_gt": self.answer_gt.to_dict(),
             "annotation_gt": self.annotation_gt.to_dict(),
             "reward_contract": self.reward_contract.to_dict(),
-            "task_complexity": self.task_complexity.to_dict(),
             "trace_ref": self.trace_ref.to_dict(),
             "versions": dict(self.versions),
         }
+        return data
 
 
 @dataclass
@@ -150,19 +133,16 @@ class CurriculumIndex:
 
     instance_id: str
     domain: str
-    task_group: str
     task: str
     scene_id: str
     query_id: str
-    task_complexity: TaskComplexity
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        data = {
             "instance_id": self.instance_id,
             "domain": self.domain,
-            "task_group": self.task_group,
             "task": self.task,
             "scene_id": self.scene_id,
             "query_id": self.query_id,
-            "task_complexity": self.task_complexity.to_dict(),
         }
+        return data

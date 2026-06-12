@@ -115,6 +115,6 @@ def test_street_lane_ahead_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "street"
+    assert taxonomy.source_scene_id == "street"
     assert SUPPORTED_QUERY_IDS == ("ahead_along_lane",)
     assert SUPPORTED_TRAVEL_MODES == ("toward_intersection", "away_from_intersection")

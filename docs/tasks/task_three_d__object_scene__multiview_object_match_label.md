@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query id: `same_object_in_second_view`
 - Answer type: `option_letter`
 - Annotation type: role-keyed `keyed_bbox_map`
@@ -24,7 +24,7 @@ Annotation is a `keyed_bbox_map` with:
 Keyed annotation is required because the two witness boxes have distinct source-vs-target roles. The red-box annotation itself is render guidance; the verifier uses finalized object metadata and projected object boxes.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records canonical object ids, answer label, target object id/name/shape, both view cameras, both projection frames, per-view projected object boxes, and the candidate-label map used by the verifier.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records canonical object ids, answer label, target object id/name/shape, both view cameras, both projection frames, per-view projected object boxes, and the candidate-label map used by the verifier.
 
 ## Calibration
 Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance annotation.

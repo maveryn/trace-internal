@@ -15,57 +15,168 @@ generation:
       variant_generation_params:
         grid_color_violation:
           pool_manifest: all_icons.txt
-          color_levels: [0, 1, 2, 3, 4, 5, 6, 7]
-          color_level_names: [red, orange, yellow, green, cyan, blue, purple, magenta]
+          color_levels:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          color_level_names:
+          - red
+          - orange
+          - yellow
+          - green
+          - cyan
+          - blue
+          - purple
+          - magenta
           color_ladder_rgb:
-            - [210, 54, 64]
-            - [224, 120, 28]
-            - [198, 164, 28]
-            - [48, 156, 72]
-            - [22, 160, 178]
-            - [58, 104, 210]
-            - [132, 74, 200]
-            - [204, 70, 156]
-          base_color_level_candidates: [0, 1, 2, 3, 4, 5, 6, 7]
-          row_step_color_candidates: [-2, -1, 0, 1, 2]
-          col_step_color_candidates: [-2, -1, 0, 1, 2]
-          shared_rotation_candidates_degrees: [0, 90, 180, 270]
+          - - 210
+            - 54
+            - 64
+          - - 224
+            - 120
+            - 28
+          - - 198
+            - 164
+            - 28
+          - - 48
+            - 156
+            - 72
+          - - 22
+            - 160
+            - 178
+          - - 58
+            - 104
+            - 210
+          - - 132
+            - 74
+            - 200
+          - - 204
+            - 70
+            - 156
+          base_color_level_candidates:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          row_step_color_candidates:
+          - -2
+          - -1
+          - 0
+          - 1
+          - 2
+          col_step_color_candidates:
+          - -2
+          - -1
+          - 0
+          - 1
+          - 2
+          shared_rotation_candidates_degrees:
+          - 0
+          - 90
+          - 180
+          - 270
         grid_size_violation:
           pool_manifest: all_icons.txt
-          size_levels: [1, 2, 3, 4, 5]
-          base_level_candidates: [1, 2, 3, 4, 5]
-          row_step_candidates: [-1, 0, 1]
-          col_step_candidates: [-1, 0, 1]
+          size_levels:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          base_level_candidates:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          row_step_candidates:
+          - -1
+          - 0
+          - 1
+          col_step_candidates:
+          - -1
+          - 0
+          - 1
           min_violation_level_delta: 2
-          shared_rotation_candidates_degrees: [0, 90, 180, 270]
+          shared_rotation_candidates_degrees:
+          - 0
+          - 90
+          - 180
+          - 270
     task_icons__sequence_strip__rotation_sequence_violation_index:
       sequence_length_min: 10
       sequence_length_max: 10
       answer_index_min: 2
       answer_index_max: 6
       pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees: [0, 90, 180, 270]
-      step_candidates_degrees: [90, 180]
+      rotation_candidates_degrees:
+      - 0
+      - 90
+      - 180
+      - 270
+      step_candidates_degrees:
+      - 90
+      - 180
     task_icons__wallpaper_panels__motif_violation_label:
-      option_count_choices: [6]
+      option_count_choices:
+      - 6
       lattice_rows: 4
       lattice_cols: 4
-      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      wallpaper_group_ids:
+      - p1
+      - p2
+      - pm
+      - pg
+      - cm
+      - pmm
+      - p4
+      - p3
       pool_manifest: non_symmetry.txt
     task_icons__wallpaper_panels__same_pattern_as_reference_label:
-      option_count_choices: [6]
+      option_count_choices:
+      - 6
       lattice_rows: 4
       lattice_cols: 4
-      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      wallpaper_group_ids:
+      - p1
+      - p2
+      - pm
+      - pg
+      - cm
+      - pmm
+      - p4
+      - p3
       pool_manifest: non_symmetry.txt
     task_icons__wallpaper_panels__reference_pattern_match_count:
-      option_count_choices: [6]
-      match_count_choices: [1, 2, 3, 4, 5]
+      option_count_choices:
+      - 6
+      match_count_choices:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
       lattice_rows: 4
       lattice_cols: 4
-      wallpaper_group_ids: [p1, p2, pm, pg, cm, pmm, p4, p3]
+      wallpaper_group_ids:
+      - p1
+      - p2
+      - pm
+      - pg
+      - cm
+      - pmm
+      - p4
+      - p3
       pool_manifest: non_symmetry.txt
-
 rendering:
   shared:
     outer_margin_px: 24
@@ -77,10 +188,10 @@ rendering:
     cell_box_width_max_px: 140
     cell_box_height_min_px: 104
     cell_box_height_max_px: 140
-    scene_max_overlap_fraction: 0.20
+    scene_max_overlap_fraction: 0.2
     scene_placement_max_attempts: 80
     scene_size_shrink_rounds: 6
-    scene_size_shrink_factor: 0.90
+    scene_size_shrink_factor: 0.9
     palette_size_min: 1
     palette_size_max: 1
     color_channel_min: 24
@@ -88,58 +199,140 @@ rendering:
     min_color_distance: 40.0
     color_distance_space: lab
     panel_title_font_size_px: 24
-    background_color_rgb: [247, 248, 251]
+    background_color_rgb:
+    - 247
+    - 248
+    - 251
     background_color_rgb_options:
-      - [247, 248, 251]
-      - [243, 246, 252]
-      - [250, 247, 242]
-      - [244, 249, 246]
-      - [248, 246, 253]
-    panel_fill_rgb: [255, 255, 255]
+    - - 247
+      - 248
+      - 251
+    - - 243
+      - 246
+      - 252
+    - - 250
+      - 247
+      - 242
+    - - 244
+      - 249
+      - 246
+    - - 248
+      - 246
+      - 253
+    panel_fill_rgb:
+    - 255
+    - 255
+    - 255
     panel_fill_rgb_options:
-      - [255, 255, 255]
-      - [253, 254, 255]
-      - [255, 254, 250]
-      - [250, 253, 250]
-    panel_border_rgb: [205, 212, 224]
+    - - 255
+      - 255
+      - 255
+    - - 253
+      - 254
+      - 255
+    - - 255
+      - 254
+      - 250
+    - - 250
+      - 253
+      - 250
+    panel_border_rgb:
+    - 205
+    - 212
+    - 224
     panel_border_rgb_options:
-      - [205, 212, 224]
-      - [198, 209, 222]
-      - [218, 208, 197]
-      - [198, 218, 211]
-    header_text_rgb: [70, 78, 96]
+    - - 205
+      - 212
+      - 224
+    - - 198
+      - 209
+      - 222
+    - - 218
+      - 208
+      - 197
+    - - 198
+      - 218
+      - 211
+    header_text_rgb:
+    - 70
+    - 78
+    - 96
     header_text_rgb_options:
-      - [70, 78, 96]
-      - [63, 84, 112]
-      - [86, 73, 94]
-      - [68, 91, 79]
-    icon_noise_edit_types: [blur, downsample, jpeg, noise]
-    icon_noise_edit_count_range: [0, 2]
+    - - 70
+      - 78
+      - 96
+    - - 63
+      - 84
+      - 112
+    - - 86
+      - 73
+      - 94
+    - - 68
+      - 91
+      - 79
+    icon_noise_edit_types:
+    - blur
+    - downsample
+    - jpeg
+    - noise
+    icon_noise_edit_count_range:
+    - 0
+    - 2
     icon_noise_value_ranges:
       blur:
-        radius: [0.2, 0.6]
+        radius:
+        - 0.2
+        - 0.6
       downsample:
-        scale: [0.85, 0.95]
+        scale:
+        - 0.85
+        - 0.95
       jpeg:
-        quality: [70, 90]
+        quality:
+        - 70
+        - 90
       noise:
-        alpha: [0.03, 0.08]
+        alpha:
+        - 0.03
+        - 0.08
     cell_padding_px: 10
     cell_icon_padding_px: 10
     cell_corner_radius_px: 12
-    cell_border_rgb: [218, 223, 233]
+    cell_border_rgb:
+    - 218
+    - 223
+    - 233
     cell_border_rgb_options:
-      - [218, 223, 233]
-      - [208, 218, 232]
-      - [226, 216, 205]
-      - [207, 225, 217]
+    - - 218
+      - 223
+      - 233
+    - - 208
+      - 218
+      - 232
+    - - 226
+      - 216
+      - 205
+    - - 207
+      - 225
+      - 217
     cell_label_font_size_px: 22
-    cell_label_color_rgb: [52, 60, 77]
+    cell_label_color_rgb:
+    - 52
+    - 60
+    - 77
     cell_label_color_rgb_options:
-      - [52, 60, 77]
-      - [48, 68, 93]
-      - [77, 61, 81]
-      - [53, 77, 67]
+    - - 52
+      - 60
+      - 77
+    - - 48
+      - 68
+      - 93
+    - - 77
+      - 61
+      - 81
+    - - 53
+      - 77
+      - 67
     scene_content_side_padding_px: 10
     scene_content_bottom_padding_px: 10
     scene_content_top_offset_px: 40
@@ -155,7 +348,9 @@ rendering:
           cell_box_height_max_px: 152
           palette_size_min: 8
           palette_size_max: 8
-          icon_noise_edit_count_range: [0, 0]
+          icon_noise_edit_count_range:
+          - 0
+          - 0
         grid_size_violation:
           scene_icon_size_min_px: 34
           scene_icon_size_max_px: 82
@@ -164,7 +359,9 @@ rendering:
           cell_box_height_min_px: 116
           cell_box_height_max_px: 152
           size_level_gap_px: 10
-          icon_noise_edit_count_range: [0, 0]
+          icon_noise_edit_count_range:
+          - 0
+          - 0
     task_icons__sequence_strip__rotation_sequence_violation_index:
       scene_icon_size_min_px: 72
       scene_icon_size_max_px: 92
@@ -172,7 +369,9 @@ rendering:
       cell_box_width_max_px: 132
       cell_box_height_min_px: 112
       cell_box_height_max_px: 144
-      icon_noise_edit_count_range: [0, 0]
+      icon_noise_edit_count_range:
+      - 0
+      - 0
     task_icons__wallpaper_panels__motif_violation_label:
       canvas_width: 1104
       canvas_height: 640
@@ -186,8 +385,15 @@ rendering:
       cell_label_font_size_px: 22
       palette_size_min: 1
       palette_size_max: 1
-      icon_noise_edit_count_range: [0, 0]
-      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_noise_edit_count_range:
+      - 0
+      - 0
+      icon_canvas_treatments:
+      - bare_canvas
+      - plain_sheet
+      - matte_sheet
+      - thin_frame
+      - soft_panel
       icon_canvas_treatment_weights:
         bare_canvas: 1.0
         plain_sheet: 1.0
@@ -208,8 +414,15 @@ rendering:
       cell_label_font_size_px: 22
       palette_size_min: 1
       palette_size_max: 1
-      icon_noise_edit_count_range: [0, 0]
-      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_noise_edit_count_range:
+      - 0
+      - 0
+      icon_canvas_treatments:
+      - bare_canvas
+      - plain_sheet
+      - matte_sheet
+      - thin_frame
+      - soft_panel
       icon_canvas_treatment_weights:
         bare_canvas: 1.0
         plain_sheet: 1.0
@@ -230,15 +443,21 @@ rendering:
       cell_label_font_size_px: 22
       palette_size_min: 1
       palette_size_max: 1
-      icon_noise_edit_count_range: [0, 0]
-      icon_canvas_treatments: [bare_canvas, plain_sheet, matte_sheet, thin_frame, soft_panel]
+      icon_noise_edit_count_range:
+      - 0
+      - 0
+      icon_canvas_treatments:
+      - bare_canvas
+      - plain_sheet
+      - matte_sheet
+      - thin_frame
+      - soft_panel
       icon_canvas_treatment_weights:
         bare_canvas: 1.0
         plain_sheet: 1.0
         matte_sheet: 1.0
         thin_frame: 1.0
         soft_panel: 1.0
-
 prompt:
   shared:
     bundle_id: icons_pattern_v0
@@ -248,45 +467,49 @@ prompt:
     task_icons__pattern_grid__attribute_pattern_violation_index:
       object_description: a numbered 3 by 3 grid with one icon per box
       question_text: Which numbered box breaks the visible pattern?
-      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating grid box
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0,
+        y0, x1, y1] box in image pixel coordinates for the violating grid box
       answer_hint: set "answer" to the violating box index as an integer
       json_example: '{"annotation":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
     task_icons__sequence_strip__rotation_sequence_violation_index:
       object_description: a horizontal row of numbered boxes with one icon per box
       question_text: Which numbered box breaks the rotation sequence?
-      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating numbered box
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0,
+        y0, x1, y1] box in image pixel coordinates for the violating numbered box
       answer_hint: set "answer" to the violating box index as an integer
       json_example: '{"annotation":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
     task_icons__wallpaper_panels__motif_violation_label:
       scene_key: wallpaper_panel_violation_scene
       object_description: six labeled wallpaper panels filled with repeated icon motifs
-      question_text: Which labeled wallpaper panel uses a different wallpaper pattern from the others?
-      annotation_hint: set "annotation" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the selected wallpaper panel
+      question_text: Which labeled wallpaper panel uses a different wallpaper pattern
+        from the others?
+      annotation_hint: set "annotation" to a JSON array containing exactly one [x0,
+        y0, x1, y1] box in image pixel coordinates for the selected wallpaper panel
       answer_hint: set "answer" to the odd panel letter
       json_example: '{"annotation":[[420,220,462,262]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_icons__wallpaper_panels__same_pattern_as_reference_label:
       scene_key: wallpaper_reference_match_scene
-      object_description: one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs
-      question_text: Which labeled panel has the same wallpaper pattern as the Reference panel?
-      annotation_hint: set "annotation" to a JSON object with keys "reference_panel" and "selected_panel", each mapped to one [x0, y0, x1, y1] box in image pixel coordinates
+      object_description: one Reference wallpaper panel and six labeled wallpaper
+        panels filled with repeated icon motifs
+      question_text: Which labeled panel has the same wallpaper pattern as the Reference
+        panel?
+      annotation_hint: set "annotation" to a JSON object with keys "reference_panel"
+        and "selected_panel", each mapped to one [x0, y0, x1, y1] box in image pixel
+        coordinates
       answer_hint: set "answer" to the matching panel letter
       json_example: '{"annotation":{"reference_panel":[36,36,320,604],"selected_panel":[420,220,620,400]},"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_icons__wallpaper_panels__reference_pattern_match_count:
       scene_key: wallpaper_reference_match_scene
-      object_description: one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs
-      question_text: How many labeled panels use the same wallpaper arrangement as the Reference panel?
-      annotation_hint: set "annotation" to a JSON object with lists of [x0, y0, x1, y1] pixel panel boxes under "reference_panel" and "matching_candidate_panels"
+      object_description: one Reference wallpaper panel and six labeled wallpaper
+        panels filled with repeated icon motifs
+      question_text: How many labeled panels use the same wallpaper arrangement as
+        the Reference panel?
+      annotation_hint: set "annotation" to a JSON object with lists of [x0, y0, x1,
+        y1] pixel panel boxes under "reference_panel" and "matching_candidate_panels"
       answer_hint: set "answer" to the number of matching labeled panels as an integer
       json_example: '{"annotation":{"reference_panel":[[36,36,320,604]],"matching_candidate_panels":[[420,220,620,400],[650,220,850,400]]},"answer":2}'
       json_example_answer_only: '{"answer":2}'
-complexity:
-  shared:
-    criteria_weights:
-      rule_inference: 0.45
-      visual_scan: 0.25
-      ambiguity: 0.20
-      clutter: 0.10

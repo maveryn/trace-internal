@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `switch_circuit`
-- Implementation task group: `circuits`
+- Implementation scene: `circuits`
 - Implementation source: `trace/tasks/physics/circuits/switch_circuit.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__switch_circuit__lit_bulb_count` -> `task_physics__switch_circuit__lit_bulb_count`

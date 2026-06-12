@@ -6,10 +6,10 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.shared.lane_runner_common import LaneRunnerCoin, path_coin_collection
-from trace.tasks.games.shared.lane_runner_common import LaneRunnerHazard, path_hits_hazard, path_option_entity_id
+from trace.tasks.games.lane_runner.shared.common import LaneRunnerCoin, path_coin_collection
+from trace.tasks.games.lane_runner.shared.common import LaneRunnerHazard, path_hits_hazard, path_option_entity_id
 from trace.tasks.registry import create_task, list_default_task_ids
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -19,7 +19,7 @@ SAFE_PATH_TASK_ID = "task_games__lane_runner__safe_path_label"
 
 
 def test_games_lane_runner_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "lane_runner")
+    cfg = get_scene_defaults("games", "lane_runner")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="games_lane_runner_path_coin_base",
@@ -74,14 +74,14 @@ def test_games_lane_runner_taxonomy_and_default_registry() -> None:
     assert path_taxonomy.domain == "games"
     assert path_taxonomy.scene_id == "lane_runner"
     assert path_taxonomy.source_domain == "games"
-    assert path_taxonomy.source_task_group == "lane_runner"
+    assert path_taxonomy.source_scene_id == "lane_runner"
     assert PATH_COIN_TASK_ID in default_ids
 
     safe_taxonomy = resolve_task_taxonomy(SAFE_PATH_TASK_ID)
     assert safe_taxonomy.domain == "games"
     assert safe_taxonomy.scene_id == "lane_runner"
     assert safe_taxonomy.source_domain == "games"
-    assert safe_taxonomy.source_task_group == "lane_runner"
+    assert safe_taxonomy.source_scene_id == "lane_runner"
     assert SAFE_PATH_TASK_ID in default_ids
 
 

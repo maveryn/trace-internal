@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
+from trace.tasks.geometry.graph_paper.angle_value import GeometryAngleMeasure2DTask
 from trace.tasks.geometry.shared.graph_panel_layout import resolve_graph_panel_layout
 
 

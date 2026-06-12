@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `circuit_state_change`
-- Implementation task group: `circuits`
+- Implementation scene: `circuits`
 - Implementation source: `trace/tasks/physics/circuits/state_change_brightness.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__circuit_state_change__bulb_brightness_change_label` -> `task_physics__circuit_state_change__bulb_brightness_change_label`

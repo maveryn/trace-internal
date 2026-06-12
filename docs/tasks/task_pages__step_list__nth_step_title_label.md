@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `step_list`
+2. Scene: `step_list`
 3. Scene id: `step_list`
 4. Task id: `task_pages__step_list__nth_step_title_label`
 5. Objective: Return the title of an ordinally referenced step card.

@@ -7,14 +7,14 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.circle_centerline_overlap import (
+from trace.tasks.geometry.circle_centerline_overlap.segment_length_value import (
     BOUNDARY_PAIRS,
     BOUNDARY_TARGET_ROLES,
+    GeometryCircleCenterlineOverlapSegmentLengthValueTask,
+    TASK_ID,
     QUERY_ID_BOUNDARY_SEGMENT,
     QUERY_ID_CENTER_DISTANCE,
     SCENE_ID,
-    TASK_ID,
-    GeometryCircleCenterlineOverlapSegmentLengthValueTask,
     _CASES,
     _segment_length,
 )
@@ -43,7 +43,7 @@ def test_circle_centerline_overlap_queries_emit_keyed_point_annotation(query_id:
     assert out.annotation_gt.type == "keyed_point_map"
     assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_centerline_overlap_v0"
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_centerline_overlap_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
 
@@ -143,9 +143,13 @@ def test_circle_centerline_overlap_rejects_invalid_params() -> None:
     with pytest.raises(ValueError):
         task.generate(1, params={"label_mode": "circumference"}, max_attempts=1)
     with pytest.raises(ValueError):
-        task.generate(1, params={"boundary_pair": "AC"}, max_attempts=1)
+        task.generate(1, params={"query_id": QUERY_ID_BOUNDARY_SEGMENT, "boundary_pair": "AC"}, max_attempts=1)
     with pytest.raises(ValueError):
-        task.generate(1, params={"boundary_target_role": "whole_diameter"}, max_attempts=1)
+        task.generate(
+            1,
+            params={"query_id": QUERY_ID_BOUNDARY_SEGMENT, "boundary_target_role": "whole_diameter"},
+            max_attempts=1,
+        )
     with pytest.raises(ValueError):
         task.generate(1, params={"overlap_case": (4, 13, 9, 3, 2)}, max_attempts=1)
 

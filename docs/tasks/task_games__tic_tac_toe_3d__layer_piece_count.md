@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tic_tac_toe_3d`
+2. Scene: `tic_tac_toe_3d`
 3. Scene id: `tic_tac_toe_3d`
 4. Public task id: `task_games__tic_tac_toe_3d__layer_piece_count`
 5. Supported `query_id` values: `o_piece_count_in_layer`, `x_piece_count_in_layer`

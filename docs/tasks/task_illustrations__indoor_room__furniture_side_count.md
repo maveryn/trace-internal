@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `indoor_room`
-- Implementation task group: `relation`
-- Implementation source: `trace/tasks/illustrations/relation/furniture_side_count.py`
+- Implementation scene package: `indoor_room`
+- Implementation source: `trace/tasks/illustrations/indoor_room/furniture_side_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__indoor_room__furniture_side_count` -> `task_illustrations__indoor_room__furniture_side_count`
 - Status: `pending_v0_manual_review_and_solve_rate`

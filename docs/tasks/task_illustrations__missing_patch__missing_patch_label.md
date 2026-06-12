@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `missing_patch`
-- Implementation task group: `visual`
-- Implementation source: `trace/tasks/illustrations/visual/missing_patch_label.py`
+- Implementation scene package: `missing_patch`
+- Implementation source: `trace/tasks/illustrations/missing_patch/missing_patch_label.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__missing_patch__missing_patch_label` -> `task_illustrations__missing_patch__missing_patch_label`
 - Status: `pending_v0_manual_review_and_solve_rate`

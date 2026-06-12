@@ -13,6 +13,6 @@ Public taxonomy: `games -> ludo_board -> task_games__ludo_board__winning_roll_va
 
 ## Generator
 
-- Implementation: `trace/tasks/games/ludo_board/board_tasks.py`
+- Implementation: `trace/tasks/games/ludo_board/winning_roll_value.py`
 - Config: `configs/domains/games/ludo_board.yaml`
-- Prompt bundle: `prompts/games/ludo_board/games_ludo_board_v0.json`
+- Prompt bundle: `prompts/games/ludo_board/games_ludo_board_v1.json`

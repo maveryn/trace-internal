@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.space_shooter.playfield_tasks import (
+from trace.tasks.games.space_shooter.clear_shot_count import (
     GamesSpaceShooterClearShotCountTask,
     GamesSpaceShooterClearShotScoreValueTask,
     GamesSpaceShooterHighestThreatLabelTask,
@@ -245,4 +245,4 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 5
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "space_shooter" for row in rows)
+    assert all(row.get("scene_id") == "space_shooter" for row in rows)

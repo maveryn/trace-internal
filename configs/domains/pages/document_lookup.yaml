@@ -3,50 +3,28 @@ generation:
     balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
-    task_pages__comparison_panel__side_attribute_value_label:
-      side_count_support: [2, 3]
-      attribute_count_support: [4, 5, 6]
-      query_id_weights:
-        side_attribute_value_label: 1.0
-      scene_variant_weights:
-        matrix_sheet: 1.0
-        feature_bands: 1.0
-    task_pages__category_grid__category_slot_item_label:
-      category_count_support: [3, 4]
-      subcategory_count_support: [2, 3]
-      item_count_support: [2, 3, 4, 5, 6]
-      query_id_weights:
-        category_slot_item_label: 1.0
-      scene_variant_weights:
-        card_grid: 1.0
-        column_groups: 1.0
-        compact_index: 1.0
-    task_pages__category_grid__category_item_count:
-      category_count_support: [3, 4]
-      subcategory_count_support: [2, 3]
-      item_count_support: [2, 3, 4, 5, 6]
-      query_id_weights:
-        category_item_count: 1.0
-      scene_variant_weights:
-        card_grid: 1.0
-        column_groups: 1.0
-        compact_index: 1.0
     task_pages__profile_card_grid__profile_for_field_value:
-      card_count_support: [6, 9]
+      card_count_support:
+      - 6
+      - 9
       query_id_weights:
         profile_for_field_value: 1.0
       scene_variant_weights:
         directory_grid: 1.0
         compact_cards: 1.0
     task_pages__profile_card_grid__value_for_named_profile_field:
-      card_count_support: [6, 9]
+      card_count_support:
+      - 6
+      - 9
       query_id_weights:
         value_for_named_profile_field: 1.0
       scene_variant_weights:
         directory_grid: 1.0
         compact_cards: 1.0
     task_pages__profile_card_grid__field_extremum_profile_label:
-      card_count_support: [6, 9]
+      card_count_support:
+      - 6
+      - 9
       query_id_weights:
         highest_field_profile_label: 1.0
         lowest_field_profile_label: 1.0
@@ -54,8 +32,12 @@ generation:
         directory_grid: 1.0
         compact_cards: 1.0
     task_pages__profile_card_grid__field_ranked_profile_label:
-      card_count_support: [6, 9]
-      rank_position_support: [2, 3]
+      card_count_support:
+      - 6
+      - 9
+      rank_position_support:
+      - 2
+      - 3
       query_id_weights:
         nth_highest_field_profile_label: 1.0
         nth_lowest_field_profile_label: 1.0
@@ -63,8 +45,13 @@ generation:
         directory_grid: 1.0
         compact_cards: 1.0
     task_pages__ranked_list__ordinal_entry_label:
-      section_count_support: [2, 3]
-      item_count_support: [5, 6, 7]
+      section_count_support:
+      - 2
+      - 3
+      item_count_support:
+      - 5
+      - 6
+      - 7
       balanced_ordinal_reference_sampling: true
       balanced_from_end_reference_sampling: true
       query_id_weights:
@@ -82,7 +69,6 @@ generation:
         last: 1.0
         second_last: 1.0
         third_last: 1.0
-
 rendering:
   shared:
     canvas_width: 1120
@@ -98,85 +84,73 @@ rendering:
     label_font_size_px: 15
     value_font_size_px: 17
   task_overrides:
-    task_pages__category_grid__category_slot_item_label:
-      canvas_height: 900
-      category_title_font_size_px: 21
-      subcategory_title_font_size_px: 15
-      item_font_size_px: 14
-    task_pages__category_grid__category_item_count:
-      canvas_height: 900
-      category_title_font_size_px: 21
-      subcategory_title_font_size_px: 15
-      item_font_size_px: 14
     task_pages__ranked_list__ordinal_entry_label:
       canvas_width: 1000
       canvas_height: 850
-
-complexity:
-  shared:
-    criteria_weights:
-      lookup_reasoning: 0.45
-      visual_scan: 0.35
-      layout_load: 0.20
-
 prompt:
   shared:
     bundle_id: pages_document_lookup_v0
     answer_hint: set "answer" to the exact visible text requested by the question
   task_overrides:
-    task_pages__comparison_panel__side_attribute_value_label:
-      scene_key: comparison_panel
-      task_key: comparison_panel_lookup_query
-      object_description: a side-by-side comparison panel with option headers, shared attribute labels, and visible value cells
-      annotation_hint: set "annotation" to an object mapping side_header, attribute_label, and value_cell to [x0,y0,x1,y1] pixel bounding boxes for the requested lookup
-    task_pages__category_grid__category_slot_item_label:
-      scene_key: category_grid
-      task_key: category_grid_lookup_query
-      object_description: a category grid page with category headers, subcategory headers, and short item rows
-      annotation_hint: set "annotation" to an object mapping category_header, subcategory_header, and target_item to [x0,y0,x1,y1] pixel bounding boxes for the requested item
-      answer_hint: set "answer" to the exact visible item label requested by the question
-    task_pages__category_grid__category_item_count:
-      scene_key: category_grid
-      task_key: category_grid_lookup_query
-      object_description: a category grid page with category headers, subcategory headers, and short item rows
-      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted item rows
-      answer_hint: set "answer" to the integer count requested by the question
     task_pages__profile_card_grid__profile_for_field_value:
       scene_key: profile_card_grid
       task_key: profile_attribute_lookup_query
-      object_description: a grid of profile cards, each with a visible profile name and labeled fields
-      annotation_hint: set "annotation" to an object mapping profile_name, field_label, and field_value to [x0,y0,x1,y1] pixel bounding boxes for the matched card row
+      object_description: a grid of profile cards, each with a visible profile name
+        and labeled fields
+      annotation_hint: set "annotation" to an object mapping profile_name, field_label,
+        and field_value to [x0,y0,x1,y1] pixel bounding boxes for the matched card
+        row
     task_pages__profile_card_grid__value_for_named_profile_field:
       scene_key: profile_card_grid
       task_key: profile_attribute_lookup_query
-      object_description: a grid of profile cards, each with a visible profile name and labeled fields
-      annotation_hint: set "annotation" to an object mapping profile_name, field_label, and field_value to [x0,y0,x1,y1] pixel bounding boxes for the matched card row
+      object_description: a grid of profile cards, each with a visible profile name
+        and labeled fields
+      annotation_hint: set "annotation" to an object mapping profile_name, field_label,
+        and field_value to [x0,y0,x1,y1] pixel bounding boxes for the matched card
+        row
     task_pages__profile_card_grid__field_extremum_profile_label:
       scene_key: profile_card_grid
       task_key: profile_attribute_lookup_query
-      object_description: a grid of profile cards, each with a visible profile name and labeled numeric fields
-      annotation_hint: set "annotation" to an object mapping target_profile, field_label, and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected profile and numeric field row
+      object_description: a grid of profile cards, each with a visible profile name
+        and labeled numeric fields
+      annotation_hint: set "annotation" to an object mapping target_profile, field_label,
+        and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected profile
+        and numeric field row
     task_pages__profile_card_grid__field_ranked_profile_label:
       scene_key: profile_card_grid
       task_key: profile_attribute_lookup_query
-      object_description: a grid of profile cards, each with a visible profile name and labeled numeric fields
-      annotation_hint: set "annotation" to an object mapping target_profile, field_label, and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected profile and numeric field row
+      object_description: a grid of profile cards, each with a visible profile name
+        and labeled numeric fields
+      annotation_hint: set "annotation" to an object mapping target_profile, field_label,
+        and target_value to [x0,y0,x1,y1] pixel bounding boxes for the selected profile
+        and numeric field row
     task_pages__ranked_list__ordinal_entry_label:
       scene_key: ranked_list
       task_key: ranked_list_entry_query
       object_description: grouped numbered lists with short visible item labels
-      annotation_hint: set "annotation" to an object mapping section_title and target_item to [x0,y0,x1,y1] pixel bounding boxes; include source_item for following-entry questions
-
+      annotation_hint: set "annotation" to an object mapping section_title and target_item
+        to [x0,y0,x1,y1] pixel bounding boxes; include source_item for following-entry
+        questions
 visual:
   noise:
     apply_prob: 0.4
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.05, 0.18]
+        radius:
+        - 0.05
+        - 0.18
       downsample:
-        scale: [0.96, 0.99]
+        scale:
+        - 0.96
+        - 0.99
       jpeg:
-        quality: [90.0, 97.0]
+        quality:
+        - 90.0
+        - 97.0
       noise:
-        alpha: [0.004, 0.012]
+        alpha:
+        - 0.004
+        - 0.012

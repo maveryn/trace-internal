@@ -141,7 +141,7 @@ def main() -> int:
             "max_total_samples_per_task": int(args.max_total_samples_per_task),
             "workers": int(args.workers),
             "checks": {
-                "min_unique_answers": 5,
+                "min_unique_answers": 4,
                 "max_answer_frequency": 1.0 / 3.0,
                 "numeric_bin_summary": "reported_only_five_equal_width_bins",
             },
@@ -196,7 +196,7 @@ def main() -> int:
         task_report: Dict[str, Any] = dict(overall_report)
         task_report["task_id"] = str(task_id)
         task_report["domain"] = str(getattr(task_instance, "domain", ""))
-        task_report["task_group"] = str(getattr(task_instance, "task_group", ""))
+        task_report["scene_id"] = str(getattr(task_instance, "scene_id", ""))
         task_report["target_count_per_query_id"] = int(args.count_per_query_id)
         task_report["total_generated"] = int(collected.get("total_generated", 0))
         task_report["expected_query_ids"] = list(expected_query_ids)

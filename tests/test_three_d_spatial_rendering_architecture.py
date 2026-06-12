@@ -4,22 +4,31 @@ import ast
 from pathlib import Path
 
 
-SPATIAL_TASK_FILES = (
-    Path("trace/tasks/three_d/spatial/surface_fixture_count.py"),
-    Path("trace/tasks/three_d/spatial/marked_point_common.py"),
-    Path("trace/tasks/three_d/spatial/marked_point_depth.py"),
-    Path("trace/tasks/three_d/spatial/marked_point_vertical_relation.py"),
-    Path("trace/tasks/three_d/spatial/multiview_object_match.py"),
-    Path("trace/tasks/three_d/spatial/landmark_correspondence.py"),
-    Path("trace/tasks/three_d/spatial/camera_distance.py"),
+OBJECT_SCENE_TASK_FILES = (
+    Path("trace/tasks/three_d/object_scene/marked_point_depth_extremum_label.py"),
+    Path("trace/tasks/three_d/object_scene/marked_point_vertical_relation_label.py"),
+    Path("trace/tasks/three_d/object_scene/multiview_object_match_label.py"),
+    Path("trace/tasks/three_d/object_scene/landmark_correspondence_label.py"),
+    Path("trace/tasks/three_d/object_scene/camera_distance_extremum_label.py"),
+    Path("trace/tasks/three_d/object_scene/shared/marked_point_common.py"),
+)
+
+SURFACE_FIXTURE_TASK_FILES = (
+    Path("trace/tasks/three_d/surface_fixture/repeated_element_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/colored_element_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/state_element_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/scoped_colored_element_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/empty_or_missing_cell_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/adjacent_to_reference_count.py"),
+    Path("trace/tasks/three_d/surface_fixture/shared/task_base.py"),
 )
 
 
-SPATIAL_RENDERING_FILES = (
-    Path("trace/tasks/three_d/spatial/surface_fixture_rendering.py"),
-    Path("trace/tasks/three_d/spatial/marked_point_rendering.py"),
-    Path("trace/tasks/three_d/spatial/multiview_rendering.py"),
-    Path("trace/tasks/three_d/spatial/landmark_rendering.py"),
+OBJECT_SCENE_RENDERING_FILES = (
+    Path("trace/tasks/three_d/object_scene/shared/marked_point_rendering.py"),
+    Path("trace/tasks/three_d/object_scene/shared/multiview_rendering.py"),
+    Path("trace/tasks/three_d/object_scene/shared/landmark_rendering.py"),
+    Path("trace/tasks/three_d/surface_fixture/shared/rendering.py"),
 )
 
 
@@ -43,18 +52,18 @@ def test_spatial_task_modules_do_not_own_pil_rendering() -> None:
         "def _draw_",
         "draw.",
     )
-    for path in SPATIAL_TASK_FILES:
+    for path in (*OBJECT_SCENE_TASK_FILES, *SURFACE_FIXTURE_TASK_FILES):
         source = path.read_text()
         assert all(token not in source for token in forbidden_tokens), str(path)
 
 
 def test_spatial_task_modules_do_not_reexport_draw_helpers() -> None:
-    for path in SPATIAL_TASK_FILES:
+    for path in (*OBJECT_SCENE_TASK_FILES, *SURFACE_FIXTURE_TASK_FILES):
         tree = ast.parse(path.read_text(), filename=str(path))
         imported = _imported_names(tree)
         assert not any(name.startswith("_draw_") for name in imported), str(path)
 
 
 def test_spatial_rendering_helpers_are_scene_local_modules() -> None:
-    for path in SPATIAL_RENDERING_FILES:
+    for path in OBJECT_SCENE_RENDERING_FILES:
         assert path.exists(), str(path)

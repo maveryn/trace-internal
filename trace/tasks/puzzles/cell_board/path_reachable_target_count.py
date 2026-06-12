@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
@@ -31,12 +31,6 @@ from trace.tasks.shared.prompt_variants import (
 )
 from .shared.board_size_sampling import resolve_square_board_dimensions
 from .shared.grid_graph import cell_id, coord_adjacency_to_cell_ids, open_grid_adjacency
-from .shared.complexity import (
-    build_tile_complexity,
-    normalize_float_with_bounds,
-    normalize_int_with_bounds,
-    resolve_tile_complexity_weights,
-)
 from .shared.reachability_board import sample_reachability_board
 from .shared.rectangular_board import (
     RectangularTileSpec,
@@ -88,17 +82,13 @@ class _TaskDefaults:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_path")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_path")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_target_reachability_count_internal",
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="path")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="path", apply_prob=0.0)
-_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="cell_board_target_reachability_count_internal",
-)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="path")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="path", apply_prob=0.0)
 _SUPPORTED_QUERY_IDS = ("reachable_target_count", "unreachable_target_count")
 
 
@@ -155,7 +145,7 @@ class TileReachableTargetCountTask:
 
     task_id = "cell_board_target_reachability_count_internal"
     domain = "puzzles"
-    task_group = "cell_board_path"
+    scene_id = "cell_board_path"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -445,7 +435,7 @@ class TileReachableTargetCountTask:
             )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_task_key),
@@ -629,38 +619,6 @@ class TileReachableTargetCountTask:
             int(effective_target_reachable_target_count_max) + 1,
             int(effective_target_unreachable_target_count_max) + 1,
         )
-        complexity = build_tile_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": (
-                    0.55
-                    * normalize_float_with_bounds(
-                        float(realized_obstacle_fraction),
-                        (float(obstacle_prob_min), float(obstacle_prob_max)),
-                    )
-                    + 0.45
-                    * normalize_int_with_bounds(
-                        int(total_target_count),
-                        (2, int(max_total_target_count)),
-                    )
-                ),
-                "reasoning_load": (
-                    0.65
-                    * normalize_int_with_bounds(
-                        int(answer_value),
-                        (
-                            int(target_count_min),
-                            int(target_count_max),
-                        ),
-                    )
-                    + 0.35
-                    * normalize_float_with_bounds(
-                        1.0 - float(reachable_fraction),
-                        (1.0 - float(reachable_fraction_max), 1.0 - float(reachable_fraction_min)),
-                    )
-                ),
-            },
-        )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -672,7 +630,6 @@ class TileReachableTargetCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

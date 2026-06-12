@@ -39,7 +39,12 @@ generation:
       balanced_target_condition_sampling: true
       balanced_option_letter_sampling: true
       balanced_target_answer_sampling: true
-      path_difference_step_support: [1, 2, 3, 4, 5]
+      path_difference_step_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
     physics_waves_waveform_panel_family:
       scene_variant_weights:
         clean_stack: 1.0
@@ -73,7 +78,6 @@ generation:
       balanced_query_id_sampling: true
       balanced_waveform_family_sampling: true
       balanced_target_answer_sampling: true
-
 rendering:
   task_overrides:
     physics_waves_interference_tank_family:
@@ -141,28 +145,6 @@ rendering:
       waveform_line_width_px: 4
       spectrum_line_width_px: 4
       grid_line_width_px: 1
-
-complexity:
-  task_overrides:
-    physics_waves_interference_tank_family:
-      criteria_weights:
-        visual_scan: 0.30
-        wave_reasoning: 0.44
-        ambiguity: 0.14
-        output_burden: 0.12
-    physics_waves_waveform_panel_family:
-      criteria_weights:
-        visual_scan: 0.34
-        wave_reasoning: 0.42
-        ambiguity: 0.14
-        output_burden: 0.10
-    physics_waves_signal_transform_family:
-      criteria_weights:
-        visual_scan: 0.34
-        transform_reasoning: 0.42
-        ambiguity: 0.14
-        output_burden: 0.10
-
 prompt:
   shared:
     bundle_id: physics_waves_v0
@@ -170,29 +152,60 @@ prompt:
     physics_waves_interference_tank_family:
       scene_key: wave_interference_tank
       task_key: wave_interference_tank_query
-      object_description_clean_tank: a two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points or a highlighted point P
-      object_description_grid_tank: a gridded two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points or a highlighted point P
-      object_description_lab_sheet: a lab-sheet style two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points or a highlighted point P
-      object_description_clean_tank_interference_point_choice: a two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points A-E
-      object_description_grid_tank_interference_point_choice: a gridded two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points A-E
-      object_description_lab_sheet_interference_point_choice: a lab-sheet style two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, and candidate points A-E
-      object_description_clean_tank_path_difference_value: a two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
-      object_description_grid_tank_path_difference_value: a gridded two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
-      object_description_lab_sheet_path_difference_value: a lab-sheet style two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
-      annotation_hint_interference_point_choice: set "annotation" to an array containing one pixel point [x,y] at the center of the labeled candidate point matching the requested interference condition
-      annotation_hint_path_difference_value: set "annotation" to an object mapping S1P and S2P to [x0, y0, x1, y1] pixel boxes around the corresponding labeled dashed source-to-P path guide
-      answer_hint_interference_point_choice: set "answer" to the option letter of the candidate point
-      answer_hint_path_difference_value: set "answer" to the integer absolute path difference counted in lambda/2 steps
+      object_description_clean_tank: a two-source ripple-tank interference diagram
+        with circular crest and trough wavefronts, source labels, and candidate points
+        or a highlighted point P
+      object_description_grid_tank: a gridded two-source ripple-tank interference
+        diagram with circular crest and trough wavefronts, source labels, and candidate
+        points or a highlighted point P
+      object_description_lab_sheet: a lab-sheet style two-source ripple-tank interference
+        diagram with circular crest and trough wavefronts, source labels, and candidate
+        points or a highlighted point P
+      object_description_clean_tank_interference_point_choice: a two-source ripple-tank
+        interference diagram with circular crest and trough wavefronts, source labels,
+        and candidate points A-E
+      object_description_grid_tank_interference_point_choice: a gridded two-source
+        ripple-tank interference diagram with circular crest and trough wavefronts,
+        source labels, and candidate points A-E
+      object_description_lab_sheet_interference_point_choice: a lab-sheet style two-source
+        ripple-tank interference diagram with circular crest and trough wavefronts,
+        source labels, and candidate points A-E
+      object_description_clean_tank_path_difference_value: a two-source ripple-tank
+        interference diagram with circular crest and trough wavefronts, source labels,
+        point P, and labeled dashed source-to-P path guides
+      object_description_grid_tank_path_difference_value: a gridded two-source ripple-tank
+        interference diagram with circular crest and trough wavefronts, source labels,
+        point P, and labeled dashed source-to-P path guides
+      object_description_lab_sheet_path_difference_value: a lab-sheet style two-source
+        ripple-tank interference diagram with circular crest and trough wavefronts,
+        source labels, point P, and labeled dashed source-to-P path guides
+      annotation_hint_interference_point_choice: set "annotation" to an array containing
+        one pixel point [x,y] at the center of the labeled candidate point matching
+        the requested interference condition
+      annotation_hint_path_difference_value: set "annotation" to an object mapping
+        S1P and S2P to [x0, y0, x1, y1] pixel boxes around the corresponding labeled
+        dashed source-to-P path guide
+      answer_hint_interference_point_choice: set "answer" to the option letter of
+        the candidate point
+      answer_hint_path_difference_value: set "answer" to the integer absolute path
+        difference counted in lambda/2 steps
     physics_waves_waveform_panel_family:
       scene_key: waveform_panel_diagram
       task_key: waveform_property_extremum_query
-      object_description: stacked labeled sinusoidal waveform panels on a shared horizontal scale with visible midlines and panel labels
-      annotation_hint_highest_amplitude_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
-      annotation_hint_lowest_amplitude_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
-      annotation_hint_highest_frequency_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
-      annotation_hint_lowest_frequency_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
-      annotation_hint_longest_wavelength_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
-      annotation_hint_shortest_wavelength_label: set "annotation" to an array containing one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      object_description: stacked labeled sinusoidal waveform panels on a shared horizontal
+        scale with visible midlines and panel labels
+      annotation_hint_highest_amplitude_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      annotation_hint_lowest_amplitude_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      annotation_hint_highest_frequency_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      annotation_hint_lowest_frequency_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      annotation_hint_longest_wavelength_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
+      annotation_hint_shortest_wavelength_label: set "annotation" to an array containing
+        one pixel bounding box [x0,y0,x1,y1] around the selected waveform panel
       answer_hint_highest_amplitude_label: set "answer" to the selected panel letter
       answer_hint_lowest_amplitude_label: set "answer" to the selected panel letter
       answer_hint_highest_frequency_label: set "answer" to the selected panel letter
@@ -202,10 +215,20 @@ prompt:
     physics_waves_signal_transform_family:
       scene_key: signal_transform_diagram
       task_key: signal_transform_match_query
-      object_description: one time-domain waveform panel and five labeled visual magnitude-spectrum options
-      annotation_hint_sinusoid_component_spectrum: set "annotation" to an object mapping input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes around the input waveform panel and the matching spectrum option panel
-      annotation_hint_periodic_wave_harmonic_spectrum: set "annotation" to an object mapping input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes around the input waveform panel and the matching spectrum option panel
-      annotation_hint_pulse_width_spectrum: set "annotation" to an object mapping input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes around the input waveform panel and the matching spectrum option panel
-      answer_hint_sinusoid_component_spectrum: set "answer" to the matching spectrum option letter
-      answer_hint_periodic_wave_harmonic_spectrum: set "answer" to the matching spectrum option letter
-      answer_hint_pulse_width_spectrum: set "answer" to the matching spectrum option letter
+      object_description: one time-domain waveform panel and five labeled visual magnitude-spectrum
+        options
+      annotation_hint_sinusoid_component_spectrum: set "annotation" to an object mapping
+        input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes around the
+        input waveform panel and the matching spectrum option panel
+      annotation_hint_periodic_wave_harmonic_spectrum: set "annotation" to an object
+        mapping input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes
+        around the input waveform panel and the matching spectrum option panel
+      annotation_hint_pulse_width_spectrum: set "annotation" to an object mapping
+        input_waveform and selected_spectrum to [x0,y0,x1,y1] pixel boxes around the
+        input waveform panel and the matching spectrum option panel
+      answer_hint_sinusoid_component_spectrum: set "answer" to the matching spectrum
+        option letter
+      answer_hint_periodic_wave_harmonic_spectrum: set "answer" to the matching spectrum
+        option letter
+      answer_hint_pulse_width_spectrum: set "answer" to the matching spectrum option
+        letter

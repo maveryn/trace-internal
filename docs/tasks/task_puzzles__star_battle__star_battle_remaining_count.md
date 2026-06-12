@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__star_battle__star_battle_remaining_count`
 4. Scene id: `star_battle`
 5. Goal: count legal remaining star placements in a marked row, column, or region.

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `cylinder_wrap`
 3. Scene id: `cylinder_wrap`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `wrapped_mark_position_label`
@@ -13,7 +13,7 @@
 - `label(select_rim_candidate(rim_positions, unwrap_mapping(strip_mark))); scene=cylinder_wrap; scope=wrapped_mark_position_label`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `cylinder_wrap`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/cylinder_wrap.py`
+- Config: `configs/domains/geometry/cylinder_wrap.yaml`
+- Task module: `trace/tasks/geometry/cylinder_wrap/wrapped_mark_position_label.py`

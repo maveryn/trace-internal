@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `hydraulic`
-- Implementation task group: `fluids`
+- Implementation scene: `fluids`
 - Implementation source: `trace/tasks/physics/fluids/hydraulic_missing_value.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__hydraulic__hydraulic_missing_value` -> `task_physics__hydraulic__hydraulic_missing_value`

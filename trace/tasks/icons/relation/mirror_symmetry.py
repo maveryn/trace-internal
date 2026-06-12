@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageChops
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -27,7 +27,6 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_icons_relation_mirror_symmetry_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scene
@@ -130,7 +129,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__mirror_grid__mirror_symmetry_count",
@@ -1344,7 +1343,7 @@ class IconsRelationMirrorSymmetryTask:
 
     task_id = "task_icons__mirror_grid__mirror_symmetry_count"
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic mirror-symmetry relation instance."""
@@ -1411,7 +1410,7 @@ class IconsRelationMirrorSymmetryTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1517,15 +1516,6 @@ class IconsRelationMirrorSymmetryTask:
             },
             "projected_annotation": dict(annotation_artifacts["projected_annotation"]),
         }
-        complexity = build_icons_relation_mirror_symmetry_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            query_id=str(scene_payload.query_id),
-            object_count=int(scene_payload.object_count),
-            target_count=int(scene_payload.target_count),
-            scene_cells=scene_payload.scene_cells,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -1533,7 +1523,6 @@ class IconsRelationMirrorSymmetryTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(_PUBLIC_QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

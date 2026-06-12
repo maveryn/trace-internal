@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults, resolve_task_group_section_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults, resolve_scene_section_defaults
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -173,18 +173,11 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = {
-    str(key): float(value)
-    for key, value in resolve_task_group_section_defaults(_TASK_GROUP_DEFAULTS, "complexity", task_id=TASK_ID)
-    .get("criteria_weights", {})
-    .items()
-    if float(value) > 0.0
-}
 _VISUAL_DEFAULTS = _TASK_GROUP_DEFAULTS.get("visual", {}) if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
 POST_IMAGE_BACKGROUND_DEFAULTS = (
     dict(_VISUAL_DEFAULTS.get("background", {})) if isinstance(_VISUAL_DEFAULTS.get("background"), Mapping) else {}
@@ -1085,33 +1078,6 @@ def _prompt_json_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
-    if not _COMPLEXITY_WEIGHTS:
-        raise ValueError(f"missing positive complexity criteria weights for {TASK_ID}")
-    total_controls = len(query.controls)
-    scan = (float(total_controls) - 16.0) / 10.0
-    if str(query.query_id) == "selected_enabled_controls_in_group_count":
-        state_filtering = 0.86
-        grouping = 0.58
-    else:
-        state_filtering = 0.72
-        grouping = 0.56
-    output_burden = min(1.0, float(len(query.annotation_control_ids)) / 8.0)
-    components = {
-        "visual_scan": _clamp_unit(scan),
-        "state_filtering": _clamp_unit(state_filtering + (0.06 * output_burden)),
-        "grouping": _clamp_unit(grouping),
-        "output_burden": _clamp_unit(output_burden),
-    }
-    missing = [key for key in _COMPLEXITY_WEIGHTS if key not in components]
-    if missing:
-        raise ValueError(f"GUI counting complexity is missing active criteria: {missing}")
-    total_weight = sum(float(value) for value in _COMPLEXITY_WEIGHTS.values())
-    score = sum(float(_COMPLEXITY_WEIGHTS[key]) * float(components[key]) for key in _COMPLEXITY_WEIGHTS) / float(total_weight)
-    return TaskComplexity(
-        complexity_score=_clamp_unit(score),
-        complexity_components={str(key): float(_clamp_unit(components[str(key)])) for key in _COMPLEXITY_WEIGHTS},
-    )
 
 
 class GuiCountingControlFilterCountTask:
@@ -1119,7 +1085,7 @@ class GuiCountingControlFilterCountTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1176,7 +1142,7 @@ class GuiCountingControlFilterCountTask:
         json_example, json_example_answer_only = _prompt_json_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1341,7 +1307,6 @@ class GuiCountingControlFilterCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(query),
             task_versions=default_task_versions(),
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

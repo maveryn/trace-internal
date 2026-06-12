@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `nine_mens_morris`
-3. Scene id: `nine_mens_morris`
-4. Public task id: `task_games__nine_mens_morris__pieces_in_mill_count`
-5. Supported `query_id` values: `all_pieces_in_mill_count`
-6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
-8. Program schema: `count(filter(pieces, participates_in_mill(piece)=True)); scene=nine_mens_morris; scope=pieces_in_mill_count; query_branch=all_pieces_in_mill_count`
+2. Scene id: `nine_mens_morris`
+3. Public task id: `task_games__nine_mens_morris__pieces_in_mill_count`
+4. Supported `query_id` values: `all_pieces_in_mill_count`
+5. Answer schema: `integer_count`
+6. Annotation schema: `point_set`
+7. Program schema: `count(filter(pieces, participates_in_mill(piece)=True)); scene=nine_mens_morris; scope=pieces_in_mill_count; query_branch=all_pieces_in_mill_count`
 
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.

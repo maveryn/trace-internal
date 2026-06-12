@@ -230,7 +230,7 @@ def test_physics_mechanics_lever_tasks_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["task_group"] == "mechanics" for record in train_records)
+    assert all(record["scene_id"] == "mechanics" for record in train_records)
 
     assert {record["task"] for record in train_records} == {
         "task_physics__lever__side_torque_value",

@@ -28,7 +28,7 @@ def test_counterfactual_board_grid_count_task_is_registered() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "puzzles"
         assert taxonomy.scene_id == SCENE_ID
-        assert taxonomy.source_task_group == "counterfactual"
+        assert taxonomy.source_scene_id == "counterfactual"
 
 
 def _task_for_query(query_id: object):

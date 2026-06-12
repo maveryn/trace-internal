@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__tents__tents_valid_candidate_count`
 4. Scene id: `tents`
 5. Goal: count the labeled cells around the marked tree where a tent could legally be added.

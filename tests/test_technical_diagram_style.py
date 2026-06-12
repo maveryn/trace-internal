@@ -95,7 +95,6 @@ def test_geometry_adapter_strengthens_label_contrast_on_light_panels() -> None:
             "technical_diagram_palettes": ("graphite_blue",),
         },
         scene_id="bearing_route",
-        task_group="measurement",
         allow_dark=False,
     )
 
@@ -119,7 +118,6 @@ def test_physics_diagram_adapter_preserves_electrostatics_semantic_colors() -> N
         instance_seed=12003,
         params={},
         scene_id="electrostatics_field_map",
-        task_group="electrostatics",
         protected_colors=PHYSICS_ELECTROSTATICS_SEMANTIC_COLORS,
         allow_dark=False,
     )

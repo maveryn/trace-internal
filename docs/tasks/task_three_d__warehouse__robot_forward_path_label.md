@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `warehouse`
-- Task group: `warehouse`
+- Scene: `warehouse`
 - Query id: `first_object_ahead`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`

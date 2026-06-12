@@ -1,0 +1,103 @@
+{
+  "bundle_id": "charts_hypothetical_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "hypothetical_chart_counterfactual": [
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}.",
+        "The image shows {object_description}."
+      ]
+    },
+    "task": {
+      "counterfactual_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "remaining_mean_after_removal": [
+        "If labels {removed_labels_text} were removed, what would be the mean of the remaining labels?",
+        "Remove labels {removed_labels_text}. What is the average value of the labels that remain?",
+        "After excluding {removed_labels_text}, compute the mean of the remaining values.",
+        "Ignoring labels {removed_labels_text}, what is the average of the remaining labeled values?",
+        "What is the mean after removing labels {removed_labels_text} from the display?"
+      ],
+      "target_share_after_removal": [
+        "If labels {removed_labels_text} were removed, what percent of the remaining total is label \"{target_label}\"?",
+        "Remove labels {removed_labels_text}. What integer percent of the remaining sum comes from label \"{target_label}\"?",
+        "After excluding {removed_labels_text}, compute the share of label \"{target_label}\" in the remaining total as a percent.",
+        "Ignoring labels {removed_labels_text}, what percent of the remaining total is contributed by \"{target_label}\"?",
+        "What is the integer percent share of label \"{target_label}\" after removing {removed_labels_text}?"
+      ],
+      "baseline_from_aggregate_percent_change": [
+        "The combined value of labels {aggregate_labels_text} is {percent_value}% higher than a baseline. What is the baseline?",
+        "Labels {aggregate_labels_text} together are {percent_value}% above a baseline. Compute that baseline.",
+        "If the sum of {aggregate_labels_text} is {percent_value}% higher than a baseline amount, what is the baseline amount?",
+        "The aggregate for {aggregate_labels_text} equals a baseline plus {percent_value}%. What is the baseline?",
+        "Compute the baseline if the combined value of {aggregate_labels_text} is {percent_value}% higher than it."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "dynamic_slots": {
+    "aggregate_labels_text": {
+      "type": "string"
+    },
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "percent_value": {
+      "type": "string"
+    },
+    "removed_labels_text": {
+      "type": "string"
+    },
+    "retained_labels_text": {
+      "type": "string"
+    },
+    "target_label": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {}
+}

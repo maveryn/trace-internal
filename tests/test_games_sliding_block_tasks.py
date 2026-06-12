@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.games.sliding_block.grid_tasks import (
+from trace.tasks.games.sliding_block.movable_block_count import GamesSlidingBlockMovableBlockCountTask
+from trace.tasks.games.sliding_block.sliding_block_blocker_count import (
     BlockSpec,
     GamesSlidingBlockBlockerCountTask,
-    GamesSlidingBlockMovableBlockCountTask,
-    GamesSlidingBlockMoveResultLabelTask,
     _legal_moves,
 )
+from trace.tasks.games.sliding_block.sliding_block_move_result_label import GamesSlidingBlockMoveResultLabelTask
 
 
 TASKS = (
@@ -49,6 +49,17 @@ def _execution_blocks(execution) -> list[BlockSpec]:
         )
         for block in execution["blocks"]
     ]
+
+
+def _bbox_row_counts(bboxes: dict[str, list[float]], *, tolerance_px: float = 4.0) -> tuple[int, ...]:
+    centers = sorted((float(bbox[1]) + float(bbox[3])) / 2.0 for bbox in bboxes.values())
+    rows: list[list[float]] = []
+    for center_y in centers:
+        if rows and abs(float(rows[-1][0]) - center_y) <= float(tolerance_px):
+            rows[-1].append(center_y)
+        else:
+            rows.append([center_y])
+    return tuple(len(row) for row in rows)
 
 
 def test_sliding_block_tasks_are_registered_and_taxonomy_mapped() -> None:
@@ -118,3 +129,15 @@ def test_sliding_block_tasks_emit_contracts() -> None:
             assert len(bbox) == 4
             assert bbox[0] < bbox[2]
             assert bbox[1] < bbox[3]
+
+
+def test_sliding_block_move_result_lays_out_four_options_as_two_by_two() -> None:
+    out = GamesSlidingBlockMoveResultLabelTask().generate(
+        2026052799,
+        params={"option_count": 4},
+        max_attempts=128,
+    )
+    option_bboxes = out.trace_payload["render_map"]["option_panel_bboxes_px"]
+
+    assert set(option_bboxes) == {"option_A", "option_B", "option_C", "option_D"}
+    assert _bbox_row_counts(option_bboxes) == (2, 2)

@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -25,7 +25,7 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_mechanics_orbital_motion_family"
+TASK_NAMESPACE = "physics_mechanics_orbital_motion"
 SCENE_ID = "orbital_motion"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "sun_focus_label",
@@ -34,12 +34,12 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
 )
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -98,7 +98,7 @@ def _choice(values: Sequence[str], instance_seed: int, namespace: str, params: M
 
 
 def _make_orbit_spec(instance_seed: int, *, params: Mapping[str, Any], query_id: str) -> _OrbitSpec:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.orbit")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.orbit")
     canvas_width = int(_RENDER_DEFAULTS.get("canvas_width", 1040))
     canvas_height = int(_RENDER_DEFAULTS.get("canvas_height", 720))
     center = (
@@ -113,7 +113,7 @@ def _make_orbit_spec(instance_seed: int, *, params: Mapping[str, Any], query_id:
     rotation_rad = math.radians(rotation_deg)
     focus_distance = math.sqrt(float(semi_major * semi_major - semi_minor * semi_minor))
     axis_unit = _major_axis_unit(rotation_rad)
-    focus_side = 1 if int(hash64(int(instance_seed), f"{FAMILY_ID}.focus_side", 0) % 2) == 0 else -1
+    focus_side = 1 if int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.focus_side", 0) % 2) == 0 else -1
     focus = (
         float(center[0] + focus_side * focus_distance * axis_unit[0]),
         float(center[1] + focus_side * focus_distance * axis_unit[1]),
@@ -291,7 +291,7 @@ def _draw_orbit_scene(
 
 class _PhysicsOrbitalMotionBaseTask:
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     default_dataset_enabled = True
     fixed_query_id: str | None = None
 
@@ -302,7 +302,7 @@ class _PhysicsOrbitalMotionBaseTask:
             "greatest_speed_position_label",
             "least_speed_position_label",
         )
-        query_id = _choice(supported, int(instance_seed), f"{FAMILY_ID}.query_id", params, "query_id")
+        query_id = _choice(supported, int(instance_seed), f"{TASK_NAMESPACE}.query_id", params, "query_id")
         spec = _make_orbit_spec(int(instance_seed), params=params, query_id=query_id)
         canvas_width = int(_RENDER_DEFAULTS.get("canvas_width", 1040))
         canvas_height = int(_RENDER_DEFAULTS.get("canvas_height", 720))
@@ -310,7 +310,6 @@ class _PhysicsOrbitalMotionBaseTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -318,7 +317,7 @@ class _PhysicsOrbitalMotionBaseTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -357,7 +356,7 @@ class _PhysicsOrbitalMotionBaseTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -375,15 +374,6 @@ class _PhysicsOrbitalMotionBaseTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        complexity = TaskComplexity(
-            complexity_score=0.46 if query_id == "sun_focus_label" else 0.56,
-            complexity_components={
-                "visual_scan": 0.28,
-                "physics_rule": 0.44 if query_id != "sun_focus_label" else 0.34,
-                "output_burden": 0.12,
-                "ambiguity": 0.12,
-            },
-        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "physics_orbital_motion_ellipse",
@@ -443,7 +433,6 @@ class _PhysicsOrbitalMotionBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import sqlite3
 import time
 
 from PIL import Image
@@ -44,6 +45,38 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
         },
     )
     _write_json(
+        root / "pages" / "workspace" / "migration_test_status.json",
+        {
+            "schema": "trace_scene_migration_test_status_v1",
+            "domain": "pages",
+            "scene_id": "workspace",
+            "passed": True,
+            "status": "passed",
+            "summary": "3 passed",
+            "checked_at": "2026-06-12T00:00:00+00:00",
+            "command": "pytest -q tests/test_review_app.py tests/test_run_task_review.py",
+            "test_files": ["tests/test_review_app.py", "tests/test_run_task_review.py"],
+        },
+    )
+    _write_json(
+        root / "pages" / "workspace" / "manual_code_audit_status.json",
+        {
+            "schema": "trace_scene_manual_code_audit_status_v1",
+            "domain": "pages",
+            "scene_id": "workspace",
+            "passed": True,
+            "status": "passed",
+            "summary": "role-boundary audit passed",
+            "checked_at": "2026-06-12T00:00:00+00:00",
+            "checked_by": "test",
+            "checklist": {
+                "public_tasks_own_objectives": True,
+                "shared_code_identity_free": True,
+            },
+            "files_reviewed": ["trace/tasks/pages/workspace/example.py"],
+        },
+    )
+    _write_json(
         task_dir / "manifest.json",
         {
             "calibration_baseline": "v0",
@@ -76,7 +109,7 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
                     "min_unique_answers": {
                         "observed": 5,
                         "pass": True,
-                        "threshold": 5,
+                        "threshold": 4,
                     },
                 },
                 "max_answer_frequency": 0.25,
@@ -229,7 +262,7 @@ def _write_taxonomy_audit_fixture(tmp_path: Path) -> None:
     (audit_dir / "task_query_analysis.csv").write_text(
         "\n".join(
             [
-                "domain,scene_id,current_task_id,current_query_id,current_task_slug,proposed_task_id,proposed_task_slug,scene_contract,view_contract,answer_schema,answer_type_observed,annotation_schema,annotation_type_observed,annotation_schema_notes,program_signature_id,program_schema,base_program_contract,parameter_axes,program_arguments_json,decision_source,rationale,generation_failures,source_file,doc_path,sample_count,example_json_paths,example_image_paths,decision,split_from,merge_with,proposed_task_group_size",
+                "domain,scene_id,current_task_id,current_query_id,current_task_slug,proposed_task_id,proposed_task_slug,scene_contract,view_contract,answer_schema,answer_type_observed,annotation_schema,annotation_type_observed,annotation_schema_notes,program_signature_id,program_schema,base_program_contract,parameter_axes,program_arguments_json,decision_source,rationale,generation_failures,source_file,doc_path,sample_count,example_json_paths,example_image_paths,decision,split_from,merge_with,proposed_scene_id_size",
                 (
                     "pages,workspace,"
                     f"{TASK_ID},lookup,toolbar_palette_control_label,"
@@ -278,7 +311,7 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
         {"domain": "scratch_domain", "scene_id": "scratch_scene", "task_count": 99},
     )
 
-    index = build_review_index(root, repo_root=tmp_path)
+    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
 
     assert sorted(index.domains) == ["pages"]
     assert sorted(index.scenes) == ["pages/workspace"]
@@ -287,6 +320,13 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     task = index.tasks[f"pages/workspace/{TASK_ID}"]
     assert task.query_counts == {"lookup": 1}
     assert task.distribution_pass is True
+    scene = index.scenes["pages/workspace"]
+    assert scene.migration_test_pass is True
+    assert scene.migration_test_summary["summary"] == "3 passed"
+    assert scene.migration_test_status_rel_path == "pages/workspace/migration_test_status.json"
+    assert scene.manual_code_audit_pass is True
+    assert scene.manual_code_audit_summary["summary"] == "role-boundary audit passed"
+    assert scene.manual_code_audit_status_rel_path == "pages/workspace/manual_code_audit_status.json"
     sample = next(iter(index.samples.values()))
     assert sample.answer_value == "G"
     assert sample.image_exists is True
@@ -297,19 +337,30 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     assert "assets/fonts" not in index.scenes
 
 
+def test_review_index_default_hides_unregistered_migration_scenes(tmp_path: Path) -> None:
+    root = _make_review_fixture(tmp_path)
+
+    index = build_review_index(root, repo_root=tmp_path)
+
+    assert index.domains == {}
+    assert index.scenes == {}
+    assert index.tasks == {}
+    assert index.samples == {}
+
+
 def test_review_sample_uid_changes_when_sample_content_changes(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path, prompt="First prompt")
-    first_uid = next(iter(build_review_index(root, repo_root=tmp_path).samples))
+    first_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples))
 
     _make_review_fixture(tmp_path, prompt="Changed prompt")
-    second_uid = next(iter(build_review_index(root, repo_root=tmp_path).samples))
+    second_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples))
 
     assert first_uid != second_uid
 
 
 def test_feedback_store_persists_and_updates_records(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path)
-    sample = next(iter(build_review_index(root, repo_root=tmp_path).samples.values()))
+    sample = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples.values()))
     store = FeedbackStore(tmp_path / "feedback.sqlite")
 
     created = store.add_feedback(sample=sample, comment="Annotation box is too broad.", category="annotation")
@@ -378,14 +429,16 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
         image_pass=True,
         annotation_pass=True,
         distribution_pass=True,
+        code_review_pass=True,
         solve_rate_pass=True,
         updated_by="reviewer",
     )
 
     assert updated.manual_pass is True
     assert updated.review_pass is True
-    assert updated.review_count == 4
-    assert updated.passed_count == 5
+    assert updated.code_review_pass is True
+    assert updated.review_count == 5
+    assert updated.passed_count == 6
     assert store.task_audits_by_task()[f"pages/workspace/{TASK_ID}"].updated_by == "reviewer"
 
     illustration_review = store.update_illustration_object_review(
@@ -405,6 +458,48 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
     ).updated_by == "reviewer"
     assert "top_down_pixel_rpg__pixel_rpg__tree__oak" in store.illustration_object_reviews_by_item()
     assert "Canopy needs stronger isometric lighting." in store.export_illustration_object_reviews_jsonl()
+
+
+def test_feedback_store_migrates_task_audit_code_review_gate(tmp_path: Path) -> None:
+    db_path = tmp_path / "feedback.sqlite"
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE task_audit (
+                domain TEXT NOT NULL,
+                scene_id TEXT NOT NULL,
+                task_id TEXT NOT NULL,
+                prompt_pass INTEGER NOT NULL DEFAULT 0,
+                image_pass INTEGER NOT NULL DEFAULT 0,
+                annotation_pass INTEGER NOT NULL DEFAULT 0,
+                distribution_pass INTEGER NOT NULL DEFAULT 0,
+                solve_rate_pass INTEGER NOT NULL DEFAULT 0,
+                notes TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL,
+                updated_by TEXT NOT NULL DEFAULT '',
+                PRIMARY KEY (domain, scene_id, task_id)
+            )
+            """
+        )
+
+    store = FeedbackStore(db_path)
+    migrated = store.update_task_audit(
+        domain="pages",
+        scene_id="workspace",
+        task_id=TASK_ID,
+        prompt_pass=True,
+        image_pass=True,
+        annotation_pass=True,
+        distribution_pass=True,
+        code_review_pass=True,
+        solve_rate_pass=True,
+    )
+
+    assert migrated.code_review_pass is True
+    assert migrated.review_pass is True
+    with sqlite3.connect(db_path) as conn:
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(task_audit)").fetchall()}
+    assert "code_review_pass" in columns
 
 
 def test_illustration_object_review_uses_variant_pixel_footprints() -> None:
@@ -499,6 +594,7 @@ def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -531,6 +627,7 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -979,6 +1076,7 @@ def test_review_app_browses_taxonomy_audit_with_feedback(tmp_path: Path) -> None
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
     )
@@ -1093,6 +1191,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1112,7 +1211,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     assert "Solve rate 0/1" in domain_page.text
     assert "Completed 0/1" not in domain_page.text
 
-    update = client.patch(
+    old_gate_update = client.patch(
         f"/api/tasks/pages/workspace/{TASK_ID}/audit",
         headers={"Authorization": "Bearer secret"},
         json={
@@ -1124,9 +1223,30 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
             "updated_by": "reviewer",
         },
     )
+    assert old_gate_update.status_code == 200
+    assert old_gate_update.json()["status"]["complete"] is False
+    assert old_gate_update.json()["status"]["review_pass"] is False
+    assert old_gate_update.json()["status"]["code_review_pass"] is False
+    assert old_gate_update.json()["status"]["review_count"] == 4
+    assert old_gate_update.json()["status"]["review_total"] == 5
+
+    update = client.patch(
+        f"/api/tasks/pages/workspace/{TASK_ID}/audit",
+        headers={"Authorization": "Bearer secret"},
+        json={
+            "prompt_pass": True,
+            "image_pass": True,
+            "annotation_pass": True,
+            "distribution_pass": True,
+            "code_review_pass": True,
+            "solve_rate_pass": True,
+            "updated_by": "reviewer",
+        },
+    )
     assert update.status_code == 200
     assert update.json()["status"]["complete"] is True
     assert update.json()["status"]["review_pass"] is True
+    assert update.json()["status"]["code_review_pass"] is True
     assert update.json()["status"]["solve_rate_pass"] is True
     assert update.json()["status"]["solve_artifact_pass"] is True
 
@@ -1138,7 +1258,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     scene_page = client.get("/domains/pages/scenes/workspace", headers={"Authorization": "Bearer secret"})
     assert scene_page.status_code == 200
     assert "review done" in scene_page.text
-    assert "4/4" in scene_page.text
+    assert "5/5" in scene_page.text
     assert "solve rate done" in scene_page.text
 
 
@@ -1151,6 +1271,7 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1162,6 +1283,8 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
     scene_page = client.get("/domains/pages/scenes/workspace", headers=headers)
     assert scene_page.status_code == 200
     assert "Open Scene Review" in scene_page.text
+    assert "Migration Tests" in scene_page.text
+    assert "3 passed" in scene_page.text
     assert 'href="/domains/pages/scenes/workspace/review"' in scene_page.text
     assert "<label>open scene issues</label>" in scene_page.text
 
@@ -1223,6 +1346,7 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1257,6 +1381,7 @@ def test_review_app_adds_feedback_via_api(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1285,6 +1410,7 @@ def test_review_app_reviews_three_d_object_profiles(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
+        enforce_migration_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",

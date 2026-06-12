@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `radial_hunt_board`
+2. Scene: `radial_hunt_board`
 3. Scene id: `radial_hunt_board`
 4. Public task id: `task_games__radial_hunt_board__capture_move_count`
 5. Supported `query_id` values: `capture_move_count`

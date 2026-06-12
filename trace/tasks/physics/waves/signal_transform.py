@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -23,17 +23,11 @@ from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ..shared.complexity import (
-    build_physics_complexity,
-    clamp_unit_interval,
-    normalize_linear,
-    resolve_physics_complexity_weights,
-)
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_waves_signal_transform_family"
+TASK_NAMESPACE = "physics_waves_signal_transform"
 SCENE_ID = "signal_transform"
 SINUSOID_TASK_ID = "task_physics__signal_transform__sinusoid_component_spectrum_match_label"
 PERIODIC_TASK_ID = "task_physics__signal_transform__periodic_harmonic_spectrum_match_label"
@@ -51,12 +45,12 @@ QUERY_FAMILIES: Dict[str, Tuple[str, ...]] = {
 }
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "waves")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "waves")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="waves", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="waves", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -177,7 +171,7 @@ def _resolve_waveform_family(
     query_id: str,
 ) -> Tuple[str, Dict[str, float]]:
     supported = QUERY_FAMILIES[str(query_id)]
-    explicit = str(params.get("waveform_family", "") or "").strip()
+    explicit = str(params.get("waveform", "") or "").strip()
     if explicit:
         if explicit not in supported:
             raise ValueError(f"waveform_family {explicit!r} is not supported for {query_id}")
@@ -196,7 +190,7 @@ def _resolve_correct_option_letter(instance_seed: int, params: Mapping[str, Any]
     index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.correct_option_letter",
+        namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     ) % len(OPTION_LABELS)
     return str(OPTION_LABELS[index]), _uniform_probability(OPTION_LABELS)
 
@@ -274,7 +268,7 @@ def _unique_specs(specs: Sequence[_SpectrumSpec], *, exclude_signature: str) -> 
 
 
 def _scenario_for_family(family: str, instance_seed: int) -> Tuple[int, Tuple[int, ...], float, _SpectrumSpec, List[_SpectrumSpec]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scenario.{family}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scenario.{family}")
     if family == "single_sinusoid":
         freq = int(rng.choice([2, 3, 4, 5]))
         correct = _spikes(f"single_spike_f{freq}", [freq], [1.0])
@@ -357,7 +351,7 @@ def _build_scenario(axes: _ResolvedAxes, instance_seed: int) -> _SignalScenario:
         int(instance_seed),
     )
     distractor_specs = _unique_specs(distractors, exclude_signature=str(correct.signature))
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_order.{axes.waveform_family}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_order.{axes.waveform_family}")
     rng.shuffle(distractor_specs)
     option_specs: Dict[str, _SpectrumSpec] = {}
     cursor = 0
@@ -692,22 +686,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(*, axes: _ResolvedAxes) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    family_count = len(QUERY_FAMILIES[str(axes.query_id)])
-    transform_reasoning = 0.54 if str(axes.query_id) != "sinusoid_component_spectrum" else 0.42
-    visual_scan = clamp_unit_interval(0.42 + (0.06 * normalize_linear(float(family_count), min_value=2.0, max_value=3.0)))
-    ambiguity = 0.16
-    output_burden = 0.22
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "transform_reasoning": float(transform_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 class _PhysicsSignalTransformSpectrumMatchTaskBase:
@@ -715,7 +693,7 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
 
     task_id = ""
     domain = "physics"
-    task_group = "waves"
+    scene_id = "waves"
     default_dataset_enabled = True
     forced_query_id = ""
 
@@ -737,7 +715,6 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),
             require_grid=True,
@@ -745,7 +722,7 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -756,7 +733,7 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
                 key,
                 int(getattr(_DEFAULTS, key)),
                 instance_seed=int(instance_seed),
-                namespace=FAMILY_ID,
+                namespace=TASK_NAMESPACE,
             )
             for key in (
                 "sheet_left_px",
@@ -820,7 +797,7 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -927,7 +904,6 @@ class _PhysicsSignalTransformSpectrumMatchTaskBase:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(axes=axes),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(axes.query_id),

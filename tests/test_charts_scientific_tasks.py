@@ -1,27 +1,13 @@
 """Behavior tests for scientific multi-panel chart tasks."""
-
 from __future__ import annotations
-
 from collections import Counter
-
 import pytest
-
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
-from trace.tasks.charts.scientific.axis_frame_query import (
-    AXIS_SPAN_QUERY_IDS,
-    SUPPORTED_QUERY_IDS as AXIS_FRAME_QUERY_IDS,
-    TICK_SPACING_QUERY_IDS,
-    ChartsScientificAxisFrameQueryTask,
-)
-from trace.tasks.charts.scientific.multipanel_subplot_query import (
-    SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_IDS,
-    ChartsScientificMultipanelSubplotQueryTask,
-)
-
+from trace.tasks.charts.scientific_axis_frame.shared.axis_frame_query import AXIS_SPAN_QUERY_IDS, SUPPORTED_QUERY_IDS as AXIS_FRAME_QUERY_IDS, TICK_SPACING_QUERY_IDS, ChartsScientificAxisFrameQueryTask
+from trace.tasks.charts.curve_panels.shared.multipanel_subplot_query import SUPPORTED_SCENE_VARIANTS, SUPPORTED_QUERY_IDS, ChartsScientificMultipanelSubplotQueryTask
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
     assert len(bbox) == 4
@@ -29,277 +15,195 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= x0 < x1 <= width
     assert 0 <= y0 < y1 <= height
 
-
 def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
     assert len(point) == 2
     x, y = [float(value) for value in point]
     assert 0 <= x <= width
     assert 0 <= y <= height
 
-
 def _bbox_center(bbox: list[float]) -> list[float]:
     x0, y0, x1, y1 = [float(value) for value in bbox]
     return [round((x0 + x1) * 0.5, 3), round((y0 + y1) * 0.5, 3)]
 
-
 def _assert_keyed_bbox_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
     assert annotation
     for bbox in annotation.values():
-        _assert_bbox_inside_canvas(
-            [float(value) for value in bbox],
-            width=int(width),
-            height=int(height),
-        )
-
+        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(width), height=int(height))
 
 def _assert_keyed_point_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
     assert annotation
     for point in annotation.values():
-        _assert_point_inside_canvas(
-            [float(value) for value in point],
-            width=int(width),
-            height=int(height),
-        )
-
+        _assert_point_inside_canvas([float(value) for value in point], width=int(width), height=int(height))
 
 def _expected_answer(execution: dict) -> str | int:
-    variant = str(execution["query_id"])
-
-    if variant == "curve_at_x_extremum_label":
-        values = {str(key): int(value) for key, value in execution["values_at_query_x"].items()}
+    variant = str(execution['query_id'])
+    if variant == 'curve_at_x_extremum_label':
+        values = {str(key): int(value) for key, value in execution['values_at_query_x'].items()}
         return max(values, key=lambda label: (values[label], label))
-
-    if variant == "threshold_series_count":
-        threshold = int(execution["threshold_value"])
-        values = {str(key): int(value) for key, value in execution["values_at_query_x"].items()}
-        return sum(1 for value in values.values() if int(value) > int(threshold))
-
-    if variant == "panel_point_threshold_count":
-        threshold = int(execution["threshold_value"])
-        direction = str(execution["threshold_direction"])
-        values_by_method = {
-            str(method): [int(value) for value in values]
-            for method, values in execution["values_in_query_panel"].items()
-        }
-        if direction == "above":
-            return sum(1 for values in values_by_method.values() for value in values if int(value) > int(threshold))
-        if direction == "below":
-            return sum(1 for values in values_by_method.values() for value in values if int(value) < int(threshold))
-        raise AssertionError(f"unsupported point threshold direction: {direction}")
-
-    if variant == "panel_curve_threshold_crossing_count":
-        return len(execution["threshold_crossing_points"])
-
-    if variant == "cross_panel_delta_extremum_label":
-        deltas = {str(key): int(value) for key, value in execution["deltas_by_panel"].items()}
+    if variant == 'threshold_series_count':
+        threshold = int(execution['threshold_value'])
+        values = {str(key): int(value) for key, value in execution['values_at_query_x'].items()}
+        return sum((1 for value in values.values() if int(value) > int(threshold)))
+    if variant == 'panel_point_threshold_count':
+        threshold = int(execution['threshold_value'])
+        direction = str(execution['threshold_direction'])
+        values_by_method = {str(method): [int(value) for value in values] for method, values in execution['values_in_query_panel'].items()}
+        if direction == 'above':
+            return sum((1 for values in values_by_method.values() for value in values if int(value) > int(threshold)))
+        if direction == 'below':
+            return sum((1 for values in values_by_method.values() for value in values if int(value) < int(threshold)))
+        raise AssertionError(f'unsupported point threshold direction: {direction}')
+    if variant == 'panel_curve_threshold_crossing_count':
+        return len(execution['threshold_crossing_points'])
+    if variant == 'cross_panel_delta_extremum_label':
+        deltas = {str(key): int(value) for key, value in execution['deltas_by_panel'].items()}
         return max(deltas, key=lambda label: (deltas[label], label))
-
-    if variant == "cross_panel_threshold_earliest_label":
-        crossing_x = {str(key): float(value) for key, value in execution["threshold_crossing_x_by_panel"].items()}
+    if variant == 'cross_panel_threshold_earliest_label':
+        crossing_x = {str(key): float(value) for key, value in execution['threshold_crossing_x_by_panel'].items()}
         return min(crossing_x, key=lambda label: (crossing_x[label], label))
-
-    if variant == "curve_intersection_count":
-        return int(execution["intersection_count"])
-
-    if variant == "earliest_maximum_panel_label":
-        peak_x = {str(key): int(value) for key, value in execution["peak_x_by_panel"].items()}
+    if variant == 'curve_intersection_count':
+        return int(execution['intersection_count'])
+    if variant == 'earliest_maximum_panel_label':
+        peak_x = {str(key): int(value) for key, value in execution['peak_x_by_panel'].items()}
         return min(peak_x, key=lambda label: (peak_x[label], label))
+    raise AssertionError(f'unsupported variant: {variant}')
 
-    raise AssertionError(f"unsupported variant: {variant}")
-
-
-@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+@pytest.mark.parametrize('query_id', SUPPORTED_QUERY_IDS)
 def test_charts_scientific_variants_match_contract(query_id: str) -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
-    out = task.generate(
-        93100 + SUPPORTED_QUERY_IDS.index(query_id),
-        params={"query_id": query_id},
-        max_attempts=80,
-    )
+    out = task.generate(93100 + SUPPORTED_QUERY_IDS.index(query_id), params={'query_id': query_id}, max_attempts=80)
     trace = out.trace_payload
-    execution = trace["execution_trace"]
-    render = trace["render_spec"]
-    render_map = trace["render_map"]
-
+    execution = trace['execution_trace']
+    render = trace['render_spec']
+    render_map = trace['render_map']
     assert out.query_id == query_id
-    assert out.scene_id == "curve_panels"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert str(execution["question_format"]) == "curve_panels_subplot_query"
-    assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
-    assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-    assert 4 <= int(execution["panel_count"]) <= 8
-    assert 3 <= int(execution["method_count"]) <= 6
-    assert 4 <= int(len(execution["x_values"])) <= 10
-    x_values = [int(value) for value in execution["x_values"]]
+    assert out.scene_id == 'curve_panels'
+    assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
+    assert str(execution['question_format']) == 'curve_panels_subplot_query'
+    assert str(execution['scene_variant']) in SUPPORTED_SCENE_VARIANTS
+    assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
+    assert 4 <= int(execution['panel_count']) <= 8
+    assert 3 <= int(execution['method_count']) <= 6
+    assert 4 <= int(len(execution['x_values'])) <= 10
+    x_values = [int(value) for value in execution['x_values']]
     assert x_values[0] == 0
     assert len({x_values[index + 1] - x_values[index] for index in range(len(x_values) - 1)}) == 1
-
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
-    assert execution["answer"] == expected_answer
-    if query_id == "cross_panel_delta_extremum_label":
-        assert out.annotation_gt.type == "keyed_point_map"
-        assert trace["projected_annotation"]["type"] == "keyed_point_map"
-        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+    assert execution['answer'] == expected_answer
+    if query_id == 'cross_panel_delta_extremum_label':
+        assert out.annotation_gt.type == 'keyed_point_map'
+        assert trace['projected_annotation']['type'] == 'keyed_point_map'
+        assert trace['projected_annotation']['keyed_point_map'] == out.annotation_gt.value
+        assert trace['projected_annotation']['pixel_keyed_point_map'] == out.annotation_gt.value
     else:
-        assert out.annotation_gt.type == "point_set"
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
-    assert trace["render_spec"]["font_assets"]["chart_font_family"]
-
-    if query_id == "cross_panel_delta_extremum_label":
-        _assert_keyed_point_map_inside_canvas(
-            out.annotation_gt.value,
-            width=int(render["canvas_width"]),
-            height=int(render["canvas_height"]),
-        )
+        assert out.annotation_gt.type == 'point_set'
+        assert trace['projected_annotation']['type'] == 'point_set'
+        assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
+        assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
+    assert trace['render_spec']['font_assets']['chart_font_family']
+    if query_id == 'cross_panel_delta_extremum_label':
+        _assert_keyed_point_map_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
     else:
         for point in out.annotation_gt.value:
-            _assert_point_inside_canvas(
-                [float(value) for value in point],
-                width=int(render["canvas_width"]),
-                height=int(render["canvas_height"]),
-            )
-
-    for panel_label in trace["projected_annotation"]["panel_labels"]:
-        _assert_bbox_inside_canvas(
-            render_map["panel_bboxes_px"][str(panel_label)],
-            width=int(render["canvas_width"]),
-            height=int(render["canvas_height"]),
-        )
+            _assert_point_inside_canvas([float(value) for value in point], width=int(render['canvas_width']), height=int(render['canvas_height']))
+    for panel_label in trace['projected_annotation']['panel_labels']:
+        _assert_bbox_inside_canvas(render_map['panel_bboxes_px'][str(panel_label)], width=int(render['canvas_width']), height=int(render['canvas_height']))
     expected_points = []
-    for point_id in trace["projected_annotation"]["point_ids"]:
-        expected_points.append(_bbox_center(render_map["point_bboxes_px"][str(point_id)]))
-    for intersection_id in trace["projected_annotation"]["intersection_ids"]:
-        expected_points.append(_bbox_center(render_map["intersection_bboxes_px"][str(intersection_id)]))
-    for crossing_id in trace["projected_annotation"]["threshold_crossing_ids"]:
-        expected_points.append(_bbox_center(render_map["threshold_crossing_bboxes_px"][str(crossing_id)]))
-    if query_id == "cross_panel_delta_extremum_label":
+    for point_id in trace['projected_annotation']['point_ids']:
+        expected_points.append(_bbox_center(render_map['point_bboxes_px'][str(point_id)]))
+    for intersection_id in trace['projected_annotation']['intersection_ids']:
+        expected_points.append(_bbox_center(render_map['intersection_bboxes_px'][str(intersection_id)]))
+    for crossing_id in trace['projected_annotation']['threshold_crossing_ids']:
+        expected_points.append(_bbox_center(render_map['threshold_crossing_bboxes_px'][str(crossing_id)]))
+    if query_id == 'cross_panel_delta_extremum_label':
         expected_keyed_points = {}
-        for point_id in trace["projected_annotation"]["point_ids"]:
-            panel_label, _method_label, x_value = str(point_id).split("|")
-            role = "start" if int(x_value) == int(execution["start_x_value"]) else "end"
-            expected_keyed_points[f"{str(panel_label)}_{role}"] = _bbox_center(render_map["point_bboxes_px"][str(point_id)])
+        for point_id in trace['projected_annotation']['point_ids']:
+            panel_label, _method_label, x_value = str(point_id).split('|')
+            role = 'start' if int(x_value) == int(execution['start_x_value']) else 'end'
+            expected_keyed_points[f'{str(panel_label)}_{role}'] = _bbox_center(render_map['point_bboxes_px'][str(point_id)])
         assert out.annotation_gt.value == expected_keyed_points
     else:
         assert out.annotation_gt.value == expected_points
-
-    if query_id in {"threshold_series_count", "panel_point_threshold_count"}:
-        assert out.answer_gt.type == "integer"
-        assert int(out.answer_gt.value) == len(trace["projected_annotation"]["point_ids"])
-    elif query_id == "panel_curve_threshold_crossing_count":
-        assert out.answer_gt.type == "integer"
-        assert int(out.answer_gt.value) == len(trace["projected_annotation"]["threshold_crossing_ids"])
-    elif query_id == "curve_intersection_count":
-        assert out.answer_gt.type == "integer"
-        assert int(out.answer_gt.value) == len(trace["projected_annotation"]["intersection_ids"])
+    if query_id in {'threshold_series_count', 'panel_point_threshold_count'}:
+        assert out.answer_gt.type == 'integer'
+        assert int(out.answer_gt.value) == len(trace['projected_annotation']['point_ids'])
+    elif query_id == 'panel_curve_threshold_crossing_count':
+        assert out.answer_gt.type == 'integer'
+        assert int(out.answer_gt.value) == len(trace['projected_annotation']['threshold_crossing_ids'])
+    elif query_id == 'curve_intersection_count':
+        assert out.answer_gt.type == 'integer'
+        assert int(out.answer_gt.value) == len(trace['projected_annotation']['intersection_ids'])
     else:
-        assert out.answer_gt.type == "string"
-
-    complexity = out.complexity.to_dict()
-    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
-    assert set(complexity["complexity_components"].keys()) == {
-        "reasoning_load",
-        "scene_variant_load",
-        "visual_scan",
-    }
-    assert all(0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values())
-
+        assert out.answer_gt.type == 'string'
 
 def test_charts_scientific_prompt_examples_match_contract() -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=93200):
-        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
-        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
-        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        if query_id == "cross_panel_delta_extremum_label":
-            assert isinstance(answer_and_annotation["annotation"], dict)
-            assert {"A_start", "A_end", "B_start", "B_end"}.issubset(set(answer_and_annotation["annotation"]))
+        out = task.generate(index, params={'query_id': query_id}, max_attempts=80)
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+        answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
+        if query_id == 'cross_panel_delta_extremum_label':
+            assert isinstance(answer_and_annotation['annotation'], dict)
+            annotation_keys = set((str(key) for key in answer_and_annotation['annotation']))
+            assert len(annotation_keys) == 4
+            assert sum((key.endswith('_start') for key in annotation_keys)) == 2
+            assert sum((key.endswith('_end') for key in annotation_keys)) == 2
         else:
-            assert isinstance(answer_and_annotation["annotation"], list)
-        if out.answer_gt.type == "integer":
-            assert isinstance(answer_and_annotation["answer"], int)
-            assert isinstance(answer_only["answer"], int)
+            assert isinstance(answer_and_annotation['annotation'], list)
+        if out.answer_gt.type == 'integer':
+            assert isinstance(answer_and_annotation['answer'], int)
+            assert isinstance(answer_only['answer'], int)
         else:
-            assert isinstance(answer_and_annotation["answer"], str)
-            assert isinstance(answer_only["answer"], str)
+            assert isinstance(answer_and_annotation['answer'], str)
+            assert isinstance(answer_only['answer'], str)
 
-
-@pytest.mark.parametrize("query_id", AXIS_FRAME_QUERY_IDS)
+@pytest.mark.parametrize('query_id', AXIS_FRAME_QUERY_IDS)
 def test_charts_scientific_axis_frame_variants_match_contract(query_id: str) -> None:
     task = ChartsScientificAxisFrameQueryTask()
-    out = task.generate(
-        93600 + AXIS_FRAME_QUERY_IDS.index(query_id),
-        params={"query_id": query_id},
-        max_attempts=80,
-    )
+    out = task.generate(93600 + AXIS_FRAME_QUERY_IDS.index(query_id), params={'query_id': query_id}, max_attempts=80)
     trace = out.trace_payload
-    execution = trace["execution_trace"]
-    render = trace["render_spec"]
-    render_map = trace["render_map"]
-
+    execution = trace['execution_trace']
+    render = trace['render_spec']
+    render_map = trace['render_map']
     assert out.query_id == query_id
-    assert out.scene_id == "scientific_axis_frame"
-    assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert str(execution["question_format"]) == "scientific_axis_frame"
-    assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-    assert 4 <= len(execution["x_tick_values"]) <= 8
-    assert 4 <= len(execution["y_tick_values"]) <= 8
-    assert trace["render_spec"]["font_assets"]["chart_font_family"]
-
-    query_params = execution["query_params"]
+    assert out.scene_id == 'scientific_axis_frame'
+    assert out.answer_gt.type == 'integer'
+    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
+    assert str(execution['question_format']) == 'scientific_axis_frame'
+    assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
+    assert 4 <= len(execution['x_tick_values']) <= 8
+    assert 4 <= len(execution['y_tick_values']) <= 8
+    assert trace['render_spec']['font_assets']['chart_font_family']
+    query_params = execution['query_params']
     if query_id in TICK_SPACING_QUERY_IDS:
-        expected_answer = int(query_params["next_tick_value"]) - int(query_params["first_tick_value"])
-        expected_annotation = {
-            "first_tick": render_map["tick_label_bboxes_px"][execution["annotation_tick_keys"][0]],
-            "next_tick": render_map["tick_label_bboxes_px"][execution["annotation_tick_keys"][1]],
-        }
+        expected_answer = int(query_params['next_tick_value']) - int(query_params['first_tick_value'])
+        expected_annotation = {'first_tick': render_map['tick_label_bboxes_px'][execution['annotation_tick_keys'][0]], 'next_tick': render_map['tick_label_bboxes_px'][execution['annotation_tick_keys'][1]]}
     else:
-        expected_answer = int(query_params["max_tick_value"]) - int(query_params["min_tick_value"])
-        expected_annotation = {
-            "min_tick": render_map["tick_label_bboxes_px"][execution["annotation_tick_keys"][0]],
-            "max_tick": render_map["tick_label_bboxes_px"][execution["annotation_tick_keys"][1]],
-        }
-
+        expected_answer = int(query_params['max_tick_value']) - int(query_params['min_tick_value'])
+        expected_annotation = {'min_tick': render_map['tick_label_bboxes_px'][execution['annotation_tick_keys'][0]], 'max_tick': render_map['tick_label_bboxes_px'][execution['annotation_tick_keys'][1]]}
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert execution["answer_value"] == int(expected_answer)
+    assert execution['answer_value'] == int(expected_answer)
     assert out.annotation_gt.value == expected_annotation
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
-    _assert_keyed_bbox_map_inside_canvas(
-        out.annotation_gt.value,
-        width=int(render["canvas_width"]),
-        height=int(render["canvas_height"]),
-    )
-
-    complexity = out.complexity.to_dict()
-    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
-    assert set(complexity["complexity_components"].keys()) == {
-        "reasoning_load",
-        "scene_variant_load",
-        "visual_scan",
-    }
-
+    assert trace['projected_annotation']['type'] == 'keyed_bbox_map'
+    assert trace['projected_annotation']['keyed_bbox_map'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_keyed_bbox_map'] == out.annotation_gt.value
+    _assert_keyed_bbox_map_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
 
 def test_charts_scientific_axis_frame_prompt_examples_match_contract() -> None:
     task = ChartsScientificAxisFrameQueryTask()
     for index, query_id in enumerate(AXIS_FRAME_QUERY_IDS, start=93650):
-        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
-        answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
-        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert isinstance(answer_and_annotation["annotation"], dict)
-        assert isinstance(answer_and_annotation["answer"], int)
-        assert isinstance(answer_only["answer"], int)
+        out = task.generate(index, params={'query_id': query_id}, max_attempts=80)
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+        answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
+        assert isinstance(answer_and_annotation['annotation'], dict)
+        assert isinstance(answer_and_annotation['answer'], int)
+        assert isinstance(answer_only['answer'], int)
         if query_id in TICK_SPACING_QUERY_IDS:
-            assert set(answer_and_annotation["annotation"]) == {"first_tick", "next_tick"}
+            assert set(answer_and_annotation['annotation']) == {'first_tick', 'next_tick'}
         else:
-            assert set(answer_and_annotation["annotation"]) == {"min_tick", "max_tick"}
-
+            assert set(answer_and_annotation['annotation']) == {'min_tick', 'max_tick'}
 
 def test_charts_scientific_balanced_sampling_covers_axes() -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
@@ -312,29 +216,27 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
     threshold_earliest_answers: Counter[str] = Counter()
     intersection_answers: Counter[int] = Counter()
     earliest_answers: Counter[str] = Counter()
-
     for index in range(240):
-        out = task.generate(hash64(93300, "charts_scientific", index), params={}, max_attempts=120)
-        execution = out.trace_payload["execution_trace"]
-        variant = str(execution["query_id"])
+        out = task.generate(hash64(93300, 'charts_scientific', index), params={}, max_attempts=120)
+        execution = out.trace_payload['execution_trace']
+        variant = str(execution['query_id'])
         variants[variant] += 1
-        if variant == "curve_at_x_extremum_label":
-            curve_answers[str(execution["answer"])] += 1
-        elif variant == "threshold_series_count":
-            threshold_answers[int(execution["answer"])] += 1
-        elif variant == "panel_point_threshold_count":
-            panel_point_answers[int(execution["answer"])] += 1
-        elif variant == "panel_curve_threshold_crossing_count":
-            panel_crossing_answers[int(execution["answer"])] += 1
-        elif variant == "cross_panel_delta_extremum_label":
-            delta_answers[str(execution["answer"])] += 1
-        elif variant == "cross_panel_threshold_earliest_label":
-            threshold_earliest_answers[str(execution["answer"])] += 1
-        elif variant == "curve_intersection_count":
-            intersection_answers[int(execution["answer"])] += 1
-        elif variant == "earliest_maximum_panel_label":
-            earliest_answers[str(execution["answer"])] += 1
-
+        if variant == 'curve_at_x_extremum_label':
+            curve_answers[str(execution['answer'])] += 1
+        elif variant == 'threshold_series_count':
+            threshold_answers[int(execution['answer'])] += 1
+        elif variant == 'panel_point_threshold_count':
+            panel_point_answers[int(execution['answer'])] += 1
+        elif variant == 'panel_curve_threshold_crossing_count':
+            panel_crossing_answers[int(execution['answer'])] += 1
+        elif variant == 'cross_panel_delta_extremum_label':
+            delta_answers[str(execution['answer'])] += 1
+        elif variant == 'cross_panel_threshold_earliest_label':
+            threshold_earliest_answers[str(execution['answer'])] += 1
+        elif variant == 'curve_intersection_count':
+            intersection_answers[int(execution['answer'])] += 1
+        elif variant == 'earliest_maximum_panel_label':
+            earliest_answers[str(execution['answer'])] += 1
     assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert len(curve_answers) >= 20
     assert set(threshold_answers).issubset({1, 2, 3, 4, 5, 6})
@@ -348,110 +250,81 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
     assert set(intersection_answers) == {0, 1, 2, 3, 4}
     assert len(earliest_answers) >= 4
 
-
 def test_charts_scientific_intersection_count_review_distribution() -> None:
-    task = create_task("task_charts__curve_panels__curve_intersection_count")
+    task = create_task('task_charts__curve_panels__curve_intersection_count')
     answers: Counter[int] = Counter()
-
     for index in range(100):
-        out = task.generate(
-            hash64(20260507, task.task_id, index),
-            params={},
-            max_attempts=120,
-        )
+        out = task.generate(hash64(20260507, task.task_id, index), params={}, max_attempts=120)
         answers[int(out.answer_gt.value)] += 1
-
     assert set(answers) == {0, 1, 2, 3, 4}
     assert max(answers.values()) <= 25
 
-
-@pytest.mark.parametrize(
-    "task_id,allowed_queries",
-    [
-        ("task_charts__scientific_axis_frame__tick_spacing_value", set(TICK_SPACING_QUERY_IDS)),
-        ("task_charts__scientific_axis_frame__axis_span_value", set(AXIS_SPAN_QUERY_IDS)),
-    ],
-)
+@pytest.mark.parametrize('task_id,allowed_queries', [('task_charts__scientific_axis_frame__tick_spacing_value', set(TICK_SPACING_QUERY_IDS)), ('task_charts__scientific_axis_frame__axis_span_value', set(AXIS_SPAN_QUERY_IDS))])
 def test_charts_scientific_axis_frame_public_task_distribution(task_id: str, allowed_queries: set[str]) -> None:
     task = create_task(task_id)
     answers: Counter[int] = Counter()
     query_ids: Counter[str] = Counter()
-
     for index in range(100):
         out = task.generate(hash64(20260605, task.task_id, index), params={}, max_attempts=120)
         answers[int(out.answer_gt.value)] += 1
         query_ids[str(out.query_id)] += 1
-
     assert set(query_ids).issubset(set(allowed_queries))
     assert set(query_ids) == set(allowed_queries)
     assert max(answers.values()) <= 25
 
-
 def test_charts_scientific_is_deterministic() -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
-    params = {"query_id": "cross_panel_delta_extremum_label"}
+    params = {'query_id': 'cross_panel_delta_extremum_label'}
     out_a = task.generate(93400, params=params, max_attempts=80)
     out_b = task.generate(93400, params=params, max_attempts=80)
-
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
-    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
-    assert out_a.complexity.to_dict() == out_b.complexity.to_dict()
-
+    assert out_a.trace_payload['execution_trace'] == out_b.trace_payload['execution_trace']
 
 def test_charts_scientific_axis_frame_is_deterministic() -> None:
     task = ChartsScientificAxisFrameQueryTask()
-    params = {"query_id": "x_axis_span_value"}
+    params = {'query_id': 'x_axis_span_value'}
     out_a = task.generate(93690, params=params, max_attempts=80)
     out_b = task.generate(93690, params=params, max_attempts=80)
-
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
-    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
-    assert out_a.complexity.to_dict() == out_b.complexity.to_dict()
-
+    assert out_a.trace_payload['execution_trace'] == out_b.trace_payload['execution_trace']
 
 def test_charts_scientific_registered_and_group_config_loaded() -> None:
-    assert create_task("task_charts__curve_panels__curve_at_x_extremum_label").task_id == "task_charts__curve_panels__curve_at_x_extremum_label"
-
-    cfg = get_task_group_defaults("charts", "scientific")
-    assert isinstance(cfg.get("generation"), dict)
-    assert isinstance(cfg.get("rendering"), dict)
-    assert isinstance(cfg.get("prompt"), dict)
-
-    generation = cfg["generation"]["shared"]
-    assert int(generation["panel_count_min"]) == 4
-    assert int(generation["method_count_min"]) == 3
-    assert int(generation["method_count_max"]) == 6
-    assert int(generation["x_tick_count_min"]) == 4
-    assert int(generation["x_tick_count_max"]) == 10
-    assert int(generation["x_step_min"]) == 5
-    assert int(generation["x_step_max"]) == 20
-    assert sorted(generation["query_id_weights"].keys()) == sorted(SUPPORTED_QUERY_IDS)
-
-    prompt = cfg["prompt"]["shared"]
-    assert str(prompt["bundle_id"]) == "charts_scientific_v0"
-    assert str(prompt["scene_key"]) == "curve_panels_subplot"
-    assert str(prompt["task_key"]) == "multipanel_subplot_query"
-    assert str(prompt["scene_key_axis_frame"]) == "scientific_axis_frame"
-    assert str(prompt["task_key_axis_frame"]) == "axis_frame_query"
-    assert "axis_frame_query_id_weights" in generation
-
+    assert create_task('task_charts__curve_panels__curve_at_x_extremum_label').task_id == 'task_charts__curve_panels__curve_at_x_extremum_label'
+    cfg = get_scene_defaults('charts', 'curve_panels')
+    assert isinstance(cfg.get('generation'), dict)
+    assert isinstance(cfg.get('rendering'), dict)
+    assert isinstance(cfg.get('prompt'), dict)
+    generation = cfg['generation']['shared']
+    assert int(generation['panel_count_min']) == 4
+    assert int(generation['method_count_min']) == 3
+    assert int(generation['method_count_max']) == 6
+    assert int(generation['x_tick_count_min']) == 4
+    assert int(generation['x_tick_count_max']) == 10
+    assert int(generation['x_step_min']) == 5
+    assert int(generation['x_step_max']) == 20
+    assert sorted(generation['query_id_weights'].keys()) == sorted(SUPPORTED_QUERY_IDS)
+    prompt = cfg['prompt']['shared']
+    assert str(prompt['bundle_id']) == 'charts_scientific_v0'
+    assert str(prompt['scene_key']) == 'curve_panels_subplot'
+    assert str(prompt['task_key']) == 'multipanel_subplot_query'
+    assert str(prompt['scene_key_axis_frame']) == 'scientific_axis_frame'
+    assert str(prompt['task_key_axis_frame']) == 'axis_frame_query'
+    assert 'axis_frame_query_id_weights' in generation
 
 def test_scientific_curve_at_x_public_task_uses_calibrated_density() -> None:
-    task = create_task("task_charts__curve_panels__curve_at_x_extremum_label")
+    task = create_task('task_charts__curve_panels__curve_at_x_extremum_label')
     out = task.generate(2026052301, params={}, max_attempts=120)
-    execution = out.trace_payload["execution_trace"]
-
-    assert out.query_id == "curve_at_x_extremum_label"
-    assert 6 <= int(execution["panel_count"]) <= 8
-    assert int(execution["method_count"]) == 6
-    assert 8 <= len(execution["x_values"]) <= 10
-
-    values = {str(key): int(value) for key, value in execution["values_at_query_x"].items()}
+    execution = out.trace_payload['execution_trace']
+    assert out.query_id == 'curve_at_x_extremum_label'
+    assert 6 <= int(execution['panel_count']) <= 8
+    assert int(execution['method_count']) == 6
+    assert 8 <= len(execution['x_values']) <= 10
+    values = {str(key): int(value) for key, value in execution['values_at_query_x'].items()}
     answer = str(out.answer_gt.value)
     assert answer in values
     assert values[answer] == max(values.values())
-    assert min(values[answer] - value for key, value in values.items() if str(key) != answer) >= 4
+    assert min((values[answer] - value for key, value in values.items() if str(key) != answer)) >= 4

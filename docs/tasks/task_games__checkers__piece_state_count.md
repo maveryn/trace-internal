@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `checkers`
+2. Scene package: `checkers`
 3. Scene id: `checkers`
 4. Public task id: `task_games__checkers__piece_state_count`
 5. Supported `query_id` values: `black_edge_piece_count`, `black_piece_count`, `red_edge_piece_count`, `red_piece_count`

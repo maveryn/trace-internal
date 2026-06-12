@@ -11,8 +11,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -25,7 +25,6 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice
@@ -33,7 +32,7 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__switch_circuit__lit_bulb_count"
-FAMILY_ID = "physics_circuits_switch_circuit_family"
+TASK_NAMESPACE = "physics_circuits_switch_circuit"
 SCENE_ID = "switch_circuit"
 QUERY_ID = "lit_bulb_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
@@ -44,12 +43,12 @@ TARGET_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
 POS_NODE = "P"
 NEG_NODE = "N"
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -158,14 +157,14 @@ def _resolve_query_id(params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]
     explicit = str(params.get("query_id") or "").strip()
     if explicit:
         if explicit != QUERY_ID:
-            raise ValueError(f"unsupported query_id for {FAMILY_ID}: {explicit}")
+            raise ValueError(f"unsupported query_id for {TASK_NAMESPACE}: {explicit}")
         return QUERY_ID, _probability_map(SUPPORTED_QUERY_IDS, selected=QUERY_ID)
     return QUERY_ID, _probability_map(SUPPORTED_QUERY_IDS)
 
 
 def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene_variant"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene_variant"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_SCENE_VARIANTS,
@@ -182,7 +181,7 @@ def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tup
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{FAMILY_ID}.scene_variant",
+        sampling_namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -195,14 +194,14 @@ def _resolve_target_answer(instance_seed: int, params: Mapping[str, Any]) -> Tup
         support_key="target_answer_support",
         explicit_key="target_answer",
         fallback_support=TARGET_SUPPORT,
-        namespace=f"{FAMILY_ID}.target_answer",
+        namespace=f"{TASK_NAMESPACE}.target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
 
 
 def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.accent_color_name"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.accent_color_name"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_PHYSICS_COLOR_NAMES,
@@ -219,7 +218,7 @@ def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tupl
         balance_flag_key="balanced_accent_color_name_sampling",
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
-        sampling_namespace=f"{FAMILY_ID}.accent_color_name",
+        sampling_namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -333,7 +332,7 @@ def _resolve_switch_states(
     solutions = _enumerate_switch_state_solutions(int(target_answer))
     if not solutions:
         raise ValueError(f"no switch-state assignment can realize target_answer={target_answer}")
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.switch_states.{int(target_answer)}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.switch_states.{int(target_answer)}")
     selected = solutions[int(rng.randrange(len(solutions)))]
     lit_bulbs = _lit_bulbs_from_edges(_make_edges(selected))
     return dict(selected), tuple(lit_bulbs)
@@ -402,7 +401,7 @@ def _resolve_render_defaults(params: Mapping[str, Any], *, instance_seed: int) -
             key,
             int(getattr(_DEFAULTS, key)),
             instance_seed=int(instance_seed),
-            namespace=FAMILY_ID,
+            namespace=TASK_NAMESPACE,
         )
         for key in keys
     }
@@ -807,18 +806,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(scenario: _SwitchCircuitScenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    closed_count = sum(1 for value in scenario.switch_states.values() if bool(value))
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": min(1.0, 0.34 + 0.04 * len(SWITCH_LABELS)),
-            "connectivity_reasoning": min(1.0, 0.44 + 0.05 * closed_count),
-            "ambiguity": 0.16,
-            "output_burden": 0.20,
-        },
-    )
 
 
 def _prompt_examples() -> Tuple[str, str]:
@@ -841,7 +828,7 @@ class PhysicsSwitchCircuitLitBulbCountTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -862,7 +849,6 @@ class PhysicsSwitchCircuitLitBulbCountTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=canvas_width,
                 canvas_height=canvas_height,
                 require_grid=True,
@@ -870,7 +856,7 @@ class PhysicsSwitchCircuitLitBulbCountTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -907,7 +893,7 @@ class PhysicsSwitchCircuitLitBulbCountTask:
             json_example, json_example_answer_only = _prompt_examples()
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -925,7 +911,6 @@ class PhysicsSwitchCircuitLitBulbCountTask:
                 answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-            complexity = _build_complexity(scenario)
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": "physics_switch_circuit_mixed_branch",
@@ -1019,7 +1004,6 @@ class PhysicsSwitchCircuitLitBulbCountTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=QUERY_ID,

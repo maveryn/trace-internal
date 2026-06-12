@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__tents__tents_missing_tent_cell_label`
 4. Scene id: `tents`
 5. Goal: choose the labeled cell that can contain the missing tent for the marked tree.

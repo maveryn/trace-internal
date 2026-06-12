@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `cross_form`
+2. Scene: `cross_form`
 3. Scene id: `paired_forms`
 4. Task id: `task_pages__paired_forms__shortfall_minus_overage_value`
 5. Objective: Compute shortfall minus overage across mismatched paired-form rows.

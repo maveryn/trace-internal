@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -90,7 +90,7 @@ class _QueryChoice:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -348,28 +348,6 @@ def _counted_side_object_ids(*, scene, feature_id: str, relation: str) -> Tuple[
     return tuple(ids)
 
 
-def _build_complexity(*, query_id: str, object_count: int, target_count: int, theme_id: str) -> TaskComplexity:
-    visual_scan = (int(object_count) - _DEFAULTS.object_count_min) / max(1, _DEFAULTS.object_count_max - _DEFAULTS.object_count_min)
-    if str(query_id) == "feature_side_object_count":
-        answer_load = min(1.0, float(target_count) / max(1.0, float(_DEFAULTS.feature_side_target_count_max)))
-        relation_load = 0.82
-    elif str(query_id) == "on_feature_object_count":
-        answer_load = min(1.0, float(target_count) / max(1.0, float(_DEFAULTS.on_feature_target_count_max)))
-        relation_load = 0.70
-    else:
-        answer_load = min(1.0, float(target_count) / max(1.0, float(_DEFAULTS.crossing_target_count_max)))
-        relation_load = 0.76
-    scene_load = 1.0 if str(theme_id) in {"road_and_river", "canal_city", "skyline_street"} else 0.65
-    score = 0.38 * max(0.0, min(1.0, visual_scan)) + 0.32 * max(0.0, min(1.0, answer_load)) + 0.18 * relation_load + 0.12 * scene_load
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "relation_load": round(float(relation_load), 6),
-            "scene_load": round(float(scene_load), 6),
-        },
-    )
 
 
 class _FeatureRelationCountImpl:
@@ -377,7 +355,7 @@ class _FeatureRelationCountImpl:
 
     task_id = TASK_ID
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -545,7 +523,7 @@ class _FeatureRelationCountImpl:
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -653,12 +631,6 @@ class _FeatureRelationCountImpl:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(
-                query_id=str(choice.query_id),
-                object_count=int(len(scene.placements)),
-                target_count=int(answer),
-                theme_id=str(choice.theme_id),
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(choice.query_id),
@@ -708,7 +680,7 @@ class IllustrationsCountingFeatureSideObjectCountTask:
 
     task_id = PUBLIC_TASK_BY_QUERY["feature_side_object_count"]
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -727,7 +699,7 @@ class IllustrationsCountingOnFeatureObjectCountTask:
 
     task_id = PUBLIC_TASK_BY_QUERY["on_feature_object_count"]
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -746,7 +718,7 @@ class IllustrationsCountingCrossingFeatureCountTask:
 
     task_id = PUBLIC_TASK_BY_QUERY["crossing_feature_count"]
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

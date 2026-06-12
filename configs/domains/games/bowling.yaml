@@ -2,9 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       lane_rack: 1.0
-    query_id_weights:
-      first_pin_hit_label: 1.0
-      spare_path_label: 1.0
     style_variant_weights:
       classic: 1.0
       cosmic: 1.0
@@ -12,41 +9,43 @@ generation:
       tournament: 1.0
       retro: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_visible_pin_count_sampling: true
-    balanced_path_option_count_sampling: true
-    balanced_target_pin_sampling: true
-    balanced_target_path_sampling: true
-    visible_pin_count_support:
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-    path_option_count_support:
-      - 4
-      - 5
-      - 6
-    target_pin_index_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-    target_path_index_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
+  task_overrides:
+    task_games__bowling__first_pin_hit_label:
+      balanced_visible_pin_count_sampling: true
+      balanced_target_pin_sampling: true
+      visible_pin_count_support:
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+      target_pin_index_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+    task_games__bowling__spare_path_label:
+      balanced_path_option_count_sampling: true
+      balanced_target_path_sampling: true
+      path_option_count_support:
+        - 4
+        - 5
+        - 6
+      target_path_index_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
 rendering:
   shared:
     canvas_width: 1000
@@ -59,22 +58,8 @@ rendering:
     ball_radius_px: 24
     path_width_px: 5
     label_font_size_px: 24
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.32
-      motion_reasoning: 0.42
-      ambiguity: 0.12
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_bowling_v0
+    bundle_id: games_bowling_v1
     scene_key: visible_bowling_lane
     task_key: bowling_lane_query
-    object_description_lane_rack: a bowling lane with a bowling ball, visible labeled pins, and any shown aiming paths
-    bowling_motion_rule_text: The dashed arrow shows the ball's current straight path.
-    spare_path_rule_text: Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin.
-    annotation_hint_first_pin_hit_label: set "annotation" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path
-    answer_hint_first_pin_hit_label: set "answer" to the selected pin label as a string
-    annotation_hint_spare_path_label: set "annotation" to one path point-pair of [x, y] pixel points as [[[x0, y0], [x1, y1]]], using the two endpoints of the selected visible dashed cue
-    answer_hint_spare_path_label: set "answer" to the selected numbered path label as a string

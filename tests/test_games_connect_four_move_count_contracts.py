@@ -9,17 +9,17 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.connect_four.move_count import (
-    GamesConnectFourMoveCountTask,
-    GamesConnectFourWinningMoveColumnLabelTask,
-)
+from trace.tasks.games.connect_four.safe_move_count import GamesConnectFourSafeMoveCountTask
+from trace.tasks.games.connect_four.winning_move_column_label import GamesConnectFourWinningMoveColumnLabelTask
+from trace.tasks.games.connect_four.winning_move_count import GamesConnectFourWinningMoveCountTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_annotation_count", "expected_rows", "expected_columns"),
+    ("task_cls", "params", "expected_answer", "expected_annotation_count", "expected_rows", "expected_columns"),
     (
         (
+            GamesConnectFourWinningMoveCountTask,
             {
                 "scene_variant": "midgame_board",
                 "query_id": "winning_move_count",
@@ -32,6 +32,7 @@ from tests.helpers import read_jsonl
             7,
         ),
         (
+            GamesConnectFourSafeMoveCountTask,
             {
                 "scene_variant": "crowded_board",
                 "query_id": "safe_move_count",
@@ -46,13 +47,14 @@ from tests.helpers import read_jsonl
     ),
 )
 def test_games_connect_four_move_count_emits_expected_contract(
+    task_cls,
     params: dict[str, int | str],
     expected_answer: int,
     expected_annotation_count: int,
     expected_rows: int,
     expected_columns: int,
 ) -> None:
-    out = GamesConnectFourMoveCountTask().generate(31001, params=params, max_attempts=48)
+    out = task_cls().generate(31001, params=params, max_attempts=48)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
@@ -72,7 +74,7 @@ def test_games_connect_four_move_count_emits_expected_contract(
 
 
 def test_games_connect_four_move_count_winning_annotation_stays_on_immediate_wins() -> None:
-    out = GamesConnectFourMoveCountTask().generate(
+    out = GamesConnectFourWinningMoveCountTask().generate(
         31011,
         params={
             "scene_variant": "midgame_board",
@@ -91,7 +93,7 @@ def test_games_connect_four_move_count_winning_annotation_stays_on_immediate_win
 
 
 def test_games_connect_four_move_count_safe_annotation_tracks_safe_landing_squares() -> None:
-    out = GamesConnectFourMoveCountTask().generate(
+    out = GamesConnectFourSafeMoveCountTask().generate(
         31021,
         params={
             "scene_variant": "crowded_board",
@@ -161,7 +163,7 @@ def test_games_connect_four_winning_move_column_label_contract(
 
 
 def test_games_connect_four_safe_move_count_default_board_size_uses_square_range() -> None:
-    task = GamesConnectFourMoveCountTask()
+    task = GamesConnectFourSafeMoveCountTask()
     out = task.generate(
         31025,
         params={
@@ -191,16 +193,16 @@ def test_games_connect_four_safe_move_count_default_board_size_uses_square_range
     assert int(forced_execution["board_column_count"]) == 6
 
 
-def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() -> None:
+def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
     safe_answers: list[int] = []
     styles_by_variant: dict[str, set[str]] = {
         "safe_move_count": set(),
         "winning_move_count": set(),
     }
-    task = GamesConnectFourMoveCountTask()
     cases = (
         (
             "winning_move_count",
+            GamesConnectFourWinningMoveCountTask,
             {
                 "scene_variant": "midgame_board",
                 "board_size_variant": "standard_7x6",
@@ -209,6 +211,7 @@ def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() 
         ),
         (
                 "safe_move_count",
+                GamesConnectFourSafeMoveCountTask,
                 {
                     "scene_variant": "crowded_board",
                     "board_size_variant": "small_6x5",
@@ -217,13 +220,13 @@ def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() 
         ),
     )
     expected_styles = {"classic", "soft", "outlined", "arcade_blue", "teal_frame", "charcoal"}
-    for query_id, base_params in cases:
+    for query_id, task_cls, base_params in cases:
         for sampling_index, style_variant in enumerate(sorted(expected_styles)):
             params = dict(base_params)
             params["query_id"] = str(query_id)
             params["style_variant"] = str(style_variant)
             params["_sample_cursor"] = int(sampling_index)
-            out = task.generate(
+            out = task_cls().generate(
                 20260506 + int(sampling_index),
                 params=params,
                 max_attempts=96,
@@ -247,7 +250,7 @@ def test_games_connect_four_move_count_is_deterministic() -> None:
         "query_id": "safe_move_count",
         "target_answer": 1,
     }
-    task = GamesConnectFourMoveCountTask()
+    task = GamesConnectFourSafeMoveCountTask()
     out_a = task.generate(31041, params=params, max_attempts=64)
     out_b = task.generate(31041, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -259,7 +262,7 @@ def test_games_connect_four_move_count_is_deterministic() -> None:
 
 
 def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_query_specific_prompts() -> None:
-    bundle = json.loads(Path("prompts/games/connect_four/games_connect_four_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/connect_four/games_connect_four_v1.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:winning_move_count"] == [
         "current_player_name",
@@ -303,7 +306,7 @@ def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "connect_four" for record in train_records)
+    assert all(record.get("scene_id") == "connect_four" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__connect_four__winning_move_count"]) == 4

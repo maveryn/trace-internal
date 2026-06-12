@@ -19,10 +19,10 @@ def _source_domain(task_obj: Any | None, source_domain: str = "") -> str:
     return str(source_domain or getattr(task_obj, "domain", "") or "")
 
 
-def _source_task_group(task_obj: Any | None, source_task_group: str = "") -> str:
+def _source_scene_id(task_obj: Any | None, source_scene_id: str = "") -> str:
     if task_obj is None:
-        return str(source_task_group or "")
-    return str(source_task_group or getattr(task_obj, "task_group", "") or "")
+        return str(source_scene_id or "")
+    return str(source_scene_id or getattr(task_obj, "scene_id", "") or "")
 
 
 def _public_task_id_parts(task_id: str) -> tuple[str, str] | None:
@@ -37,7 +37,7 @@ def resolve_review_task_taxonomy(
     *,
     task_obj: Any | None = None,
     source_domain: str = "",
-    source_task_group: str = "",
+    source_scene_id: str = "",
 ) -> TaxonomyEntry:
     """Resolve review-facing taxonomy for one task id.
 
@@ -50,7 +50,7 @@ def resolve_review_task_taxonomy(
     resolved = resolve_task_taxonomy(
         str(task_id),
         source_domain=_source_domain(task_obj, source_domain),
-        source_task_group=_source_task_group(task_obj, source_task_group),
+        source_scene_id=_source_scene_id(task_obj, source_scene_id),
     )
     if resolved.domain != "unknown" and resolved.scene_id != "unknown":
         return resolved
@@ -63,12 +63,12 @@ def resolve_review_task_taxonomy(
     domain = str(resolved.domain if resolved.domain != "unknown" else public_domain)
     scene_id = str(resolved.scene_id if resolved.scene_id != "unknown" else public_scene)
     source_domain_value = str(resolved.source_domain if resolved.source_domain != "unknown" else domain)
-    source_group_value = str(resolved.source_task_group if resolved.source_task_group != "unknown" else scene_id)
+    source_group_value = str(resolved.source_scene_id if resolved.source_scene_id != "unknown" else scene_id)
     return TaxonomyEntry(
         domain=domain,
         scene_id=scene_id,
         source_domain=source_domain_value,
-        source_task_group=source_group_value,
+        source_scene_id=source_group_value,
     )
 
 
@@ -105,7 +105,7 @@ def task_review_dir(
         str(task_id),
         task_obj=task_obj,
         source_domain=str(domain),
-        source_task_group=str(scene_id),
+        source_scene_id=str(scene_id),
     )
     return Path(out_root) / str(taxonomy.domain) / str(taxonomy.scene_id) / str(task_id)
 

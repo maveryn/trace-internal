@@ -7,7 +7,7 @@ from itertools import combinations
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.geometry.transformation.match import GeometryTransformationMatchTask
+from trace.tasks.geometry.shape_gallery.reflection_match import GeometryTransformationMatchTask
 
 
 @pytest.mark.parametrize(

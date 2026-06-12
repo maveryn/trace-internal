@@ -1,11 +1,11 @@
-"""Helpers for loading domain/task-group visual defaults with fallbacks."""
+"""Helpers for loading domain and scene visual defaults with fallbacks."""
 
 from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any, Dict, Mapping
 
-from ..task_group_config import get_domain_defaults, get_task_group_defaults
+from ..scene_config import get_domain_defaults, get_scene_defaults
 
 
 def _resolve_visual_section(
@@ -47,16 +47,17 @@ def load_domain_visual_section(
     )
 
 
-def load_task_group_visual_section(
+def load_scene_visual_section(
     *,
     domain: str,
-    task_group: str,
+    scene_id: str,
     section: str,
     fallback: Mapping[str, Any],
     merge_with_fallback: bool,
 ) -> Dict[str, Any]:
-    """Load one visual section (`background`/`noise`) with fallback handling."""
-    cfg = get_task_group_defaults(str(domain), str(task_group))
+    """Load one scene visual section (`background`/`noise`) with fallback handling."""
+
+    cfg = get_scene_defaults(str(domain), str(scene_id))
     visual = cfg.get("visual", {})
     if not isinstance(visual, Mapping):
         return deepcopy(dict(fallback))

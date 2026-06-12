@@ -10,17 +10,15 @@ Use this before writing code for a new task or before changing a task's contract
 ## Read first
 1. `docs/core/BLUEPRINT.md`
 2. `docs/workflows/TASK_AUTHORING.md`
-3. `docs/domains/SCENE_TASK_QUERY_GUIDE.md`
-4. `docs/project/STATUS.md`
+3. the matching domain contract doc under `docs/domains/`
+4. `docs/ACTIVE_TASK_INVENTORY.md`
 
-If the task is domain-specific, also open the matching `docs/domains/*_TASK_SETUP.md` file and `skills/domain-<domain>/SKILL.md`.
-
-If the task needs a new or revised difficulty policy, also open:
-- `skills/task-complexity/SKILL.md`
+If the task is domain-specific, also open the matching domain doc and
+`skills/domain-<domain>/SKILL.md`.
 
 ## Design workflow
-1. Confirm `domain`, `scene_id`, `task_group`, `task_id`, and whether the idea should be a new public task or a `query_id` inside an existing task.
-2. Check `docs/project/STATUS.md` and `docs/tasks/README.md` so you do not create a near-duplicate scene.
+1. Confirm `domain`, `scene_id`, `task_id`, and whether the idea should be a new public task or a `query_id` inside an existing task.
+2. Check `docs/ACTIVE_TASK_INVENTORY.md` and `docs/tasks/README.md` so you do not create a near-duplicate scene.
 3. Freeze the public contract before coding:
    - scene and query structure,
    - answer type,
@@ -36,14 +34,14 @@ If the task needs a new or revised difficulty policy, also open:
    - output mode.
 6. Decide which docs must change in the same patch:
    - task doc,
-   - `docs/project/STATUS.md`,
+   - `docs/ACTIVE_TASK_INVENTORY.md`,
    - `docs/TODO.md`,
    - domain/workflow docs if the new task changes reusable policy.
 
 ## Design checks
 - Answer and annotation must come from the same execution path.
 - Annotation should be as direct as possible; do not invent a weaker proxy if a canonical witness exists.
-- Prefer reusing an existing task group unless the reasoning style is materially different.
+- Prefer reusing an existing scene contract unless the reasoning style or visual grammar is materially different.
 - Keep prompt-facing contracts minimal; richer partitions and diagnostics can live in trace.
 
 ## Handoff

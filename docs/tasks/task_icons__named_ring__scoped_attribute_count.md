@@ -2,7 +2,7 @@
 
 - domain: `icons`
 - scene_id: `named_ring`
-- task_group: `counting`
+- scene_id: `counting`
 - task: `arc_shape_count`
 - module: `trace/tasks/icons/counting/named_ring_arc_shape_count.py`
 

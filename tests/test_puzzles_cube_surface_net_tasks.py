@@ -44,7 +44,7 @@ def test_cube_surface_tasks_are_registered() -> None:
     ):
         task = task_cls()
         assert task.domain == "puzzles"
-        assert task.task_group == "spatial"
+        assert task.scene_id == "spatial"
 
 
 def test_cube_net_face_relation_contracts() -> None:

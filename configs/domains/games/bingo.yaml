@@ -2,18 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       single_card: 1.0
-    query_id_weights:
-      completed_axis_line_count: 1.0
-      line_sum_extremum_value: 1.0
-      near_complete_row_count: 1.0
-      near_complete_column_count: 1.0
-      called_marked_number_count: 1.0
-    line_axis_weights:
-      row: 1.0
-      column: 1.0
-    extremum_weights:
-      max: 1.0
-      min: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -32,51 +20,57 @@ generation:
       column_tint: 1.0
       checker_tint: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
-    balanced_line_axis_sampling: true
-    balanced_extremum_sampling: true
     balanced_style_variant_sampling: true
     balanced_mark_shape_sampling: true
     balanced_cell_fill_pattern_sampling: true
     balanced_target_answer_sampling: true
-    balanced_called_number_count_sampling: true
-    balanced_target_answer_within_line_axis: false
-    axis_distractor_mark_prob: 0.2
-    line_sum_distractor_mark_prob: 0.2
-    completed_axis_line_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    completed_axis_line_count_balanced_cycle:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    line_sum_completed_line_count_support:
-    - 2
-    - 3
-    - 4
-    near_complete_line_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    called_marked_number_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    called_number_count_support:
-    - 5
-    - 6
-    - 7
-    - 8
+  task_overrides:
+    task_games__bingo__completed_column_label:
+      target_column_label_weights:
+        B: 1.0
+        I: 1.0
+        N: 1.0
+        G: 1.0
+        O: 1.0
+      balanced_target_column_label_sampling: true
+      column_distractor_mark_prob: 0.2
+    task_games__bingo__line_sum_extremum_value:
+      line_axis_weights:
+        row: 1.0
+        column: 1.0
+      extremum_weights:
+        max: 1.0
+        min: 1.0
+      balanced_line_axis_sampling: true
+      balanced_extremum_sampling: true
+      line_sum_distractor_mark_prob: 0.2
+      line_sum_completed_line_count_support:
+      - 2
+      - 3
+      - 4
+    task_games__bingo__near_complete_line_count:
+      axis_distractor_mark_prob: 0.2
+      near_complete_line_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+    task_games__bingo__called_number_mark_count:
+      balanced_called_number_count_sampling: true
+      axis_distractor_mark_prob: 0.2
+      called_marked_number_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      called_number_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
 rendering:
   shared:
     canvas_width: 1180
@@ -107,50 +101,8 @@ rendering:
     called_panel_number_font_size_px: 25
     mark_shape: ellipse
     cell_fill_pattern: solid
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.28
-      state_reasoning: 0.42
-      ambiguity: 0.16
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_bingo_v0
+    bundle_id: games_bingo_v1
     scene_key: visible_bingo_card
-    task_key: bingo_completed_line_query
-    object_description_single_card: one face-up 5 x 5 bingo card with some cells marked
-    completed_axis_rule_text: A completed {line_axis} is a {line_axis} with all five
-      cells marked.
-    line_sum_extremum_rule_text: A completed {line_axis} is a {line_axis} with all
-      five cells marked. Sum the printed numbers in each completed {line_axis}, then
-      use the {extremum} sum.
-    near_complete_line_rule_text: A near-complete {line_axis} is a {line_axis} with
-      exactly one unmarked cell.
-    called_marked_number_rule_text: The called list shows numbers that appear on the
-      card.
-    annotation_hint_completed_axis_line_count: set "annotation" to an array of bounding
-      boxes [x0, y0, x1, y1] for every marked cell that belongs to one of the completed
-      {line_axis}s
-    annotation_hint_line_sum_extremum_value: set "annotation" to an array of bounding
-      boxes [x0, y0, x1, y1] for the five cells in the completed {line_axis} with
-      the unique {extremum} sum
-    annotation_hint_near_complete_row_count: set "annotation" to an array of bounding
-      boxes [x0, y0, x1, y1] for the single unmarked gap cell in each near-complete
-      row
-    annotation_hint_near_complete_column_count: set "annotation" to an array of bounding
-      boxes [x0, y0, x1, y1] for the single unmarked gap cell in each near-complete
-      column
-    annotation_hint_called_marked_number_count: set "annotation" to an array of bounding
-      boxes [x0, y0, x1, y1] for each card cell whose number is in the CALLED list
-      and is marked
-    answer_hint_completed_axis_line_count: set "answer" to the number of completed
-      {line_axis}s
-    answer_hint_line_sum_extremum_value: set "answer" to the unique {extremum} sum
-      among completed {line_axis}s
-    answer_hint_near_complete_row_count: set "answer" to the number of near-complete
-      rows
-    answer_hint_near_complete_column_count: set "answer" to the number of near-complete
-      columns
-    answer_hint_called_marked_number_count: set "answer" to the number of called
-      numbers that are marked on the card
+    task_key: bingo_card_query

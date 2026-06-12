@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `wire_magnetism`
-- Implementation task group: `magnetism`
+- Implementation scene: `magnetism`
 - Implementation source: `trace/tasks/physics/magnetism/wire_field.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__wire_magnetism__wire_field_direction_choice` -> `task_physics__wire_magnetism__wire_field_direction_choice`

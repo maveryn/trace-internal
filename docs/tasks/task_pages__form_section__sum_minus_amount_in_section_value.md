@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `arithmetic`
+2. Scene: `arithmetic`
 3. Scene id: `form_section`
 4. Task id: `task_pages__form_section__sum_minus_amount_in_section_value`
 5. Objective: Compute a visible two-term sum minus a third visible amount in one named document section.

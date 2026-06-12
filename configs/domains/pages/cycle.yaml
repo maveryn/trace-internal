@@ -1,15 +1,3 @@
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.34
-      scene_variant_load: 0.24
-  task_overrides:
-    task_pages__cycle__offset_stage_label:
-      criteria_weights:
-        visual_scan: 0.34
-        reasoning_load: 0.49
-        scene_variant_load: 0.17
 rendering:
   shared:
     layout_jitter_enabled: true
@@ -245,5 +233,5 @@ prompt:
       task_key: offset_stage_query
       object_description_cycle_ring: a directed cycle with labeled stages connected
         by arrows
-      annotation_hint_offset_stage_label: set "annotation" to an array containing exactly
-        one bounding box [x0, y0, x1, y1] for the correct stage box
+      annotation_hint_offset_stage_label: set "annotation" to an array containing
+        exactly one bounding box [x0, y0, x1, y1] for the correct stage box

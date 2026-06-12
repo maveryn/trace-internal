@@ -1,4 +1,4 @@
-"""Shared render-param and noise helpers for icon task groups."""
+"""Shared render-param and noise helpers for icon scenes."""
 
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def resolve_icon_render_params(
     fallback_defaults: Any,
     instance_seed: int | None = None,
 ) -> Dict[str, Any]:
-    """Resolve common rendering params for icon task groups."""
+    """Resolve common rendering params for icon scenes."""
 
     canvas_style, canvas_style_metadata = resolve_icon_canvas_style(
         params=params,

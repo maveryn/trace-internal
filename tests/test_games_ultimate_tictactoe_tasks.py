@@ -6,15 +6,15 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.registry import create_task, list_default_task_ids
-from trace.tasks.games.ultimate_tictactoe.board_tasks import _immediate_winning_cells
+from trace.tasks.games.ultimate_tictactoe.line_completion_move_label import _immediate_winning_cells
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
 def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "ultimate_tictactoe")
+    cfg = get_scene_defaults("games", "ultimate_tictactoe")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["status_count_query_id_weights"].keys()) == {
@@ -44,6 +44,8 @@ def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
     assert int(rendering["canvas_height"]) == 820
     assert bool(rendering["dynamic_canvas_size_enabled"])
     assert float(rendering["unit_size_scale_max"]) / float(rendering["unit_size_scale_min"]) >= 2.0
+    assert list(generation["won_board_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["drawn_board_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["macro_threat_board_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert str(prompt["bundle_id"]) == "games_ultimate_tictactoe_v0"
 
@@ -77,7 +79,7 @@ def test_games_ultimate_tictactoe_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "ultimate_tictactoe"
-        assert taxonomy.source_task_group == "ultimate_tictactoe"
+        assert taxonomy.source_scene_id == "ultimate_tictactoe"
 
 
 def test_games_ultimate_tictactoe_status_count_matches_trace() -> None:

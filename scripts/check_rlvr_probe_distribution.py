@@ -40,7 +40,7 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument(
         "--min-unique-answers",
         type=int,
-        default=5,
+        default=4,
         help="Minimum unique answers threshold",
     )
     parser.add_argument(

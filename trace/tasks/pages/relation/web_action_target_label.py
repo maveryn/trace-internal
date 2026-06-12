@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults, resolve_task_group_section_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults, resolve_scene_section_defaults
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -27,7 +27,7 @@ from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_STYLE_VARIANTS,
@@ -222,18 +222,11 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = {
-    str(key): float(value)
-    for key, value in resolve_task_group_section_defaults(_TASK_GROUP_DEFAULTS, "complexity", task_id=TASK_ID)
-    .get("criteria_weights", {})
-    .items()
-    if float(value) > 0.0
-}
 _VISUAL_DEFAULTS = _TASK_GROUP_DEFAULTS.get("visual", {}) if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
 POST_IMAGE_BACKGROUND_DEFAULTS = (
     dict(_VISUAL_DEFAULTS.get("background", {})) if isinstance(_VISUAL_DEFAULTS.get("background"), Mapping) else {}
@@ -1573,29 +1566,6 @@ def _web_profile_dict(profile: _WebProfile) -> Dict[str, Any]:
     }
 
 
-def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
-    if not _COMPLEXITY_WEIGHTS:
-        raise ValueError(f"missing positive complexity criteria weights for {TASK_ID}")
-    variant_grounding = {
-        "click_target_label": 0.78,
-        "type_field_label": 0.82,
-        "select_option_label": 0.84,
-    }
-    components = {
-        "visual_scan": _clamp_unit((float(len(query.controls)) - 6.0) / 14.0),
-        "relational_grounding": float(variant_grounding.get(str(query.query_id), 0.65)),
-        "layout_complexity": _clamp_unit(0.45 + (float(len(query.controls)) / 40.0)),
-        "output_burden": 0.50,
-    }
-    missing = [key for key in _COMPLEXITY_WEIGHTS if key not in components]
-    if missing:
-        raise ValueError(f"GUI web-action complexity is missing active criteria: {missing}")
-    total_weight = sum(float(value) for value in _COMPLEXITY_WEIGHTS.values())
-    score = sum(float(_COMPLEXITY_WEIGHTS[key]) * float(components[key]) for key in _COMPLEXITY_WEIGHTS) / float(total_weight)
-    return TaskComplexity(
-        complexity_score=_clamp_unit(score),
-        complexity_components={str(key): float(_clamp_unit(components[str(key)])) for key in _COMPLEXITY_WEIGHTS},
-    )
 
 
 class PagesRelationWebActionTargetLabelTask:
@@ -1603,7 +1573,7 @@ class PagesRelationWebActionTargetLabelTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1664,7 +1634,7 @@ class PagesRelationWebActionTargetLabelTask:
         json_example, json_example_answer_only = _prompt_json_examples(query_id=str(query.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1860,7 +1830,6 @@ class PagesRelationWebActionTargetLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(query),
             task_versions=default_task_versions(),
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1879,7 +1848,7 @@ class PagesWebActionClickTargetLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__web_action__click_target_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "web_action"
     fixed_query_id = "click_target_label"
     source_task_cls = PagesRelationWebActionTargetLabelTask
@@ -1891,7 +1860,7 @@ class PagesWebActionTypeFieldLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__web_action__type_field_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "web_action"
     fixed_query_id = "type_field_label"
     source_task_cls = PagesRelationWebActionTargetLabelTask
@@ -1903,7 +1872,7 @@ class PagesWebActionSelectOptionLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__web_action__select_option_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "web_action"
     fixed_query_id = "select_option_label"
     source_task_cls = PagesRelationWebActionTargetLabelTask

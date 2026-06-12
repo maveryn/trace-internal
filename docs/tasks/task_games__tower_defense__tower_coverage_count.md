@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tower_defense`
+2. Scene: `tower_defense`
 3. Scene id: `tower_defense`
 4. Public task id: `task_games__tower_defense__tower_coverage_count`
 5. Supported `query_id` values: `marked_enemy_covered_by_tower_count`

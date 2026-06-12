@@ -36,10 +36,10 @@ from trace.tasks.graph.order.binary_tree_traversal_label import (
     GraphOrderBinaryTreeTraversalLabelTask,
 )
 from trace.tasks.graph.path.shortest_path_length import GraphPathShortestPathLengthTask
-from trace.tasks.graph.relation.automaton_state_simulation_label import (
+from trace.tasks.graph.automaton.state_after_input_label import (
     GraphRelationAutomatonStateSimulationLabelTask,
 )
-from trace.tasks.graph.relation.automaton_string_acceptance_label import (
+from trace.tasks.graph.automaton.nfa_accepted_string_label import (
     GraphRelationAutomatonNfaAcceptedStringLabelTask,
 )
 from trace.tasks.graph.relation.binary_tree_node_label import (

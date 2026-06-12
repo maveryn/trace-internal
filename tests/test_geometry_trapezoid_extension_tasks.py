@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.trapezoid_extension import (
+from trace.tasks.geometry.trapezoid_extension.extension_from_parallelogram_area import GeometryExtensionFromParallelogramAreaTask
+from trace.tasks.geometry.trapezoid_extension.extension_from_parallelogram_perimeter import GeometryExtensionFromParallelogramPerimeterTask
+from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_bases_and_height import (
     SCENE_ID,
-    GeometryExtensionFromParallelogramAreaTask,
-    GeometryExtensionFromParallelogramPerimeterTask,
     GeometryTrapezoidAreaFromBasesAndHeightTask,
-    GeometryTrapezoidAreaFromExtensionAndHeightTask,
-    GeometryTrapezoidAreaFromParallelogramAreaTask,
 )
+from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_extension_and_height import GeometryTrapezoidAreaFromExtensionAndHeightTask
+from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_parallelogram_area import GeometryTrapezoidAreaFromParallelogramAreaTask
 
 TASK_CLASSES = (
     GeometryExtensionFromParallelogramAreaTask,

@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -26,11 +26,6 @@ from ..shared.calendar_scene import (
   SUPPORTED_PAGE_CALENDAR_SCENE_VARIANTS,
   render_month_calendar_scene,
   resolve_calendar_render_params,
-)
-from ...shared.time_artifact_complexity import (
-  build_time_artifact_complexity,
-  normalize_int_with_bounds,
-  resolve_time_artifact_complexity_weights,
 )
 from ...shared.time_artifact_fixed_query import force_time_artifact_query_params, rewrite_time_artifact_query_output
 from ...shared.time_artifact_style import (
@@ -194,14 +189,13 @@ class _ResolvedQuery:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "calendar")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "calendar")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
   _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
   task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_time_artifact_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="calendar")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="calendar", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="calendar")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="calendar", apply_prob=0.0)
 
 
 def _resolve_named_variant(
@@ -927,7 +921,7 @@ class _PagesCalendarMonthViewBase:
 
   task_id = TASK_ID
   domain = "pages"
-  task_group = "calendar"
+  scene_id = "calendar"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     del max_attempts
@@ -1039,7 +1033,7 @@ class _PagesCalendarMonthViewBase:
 
     prompt_selection = render_task_prompt_variants(
       domain=self.domain,
-      task_group=self.task_group,
+      scene_id=self.scene_id,
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
@@ -1256,52 +1250,6 @@ class _PagesCalendarMonthViewBase:
 
     marked_count = len(query.marked_dates)
     query_step_count = int(query.query_occurrence or query.workday_offset or marked_count or 1)
-    complexity = build_time_artifact_complexity(
-      weights=_COMPLEXITY_WEIGHTS,
-      components={
-        "calendar_lookup": min(
-          1.0,
-          float(_CALENDAR_LOOKUP_BASE_BY_VARIANT[str(query.query_id)])
-          + (
-            0.18
-            * float(
-              normalize_int_with_bounds(
-                int(query_step_count),
-                [1, 20],
-              )
-            )
-          ),
-        ),
-        "visual_scan": min(
-          1.0,
-          float(_VISUAL_SCAN_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_VISUAL_SCAN_STYLE_BONUS[str(query.style_variant)])
-          + (0.18 * float(normalize_int_with_bounds(int(query.row_count), [4, 6])))
-          + (0.10 * float(normalize_int_with_bounds(int(marked_count), [0, 8]))),
-        ),
-        "ambiguity": min(
-          1.0,
-          (0.18 * float(normalize_int_with_bounds(int(query.row_count), [4, 6])))
-          + (0.28 * float(normalize_int_with_bounds(int(marked_count), [0, 8])))
-          + (
-            0.20
-            * float(
-              normalize_int_with_bounds(
-                int(query_step_count),
-                [1, 20],
-              )
-            )
-          )
-          + 0.08,
-        ),
-        "clutter": min(
-          1.0,
-          float(_CLUTTER_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_CLUTTER_STYLE_BONUS[str(query.style_variant)])
-          + (0.16 * float(normalize_int_with_bounds(int(marked_count), [0, 8]))),
-        ),
-      },
-    )
 
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
@@ -1310,7 +1258,6 @@ class _PagesCalendarMonthViewBase:
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
-      complexity=complexity,
       task_versions=default_task_versions(),
       query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),

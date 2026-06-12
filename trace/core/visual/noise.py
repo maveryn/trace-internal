@@ -1,7 +1,7 @@
 """Deterministic post-image noise augmentation helpers for TRACE tasks.
 
 This module applies coordinate-preserving post-render noise edits with
-deterministic sampling. Task groups provide their own default config; this
+deterministic sampling. Scenes provide their own default config; this
 module only merges defaults with per-task/per-instance override keys.
 """
 
@@ -573,7 +573,7 @@ def _serialize_edits(edits: Sequence[Tuple[str, Mapping[str, float]]]) -> List[D
 
 
 def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[str, Any]:
-    """Normalize caller-provided task-group defaults against global fallback."""
+    """Normalize caller-provided scene defaults against global fallback."""
     base = deepcopy(_DEFAULT_NOISE_CONFIG)
     if not isinstance(default_config, Mapping):
         return base

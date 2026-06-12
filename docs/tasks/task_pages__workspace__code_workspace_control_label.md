@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `workspace`
 4. Task id: `task_pages__workspace__code_workspace_control_label`
 5. Objective: Identify an IDE workspace control from a visible code cue.

@@ -3,9 +3,9 @@
 ## Summary
 1. Domain: `graph`
 2. Scene: `adjacency`
-3. Task group: `optimization`
-4. Task id: `task_graph__adjacency__mst_weight`
-5. Objective: compute the total weight of the unique minimum spanning tree from a weighted adjacency matrix.
+3. Task id: `task_graph__adjacency__mst_weight`
+4. Objective: compute the total weight of the unique minimum spanning tree from a weighted adjacency matrix.
+5. Implementation: `trace/tasks/graph/adjacency/mst_weight.py`.
 
 ## Query IDs
 1. `weighted_matrix_mst_weight`: find the minimum spanning tree in a connected undirected weighted graph shown as a matrix.
@@ -13,7 +13,7 @@
 ## Annotation
 1. Answer type: `integer`.
 2. Annotation type: `bbox_set`.
-3. Annotation boxes are `[x0,y0,x1,y1]` pixel boxes around one visible matrix cell for each MST edge.
+3. Annotation boxes are `[x0,y0,x1,y1]` pixel boxes around the MST-edge matrix cell whose row label is topmost among the two endpoint rows.
 
 ## Generation Notes
 1. Blank off-diagonal cells mean no edge; the diagonal uses `-`.

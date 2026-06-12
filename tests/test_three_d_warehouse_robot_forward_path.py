@@ -126,7 +126,7 @@ def test_warehouse_robot_forward_path_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "warehouse"
+    assert taxonomy.source_scene_id == "warehouse"
     assert SUPPORTED_QUERY_IDS == ("first_object_ahead",)
     assert SUPPORTED_ROBOT_HEADINGS == ("east", "north", "west", "south")
     assert SUPPORTED_ROBOT_DESIGNS == ("low_cart", "sensor_tower", "stacker_bot")

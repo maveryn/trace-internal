@@ -14,7 +14,7 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `integer`.
+1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.
 3. Annotation should mark the centers of the counted points in the named category only.
 4. Renderer context such as legends, axes, threshold guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `category_threshold_point_count` | `count.category_points_by_axis_threshold` | `integer` | `point_set` |
+| `category_threshold_point_count` | `count.category_points_by_axis_threshold` | `integer_count` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

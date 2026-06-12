@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_graph__node_link__same_component_count`
 5. Objective: count nodes in the same connected component as a reference node.
 
@@ -23,6 +23,6 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

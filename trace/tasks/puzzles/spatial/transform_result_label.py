@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,13 +18,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import (
-    build_puzzle_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_puzzle_complexity_weights,
-)
-from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin
 from ..shared.paper_fold_common import (
     PuzzleFoldResultDefaults,
     SUPPORTED_PUZZLE_FOLD_SCENE_VARIANTS,
@@ -109,13 +103,12 @@ _SUPPORTED_OVERLAY_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_PUZZLE_OVERLAY_SC
 _FOLD_RESULT_DEFAULTS = PuzzleFoldResultDefaults()
 _FOLD_CUT_DEFAULTS = PuzzleFoldCutDefaults()
 _OVERLAY_DEFAULTS = PuzzleOverlayDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.0)
 
 
 def _resolve_transform_scene_style(instance_seed: int, *, task_id: str, scene_id: str):
@@ -328,7 +321,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -497,7 +490,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -549,15 +542,6 @@ class _PuzzlesSpatialTransformResultBaseTask:
                     + (0.22 * float(folded_source_scan))
                 )
             )
-        complexity_components = {
-            "visual_scan": float(visual_scan),
-            "reasoning_load": float(reasoning_load),
-            "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-        }
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components=complexity_components,
-        )
 
         render_map = {
             "image_id": "img0",
@@ -695,7 +679,6 @@ class _PuzzlesSpatialTransformResultBaseTask:
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
             "projected_annotation": dict(annotation_projection),
-            "complexity": complexity.to_dict(),
         }
 
         if is_fold_cut_variant:
@@ -730,7 +713,6 @@ class _PuzzlesSpatialTransformResultBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -830,7 +812,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -875,125 +857,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             + (0.18 * float(overlap_scan))
             + (0.12 * float(union_scan))
         )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float((0.4 * grid_scan) + (0.35 * sheet_scan) + (0.25 * option_scan)),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
 
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": f"puzzle_spatial_transform_{str(scene_variant)}",
-                "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "query_id": "overlay_result",
-                    "internal_query_id": "overlay_union_same_grid",
-                    "scene_variant": str(scene_variant),
-                    "answer_option_label": str(answer_value),
-                    "correct_option_choice_id": str(correct_option_choice_id),
-                    "view_family": str(dataset["view_family"]),
-                },
-            },
-            "query_spec": {
-                "query_id": "overlay_result",
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": "overlay_result",
-                    "internal_query_id": "overlay_union_same_grid",
-                    "scene_variant": str(scene_variant),
-                    "query_id_probabilities": dict(query_id_probabilities),
-                    "scene_variant_probabilities": dict(scene_variant_probabilities),
-                    "grid_size": int(dataset["grid_size"]),
-                    "grid_size_range": list(dataset["grid_size_range"]),
-                    "option_count": int(dataset["option_count"]),
-                    "option_count_range": list(dataset["option_count_range"]),
-                    "left_mark_count": int(dataset["left_mark_count"]),
-                    "right_mark_count": int(dataset["right_mark_count"]),
-                    "sheet_mark_count_range": list(dataset["sheet_mark_count_range"]),
-                    "overlap_count": int(dataset["overlap_count"]),
-                    "overlap_count_range": list(dataset["overlap_count_range"]),
-                },
-            },
-            "render_spec": {
-                "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
-                "coord_space": "pixel",
-                "scene_variant": str(scene_variant),
-                "background_style": dict(background_meta),
-                "scene_style": dict(scene_style_meta),
-                "post_image_noise": dict(post_noise_meta),
-                "scene_bbox_px": list(rendered_scene.scene_bbox_px),
-                "unit_size_jitter": dict(render_params.unit_size_jitter),
-                "text_style": {
-                    "option_label_font_size_px": int(render_params.option_label_font_size_px),
-                    "combine_symbol_font_size_px": int(render_params.combine_symbol_font_size_px),
-                },
-                "mark_style": {
-                    "shape": str(render_params.mark_shape),
-                    "fill_rgb": list(render_params.mark_fill_rgb),
-                    "outline_rgb": list(render_params.mark_outline_rgb),
-                },
-            },
-            "render_map": with_puzzle_unit_size_jitter(
-                {
-                    "image_id": "img0",
-                    "scene_bbox_px": list(rendered_scene.scene_bbox_px),
-                    "reference_panel_bbox_px": list(rendered_scene.reference_panel_bbox_px),
-                    "source_sheet_bboxes_px": {
-                        str(key): list(value) for key, value in rendered_scene.source_sheet_bbox_map.items()
-                    },
-                    "option_choice_bboxes_px": {
-                        str(key): list(value) for key, value in rendered_scene.option_choice_bbox_map.items()
-                    },
-                },
-                render_params.unit_size_jitter,
-            ),
-            "execution_trace": {
-                "query_id": "overlay_result",
-                "internal_query_id": "overlay_union_same_grid",
-                "scene_variant": str(scene_variant),
-                "question_format": str(dataset["question_format"]),
-                "view_family": str(dataset["view_family"]),
-                "grid_size": int(dataset["grid_size"]),
-                "grid_size_range": list(dataset["grid_size_range"]),
-                "option_count": int(dataset["option_count"]),
-                "option_count_range": list(dataset["option_count_range"]),
-                "sheet_mark_count_range": list(dataset["sheet_mark_count_range"]),
-                "overlap_count_range": list(dataset["overlap_count_range"]),
-                "left_cells": [list(cell) for cell in dataset["left_cells"]],
-                "right_cells": [list(cell) for cell in dataset["right_cells"]],
-                "overlap_cells": [list(cell) for cell in dataset["overlap_cells"]],
-                "union_cells": [list(cell) for cell in dataset["union_cells"]],
-                "left_mark_specs": [dict(item) for item in dataset["left_mark_specs"]],
-                "right_mark_specs": [dict(item) for item in dataset["right_mark_specs"]],
-                "left_mark_count": int(dataset["left_mark_count"]),
-                "right_mark_count": int(dataset["right_mark_count"]),
-                "mark_shape": str(render_params.mark_shape),
-                "overlap_count": int(dataset["overlap_count"]),
-                "union_mark_count": int(dataset["union_mark_count"]),
-                "option_specs": [dict(spec) for spec in dataset["option_specs"]],
-                "answer_option_label": str(answer_value),
-                "correct_option_index": int(dataset["correct_option_index"]),
-                "correct_option_choice_id": str(correct_option_choice_id),
-                "supporting_option_choice_ids": [str(item) for item in dataset["valid_option_choice_ids"]],
-                "solver_trace": dict(dataset["solver_trace"]),
-                "complexity_components": dict(complexity.complexity_components),
-            },
-            "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(annotation_bboxes),
-            },
-            "answer_gt": answer_gt.to_dict(),
-            "annotation_gt": annotation_gt.to_dict(),
-            "projected_annotation": dict(annotation_projection),
-            "complexity": complexity.to_dict(),
-        }
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1002,7 +866,6 @@ class _PuzzlesSpatialTransformResultBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id="overlay_result",
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -1,1 +1,0 @@
-"""Illustration counterfactual tasks."""

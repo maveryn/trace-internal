@@ -5,27 +5,21 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
-    render_task_prompt_variants,
+    render_scene_prompt_variants,
 )
 from ..shared.diagram.common import projected_diagram_bbox_annotation
-from ..shared.diagram.complexity import (
-    build_diagrams_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_diagrams_complexity_weights,
-)
-from ..shared.diagram.cycle_common import (
+from .shared.common import (
     CycleDefaults,
     SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS,
     SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS,
@@ -37,12 +31,13 @@ from ..shared.diagram.cycle_common import (
     resolve_cycle_scene_variant,
     resolve_cycle_query_id,
 )
-from ..shared.diagram.cycle_scene import render_cycle_scene
-from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
+from .shared.scene import render_cycle_scene
+from ..shared.diagram.visual_defaults import load_diagrams_scene_background_defaults, load_diagrams_scene_noise_defaults
 from ..shared.public_query_task import rewrite_pages_query_output
 
 
 TASK_ID = "task_pages__cycle__offset_stage_label"
+SCENE_ID = "cycle"
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_RELATIONSHIP = {
@@ -52,14 +47,24 @@ _REASONING_LOAD_BASE_BY_RELATIONSHIP = {
 _SCENE_LOAD_BY_VARIANT = {"cycle_ring": 0.12}
 
 _DEFAULTS = CycleDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "cycle")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+_SCENE_DEFAULTS = get_scene_defaults("pages", SCENE_ID)
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
+    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_diagrams_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="cycle")
-POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="cycle", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_scene_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_diagrams_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
+
+
+def clamp_unit_interval(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
+
+
+def normalize_int_with_bounds(value: int, bounds: tuple[int, int] | list[int]) -> float:
+    low, high = int(bounds[0]), int(bounds[1])
+    if high <= low:
+        return 0.0
+    return clamp_unit_interval((int(value) - low) / float(high - low))
 
 
 def _build_prompt_json_examples() -> tuple[str, str]:
@@ -81,7 +86,7 @@ class PagesCycleOffsetStageLabelTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "cycle"
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -158,9 +163,10 @@ class PagesCycleOffsetStageLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _build_prompt_json_examples()
-        prompt_selection = render_task_prompt_variants(
+        query_prompt_slots = dict(dataset["query_prompt_slots"])
+        prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -168,7 +174,7 @@ class PagesCycleOffsetStageLabelTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_cycle_ring"]),
-                "question_text": str(dataset["question_text"]),
+                **query_prompt_slots,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "annotation_hint": str(prompt_defaults["annotation_hint_offset_stage_label"]),
@@ -193,14 +199,6 @@ class PagesCycleOffsetStageLabelTask:
             float(_REASONING_LOAD_BASE_BY_RELATIONSHIP[str(query_relationship)])
             + (0.12 * float(stage_scan))
             + (0.20 * float(step_scan))
-        )
-        complexity = build_diagrams_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(stage_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -263,7 +261,7 @@ class PagesCycleOffsetStageLabelTask:
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
                 "scene_title": str(dataset["scene_title"]),
-                "question_text": str(dataset["question_text"]),
+                "query_prompt_slots": dict(query_prompt_slots),
                 "direction": str(dataset["direction"]),
                 "stage_count": int(dataset["stage_count"]),
                 "step_count": int(dataset["step_count"]),
@@ -296,7 +294,6 @@ class PagesCycleOffsetStageLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
         )
@@ -304,7 +301,7 @@ class PagesCycleOffsetStageLabelTask:
         return rewrite_pages_query_output(
             output,
             query_id=query_id,
-            scene_id="cycle",
+            scene_id=SCENE_ID,
             query_probabilities={
                 f"{key}_offset_stage_label": float(value)
                 for key, value in query_relationship_probabilities.items()

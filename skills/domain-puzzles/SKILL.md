@@ -8,18 +8,17 @@ description: Use when designing, implementing, or reviewing TRACE puzzles-domain
 Use this whenever the task lives under `domain=puzzles`.
 
 ## Read first
-1. `docs/domains/PUZZLES_TASK_SETUP.md`
+1. `docs/domains/puzzles.md`
 2. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
-6. `docs/workflows/PUZZLE_GAME_RENDERING_UPGRADE.md` when touching repeated-cell, board, sticker, or voxel scenes
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
+5. `docs/workflows/PUZZLE_GAME_RENDERING_UPGRADE.md` when touching repeated-cell, board, sticker, or voxel scenes
 
 ## Active-contract reminders
-- `docs/domains/PUZZLES_TASK_SETUP.md` owns the active puzzles contract.
+- `docs/domains/puzzles.md` owns the active puzzles contract.
 - Treat `cell_board` as a puzzle scene.
 - Treat puzzles as hidden-rule / hidden-variable reasoning tasks, not generic icon grids or mini tables.
-- Define `task_group` by reasoning family: `arithmetic`, `logic`, `spatial`, `topology`, and later genuinely new puzzle families.
+- Keep puzzle scene contracts grouped by visual grammar and reasoning family; add a new scene only when the scaffold or verifier contract materially changes.
 - Keep prompts explicit about the queried unknown, missing slot, target option, or equivalence rule.
 
 ## Practical review checklist
@@ -28,4 +27,4 @@ Use this whenever the task lives under `domain=puzzles`.
 - Add variants inside an existing task when the scene grammar and annotation contract stay the same.
 - Split only when a new puzzle changes the visual grammar or witness semantics enough to be a healthy standalone task.
 - Reuse puzzle helpers under `trace/tasks/puzzles/shared/` before adding task-local layout or rule-building utilities.
-- For cell-board implementation work, follow the `puzzles/cell_board` section in `docs/domains/PUZZLES_TASK_SETUP.md` and the board-rendering checklist.
+- For cell-board implementation work, follow the `puzzles/cell_board` section in `docs/domains/puzzles.md` and the board-rendering checklist.

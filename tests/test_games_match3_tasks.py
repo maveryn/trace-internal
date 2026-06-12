@@ -6,14 +6,14 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 from trace.tasks.shared.named_colors import named_color
 
 
 def test_games_match3_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "match3")
+    cfg = get_scene_defaults("games", "match3")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
     )
@@ -59,7 +59,7 @@ def test_games_match3_prompt_bundle_has_queries() -> None:
 
 
 def test_games_match3_best_swap_uses_easier_task_override() -> None:
-    cfg = get_task_group_defaults("games", "match3")
+    cfg = get_scene_defaults("games", "match3")
     generation, rendering, _prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_games__match3__max_clear_swap_label",

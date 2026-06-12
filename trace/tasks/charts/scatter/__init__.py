@@ -1,1 +1,0 @@
-"""Scatter chart task group."""

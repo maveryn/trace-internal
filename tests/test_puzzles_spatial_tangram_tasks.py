@@ -20,7 +20,7 @@ def test_tangram_tasks_are_registered() -> None:
         assert TASK_REGISTRY[task_id] is task_cls
         task = task_cls()
         assert task.domain == "puzzles"
-        assert task.task_group == "spatial"
+        assert task.scene_id == "spatial"
 
 
 def test_tangram_tasks_emit_public_contracts() -> None:

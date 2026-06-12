@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `wallpaper_panels`
-3. Task group: `pattern`
+3. Scene: `pattern`
 4. Task id: `task_icons__wallpaper_panels__same_pattern_as_reference_label`
 5. Objective: select the labeled wallpaper panel whose global wallpaper pattern matches the Reference panel.
 
@@ -36,4 +36,4 @@
 ## 5) Complexity + tests
 1. Complexity definition/components: wallpaper-group rule inference, visual scan over the Reference and candidate panels, answer ambiguity floor, and icon-scene clutter.
 2. Behavior/trace/prompt tests: `tests/test_icons_pattern_wallpaper_reference_match_tasks.py`
-3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_icons_task_group_config.py`
+3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_icons_scene_config.py`

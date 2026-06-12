@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -19,11 +19,6 @@ from ...shared.prompt_variants import (
   PROMPT_OUTPUT_MODES,
   build_prompt_trace_artifacts,
   render_task_prompt_variants,
-)
-from ...shared.time_artifact_complexity import (
-  build_time_artifact_complexity,
-  normalize_int_with_bounds,
-  resolve_time_artifact_complexity_weights,
 )
 from ...shared.time_artifact_style import (
   SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
@@ -170,14 +165,13 @@ class _ResolvedQuery:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "timeline")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "timeline")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
   _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
   task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_time_artifact_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="timeline")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="timeline", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="timeline")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="timeline", apply_prob=0.0)
 
 
 def _resolve_named_variant(
@@ -257,7 +251,7 @@ def _resolve_query_id(
 
 
 def _force_interval_membership_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-  """Force the interval task family while preserving its public query aliases."""
+  """Force the interval query while preserving its public query aliases."""
 
   forced = dict(params)
   explicit_variant = forced.get("query_id")
@@ -754,7 +748,7 @@ class _PagesTimelineMilestonesBase:
 
   task_id = TASK_ID
   domain = "pages"
-  task_group = "timeline"
+  scene_id = "timeline"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     del max_attempts
@@ -876,7 +870,7 @@ class _PagesTimelineMilestonesBase:
 
     prompt_selection = render_task_prompt_variants(
       domain=self.domain,
-      task_group=self.task_group,
+      scene_id=self.scene_id,
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
@@ -1040,71 +1034,6 @@ class _PagesTimelineMilestonesBase:
     reference_span = int(secondary_index - reference_index)
     reference_edge_distance = int(min(reference_index, max(0, event_count - 1 - secondary_index)))
 
-    complexity = build_time_artifact_complexity(
-      weights=_COMPLEXITY_WEIGHTS,
-      components={
-        "timeline_order_reasoning": min(
-          1.0,
-          float(_TIMELINE_ORDER_BASE_BY_RELATION[str(query.interval_relation)])
-          + (
-            0.18
-            * float(
-              normalize_int_with_bounds(
-                int(query.answer_value),
-                [0, 8],
-              )
-            )
-          )
-          + (0.08 * float(normalize_int_with_bounds(int(reference_span), [0, 7])))
-          + (
-            0.16
-            * float(
-              normalize_int_with_bounds(
-                int(query.answer_value),
-                [2, 24],
-              )
-            )
-            if str(query.query_id) == "event_date_gap_value"
-            else 0.0
-          ),
-        ),
-        "visual_scan": min(
-          1.0,
-          float(_VISUAL_SCAN_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_VISUAL_SCAN_STYLE_BONUS[str(query.style_variant)])
-          + (0.24 * float(normalize_int_with_bounds(int(event_count), [6, 12]))),
-        ),
-        "ambiguity": min(
-          1.0,
-          0.10
-          + (0.16 * float(normalize_int_with_bounds(int(event_count), [6, 12])))
-          + (
-            0.24
-            * float(
-              normalize_int_with_bounds(
-                int(reference_edge_distance),
-                [0, 4],
-              )
-            )
-          )
-          + (
-            0.12
-            * float(
-              normalize_int_with_bounds(
-                int(query.answer_value),
-                [0, 8],
-              )
-            )
-          ),
-        ),
-        "clutter": min(
-          1.0,
-          float(_CLUTTER_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_CLUTTER_STYLE_BONUS[str(query.style_variant)])
-          + (0.20 * float(normalize_int_with_bounds(int(event_count), [6, 12]))),
-        ),
-      },
-    )
 
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
@@ -1113,7 +1042,6 @@ class _PagesTimelineMilestonesBase:
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
-      complexity=complexity,
       task_versions=default_task_versions(),
       query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),

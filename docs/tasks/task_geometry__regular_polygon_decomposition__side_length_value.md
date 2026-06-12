@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
-3. Task group: `measurement`
+3. Scene package: `measurement`
 4. Task id: `task_geometry__regular_polygon_decomposition__side_length_value`
 5. Objective: compute the marked side length of a regular polygon from perimeter, total area plus apothem, or shaded wedge area plus apothem.
 

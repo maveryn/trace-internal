@@ -99,6 +99,7 @@ class TaskAuditRecord:
     image_pass: bool = False
     annotation_pass: bool = False
     distribution_pass: bool = False
+    code_review_pass: bool = False
     solve_rate_pass: bool = False
     notes: str = ""
     updated_at: str = ""
@@ -113,6 +114,7 @@ class TaskAuditRecord:
             and self.image_pass
             and self.annotation_pass
             and self.distribution_pass
+            and self.code_review_pass
         )
 
     @property
@@ -122,11 +124,12 @@ class TaskAuditRecord:
             + int(self.image_pass)
             + int(self.annotation_pass)
             + int(self.distribution_pass)
+            + int(self.code_review_pass)
         )
 
     @property
     def review_total(self) -> int:
-        return 4
+        return 5
 
     @property
     def solve_rate_review_pass(self) -> bool:
@@ -146,7 +149,7 @@ class TaskAuditRecord:
 
     @property
     def total_count(self) -> int:
-        return 5
+        return 6
 
     @classmethod
     def empty(cls, *, domain: str, scene_id: str, task_id: str) -> "TaskAuditRecord":
@@ -162,6 +165,7 @@ class TaskAuditRecord:
             image_pass=bool(int(row["image_pass"] or 0)),
             annotation_pass=bool(int(row["annotation_pass"] or 0)),
             distribution_pass=bool(int(row["distribution_pass"] or 0)),
+            code_review_pass=bool(int(row.get("code_review_pass", 0) or 0)),
             solve_rate_pass=bool(int(row.get("solve_rate_pass", 0) or 0)),
             notes=str(row["notes"] or ""),
             updated_at=str(row["updated_at"] or ""),
@@ -298,6 +302,12 @@ class SceneRecord:
     preview_uid: str = ""
     tasks: List[str] = field(default_factory=list)
     model_stats_count: int = 0
+    migration_test_status_rel_path: str = ""
+    migration_test_pass: bool | None = None
+    migration_test_summary: Dict[str, Any] = field(default_factory=dict)
+    manual_code_audit_status_rel_path: str = ""
+    manual_code_audit_pass: bool | None = None
+    manual_code_audit_summary: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

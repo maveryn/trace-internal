@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -23,17 +23,11 @@ from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ..shared.complexity import (
-    build_physics_complexity,
-    clamp_unit_interval,
-    normalize_linear,
-    resolve_physics_complexity_weights,
-)
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_waves_waveform_panel_family"
+TASK_NAMESPACE = "physics_waves_waveform_panel"
 SCENE_ID = "waveform_panel"
 TASK_ID = "task_physics__waveform_panel__wave_property_extremum_label"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("clean_stack", "grid_stack", "lab_sheet")
@@ -64,12 +58,12 @@ QUERY_EXTREMUM: Dict[str, str] = {
     "shortest_wavelength_label": "shortest",
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "waves")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "waves")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="waves", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="waves", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -221,7 +215,7 @@ def _resolve_target_label(
     index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.target_label.{int(panel_count)}",
+        namespace=f"{TASK_NAMESPACE}.target_label.{int(panel_count)}",
     ) % int(panel_count)
     return str(PANEL_LABELS[index]), {}
 
@@ -314,14 +308,14 @@ def _build_panel_specs(
         target_index=target_index if amplitude_mode else None,
         target_mode=amplitude_mode,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.amplitude_ranks.{axes.query_id}",
+        namespace=f"{TASK_NAMESPACE}.amplitude_ranks.{axes.query_id}",
     )
     cycle_counts = _rank_assignment(
         count=panel_count,
         target_index=target_index if cycle_mode else None,
         target_mode=cycle_mode,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.cycle_counts.{axes.query_id}",
+        namespace=f"{TASK_NAMESPACE}.cycle_counts.{axes.query_id}",
     )
 
     stack_top = float(render_defaults["stack_top_px"])
@@ -546,22 +540,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(*, axes: _ResolvedAxes) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    property_name = QUERY_PROPERTY[str(axes.query_id)]
-    visual_scan = clamp_unit_interval(0.34 + (0.34 * normalize_linear(float(axes.panel_count), min_value=4.0, max_value=6.0)))
-    wave_reasoning = clamp_unit_interval(0.45 + (0.10 if property_name == "wavelength" else 0.0))
-    ambiguity = 0.18
-    output_burden = normalize_linear(float(axes.panel_count), min_value=4.0, max_value=6.0)
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "wave_reasoning": float(wave_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 @register_task
@@ -570,7 +548,7 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "waves"
+    scene_id = "waves"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -584,7 +562,6 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),
             require_grid=True,
@@ -592,7 +569,7 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -603,7 +580,7 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
                 key,
                 int(getattr(_DEFAULTS, key)),
                 instance_seed=int(instance_seed),
-                namespace=FAMILY_ID,
+                namespace=TASK_NAMESPACE,
             )
             for key in (
                 "sheet_left_px",
@@ -658,7 +635,7 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -676,7 +653,6 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        complexity = _build_complexity(axes=axes)
         panels_payload = [dict(panel) for panel in rendered.render_map["panels"]]
         trace_payload = {
             "scene_ir": {
@@ -766,7 +742,6 @@ class PhysicsWaveformPanelWavePropertyExtremumLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(axes.query_id),

@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
@@ -77,7 +77,7 @@ class _SampleSpec:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -156,19 +156,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     )
 
 
-def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
-    visual_scan = (int(sample.person_count) - _DEFAULTS.person_count_min) / max(1, _DEFAULTS.person_count_max - _DEFAULTS.person_count_min)
-    answer_load = (int(sample.target_count) - _DEFAULTS.target_count_min) / max(1, _DEFAULTS.target_count_max - _DEFAULTS.target_count_min)
-    activity_scope = 0.65 if str(sample.activity) != "playing_ball" else 0.78
-    score = 0.42 * max(0.0, min(1.0, visual_scan)) + 0.38 * max(0.0, min(1.0, answer_load)) + 0.20 * activity_scope
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "activity_scope": round(float(activity_scope), 6),
-        },
-    )
 
 
 class ParkPersonActivityBranch:
@@ -177,7 +164,7 @@ class ParkPersonActivityBranch:
     task_id = TASK_ID
     branch_id = "park_person_activity"
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -245,7 +232,7 @@ class ParkPersonActivityBranch:
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -327,7 +314,6 @@ class ParkPersonActivityBranch:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

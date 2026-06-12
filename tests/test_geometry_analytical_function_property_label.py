@@ -7,7 +7,7 @@ from collections import Counter
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.geometry.analytical.function_property_label import (
+from trace.tasks.geometry.function_panels.function_status_label import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
     GeometryAnalyticalFunctionPropertyLabelTask,

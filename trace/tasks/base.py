@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Protocol
 
 from PIL import Image
 
-from ..core.types import TaskComplexity, TypedValue
+from ..core.types import TypedValue
 
 
 @dataclass
@@ -20,7 +20,6 @@ class TaskOutput:
     image: Image.Image
     image_id: str
     trace_payload: Dict[str, Any]
-    complexity: TaskComplexity
     task_versions: Dict[str, str]
     # Canonical task-internal branch id used for sampling, replay, and review.
     scene_id: str = ""
@@ -57,7 +56,7 @@ class Task(Protocol):
 
     task_id: str
     domain: str
-    task_group: str
+    scene_id: str | None
     default_dataset_enabled: bool
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

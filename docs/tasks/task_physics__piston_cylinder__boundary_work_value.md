@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `piston_cylinder`
-- Implementation task group: `thermodynamics`
+- Implementation scene: `thermodynamics`
 - Implementation source: `trace/tasks/physics/thermodynamics/piston_cylinder.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__piston_cylinder__boundary_work_value` -> `task_physics__piston_cylinder__boundary_work_value`

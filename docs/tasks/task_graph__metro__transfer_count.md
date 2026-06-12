@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `path`
+2. Scene: `path`
 3. Scene id: `metro`
 4. Task id: `task_graph__metro__transfer_count`
 5. Objective: count the minimum colored-route changes for a metro trip from a source station to a goal station through a required via station.

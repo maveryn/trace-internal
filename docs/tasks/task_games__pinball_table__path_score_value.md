@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `pinball_table`
+2. Scene package: `trace/tasks/games/pinball_table/`
 3. Scene id: `pinball_table`
 4. Public task id: `task_games__pinball_table__path_score_value`
 5. Supported `query_id` values: `path_score_value`

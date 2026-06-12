@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `analog_meter`
-- Implementation task group: `circuits`
+- Implementation scene: `circuits`
 - Implementation source: `trace/tasks/physics/circuits/analog_meter.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__analog_meter__meter_readout_value` -> `task_physics__analog_meter__meter_readout_value`

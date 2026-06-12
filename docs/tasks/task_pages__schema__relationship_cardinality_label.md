@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `schema`
+2. Scene: `schema`
 3. Scene id: `schema`
 4. Task id: `task_pages__schema__relationship_cardinality_label`
 5. Objective: Identify the normalized cardinality class shown by relationship endpoint markers between two tables.

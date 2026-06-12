@@ -8,14 +8,13 @@ description: Use when designing, implementing, or reviewing TRACE icon-domain ta
 Use this whenever the task lives under `domain=icons`.
 
 ## Read first
-1. `docs/domains/ICON_TASK_SETUP.md`
+1. `docs/domains/icons.md`
 2. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/ICON_TASK_SETUP.md` owns the active icons contract, asset policy, and annotation policy.
+- `docs/domains/icons.md` owns the active icons contract, asset policy, and annotation policy.
 - Active icon tasks put the concrete branch in `query_id`; old `query_id` params may still be used as internal replay controls for reviews.
 - Use icon manifests only through `trace/tasks/icons/shared/icon_assets.py`.
 - Use asymmetric icons when orientation, mirror symmetry, transformation identity, or attribute binding can collapse under icon symmetry.

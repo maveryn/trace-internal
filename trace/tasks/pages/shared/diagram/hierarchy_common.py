@@ -760,7 +760,7 @@ def _build_parent_query(
     )
     answer_node_id = str(parent_by_child[query_node_id])
     return {
-        "question_text": f"What is the parent of {labels[query_node_id]}? Return the exact label shown.",
+        "query_prompt_slots": {"query_label": str(labels[query_node_id])},
         "query_node_ids": [str(query_node_id)],
         "query_node_labels": [str(labels[query_node_id])],
         "query_depths": [int(depths[query_node_id])],
@@ -822,10 +822,10 @@ def _build_lca_query(
     answer_depth = int(depths[answer_node_id])
     span = int((left_depth - answer_depth) + (right_depth - answer_depth))
     return {
-        "question_text": (
-            f"What is the lowest common ancestor of {labels[left_id]} and {labels[right_id]}? "
-            "Return the exact label shown."
-        ),
+        "query_prompt_slots": {
+            "query_label": str(labels[left_id]),
+            "right_query_label": str(labels[right_id]),
+        },
         "query_node_ids": [str(left_id), str(right_id)],
         "query_node_labels": [str(labels[left_id]), str(labels[right_id])],
         "query_depths": [left_depth, right_depth],
@@ -918,7 +918,7 @@ def build_hierarchy_ancestor_dataset(
         "scene_title": _title(rng=rng),
         "scene_variant": str(scene_variant),
         "query_id": str(query_id),
-        "question_text": str(query["question_text"]),
+        "query_prompt_slots": dict(query["query_prompt_slots"]),
         "question_format": "hierarchy_ancestor_label",
         "view_family": "org_chart_diagram",
         "template_id": str(template["template_id"]),
@@ -1098,12 +1098,15 @@ def build_hierarchy_tree_count_dataset(
     labels = _label_map(node_ids=node_ids, rng=rng)
     query_label = str(labels[str(query_node_id)])
     if query_key == "subtree_descendant_count":
-        question_text = f"How many descendants does \"{query_label}\" have? Do not include \"{query_label}\" itself."
+        query_prompt_slots = {"query_label": str(query_label)}
     elif query_key == "subtree_leaf_count":
-        question_text = f"How many leaf nodes are in the subtree rooted at \"{query_label}\"?"
+        query_prompt_slots = {"query_label": str(query_label)}
     else:
         right_query_label = str(labels[str(right_query_node_id)])
-        question_text = f"How many parent-child hops are on the path between \"{query_label}\" and \"{right_query_label}\"?"
+        query_prompt_slots = {
+            "query_label": str(query_label),
+            "right_query_label": str(right_query_label),
+        }
 
     node_specs: List[Dict[str, Any]] = []
     for node_id in node_ids:
@@ -1148,7 +1151,7 @@ def build_hierarchy_tree_count_dataset(
         "scene_title": _tree_title(rng=rng),
         "scene_variant": str(scene_variant),
         "query_id": query_key,
-        "question_text": str(question_text),
+        "query_prompt_slots": dict(query_prompt_slots),
         "question_format": "hierarchy_tree_count",
         "view_family": "rooted_tree_diagram",
         "template_id": f"generated_{query_key}",

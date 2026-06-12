@@ -6,13 +6,10 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.circular_chess.board_tasks import (
-    BLACK_REACHER_QUERY_ID,
-    MARKED_CAPTURE_QUERY_ID,
-    MARKED_MOVE_QUERY_ID,
-    WHITE_REACHER_QUERY_ID,
+from trace.tasks.games.circular_chess.marked_piece_destination_count import MARKED_CAPTURE_QUERY_ID, MARKED_MOVE_QUERY_ID
+from trace.tasks.games.circular_chess.shared.mechanics import (
     capture_destinations,
     circular_coord_to_cell_id,
     circular_piece_to_entity_id,
@@ -21,9 +18,10 @@ from trace.tasks.games.circular_chess.board_tasks import (
     legal_destinations,
     target_reachers,
 )
-from trace.tasks.games.shared.chess_common import BLACK, WHITE, ChessPiece, material_count, validate_circular_chess_material
+from trace.tasks.games.circular_chess.target_cell_reacher_count import BLACK_REACHER_QUERY_ID, WHITE_REACHER_QUERY_ID
+from trace.tasks.games.shared.piece_board_rules import BLACK, WHITE, ChessPiece, material_count, validate_circular_chess_material
 from trace.tasks.registry import create_task
-from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 
 
 MARKED_DESTINATION_TASK_ID = "task_games__circular_chess__marked_piece_destination_count"
@@ -45,35 +43,29 @@ def _board_from_trace(out) -> tuple[tuple[ChessPiece | None, ...], ...]:
 
 
 def test_games_circular_chess_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "circular_chess")
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+    cfg = get_scene_defaults("games", "circular_chess")
+    generation, rendering, prompt = split_scene_generation_rendering_prompt_defaults(
         cfg,
         task_id=MARKED_DESTINATION_TASK_ID,
     )
 
-    assert set(generation["query_id_weights"].keys()) == {
-        MARKED_MOVE_QUERY_ID,
-        MARKED_CAPTURE_QUERY_ID,
-        WHITE_REACHER_QUERY_ID,
-        BLACK_REACHER_QUERY_ID,
-    }
     assert set(generation["marked_piece_kind_weights"].keys()) == {"king", "queen", "rook", "bishop", "knight"}
     assert list(generation["marked_piece_move_count_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
     assert int(rendering["max_board_size_px"]) > 0
-    assert str(prompt["bundle_id"]) == "games_circular_chess_v0"
-    assert "Sectors wrap" in str(prompt["circular_board_rule_text"])
+    assert str(prompt["bundle_id"]) == "games_circular_chess_v1"
 
 
 def test_games_circular_chess_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/circular_chess/games_circular_chess_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/circular_chess/games_circular_chess_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert set(bundle["templates"]["query"].keys()) == {
         MARKED_MOVE_QUERY_ID,
         MARKED_CAPTURE_QUERY_ID,
         WHITE_REACHER_QUERY_ID,
         BLACK_REACHER_QUERY_ID,
     }
+    assert "Sectors wrap" in str(bundle["code_prompt_defaults"]["circular_board_rule_text"])
     assert "piece_rule_text" in bundle["required_slots_by_key"][f"query:{MARKED_MOVE_QUERY_ID}"]
 
 
@@ -167,7 +159,6 @@ def test_games_circular_chess_taxonomy_mapping() -> None:
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "circular_chess"
         assert taxonomy.source_domain == "games"
-        assert taxonomy.source_task_group == "circular_chess"
 
 
 def test_games_circular_chess_boards_are_material_plausible() -> None:

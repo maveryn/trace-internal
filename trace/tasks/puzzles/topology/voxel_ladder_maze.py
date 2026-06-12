@@ -9,8 +9,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -20,8 +20,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.text_legibility import draw_text_traced
-from ..shared.common import projected_puzzle_bbox_annotation
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
+from ..shared.common import projected_puzzle_bbox_annotation, projected_puzzle_keyed_bbox_set_annotation
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_noise_defaults
@@ -46,8 +45,8 @@ Color = Tuple[int, int, int]
 Node = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "topology")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="topology", apply_prob=0.0)
 
 
 @dataclass(frozen=True)
@@ -842,7 +841,7 @@ def _render_voxel_maze(background: Image.Image, *, dataset: _VoxelMazeDataset, r
 
 class _PuzzlesTopologyVoxelLadderMazeBaseTask:
     domain = "puzzles"
-    task_group = "topology"
+    scene_id = "topology"
     default_dataset_enabled = True
     task_id: str
     supported_query_ids: Tuple[str, ...]
@@ -915,7 +914,7 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
         annotation_hint = str(prompt_defaults_required[f"annotation_hint_{query_id}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults_required["bundle_id"]),
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required["task_key"]),
@@ -934,27 +933,56 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        annotation_projection = projected_puzzle_bbox_annotation(rendered.item_bbox_map, dataset.supporting_item_ids)
-        annotation_bboxes = [[round(float(v), 3) for v in bbox] for bbox in annotation_projection["bbox_set"]]
-        if len(annotation_bboxes) != len(dataset.supporting_item_ids):
-            raise ValueError("voxel-ladder annotation projection does not match supporting item ids")
+        if str(query_id) == "checkpoint_sequence_label":
+            annotation_role_item_ids = {
+                "start": ["cube_start"],
+                "route_checkpoints": [
+                    _checkpoint_item_id(label)
+                    for label in dataset.route_checkpoint_sequence
+                ],
+                "route_ladders": [
+                    ladder.ladder_id
+                    for ladder in dataset.ladders
+                    if bool(ladder.on_goal_route)
+                ],
+                "goal": ["cube_goal"],
+            }
+            annotation_projection = projected_puzzle_keyed_bbox_set_annotation(rendered.item_bbox_map, annotation_role_item_ids)
+            annotation_value = {
+                str(role): [
+                    [round(float(v), 3) for v in bbox]
+                    for bbox in bboxes
+                ]
+                for role, bboxes in annotation_projection["keyed_bbox_set_map"].items()
+            }
+            annotation_bbox_count = sum(len(bboxes) for bboxes in annotation_value.values())
+            if annotation_bbox_count != sum(len(ids) for ids in annotation_role_item_ids.values()):
+                raise ValueError("voxel-ladder keyed annotation projection does not match role item ids")
+            annotation_type = "keyed_bbox_set_map"
+            annotation_policy = "keyed_bbox_set_map over start, route checkpoints, route ladders, and goal"
+            witness_symbolic = {
+                "type": annotation_type,
+                "value": dict(annotation_value),
+                "role_item_ids": {str(role): list(ids) for role, ids in annotation_role_item_ids.items()},
+            }
+        else:
+            annotation_projection = projected_puzzle_bbox_annotation(rendered.item_bbox_map, dataset.supporting_item_ids)
+            annotation_value = [[round(float(v), 3) for v in bbox] for bbox in annotation_projection["bbox_set"]]
+            if len(annotation_value) != len(dataset.supporting_item_ids):
+                raise ValueError("voxel-ladder annotation projection does not match supporting item ids")
+            annotation_bbox_count = len(annotation_value)
+            annotation_type = "bbox_set"
+            annotation_policy = "bbox_set over count/label support items"
+            witness_symbolic = {
+                "type": annotation_type,
+                "value": list(annotation_value),
+                "item_ids": list(dataset.supporting_item_ids),
+            }
         answer_gt = TypedValue(type=str(dataset.answer_type), value=dataset.answer_value)
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        annotation_gt = TypedValue(type=str(annotation_type), value=annotation_value)
         visual_scan = normalize_int_with_bounds(len(dataset.cubes), [8, 20])
         route_load = normalize_int_with_bounds(len(dataset.route_nodes), [5, 14])
-        annotation_load = min(1.0, len(annotation_bboxes) / 8.0)
-        complexity_weights = resolve_puzzle_complexity_weights(
-            _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-            task_id=str(self.task_id),
-        )
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": min(1.0, 0.35 + (0.35 * float(route_load)) + (0.20 * float(annotation_load))),
-                "scene_variant_load": 0.38 if str(scene_variant) == "game_board_voxel_maze" else 0.30,
-            },
-        )
+        annotation_load = min(1.0, int(annotation_bbox_count) / 8.0)
 
         rounded_bboxes = {key: [round(float(v), 3) for v in bbox] for key, bbox in rendered.item_bbox_map.items()}
         checkpoint_specs = [
@@ -1053,19 +1081,14 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "answer_value": dataset.answer_value,
                 "supporting_item_ids": list(dataset.supporting_item_ids),
                 "supporting_annotation_source": "item_bboxes_px",
-                "annotation_policy": "bbox_set over route/count support items",
+                "annotation_policy": str(annotation_policy),
                 "query_id_probabilities": dict(query_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
             },
-            "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(annotation_bboxes),
-                "item_ids": list(dataset.supporting_item_ids),
-            },
+            "witness_symbolic": dict(witness_symbolic),
             "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1074,10 +1097,6 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=float(complexity.complexity_score),
-                complexity_components=dict(complexity.complexity_components),
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

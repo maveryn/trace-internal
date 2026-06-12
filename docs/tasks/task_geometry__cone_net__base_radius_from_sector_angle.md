@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `cone_net`
 3. Scene id: `cone_net`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `base_radius_from_sector_angle`
@@ -13,7 +13,7 @@
 - `derive_geometry_metric(visible_cone_net_measurements, derivation_rule=base_radius_from_sector_angle, output_role=radius_length); scene=cone_net; scope=base_radius_from_sector_angle`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `cone_net`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/cone_sector_net.py`
+- Config: `configs/domains/geometry/cone_net.yaml`
+- Task module: `trace/tasks/geometry/cone_net/base_radius_from_sector_angle.py`

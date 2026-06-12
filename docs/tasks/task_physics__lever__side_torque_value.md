@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `lever`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/lever_balance.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__lever__side_torque_value` -> `task_physics__lever__side_torque_value`

@@ -9,7 +9,7 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
@@ -34,12 +34,6 @@ from .shared.grid_graph import (
     cell_id,
     coord_adjacency_to_cell_ids,
     open_grid_adjacency,
-)
-from .shared.complexity import (
-    build_tile_complexity,
-    normalize_float_with_bounds,
-    normalize_int_with_bounds,
-    resolve_tile_complexity_weights,
 )
 from .shared.reachability_board import sample_reachability_board
 from .shared.rectangular_board import (
@@ -88,17 +82,13 @@ class _TaskDefaults:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_reachability")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "cell_board_reachability")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_region_size_internal",
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="reachability")
-POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="reachability", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="cell_board_region_size_internal",
-)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(scene_id="reachability")
+POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(scene_id="reachability", apply_prob=0.5)
 
 
 def _eligible_board_shapes(
@@ -128,7 +118,7 @@ class TileRegionSizeTask:
 
     task_id = "cell_board_region_size_internal"
     domain = "puzzles"
-    task_group = "cell_board_reachability"
+    scene_id = "cell_board_reachability"
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -362,7 +352,7 @@ class TileRegionSizeTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -488,50 +478,6 @@ class TileRegionSizeTask:
         blocked_count = len(blocked_coords)
         min_board_cell_count = int(rows_min) * int(cols_min)
         max_board_cell_count = int(rows_max) * int(cols_max)
-        complexity = build_tile_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": (
-                    0.80
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.20
-                    * normalize_float_with_bounds(
-                        float(realized_obstacle_fraction),
-                        (float(obstacle_fraction_min), float(obstacle_fraction_max)),
-                    )
-                ),
-                "reasoning_load": (
-                    0.45
-                    * normalize_int_with_bounds(
-                        int(board_cell_count),
-                        (int(min_board_cell_count), int(max_board_cell_count)),
-                    )
-                    + 0.30
-                    * normalize_int_with_bounds(
-                        int(answer_value),
-                        (int(answer_min), int(answer_max)),
-                    )
-                    + 0.10
-                    * normalize_int_with_bounds(
-                        int(cols),
-                        (int(cols_min), int(cols_max)),
-                    )
-                    + 0.10
-                    * normalize_float_with_bounds(
-                        1.0 - float(realized_obstacle_fraction),
-                        (1.0 - float(obstacle_fraction_max), 1.0 - float(obstacle_fraction_min)),
-                    )
-                    + 0.05
-                    * normalize_float_with_bounds(
-                        1.0 - float(reachable_fraction),
-                        (1.0 - float(reachable_fraction_max), 1.0 - float(reachable_fraction_min)),
-                    )
-                ),
-            },
-        )
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -543,7 +489,6 @@ class TileRegionSizeTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id="region_size",
             prompt_variants=dict(prompt_artifacts.prompt_variants),

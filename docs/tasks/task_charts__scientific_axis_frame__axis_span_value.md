@@ -14,7 +14,7 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `integer`.
+1. Answer schema: `integer_value`.
 2. Annotation schema: `keyed_bbox_map`.
 3. Annotation maps `min_tick` and `max_tick` to the smallest and largest visible tick labels on the requested axis.
 4. Decorative plotted data, title text, axis labels, and distractor text are metadata unless explicitly queried.
@@ -23,8 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `x_axis_span_value` | `difference.axis_tick.visible_min_max` | `integer` | `keyed_bbox_map` |
-| `y_axis_span_value` | `difference.axis_tick.visible_min_max` | `integer` | `keyed_bbox_map` |
+| `x_axis_span_value` | `difference.axis_tick.visible_min_max` | `integer_value` | `keyed_bbox_map` |
+| `y_axis_span_value` | `difference.axis_tick.visible_min_max` | `integer_value` | `keyed_bbox_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `sixteen_soldiers`
+2. Scene: `sixteen_soldiers`
 3. Scene id: `sixteen_soldiers`
 4. Public task id: `task_games__sixteen_soldiers__marked_piece_destination_count`
 5. Supported `query_id` values: `marked_piece_destination_count`

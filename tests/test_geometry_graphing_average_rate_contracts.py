@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.geometry.graphing.rate import (
+from trace.tasks.geometry.function_graph.average_rate_value import (
     GeometryGraphingAverageRateValueBaseTask,
     GeometryGraphingAverageRateValueTask,
 )

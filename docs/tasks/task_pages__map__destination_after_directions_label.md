@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `map`
+2. Scene: `map`
 3. Scene id: `map`
 4. Task id: `task_pages__map__destination_after_directions_label`
 5. Objective: Identify the destination landmark reached by following visible map directions.

@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `web_action`
 4. Task id: `task_pages__web_action__select_option_label`
 5. Objective: Identify the option chip described by a visible action instruction.

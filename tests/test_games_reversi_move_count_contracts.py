@@ -9,8 +9,8 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.reversi.move_count import GamesReversiMoveCountTask
-from trace.tasks.games.shared.reversi_common import BLACK, WHITE, corner_coords, frontier_disc_coords
+from trace.tasks.games.reversi.legal_destination_count import GamesReversiMoveCountTask
+from trace.tasks.games.reversi.shared.common import BLACK, WHITE, corner_coords, frontier_disc_coords
 from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from trace.tasks.registry import create_task
 from tests.helpers import read_jsonl
@@ -253,7 +253,7 @@ def test_games_reversi_move_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "reversi" for record in train_records)
+    assert all(record.get("scene_id") == "reversi" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__reversi__legal_destination_count"]) == 4

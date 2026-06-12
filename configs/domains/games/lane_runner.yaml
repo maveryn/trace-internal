@@ -2,9 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       two_lane_track: 1.0
-    query_id_weights:
-      path_coin_count: 1.0
-      safe_path_label: 1.0
     style_variant_weights:
       arcade_lane: 1.0
       city_road: 1.0
@@ -12,54 +9,40 @@ generation:
       neon_track: 1.0
       paper_course: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_row_count_sampling: true
     balanced_start_lane_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_option_count_sampling: true
-    balanced_answer_option_index_sampling: true
     row_count_support:
-      - 5
-      - 6
-      - 7
-      - 8
+    - 5
+    - 6
+    - 7
+    - 8
     start_lane_support:
-      - 0
-      - 1
-    target_answer_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-    option_count_support:
-      - 4
-      - 6
-    answer_option_index_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
+    - 0
+    - 1
   task_overrides:
-    games_lane_runner_path_coin_base:
-      query_id_weights:
-        path_coin_count: 1.0
-        safe_path_label: 0.0
+    task_games__lane_runner__path_coin_count:
+      balanced_target_answer_sampling: true
       target_answer_support:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
-    games_lane_runner_safe_path_base:
-      query_id_weights:
-        path_coin_count: 0.0
-        safe_path_label: 1.0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    task_games__lane_runner__safe_path_label:
+      balanced_option_count_sampling: true
+      balanced_answer_option_index_sampling: true
+      option_count_support:
+      - 4
+      - 6
+      answer_option_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
 rendering:
   shared:
     dynamic_canvas_size_enabled: true
@@ -91,24 +74,8 @@ rendering:
     layout_jitter_x_slack_fraction_max: 0.75
     layout_jitter_y_slack_fraction_min: -0.75
     layout_jitter_y_slack_fraction_max: 0.75
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      path_planning: 0.30
-      ambiguity: 0.12
-      output_burden: 0.24
 prompt:
   shared:
-    bundle_id: games_lane_runner_v0
+    bundle_id: games_lane_runner_v1
     scene_key: lane_runner_track
     task_key: lane_runner_query
-    object_description_two_lane_track: a two-lane runner track with a start marker, a finish band, and visible coins in lane cells
-    object_description_two_lane_track_path_coin: a two-lane runner track with a start marker, a finish band, visible coins in lane cells, and one shown path
-    lane_runner_path_rule_text: Follow the shown path from start to finish. Each step moves one row toward the finish; the path may stay in the same lane or switch diagonally to the other lane.
-    annotation_hint_path_coin_count: set "annotation" to [x, y] pixel points at the centers of every coin collected by the shown path
-    answer_hint_path_coin_count: set "answer" to the number of coins collected by the shown path
-    object_description_two_lane_track_safe_path: labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path
-    safe_path_rule_text: Each path moves one row toward the finish. A safe path never enters a hazard cell.
-    annotation_hint_safe_path_label: set "annotation" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected path card
-    answer_hint_safe_path_label: set "answer" to the selected path label as a capital letter

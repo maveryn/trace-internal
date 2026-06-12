@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -24,16 +24,15 @@ from ...shared.variant_sampling import (
     resolve_compatible_scene_query_ids,
     resolve_variant,
 )
-from ..shared.complexity import build_physics_optics_ray_trace_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
-from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPhysicsQueryVariantTaskMixin
 from ..shared.optics_scene import RenderedOpticsScene, render_optics_ray_scene
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "physics_optics_ray_trace_family"
+TASK_ID = "physics_optics_ray_trace"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "single_mirror",
     "double_mirror",
@@ -157,12 +156,12 @@ class _SceneLayout:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "optics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "optics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="optics", apply_prob=0.5)
 
 
 def _target_support_key(*, scene_variant: str, query_id: str) -> str:
@@ -817,7 +816,7 @@ class _PhysicsOpticsRayTraceBaseTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "optics"
+    scene_id = "optics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -845,7 +844,6 @@ class _PhysicsOpticsRayTraceBaseTask:
 
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="ray_optics",
-                task_group=self.task_group,
                 canvas_width=int(render_defaults["canvas_width"]),
                 canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
@@ -854,7 +852,7 @@ class _PhysicsOpticsRayTraceBaseTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -921,7 +919,7 @@ class _PhysicsOpticsRayTraceBaseTask:
             json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -968,15 +966,6 @@ class _PhysicsOpticsRayTraceBaseTask:
             annotation_gt = TypedValue(
                 type=str(annotation_artifacts["annotation_type"]),
                 value=list(annotation_artifacts["annotation_value"]),
-            )
-            complexity = build_physics_optics_ray_trace_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=TASK_ID,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                mirror_count=len(scene_layout.mirrors),
-                target_count=len(scene_layout.targets),
-                target_answer=int(axes.target_answer),
             )
             support_key = _target_support_key(scene_variant=str(axes.scene_variant), query_id=str(axes.query_id))
             trace_payload = {
@@ -1082,7 +1071,6 @@ class _PhysicsOpticsRayTraceBaseTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 query_id=str(axes.query_id),
                 scene_id="ray_optics",

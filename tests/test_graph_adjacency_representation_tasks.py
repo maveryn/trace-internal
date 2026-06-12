@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.adjacency_component_count import GraphCountingAdjacencyComponentCountTask
-from trace.tasks.graph.counting.adjacency_pair_reciprocity_count import GraphCountingAdjacencyDirectedPairReciprocityCountTask
-from trace.tasks.graph.optimization.adjacency_matrix_mst_weight import GraphOptimizationAdjacencyMatrixMSTWeightTask
-from trace.tasks.graph.order.adjacency_traversal_label import GraphOrderAdjacencyTraversalLabelTask
+from trace.tasks.graph.adjacency.directed_pair_reciprocity_count import GraphCountingAdjacencyDirectedPairReciprocityCountTask
+from trace.tasks.graph.adjacency.directed_strong_component_count import GraphCountingAdjacencyDirectedStrongComponentCountTask
+from trace.tasks.graph.adjacency.mst_weight import GraphOptimizationAdjacencyMatrixMSTWeightTask
+from trace.tasks.graph.adjacency.traversal_kth_label import GraphOrderAdjacencyTraversalLabelTask
+from trace.tasks.graph.adjacency.undirected_component_count import GraphCountingAdjacencyUndirectedComponentCountTask
 
 
 def _assert_bbox_in_image(bbox: list[float], size: tuple[int, int]) -> None:
@@ -45,19 +46,19 @@ def test_graph_order_adjacency_traversal_label_contracts() -> None:
         assert len(trace["scene_ir"]["relations"]["adjacency"]) == 6
         for bbox in out.annotation_gt.value:
             _assert_bbox_in_image(bbox, out.image.size)
-        assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
+        assert "annotation format" in out.prompt_variants["answer_and_annotation"].lower()
         assert "ordered JSON array" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_counting_adjacency_component_count_contracts() -> None:
-    task = GraphCountingAdjacencyComponentCountTask()
     cases = (
-        ("undirected_component_count", "adjacency_list_panel"),
-        ("directed_strong_component_count", "adjacency_matrix_panel"),
+        (GraphCountingAdjacencyUndirectedComponentCountTask(), "undirected_component_count", "adjacency_list_panel"),
+        (GraphCountingAdjacencyDirectedStrongComponentCountTask(), "directed_strong_component_count", "adjacency_matrix_panel"),
     )
 
     assert "task_graph__adjacency__undirected_component_count" in TASK_REGISTRY
-    for offset, (query_id, scene_variant) in enumerate(cases):
+    assert "task_graph__adjacency__directed_strong_component_count" in TASK_REGISTRY
+    for offset, (task, query_id, scene_variant) in enumerate(cases):
         out = task.generate(
             41200 + offset,
             params={
@@ -79,7 +80,7 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
         assert int(out.answer_gt.value) == 3
         assert len(out.annotation_gt.value) == 3
         assert len(execution["components"]) == 3
-        assert len(execution["component_representatives"]) == 3
+        assert len(execution["component_topmost_row_labels"]) == 3
         assert execution["representation_variant"] == scene_variant
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
         prompt_line = str(out.prompt).splitlines()[0].lower()
@@ -93,65 +94,84 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
             _assert_bbox_in_image(bbox, out.image.size)
         annotation_text = out.prompt_variants["answer_and_annotation"]
         if query_id == "directed_strong_component_count":
-            assert "one row label from each strongly connected component" in annotation_text
+            assert "topmost row label in each strongly connected component" in annotation_text
         else:
-            assert "one row label from each connected component" in annotation_text
+            assert "topmost row label in each connected component" in annotation_text
 
 
 def test_graph_counting_adjacency_pair_reciprocity_contracts() -> None:
     task = GraphCountingAdjacencyDirectedPairReciprocityCountTask()
 
     assert "task_graph__adjacency__directed_pair_reciprocity_count" in TASK_REGISTRY
-    for offset, query_id in enumerate(("one_way_pair_count", "mutual_pair_count")):
-        out = task.generate(
-            41270 + offset,
-            params={
-                "query_id": query_id,
-                "node_count": 6,
-                "target_count": 3,
-                "label_variant": "letters",
-            },
-            max_attempts=100,
-        )
-        trace = out.trace_payload
-        execution = trace["execution_trace"]
+    out = task.generate(
+        41270,
+        params={
+            "query_id": "mutual_pair_count",
+            "node_count": 6,
+            "target_count": 3,
+            "label_variant": "letters",
+        },
+        max_attempts=100,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
 
-        assert out.scene_id == "adjacency"
-        assert out.query_id == query_id
-        assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "bbox_set"
-        assert int(out.answer_gt.value) == 3
-        assert execution["representation_variant"] == "adjacency_matrix_panel"
-        assert execution["target_pair_state"] == ("one_way" if query_id == "one_way_pair_count" else "mutual")
-        assert len(execution["counted_pairs"]) == int(out.answer_gt.value)
-        assert len(out.annotation_gt.value) == 2 * int(out.answer_gt.value)
-        assert len(execution["annotation_cell_keys"]) == len(out.annotation_gt.value)
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-        assert all("||" in key for key in execution["annotation_cell_keys"])
-        for key in execution["annotation_cell_keys"]:
-            row_label, column_label = str(key).split("||")
-            assert row_label != column_label
-        for bbox in out.annotation_gt.value:
-            _assert_bbox_in_image(bbox, out.image.size)
-        assert "mirrored matrix cells" in out.prompt_variants["answer_and_annotation"]
+    assert task.supported_query_ids == ("mutual_pair_count",)
+    assert out.scene_id == "adjacency"
+    assert out.query_id == "mutual_pair_count"
+    assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "point_pair_set"
+    assert int(out.answer_gt.value) == 3
+    assert execution["representation_variant"] == "adjacency_matrix_panel"
+    assert execution["target_pair_state"] == "mutual"
+    assert len(execution["counted_pairs"]) == int(out.answer_gt.value)
+    assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+    assert len(execution["annotation_cell_keys"]) == 2 * len(out.annotation_gt.value)
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert all("||" in key for key in execution["annotation_cell_keys"])
+    for key in execution["annotation_cell_keys"]:
+        row_label, column_label = str(key).split("||")
+        assert row_label != column_label
+    width, height = out.image.size
+    for point_pair in out.annotation_gt.value:
+        assert len(point_pair) == 2
+        for point in point_pair:
+            assert 0 <= float(point[0]) <= width
+            assert 0 <= float(point[1]) <= height
+    assert "mirrored matrix-cell centers" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_counting_adjacency_pair_reciprocity_allows_zero_answer() -> None:
     task = GraphCountingAdjacencyDirectedPairReciprocityCountTask()
-    out = task.generate(
-        41290,
+    try:
+        task.generate(
+            41290,
+            params={
+                "query_id": "one_way_pair_count",
+                "node_count": 5,
+                "target_count": 0,
+                "label_variant": "letters",
+            },
+            max_attempts=100,
+        )
+    except ValueError as exc:
+        assert "query_id" in str(exc)
+    else:
+        raise AssertionError("one_way_pair_count should no longer be a supported query")
+
+    zero = task.generate(
+        41291,
         params={
-            "query_id": "one_way_pair_count",
+            "query_id": "mutual_pair_count",
             "node_count": 5,
             "target_count": 0,
             "label_variant": "letters",
         },
         max_attempts=100,
     )
-
-    assert out.answer_gt.value == 0
-    assert out.annotation_gt.value == []
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == []
+    assert zero.answer_gt.value == 0
+    assert zero.annotation_gt.value == []
+    assert zero.trace_payload["projected_annotation"]["point_pair_set"] == []
 
 
 def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:

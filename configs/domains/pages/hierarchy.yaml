@@ -1,15 +1,3 @@
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.34
-      scene_variant_load: 0.24
-  task_overrides:
-    pages_hierarchy_tree_count_base:
-      criteria_weights:
-        visual_scan: 0.38
-        reasoning_load: 0.48
-        scene_variant_load: 0.14
 rendering:
   shared:
     layout_jitter_enabled: true
@@ -257,9 +245,9 @@ prompt:
         parent-child connector lines
       annotation_hint_subtree_descendant_count: set "annotation" to an array of bounding
         boxes [x0, y0, x1, y1] for every counted descendant node, in any order
-      annotation_hint_subtree_leaf_count: set "annotation" to an array of bounding boxes
-        [x0, y0, x1, y1] for every counted leaf node in the queried subtree, in any
-        order
+      annotation_hint_subtree_leaf_count: set "annotation" to an array of bounding
+        boxes [x0, y0, x1, y1] for every counted leaf node in the queried subtree,
+        in any order
       annotation_hint_path_length_between_two_nodes: set "annotation" to an ordered
-        array of bounding boxes [x0, y0, x1, y1] for the nodes on the path from
-        the first queried node to the second queried node
+        array of bounding boxes [x0, y0, x1, y1] for the nodes on the path from the
+        first queried node to the second queried node

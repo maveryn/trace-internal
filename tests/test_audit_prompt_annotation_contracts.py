@@ -44,6 +44,18 @@ def test_annotation_prompt_audit_rejects_negative_annotation_format_instructions
     assert any(issue["code"] == "negative_annotation_format_instruction" for issue in issues)
 
 
+def test_annotation_prompt_audit_rejects_degenerate_point_examples() -> None:
+    prompt = (
+        'Annotation format: set "annotation" to a JSON object mapping each key to a pixel point [x,y].\n'
+        'Example JSON:\n'
+        '{"annotation":{"A":[320,240],"B":[320,240],"C":[320,240],"D":[320,240]},"answer":8}'
+    )
+
+    issues = audit._audit_annotation_prompt(prompt, annotation_type="keyed_point_map", mode="answer_and_annotation")
+
+    assert any(issue["code"] == "degenerate_example_points" for issue in issues)
+
+
 def test_validate_bbox_set_checks_pixel_bounds_and_area() -> None:
     valid = audit._validate_annotation_value(
         "bbox_set",

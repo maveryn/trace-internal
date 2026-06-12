@@ -1,0 +1,86 @@
+{
+  "bundle_id": "pedigree_chart_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "relationship_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "relatedness_coefficient_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:pedigree_chart": [
+      "object_description"
+    ],
+    "query:relationship_label_between_two_people": [
+      "person_label_a",
+      "person_label_b"
+    ],
+    "query:relatedness_coefficient_between_two_people": [
+      "person_label_a",
+      "person_label_b"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "pedigree_chart": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "relationship_label_between_two_people": [
+      "Which option gives the relationship of person {person_label_a} to person {person_label_b}?",
+      "In the pedigree, which option says how {person_label_a} is related to {person_label_b}?",
+      "Using the pedigree links, choose the option for {person_label_a}'s relationship to {person_label_b}.",
+      "Which option shows the family relationship {person_label_a} has to {person_label_b}?",
+      "Read the pedigree chart. Which option is {person_label_a} relative to {person_label_b}?"
+    ],
+    "relatedness_coefficient_between_two_people": [
+      "Which option gives the coefficient of relatedness between {person_label_a} and {person_label_b}?",
+      "Using the pedigree links, choose the option for the coefficient of relatedness between {person_label_a} and {person_label_b}.",
+      "Trace the family connections. Which option is the relatedness coefficient for {person_label_a} and {person_label_b}?",
+      "What option shows the correct coefficient of relatedness for {person_label_a} and {person_label_b}?",
+      "Read the pedigree chart. Which option is the coefficient of relatedness between {person_label_a} and {person_label_b}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

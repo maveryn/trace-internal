@@ -8,7 +8,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.spatial.logical_predicate_count import (
+from trace.tasks.three_d.object_scene.shared.logical_predicate_count import (
     MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
@@ -122,4 +122,4 @@ def test_logical_predicate_count_task_registered_in_three_d_taxonomy(task_id: st
     assert task_id in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_task_group == "spatial"
+    assert taxonomy.source_scene_id == "object_scene"

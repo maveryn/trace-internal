@@ -48,7 +48,7 @@ class VisualStyleRequest:
 
     domain: str
     scene_id: str
-    task_group: str
+    routing_key: str
     instance_seed: int
     style_family: str
     params: Mapping[str, Any]
@@ -62,7 +62,7 @@ def build_visual_style_request(
     *,
     domain: str,
     scene_id: str,
-    task_group: str,
+    routing_key: str,
     instance_seed: int,
     params: Mapping[str, Any] | None,
     style_family: str,
@@ -79,7 +79,7 @@ def build_visual_style_request(
     return VisualStyleRequest(
         domain=str(domain),
         scene_id=str(scene_id),
-        task_group=str(task_group),
+        routing_key=str(routing_key),
         instance_seed=int(instance_seed),
         style_family=str(family),
         params=dict(params or {}),
@@ -96,7 +96,7 @@ def visual_style_request_metadata(request: VisualStyleRequest) -> dict[str, Any]
     return {
         "domain": str(request.domain),
         "scene_id": str(request.scene_id),
-        "task_group": str(request.task_group),
+        "routing_key": str(request.routing_key),
         "style_family": str(request.style_family),
         "allow_dark": bool(request.allow_dark),
         "allow_colored_surface": bool(request.allow_colored_surface),

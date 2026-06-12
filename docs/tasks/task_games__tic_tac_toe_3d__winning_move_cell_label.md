@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tic_tac_toe_3d`
+2. Scene: `tic_tac_toe_3d`
 3. Scene id: `tic_tac_toe_3d`
 4. Public task id: `task_games__tic_tac_toe_3d__winning_move_cell_label`
 5. Supported `query_id` values: `o_winning_move_label`, `x_winning_move_label`

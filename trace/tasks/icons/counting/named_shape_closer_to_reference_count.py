@@ -10,8 +10,8 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.color_format import format_named_color_with_hex
@@ -178,7 +178,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -662,33 +662,6 @@ def _render_scene(
     raise RuntimeError("failed to render closer-reference icon scene") from last_error
 
 
-def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any], axis_degrees: int) -> TaskComplexity:
-    visual_scan = (int(sample.target_icon_count) - _DEFAULTS.target_icon_count_min) / max(1, _DEFAULTS.target_icon_count_max - _DEFAULTS.target_icon_count_min)
-    answer_load = (int(sample.target_answer) - _DEFAULTS.target_answer_min) / max(1, _DEFAULTS.target_answer_max - _DEFAULTS.target_answer_min)
-    axis_difficulty = 0.10 if int(axis_degrees) in {0, 90} else 0.35
-    edge_case = 0.20 if int(sample.target_answer) in {0, int(sample.target_icon_count)} else 0.0
-    score = (
-        0.30 * max(0.0, min(1.0, visual_scan))
-        + 0.25 * max(0.0, min(1.0, answer_load))
-        + 0.25 * float(axis_difficulty)
-        + 0.10 * float(edge_case)
-        + 0.10 * 0.40
-    )
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "axis_difficulty": round(float(axis_difficulty), 6),
-            "edge_case": round(float(edge_case), 6),
-            "target_icon_count": int(sample.target_icon_count),
-            "target_answer": int(sample.target_answer),
-            "queried_reference_label": str(sample.queried_reference_label),
-            "target_shape_id": str(sample.target_shape_id),
-            "reference_axis_degrees": int(axis_degrees),
-            "distance_margin_px": int(render_params["distance_margin_px"]),
-        },
-    )
 
 
 @register_task
@@ -697,7 +670,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = _resolve_render_params(params, instance_seed=int(instance_seed))
@@ -750,7 +723,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -908,7 +881,6 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, render_params=render_params, axis_degrees=int(scene.reference_axis_degrees)),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

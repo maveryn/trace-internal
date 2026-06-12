@@ -222,7 +222,7 @@ def test_physics_optics_ray_tasks_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["task_group"] == "optics" for record in train_records)
+    assert all(record["scene_id"] == "optics" for record in train_records)
 
     assert {record["task"] for record in train_records} == {
         "task_physics__ray_optics__ray_bounce_count",

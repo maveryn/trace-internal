@@ -5,7 +5,10 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw
 
-from trace.tasks.geometry.coordinate.relation import GeometryCoordinateRelationTask, _segments_intersect
+from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
+    GeometryCoordinateRelationTask,
+    _segments_intersect,
+)
 from trace.tasks.shared.text_rendering import load_font, resolve_text_label_center
 
 

@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `sectioned_infographic`
-3. Source task group: `infographic`
+3. Source scene: `infographic`
 4. Task id: `task_pages__sectioned_infographic__section_filtered_item_label`
 
 ## Contract

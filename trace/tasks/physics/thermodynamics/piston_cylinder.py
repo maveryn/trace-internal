@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,16 +29,16 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__piston_cylinder__boundary_work_value"
-FAMILY_ID = "physics_thermodynamics_piston_cylinder_family"
+TASK_NAMESPACE = "physics_thermodynamics_piston_cylinder"
 SCENE_ID = "piston_cylinder"
 QUERY_ID = "constant_pressure_boundary_work"
 SUPPORTED_ORIENTATIONS: Tuple[str, ...] = ("vertical_pair", "horizontal_pair")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="thermodynamics", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "thermodynamics")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="thermodynamics", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "thermodynamics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -185,7 +185,7 @@ def _resolve_orientation(instance_seed: int, params: Mapping[str, Any]) -> Tuple
         if explicit not in SUPPORTED_ORIENTATIONS:
             raise ValueError(f"unsupported orientation for {TASK_ID}: {explicit}")
         return explicit, _probability_map(SUPPORTED_ORIENTATIONS, selected=explicit)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.orientation")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.orientation")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -204,7 +204,7 @@ def _resolve_orientation(instance_seed: int, params: Mapping[str, Any]) -> Tuple
         balance_flag_key="balanced_orientation_sampling",
         explicit_key="orientation",
         weights_key="orientation_weights",
-        sampling_namespace=f"{FAMILY_ID}.orientation",
+        sampling_namespace=f"{TASK_NAMESPACE}.orientation",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -241,7 +241,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _PistonS
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer_tuple",
+            namespace=f"{TASK_NAMESPACE}.target_answer_tuple",
         )
         selected_tuple = candidates[int(index) % len(candidates)]
     else:
@@ -250,17 +250,17 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _PistonS
             answer_index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.target_answer",
+                namespace=f"{TASK_NAMESPACE}.target_answer",
             )
             target_answer = int(answers[int(answer_index) % len(answers)])
         else:
-            rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.target_answer")
+            rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.target_answer")
             target_answer = int(answers[int(rng.randrange(len(answers)))])
         answer_candidates = [item for item in candidates if int(item[3]) == int(target_answer)]
         tuple_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer_tuple",
+            namespace=f"{TASK_NAMESPACE}.target_answer_tuple",
         )
         selected_tuple = answer_candidates[int(tuple_index) % len(answer_candidates)]
 
@@ -434,17 +434,16 @@ def _render_piston_cylinder(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="thermodynamics",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
     )
     draw = ImageDraw.Draw(background)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.render")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.render")
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     label_font = load_font(int(_RENDER_DEFAULTS.get("label_font_size_px", _DEFAULTS.label_font_size_px)), bold=True, font_family=str(font_family))
@@ -480,7 +479,7 @@ def _render_piston_cylinder(
         (217, 153, 82),
         (177, 128, 202),
     )
-    gas_rgb = gas_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.gas_color", 0) % len(gas_palette))]
+    gas_rgb = gas_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.gas_color", 0) % len(gas_palette))]
     max_volume = max(_integer_support(params, "volume_l_support", _DEFAULTS.volume_l_support))
     jitter_x = float(rng.randint(-12, 12))
     jitter_y = float(rng.randint(-8, 8))
@@ -640,7 +639,7 @@ class PhysicsPistonCylinderBoundaryWorkValueTask:
     """Compute signed boundary work for a constant-pressure piston-cylinder process."""
 
     domain = "physics"
-    task_group = "thermodynamics"
+    scene_id = "thermodynamics"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -675,7 +674,7 @@ class PhysicsPistonCylinderBoundaryWorkValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -696,7 +695,7 @@ class PhysicsPistonCylinderBoundaryWorkValueTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -777,16 +776,6 @@ class PhysicsPistonCylinderBoundaryWorkValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.41,
-                complexity_components={
-                    "state_readout": 0.36,
-                    "boundary_work_relation": 0.34,
-                    "signed_delta_volume": 0.14,
-                    "ambiguity": 0.06,
-                    "output_burden": 0.10,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

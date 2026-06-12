@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.similarity.count import GeometrySimilarityCountTask
+from trace.tasks.geometry.shape_gallery.congruent_count import GeometrySimilarityCountTask
 
 
 @pytest.mark.parametrize(

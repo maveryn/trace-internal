@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -18,7 +18,6 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.variant_sampling import resolve_variant
-from ..shared.complexity import build_icon_task_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_grid_scene import resolve_horizontal_row_slots
@@ -180,7 +179,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "sequence")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "sequence")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -642,29 +641,6 @@ def _serialize_icon(icon: _RenderedStripIcon) -> Dict[str, Any]:
     }
 
 
-def _complexity(sample: _SampleSpec, scene: _ScenePayload, *, render_params: Mapping[str, Any]) -> TaskComplexity:
-    strip_min, strip_max = int(_DEFAULTS.strip_length_min), int(_DEFAULTS.strip_length_max)
-    visual_scan = (int(sample.strip_length) - strip_min) / float(max(1, strip_max - strip_min))
-    run_count = len(sample.target_runs)
-    ambiguity = min(1.0, max(0.0, (float(run_count) - 1.0) / 3.0))
-    rule_inference = 0.45 if str(sample.query_id) == "shortest_shape_run_length" else 0.35
-    noise_cap = max((int(value) for value in render_params["icon_noise_edit_count_range"]), default=0)
-    avg_noise = (
-        sum(len(icon.noise_edits) for icon in scene.icons) / float(max(1, len(scene.icons) * noise_cap))
-        if int(noise_cap) > 0
-        else 0.0
-    )
-    clutter = min(1.0, (0.70 * max(0.0, min(1.0, visual_scan))) + (0.30 * max(0.0, min(1.0, avg_noise))))
-    return build_icon_task_complexity(
-        task_group_defaults=_TASK_GROUP_DEFAULTS,
-        task_id=TASK_ID,
-        criterion_values={
-            "visual_scan": max(0.0, min(1.0, visual_scan)),
-            "ambiguity": max(0.0, min(1.0, ambiguity)),
-            "clutter": max(0.0, min(1.0, clutter)),
-            "rule_inference": max(0.0, min(1.0, rule_inference)),
-        },
-    )
 
 
 @register_task
@@ -673,7 +649,7 @@ class IconsSequenceNamedShapeRunLengthTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "sequence"
+    scene_id = "sequence"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = resolve_icon_cell_render_params(
@@ -748,7 +724,7 @@ class IconsSequenceNamedShapeRunLengthTask:
         question_key = f"question_text_{sample.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -871,7 +847,6 @@ class IconsSequenceNamedShapeRunLengthTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, scene, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

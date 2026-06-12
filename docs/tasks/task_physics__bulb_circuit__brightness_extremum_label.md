@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `bulb_circuit`
-- Implementation task group: `circuits`
+- Implementation scene: `circuits`
 - Implementation source: `trace/tasks/physics/circuits/bulb_brightness.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__bulb_circuit__brightness_extremum_label` -> `task_physics__bulb_circuit__brightness_extremum_label`

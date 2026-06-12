@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -24,16 +24,10 @@ from ..shared.arithmetic_common import (
     resolve_document_arithmetic_query_id,
 )
 from ..shared.common import projected_document_keyed_bbox_annotation
-from ..shared.complexity import (
-    build_pages_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_pages_complexity_weights,
-)
 from ..shared.document_common import DocumentDefaults, resolve_document_render_params
 from ..shared.document_scene import render_document_scene
 from ..shared.information_style import prepare_document_information_scene
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin
 from ..shared.public_query_task import rewrite_pages_query_output
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
@@ -53,14 +47,13 @@ _SCENE_LOAD_BY_VARIANT = {
 _OPERAND_ANNOTATION_KEYS: Tuple[str, ...] = ("first_operand", "second_operand", "third_operand")
 
 _DEFAULTS = DocumentDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "arithmetic")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "arithmetic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="arithmetic")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="arithmetic", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="arithmetic")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="arithmetic", apply_prob=0.0)
 
 
 def _scene_sampling_params(params: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -120,7 +113,7 @@ class PagesArithmeticSectionExpressionValueTask:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "arithmetic"
+    scene_id = "arithmetic"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -148,7 +141,6 @@ class PagesArithmeticSectionExpressionValueTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id="form_section",
-            task_group=self.task_group,
             render_params=render_params,
         )
         rendered_scene = render_document_scene(
@@ -184,9 +176,10 @@ class PagesArithmeticSectionExpressionValueTask:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
+        query_prompt_slots = dict(dataset["query_prompt_slots"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -194,7 +187,7 @@ class PagesArithmeticSectionExpressionValueTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
-                "question_text": str(dataset["question_text"]),
+                **query_prompt_slots,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "annotation_hint": str(prompt_defaults["annotation_hint"]),
@@ -222,14 +215,6 @@ class PagesArithmeticSectionExpressionValueTask:
         operand_scan = normalize_int_with_bounds(len(list(dataset["operand_field_ids"])), [2, 3])
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]) + (0.12 * float(operand_scan))
-        )
-        complexity = build_pages_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(field_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -292,7 +277,7 @@ class PagesArithmeticSectionExpressionValueTask:
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
                 "scene_title": str(dataset["scene_title"]),
-                "question_text": str(dataset["question_text"]),
+                "query_prompt_slots": dict(query_prompt_slots),
                 "field_count": int(dataset["field_count"]),
                 "field_specs": [dict(spec) for spec in dataset["field_specs"]],
                 "section_specs": [dict(spec) for spec in dataset["section_specs"]],
@@ -335,7 +320,6 @@ class PagesArithmeticSectionExpressionValueTask:
             image=image,
             image_id=f"{self.task_id}_image",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
         )
@@ -353,7 +337,7 @@ class PagesFormSectionSumTwoAmountsInSectionValueTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__form_section__sum_two_amounts_in_section_value"
     domain = "pages"
-    task_group = "arithmetic"
+    scene_id = "arithmetic"
     public_scene_id = "form_section"
     fixed_query_id = "sum_two_amounts_in_section"
     source_task_cls = PagesArithmeticSectionExpressionValueTask
@@ -365,7 +349,7 @@ class PagesFormSectionDifferenceTwoAmountsInSectionValueTask(FixedPagesQueryTask
 
     task_id = "task_pages__form_section__difference_two_amounts_in_section_value"
     domain = "pages"
-    task_group = "arithmetic"
+    scene_id = "arithmetic"
     public_scene_id = "form_section"
     fixed_query_id = "difference_two_amounts_in_section"
     source_task_cls = PagesArithmeticSectionExpressionValueTask
@@ -377,7 +361,7 @@ class PagesFormSectionSumMinusAmountInSectionValueTask(FixedPagesQueryTaskMixin)
 
     task_id = "task_pages__form_section__sum_minus_amount_in_section_value"
     domain = "pages"
-    task_group = "arithmetic"
+    scene_id = "arithmetic"
     public_scene_id = "form_section"
     fixed_query_id = "sum_minus_amount_in_section"
     source_task_cls = PagesArithmeticSectionExpressionValueTask

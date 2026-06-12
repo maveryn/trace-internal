@@ -126,7 +126,7 @@ def resolve_diagrams_rgb_triple(
     instance_seed: int | None = None,
     namespace: str = "pages.diagram",
 ) -> tuple[int, int, int]:
-    """Resolve one RGB triple from task-group defaults and task params."""
+    """Resolve one RGB triple from scene defaults and task params."""
 
     return resolve_render_rgb(
         params,

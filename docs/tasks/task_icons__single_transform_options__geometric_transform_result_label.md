@@ -3,9 +3,8 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `single_transform_options`
-3. Task group: `transformation`
-4. Task id: `task_icons__single_transform_options__geometric_transform_result_label`
-5. Objective: select the labeled option that shows a Reference icon after one geometric transform.
+3. Task id: `task_icons__single_transform_options__geometric_transform_result_label`
+4. Objective: select the labeled option that shows a Reference icon after one geometric transform.
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a Reference icon and transform cue on the left, plus six labeled result options `A..F` on the right.
@@ -23,7 +22,7 @@
 8. Styling policy: all options share one tint within an instance so the answer depends on geometric transformation rather than color or size.
 
 ## 3) Prompt contract
-1. `prompt_bundle_id`: `icons_transformation_v0`
+1. `prompt_bundle_id`: `icons_single_transform_options_v0`
 2. `scene_key`: `single_transform_options_transformation`
 3. `task_key`: `transformation_query`
 4. Answer+annotation JSON shape: `{"annotation":{"reference_icon":[82,144,250,312],"selected_option":[532,104,702,274]},"answer":"C"}`
@@ -40,4 +39,4 @@
 ## 5) Complexity + tests
 1. Complexity definition/components: fixed six-option scan load, transform rule load, signature ambiguity floor, and option-cell clutter.
 2. Behavior/trace/prompt tests: `tests/test_icons_transformation_single_transform_options_tasks.py`
-3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_icons_task_group_config.py`
+3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_icons_scene_config.py`

@@ -12,7 +12,7 @@
 9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
 
 ## Implementation
-1. Registered class: `trace.tasks.games.sokoban.grid_tasks.GamesSokobanShortestPathSequenceLabelTask`
+1. Registered class: `trace.tasks.games.sokoban.shortest_path_sequence_label.GamesSokobanShortestPathSequenceLabelTask`
 2. Prompt lookup domain/group: `games/sokoban`
 3. Prompt bundle: `see trace prompt metadata`
 4. Example sampled scene variant: `cool_room`

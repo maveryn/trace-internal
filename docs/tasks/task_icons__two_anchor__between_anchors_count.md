@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `two_anchor`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_icons__two_anchor__between_anchors_count`
 5. Objective: count how many Scene icons have centers inside the strip between two marked anchors.
 
@@ -47,7 +47,7 @@
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_between_two_anchors_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_between_two_anchors_count_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`
 
 ## Current Review Status
 Current browser-review sidecars live under

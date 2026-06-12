@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `indoor_room`
-- Implementation task group: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/object_type_on_surface_count.py`
+- Implementation scene package: `indoor_room`
+- Implementation source: `trace/tasks/illustrations/indoor_room/surface_object_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__indoor_room__surface_object_count` -> `task_illustrations__indoor_room__surface_object_count`
 - Status: `pending_v0_manual_review_and_solve_rate`

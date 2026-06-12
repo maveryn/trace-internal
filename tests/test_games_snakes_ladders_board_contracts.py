@@ -7,13 +7,13 @@ from pathlib import Path
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.shared.snakes_ladders_common import (
+from trace.tasks.games.snakes_ladders.shared.common import (
     SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS,
     apply_die_roll,
     best_final_square,
     square_to_cell_id,
 )
-from trace.tasks.games.snakes_ladders.board_tasks import (
+from trace.tasks.games.snakes_ladders.move_outcome_value import (
     GamesSnakesLaddersBestRollValueTask,
     GamesSnakesLaddersMoveOutcomeValueTask,
     GamesSnakesLaddersSpecialSquareCountTask,
@@ -24,7 +24,7 @@ from tests.helpers import read_jsonl
 def _jumps_from_trace(execution: dict) -> tuple:
     """Return jump dataclasses from trace dictionaries."""
 
-    from trace.tasks.games.shared.snakes_ladders_common import SnakesLaddersJump
+    from trace.tasks.games.snakes_ladders.shared.common import SnakesLaddersJump
 
     return tuple(
         SnakesLaddersJump(

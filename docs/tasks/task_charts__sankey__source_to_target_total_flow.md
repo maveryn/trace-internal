@@ -14,8 +14,8 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `unknown_answer_schema`.
-2. Annotation schema: `unknown_annotation_schema`.
+1. Answer schema: `integer_value`.
+2. Annotation schema: `bbox_set`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `source_to_target_total_flow` | `numeric.aggregate_sum` | `unknown_answer_schema` | `unknown_annotation_schema` |
+| `source_to_target_total_flow` | `numeric.aggregate_sum` | `integer_value` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

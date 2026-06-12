@@ -1,4 +1,4 @@
-"""Contract tests for the games cards hand-count task."""
+"""Contract tests for the games cards scene-package tasks."""
 
 from __future__ import annotations
 
@@ -9,95 +9,92 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.cards.exact_triple_count import GamesCardsExactTripleCountTask
+from trace.tasks.games.cards.higher_than_reference_count import GamesCardsHigherThanReferenceCountTask
+from trace.tasks.games.cards.longest_run_length import GamesCardsLongestRunLengthTask
+from trace.tasks.games.cards.same_suit_as_reference_count import GamesCardsSameSuitAsReferenceCountTask
+from trace.tasks.games.cards.shared.sampling import MISSING_CARD_COMPLETION_KINDS, poker_score
 from trace.tasks.registry import create_task
-from trace.tasks.games.cards.hand_count import (
-    GamesCardsHandCountTask,
-    GamesCardsHigherThanReferenceCountTask,
-    GamesCardsSameSuitAsReferenceCountTask,
-    SUPPORTED_MISSING_CARD_QUERY_IDS,
-    _poker_score,
-)
 from tests.helpers import read_jsonl
 
 
+HAND_COUNT_TASKS = {
+    "same_suit_as_reference_count": GamesCardsSameSuitAsReferenceCountTask,
+    "higher_than_reference_count": GamesCardsHigherThanReferenceCountTask,
+    "exact_triple_count": GamesCardsExactTripleCountTask,
+    "longest_run_length": GamesCardsLongestRunLengthTask,
+}
+
+
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_annotation_count"),
+    ("prompt_key", "task_cls", "params", "expected_answer", "expected_annotation_count"),
     (
         (
-            {
-                "query_id": "same_suit_as_reference_count",
-                "target_answer": 3,
-                "card_count": 16,
-            },
+            "same_suit_as_reference_count",
+            GamesCardsSameSuitAsReferenceCountTask,
+            {"target_answer": 3, "card_count": 16},
             3,
             3,
         ),
         (
-            {
-                "query_id": "higher_than_reference_count",
-                "target_answer": 4,
-                "card_count": 17,
-            },
+            "higher_than_reference_count",
+            GamesCardsHigherThanReferenceCountTask,
+            {"target_answer": 4, "card_count": 17},
             4,
             4,
         ),
         (
-                {
-                    "query_id": "exact_triple_count",
-                    "target_answer": 3,
-                    "card_count": 22,
-                },
+            "exact_triple_count",
+            GamesCardsExactTripleCountTask,
+            {"target_answer": 3, "card_count": 22},
             3,
             9,
         ),
         (
-            {
-                "query_id": "longest_run_length",
-                "target_answer": 5,
-                "card_count": 40,
-            },
+            "longest_run_length",
+            GamesCardsLongestRunLengthTask,
+            {"target_answer": 5, "card_count": 40},
             5,
             5,
         ),
     ),
 )
 def test_games_cards_hand_count_emits_expected_contract(
-    params: dict[str, int | str],
+    prompt_key: str,
+    task_cls: type,
+    params: dict[str, int],
     expected_answer: int,
     expected_annotation_count: int,
 ) -> None:
-    out = GamesCardsHandCountTask().generate(25001, params=params, max_attempts=40)
+    out = task_cls().generate(25001, params=params, max_attempts=80)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
+    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["params"]["hand_kind"] == prompt_key
+    assert execution["hand_kind"] == prompt_key
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    if str(params["query_id"]) == "exact_triple_count":
+    if prompt_key == "exact_triple_count":
         assert out.annotation_gt.type == "keyed_bbox_set_map"
         assert len(out.annotation_gt.value) == int(expected_answer)
         assert sum(len(value) for value in out.annotation_gt.value.values()) == int(expected_annotation_count)
-    else:
-        assert out.annotation_gt.type == "bbox_set"
-        assert len(out.annotation_gt.value) == int(expected_annotation_count)
-    assert trace["query_spec"]["params"]["query_id"] == out.query_id
-    assert int(execution["target_answer"]) == int(expected_answer)
-    if str(params["query_id"]) == "exact_triple_count":
         assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
         assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == out.annotation_gt.value
     else:
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(expected_annotation_count)
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert int(execution["target_answer"]) == int(expected_answer)
     assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
 
 
-def test_games_cards_hand_count_exact_triple_count_uses_exact_triples_only() -> None:
-    out = GamesCardsHandCountTask().generate(
+def test_games_cards_exact_triple_count_uses_exact_triples_only() -> None:
+    out = GamesCardsExactTripleCountTask().generate(
         25017,
-        params={
-            "query_id": "exact_triple_count",
-            "target_answer": 4,
-            "card_count": 22,
-        },
-        max_attempts=40,
+        params={"target_answer": 4, "card_count": 22},
+        max_attempts=80,
     )
     specs = out.trace_payload["execution_trace"]["card_specs"]
     rank_counts: dict[int, int] = {}
@@ -119,15 +116,11 @@ def test_games_cards_hand_count_exact_triple_count_uses_exact_triples_only() -> 
     assert set(out.annotation_gt.value) == set(annotation_rank_card_ids)
 
 
-def test_games_cards_hand_count_multi_row_run_emits_continuation_cue() -> None:
-    out = GamesCardsHandCountTask().generate(
+def test_games_cards_longest_run_emits_continuation_cue() -> None:
+    out = GamesCardsLongestRunLengthTask().generate(
         25021,
-        params={
-            "query_id": "longest_run_length",
-            "target_answer": 6,
-            "card_count": 40,
-        },
-        max_attempts=40,
+        params={"target_answer": 6, "card_count": 40},
+        max_attempts=80,
     )
     render_map = out.trace_payload["render_map"]
     assert render_map["continuation_cue_bbox_px"] is not None
@@ -138,14 +131,10 @@ def test_games_cards_hand_count_multi_row_run_emits_continuation_cue() -> None:
 
 
 def test_games_cards_hand_count_is_deterministic() -> None:
-    params = {
-        "query_id": "higher_than_reference_count",
-        "target_answer": 5,
-        "card_count": 26,
-    }
-    task = GamesCardsHandCountTask()
-    out_a = task.generate(25031, params=params, max_attempts=40)
-    out_b = task.generate(25031, params=params, max_attempts=40)
+    params = {"target_answer": 5, "card_count": 26}
+    task = GamesCardsHigherThanReferenceCountTask()
+    out_a = task.generate(25031, params=params, max_attempts=80)
+    out_b = task.generate(25031, params=params, max_attempts=80)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
@@ -154,51 +143,56 @@ def test_games_cards_hand_count_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def _reference_condition_task(query_id: str):
-    if query_id == "same_suit_as_reference_count":
-        return GamesCardsSameSuitAsReferenceCountTask()
-    if query_id == "higher_than_reference_count":
-        return GamesCardsHigherThanReferenceCountTask()
-    raise AssertionError(f"unexpected reference-condition query_id={query_id!r}")
-
-
 @pytest.mark.parametrize(
-    "query_id",
-    ("same_suit_as_reference_count", "higher_than_reference_count"),
+    ("prompt_key", "task_cls", "target_answer", "card_count"),
+    (
+        ("same_suit_as_reference_count", GamesCardsSameSuitAsReferenceCountTask, 3, 16),
+        ("higher_than_reference_count", GamesCardsHigherThanReferenceCountTask, 4, 17),
+    ),
 )
-def test_games_cards_reference_condition_ref_is_leftmost_top_row_card(query_id: str) -> None:
-    out = _reference_condition_task(query_id).generate(
+def test_games_cards_reference_condition_ref_is_leftmost_top_row_card(
+    prompt_key: str,
+    task_cls: type,
+    target_answer: int,
+    card_count: int,
+) -> None:
+    out = task_cls().generate(
         25037,
-        params={"query_id": query_id, "target_answer": 3, "card_count": 17},
-        max_attempts=40,
+        params={"target_answer": target_answer, "card_count": card_count},
+        max_attempts=80,
     )
     trace = out.trace_payload
     reference_card_id = str(trace["execution_trace"]["reference_card_id"])
 
+    assert out.query_id == "default"
     assert trace["render_map"]["row_card_ids"][0][0] == reference_card_id
+    assert trace["execution_trace"]["hand_kind"] == prompt_key
     assert trace["execution_trace"]["card_ordering"] == "sampled"
     assert trace["query_spec"]["params"]["card_ordering"] == "sampled"
 
 
-def test_games_cards_hand_count_prompt_bundle_requires_rank_order_for_rank_queries() -> None:
-    bundle = json.loads(Path("prompts/games/cards/games_cards_v0.json").read_text(encoding="utf-8"))
-    required = bundle["required_slots_by_key"]
-    assert required["query:higher_than_reference_count"] == ["rank_order_text"]
-    assert required["query:longest_run_length"] == [
-        "rank_order_text",
-        "continuation_rule_text",
-    ]
-    assert required["query:blackjack_best_hand_label"] == ["blackjack_rule_text"]
-    assert required["query:poker_best_hand_label"] == ["poker_rule_text"]
-    assert required["query:trick_taking_winner_label"] == [
-        "rank_order_text",
-        "trick_rule_text",
-        "trump_text",
-    ]
-    assert required["query:missing_straight_card_label"] == ["rank_order_text"]
+def test_games_cards_prompt_bundle_is_v1_and_static_prompt_owned() -> None:
+    bundle = json.loads(Path("prompts/games/cards/games_cards_v1.json").read_text(encoding="utf-8"))
+    assert bundle["schema_version"] == "v1"
+    assert bundle["bundle_id"] == "games_cards_v1"
+    assert bundle["dynamic_slots"] == {
+        "trump_text": {
+            "type": "string",
+            "scope": "query:trick_taking_winner_label query:trick_winning_play_label",
+            "description": "Generated trump-suit sentence for the current trick scene.",
+        }
+    }
+    static = bundle["static_slots_by_key"]
+    assert "rank_order_text" in static["query:higher_than_reference_count"]
+    assert "continuation_rule_text" in static["query:longest_run_length"]
+    assert "blackjack_rule_text" in static["query:blackjack_best_hand_label"]
+    assert "poker_rule_text" in static["query:poker_best_hand_label"]
+    assert "trick_winner_rule_text" in static["query:trick_taking_winner_label"]
+    assert "trick_play_rule_text" in static["query:trick_winning_play_label"]
+    assert static["query:exact_triple_count"]["json_example"].startswith('{"annotation":{"7"')
 
 
-def test_games_cards_hand_count_build_smoke(tmp_path: Path) -> None:
+def test_games_cards_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / "task_games__cards__same_suit_as_reference_count"
     config = BuildConfig(
         output_root=str(output_root),
@@ -213,7 +207,7 @@ def test_games_cards_hand_count_build_smoke(tmp_path: Path) -> None:
             )
         ],
         strict_repro=False,
-        max_attempts_per_instance=40,
+        max_attempts_per_instance=80,
         sampling_seed=53,
     )
     final_path = build_dataset(config, code_hash="games-cards-hand-count-smoke")
@@ -221,7 +215,7 @@ def test_games_cards_hand_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "cards" for record in train_records)
+    assert all(record.get("scene_id") == "cards" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__cards__same_suit_as_reference_count"]) == 4
@@ -231,37 +225,7 @@ def test_games_cards_hand_count_build_smoke(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    ("query_id", "target_answer", "card_count"),
-    (
-        ("same_suit_as_reference_count", 3, 16),
-        ("higher_than_reference_count", 4, 17),
-    ),
-)
-def test_games_cards_reference_condition_public_task_records_query_id(
-    query_id: str,
-    target_answer: int,
-    card_count: int,
-) -> None:
-    out = _reference_condition_task(query_id).generate(
-        25041,
-        params={
-            "query_id": query_id,
-            "target_answer": target_answer,
-            "card_count": card_count,
-        },
-        max_attempts=40,
-    )
-    trace = out.trace_payload
-
-    assert out.query_id == query_id
-    assert trace["query_spec"]["query_id"] == query_id
-    assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert int(out.answer_gt.value) == int(target_answer)
-
-
-@pytest.mark.parametrize(
-    ("task_id", "expected_query_id", "min_annotation_count"),
+    ("task_id", "pattern_kind", "min_annotation_count"),
     (
         ("task_games__cards__blackjack_best_hand_label", "blackjack_best_hand_label", 3),
         ("task_games__cards__poker_best_hand_label", "poker_best_hand_label", 5),
@@ -270,18 +234,22 @@ def test_games_cards_reference_condition_public_task_records_query_id(
 )
 def test_games_cards_rule_tasks_emit_label_contracts(
     task_id: str,
-    expected_query_id: str,
+    pattern_kind: str,
     min_annotation_count: int,
 ) -> None:
-    out = create_task(task_id).generate(25101, params={}, max_attempts=80)
+    out = create_task(task_id).generate(25101, params={}, max_attempts=160)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     answer = str(out.answer_gt.value)
 
+    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["params"]["pattern_kind"] == pattern_kind
+    assert execution["pattern_kind"] == pattern_kind
     assert out.answer_gt.type == "string"
     label_key = "winning_label"
     option_key = "winning_option"
-    label_prefix = "Player " if expected_query_id == "trick_taking_winner_label" else "Hand "
+    label_prefix = "Player " if pattern_kind == "trick_taking_winner_label" else "Hand "
     assert len(answer) == 1
     assert "A" <= answer <= "H"
     assert str(execution[label_key]).startswith(label_prefix)
@@ -289,10 +257,6 @@ def test_games_cards_rule_tasks_emit_label_contracts(
     assert str(execution[label_key]).endswith(answer)
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) >= int(min_annotation_count)
-    assert out.query_id == expected_query_id
-    assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id_probabilities"] == {expected_query_id: 1.0}
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
@@ -300,7 +264,7 @@ def test_games_cards_blackjack_best_hand_enforces_unique_non_bust_winner() -> No
     out = create_task("task_games__cards__blackjack_best_hand_label").generate(
         25117,
         params={"option_count": 6, "cards_per_hand": 4},
-        max_attempts=80,
+        max_attempts=160,
     )
     execution = out.trace_payload["execution_trace"]
     scores = dict(execution["playable_scores"])
@@ -317,7 +281,7 @@ def test_games_cards_poker_best_hand_enforces_unique_winner_score() -> None:
     out = create_task("task_games__cards__poker_best_hand_label").generate(
         25123,
         params={"option_count": 6},
-        max_attempts=120,
+        max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
     scores = {
@@ -346,7 +310,7 @@ def test_games_cards_poker_best_hand_can_target_rare_categories(category_key: st
     out = create_task("task_games__cards__poker_best_hand_label").generate(
         25127,
         params={"option_count": 6, "poker_winning_category": category_key},
-        max_attempts=120,
+        max_attempts=240,
     )
     execution = out.trace_payload["execution_trace"]
 
@@ -365,30 +329,30 @@ def _is_ace_high_straight(cards: list[dict]) -> bool:
     return len(ranks) == 5 and int(ranks[-1] - ranks[0]) == 4
 
 
-def _missing_card_completion_matches(query_id: str, partial_cards: list[dict], candidate: dict) -> bool:
+def _missing_card_completion_matches(pattern_kind: str, partial_cards: list[dict], candidate: dict) -> bool:
     cards = [dict(card) for card in partial_cards] + [dict(candidate)]
-    if query_id == "missing_flush_card_label":
+    if pattern_kind == "missing_flush_card_label":
         return len({str(card["suit_name"]) for card in cards}) == 1
-    if query_id == "missing_straight_card_label":
+    if pattern_kind == "missing_straight_card_label":
         return _is_ace_high_straight(cards)
     rank_counts: dict[int, int] = {}
     for card in cards:
         rank = int(card["rank_value"])
         rank_counts[rank] = rank_counts.get(rank, 0) + 1
     counts = sorted(rank_counts.values(), reverse=True)
-    if query_id == "missing_full_house_card_label":
+    if pattern_kind == "missing_full_house_card_label":
         return counts == [3, 2]
-    if query_id == "missing_three_of_kind_card_label":
+    if pattern_kind == "missing_three_of_kind_card_label":
         return counts == [3, 1, 1]
-    raise AssertionError(f"unexpected missing-card query_id={query_id!r}")
+    raise AssertionError(f"unexpected missing-card pattern_kind={pattern_kind!r}")
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_MISSING_CARD_QUERY_IDS)
-def test_games_cards_missing_card_completion_has_one_valid_candidate(query_id: str) -> None:
+@pytest.mark.parametrize("pattern_kind", MISSING_CARD_COMPLETION_KINDS)
+def test_games_cards_missing_card_completion_has_one_valid_candidate(pattern_kind: str) -> None:
     out = create_task("task_games__cards__missing_card_to_complete_hand_label").generate(
         25141,
-        params={"query_id": query_id, "option_count": 6, "target_candidate_index": 3},
-        max_attempts=120,
+        params={"query_id": pattern_kind, "option_count": 6, "target_candidate_index": 3},
+        max_attempts=200,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -396,10 +360,13 @@ def test_games_cards_missing_card_completion_has_one_valid_candidate(query_id: s
     partial_cards = [card_by_id[str(card_id)] for card_id in execution["partial_card_ids"]]
     candidate_specs = dict(execution["candidate_specs_by_label"])
     completions = {
-        str(label): _missing_card_completion_matches(query_id, partial_cards, dict(candidate))
+        str(label): _missing_card_completion_matches(pattern_kind, partial_cards, dict(candidate))
         for label, candidate in candidate_specs.items()
     }
 
+    assert out.query_id == pattern_kind
+    assert trace["query_spec"]["query_id"] == pattern_kind
+    assert trace["query_spec"]["params"]["pattern_kind"] == pattern_kind
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
     assert execution["correct_candidate_label"] == "D"
@@ -409,12 +376,11 @@ def test_games_cards_missing_card_completion_has_one_valid_candidate(query_id: s
     assert execution["annotation_entity_ids"] == [execution["candidate_card_ids_by_label"]["D"]]
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_map"]["row_card_counts"] == [4, 6]
-    assert out.query_id == query_id
     assert "candidate" in out.prompt.lower()
 
 
 def test_games_cards_trick_taking_prompt_and_trace_expose_rule() -> None:
-    out = create_task("task_games__cards__trick_taking_winner_label").generate(25131, params={}, max_attempts=80)
+    out = create_task("task_games__cards__trick_taking_winner_label").generate(25131, params={}, max_attempts=160)
     execution = out.trace_payload["execution_trace"]
 
     assert "leftmost card is the led card" in out.prompt
@@ -429,7 +395,7 @@ def test_games_cards_trick_winning_play_has_one_winning_candidate() -> None:
     out = create_task("task_games__cards__trick_winning_play_label").generate(
         25161,
         params={"option_count": 6, "target_candidate_index": 2, "trick_play_trump_mode": "with_trump"},
-        max_attempts=160,
+        max_attempts=240,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -441,6 +407,7 @@ def test_games_cards_trick_winning_play_has_one_winning_candidate() -> None:
         if tuple(int(value) for value in spec["trick_score"]) > current_best
     ]
 
+    assert out.query_id == "default"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "C"
     assert execution["correct_candidate_label"] == "C"
@@ -456,7 +423,7 @@ def test_games_cards_poker_draw_card_has_one_best_candidate() -> None:
     out = create_task("task_games__cards__poker_draw_card_label").generate(
         25167,
         params={"option_count": 6, "target_candidate_index": 3, "poker_draw_target_category": "flush"},
-        max_attempts=200,
+        max_attempts=240,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -469,12 +436,13 @@ def test_games_cards_poker_draw_card_has_one_best_candidate() -> None:
     scores = {}
     for label, spec in candidate_specs.items():
         candidate = (int(spec["rank_value"]), str(spec["suit_name"]))
-        score = _poker_score([*partial_cards, candidate])
+        score = poker_score([*partial_cards, candidate])
         scores[str(label)] = (int(score[0]), tuple(int(value) for value in score[1]))
         assert [int(score[0]), [int(value) for value in score[1]]] == spec["completed_score"]
     best_score = max(scores.values())
     winning_labels = [str(label) for label, score in scores.items() if score == best_score]
 
+    assert out.query_id == "default"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
     assert execution["correct_candidate_label"] == "D"

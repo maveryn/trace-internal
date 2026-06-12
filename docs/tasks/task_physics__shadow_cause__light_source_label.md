@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `shadow_cause`
-- Implementation task group: `optics`
+- Implementation scene: `optics`
 - Implementation source: `trace/tasks/physics/optics/shadow_cause.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__shadow_cause__light_source_label` -> `task_physics__shadow_cause__light_source_label`

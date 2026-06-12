@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `tetris`
+2. Scene: `tetris`
 3. Scene id: `tetris`
 4. Public task id: `task_games__tetris__drop_result_label`
 5. Supported `query_id` values: `multi_clear_result`, `no_clear_result`, `single_clear_result`

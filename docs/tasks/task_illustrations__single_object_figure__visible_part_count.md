@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `single_object_figure`
-- Implementation task group: `counterfactual`
-- Implementation source: `trace/tasks/illustrations/counterfactual/visible_part_count.py`
+- Implementation scene package: `single_object_figure`
+- Implementation source: `trace/tasks/illustrations/single_object_figure/visible_part_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__single_object_figure__visible_part_count` -> `task_illustrations__single_object_figure__visible_part_count`
 - Status: `pending_v0_manual_review_and_solve_rate`

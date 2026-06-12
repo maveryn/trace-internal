@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -19,12 +19,6 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.diagram.common import projected_diagram_bbox_annotation, projected_diagram_bbox_sequence_annotation
-from ..shared.diagram.complexity import (
-    build_diagrams_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_diagrams_complexity_weights,
-)
 from ..shared.diagram.hierarchy_common import (
     HierarchyDefaults,
     SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS,
@@ -56,14 +50,24 @@ _REASONING_LOAD_BASE_BY_VARIANT = {
 _SCENE_LOAD_BY_VARIANT = {"rooted_tree": 0.16}
 
 _DEFAULTS = HierarchyDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "hierarchy")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "hierarchy")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_diagrams_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="hierarchy")
-POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="hierarchy", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(scene_id="hierarchy")
+POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(scene_id="hierarchy", apply_prob=0.0)
+
+
+def clamp_unit_interval(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
+
+
+def normalize_int_with_bounds(value: int, bounds: tuple[int, int] | list[int]) -> float:
+    low, high = int(bounds[0]), int(bounds[1])
+    if high <= low:
+        return 0.0
+    return clamp_unit_interval((int(value) - low) / float(high - low))
 
 
 def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
@@ -124,7 +128,7 @@ class _PagesHierarchyTreeCountBase:
 
     task_id = TASK_ID
     domain = "pages"
-    task_group = "hierarchy"
+    scene_id = "hierarchy"
     allowed_query_ids: Tuple[str, ...] = _SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -194,9 +198,10 @@ class _PagesHierarchyTreeCountBase:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
+        query_prompt_slots = dict(dataset["query_prompt_slots"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -204,7 +209,7 @@ class _PagesHierarchyTreeCountBase:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_rooted_tree"]),
-                "question_text": str(dataset["question_text"]),
+                **query_prompt_slots,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(query_id)}"]),
@@ -244,14 +249,6 @@ class _PagesHierarchyTreeCountBase:
             + (0.16 * float(depth_scan))
             + (0.14 * float(answer_scan))
             + (0.10 * float(annotation_scan))
-        )
-        complexity = build_diagrams_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": max(float(node_scan), float(depth_scan)),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         witness_type = "ordered_id_path" if str(annotation_type) == "bbox_sequence" else "id_set"
@@ -313,7 +310,7 @@ class _PagesHierarchyTreeCountBase:
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
                 "scene_title": str(dataset["scene_title"]),
-                "question_text": str(dataset["question_text"]),
+                "query_prompt_slots": dict(query_prompt_slots),
                 "template_id": str(dataset["template_id"]),
                 "tree_node_count": int(dataset["tree_node_count"]),
                 "tree_depth": int(dataset["tree_depth"]),
@@ -358,7 +355,6 @@ class _PagesHierarchyTreeCountBase:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
         )

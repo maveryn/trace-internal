@@ -1,1 +1,1 @@
-"""Brick-breaker games tasks."""
+"""Brick-breaker scene package for games-domain tasks."""

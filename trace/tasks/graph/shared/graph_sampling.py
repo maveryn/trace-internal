@@ -1,7 +1,10 @@
-"""Compatibility facade for graph-domain sampling helpers.
+"""Temporary compatibility facade for legacy node-link sampling helpers.
 
 Implementation lives in family-specific modules in this package. Keep this
-module as the stable import surface for graph tasks and tests.
+module only as a transitional import surface while ``graph/node_link`` is
+migrated. New or migrated non-node-link scenes should import concrete shared
+modules such as ``graph_sample_types`` or scene-local ``shared/sampling.py``
+instead of this facade.
 """
 
 from __future__ import annotations

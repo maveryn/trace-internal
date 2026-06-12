@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `manometer`
-- Implementation task group: `fluids`
+- Implementation scene: `fluids`
 - Implementation source: `trace/tasks/physics/fluids/manometer.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__manometer__pressure_difference_value` -> `task_physics__manometer__pressure_difference_value`

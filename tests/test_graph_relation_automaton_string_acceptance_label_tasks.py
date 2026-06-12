@@ -10,8 +10,10 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.automaton_string_acceptance_label import (
+from trace.tasks.graph.automaton.dfa_accepted_string_label import (
     GraphRelationAutomatonDfaAcceptedStringLabelTask,
+)
+from trace.tasks.graph.automaton.nfa_accepted_string_label import (
     GraphRelationAutomatonNfaAcceptedStringLabelTask,
 )
 from tests.helpers import read_jsonl
@@ -179,8 +181,8 @@ def test_graph_relation_automaton_string_acceptance_build_smoke(tmp_path: Path) 
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["task_group"] == "relation" for record in train_records)
     assert all(record["scene_id"] == "automaton" for record in train_records)
+    assert all("scene_id" not in record for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_graph__automaton__dfa_accepted_string_label"]) == 2

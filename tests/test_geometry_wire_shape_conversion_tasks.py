@@ -8,7 +8,9 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.wire_shape_conversion import (
+from trace.tasks.geometry.wire_shape_conversion.frame_edge_length_value import GeometryWireShapeConversionFrameEdgeLengthValueTask
+from trace.tasks.geometry.wire_shape_conversion.missing_dimension_value import GeometryWireShapeConversionMissingDimensionValueTask
+from trace.tasks.geometry.wire_shape_conversion.wire_length_value import (
     FRAME_EDGE_ANNOTATION_KEYS,
     MISSING_DIMENSION_ANNOTATION_KEYS,
     QUERY_ID_SAME_WIRE_CIRCLE_TO_TRAPEZOID_SIDE,
@@ -19,8 +21,6 @@ from trace.tasks.geometry.measurement.wire_shape_conversion import (
     TASK_ID_MISSING_DIMENSION,
     TASK_ID_WIRE_LENGTH,
     WIRE_LENGTH_ANNOTATION_KEYS,
-    GeometryWireShapeConversionFrameEdgeLengthValueTask,
-    GeometryWireShapeConversionMissingDimensionValueTask,
     GeometryWireShapeConversionWireLengthValueTask,
 )
 
@@ -42,7 +42,7 @@ def test_wire_shape_conversion_tasks_registered() -> None:
         assert taxonomy is not None
         assert taxonomy.domain == "geometry"
         assert taxonomy.scene_id == SCENE_ID
-        assert taxonomy.source_task_group == "measurement"
+        assert taxonomy.source_scene_id == "measurement"
 
 
 def test_trapezoid_wire_length_formula_and_annotation() -> None:

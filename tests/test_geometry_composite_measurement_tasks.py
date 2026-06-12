@@ -4,31 +4,31 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.composite_measurement import (
-    GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
-    GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
-    GeometryAngleBisectorBaseLengthTask,
-    GeometryAngleBisectorSplitLengthTask,
+from trace.tasks.geometry.angle_relations.algebraic_angle_value import GeometryAngleRelationsAlgebraicAngleValueTask
+from trace.tasks.geometry.angle_relations.parallel_supplement_angle import (
     GeometryAngleRelationsParallelSupplementAngleTask,
-    GeometryAngleRelationsTriangleExteriorAngleTask,
-    GeometryCentroidMedianVertexSegmentLengthTask,
-    GeometryCentroidMedianWholeMedianLengthTask,
-    GeometryCompositeShapeTabbedRectilinearPerimeterTask,
-    GeometryMeasurementCompositeAreaValueTask,
-    GeometryMeasurementCompositePerimeterValueTask,
-    GeometryPythagoreanLengthChainedRectangleDiagonalTask,
-    GeometryPythagoreanLengthRectangleTriangleSharedHeightTask,
-    GeometryTriangleRelationsParallelSectionBaseLengthTask,
-    GeometryTriangleRelationsParallelSectionCrossLengthTask,
-    GeometryTriangleRelationsSimilarTrianglesSideLengthTask,
 )
+from trace.tasks.geometry.angle_relations.triangle_exterior_angle import (
+    GeometryAngleRelationsTriangleExteriorAngleTask,
+)
+from trace.tasks.geometry.composite_shape.composite_area_value import GeometryMeasurementCompositeAreaValueTask
+from trace.tasks.geometry.composite_shape.house_outline_perimeter import GeometryMeasurementCompositePerimeterValueTask
+from trace.tasks.geometry.composite_shape.tabbed_rectilinear_perimeter import GeometryCompositeShapeTabbedRectilinearPerimeterTask
+from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_base_length import GeometryAngleBisectorBaseLengthTask
+from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_split_length import GeometryAngleBisectorSplitLengthTask
+from trace.tasks.geometry.triangle_relations.centroid_median_segment_value_centroid_vertex_segment_length import GeometryCentroidMedianVertexSegmentLengthTask
+from trace.tasks.geometry.triangle_relations.centroid_median_segment_value_centroid_whole_median_length import GeometryCentroidMedianWholeMedianLengthTask
+from trace.tasks.geometry.triangle_relations.parallel_section_base_length import GeometryTriangleRelationsParallelSectionBaseLengthTask
+from trace.tasks.geometry.triangle_relations.parallel_section_cross_length import GeometryTriangleRelationsParallelSectionCrossLengthTask
+from trace.tasks.geometry.triangle_relations.pythagorean_length_value_chained_rectangle_diagonal_length import GeometryPythagoreanLengthChainedRectangleDiagonalTask
+from trace.tasks.geometry.triangle_relations.pythagorean_length_value_rectangle_triangle_shared_height_length import GeometryPythagoreanLengthRectangleTriangleSharedHeightTask
+from trace.tasks.geometry.triangle_relations.similar_triangles_side_length import GeometryTriangleRelationsSimilarTrianglesSideLengthTask
 
 
 TASK_CLASSES = (
     GeometryAngleRelationsParallelSupplementAngleTask,
     GeometryAngleRelationsTriangleExteriorAngleTask,
-    GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
-    GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
+    GeometryAngleRelationsAlgebraicAngleValueTask,
     GeometryTriangleRelationsParallelSectionBaseLengthTask,
     GeometryTriangleRelationsParallelSectionCrossLengthTask,
     GeometryTriangleRelationsSimilarTrianglesSideLengthTask,
@@ -126,11 +126,8 @@ def test_parallel_section_scale_task_supports_every_query() -> None:
 
 
 def test_algebraic_triangle_cases_keep_annotation_inside_canvas() -> None:
-    tasks = (
-        (GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask(), "triangle_single_extension_expression"),
-        (GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask(), "triangle_double_extension_expression"),
-    )
-    for task, query_id in tasks:
+    task = GeometryAngleRelationsAlgebraicAngleValueTask()
+    for query_id in task.supported_query_ids:
         for case_index in range(6):
             out = task.generate(
                 44041 + case_index,
@@ -149,13 +146,12 @@ def test_algebraic_triangle_cases_keep_annotation_inside_canvas() -> None:
     (
         GeometryAngleRelationsParallelSupplementAngleTask,
         GeometryAngleRelationsTriangleExteriorAngleTask,
-        GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask,
-        GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask,
+        GeometryAngleRelationsAlgebraicAngleValueTask,
     ),
 )
 def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes(task_cls) -> None:
     task = task_cls()
-    for query_id in sorted({case.query_id for case in task.cases}):
+    for query_id in task.supported_query_ids:
         out = task.generate(44061, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
         assert out.annotation_gt.type == "keyed_point_map"
         assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
@@ -177,12 +173,9 @@ def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes
 
 
 def test_algebraic_angle_uses_varied_expression_forms() -> None:
-    tasks = (
-        (GeometryAlgebraicAngleTriangleSingleExtensionExpressionTask(), "triangle_single_extension_expression"),
-        (GeometryAlgebraicAngleTriangleDoubleExtensionExpressionTask(), "triangle_double_extension_expression"),
-    )
+    task = GeometryAngleRelationsAlgebraicAngleValueTask()
     expressions: set[str] = set()
-    for task, query_id in tasks:
+    for query_id in task.supported_query_ids:
         for case_index in range(6):
             out = task.generate(
                 44101 + case_index,

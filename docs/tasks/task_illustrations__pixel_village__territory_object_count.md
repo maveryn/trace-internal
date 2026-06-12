@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `pixel_village`
-- Implementation task group: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/pixel_village_count.py`
+- Implementation scene package: `pixel_village`
+- Implementation source: `trace/tasks/illustrations/pixel_village/territory_object_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__pixel_village__territory_object_count` -> `task_illustrations__pixel_village__territory_object_count`
 - Status: `pending_v0_manual_review_and_solve_rate`
@@ -24,7 +24,7 @@ This public task id is a stable contract-v0 unit: one renderer scene id plus one
 - Program signatures: `count.scoped_attribute_membership`
 - Base program contract: `count(filter(pixel_village_entities, territory_id(entity)=target_territory and public_name(entity)=target_public_name)); scene=pixel_village; scope=territory_object_count`
 - Parameter axes: `territory_object`
-- Supported operands: `cemetery_grave_marker`, `orchard_tree`, `farm_plot_crop_row`, `farm_plot_vegetable_patch`
+- Supported operands: `cemetery_grave_marker`, `orchard_tree`
 - Argument metadata status: `curated`
 - Supported query ids: `territory_object_count`
 

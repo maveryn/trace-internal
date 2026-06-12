@@ -11,7 +11,7 @@ from trace.tasks.illustrations.shared.environment_object_rendering import (
     render_environment_object_scene,
 )
 from trace.tasks.illustrations.shared.environment_task_common import serialize_environment_objects
-from trace.tasks.illustrations.shared.indoor_room_rendering import (
+from trace.tasks.illustrations.indoor_room.shared.rendering import (
     IndoorObjectSpec,
     indoor_scene_entities,
     render_indoor_room_scene,
@@ -334,7 +334,7 @@ def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -
             "def _draw_material(",
             "def _draw_equipment(",
         ),
-        "trace/tasks/illustrations/shared/indoor_room_rendering.py": (
+        "trace/tasks/illustrations/indoor_room/shared/rendering.py": (
             "def _draw_surface_plane(",
             "def _draw_room_furniture(",
         ),

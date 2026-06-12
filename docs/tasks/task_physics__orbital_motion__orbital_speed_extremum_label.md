@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `orbital_motion`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/orbital_motion.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__orbital_motion__orbital_speed_extremum_label` -> `task_physics__orbital_motion__orbital_speed_extremum_label`

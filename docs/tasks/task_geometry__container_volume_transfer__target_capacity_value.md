@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `container_volume_transfer`
 3. Scene id: `container_volume_transfer`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `target_capacity_from_source_and_count`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/container_volume_transfer.py`
+- Config: `configs/domains/geometry/container_volume_transfer.yaml`
+- Task module: `trace/tasks/geometry/container_volume_transfer/target_capacity_value.py`

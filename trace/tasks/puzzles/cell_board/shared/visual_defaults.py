@@ -6,8 +6,8 @@ from typing import Any, Dict
 
 from trace.tasks.shared.visual_defaults import (
     default_noise_fallback,
-    load_task_group_background_defaults,
-    load_task_group_noise_defaults,
+    load_scene_background_defaults,
+    load_scene_noise_defaults,
 )
 
 
@@ -25,26 +25,26 @@ def solid_light_background_fallback() -> Dict[str, Any]:
     }
 
 
-def _cell_board_task_group(task_group: str) -> str:
-    group = str(task_group)
+def _cell_board_scene_id(scene_id: str) -> str:
+    group = str(scene_id)
     return group if group.startswith("cell_board_") else f"cell_board_{group}"
 
 
-def load_tile_background_defaults(*, task_group: str) -> Dict[str, Any]:
-    """Load one cell-board task-group background config with the canonical fallback."""
-    return load_task_group_background_defaults(
+def load_tile_background_defaults(*, scene_id: str) -> Dict[str, Any]:
+    """Load one cell-board scene background config with the canonical fallback."""
+    return load_scene_background_defaults(
         domain="puzzles",
-        task_group=_cell_board_task_group(str(task_group)),
+        scene_id=_cell_board_scene_id(str(scene_id)),
         fallback=solid_light_background_fallback(),
         merge_with_fallback=True,
     )
 
 
-def load_tile_noise_defaults(*, task_group: str, apply_prob: float) -> Dict[str, Any]:
-    """Load one cell-board task-group noise config with the canonical fallback."""
-    return load_task_group_noise_defaults(
+def load_tile_noise_defaults(*, scene_id: str, apply_prob: float) -> Dict[str, Any]:
+    """Load one cell-board scene noise config with the canonical fallback."""
+    return load_scene_noise_defaults(
         domain="puzzles",
-        task_group=_cell_board_task_group(str(task_group)),
+        scene_id=_cell_board_scene_id(str(scene_id)),
         fallback=default_noise_fallback(apply_prob=float(apply_prob)),
         merge_with_fallback=False,
     )

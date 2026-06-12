@@ -381,12 +381,11 @@ def build_document_field_lookup_dataset(
             raise ValueError(f"scene_variant='{scene_variant}' has no fields for query_id='{query_id}'")
         query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_field")
         query_field = dict(candidates[int(query_rng.randrange(len(candidates)))])
-        question_text = f"What is the {str(query_field['question_name'])}?"
         return {
             "scene_variant": str(scene_variant),
             "query_id": str(query_id),
             "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
-            "question_text": str(question_text),
+            "query_prompt_slots": {"question_name": str(query_field["question_name"])},
             "field_specs": list(field_specs),
             "query_field_id": str(query_field["field_id"]),
             "query_field_label": str(query_field["field_label"]),

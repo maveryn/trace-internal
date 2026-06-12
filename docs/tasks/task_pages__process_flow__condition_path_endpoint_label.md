@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `pages`
 2. Scene: `process_flow`
-3. Task group: `process_flow`
+3. Scene: `process_flow`
 4. Task id: `task_pages__process_flow__condition_path_endpoint_label`
 5. Objective: follow visible decision-arrow labels in a process-flow diagram and return the reached step label.
 

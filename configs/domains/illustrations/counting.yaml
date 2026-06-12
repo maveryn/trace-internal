@@ -37,43 +37,6 @@ generation:
         - skyline_street
       window_mode_support:
         - lit
-    task_illustrations__indoor_room__surface_object_count:
-      object_count_min: 10
-      object_count_max: 16
-      target_count_min: 1
-      target_count_max: 6
-      surface_type_support:
-        - table
-        - shelf
-        - counter
-      indoor_object_type_support:
-        - apple
-        - backpack
-        - egg
-        - soccer_ball
-        - rugby_ball
-        - spoon
-        - plate
-        - book
-        - camera
-        - remote
-        - pencil
-        - ruler
-        - clock
-        - gift
-        - vase
-        - bowl
-        - candle
-        - lightbulb
-        - mug
-        - teapot
-        - bottle
-        - key
-        - scissors
-        - lamp
-        - potted_plant
-        - flower
-        - mushroom
     private_library_book_count:
       query_id_support:
         - books_in_section_count
@@ -162,37 +125,6 @@ generation:
         - swing_set
         - seesaw
         - climbing_frame
-    task_illustrations__pixel_village__object_type_count:
-      query_id_support:
-        - object_type_count
-      target_object_support:
-        - building
-        - person
-        - tree
-        - crate
-        - lamp_post
-        - well
-        - pond
-      target_answer_count_max: 8
-    task_illustrations__pixel_village__person_path_count:
-      query_id_support:
-        - people_on_path_count
-      path_person_count_min: 2
-      path_person_count_max: 6
-    task_illustrations__pixel_village__territory_object_count:
-      query_id_support:
-        - territory_object_count
-      territory_object_support:
-        - cemetery_grave_marker
-        - orchard_tree
-        - farm_plot_crop_row
-        - farm_plot_vegetable_patch
-      target_answer_count_max: 8
-    task_illustrations__pixel_village__building_near_path_count:
-      query_id_support:
-        - building_near_path_count
-      near_path_tile_distance: 1
-      target_answer_count_max: 8
     private_park_person_equipment_use:
       equipment_count_min: 4
       equipment_count_max: 7
@@ -442,21 +374,6 @@ rendering:
         watercolor_wash: 1.0
       skyline_building_min: 4
       skyline_building_max: 7
-    task_illustrations__indoor_room__surface_object_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
     task_illustrations__park_playground__playground_equipment_count:
       art_style_support:
         - flat_vector
@@ -472,47 +389,6 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
-    task_illustrations__pixel_village__object_type_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
-      pixel_village_cemetery_mode: auto
-      pixel_village_orchard_mode: auto
-      pixel_village_farm_plot_mode: auto
-      pixel_village_windmill_mode: auto
-      annotation_padding_px: 0.0
-    task_illustrations__pixel_village__person_path_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
-      pixel_village_cemetery_mode: auto
-      pixel_village_orchard_mode: auto
-      pixel_village_farm_plot_mode: auto
-      pixel_village_windmill_mode: auto
-      background_person_path_clearance: 1
-      annotation_padding_px: 0.0
-    task_illustrations__pixel_village__territory_object_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
-      pixel_village_cemetery_mode: auto
-      pixel_village_orchard_mode: auto
-      pixel_village_farm_plot_mode: auto
-      pixel_village_windmill_mode: auto
-      annotation_padding_px: 0.0
-    task_illustrations__pixel_village__building_near_path_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
-      pixel_village_cemetery_mode: auto
-      pixel_village_orchard_mode: auto
-      pixel_village_farm_plot_mode: auto
-      pixel_village_windmill_mode: auto
-      annotation_padding_px: 0.0
     private_park_person_activity:
       art_style_support:
         - flat_vector
@@ -585,14 +461,6 @@ prompt:
       annotation_hint_building_window: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted lit building window
       json_example_building_window: '{"annotation":[[72,194,88,212],[112,194,128,212],[206,246,222,264],[336,178,352,196]],"answer":4}'
       json_example_answer_only_building_window: '{"answer":4}'
-    task_illustrations__indoor_room__surface_object_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: indoor_room_canvas
-      task_key: object_type_on_surface_count_task
-      answer_hint_object_type_on_surface: set "answer" to the count of {object_name} objects on the {surface_name} as an integer
-      annotation_hint_object_type_on_surface: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {object_name} object on the {surface_name}
-      json_example_object_type_on_surface: '{"annotation":[[466,344,518,410],[602,338,654,410]],"answer":2}'
-      json_example_answer_only_object_type_on_surface: '{"answer":2}'
     private_library_book_count:
       bundle_id: illustrations_counting_v0
       scene_key: library_canvas
@@ -625,38 +493,6 @@ prompt:
       annotation_hint_playground_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
       json_example_playground_equipment: '{"annotation":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
       json_example_answer_only_playground_equipment: '{"answer":3}'
-    task_illustrations__pixel_village__object_type_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_object_type_count_task
-      answer_hint_pixel_village_object_type: set "answer" to the count of visible {target_plural} as an integer
-      annotation_hint_pixel_village_object_type: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit}
-      json_example_pixel_village_object_type: '{"annotation":[[128,224,256,320],[384,192,512,288],[640,352,768,448]],"answer":3}'
-      json_example_answer_only_pixel_village_object_type: '{"answer":3}'
-    task_illustrations__pixel_village__person_path_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_person_path_count_task
-      answer_hint_pixel_village_person_path: set "answer" to the count of people on the paths as an integer
-      annotation_hint_pixel_village_person_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person on a path
-      json_example_pixel_village_person_path: '{"annotation":[[304,336,336,368],[464,272,496,304],[592,400,624,432]],"answer":3}'
-      json_example_answer_only_pixel_village_person_path: '{"answer":3}'
-    task_illustrations__pixel_village__territory_object_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_territory_object_count_task
-      answer_hint_pixel_village_territory_object: set "answer" to the count of {target_plural} in the {territory_name} as an integer
-      annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit} in the {territory_name}
-      json_example_pixel_village_territory_object: '{"annotation":[[128,224,160,256],[192,224,224,256],[256,224,288,256]],"answer":3}'
-      json_example_answer_only_pixel_village_territory_object: '{"answer":3}'
-    task_illustrations__pixel_village__building_near_path_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_building_near_path_count_task
-      answer_hint_pixel_village_building_near_path: set "answer" to the count of buildings near a path as an integer
-      annotation_hint_pixel_village_building_near_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted building near a path
-      json_example_pixel_village_building_near_path: '{"annotation":[[128,160,256,256],[416,256,544,352],[640,320,768,416]],"answer":3}'
-      json_example_answer_only_pixel_village_building_near_path: '{"answer":3}'
     private_park_person_equipment_use:
       bundle_id: illustrations_counting_v0
       scene_key: park_playground_canvas

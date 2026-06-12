@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `calendar_event_grid`
-3. Source task group: `calendar`
+3. Source scene package: `calendar_event_grid`
 4. Task id: `task_pages__calendar_event_grid__date_slot_category_label`
 
 ## Contract
@@ -15,7 +15,7 @@
 6. Query knobs: date number and event slot label.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_calendar_v0`
+1. Prompt bundle: `pages_calendar_event_grid_v0`
 2. Scene key: `calendar_event_grid`
 3. Task key: `calendar_event_grid_query`
 4. Internal prompt variant key: `date_slot_category_label`

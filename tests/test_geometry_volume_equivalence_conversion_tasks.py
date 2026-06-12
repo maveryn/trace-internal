@@ -8,7 +8,8 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.volume_equivalence_conversion import (
+from trace.tasks.geometry.volume_equivalence_conversion.equal_volume_option_label import GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask
+from trace.tasks.geometry.volume_equivalence_conversion.missing_dimension_value import (
     MISSING_DIMENSION_ANNOTATION_KEYS,
     OPTION_ANNOTATION_KEYS,
     QUERY_ID_CONE_MATCHES_CYLINDER_OPTION,
@@ -16,7 +17,6 @@ from trace.tasks.geometry.measurement.volume_equivalence_conversion import (
     SCENE_ID,
     TASK_ID_EQUAL_VOLUME_OPTION,
     TASK_ID_MISSING_DIMENSION,
-    GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask,
     GeometryVolumeEquivalenceConversionMissingDimensionValueTask,
 )
 
@@ -36,7 +36,7 @@ def test_volume_equivalence_conversion_tasks_registered() -> None:
         assert taxonomy is not None
         assert taxonomy.domain == "geometry"
         assert taxonomy.scene_id == SCENE_ID
-        assert taxonomy.source_task_group == "measurement"
+        assert taxonomy.source_scene_id == "measurement"
 
 
 def test_cuboid_to_cylinder_missing_dimension_formula_and_annotation() -> None:

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `park_playground`
-- Implementation task group: `counting`
+- Implementation scene: `counting`
 - Implementation source: `trace/tasks/illustrations/counting/playground_equipment_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__park_playground__playground_equipment_count` -> `task_illustrations__park_playground__playground_equipment_count`

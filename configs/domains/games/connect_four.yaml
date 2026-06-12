@@ -6,12 +6,6 @@ generation:
     board_size_variant_weights:
       standard_7x6: 1.0
       small_6x5: 1.0
-    safe_board_size_variant_weights:
-      square_5x5: 1.0
-      square_6x6: 1.0
-    query_id_weights:
-      winning_move_count: 1.0
-      safe_move_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -21,35 +15,41 @@ generation:
       charcoal: 1.0
     balanced_scene_variant_sampling: true
     balanced_board_size_variant_sampling: true
-    balanced_safe_board_size_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
-    balanced_winning_move_label_threat_kind_sampling: true
-    winning_move_label_threat_kind_weights:
-      vertical_threat: 1.0
-      horizontal_threat: 1.0
-    winning_move_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    safe_move_count_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
     midgame_min_occupied_count: 8
     midgame_max_occupied_count: 16
     crowded_min_occupied_count: 16
     crowded_max_occupied_count: 24
-    safe_midgame_min_occupied_count: 8
-    safe_midgame_max_occupied_count: 16
-    safe_crowded_min_occupied_count: 16
-    safe_crowded_max_occupied_count: 24
+  task_overrides:
+    task_games__connect_four__winning_move_count:
+      winning_move_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+    task_games__connect_four__safe_move_count:
+      balanced_safe_board_size_variant_sampling: true
+      safe_board_size_variant_weights:
+        square_5x5: 1.0
+        square_6x6: 1.0
+      safe_move_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      safe_midgame_min_occupied_count: 8
+      safe_midgame_max_occupied_count: 16
+      safe_crowded_min_occupied_count: 16
+      safe_crowded_max_occupied_count: 24
+    task_games__connect_four__winning_move_column_label:
+      balanced_winning_move_label_threat_kind_sampling: true
+      winning_move_label_threat_kind_weights:
+        vertical_threat: 1.0
+        horizontal_threat: 1.0
 rendering:
   shared:
     canvas_width: 980
@@ -71,39 +71,8 @@ rendering:
     canvas_min_height_px: 520
     canvas_side_padding_px: 132
     canvas_vertical_padding_px: 92
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.3
-      card_reasoning: 0.42
-      ambiguity: 0.16
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_connect_four_v0
+    bundle_id: games_connect_four_v1
     scene_key: visible_connect_four_board
     task_key: connect_four_move_query
-    object_description_midgame_board: a Connect Four board in a midgame position with
-      red and yellow discs
-    object_description_crowded_board: a Connect Four board in a crowded late-game
-      position with red and yellow discs
-    legal_drop_rule_text: A legal drop chooses one non-full column and lands in its
-      lowest empty square.
-    winning_rule_text: A horizontal, vertical, or diagonal line of four matching discs
-      wins.
-    safety_rule_text: For each non-full column, imagine dropping the current player's
-      disc into its lowest empty square. A safe drop is one where the opponent then
-      has no immediate winning drop on their next single move.
-    annotation_hint_winning_move_count: set "annotation" to a JSON array of bounding boxes
-      [x0, y0, x1, y1] for every immediate-winning landing square
-    annotation_hint_winning_move_column_label: set "annotation" to a JSON array containing
-      the bounding box [x0, y0, x1, y1] for the landing square in the selected winning
-      column
-    annotation_hint_safe_move_count: set "annotation" to a JSON array of bounding boxes
-      [x0, y0, x1, y1] for every safe legal landing square
-    answer_hint_winning_move_count: set "answer" to the number of legal drop columns
-      that win immediately
-    answer_hint_winning_move_column_label: set "answer" to the selected column label
-      as a capital letter shown below the board
-    answer_hint_safe_move_count: set "answer" to the number of legal drop columns
-      that are safe

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -22,7 +22,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import build_icons_counting_singleton_type_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params
@@ -83,7 +82,7 @@ TASK_ID = TYPE_FREQUENCY_TASK_ID
 QUERY_ID = "most_frequent_type_count"
 TYPE_FREQUENCY_QUERY_IDS: Tuple[str, ...] = ("singleton_type_count", "most_frequent_type_count")
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -229,7 +228,7 @@ class IconsCountingMostFrequentTypeCountTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic most-frequent-type counting instance."""
@@ -322,7 +321,7 @@ class IconsCountingMostFrequentTypeCountTask:
             raise ValueError(f"missing prompt annotation hint for {self.task_id}:{QUERY_ID}")
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -424,22 +423,6 @@ class IconsCountingMostFrequentTypeCountTask:
                 "bbox_set": list(annotation_bboxes),
             },
         }
-        complexity = build_icons_counting_singleton_type_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            object_count=int(scene_payload.object_count),
-            target_count=int(answer_value),
-            repeated_type_count=int(len(frequency_spec.repeated_type_multiplicities)),
-            distinct_type_count=int(scene_payload.distinct_type_count),
-            object_count_min=int(
-                params.get("object_count_min", group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min))
-            ),
-            object_count_max=int(
-                params.get("object_count_max", group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max))
-            ),
-            scene_instances=scene_payload.scene_instances,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -447,7 +430,6 @@ class IconsCountingMostFrequentTypeCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -507,7 +489,7 @@ class IconsIconFieldTypeFrequencyCountTask:
 
     task_id = TYPE_FREQUENCY_TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query_id, query_probabilities = _resolve_type_frequency_query(int(instance_seed), params)

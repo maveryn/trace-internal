@@ -1,0 +1,75 @@
+{
+  "bundle_id": "geometry_bearing_route_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "bearing_route_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This geometry diagram shows {object_description}.",
+        "The image shows {object_description}.",
+        "The labeled navigation diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "bearing_route_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "final_bearing_value": [
+        "Starting at S, follow the two bearing legs. What is the final bearing from S to F?",
+        "After following the two bearing instructions from S, what bearing points directly from S to F?",
+        "Using the shown route, give the compass bearing from the start point S to the finish point F.",
+        "What is the direct bearing from S to F, measured clockwise from north?",
+        "Follow the route from S to F. What is the final direct bearing from S?"
+      ],
+      "endpoint_position_label": [
+        "Which labeled endpoint is reached by following the route instructions from S?",
+        "Follow the two bearing instructions from S. Which candidate endpoint label is reached?",
+        "Starting at the point marked S, which labeled point is the final position after the shown bearing route?",
+        "Using the route instruction panel from the start point S, choose the reached endpoint label.",
+        "Starting at S, which candidate label marks the endpoint of the bearing route?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:final_bearing_value": {
+      "object_description": "a compass-bearing route diagram from start point S to finish point F, with bearings measured clockwise from north",
+      "answer_hint": "set \"answer\" to the final direct bearing from S to F as an integer number of degrees clockwise from north",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping \"start_point\" and \"finish_point\" to pixel points [x,y]",
+      "json_example": "{\"annotation\":{\"start_point\":[185,405],\"finish_point\":[485,180]},\"answer\":45}",
+      "json_example_answer_only": "{\"answer\":45}"
+    },
+    "query:endpoint_position_label": {
+      "object_description": "a compass-bearing route instruction panel, a graph-paper candidate grid where each square is one step, the start point marked S, and labeled candidate endpoint points, with bearings measured clockwise from north",
+      "answer_hint": "set \"answer\" to the reached endpoint label as a capital letter",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping \"start_point\" and \"reached_endpoint\" to pixel points [x,y]",
+      "json_example": "{\"annotation\":{\"start_point\":[235,260],\"reached_endpoint\":[306,196]},\"answer\":\"R\"}",
+      "json_example_answer_only": "{\"answer\":\"R\"}"
+    }
+  },
+  "dynamic_slots": {},
+  "required_slots_by_key": {}
+}

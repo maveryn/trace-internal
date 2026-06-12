@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `ultimate_tictactoe`
+2. Scene: `ultimate_tictactoe`
 3. Scene id: `ultimate_tictactoe`
 4. Public task id: `task_games__ultimate_tictactoe__small_board_status_count`
 5. Supported `query_id` values: `drawn_board_count`, `neither_won_board_count`, `o_won_board_count`, `x_won_board_count`

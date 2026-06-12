@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `coordinate`
+2. Scene id: `coordinate_plane`
 3. Scene id: `coordinate_plane`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `circle_inequality_panel_match`, `horizontal_halfplane_panel_match`, `two_inequality_panel_match`, `vertical_strip_panel_match`
@@ -13,7 +13,7 @@
 - `label(select_panel(candidate_region_panels, condition_box, region_rule_family)); scene=coordinate_plane; scope=locus_panel_match_label`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/coordinate.yaml`
-- Task module: `trace/tasks/geometry/coordinate/locus_region.py`
+- Config: `configs/domains/geometry/coordinate_plane.yaml`
+- Task module: `trace/tasks/geometry/coordinate_plane/locus_panel_match_label.py`

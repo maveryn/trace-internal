@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import inspect
+
 import pytest
 from PIL import Image, ImageDraw
 
@@ -41,6 +43,11 @@ def test_draw_readout_centered_returns_canvas_bbox() -> None:
     bbox = draw_readout_centered(ctx, "AB=12", (90, 70), small=True)
 
     _assert_inside(bbox)
+
+
+def test_measurement_readout_helpers_default_to_plain_text() -> None:
+    assert inspect.signature(draw_readout_centered).parameters["backed"].default is False
+    assert inspect.signature(draw_dimension_line).parameters["backed"].default is False
 
 
 def test_draw_dimension_line_returns_label_bbox() -> None:

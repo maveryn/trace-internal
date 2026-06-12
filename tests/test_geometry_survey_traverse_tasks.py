@@ -8,7 +8,8 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.survey_traverse import (
+from trace.tasks.geometry.survey_traverse.bearing_angle_value import GeometrySurveyTraverseBearingAngleValueTask
+from trace.tasks.geometry.survey_traverse.shared.measurement.survey_traverse_common import (
     AREA_QUERY_IDS,
     ELEVATION_QUERY_IDS,
     QUERY_IDS,
@@ -17,10 +18,9 @@ from trace.tasks.geometry.measurement.survey_traverse import (
     TASK_ID_BEARING_ANGLE,
     TASK_ID_STATION_ELEVATION,
     TASK_ID_TRAVERSE_AREA,
-    GeometrySurveyTraverseBearingAngleValueTask,
-    GeometrySurveyTraverseStationElevationValueTask,
-    GeometrySurveyTraverseTraverseAreaValueTask,
 )
+from trace.tasks.geometry.survey_traverse.station_elevation_value import GeometrySurveyTraverseStationElevationValueTask
+from trace.tasks.geometry.survey_traverse.traverse_area_value import GeometrySurveyTraverseTraverseAreaValueTask
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_BEARING_ANGLE, **params):
@@ -40,17 +40,14 @@ def test_survey_traverse_bearing_angle_registered_public_task() -> None:
     assert bearing_taxonomy is not None
     assert bearing_taxonomy.domain == "geometry"
     assert bearing_taxonomy.scene_id == SCENE_ID
-    assert bearing_taxonomy.source_task_group == "measurement"
     elevation_taxonomy = lookup_task_taxonomy(TASK_ID_STATION_ELEVATION)
     assert elevation_taxonomy is not None
     assert elevation_taxonomy.domain == "geometry"
     assert elevation_taxonomy.scene_id == SCENE_ID
-    assert elevation_taxonomy.source_task_group == "measurement"
     area_taxonomy = lookup_task_taxonomy(TASK_ID_TRAVERSE_AREA)
     assert area_taxonomy is not None
     assert area_taxonomy.domain == "geometry"
     assert area_taxonomy.scene_id == SCENE_ID
-    assert area_taxonomy.source_task_group == "measurement"
 
 
 def test_back_bearing_contract_and_formula() -> None:

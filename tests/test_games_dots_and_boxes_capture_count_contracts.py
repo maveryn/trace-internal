@@ -10,7 +10,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.dots_and_boxes.capture_count import (
+from trace.tasks.games.dots_and_boxes.capture_move_count import (
     GamesDotsAndBoxesCaptureCountTask,
     GamesDotsAndBoxesCaptureMoveCountTask,
     GamesDotsAndBoxesOwnedBoxCountTask,
@@ -274,7 +274,7 @@ def test_games_dots_and_boxes_capture_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "dots_and_boxes" for record in train_records)
+    assert all(record.get("scene_id") == "dots_and_boxes" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__dots_and_boxes__capture_move_count"]) == 4

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `construction_site`
-- Implementation task group: `counting`
+- Implementation scene: `counting`
 - Implementation source: `trace/tasks/illustrations/counting/worker_safety_gear_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__construction_site__worker_attribute_count` -> `task_illustrations__construction_site__worker_attribute_count`

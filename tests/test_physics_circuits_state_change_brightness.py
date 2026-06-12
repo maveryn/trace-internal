@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.physics.circuits.state_change_brightness import PhysicsCircuitStateChangeBulbBrightnessLabelTask
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -124,7 +124,7 @@ def test_physics_state_change_brightness_is_deterministic() -> None:
 
 
 def test_physics_state_change_brightness_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("physics", "circuits")
+    cfg = get_scene_defaults("physics", "circuits")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="physics_circuits_state_change_bulb_brightness_family",

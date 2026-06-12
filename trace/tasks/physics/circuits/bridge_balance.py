@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -22,19 +22,13 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import (
-    build_physics_complexity,
-    clamp_unit_interval,
-    normalize_linear,
-    resolve_physics_complexity_weights,
-)
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_circuits_bridge_missing_resistance_family"
+TASK_NAMESPACE = "physics_circuits_bridge_missing_resistance"
 SCENE_ID = "bridge_circuit"
 QUERY_ID = "missing_bridge_resistance"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
@@ -43,12 +37,12 @@ RESISTOR_LABELS: Tuple[str, ...] = ("R1", "R2", "R3", "R4")
 DEFAULT_TARGET_SUPPORT: Tuple[int, ...] = tuple(range(1, 21))
 DEFAULT_MAX_RESISTANCE = 60
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -120,13 +114,13 @@ def _resolve_query_id(params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]
     explicit = str(params.get("query_id") or "").strip()
     if explicit:
         if explicit != QUERY_ID:
-            raise ValueError(f"unsupported query_id for {FAMILY_ID}: {explicit}")
+            raise ValueError(f"unsupported query_id for {TASK_NAMESPACE}: {explicit}")
         return QUERY_ID, _probability_map(SUPPORTED_QUERY_IDS, selected=QUERY_ID)
     return QUERY_ID, _probability_map(SUPPORTED_QUERY_IDS)
 
 
 def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene_variant")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -145,13 +139,13 @@ def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tup
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{FAMILY_ID}.scene_variant",
+        sampling_namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.accent_color_name")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.accent_color_name")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -170,13 +164,13 @@ def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tupl
         balance_flag_key="balanced_accent_color_name_sampling",
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
-        sampling_namespace=f"{FAMILY_ID}.accent_color_name",
+        sampling_namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_missing_resistor(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.missing_resistor")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.missing_resistor")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -195,7 +189,7 @@ def _resolve_missing_resistor(instance_seed: int, params: Mapping[str, Any]) -> 
         balance_flag_key="balanced_missing_resistor_sampling",
         explicit_key="missing_resistor",
         weights_key="missing_resistor_weights",
-        sampling_namespace=f"{FAMILY_ID}.missing_resistor",
+        sampling_namespace=f"{TASK_NAMESPACE}.missing_resistor",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -213,7 +207,7 @@ def _resolve_target_answer(instance_seed: int, params: Mapping[str, Any]) -> Tup
         support_key=support_key,
         explicit_key="target_answer",
         fallback_support=DEFAULT_TARGET_SUPPORT,
-        namespace=f"{FAMILY_ID}.target_answer",
+        namespace=f"{TASK_NAMESPACE}.target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
     return int(target), {str(key): float(value) for key, value in probabilities.items()}
@@ -258,7 +252,7 @@ def _construct_balanced_values(
         raise ValueError("component_value_max must be at least the target answer")
 
     pair_options = [(2, 3), (2, 5), (2, 7), (2, 9), (3, 2), (3, 4), (3, 5), (3, 7), (3, 8)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.bridge_values.{str(missing_resistor)}.{int(target_answer)}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.bridge_values.{str(missing_resistor)}.{int(target_answer)}")
     shuffled = list(pair_options)
     rng.shuffle(shuffled)
     fallback: Dict[str, int] | None = None
@@ -622,23 +616,6 @@ def _build_prompt_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(*, scenario: _BridgeScenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    known_values = [int(spec.value_ohm) for spec in scenario.resistors if not bool(spec.is_missing)]
-    distinct_known = len(set(known_values))
-    visual_scan = clamp_unit_interval(0.50 + 0.05 * normalize_linear(float(distinct_known), min_value=1.0, max_value=3.0))
-    bridge_reasoning = clamp_unit_interval(0.66 + 0.10 * normalize_linear(float(scenario.target_answer), min_value=1.0, max_value=20.0))
-    ambiguity = clamp_unit_interval(0.18 if distinct_known >= 3 else 0.28)
-    output_burden = 0.18
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "bridge_reasoning": float(bridge_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 @register_task
@@ -647,7 +624,7 @@ class PhysicsBridgeCircuitMissingResistanceValueTask:
 
     task_id = "task_physics__bridge_circuit__bridge_missing_resistance_value"
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -659,7 +636,6 @@ class PhysicsBridgeCircuitMissingResistanceValueTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -667,7 +643,7 @@ class PhysicsBridgeCircuitMissingResistanceValueTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -704,7 +680,7 @@ class PhysicsBridgeCircuitMissingResistanceValueTask:
         json_example, json_example_answer_only = _build_prompt_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -818,7 +794,6 @@ class PhysicsBridgeCircuitMissingResistanceValueTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scenario=scenario),
             task_versions=default_task_versions(),
             query_id=str(scenario.query_id),
             scene_id=SCENE_ID,

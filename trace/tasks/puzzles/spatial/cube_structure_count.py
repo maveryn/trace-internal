@@ -7,7 +7,7 @@ from itertools import product
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -19,13 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.block_stack_scene import render_puzzle_block_comparison_scene, render_puzzle_block_structure_scene
 from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import (
-    build_puzzle_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_puzzle_complexity_weights,
-)
-from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin
 from ..shared.params import resolve_puzzle_int_param
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.spatial_blocks_common import (
@@ -97,14 +91,13 @@ _SOLID_VIEW_SOURCE_QUERY_IDS: Tuple[str, ...] = (
     "right_view_visible_count",
 )
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="spatial")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="spatial")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.0)
 _DEFAULT_CUBE_COLOR_NAME_SUPPORT: Tuple[str, ...] = ("orange", "blue", "green", "purple", "cyan", "magenta", "brown")
 
 
@@ -1080,7 +1073,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         public_query_id, internal_query_id, query_metadata, sampling_axis_divisor = _resolve_query_contract(
@@ -1239,7 +1232,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1289,14 +1282,6 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             "stack_card": 0.18,
             "stack_outline": 0.15,
         }[str(scene_variant)]
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": max(float(total_scan), float(answer_scan)),
-                "reasoning_load": clamp_unit_interval(float(variant_reasoning_load) + float(comparison_load)),
-                "scene_variant_load": float(scene_load),
-            },
-        )
 
         render_map: Dict[str, Any] = {
             "image_id": "img0",
@@ -1417,7 +1402,6 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(public_query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

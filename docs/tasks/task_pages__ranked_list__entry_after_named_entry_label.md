@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `document_lookup`
+2. Scene: `document_lookup`
 3. Scene id: `ranked_list`
 4. Task id: `task_pages__ranked_list__entry_after_named_entry_label`
 5. Objective: Return the ranked-list item immediately after a named source item.

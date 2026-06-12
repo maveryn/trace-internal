@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `electromagnetic_induction`
-- Implementation task group: `magnetism`
+- Implementation scene: `magnetism`
 - Implementation source: `trace/tasks/physics/magnetism/electromagnetic_induction.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__electromagnetic_induction__induced_current_direction_count` -> `task_physics__electromagnetic_induction__induced_current_direction_count`

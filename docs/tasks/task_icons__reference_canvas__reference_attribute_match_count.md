@@ -3,8 +3,8 @@
 ## Identity
 - domain: `icons`
 - scene_id: `reference_canvas`
-- task_group: `counting`
-- module: `trace/tasks/icons/counting/reference_match_count.py`
+- scene_id: `counting`
+- module: `trace/tasks/icons/reference_canvas/reference_attribute_match_count.py`
 - prompt bundle: `icons_counting_v0`
 
 ## Contract

@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `minecraft`
-3. Scene id: `minecraft`
-4. Public task id: `task_games__minecraft__reachable_ore_stack_count`
-5. Supported `query_id` values: `reachable_ore_stack_count`
-6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
-8. Program schema: `count(filter(reachable_prefix(stack_line, step_rule=next_height<=current_height+1), top_block_type=target_ore_type)); scene=minecraft; scope=reachable_ore_stack_count`
+2. Scene id: `minecraft`
+3. Public task id: `task_games__minecraft__reachable_ore_stack_count`
+4. Supported `query_id` values: `reachable_ore_stack_count`
+5. Answer schema: `integer_count`
+6. Annotation schema: `point_set`
+7. Program schema: `count(filter(reachable_prefix(stack_line, step_rule=next_height<=current_height+1), top_block_type=target_ore_type)); scene=minecraft; scope=reachable_ore_stack_count`
 
 ## Generation Notes
 1. The scene shows one highlighted isometric stack line ordered left to right.

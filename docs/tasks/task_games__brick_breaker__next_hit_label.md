@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `brick_breaker`
+2. Scene package: `trace/tasks/games/brick_breaker/`
 3. Scene id: `brick_breaker`
 4. Public task id: `task_games__brick_breaker__next_hit_label`
 5. Supported `query_id` values: `next_hit_label`

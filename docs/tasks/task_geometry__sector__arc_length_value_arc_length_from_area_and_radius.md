@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `sector`
 3. Scene id: `sector`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `arc_length_from_area_and_radius`
@@ -13,7 +13,7 @@
 - `solve_formula(visible_sector_measurements, unknown_role=arc_length, formula_schema=arc_length_from_area_and_radius); scene=sector; scope=arc_length_value_arc_length_from_area_and_radius`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `sector`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/sector_formula.py`
+- Config: `configs/domains/geometry/sector.yaml`
+- Task module: `trace/tasks/geometry/sector/arc_length_value_arc_length_from_area_and_radius.py`

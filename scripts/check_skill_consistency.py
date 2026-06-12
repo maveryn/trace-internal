@@ -17,20 +17,20 @@ from trace.tasks.registry import list_default_task_ids
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = REPO_ROOT / "skills"
-STALE_SKILL_REFERENCES = ("docs/project/TODO.md",)
+STALE_SKILL_REFERENCES = ("docs/project/",)
 
 DOMAIN_SETUP_DOCS = {
-    "charts": "docs/domains/CHART_TASK_SETUP.md",
-    "games": "docs/domains/GAMES_TASK_SETUP.md",
-    "geometry": "docs/domains/GEOMETRY_TASK_SETUP.md",
-    "graph": "docs/domains/GRAPH_TASK_SETUP.md",
-    "icons": "docs/domains/ICON_TASK_SETUP.md",
-    "illustrations": "docs/domains/ILLUSTRATIONS_TASK_SETUP.md",
-    "pages": "docs/domains/PAGES_TASK_SETUP.md",
-    "physics": "docs/domains/PHYSICS_TASK_SETUP.md",
-    "misc": "docs/domains/MISC_TASK_SETUP.md",
-    "puzzles": "docs/domains/PUZZLES_TASK_SETUP.md",
-    "three_d": "docs/domains/THREE_D_TASK_SETUP.md",
+    "charts": "docs/domains/charts.md",
+    "games": "docs/domains/games.md",
+    "geometry": "docs/domains/geometry.md",
+    "graph": "docs/domains/graph.md",
+    "icons": "docs/domains/icons.md",
+    "illustrations": "docs/domains/illustrations.md",
+    "pages": "docs/domains/pages.md",
+    "physics": "docs/domains/physics.md",
+    "symbolic": "docs/domains/symbolic.md",
+    "puzzles": "docs/domains/puzzles.md",
+    "three_d": "docs/domains/three_d.md",
 }
 
 REQUIRED_DOMAIN_SECTIONS = (
@@ -139,18 +139,6 @@ def collect_skill_consistency_failures() -> list[SkillConsistencyFailure]:
                         f"{skill_path.relative_to(REPO_ROOT)} is missing {section}",
                     )
                 )
-
-    complexity_refs = SKILLS_ROOT / "task-complexity" / "references"
-    expected_refs = {f"{domain}.md" for domain in active_domains} | {"policy.md"}
-    actual_refs = {path.name for path in complexity_refs.glob("*.md")} if complexity_refs.exists() else set()
-
-    missing_refs = sorted(expected_refs - actual_refs)
-    if missing_refs:
-        failures.append(SkillConsistencyFailure("complexity_refs_missing", ", ".join(missing_refs)))
-
-    extra_refs = sorted(actual_refs - expected_refs)
-    if extra_refs:
-        failures.append(SkillConsistencyFailure("complexity_refs_extra", ", ".join(extra_refs)))
 
     return failures
 

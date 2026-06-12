@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `pedigree_chart`
-3. Task group: `relation`
+3. Source package: `trace/tasks/graph/pedigree_chart/relatedness_coefficient_label.py`
 4. Task id: `task_graph__pedigree_chart__relatedness_coefficient_label`
 5. Objective: select the visual option giving the coefficient of relatedness between two labeled people.
 
@@ -27,6 +27,6 @@
 4. Six fraction options are rendered inside the image; the prompt must not list prompt-only answer choices.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config.
+1. Prompt text comes from `prompts/graph/pedigree_chart/pedigree_chart_v0.json` and `configs/domains/graph/pedigree_chart.yaml`.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with keyed bbox annotation.

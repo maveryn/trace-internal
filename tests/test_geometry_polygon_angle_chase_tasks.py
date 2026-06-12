@@ -7,14 +7,14 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.geometry.measurement.polygon_angle_chase import (
+from trace.tasks.geometry.polygon_angle_chase.parallel_line_angle_value import GeometryPolygonAngleChaseParallelLineAngleValueTask
+from trace.tasks.geometry.polygon_angle_chase.polygon_interior_angle_value import (
     PARALLEL_TASK_ID,
     SYMMETRY_TASK_ID,
     TASK_ID,
     GeometryPolygonAngleChaseInteriorAngleValueTask,
-    GeometryPolygonAngleChaseParallelLineAngleValueTask,
-    GeometryPolygonAngleChaseSymmetryAngleValueTask,
 )
+from trace.tasks.geometry.polygon_angle_chase.symmetry_angle_value import GeometryPolygonAngleChaseSymmetryAngleValueTask
 
 
 def _generate(seed: int, **params):

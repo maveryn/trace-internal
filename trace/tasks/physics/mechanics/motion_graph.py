@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,8 +29,8 @@ from ..shared.option_cards import draw_lettered_option_cards
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_mechanics_motion_graph_family"
-INTERVAL_FAMILY_ID = "physics_mechanics_motion_graph_interval_displacement_family"
+TASK_NAMESPACE = "physics_mechanics_motion_graph"
+INTERVAL_TASK_NAMESPACE = "physics_mechanics_motion_graph_interval_displacement"
 INTERVAL_TASK_ID = "task_physics__motion_graph__interval_displacement_value"
 SCENE_ID = "motion_graph"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -69,16 +69,16 @@ INTERVAL_COMPATIBILITY: Dict[str, Sequence[str]] = {
     "bold_grid": INTERVAL_QUERY_IDS,
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 _INTERVAL_GEN_DEFAULTS, _INTERVAL_RENDER_DEFAULTS, _INTERVAL_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=INTERVAL_FAMILY_ID,
+    task_id=INTERVAL_TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -205,7 +205,7 @@ def _resolve_motion_state(
     if explicit_state is not None:
         state_params["motion_state"] = str(explicit_state)
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.motion_state"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.motion_state"),
         params=state_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=states,
@@ -222,7 +222,7 @@ def _resolve_motion_state(
         balance_flag_key="balanced_motion_state_sampling",
         explicit_key="motion_state",
         weights_key=f"{str(query_id)}_state_weights",
-        sampling_namespace=f"{FAMILY_ID}.motion_state.{str(query_id)}",
+        sampling_namespace=f"{TASK_NAMESPACE}.motion_state.{str(query_id)}",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -233,7 +233,7 @@ def _resolve_correct_option_letter(
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.correct_option_letter"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.correct_option_letter"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=OPTION_LETTERS,
@@ -250,13 +250,13 @@ def _resolve_correct_option_letter(
         balance_flag_key="balanced_correct_option_letter_sampling",
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
-        sampling_namespace=f"{FAMILY_ID}.correct_option_letter",
+        sampling_namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.axes")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.axes")
     scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
@@ -265,8 +265,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
         supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
-        scene_sampling_namespace=f"{FAMILY_ID}.scene_variant",
-        query_sampling_namespace=f"{FAMILY_ID}.query_id",
+        scene_sampling_namespace=f"{TASK_NAMESPACE}.scene_variant",
+        query_sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     motion_state, state_probs = _resolve_motion_state(
         instance_seed=int(instance_seed),
@@ -338,7 +338,7 @@ def _build_option_map(
 ) -> Dict[str, str]:
     states = list(_states_for_query(str(query_id))) + ["changing_direction"]
     remaining = [state for state in states if str(state) != str(motion_state)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_map")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_map")
     rng.shuffle(remaining)
     option_map: Dict[str, str] = {}
     for letter in OPTION_LETTERS:
@@ -351,7 +351,7 @@ def _build_option_map(
 
 
 def _make_graph_spec(instance_seed: int, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _GraphSpec:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.graph_spec")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.graph_spec")
     y_min = int(params.get("y_min", group_default(_RENDER_DEFAULTS, "y_min", _DEFAULTS.y_min)))
     y_max = int(params.get("y_max", group_default(_RENDER_DEFAULTS, "y_max", _DEFAULTS.y_max)))
     t_min = int(params.get("t_min", group_default(_RENDER_DEFAULTS, "t_min", _DEFAULTS.t_min)))
@@ -682,7 +682,7 @@ def _resolve_layout_placement(
         params,
         _RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.layout",
+        namespace=f"{TASK_NAMESPACE}.layout",
     )
     min_margin = int(jitter.get("min_margin_px", 18))
     requested_dx = int(jitter.get("requested_dx_px", 0))
@@ -733,7 +733,7 @@ def _resolve_layout_placement(
 
 
 def _resolve_interval_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _IntervalAxes:
-    rng = spawn_rng(int(instance_seed), f"{INTERVAL_FAMILY_ID}.axes")
+    rng = spawn_rng(int(instance_seed), f"{INTERVAL_TASK_NAMESPACE}.axes")
     scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
@@ -742,8 +742,8 @@ def _resolve_interval_axes(instance_seed: int, *, params: Mapping[str, Any]) -> 
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
         supported_query_ids=INTERVAL_QUERY_IDS,
         compatibility=INTERVAL_COMPATIBILITY,
-        scene_sampling_namespace=f"{INTERVAL_FAMILY_ID}.scene_variant",
-        query_sampling_namespace=f"{INTERVAL_FAMILY_ID}.query_id",
+        scene_sampling_namespace=f"{INTERVAL_TASK_NAMESPACE}.scene_variant",
+        query_sampling_namespace=f"{INTERVAL_TASK_NAMESPACE}.query_id",
     )
     return _IntervalAxes(
         scene_variant=str(scene_variant),
@@ -765,7 +765,7 @@ def _resolve_interval_render_defaults(
             key,
             int(getattr(_DEFAULTS, key)),
             instance_seed=int(instance_seed),
-            namespace=INTERVAL_FAMILY_ID,
+            namespace=INTERVAL_TASK_NAMESPACE,
         )
         for key in (
             "plot_left_px",
@@ -814,7 +814,7 @@ def _resolve_interval_layout_placement(
         params,
         _INTERVAL_RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{INTERVAL_FAMILY_ID}.layout",
+        namespace=f"{INTERVAL_TASK_NAMESPACE}.layout",
     )
     min_margin = int(jitter.get("min_margin_px", 18))
     requested_dx = int(jitter.get("requested_dx_px", 0))
@@ -868,7 +868,7 @@ def _make_interval_graph_spec(
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
 ) -> _IntervalGraphSpec:
-    rng = spawn_rng(int(instance_seed), f"{INTERVAL_FAMILY_ID}.graph_spec")
+    rng = spawn_rng(int(instance_seed), f"{INTERVAL_TASK_NAMESPACE}.graph_spec")
     t_min = int(params.get("t_min", render_defaults["t_min"]))
     t_max = int(params.get("t_max", render_defaults["t_max"]))
     y_min = int(params.get("y_min", render_defaults["y_min"]))
@@ -1189,7 +1189,7 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
 
     task_id = ""
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     default_dataset_enabled = True
     forced_query_id = ""
 
@@ -1217,7 +1217,6 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 require_grid=True,
@@ -1225,7 +1224,7 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -1236,7 +1235,7 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
                     key,
                     int(getattr(_DEFAULTS, key)),
                     instance_seed=attempt_seed,
-                    namespace=FAMILY_ID,
+                    namespace=TASK_NAMESPACE,
                 )
                 for key in (
                     "plot_left_px",
@@ -1307,7 +1306,7 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -1326,15 +1325,6 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
             is_velocity_sign = str(spec.query_id) == "velocity_sign_choice"
-            complexity = TaskComplexity(
-                complexity_score=0.50 if is_velocity_sign else 0.58,
-                complexity_components={
-                    "visual_scan": 0.24,
-                    "graph_reasoning": 0.48 if is_velocity_sign else 0.56,
-                    "ambiguity": 0.12,
-                    "output_burden": 0.10,
-                },
-            )
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": f"physics_motion_graph_{str(spec.graph_kind)}",
@@ -1417,7 +1407,6 @@ class _PhysicsMotionGraphStateChoiceTaskBase:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=str(spec.query_id),
@@ -1447,7 +1436,7 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
 
     task_id = INTERVAL_TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1481,7 +1470,6 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 require_grid=True,
@@ -1489,7 +1477,7 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{INTERVAL_FAMILY_ID}.font",
+                namespace=f"{INTERVAL_TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -1531,7 +1519,7 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -1550,16 +1538,6 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
             is_accelerating = str(spec.query_id) == "constant_acceleration_interval_displacement"
-            complexity = TaskComplexity(
-                complexity_score=0.58 if not is_accelerating else 0.64,
-                complexity_components={
-                    "visual_scan": 0.26,
-                    "graph_reasoning": 0.48 if not is_accelerating else 0.54,
-                    "arithmetic": 0.18 if not is_accelerating else 0.24,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.08,
-                },
-            )
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": "physics_motion_graph_velocity_time_interval_displacement",
@@ -1636,7 +1614,6 @@ class PhysicsMotionGraphIntervalDisplacementValueTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=str(spec.query_id),

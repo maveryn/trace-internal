@@ -6,11 +6,11 @@ import math
 
 import pytest
 
-from trace.tasks.geometry.measurement.solid_cross_section import (
+from trace.tasks.geometry.solid_cross_section.cone_parallel_slice_area import (
     SCENE_ID,
     GeometryConeParallelSliceAreaTask,
-    GeometrySquarePyramidParallelSliceAreaTask,
 )
+from trace.tasks.geometry.solid_cross_section.square_pyramid_parallel_slice_area import GeometrySquarePyramidParallelSliceAreaTask
 
 TASK_CLASSES = (GeometryConeParallelSliceAreaTask, GeometrySquarePyramidParallelSliceAreaTask)
 

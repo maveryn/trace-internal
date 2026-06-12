@@ -6,8 +6,8 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.spatial.camera_distance import LARGE_CONTEXT_SHAPE_TYPES
-from trace.tasks.three_d.spatial.reference_nearest import TASK_ID
+from trace.tasks.three_d.object_scene.camera_distance_extremum_label import LARGE_CONTEXT_SHAPE_TYPES
+from trace.tasks.three_d.object_scene.reference_nearest_label import TASK_ID
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
@@ -69,4 +69,4 @@ def test_reference_nearest_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_task_group == "spatial"
+    assert taxonomy.source_scene_id == "object_scene"

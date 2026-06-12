@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.shared.sixteen_soldiers_common import (
+from trace.tasks.games.sixteen_soldiers.shared.common import (
     BLUE,
     EDGES,
     JUMP_SPECS,
@@ -47,7 +47,7 @@ def test_games_sixteen_soldiers_topology_is_canonical_and_usable() -> None:
 
 
 def test_games_sixteen_soldiers_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "sixteen_soldiers")
+    cfg = get_scene_defaults("games", "sixteen_soldiers")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id=MARKED_DESTINATION_TASK_ID,
@@ -159,4 +159,4 @@ def test_games_sixteen_soldiers_taxonomy_mapping() -> None:
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "sixteen_soldiers"
         assert taxonomy.source_domain == "games"
-        assert taxonomy.source_task_group == "sixteen_soldiers"
+        assert taxonomy.source_scene_id == "sixteen_soldiers"

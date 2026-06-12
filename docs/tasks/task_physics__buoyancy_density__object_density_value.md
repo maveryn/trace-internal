@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `buoyancy_density`
-- Implementation task group: `fluids`
+- Implementation scene: `fluids`
 - Implementation source: `trace/tasks/physics/fluids/buoyancy_density.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__buoyancy_density__object_density_value` -> `task_physics__buoyancy_density__object_density_value`

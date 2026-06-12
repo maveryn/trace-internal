@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `wire_shape_conversion`
 3. Scene id: `wire_shape_conversion`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query ids: `same_wire_circle_to_trapezoid_side`, `same_wire_polygon_to_rectangle_side`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/wire_shape_conversion.py`
+- Config: `configs/domains/geometry/wire_shape_conversion.yaml`
+- Task module: `trace/tasks/geometry/wire_shape_conversion/missing_dimension_value.py`

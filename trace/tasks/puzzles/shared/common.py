@@ -7,7 +7,6 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from .complexity import resolve_puzzle_complexity_weights
 
 
 def get_int_param(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -35,22 +34,17 @@ def get_int_range(
 
 
 def load_puzzle_task_defaults(
-    task_group_defaults: Mapping[str, Any],
+    scene_id_defaults: Mapping[str, Any],
     *,
     task_id: str,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
-    """Resolve generation/rendering/prompt defaults plus puzzle complexity weights."""
 
-    defaults = task_group_defaults if isinstance(task_group_defaults, Mapping) else {}
+    defaults = scene_id_defaults if isinstance(scene_id_defaults, Mapping) else {}
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         defaults,
         task_id=str(task_id),
     )
-    complexity_weights = resolve_puzzle_complexity_weights(
-        defaults,
-        task_id=str(task_id),
-    )
-    return gen_defaults, render_defaults, prompt_defaults, complexity_weights
+    return gen_defaults, render_defaults, prompt_defaults, {}
 
 
 def decouple_axis_sampling(
@@ -137,6 +131,34 @@ def projected_puzzle_keyed_bbox_annotation(
     }
 
 
+def projected_puzzle_keyed_bbox_set_annotation(
+    bbox_map: Mapping[str, Sequence[float]],
+    role_item_ids: Mapping[str, Sequence[str]],
+) -> Dict[str, Any]:
+    """Project role-bound puzzle item id sets into `keyed_bbox_set_map` annotation."""
+
+    keyed_bbox_sets: Dict[str, list[list[float]]] = {}
+    for role, item_ids in role_item_ids.items():
+        role_bboxes: list[list[float]] = []
+        for item_id in item_ids:
+            key = str(item_id)
+            if key not in bbox_map:
+                raise RuntimeError(f"missing bbox annotation for role {role!r}: item id {key!r}")
+            role_bboxes.append(list(bbox_map[key]))
+        keyed_bbox_sets[str(role)] = role_bboxes
+    return {
+        "type": "keyed_bbox_set_map",
+        "keyed_bbox_set_map": {
+            str(role): [list(bbox) for bbox in bboxes]
+            for role, bboxes in keyed_bbox_sets.items()
+        },
+        "pixel_keyed_bbox_set_map": {
+            str(role): [list(bbox) for bbox in bboxes]
+            for role, bboxes in keyed_bbox_sets.items()
+        },
+    }
+
+
 __all__ = [
     "decouple_axis_sampling",
     "get_int_param",
@@ -144,5 +166,6 @@ __all__ = [
     "load_puzzle_task_defaults",
     "projected_puzzle_bbox_annotation",
     "projected_puzzle_keyed_bbox_annotation",
+    "projected_puzzle_keyed_bbox_set_annotation",
     "resolve_puzzle_axis_variant",
 ]

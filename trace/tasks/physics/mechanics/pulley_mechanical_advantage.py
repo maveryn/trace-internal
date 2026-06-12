@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -28,9 +28,8 @@ from ...shared.variant_sampling import (
     resolve_compatible_scene_query_ids,
     resolve_variant,
 )
-from ..shared.complexity import build_physics_pulley_mechanical_advantage_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
-from ..shared.fixed_query_task import rewrite_physics_query_output
+from trace.tasks.shared.fixed_query import rewrite_physics_query_output
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES, build_physics_pulley_theme
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.visual_defaults import load_physics_noise_defaults
@@ -215,12 +214,12 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 PULLEY_SEMANTIC_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (255, 231, 231),
     (187, 56, 56),
@@ -1292,7 +1291,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -1359,7 +1358,6 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             )
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="pulley",
-                task_group=self.task_group,
                 canvas_width=int(render_defaults["canvas_width"]),
                 canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
@@ -1369,7 +1367,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -1408,7 +1406,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -1439,16 +1437,6 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             }
             annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_value))
             target_support_key = _answer_support_key(str(axes.query_id))
-            complexity = build_physics_pulley_mechanical_advantage_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=self.task_id,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                support_segment_count=int(scene_spec.support_segment_count),
-                disconnected_segment_count=int(scene_spec.disconnected_segment_count),
-                target_answer=int(axes.target_answer),
-                annotation_count=len(rendered_scene.annotation_bboxes),
-            )
             cut_segment_payload = [
                 {
                     "segment_id": str(segment.segment_id),
@@ -1585,7 +1573,6 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     image=image,
                     image_id="img0",
                     trace_payload=trace_payload,
-                    complexity=complexity,
                     task_versions=default_task_versions(),
                     scene_id="pulley",
                 ),

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `room`
-- Task group: `room`
+- Scene: `room`
 - Query ids: `tv_wall_mounted_count`, `clock_wall_mounted_count`, `picture_frame_wall_mounted_count`, `mirror_wall_mounted_count`, `wall_shelf_wall_mounted_count`, `wall_fan_wall_mounted_count`, `air_conditioner_wall_mounted_count`, `hanging_coat_wall_mounted_count`
 - Answer type: `integer`
 - Annotation type: `bbox_set`

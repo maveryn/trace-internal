@@ -9,9 +9,9 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.geometry.comparison.value import GeometryComparisonValueTask
-from trace.tasks.geometry.counting.value import GeometryCountingValueTask
-from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
+from trace.tasks.geometry.graph_paper.angle_extremum_label import GeometryComparisonValueTask
+from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
+from trace.tasks.geometry.graph_paper.angle_value import GeometryMeasurementValueTask
 from tests.helpers import read_jsonl
 
 
@@ -59,7 +59,7 @@ def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> 
 
 
 @pytest.mark.parametrize(
-    ("task_id", "task_group"),
+    ("task_id", "scene_id"),
     (
         ("task_geometry__graph_paper__polygon_area_value", "measurement"),
         ("task_geometry__graph_paper__area_extremum_label", "comparison"),
@@ -74,7 +74,7 @@ def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> 
         ("task_geometry__shape_gallery__reflection_match", "transformation"),
     ),
 )
-def test_geometry_consolidated_build_smoke(task_id: str, task_group: str, tmp_path: Path) -> None:
+def test_geometry_consolidated_build_smoke(task_id: str, scene_id: str, tmp_path: Path) -> None:
     output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
@@ -91,7 +91,7 @@ def test_geometry_consolidated_build_smoke(task_id: str, task_group: str, tmp_pa
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 3
     assert all(record["domain"] == "geometry" for record in train_records)
-    assert all(record["task_group"] == task_group for record in train_records)
+    assert all(record["scene_id"] == scene_id for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][task_id]) == 3

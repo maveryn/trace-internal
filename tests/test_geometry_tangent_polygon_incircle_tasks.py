@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.tangent_polygon_incircle import (
+from trace.tasks.geometry.incircle_tangents.incircle_radius_from_area_value import GeometryIncircleRadiusFromAreaValueTask
+from trace.tasks.geometry.incircle_tangents.incircle_tangent_perimeter_value import (
     SCENE_ID,
-    GeometryIncircleRadiusFromAreaValueTask,
     GeometryIncircleTangentPerimeterValueTask,
 )
 

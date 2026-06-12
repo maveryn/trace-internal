@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `warehouse`
-- Task group: `warehouse`
+- Scene: `warehouse`
 - Query ids: `top_shelf_item_count`, `middle_shelf_item_count`, `bottom_shelf_item_count`
 - Answer type: `integer`
 - Annotation type: `bbox_set`

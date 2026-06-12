@@ -26,12 +26,36 @@ generation:
       balanced_scene_variant_sampling: true
       balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
-      bounce_count_support_single_mirror: [0, 1]
-      bounce_count_support_double_mirror: [0, 1, 2]
-      bounce_count_support_triple_mirror: [0, 1, 2, 3]
-      bounce_count_support_quad_mirror: [0, 1, 2, 3, 4]
-      bounce_count_support_five_mirror: [1, 2, 3, 4, 5]
-      target_hit_count_support: [1, 2, 3, 4, 5]
+      bounce_count_support_single_mirror:
+      - 0
+      - 1
+      bounce_count_support_double_mirror:
+      - 0
+      - 1
+      - 2
+      bounce_count_support_triple_mirror:
+      - 0
+      - 1
+      - 2
+      - 3
+      bounce_count_support_quad_mirror:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      bounce_count_support_five_mirror:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      target_hit_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
       target_count_min: 4
       target_count_max: 5
     physics_optics_refraction_layers_family:
@@ -90,7 +114,6 @@ generation:
       balanced_query_id_sampling: true
       balanced_object_position_case_sampling: true
       balanced_correct_option_letter_sampling: true
-
 rendering:
   shared:
     canvas_width: 920
@@ -188,35 +211,6 @@ rendering:
       label_font_size_px: 22
       small_font_size_px: 18
       title_font_size_px: 28
-
-complexity:
-  shared: {}
-  task_overrides:
-    physics_optics_ray_trace_family:
-      criteria_weights:
-        visual_scan: 0.28
-        path_reasoning: 0.48
-        ambiguity: 0.14
-        output_burden: 0.10
-    physics_optics_refraction_layers_family:
-      criteria_weights:
-        visual_scan: 0.28
-        refraction_reasoning: 0.46
-        ambiguity: 0.16
-        output_burden: 0.10
-    physics_optics_shadow_cause_family:
-      criteria_weights:
-        visual_scan: 0.30
-        light_shadow_reasoning: 0.44
-        ambiguity: 0.16
-        output_burden: 0.10
-    physics_optics_lens_optics_family:
-      criteria_weights:
-        visual_scan: 0.28
-        lens_reasoning: 0.46
-        ambiguity: 0.12
-        output_burden: 0.14
-
 prompt:
   shared:
     bundle_id: physics_optics_v0
@@ -224,29 +218,48 @@ prompt:
     physics_optics_ray_trace_family:
       scene_key: mirror_ray_diagram
       task_key: ray_trace_query
-      object_description_single_mirror: a graph-paper ray setup with an initial direction and one diagonal mirror
-      object_description_double_mirror: a graph-paper ray setup with an initial direction and two diagonal mirrors
-      object_description_triple_mirror: a graph-paper ray setup with an initial direction and three diagonal mirrors
-      object_description_quad_mirror: a graph-paper ray setup with an initial direction and four diagonal mirrors
-      object_description_five_mirror: a graph-paper ray setup with an initial direction and five diagonal mirrors
-      annotation_hint_bounce_count: set "annotation" to an array of image pixel points [x, y] for each mirror-bounce point of the implied ray path
-      annotation_hint_target_hit_count: set "annotation" to an array of image pixel points [x, y] for each target point touched by the implied ray path
+      object_description_single_mirror: a graph-paper ray setup with an initial direction
+        and one diagonal mirror
+      object_description_double_mirror: a graph-paper ray setup with an initial direction
+        and two diagonal mirrors
+      object_description_triple_mirror: a graph-paper ray setup with an initial direction
+        and three diagonal mirrors
+      object_description_quad_mirror: a graph-paper ray setup with an initial direction
+        and four diagonal mirrors
+      object_description_five_mirror: a graph-paper ray setup with an initial direction
+        and five diagonal mirrors
+      annotation_hint_bounce_count: set "annotation" to an array of image pixel points
+        [x, y] for each mirror-bounce point of the implied ray path
+      annotation_hint_target_hit_count: set "annotation" to an array of image pixel
+        points [x, y] for each target point touched by the implied ray path
       answer_hint: set "answer" to the requested count as an integer
     physics_optics_refraction_layers_family:
       scene_key: refraction_layers_diagram
       task_key: refraction_speed_order_query
-      object_description: a refraction diagram with three labeled media, a light ray crossing two interfaces, dashed normals, and speed-order option cards
-      annotation_hint_three_medium_speed_order: set "annotation" to an object with keys "interface_1_bend" and "interface_2_bend", each mapped to a bounding box [x0, y0, x1, y1] around the corresponding ray bend and normal
+      object_description: a refraction diagram with three labeled media, a light ray
+        crossing two interfaces, dashed normals, and speed-order option cards
+      annotation_hint_three_medium_speed_order: set "annotation" to an object with
+        keys "interface_1_bend" and "interface_2_bend", each mapped to a bounding
+        box [x0, y0, x1, y1] around the corresponding ray bend and normal
       answer_hint_three_medium_speed_order: set "answer" to the selected option letter
     physics_optics_shadow_cause_family:
       scene_key: shadow_cause_diagram
       task_key: shadow_cause_query
-      object_description: a light-and-shadow diagram with one object, its cast shadow, and labeled candidate light sources
-      annotation_hint_source_from_shadow_label: set "annotation" to an object with keys "object" and "shadow", each mapped to a bounding box [x0, y0, x1, y1] around the visible object and cast shadow
-      answer_hint_source_from_shadow_label: set "answer" to the selected light-source letter
+      object_description: a light-and-shadow diagram with one object, its cast shadow,
+        and labeled candidate light sources
+      annotation_hint_source_from_shadow_label: set "annotation" to an object with
+        keys "object" and "shadow", each mapped to a bounding box [x0, y0, x1, y1]
+        around the visible object and cast shadow
+      answer_hint_source_from_shadow_label: set "answer" to the selected light-source
+        letter
     physics_optics_lens_optics_family:
       scene_key: lens_optics_diagram
       task_key: lens_image_property_query
-      object_description: a converging thin-lens diagram with a principal axis, focal marks F and 2F, one object arrow, and visible image-property option cards
-      annotation_hint_converging_lens_image_property_choice: set "annotation" to an object with keys "lens", "object_arrow", and "focal_marks", each mapped to [x0, y0, x1, y1] pixel boxes around the visible lens, object arrow, and focal-mark witnesses
-      answer_hint_converging_lens_image_property_choice: set "answer" to the selected option letter
+      object_description: a converging thin-lens diagram with a principal axis, focal
+        marks F and 2F, one object arrow, and visible image-property option cards
+      annotation_hint_converging_lens_image_property_choice: set "annotation" to an
+        object with keys "lens", "object_arrow", and "focal_marks", each mapped to
+        [x0, y0, x1, y1] pixel boxes around the visible lens, object arrow, and focal-mark
+        witnesses
+      answer_hint_converging_lens_image_property_choice: set "answer" to the selected
+        option letter

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `circle_polygon_composite`
 3. Scene id: `circle_polygon_composite`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query ids: `square_incircle_tangent_angle`, `square_semicircle_tangent_angle`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space keyed points for the shape corners, ci
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/circle_polygon_composite.py`
+- Config: `configs/domains/geometry/circle_polygon_composite.yaml`
+- Task module: `trace/tasks/geometry/circle_polygon_composite/square_circle_tangent_angle_value.py`

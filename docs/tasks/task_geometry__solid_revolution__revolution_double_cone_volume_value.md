@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `solid_revolution`
 3. Scene id: `solid_revolution`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `double_cone_volume_from_triangle`
@@ -13,7 +13,7 @@
 - `solve_formula(visible_solid_revolution_measurements, unknown_role=volume_measure, formula_schema=double_cone_volume_from_triangle); scene=solid_revolution; scope=revolution_double_cone_volume_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `solid_revolution`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/solid_revolution.py`
+- Config: `configs/domains/geometry/solid_revolution.yaml`
+- Task module: `trace/tasks/geometry/solid_revolution/revolution_double_cone_volume_value.py`

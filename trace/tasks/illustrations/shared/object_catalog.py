@@ -70,10 +70,10 @@ def _with_tags(base: Sequence[str], *extra: str) -> Tuple[str, ...]:
 
 
 _MIXED_SKY = ("airplane", "bird", "butterfly", "cloud", "kite", "sun")
-_MIXED_WATER = ("boat", "sailboat", "canoe", "fish", "duck", "buoy", "lily_pad")
+_MIXED_WATER = ("boat", "sailboat", "fish", "duck", "buoy", "lily_pad")
 _MIXED_ROADLIKE = ("car", "bus", "truck", "taxi", "van", "train", "bicycle", "scooter")
 _ENV_ROAD = ("car", "bus", "truck", "taxi", "van", "bicycle", "scooter")
-_ENV_RIVER = ("boat", "sailboat", "canoe", "fish", "duck", "buoy", "lily_pad")
+_ENV_RIVER = ("boat", "sailboat", "fish", "duck", "buoy", "lily_pad")
 _ENV_SKY = ("airplane", "bird", "butterfly", "kite")
 _ENV_LAND = (
     "quadruped",
@@ -134,7 +134,7 @@ _INDOOR_OBJECTS = (
     "flower",
     "mushroom",
 )
-_LARGE_SHARED = {"airplane", "bus", "truck", "van", "train", "boat", "sailboat", "canoe", "tree", "bench", "table"}
+_LARGE_SHARED = {"airplane", "bus", "truck", "van", "train", "boat", "sailboat", "tree", "bench", "table"}
 _SMALL_SHARED = {
     "apple",
     "egg",

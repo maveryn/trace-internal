@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Task id: `task_puzzles__voxel_cube__cube_structure_change_count`
 4. Objective: count the cube delta between two related isometric cube structures.
 

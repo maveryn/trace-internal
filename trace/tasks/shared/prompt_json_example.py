@@ -175,6 +175,29 @@ def dump_prompt_json_examples(
     )
 
 
+def build_keyed_point_prompt_json_examples(
+    *,
+    annotation_keys: Sequence[str],
+    answer: Any,
+    ensure_ascii: bool = True,
+) -> Tuple[str, str]:
+    """Build compact examples for keyed pixel-point annotation contracts."""
+
+    annotation: Dict[str, List[int]] = {}
+    for index, key in enumerate(annotation_keys):
+        row = int(index) // 4
+        col = int(index) % 4
+        annotation[str(key)] = [
+            int(140 + col * 90 + (row % 2) * 20),
+            int(160 + row * 72),
+        ]
+    return dump_prompt_json_examples(
+        annotation=annotation,
+        answer=answer,
+        ensure_ascii=bool(ensure_ascii),
+    )
+
+
 def resolve_prompt_json_examples(
     prompt_defaults: Mapping[str, Any],
     *,
@@ -199,6 +222,7 @@ def resolve_prompt_json_examples(
 
 __all__ = [
     "build_prompt_json_examples",
+    "build_keyed_point_prompt_json_examples",
     "dump_prompt_json_examples",
     "resolve_prompt_json_examples",
 ]

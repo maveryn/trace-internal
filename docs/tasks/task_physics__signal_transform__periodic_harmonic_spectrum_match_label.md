@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `signal_transform`
-- Implementation task group: `waves`
+- Implementation scene: `waves`
 - Implementation source: `trace/tasks/physics/waves/signal_transform.py`
 - Contract-v0 migration decision: `split_after_audit`
 - Public mapping: `task_physics__signal_transform__periodic_harmonic_spectrum_match_label` -> `task_physics__signal_transform__periodic_harmonic_spectrum_match_label`

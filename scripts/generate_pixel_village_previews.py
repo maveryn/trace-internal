@@ -118,23 +118,21 @@ def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, heigh
     overlay_paths: list[Path] = []
     records: list[dict] = []
     territory_modes = [
-        ("force", "none", "none", "none"),
-        ("none", "force", "none", "none"),
-        ("none", "none", "force", "none"),
-        ("none", "none", "none", "force"),
-        ("force", "force", "force", "force"),
-        ("none", "none", "none", "none"),
+        ("force", "none", "none"),
+        ("none", "force", "none"),
+        ("none", "none", "force"),
+        ("force", "force", "force"),
+        ("none", "none", "none"),
     ]
     for index in range(int(count)):
         scene_seed = int(seed) + index
-        cemetery_mode, orchard_mode, farm_plot_mode, windmill_mode = territory_modes[index % len(territory_modes)]
+        cemetery_mode, orchard_mode, windmill_mode = territory_modes[index % len(territory_modes)]
         scene = render_pixel_village_map(
             scene_seed,
             width=int(width),
             height=int(height),
             cemetery_mode=cemetery_mode,
             orchard_mode=orchard_mode,
-            farm_plot_mode=farm_plot_mode,
             windmill_mode=windmill_mode,
         )
         image_path = images_dir / f"{index:04d}.png"
@@ -164,11 +162,6 @@ def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, heigh
                 "orchard_mode": str(scene.trace["orchard_mode"]),
                 "orchard_present": bool(scene.trace["orchard_present"]),
                 "orchard_tree_count": int(scene.trace["orchard_tree_count"]),
-                "farm_plot_mode": str(scene.trace["farm_plot_mode"]),
-                "farm_plot_present": bool(scene.trace["farm_plot_present"]),
-                "farm_plot_crop_row_count": int(scene.trace["farm_plot_crop_row_count"]),
-                "farm_plot_hay_bale_count": int(scene.trace["farm_plot_hay_bale_count"]),
-                "farm_plot_scarecrow_count": int(scene.trace["farm_plot_scarecrow_count"]),
                 "windmill_mode": str(scene.trace["windmill_mode"]),
                 "windmill_present": bool(scene.trace["windmill_present"]),
                 "theme_mode": str(scene.trace["theme_mode"]),
@@ -204,12 +197,12 @@ def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, heigh
         "",
         "The renderer uses no external sprites. Kenney Tiny Town, Kenney Roguelike/RPG, Kenney RPG Urban Pack, and graveyard pixel references are visual references only.",
         "Each scene samples its own grid dimensions and renders logical tiles at 32px by default.",
-        "Preview generation cycles cemetery-only, orchard-only, farm-plot-only, windmill-only, all large optional features, and no-feature states.",
+        "Preview generation cycles cemetery-only, orchard-only, windmill-only, all large optional features, and no-feature states.",
         "Tree entities keep public name `tree` while sampling oak, pine, maple, or fruit_tree visual styles.",
         "Orchard is a reusable variable-size territory with rows of fruit-tree entities and a low hedge/post boundary.",
-        "Farm plot is a compact village territory with fence/gate, crop rows, a scarecrow, and hay bales.",
+        "Farm plots are intentionally left to dedicated farm scenes rather than the village renderer.",
         "Regular village houses, shops, and inns are front-facing and sample roof, wall, and door-state variants.",
-        "The current reusable pixel-world object set also includes castle, church, windmill, round well, market stall, wagon, statue, gazebo, woodpile, variable pond, barrel, bench, lamp post, notice board, cart, flower, crop row, hay bale, scarecrow, grave marker, and dead-tree templates.",
+        "The current reusable pixel-world object set also includes castle, church, windmill, round well, market stall, wagon, statue, gazebo, woodpile, variable pond, barrel, bench, lamp post, notice board, cart, flower, grave marker, and dead-tree templates.",
         "Dirt paths use connectivity-aware horizontal, vertical, corner, T-junction, and crossing tile pieces.",
         "Season comparison previews are optional and render the same seed as temperate, autumn, and winter for visual inspection.",
         "Cemetery is recorded as a village `territory`, not as a separate public scene prototype.",
@@ -226,24 +219,22 @@ def generate_theme_comparisons(*, out_dir: Path, count: int, seed: int, width: i
         directory.mkdir(parents=True, exist_ok=True)
 
     territory_modes = [
-        ("force", "none", "none", "none"),
-        ("none", "force", "none", "none"),
-        ("none", "none", "force", "none"),
-        ("none", "none", "none", "force"),
-        ("force", "force", "force", "force"),
-        ("none", "none", "none", "none"),
+        ("force", "none", "none"),
+        ("none", "force", "none"),
+        ("none", "none", "force"),
+        ("force", "force", "force"),
+        ("none", "none", "none"),
     ]
     comparison_paths: list[Path] = []
     records: list[dict] = []
     for index in range(int(count)):
         scene_seed = int(seed) + index
-        cemetery_mode, orchard_mode, farm_plot_mode, windmill_mode = territory_modes[index % len(territory_modes)]
+        cemetery_mode, orchard_mode, windmill_mode = territory_modes[index % len(territory_modes)]
         common_kwargs = {
             "width": int(width),
             "height": int(height),
             "cemetery_mode": cemetery_mode,
             "orchard_mode": orchard_mode,
-            "farm_plot_mode": farm_plot_mode,
             "windmill_mode": windmill_mode,
         }
         temperate = render_pixel_village_map(scene_seed, theme_mode="temperate", **common_kwargs)

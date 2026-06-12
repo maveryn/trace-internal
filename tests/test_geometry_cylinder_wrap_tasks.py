@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.cylinder_wrap import (
+from trace.tasks.geometry.cylinder_wrap.surface_path_length_value import (
     GeometryCylinderWrapSurfacePathLengthValueTask,
-    GeometryCylinderWrapWrappedMarkPositionLabelTask,
     SCENE_ID,
 )
+from trace.tasks.geometry.cylinder_wrap.wrapped_mark_position_label import GeometryCylinderWrapWrappedMarkPositionLabelTask
 
 
 TASK_CLASSES = (

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `lens_optics`
-- Implementation task group: `optics`
+- Implementation scene: `optics`
 - Implementation source: `trace/tasks/physics/optics/lens_optics.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__lens_optics__image_property_choice` -> `task_physics__lens_optics__image_property_choice`

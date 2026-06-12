@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from collections import Counter
+from inspect import getsourcefile
+from pathlib import Path
 
+from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.visual.missing_patch_label import _GEN_DEFAULTS as _MISSING_PATCH_GEN_DEFAULTS
-from trace.tasks.illustrations.visual.jigsaw_piece_order import _sample_spec as _sample_jigsaw_spec
+from trace.tasks.illustrations.missing_patch.missing_patch_label import _GEN_DEFAULTS as _MISSING_PATCH_GEN_DEFAULTS
+from trace.tasks.illustrations.image_cutout_board.jigsaw_piece_order import _sample_spec as _sample_jigsaw_spec
 
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
@@ -18,7 +21,12 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
 
 
 def test_jigsaw_piece_order_contract() -> None:
-    out = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order").generate(
+    task = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order")
+    assert not hasattr(task, "scene_id")
+    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
+        "trace/tasks/illustrations/image_cutout_board/jigsaw_piece_order.py"
+    )
+    out = task.generate(
         hash64(2026052502, "jigsaw-piece-order", 0),
         params={"board_shape": "board_2x2", "source_task_id": "task_illustrations__library__books_in_section_count"},
         max_attempts=300,
@@ -43,6 +51,10 @@ def test_jigsaw_piece_order_contract() -> None:
     assert trace["query_spec"]["params"]["option_piece_count"] == 3
     assert trace["render_spec"]["style"]["option_label_font"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["style"]["board_style"]["style_id"] in {"pale_cross", "warm_corner", "cool_dots"}
+    prompt_variant = trace["query_spec"]["prompt_variant"]
+    assert prompt_variant["prompt_bundle_id"] == "illustrations_image_cutout_board_v0"
+    assert prompt_variant["prompt_scene_id"] == "image_cutout_board"
+    assert "prompt_scene_id" not in prompt_variant
     assert "3 remaining piece labels" in out.prompt
 
 
@@ -84,7 +96,12 @@ def test_jigsaw_piece_orderseeded_sampler_decouples_shape_and_answer_order() -> 
 
 
 def test_rotated_tile_label_contract() -> None:
-    out = create_task("task_illustrations__image_cutout_board__rotated_tile_label").generate(
+    task = create_task("task_illustrations__image_cutout_board__rotated_tile_label")
+    assert not hasattr(task, "scene_id")
+    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
+        "trace/tasks/illustrations/image_cutout_board/rotated_tile_label.py"
+    )
+    out = task.generate(
         hash64(2026053001, "rotated-tile-label", 0),
         params={
             "correct_tile_index": 4,
@@ -110,6 +127,10 @@ def test_rotated_tile_label_contract() -> None:
     assert trace["scene_ir"]["entities"]["source_image_shown"] is True
     assert trace["scene_ir"]["entities"]["rotated_tile"]["label"] == "E"
     assert trace["scene_ir"]["entities"]["rotated_tile"]["bbox"] == out.annotation_gt.value[0]
+    prompt_variant = trace["query_spec"]["prompt_variant"]
+    assert prompt_variant["prompt_bundle_id"] == "illustrations_image_cutout_board_v0"
+    assert prompt_variant["prompt_scene_id"] == "image_cutout_board"
+    assert "prompt_scene_id" not in prompt_variant
 
 
 def test_rotated_tile_label_sampling_balances_labels_and_rotations() -> None:
@@ -129,11 +150,17 @@ def test_rotated_tile_label_sampling_balances_labels_and_rotations() -> None:
 
 
 def test_missing_patch_label_variants_contract() -> None:
+    task = create_task("task_illustrations__missing_patch__missing_patch_label")
+    assert not hasattr(task, "scene_id")
+    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
+        "trace/tasks/illustrations/missing_patch/missing_patch_label.py"
+    )
+
     expected_labels = ("C", "C", "C")
     for index, (mode, expected_label) in enumerate(
         zip(["plain_patch_label", "transformed_patch_label", "irregular_cutout_patch_label"], expected_labels)
     ):
-        out = create_task("task_illustrations__missing_patch__missing_patch_label").generate(
+        out = task.generate(
             hash64(2026052503, "missing-patch", index),
             params={
                 "patch_mode": mode,
@@ -154,6 +181,10 @@ def test_missing_patch_label_variants_contract() -> None:
         assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
         assert trace["render_spec"]["style"]["label_font"]["pool"] == "global_approved_font_pool"
         assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_cards", "warm_cards", "cool_cards"}
+        prompt_variant = trace["query_spec"]["prompt_variant"]
+        assert prompt_variant["prompt_bundle_id"] == "illustrations_missing_patch_missing_patch_label_v0"
+        assert prompt_variant["prompt_scene_id"] == "missing_patch"
+        assert "prompt_scene_id" not in prompt_variant
 
 
 def test_missing_patch_four_options_use_two_by_two_grid() -> None:
@@ -173,6 +204,8 @@ def test_missing_patch_four_options_use_two_by_two_grid() -> None:
 
 
 def test_missing_patch_source_support_excludes_mixed_sources() -> None:
+    scene_defaults = get_scene_defaults("illustrations", "missing_patch")
+    assert "generation" in scene_defaults
     support = tuple(_MISSING_PATCH_GEN_DEFAULTS["source_task_id_support"])
     assert support == (
         "task_illustrations__environment__on_feature_object_count",

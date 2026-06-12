@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -28,17 +28,17 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__vernier_caliper__length_readout_value"
-FAMILY_ID = "physics_measurement_vernier_caliper_family"
+TASK_NAMESPACE = "physics_measurement_vernier_caliper"
 SCENE_ID = "vernier_caliper"
 QUERY_ID = "main_scale_vernier_mm"
 VERNIER_DIVISIONS = 10
 VERNIER_RESOLUTION_MM = 0.1
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="measurement", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "measurement")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="measurement", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -146,7 +146,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Caliper
             index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.main_mm",
+                namespace=f"{TASK_NAMESPACE}.main_mm",
             )
             main_mm = int(main_support[int(index) % len(main_support)])
 
@@ -158,7 +158,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Caliper
             index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.aligned_vernier_tick",
+                namespace=f"{TASK_NAMESPACE}.aligned_vernier_tick",
             )
             aligned_tick = int(tick_support[int(index) % len(tick_support)])
 
@@ -464,13 +464,12 @@ def _render_caliper(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="measurement",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
     )
     draw = ImageDraw.Draw(background)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.render")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.render")
     panel = (
         float(_RENDER_DEFAULTS.get("panel_left_px", _DEFAULTS.panel_left_px)),
         float(_RENDER_DEFAULTS.get("panel_top_px", _DEFAULTS.panel_top_px)),
@@ -487,7 +486,7 @@ def _render_caliper(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     font_record = get_font_family_record(str(font_family))
@@ -498,7 +497,7 @@ def _render_caliper(
         (190, 129, 55),
         (143, 99, 190),
     )
-    object_rgb = object_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.object_color", 0) % len(object_palette))]
+    object_rgb = object_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.object_color", 0) % len(object_palette))]
     annotation_map, render_map, scene_entities = _draw_caliper(
         draw,
         scenario=scenario,
@@ -540,7 +539,7 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
     """Read a length from a visible Vernier caliper."""
 
     domain = "physics"
-    task_group = "measurement"
+    scene_id = "measurement"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -571,7 +570,7 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -621,7 +620,7 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
                 "canvas_width": int(rendered.image.size[0]),
                 "canvas_height": int(rendered.image.size[1]),
                 "font": {
-                    "font_family": str(rendered.render_map["font"]["font_family"]),
+                    "font_family": str(rendered.render_map["font"]["font"]),
                     "font_asset_version": str(rendered.render_map["font"]["font_asset_version"]),
                     "font_asset": dict(rendered.render_map["font"]["font_asset"]),
                     "scope": "vernier_caliper_diagram",
@@ -659,16 +658,6 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.42,
-                complexity_components={
-                    "visual_readout": 0.46,
-                    "vernier_alignment": 0.26,
-                    "scale_mapping": 0.12,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.08,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

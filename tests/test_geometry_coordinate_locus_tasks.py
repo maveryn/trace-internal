@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks import create_task
-from trace.tasks.geometry.coordinate.locus_region import (
+from trace.tasks.geometry.coordinate_plane.locus_point_label import (
     PANEL_QUERY_IDS,
     PANEL_TASK_ID,
     POINT_QUERY_IDS,

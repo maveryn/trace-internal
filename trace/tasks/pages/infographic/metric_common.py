@@ -7,9 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
-from ..shared.complexity import resolve_pages_complexity_weights
 from ..shared.page_semantic_assets import page_semantic_asset_ids
 from ..shared.visual_defaults import load_pages_background_defaults, load_pages_noise_defaults
 
@@ -53,14 +52,13 @@ ALL_QUERY_IDS: Tuple[str, ...] = (
     *METRIC_RANKED_ITEM_VARIANTS,
     *FACT_LOOKUP_VARIANTS,
 )
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "infographic")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "infographic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="infographic")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="infographic", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="infographic")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="infographic", apply_prob=0.0)
 
 _ICON_KINDS: Tuple[str, ...] = page_semantic_asset_ids(semantic_role="metric_icon", allowed_use="filter")
 _PALETTE: Tuple[Tuple[int, int, int], ...] = (

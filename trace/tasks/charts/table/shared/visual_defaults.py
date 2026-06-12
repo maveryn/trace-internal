@@ -7,14 +7,9 @@ from typing import Any, Dict, Mapping, Sequence
 from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.visual_defaults import (
     default_noise_fallback,
-    load_task_group_background_defaults,
-    load_task_group_noise_defaults,
+    load_scene_background_defaults,
+    load_scene_noise_defaults,
 )
-
-
-def _table_task_group(task_group: str) -> str:
-    group = str(task_group)
-    return group if group.startswith("table_") else f"table_{group}"
 
 
 def solid_light_background_fallback() -> Dict[str, Any]:
@@ -32,23 +27,23 @@ def solid_light_background_fallback() -> Dict[str, Any]:
     }
 
 
-def load_table_background_defaults(*, task_group: str) -> Dict[str, Any]:
-    """Load table-task background config with the canonical fallback."""
+def load_table_background_defaults(*, scene_id: str = "table") -> Dict[str, Any]:
+    """Load table-scene background config with the canonical fallback."""
 
-    return load_task_group_background_defaults(
+    return load_scene_background_defaults(
         domain="charts",
-        task_group=_table_task_group(str(task_group)),
+        scene_id=str(scene_id),
         fallback=solid_light_background_fallback(),
         merge_with_fallback=True,
     )
 
 
-def load_table_noise_defaults(*, task_group: str, apply_prob: float) -> Dict[str, Any]:
-    """Load table-task post-image noise config with the canonical fallback."""
+def load_table_noise_defaults(*, scene_id: str = "table", apply_prob: float) -> Dict[str, Any]:
+    """Load table-scene post-image noise config with the canonical fallback."""
 
-    return load_task_group_noise_defaults(
+    return load_scene_noise_defaults(
         domain="charts",
-        task_group=_table_task_group(str(task_group)),
+        scene_id=str(scene_id),
         fallback=default_noise_fallback(apply_prob=float(apply_prob)),
         merge_with_fallback=False,
     )

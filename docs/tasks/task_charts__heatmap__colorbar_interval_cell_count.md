@@ -14,7 +14,7 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `integer`.
+1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
 3. Annotation marks exactly the counted cells in row-major order.
 4. Colorbar, axes, labels, titles, and distractor text are metadata unless the task explicitly asks for them as annotation.
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `colorbar_interval_cell_count` | `count.cells.colorbar_interval` | `integer` | `bbox_set` |
+| `colorbar_interval_cell_count` | `count.cells.colorbar_interval` | `integer_count` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -23,7 +23,6 @@ from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, temporary_default_font_family
-from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
@@ -79,19 +78,17 @@ _STYLE_SPECS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "counterfactual")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="counterfactual", apply_prob=0.5)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="counterfactual")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "counterfactual")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="counterfactual", apply_prob=0.5)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="counterfactual")
 
 
 def _load_defaults(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
-    group_defaults = get_task_group_defaults("puzzles", "counterfactual")
+    group_defaults = get_scene_defaults("puzzles", "counterfactual")
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         group_defaults,
         task_id=str(task_id),
     )
-    complexity_weights = resolve_puzzle_complexity_weights(group_defaults, task_id=str(task_id))
-    return dict(gen_defaults), dict(render_defaults), dict(prompt_defaults), dict(complexity_weights)
 
 
 @dataclass(frozen=True)
@@ -949,7 +946,7 @@ def _build_prompt(
     )
     prompt_selection = render_task_prompt_variants(
         domain="puzzles",
-        task_group="counterfactual",
+        scene_id="counterfactual",
         bundle_id=str(prompt_values["bundle_id"]),
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
@@ -979,14 +976,13 @@ class _PuzzlesCounterfactualBoardCountTask:
     """Shared renderer for counterfactual board dimension and line-count tasks."""
 
     domain = "puzzles"
-    task_group = "counterfactual"
+    scene_id = "counterfactual"
     default_dataset_enabled = True
     supported_board_styles: Tuple[str, ...] = SUPPORTED_BOARD_STYLES
     supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(str(self.task_id))
         style, style_probabilities = _resolve_style(
             gen_defaults,
             params,
@@ -1126,14 +1122,6 @@ class _PuzzlesCounterfactualBoardCountTask:
         answer_support = _answer_support()
         visual_scan = normalize_int_with_bounds(int(answer), [min(answer_support), max(answer_support)])
         conflict = clamp_unit_interval(abs(float(counterfactual_delta)) / max(1.0, float(canonical_answer) * 0.25))
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(0.22 + 0.28 * conflict),
-                "scene_variant_load": float({CHESS_STYLE: 0.20, SUDOKU_STYLE: 0.24, XIANGQI_STYLE: 0.30}[str(style)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -1141,7 +1129,6 @@ class _PuzzlesCounterfactualBoardCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

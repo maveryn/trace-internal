@@ -19,7 +19,7 @@ def test_color_gradient_violation_task_is_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
     assert taxonomy.domain == "puzzles"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "visual"
+    assert taxonomy.source_scene_id == "visual"
 
 
 def test_color_gradient_violation_contract() -> None:
@@ -75,7 +75,7 @@ def test_color_gradient_completion_task_is_registered() -> None:
     taxonomy = resolve_task_taxonomy(COMPLETION_TASK_ID)
     assert taxonomy.domain == "puzzles"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "visual"
+    assert taxonomy.source_scene_id == "visual"
 
 
 def test_color_gradient_completion_contract() -> None:

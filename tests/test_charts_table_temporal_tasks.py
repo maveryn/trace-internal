@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.charts.table.temporal.value import ChartsTableTemporalValueTaskBase
+from trace.tasks.charts.table.shared.temporal.value import ChartsTableTemporalValueTaskBase
 from tests.helpers import extract_prompt_json_example
 
 

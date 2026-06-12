@@ -1,14 +1,10 @@
-"""Scientific error-bar series chart tasks."""
+"""Chart scene package tasks."""
 
-from .series_query import (
-    ChartsErrorbarSeriesBaseTask,
-    ChartsErrorbarSeriesBoundExtremumXLabelTask,
-    ChartsErrorbarSeriesSameXIntervalOverlapCountTask,
-    ChartsErrorbarSeriesThresholdSupportCountTask,
-)
+from .bound_extremum_x_label import ChartsErrorbarSeriesBoundExtremumXLabelTask
+from .same_x_interval_overlap_count import ChartsErrorbarSeriesSameXIntervalOverlapCountTask
+from .threshold_support_count import ChartsErrorbarSeriesThresholdSupportCountTask
 
 __all__ = [
-    "ChartsErrorbarSeriesBaseTask",
     "ChartsErrorbarSeriesBoundExtremumXLabelTask",
     "ChartsErrorbarSeriesSameXIntervalOverlapCountTask",
     "ChartsErrorbarSeriesThresholdSupportCountTask",

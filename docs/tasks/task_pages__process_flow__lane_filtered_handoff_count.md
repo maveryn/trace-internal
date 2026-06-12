@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `process_flow`
+2. Scene: `process_flow`
 3. Scene id: `process_flow`
 4. Task id: `task_pages__process_flow__lane_filtered_handoff_count`
 5. Objective: Count visible handoff arrows filtered by a named lane's involvement or outgoing direction.

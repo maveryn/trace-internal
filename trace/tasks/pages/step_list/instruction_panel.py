@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -27,7 +27,6 @@ from ...shared.text_legibility import draw_text_traced
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.visual_style.information_scene import InformationSceneStyle, make_information_scene_background
-from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
 from ..shared.information_style import resolve_pages_information_style
 from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
 from ..shared.visual_defaults import load_pages_noise_defaults
@@ -135,7 +134,7 @@ class _RenderedInstructionPanel:
     layout_meta: Dict[str, Any]
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", TASK_GROUP)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", TASK_GROUP)
 _SHARED_GEN_DEFAULTS, _SHARED_RENDER_DEFAULTS, _SHARED_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=SHARED_CONTROL_TASK_ID,
@@ -144,9 +143,7 @@ _PAIR_GEN_DEFAULTS, _PAIR_RENDER_DEFAULTS, _PAIR_PROMPT_DEFAULTS = split_generat
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=CONTROL_PAIR_TASK_ID,
 )
-_SHARED_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=SHARED_CONTROL_TASK_ID)
-_PAIR_COMPLEXITY_WEIGHTS = resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=CONTROL_PAIR_TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group=TASK_GROUP, apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id=TASK_GROUP, apply_prob=0.0)
 
 
 def _resolve_named_variant(
@@ -1273,7 +1270,6 @@ def _generate_instruction_panel_output(
         instance_seed=int(instance_seed),
         params=style_params,
         scene_id=SCENE_ID,
-        task_group=TASK_GROUP,
         allow_dark=False,
     )
     background, background_meta = make_information_scene_background(
@@ -1364,7 +1360,7 @@ def _generate_instruction_panel_output(
     }
     prompt_selection = render_task_prompt_variants(
         domain="pages",
-        task_group=TASK_GROUP,
+        scene_id=TASK_GROUP,
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
@@ -1484,17 +1480,6 @@ def _generate_instruction_panel_output(
             "pixel_keyed_bbox_map": dict(annotation_value),
         }
 
-    complexity = build_pages_complexity(
-        weights=complexity_weights,
-        components={
-            "lookup_reasoning": 0.66 if str(query_id) == SHARED_CONTROL_QUERY_ID else 0.58,
-            "visual_scan": normalize_int_with_bounds(
-                int(step_count) * int(controls_per_step),
-                [min(step_count_support) * min(controls_per_step_support), max(step_count_support) * max(controls_per_step_support)],
-            ),
-            "layout_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-        },
-    )
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type=str(answer_type), value=answer_value),
@@ -1502,7 +1487,6 @@ def _generate_instruction_panel_output(
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
-        complexity=complexity,
         task_versions=default_task_versions(),
         scene_id=SCENE_ID,
         query_id=str(query_id),
@@ -1516,21 +1500,11 @@ class PagesInstructionPanelSharedControlForStepSetLabelTask:
 
     task_id = SHARED_CONTROL_TASK_ID
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        return _generate_instruction_panel_output(
-            task_id=self.task_id,
-            query_id=SHARED_CONTROL_QUERY_ID,
-            instance_seed=int(instance_seed),
-            params={**params, "query_id": SHARED_CONTROL_QUERY_ID},
-            gen_defaults=_SHARED_GEN_DEFAULTS,
-            render_defaults=_SHARED_RENDER_DEFAULTS,
-            prompt_defaults_raw=_SHARED_PROMPT_DEFAULTS,
-            complexity_weights=_SHARED_COMPLEXITY_WEIGHTS,
-        )
 
 
 @register_task
@@ -1539,21 +1513,11 @@ class PagesInstructionPanelStepForControlPairLabelTask:
 
     task_id = CONTROL_PAIR_TASK_ID
     domain = "pages"
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        return _generate_instruction_panel_output(
-            task_id=self.task_id,
-            query_id=CONTROL_PAIR_QUERY_ID,
-            instance_seed=int(instance_seed),
-            params={**params, "query_id": CONTROL_PAIR_QUERY_ID},
-            gen_defaults=_PAIR_GEN_DEFAULTS,
-            render_defaults=_PAIR_RENDER_DEFAULTS,
-            prompt_defaults_raw=_PAIR_PROMPT_DEFAULTS,
-            complexity_weights=_PAIR_COMPLEXITY_WEIGHTS,
-        )
 
 
 __all__ = [

@@ -20,25 +20,6 @@ SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_IDS: Tuple[str, ...] = (
 )
 SUPPORTED_DOCUMENT_RECONCILIATION_SCENE_VARIANTS: Tuple[str, ...] = ("purchase_receipt_pair",)
 
-_QUESTION_TEXT_BY_VARIANT = {
-    "total_amount_delta": (
-        "For every item whose received quantity differs from the ordered quantity, multiply the absolute "
-        "quantity difference by the purchase-order unit value, then add those products. "
-        "What is the total amount delta? Return the integer total."
-    ),
-    "shortfall_minus_overage_value": (
-        "For every item whose received quantity differs from the ordered quantity, multiply the "
-        "quantity difference by the purchase-order unit value. Add products for shortfall rows "
-        "where received is less than ordered, subtract products for overage rows where received is greater "
-        "than ordered, and return the integer shortfall-minus-overage value."
-    ),
-    "sum_absolute_quantity_differences": (
-        "For every item whose received quantity differs from the ordered quantity, compute the absolute "
-        "quantity difference, then add those differences. What is the sum of absolute quantity differences? "
-        "Return the integer total."
-    ),
-}
-
 _ITEM_NAMES: Tuple[str, ...] = (
     "Valve",
     "Cable",
@@ -521,7 +502,7 @@ def build_cross_form_reconciliation_dataset(
             "scene_variant": str(scene_variant),
             "query_id": str(query_id),
             "scene_title": "Order Reconciliation Packet",
-            "question_text": str(_QUESTION_TEXT_BY_VARIANT[str(query_id)]),
+            "query_prompt_slots": {},
             "question_format": "cross_form_reconciliation_value",
             "view_family": "cross_form_reconciliation",
             "purchase_title": "Purchase Order",

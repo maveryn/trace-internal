@@ -134,7 +134,7 @@ def test_room_wall_object_side_relation_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "room"
+    assert taxonomy.source_scene_id == "room"
     assert SUPPORTED_QUERY_IDS == (
         "left_of_reference_on_wall",
         "right_of_reference_on_wall",

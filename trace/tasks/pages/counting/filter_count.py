@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.fixed_query_task import rewrite_pages_public_task_output
+from trace.tasks.shared.fixed_query import rewrite_pages_public_task_output
 from .control_filter_count import (
     SUPPORTED_QUERY_IDS as CONTROL_QUERY_IDS,
     GuiCountingControlFilterCountTask,
@@ -29,7 +29,7 @@ ENABLED_ACTION_FOR_TYPE_COUNT_TASK_ID = "task_pages__record_table__enabled_actio
 SELECTED_ROWS_WITH_STATUS_COUNT_TASK_ID = "task_pages__record_table__selected_rows_with_status_count"
 VALUE_THRESHOLD_IN_GROUP_COUNT_TASK_ID = "task_pages__record_table__value_threshold_in_group_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = tuple(CONTROL_QUERY_IDS) + tuple(TABLE_QUERY_IDS)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "counting")
 
 
 def _resolve_defaults(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
@@ -89,7 +89,7 @@ class _PagesCountingFilterCountBase:
 
     task_id = ""
     domain = "pages"
-    task_group = "counting"
+    scene_id = "counting"
     scene_id = ""
     supported_query_ids: Tuple[str, ...] = ()
     source_config_task_id = ""

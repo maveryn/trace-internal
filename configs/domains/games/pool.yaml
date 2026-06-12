@@ -2,9 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       standard_table: 1.0
-    query_id_weights:
-      current_group_ball_count: 1.0
-      blocking_ball_count: 1.0
     style_variant_weights:
       classic: 1.0
       tournament_blue: 1.0
@@ -12,29 +9,32 @@ generation:
       charcoal: 1.0
       light_rail: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_object_ball_count_sampling: true
-    balanced_target_answer_sampling: true
     object_ball_count_support:
-      - 7
-      - 8
-      - 9
-      - 10
-    current_group_ball_count_support:
+    - 7
+    - 8
+    - 9
+    - 10
+    line_clearance: 0.055
+    min_ball_distance: 0.075
+  task_overrides:
+    task_games__pool__group_ball_count:
+      balanced_target_answer_sampling: true
+      current_group_ball_count_support:
       - 2
       - 3
       - 4
       - 5
       - 6
-    blocking_ball_count_support:
+    task_games__pool__blocking_ball_count:
+      balanced_target_answer_sampling: true
+      blocking_ball_count_support:
       - 0
       - 1
       - 2
       - 3
       - 4
-    line_clearance: 0.055
-    min_ball_distance: 0.075
 rendering:
   shared:
     canvas_width: 1120
@@ -47,28 +47,8 @@ rendering:
     ball_radius_px: 18
     ball_number_font_size_px: 15
     badge_font_size_px: 22
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      geometry_reasoning: 0.38
-      ambiguity: 0.18
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_pool_v0
+    bundle_id: games_pool_v1
     scene_key: visible_pool_table
     task_key: pool_table_query
-    object_description_standard_table: a pool table with a cue ball, numbered object
-      balls, and six pockets
-    marked_shot_rule_text: >-
-      The marked shot has two straight segments: cue ball
-      to marked ball, then marked ball to marked pocket.
-    annotation_hint_current_group_ball_count: set "annotation" to one pixel point
-      [x,y] at the center of every visible ball in the current player's group
-    annotation_hint_blocking_ball_count: set "annotation" to one pixel point [x,y]
-      at the center of every ball on either marked shot segment
-    answer_hint_current_group_ball_count: set "answer" to the number of visible
-      balls in the current player's group
-    answer_hint_blocking_ball_count: set "answer" to the number of balls blocking
-      either marked shot segment

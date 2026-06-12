@@ -3,11 +3,6 @@ generation:
     scene_variant_weights:
       compact_maze: 1.0
       wide_maze: 1.0
-    query_id_weights:
-      path_pellet_count: 1.0
-      next_item_label: 1.0
-      pellet_count_before_ghost: 1.0
-      route_score_value: 1.0
     style_variant_weights:
       classic: 1.0
       neon: 1.0
@@ -15,62 +10,67 @@ generation:
       terminal: 1.0
       pastel: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_row_count_sampling: true
     balanced_col_count_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_target_label_sampling: true
-    balanced_item_count_sampling: true
     row_count_support:
-      - 7
-      - 8
-      - 9
+    - 7
+    - 8
+    - 9
     col_count_support:
-      - 9
-      - 11
-      - 13
-    path_pellet_count_support:
+    - 9
+    - 11
+    - 13
+  task_overrides:
+    task_games__pacman__path_pellet_count:
+      balanced_target_answer_sampling: true
+      path_pellet_count_support:
       - 1
       - 2
       - 3
       - 4
       - 5
-    pellet_count_before_ghost_support:
+    task_games__pacman__pellet_count_before_ghost:
+      balanced_target_answer_sampling: true
+      pellet_count_before_ghost_support:
       - 1
       - 2
       - 3
       - 4
       - 5
-    route_score_on_route_pellet_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-    route_score_on_route_bonus_count_support:
-      - 1
-      - 2
-      - 3
-    route_score_off_route_bonus_count_support:
-      - 1
-      - 2
-      - 3
-    route_score_bonus_value_support:
-      - 2
-      - 3
-      - 5
-      - 10
-    next_item_label_support:
+    task_games__pacman__next_item_label:
+      balanced_target_label_sampling: true
+      balanced_item_count_sampling: true
+      next_item_label_support:
       - A
       - B
       - C
       - D
       - E
       - F
-    item_count_support:
+      item_count_support:
       - 4
       - 5
       - 6
+    task_games__pacman__route_score_value:
+      route_score_on_route_pellet_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      route_score_on_route_bonus_count_support:
+      - 1
+      - 2
+      - 3
+      route_score_off_route_bonus_count_support:
+      - 1
+      - 2
+      - 3
+      route_score_bonus_value_support:
+      - 2
+      - 3
+      - 5
+      - 10
 rendering:
   shared:
     canvas_width: 980
@@ -87,26 +87,8 @@ rendering:
     ghost_radius_px: 18
     route_width_px: 8
     item_label_font_size_px: 23
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      route_reasoning: 0.38
-      ambiguity: 0.12
-      output_burden: 0.16
 prompt:
   shared:
-    bundle_id: games_pacman_v0
+    bundle_id: games_pacman_v1
     scene_key: visible_pacman_maze
     task_key: pacman_maze_query
-    object_description_compact_maze: a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route
-    object_description_wide_maze: a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route
-    annotation_hint_path_pellet_count: set "annotation" to [x, y] pixel points at the centers of the normal pellets that lie on the highlighted route
-    answer_hint_path_pellet_count: set "answer" to the number of normal pellets on the highlighted route
-    annotation_hint_next_item_label: set "annotation" to one [x, y] pixel point at the center of the first labeled bonus item reached along the highlighted route
-    answer_hint_next_item_label: set "answer" to the single option letter of the first labeled bonus item reached along the highlighted route
-    annotation_hint_pellet_count_before_ghost: set "annotation" to [x, y] pixel points at the centers of the counted normal pellets before the first ghost on the highlighted route, plus the center of that first route ghost
-    answer_hint_pellet_count_before_ghost: set "answer" to the number of normal pellets reached before the first ghost on the highlighted route
-    annotation_hint_route_score_value: set "annotation" to [x, y] pixel points at the centers of every normal pellet and printed-value bonus item included in the highlighted-route score
-    answer_hint_route_score_value: set "answer" to the integer total score from collectibles on the highlighted route
-    score_rule_text: Pellets score 1; bonus items score their printed value.

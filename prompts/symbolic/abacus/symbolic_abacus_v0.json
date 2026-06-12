@@ -1,0 +1,92 @@
+{
+  "bundle_id": "symbolic_abacus_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "abacus_displayed_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "abacus_target_value_match_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:abacus_readout": [
+      "object_description"
+    ],
+    "scene:abacus_match_panel": [
+      "object_description"
+    ],
+    "query:displayed_value_readout": [],
+    "query:target_value_match_label": [
+      "target_value"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "abacus_readout": [
+      "The image shows {object_description}.",
+      "The abacus panel shows {object_description}.",
+      "This readout panel shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "abacus_match_panel": [
+      "The image shows {object_description}.",
+      "The panel shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual contains {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "displayed_value_readout": [
+      "What number is shown on the abacus?",
+      "Read the abacus. What integer value is displayed?",
+      "What value does the abacus show?",
+      "Using the 100, 10, and 1 columns, what number is represented?",
+      "Determine the integer displayed by the abacus."
+    ],
+    "target_value_match_label": [
+      "Which option shows {target_value}?",
+      "Which labeled abacus represents {target_value}?",
+      "Select the option whose abacus shows {target_value}.",
+      "Which abacus option matches the value {target_value}?",
+      "Which option board displays {target_value}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

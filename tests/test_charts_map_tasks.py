@@ -8,7 +8,7 @@ import pytest
 
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
-from trace.tasks.charts.map.choropleth_region_label import (
+from trace.tasks.charts.region_map.shared.choropleth_region_label import (
     SUPPORTED_ADJACENT_QUERY_IDS,
     SUPPORTED_REGION_VALUE_QUERY_IDS,
     SUPPORTED_WORLD_FILTERED_QUERY_IDS,

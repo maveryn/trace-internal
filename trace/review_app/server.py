@@ -41,12 +41,24 @@ from .taxonomy_index import DEFAULT_TAXONOMY_ROUND, build_taxonomy_audit_index
 class ReviewAppState:
     """Mutable app state shared by routes."""
 
-    def __init__(self, *, review_root: Path, repo_root: Path, feedback_db: Path) -> None:
+    def __init__(
+        self,
+        *,
+        review_root: Path,
+        repo_root: Path,
+        feedback_db: Path,
+        enforce_migration_registry: bool = True,
+    ) -> None:
         self.review_root = Path(review_root).resolve()
         self.repo_root = Path(repo_root).resolve()
+        self.enforce_migration_registry = bool(enforce_migration_registry)
         self.feedback = FeedbackStore(feedback_db)
         self._lock = threading.RLock()
-        self._index = build_review_index(self.review_root, repo_root=self.repo_root)
+        self._index = build_review_index(
+            self.review_root,
+            repo_root=self.repo_root,
+            enforce_migration_registry=self.enforce_migration_registry,
+        )
         self._review_mtime_snapshot_ns = _max_review_file_mtime_ns(self.review_root)
         self._stale_cache = False
         self._stale_cache_until_ns = 0
@@ -57,7 +69,11 @@ class ReviewAppState:
             return self._index
 
     def reload(self) -> ReviewIndex:
-        fresh = build_review_index(self.review_root, repo_root=self.repo_root)
+        fresh = build_review_index(
+            self.review_root,
+            repo_root=self.repo_root,
+            enforce_migration_registry=self.enforce_migration_registry,
+        )
         fresh_mtime = _max_review_file_mtime_ns(self.review_root)
         with self._lock:
             self._index = fresh
@@ -87,6 +103,7 @@ def create_app(
     feedback_db: Path | str | None = None,
     token: str | None = None,
     base_url: str = "",
+    enforce_migration_registry: bool = True,
 ) -> FastAPI:
     """Create the task-review web app."""
 
@@ -102,6 +119,7 @@ def create_app(
         review_root=resolved_review_root,
         repo_root=resolved_repo_root,
         feedback_db=resolved_feedback_db,
+        enforce_migration_registry=bool(enforce_migration_registry),
     )
 
     package_dir = Path(__file__).resolve().parent
@@ -175,6 +193,11 @@ def create_app(
     async def index_page(request: Request) -> HTMLResponse:
         index = state.index()
         return templates.TemplateResponse(request, "index.html", _context(request, index=index, title="Domains"))
+
+    @app.get("/domains")
+    @app.get("/domains/")
+    async def domains_index_redirect() -> RedirectResponse:
+        return RedirectResponse(_app_path(resolved_base_url, "/"), status_code=303)
 
     @app.get("/feedback")
     async def feedback_page_redirect(request: Request) -> RedirectResponse:
@@ -971,6 +994,7 @@ def create_app(
             image_pass=_truthy(data.get("image_pass")),
             annotation_pass=_truthy(data.get("annotation_pass")),
             distribution_pass=_truthy(data.get("distribution_pass")),
+            code_review_pass=_truthy(data.get("code_review_pass")),
             solve_rate_pass=_truthy(data.get("solve_rate_pass")),
             notes=str(data.get("notes", "")),
             updated_by=str(data.get("updated_by", "")),
@@ -1066,6 +1090,7 @@ def create_app(
             image_pass=_truthy(data.get("image_pass", existing.image_pass)),
             annotation_pass=_truthy(data.get("annotation_pass", existing.annotation_pass)),
             distribution_pass=_truthy(data.get("distribution_pass", existing.distribution_pass)),
+            code_review_pass=_truthy(data.get("code_review_pass", existing.code_review_pass)),
             solve_rate_pass=_truthy(data.get("solve_rate_pass", existing.solve_rate_pass)),
             notes=str(data.get("notes", existing.notes)),
             updated_by=str(data.get("updated_by", existing.updated_by)),
@@ -1274,7 +1299,7 @@ def _build_scene_review_samples(
     tasks: list[Any],
     samples_per_query: int = 2,
 ) -> Dict[str, Any]:
-    task_groups: list[Dict[str, Any]] = []
+    scene_ids: list[Dict[str, Any]] = []
     summary = {
         "task_count": len(tasks),
         "query_count": 0,
@@ -1317,7 +1342,7 @@ def _build_scene_review_samples(
                     "cards": cards,
                 }
             )
-        task_groups.append(
+        scene_ids.append(
             {
                 "task": task,
                 "task_path": (
@@ -1328,7 +1353,7 @@ def _build_scene_review_samples(
                 "query_groups": query_groups,
             }
         )
-    return {"summary": summary, "task_groups": task_groups}
+    return {"summary": summary, "scene_ids": scene_ids}
 
 
 def _build_feedback_work_queue(*, index: ReviewIndex, feedback: FeedbackStore, domain: str = "") -> Dict[str, Any]:
@@ -1655,6 +1680,7 @@ def _three_d_object_group_label(profile: Any) -> str:
         "room__room_wall_object": "Room Wall",
         "room__room_floor_object": "Room Floor",
         "street__street_object": "Street",
+        "surface_fixture__surface_fixture": "Surface Fixture",
         "warehouse__warehouse_object": "Warehouse",
     }
     return labels.get(_three_d_object_group_id(profile), f"{profile.source_scene} / {profile.renderer}")
@@ -1667,7 +1693,8 @@ def _three_d_object_group_sort_index(group_id: str) -> int:
         "room__room_wall_object": 2,
         "room__room_floor_object": 3,
         "street__street_object": 4,
-        "warehouse__warehouse_object": 5,
+        "surface_fixture__surface_fixture": 5,
+        "warehouse__warehouse_object": 6,
     }
     return order.get(str(group_id), 99)
 
@@ -1905,14 +1932,15 @@ def _task_status_payload(*, task: Any, audit: Any) -> Dict[str, Any]:
     return {
         "review_pass": review_pass,
         "review_count": int(getattr(audit, "review_count", 0)),
-        "review_total": int(getattr(audit, "review_total", 4)),
+        "review_total": int(getattr(audit, "review_total", 5)),
+        "code_review_pass": bool(getattr(audit, "code_review_pass", False)),
         "solve_rate_pass": solve_rate_pass,
         "solve_artifact_pass": solve_artifact_pass,
         "complete": complete,
         # Backward-compatible API aliases.
         "manual_pass": review_pass,
         "manual_count": int(getattr(audit, "review_count", 0)),
-        "manual_total": int(getattr(audit, "review_total", 4)),
+        "manual_total": int(getattr(audit, "review_total", 5)),
         "solve_pass": solve_artifact_pass,
     }
 

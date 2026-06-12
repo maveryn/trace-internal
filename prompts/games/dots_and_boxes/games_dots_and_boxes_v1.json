@@ -1,0 +1,135 @@
+{
+  "bundle_id": "games_dots_and_boxes_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "visible_dots_and_boxes_board": [
+        "The image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This scene shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "dots_and_boxes_capture_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "three_sided_box_count": [
+        "How many boxes currently have exactly three drawn sides?",
+        "Count the boxes that have exactly three sides already drawn.",
+        "How many box cells are one edge away from being completed?",
+        "Find the number of boxes with exactly three visible sides drawn.",
+        "How many boxes on the board have three drawn boundary edges?"
+      ],
+      "capture_move_count": [
+        "How many missing edges would complete at least one box if drawn?",
+        "Count the undrawn edge positions that would finish a box immediately.",
+        "How many possible next edge draws would capture a box right away?",
+        "Find the number of missing edges that complete one or more boxes.",
+        "How many gaps on the board are immediate box-completing moves?"
+      ],
+      "highlighted_candidate_capture_count": [
+        "Among the highlighted missing edges, how many would complete at least one box if drawn?",
+        "Count the highlighted gaps that would finish a box immediately.",
+        "How many highlighted candidate edges are box-completing moves?",
+        "Find the number of highlighted missing edges that complete one or more boxes.",
+        "Of the highlighted edge positions, how many would capture a box right away?"
+      ],
+      "player_a_owned_box_count": [
+        "How many boxes are marked with player A?",
+        "Count the boxes owned by player A.",
+        "How many completed boxes show an A mark?",
+        "Find the number of box cells marked A.",
+        "How many boxes on the board belong to player A?"
+      ],
+      "player_b_owned_box_count": [
+        "How many boxes are marked with player B?",
+        "Count the boxes owned by player B.",
+        "How many completed boxes show a B mark?",
+        "Find the number of box cells marked B.",
+        "How many boxes on the board belong to player B?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:visible_dots_and_boxes_board": [
+      "object_description"
+    ],
+    "query:three_sided_box_count": [],
+    "query:capture_move_count": [],
+    "query:highlighted_candidate_capture_count": [],
+    "query:player_a_owned_box_count": [],
+    "query:player_b_owned_box_count": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_single_board": "a dots-and-boxes grid with some edges already drawn",
+    "annotation_hint_three_sided_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides",
+    "answer_hint_three_sided_box_count": "set \"answer\" to the number of boxes with exactly three drawn sides",
+    "annotation_hint_capture_move_count": "set \"annotation\" to a JSON array of endpoint point-pairs, with each endpoint as a pixel-space point [x, y], for every missing edge that would complete at least one box if drawn",
+    "answer_hint_capture_move_count": "set \"answer\" to the number of missing edges that would complete at least one box if drawn",
+    "annotation_hint_highlighted_candidate_capture_count": "set \"annotation\" to a JSON array of endpoint point-pairs, with each endpoint as a pixel-space point [x, y], for every highlighted missing edge that would complete at least one box if drawn",
+    "answer_hint_highlighted_candidate_capture_count": "set \"answer\" to the number of highlighted missing edges that would complete at least one box if drawn",
+    "annotation_hint_player_a_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player A",
+    "answer_hint_player_a_owned_box_count": "set \"answer\" to the number of boxes marked with player A",
+    "annotation_hint_player_b_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player B",
+    "answer_hint_player_b_owned_box_count": "set \"answer\" to the number of boxes marked with player B"
+  }
+}

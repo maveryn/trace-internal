@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from trace.tasks.geometry.graphing.count import GeometryGraphingCountTask
+from trace.tasks.geometry.function_graph.reference_line_crossing_count import GeometryGraphingCountTask
 
 
 @pytest.mark.parametrize(

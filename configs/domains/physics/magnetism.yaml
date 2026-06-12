@@ -58,10 +58,16 @@ generation:
         clockwise_induced_current_count: 1.0
         counterclockwise_induced_current_count: 1.0
         no_induced_current_count: 1.0
-      target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+      target_answer_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
       balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
-
 rendering:
   task_overrides:
     physics_magnetism_force_field_family:
@@ -103,28 +109,6 @@ rendering:
     physics_magnetism_electromagnetic_induction_family:
       canvas_width: 1180
       canvas_height: 820
-
-complexity:
-  task_overrides:
-    physics_magnetism_force_field_family:
-      criteria_weights:
-        visual_scan: 0.28
-        magnetic_reasoning: 0.44
-        ambiguity: 0.16
-        output_burden: 0.12
-    physics_magnetism_wire_field_family:
-      criteria_weights:
-        visual_scan: 0.24
-        right_hand_rule: 0.50
-        ambiguity: 0.14
-        output_burden: 0.12
-    physics_magnetism_electromagnetic_induction_family:
-      criteria_weights:
-        visual_scan: 0.36
-        lenz_law_reasoning: 0.42
-        counting: 0.14
-        output_burden: 0.08
-
 prompt:
   shared:
     bundle_id: physics_magnetism_v0
@@ -132,24 +116,48 @@ prompt:
     physics_magnetism_force_field_family:
       scene_key: magnetic_force_field
       task_key: magnetic_force_field_query
-      object_description_clean_panel: a magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
-      object_description_field_grid: a gridded magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
-      object_description_lab_card: a lab-card style magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
-      annotation_hint_force_direction_choice: set "annotation" to an object mapping field_orientation, charge, and velocity to bounding boxes [x0, y0, x1, y1] for the magnetic-field label, charged particle, and velocity vector
-      answer_hint_force_direction_choice: set "answer" to the option letter of the candidate force arrow
+      object_description_clean_panel: a magnetic-field panel with repeated into-page
+        or out-of-page field symbols, a charged particle, visible vectors, and a formula
+        or candidate-arrow answer area
+      object_description_field_grid: a gridded magnetic-field panel with repeated
+        into-page or out-of-page field symbols, a charged particle, visible vectors,
+        and a formula or candidate-arrow answer area
+      object_description_lab_card: a lab-card style magnetic-field panel with repeated
+        into-page or out-of-page field symbols, a charged particle, visible vectors,
+        and a formula or candidate-arrow answer area
+      annotation_hint_force_direction_choice: set "annotation" to an object mapping
+        field_orientation, charge, and velocity to bounding boxes [x0, y0, x1, y1]
+        for the magnetic-field label, charged particle, and velocity vector
+      answer_hint_force_direction_choice: set "answer" to the option letter of the
+        candidate force arrow
     physics_magnetism_wire_field_family:
       scene_key: wire_magnetism_field
       task_key: wire_magnetism_field_query
-      object_description: a straight current-carrying wire, a marked point P near the wire, a current arrow, and six labeled magnetic-field direction options
-      annotation_hint_field_direction_at_point: set "annotation" to an object mapping wire_current and point_p to pixel bounding boxes [x0,y0,x1,y1] for the current-carrying wire cue and marked point P
-      answer_hint_field_direction_at_point: set "answer" to the option letter for the magnetic-field direction at point P
+      object_description: a straight current-carrying wire, a marked point P near
+        the wire, a current arrow, and six labeled magnetic-field direction options
+      annotation_hint_field_direction_at_point: set "annotation" to an object mapping
+        wire_current and point_p to pixel bounding boxes [x0,y0,x1,y1] for the current-carrying
+        wire cue and marked point P
+      answer_hint_field_direction_at_point: set "answer" to the option letter for
+        the magnetic-field direction at point P
     physics_magnetism_electromagnetic_induction_family:
       scene_key: electromagnetic_induction_panel_grid
       task_key: electromagnetic_induction_count_query
-      object_description: six mini-panels showing conducting loops, into-page or out-of-page magnetic-field symbols, and visible cues for changing or unchanged magnetic flux
-      annotation_hint_clockwise_induced_current_count: set "annotation" to an array of bounding boxes [x0,y0,x1,y1] around the full mini-panels whose loop has clockwise induced current; use an empty array [] if none match
-      annotation_hint_counterclockwise_induced_current_count: set "annotation" to an array of bounding boxes [x0,y0,x1,y1] around the full mini-panels whose loop has counterclockwise induced current; use an empty array [] if none match
-      annotation_hint_no_induced_current_count: set "annotation" to an array of bounding boxes [x0,y0,x1,y1] around the full mini-panels whose loop has no induced current; use an empty array [] if none match
-      answer_hint_clockwise_induced_current_count: set "answer" to the number of mini-panels whose loop has clockwise induced current
-      answer_hint_counterclockwise_induced_current_count: set "answer" to the number of mini-panels whose loop has counterclockwise induced current
-      answer_hint_no_induced_current_count: set "answer" to the number of mini-panels whose loop has no induced current
+      object_description: six mini-panels showing conducting loops, into-page or out-of-page
+        magnetic-field symbols, and visible cues for changing or unchanged magnetic
+        flux
+      annotation_hint_clockwise_induced_current_count: set "annotation" to an array
+        of bounding boxes [x0,y0,x1,y1] around the full mini-panels whose loop has
+        clockwise induced current; use an empty array [] if none match
+      annotation_hint_counterclockwise_induced_current_count: set "annotation" to
+        an array of bounding boxes [x0,y0,x1,y1] around the full mini-panels whose
+        loop has counterclockwise induced current; use an empty array [] if none match
+      annotation_hint_no_induced_current_count: set "annotation" to an array of bounding
+        boxes [x0,y0,x1,y1] around the full mini-panels whose loop has no induced
+        current; use an empty array [] if none match
+      answer_hint_clockwise_induced_current_count: set "answer" to the number of mini-panels
+        whose loop has clockwise induced current
+      answer_hint_counterclockwise_induced_current_count: set "answer" to the number
+        of mini-panels whose loop has counterclockwise induced current
+      answer_hint_no_induced_current_count: set "answer" to the number of mini-panels
+        whose loop has no induced current

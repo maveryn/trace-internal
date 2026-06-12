@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `schema`
-3. Source task group: `schema`
+3. Source scene: `schema`
 4. Task id: `task_pages__schema__relationship_endpoint_label`
 
 ## Contract

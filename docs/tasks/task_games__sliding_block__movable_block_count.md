@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `games`
-2. Task group: `sliding_block`
+2. Scene: `sliding_block`
 3. Task id: `task_games__sliding_block__movable_block_count`
 4. Scene id: `sliding_block`
 5. Goal: count the non-target rectangular blocks that can legally slide at least one cell.

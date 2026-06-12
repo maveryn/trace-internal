@@ -12,7 +12,7 @@ Each generated instance should include:
 - Docs index and reading order: `docs/README.md`
 - Use `docs/README.md` as the canonical navigation entry point for core, workflow, domain, project, and task docs.
 - Python dependencies: `requirements.txt`
-- Domain/task-group defaults (generation/rendering/visual): `configs/domains/<domain>/base.yaml` and `configs/domains/<domain>/<task_group>.yaml`
+- Domain/scene defaults (generation/rendering/visual): `configs/domains/<domain>/base.yaml` and `configs/domains/<domain>/<scene_id>.yaml`
 - Repo-local execution skills: `skills/` (workflow overlays; docs remain source of truth)
 
 ## Scope and boundaries
@@ -34,11 +34,11 @@ Each generated instance should include:
 - Current serving/runbook details live in `review/docs/CALIBRATION_GUIDE.md`.
 
 ## Core engineering rules
-- Use public taxonomy consistently: `domain -> scene_id -> task_id`; `task_group` remains a module/config grouping layer.
-- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The source layout `trace/tasks/<domain>/<task_group>/<task_name>.py` is implementation routing only, not a task-id format; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
-- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep intra-task query branches in `query_id`.
-- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
-- Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
+- Use public taxonomy consistently: `domain -> scene_id -> task_id`; `scene_id` remains a module/config grouping layer.
+- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The source layout `trace/tasks/<domain>/<scene_id>/<task_name>.py` is implementation routing only, not a task-id format; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
+- Keep `scene_id` broad by reasoning style; for geometry value-style tasks use `scene_id=measurement` and keep intra-task query branches in `query_id`.
+- Sampling policy is task-level globally (equal task weights by default); domain/scene_id probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
+- Domain/scene defaults (generation/rendering/visual variation) should follow precedence `domain -> scene_id -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<scene_id>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
 - Prompt composition must be reusable: one scene layer and one task layer (plus optional query layer), each with deterministic template selection.
 - Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).

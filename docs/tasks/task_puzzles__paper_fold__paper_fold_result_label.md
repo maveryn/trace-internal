@@ -2,7 +2,7 @@
 
 ## Task
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Task id: `task_puzzles__paper_fold__paper_fold_result_label`
 4. Scene id: `paper_fold`
 5. Answer type: `option_letter`

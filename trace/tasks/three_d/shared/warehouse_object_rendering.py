@@ -356,21 +356,35 @@ def _draw_warehouse_object(
         raise ValueError("warehouse shelf_rack is scene-local support, not a reusable loose object")
     if object_type in {"crate_stack", "box_stack"}:
         parts = [
-            _sub_box_spec(spec, offset_xyz=(-width * 0.18, -depth * 0.16, 0.0), dimensions_xyz=(width * 0.50, depth * 0.50, height * 0.52)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.18, depth * 0.14, 0.0), dimensions_xyz=(width * 0.50, depth * 0.50, height * 0.48)),
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.48), dimensions_xyz=(width * 0.54, depth * 0.52, height * 0.50)),
+            _sub_box_spec(spec, offset_xyz=(-width * 0.21, -depth * 0.16, 0.0), dimensions_xyz=(width * 0.52, depth * 0.52, height * 0.50)),
+            _sub_box_spec(spec, offset_xyz=(width * 0.19, depth * 0.14, 0.0), dimensions_xyz=(width * 0.52, depth * 0.52, height * 0.48)),
+            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.47), dimensions_xyz=(width * 0.58, depth * 0.54, height * 0.52)),
         ]
         bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
         x0, y0, x1, y1 = (float(value) for value in bbox)
+        bboxes = [list(bbox)]
         if object_type == "crate_stack":
-            _draw_line(draw, (x0 + 4.0, y0 + 5.0), (x1 - 4.0, y1 - 5.0), fill=(98, 62, 35), width=2)
-            _draw_line(draw, (x1 - 4.0, y0 + 5.0), (x0 + 4.0, y1 - 5.0), fill=(98, 62, 35), width=2)
+            for left, right in (((x0 + 4.0, y0 + 5.0), (x1 - 4.0, y1 - 5.0)), ((x1 - 4.0, y0 + 5.0), (x0 + 4.0, y1 - 5.0))):
+                _draw_line(draw, left, right, fill=(98, 62, 35), width=2)
+                bboxes.append(_screen_line_bbox(left, right, pad_px=2.0))
+            for frac in (0.36, 0.64):
+                y_line = y0 + (y1 - y0) * frac
+                _draw_line(draw, (x0 + 4.0, y_line), (x1 - 4.0, y_line), fill=(118, 73, 39), width=1)
+                bboxes.append(_screen_line_bbox((x0 + 4.0, y_line), (x1 - 4.0, y_line), pad_px=1.0))
         else:
             stripe_x = x0 + (x1 - x0) * 0.50
             stripe_y = y0 + (y1 - y0) * 0.42
             _draw_line(draw, (stripe_x, y0 + 3.0), (stripe_x, y1 - 3.0), fill=(222, 203, 148), width=2)
             _draw_line(draw, (x0 + 4.0, stripe_y), (x1 - 4.0, stripe_y), fill=(222, 203, 148), width=2)
-        return list(bbox)
+            bboxes.extend([
+                _screen_line_bbox((stripe_x, y0 + 3.0), (stripe_x, y1 - 3.0), pad_px=2.0),
+                _screen_line_bbox((x0 + 4.0, stripe_y), (x1 - 4.0, stripe_y), pad_px=2.0),
+            ])
+            for frac in (0.28, 0.68):
+                y_line = y0 + (y1 - y0) * frac
+                _draw_line(draw, (x0 + 5.0, y_line), (x1 - 5.0, y_line), fill=(123, 93, 54), width=1)
+                bboxes.append(_screen_line_bbox((x0 + 5.0, y_line), (x1 - 5.0, y_line), pad_px=1.0))
+        return _bbox_union(*bboxes)
     if object_type == "pallet_load":
         parts = [
             _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width, depth, height * 0.18)),
@@ -379,12 +393,18 @@ def _draw_warehouse_object(
         ]
         bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
         x0, y0, x1, y1 = (float(value) for value in bbox)
+        bboxes = [list(bbox)]
         for frac in (0.28, 0.50, 0.72):
             x_line = x0 + (x1 - x0) * frac
             _draw_line(draw, (x_line, y1 - (y1 - y0) * 0.22), (x_line, y1 - 2.0), fill=(93, 66, 42), width=2)
+            bboxes.append(_screen_line_bbox((x_line, y1 - (y1 - y0) * 0.22), (x_line, y1 - 2.0), pad_px=2.0))
         strap_y = y0 + (y1 - y0) * 0.42
         _draw_line(draw, (x0 + 4.0, strap_y), (x1 - 4.0, strap_y), fill=(56, 58, 62), width=3)
-        return list(bbox)
+        bboxes.append(_screen_line_bbox((x0 + 4.0, strap_y), (x1 - 4.0, strap_y), pad_px=3.0))
+        top_strap_x = x0 + (x1 - x0) * 0.58
+        _draw_line(draw, (top_strap_x, y0 + 4.0), (top_strap_x, y1 - 5.0), fill=(56, 58, 62), width=2)
+        bboxes.append(_screen_line_bbox((top_strap_x, y0 + 4.0), (top_strap_x, y1 - 5.0), pad_px=2.0))
+        return _bbox_union(*bboxes)
     if object_type == "tool_cart":
         parts = [
             _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.05), dimensions_xyz=(width, depth, height * 0.72)),
@@ -473,42 +493,33 @@ def _draw_warehouse_object(
         bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
         x, y, _z = (float(value) for value in spec["base_xyz"])
         bboxes = [list(bbox)]
+        x0, y0, x1, y1 = (float(value) for value in bbox)
+        cabin = [x0 + (x1 - x0) * 0.22, y0 + (y1 - y0) * 0.16, x0 + (x1 - x0) * 0.47, y0 + (y1 - y0) * 0.42]
+        draw.rectangle(tuple(cabin), fill=(188, 214, 223), outline=(46, 62, 72), width=1)
+        bboxes.append(cabin)
         for point in ((x - width * 0.34, y - depth * 0.44, height * 0.08), (x + width * 0.24, y - depth * 0.44, height * 0.08)):
             px, py = _project_xy(point, camera, frame)
             wheel_bbox = [px - 6.0, py - 4.0, px + 6.0, py + 4.0]
             draw.ellipse(tuple(wheel_bbox), fill=(24, 25, 28), outline=(8, 9, 10), width=1)
             bboxes.append(wheel_bbox)
         return _bbox_union(*bboxes)
-    if object_type == "safety_barrier":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.34), dimensions_xyz=(width, depth, height * 0.18)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.38, 0.0, 0.0), dimensions_xyz=(0.10, depth, height)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.38, 0.0, 0.0), dimensions_xyz=(0.10, depth, height)),
-        ]
-        return _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
     if object_type == "wrapped_bundle":
         parts = [
             _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width, depth, height)),
             _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.18, height * 0.34), dimensions_xyz=(width * 1.04, 0.06, height * 0.14)),
             _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.18, height * 0.34), dimensions_xyz=(width * 1.04, 0.06, height * 0.14)),
         ]
-        return _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-    if object_type == "hand_truck":
-        parts = [
-            _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.02), dimensions_xyz=(width * 0.72, depth * 0.20, height * 0.16)),
-            _sub_box_spec(spec, offset_xyz=(-width * 0.26, 0.0, height * 0.20), dimensions_xyz=(0.08, depth * 0.88, height * 0.88)),
-            _sub_box_spec(spec, offset_xyz=(width * 0.26, 0.0, height * 0.20), dimensions_xyz=(0.08, depth * 0.88, height * 0.88)),
-            _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.34, height * 0.82), dimensions_xyz=(width * 0.70, 0.08, height * 0.10)),
-        ]
         bbox = _draw_box_parts_object(draw, parts, camera=camera, frame=frame, fill=fill)
-        x, y, _z = (float(value) for value in spec["base_xyz"])
-        wheel_bboxes: List[List[float]] = []
-        for point in ((x - width * 0.26, y - depth * 0.24, height * 0.05), (x + width * 0.26, y - depth * 0.24, height * 0.05)):
-            px, py = _project_xy(point, camera, frame)
-            wheel_bbox = [px - 5.0, py - 4.0, px + 5.0, py + 4.0]
-            draw.ellipse(tuple(wheel_bbox), fill=(23, 25, 29), outline=(8, 8, 10), width=1)
-            wheel_bboxes.append(wheel_bbox)
-        return _bbox_union(bbox, *wheel_bboxes)
+        x0, y0, x1, y1 = (float(value) for value in bbox)
+        bboxes = [list(bbox)]
+        for frac in (0.32, 0.68):
+            x_line = x0 + (x1 - x0) * frac
+            _draw_line(draw, (x_line, y0 + 4.0), (x_line, y1 - 4.0), fill=(93, 82, 70), width=2)
+            bboxes.append(_screen_line_bbox((x_line, y0 + 4.0), (x_line, y1 - 4.0), pad_px=2.0))
+        label = [x0 + (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.38, x1 - (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.54]
+        draw.rectangle(tuple(label), fill=(235, 228, 204), outline=(102, 91, 76), width=1)
+        bboxes.append(label)
+        return _bbox_union(*bboxes)
     if object_type == "stacked_pipes":
         parts = [
             _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.25, 0.0), dimensions_xyz=(width, depth * 0.24, height * 0.30)),
@@ -519,11 +530,17 @@ def _draw_warehouse_object(
         x0, y0, x1, y1 = (float(value) for value in bbox)
         bboxes = [list(bbox)]
         for frac in (0.25, 0.50, 0.75):
-            cx = x0 + (x1 - x0) * 0.18
+            cx = x0 + (x1 - x0) * 0.17
             cy = y0 + (y1 - y0) * frac
-            pipe_end = [cx - 4.0, cy - 4.0, cx + 4.0, cy + 4.0]
+            pipe_end = [cx - 5.5, cy - 4.2, cx + 5.5, cy + 4.2]
             draw.ellipse(tuple(pipe_end), fill=(212, 222, 225), outline=(70, 81, 90), width=1)
-            bboxes.append(pipe_end)
+            inner = [cx - 2.4, cy - 1.8, cx + 2.4, cy + 1.8]
+            draw.ellipse(tuple(inner), fill=(82, 94, 104))
+            bboxes.extend([pipe_end, inner])
+            rx = x1 - (x1 - x0) * 0.16
+            far_end = [rx - 4.0, cy - 3.2, rx + 4.0, cy + 3.2]
+            draw.ellipse(tuple(far_end), outline=(83, 95, 106), width=1)
+            bboxes.append(far_end)
         return _bbox_union(*bboxes)
     if object_type == "ladder":
         return _draw_warehouse_ladder_object(draw, spec, camera=camera, frame=frame, fill=fill)
@@ -568,10 +585,16 @@ def _draw_warehouse_object(
         lid_y = y0 + (y1 - y0) * 0.18
         _draw_line(draw, (x0 + 4.0, lid_y), (x1 - 4.0, lid_y), fill=(32, 39, 38), width=3)
         bboxes.append(_screen_line_bbox((x0 + 4.0, lid_y), (x1 - 4.0, lid_y), pad_px=3.0))
+        lid = [x0 + (x1 - x0) * 0.12, y0 + (y1 - y0) * 0.08, x1 - (x1 - x0) * 0.12, y0 + (y1 - y0) * 0.22]
+        draw.ellipse(tuple(lid), fill=(61, 73, 70), outline=(28, 34, 33), width=1)
+        bboxes.append(lid)
         for frac in (0.35, 0.50, 0.65):
             x_line = x0 + (x1 - x0) * frac
             _draw_line(draw, (x_line, y0 + (y1 - y0) * 0.28), (x_line, y1 - 3.0), fill=(48, 58, 56), width=2)
             bboxes.append(_screen_line_bbox((x_line, y0 + (y1 - y0) * 0.28), (x_line, y1 - 3.0), pad_px=2.0))
+        handle = [x0 + (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.26, x1 - (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.34]
+        draw.rectangle(tuple(handle), fill=(198, 207, 202), outline=(48, 58, 56), width=1)
+        bboxes.append(handle)
         return _bbox_union(*bboxes)
     if object_type == "warning_bollard":
         return _draw_warehouse_bollard_object(draw, spec, camera=camera, frame=frame, fill=fill)
@@ -584,11 +607,17 @@ def _draw_warehouse_object(
     if object_type == "charging_dock":
         bbox = _draw_wedge_object(draw, spec, camera=camera, frame=frame, fill=fill)
         x0, y0, x1, y1 = (float(value) for value in bbox)
+        bboxes = [list(bbox)]
         light = [x0 + (x1 - x0) * 0.18, y0 + (y1 - y0) * 0.34, x0 + (x1 - x0) * 0.28, y0 + (y1 - y0) * 0.45]
         draw.ellipse(tuple(light), fill=(78, 204, 120), outline=(24, 78, 50), width=1)
         plug_y = y0 + (y1 - y0) * 0.60
         _draw_line(draw, (x0 + (x1 - x0) * 0.35, plug_y), (x1 - (x1 - x0) * 0.18, plug_y), fill=(224, 229, 224), width=3)
-        return _bbox_union(bbox, light, _screen_line_bbox((x0 + (x1 - x0) * 0.35, plug_y), (x1 - (x1 - x0) * 0.18, plug_y), pad_px=3.0))
+        bboxes.extend([light, _screen_line_bbox((x0 + (x1 - x0) * 0.35, plug_y), (x1 - (x1 - x0) * 0.18, plug_y), pad_px=3.0)])
+        cable = [(x0 + (x1 - x0) * 0.48, y0 + (y1 - y0) * 0.70), (x0 + (x1 - x0) * 0.62, y1 - 3.0), (x1 - 3.0, y1 - 6.0)]
+        _draw_line(draw, cable[0], cable[1], fill=(32, 36, 40), width=2)
+        _draw_line(draw, cable[1], cable[2], fill=(32, 36, 40), width=2)
+        bboxes.extend([_screen_line_bbox(cable[0], cable[1], pad_px=2.0), _screen_line_bbox(cable[1], cable[2], pad_px=2.0)])
+        return _bbox_union(*bboxes)
     if object_type == "conveyor":
         bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
         x0, y0, x1, y1 = (float(value) for value in bbox)
@@ -609,6 +638,10 @@ def _draw_warehouse_object(
             x_line = x0 + (x1 - x0) * frac
             _draw_line(draw, (x_line, y0 + 3.0), (x_line, y1 - 2.0), fill=(87, 61, 40), width=2)
             bboxes.append(_screen_line_bbox((x_line, y0 + 3.0), (x_line, y1 - 2.0), pad_px=2.0))
+        for frac in (0.34, 0.66):
+            y_line = y0 + (y1 - y0) * frac
+            _draw_line(draw, (x0 + 4.0, y_line), (x1 - 4.0, y_line), fill=(101, 71, 45), width=2)
+            bboxes.append(_screen_line_bbox((x0 + 4.0, y_line), (x1 - 4.0, y_line), pad_px=2.0))
         return _bbox_union(*bboxes)
     if object_type == "storage_bin":
         bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)

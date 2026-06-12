@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.taxonomy import resolve_task_taxonomy
 from ....core.types import TypedValue
 from ...base import TaskOutput
@@ -24,7 +24,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import build_icons_sequence_rotation_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import resolve_icon_pool
@@ -141,7 +140,7 @@ _DEFAULTS = _TaskDefaults()
 TASK_ID = "task_icons__sequence_strip__rotation_sequence_violation_index"
 QUERY_ID = "row_rotation_violation"
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "pattern")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "pattern")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -519,7 +518,7 @@ class IconsPatternSequenceRotationViolationTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "pattern"
+    scene_id = "pattern"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon sequence rotation-violation instance."""
@@ -576,7 +575,7 @@ class IconsPatternSequenceRotationViolationTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -616,7 +615,7 @@ class IconsPatternSequenceRotationViolationTask:
                 "scene_id": taxonomy.scene_id,
                 "task_id": str(self.task_id),
                 "source_domain": taxonomy.source_domain,
-                "source_task_group": taxonomy.source_task_group,
+                "source_scene_id": taxonomy.source_scene_id,
                 "query_id": str(query_id),
             },
             "scene_ir": {
@@ -733,17 +732,6 @@ class IconsPatternSequenceRotationViolationTask:
             int(expected_rotation),
             int(scene_payload.violation_rotation_degrees),
         )
-        complexity = build_icons_sequence_rotation_violation_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            sequence_length=int(scene_payload.sequence_length),
-            sequence_length_min=int(group_default(_GEN_DEFAULTS, "sequence_length_min", _DEFAULTS.sequence_length_min)),
-            sequence_length_max=int(group_default(_GEN_DEFAULTS, "sequence_length_max", _DEFAULTS.sequence_length_max)),
-            violation_cell_index=int(scene_payload.violation_cell_index),
-            violation_rotation_difference_degrees=int(violation_rotation_difference_degrees),
-            scene_icon_instances=scene_payload.scene_icon_instances,
-            render_params=render_params,
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -751,7 +739,6 @@ class IconsPatternSequenceRotationViolationTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=taxonomy.scene_id,
             query_id=str(query_id),

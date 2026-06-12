@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query id: `between_references`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`
@@ -20,7 +20,7 @@ The answer is computed from metadata using each candidate's projected position a
 Annotation is the bounding box of the selected 3D object in the scene. The two named reference objects are present in the trace and render map, but they are not part of the answer annotation; neither the option panel nor option text is annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing names, reference ids/names/shapes, per-label between metrics, per-label between truth values, projected object bboxes, and option-panel descriptors/bboxes.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing names, reference ids/names/shapes, per-label between metrics, per-label between truth values, projected object bboxes, and option-panel descriptors/bboxes.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

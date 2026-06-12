@@ -1,2 +1,0 @@
-"""Geometry similarity task group."""
-

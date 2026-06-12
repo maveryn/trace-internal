@@ -4,10 +4,6 @@ generation:
     row_count_max: 12
     column_count_min: 6
     column_count_max: 12
-    query_id_weights:
-      axis_extremum_label: 1.0
-      off_diagonal_confusion_label: 1.0
-      threshold_cell_count: 1.0
     scene_variant_weights:
       confusion_matrix_counts: 1.0
       annotated_heatmap_table: 1.0
@@ -39,7 +35,6 @@ generation:
     comparison_weights:
       at_least: 1.0
       at_most: 1.0
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_palette_variant_sampling: true
     balanced_header_layout_sampling: true
@@ -47,7 +42,6 @@ generation:
     balanced_query_axis_sampling: true
     balanced_extremum_direction_sampling: true
     balanced_comparison_sampling: true
-
 rendering:
   shared:
     canvas_width: 1376
@@ -64,42 +58,27 @@ rendering:
     header_font_size_px: 18
     cell_font_size_px: 20
     legend_font_size_px: 16
-    inactive_cell_rgb: [245, 246, 248]
-    highlight_rgb: [236, 180, 34]
+    inactive_cell_rgb:
+    - 245
+    - 246
+    - 248
+    highlight_rgb:
+    - 236
+    - 180
+    - 34
     grid_rgb_options:
-      - [86, 94, 106]
-      - [76, 92, 108]
-      - [98, 90, 78]
-      - [76, 100, 92]
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.44
-      scene_variant_load: 0.14
-
+    - - 86
+      - 94
+      - 106
+    - - 76
+      - 92
+      - 108
+    - - 98
+      - 90
+      - 78
+    - - 76
+      - 100
+      - 92
 prompt:
   shared:
-    bundle_id: charts_matrix_v0
-    scene_key: matrix_cell
-    task_key: matrix_cell_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_confusion_matrix_counts: a labeled confusion matrix with printed integer counts in each active cell
-    object_description_annotated_heatmap_table: a labeled annotated heatmap table with printed integer values in each cell
-    object_description_correlation_matrix_signed: a labeled signed association matrix with printed integer scores in each cell
-    object_description_triangular_pairwise_matrix: a labeled triangular pairwise matrix where only the filled cells count
-    object_description_clustered_block_matrix: a labeled matrix with grouped row and column blocks and printed integer values in each cell
-    answer_hint_integer: set "answer" to the requested integer value
-    answer_hint_label: set "answer" to the exact visible row or column label as a string
-    unanswerable_instruction: If the requested row or column label is not shown, answer exactly "unanswerable".
-    annotation_hint_axis_extremum_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the selected row or column
-    annotation_hint_off_diagonal_confusion_label: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the off-diagonal candidate cells in the actual-class row
-    annotation_hint_threshold_cell_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes for the cells matching the threshold
-    json_example_axis_extremum_label: '{"annotation":[[240,300,310,345],[320,300,390,345],[400,300,470,345]],"answer":"C7"}'
-    json_example_off_diagonal_confusion_label: '{"annotation":[[240,260,310,305],[320,260,390,305],[400,260,470,305]],"answer":"C5"}'
-    json_example_threshold_cell_count: '{"annotation":[[240,260,310,305],[320,260,390,305],[400,260,470,305],[480,260,550,305]],"answer":4}'
-    json_example_answer_only_axis_extremum_label: '{"answer":"C7"}'
-    json_example_answer_only_off_diagonal_confusion_label: '{"answer":"C5"}'
-    json_example_answer_only_threshold_cell_count: '{"answer":4}'
+    bundle_id: charts_matrix_v1

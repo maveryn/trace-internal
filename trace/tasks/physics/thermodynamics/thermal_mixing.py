@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -30,16 +30,16 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__thermal_mixing__final_temperature_value"
-FAMILY_ID = "physics_thermodynamics_thermal_mixing_family"
+TASK_NAMESPACE = "physics_thermodynamics_thermal_mixing"
 SCENE_ID = "thermal_mixing"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("equal_amount_final_temperature",)
 CUP_COUNTS: Tuple[str, ...] = ("2", "3", "4")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="thermodynamics", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "thermodynamics")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="thermodynamics", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "thermodynamics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -145,7 +145,7 @@ def _draw_text_centered_traced(
 
 def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_QUERY_IDS,
@@ -162,14 +162,14 @@ def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_cup_count(instance_seed: int, *, params: Mapping[str, Any]) -> Tuple[int, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.cup_count"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.cup_count"),
         params={**dict(params), "cup_count": str(params["cup_count"]) if params.get("cup_count") is not None else None},
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=CUP_COUNTS,
@@ -186,7 +186,7 @@ def _resolve_cup_count(instance_seed: int, *, params: Mapping[str, Any]) -> Tupl
         balance_flag_key="balanced_cup_count_sampling",
         explicit_key="cup_count",
         weights_key="cup_count_weights",
-        sampling_namespace=f"{FAMILY_ID}.cup_count",
+        sampling_namespace=f"{TASK_NAMESPACE}.cup_count",
     )
     return int(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -211,17 +211,17 @@ def _resolve_final_temperature(instance_seed: int, *, params: Mapping[str, Any])
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.final_temperature",
+            namespace=f"{TASK_NAMESPACE}.final_temperature",
         )
         selected = support[abs(int(index)) % len(support)]
     else:
-        selected = int(spawn_rng(int(instance_seed), f"{FAMILY_ID}.final_temperature").choice(support))
+        selected = int(spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.final_temperature").choice(support))
     probability = 1.0 / float(len(support))
     return int(selected), {str(value): float(probability) for value in support}
 
 
 def _make_scenario(instance_seed: int, *, params: Mapping[str, Any]) -> _ThermalMixingScenario:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scenario")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scenario")
     query_id, query_probs = _resolve_query_id(int(instance_seed), params=params)
     cup_count, cup_probs = _resolve_cup_count(int(instance_seed), params=params)
     final_temperature, final_probs = _resolve_final_temperature(int(instance_seed), params=params)
@@ -279,7 +279,7 @@ def _resolve_render_defaults(params: Mapping[str, Any], *, instance_seed: int) -
             str(key),
             int(getattr(_DEFAULTS, str(key))),
             instance_seed=int(instance_seed),
-            namespace=FAMILY_ID,
+            namespace=TASK_NAMESPACE,
         )
         for key in keys
     }
@@ -553,7 +553,7 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "thermodynamics"
+    scene_id = "thermodynamics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -573,7 +573,6 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 require_grid=True,
@@ -581,7 +580,7 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -622,7 +621,7 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -640,16 +639,6 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
                 answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-            complexity = TaskComplexity(
-                complexity_score=0.38 + 0.04 * max(0, int(scenario.cup_count) - 2),
-                complexity_components={
-                    "visual_scan": 0.28 + 0.04 * max(0, int(scenario.cup_count) - 2),
-                    "thermal_equilibrium_reasoning": 0.36,
-                    "arithmetic": 0.16,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.12,
-                },
-            )
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": "physics_thermal_mixing_equal_amounts",
@@ -726,7 +715,6 @@ class PhysicsThermalMixingFinalTemperatureValueTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=str(scenario.query_id),

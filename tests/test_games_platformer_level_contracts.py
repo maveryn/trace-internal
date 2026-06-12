@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.platformer.level_tasks import (
+from trace.tasks.games.platformer.collectible_count import (
     GamesPlatformerCollectibleCountTask,
     GamesPlatformerJumpCollectibleScoreValueTask,
     GamesPlatformerJumpLandingLabelTask,
@@ -157,4 +157,4 @@ def test_games_platformer_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "platformer" for row in rows)
+    assert all(row.get("scene_id") == "platformer" for row in rows)

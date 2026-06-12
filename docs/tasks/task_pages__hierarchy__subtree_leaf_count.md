@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `hierarchy`
+2. Scene: `hierarchy`
 3. Scene id: `hierarchy`
 4. Task id: `task_pages__hierarchy__subtree_leaf_count`
 5. Objective: Count leaf nodes in one referenced hierarchy subtree.

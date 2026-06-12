@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.physics.circuits.switch_circuit import (
     PhysicsSwitchCircuitLitBulbCountTask,
     _lit_bulbs_from_edges,
@@ -125,7 +125,7 @@ def test_physics_switch_circuit_is_deterministic() -> None:
 
 
 def test_physics_switch_circuit_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("physics", "circuits")
+    cfg = get_scene_defaults("physics", "circuits")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="physics_circuits_switch_circuit_family",
@@ -166,7 +166,7 @@ def test_physics_switch_circuit_build_smoke(tmp_path: Path) -> None:
 
     assert len(train_records) == 2
     assert all(record["domain"] == "physics" for record in train_records)
-    assert all(record["task_group"] == "circuits" for record in train_records)
+    assert all(record["scene_id"] == "circuits" for record in train_records)
     assert {record["task"] for record in train_records} == {"task_physics__switch_circuit__lit_bulb_count"}
     assert {record["scene_id"] for record in train_records} == {"switch_circuit"}
     assert {record["query_id"] for record in train_records} == {"lit_bulb_count"}

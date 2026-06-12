@@ -2,26 +2,26 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
-3. Scene id: `angle_relations`
-4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
-5. Query id: `triangle_exterior_angle`
-6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+2. Scene id: `angle_relations`
+3. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+4. Query id: `triangle_exterior_angle`
+5. Answer schema: `integer_value`
+6. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `derive_geometry_metric(visible_angle_relations_measurements, derivation_rule=triangle_exterior_angle, output_role=angle_measure); scene=angle_relations; scope=triangle_exterior_angle`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `angle_relations`.
+- Prompt schema: `v1`
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses pixel-space witnesses only. The annotation is a keyed point map over exactly `ABC`, `BAC`, and `BCD`.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/composite_measurement.py`
+- Config: `configs/domains/geometry/angle_relations.yaml`
+- Task module: `trace/tasks/geometry/angle_relations/triangle_exterior_angle.py`

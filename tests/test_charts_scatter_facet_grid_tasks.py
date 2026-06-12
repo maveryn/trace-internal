@@ -8,9 +8,9 @@ import pytest
 
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
-from trace.tasks.charts.scatter.facet_grid_query import (
+from trace.tasks.charts.scatter_facet_grid.shared.facet_grid_query import (
     SUPPORTED_LAYOUTS,
     SUPPORTED_QUERY_IDS,
     ChartsScatterFacetGridQueryTask,
@@ -152,7 +152,7 @@ def test_chart_scatter_facet_grid_registered_and_group_config_loaded() -> None:
     assert out.scene_id == "scatter_facet_grid"
     assert out.query_id in SUPPORTED_QUERY_IDS
 
-    cfg = get_task_group_defaults("charts", "scatter")
+    cfg = get_scene_defaults("charts", "scatter_facet_grid")
     generation = cfg["generation"]["task_overrides"]["charts_scatter_facet_grid_query_base"]
     assert int(generation["facet_panel_count_min"]) == 6
     assert int(generation["facet_panel_count_max"]) == 12

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query id: `attribute_count_after_edits`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
@@ -22,7 +22,7 @@ Edit predicates can also be color-only, object-only, or color+object. Generation
 Annotation is a `bbox_set` containing one whole-object bounding box for each visible starting object matching the final counted description before the edits. The final answer can differ from the number of annotation boxes because the prompt asks for the count after counterfactual textual edits.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`.
 
 The trace records camera pose, projection frame, object world coordinates, prompt color names, fill RGB values, target predicate kind, target shape/color when active, initial property counts, initial target object ids, counterfactual add/remove steps, predicate relations, step deltas, and final symbolic count.
 

@@ -3,7 +3,7 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- task_group: `counting`
+- scene_id: `counting`
 - module: `trace/tasks/icons/counting/named_shape_pair_arithmetic_count.py`
 - prompt bundle: `icons_counting_v0`
 

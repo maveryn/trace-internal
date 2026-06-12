@@ -3,10 +3,36 @@
 from __future__ import annotations
 
 from collections import Counter
+from inspect import getsourcefile
+from pathlib import Path
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.shared.indoor_room_scene import INDOOR_OBJECT_TYPES
+from trace.tasks.illustrations.indoor_room.shared.scene import INDOOR_OBJECT_TYPES
+
+
+SURFACE_TASK_ID = "task_illustrations__indoor_room__surface_object_count"
+FURNITURE_TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
+TASK_SOURCE_STEMS = {
+    SURFACE_TASK_ID: "surface_object_count.py",
+    FURNITURE_TASK_ID: "furniture_side_count.py",
+}
+
+
+def _assert_scene_packaged_task(task_id: str) -> None:
+    task = create_task(task_id)
+    assert not hasattr(task, "scene_id")
+    source = Path(getsourcefile(task.__class__) or "").as_posix()
+    assert source.endswith(
+        f"trace/tasks/illustrations/indoor_room/{TASK_SOURCE_STEMS[task_id]}"
+    )
+
+
+def _assert_scene_prompt_metadata(trace: dict) -> None:
+    prompt_variant = trace["query_spec"]["prompt_variant"]
+    assert prompt_variant["prompt_bundle_id"] == "illustrations_indoor_room_v0"
+    assert prompt_variant["prompt_scene_id"] == "indoor_room"
+    assert "prompt_scene_id" not in prompt_variant
 
 
 def _expected_bboxes(trace: dict, ids: list[str]) -> list[list[float]]:
@@ -32,12 +58,14 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
 
 
 def test_object_type_on_surface_count_contract() -> None:
-    out = create_task("task_illustrations__indoor_room__surface_object_count").generate(
+    _assert_scene_packaged_task(SURFACE_TASK_ID)
+    out = create_task(SURFACE_TASK_ID).generate(
         hash64(2026052401, "type-on-surface", 0),
         params={"object_type": "mug", "surface_type": "shelf", "target_count": 2, "object_count": 12, "theme_id": "study"},
         max_attempts=80,
     )
     trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
     execution = trace["execution_trace"]
     placements = trace["render_map"]["placements"]
     assert out.scene_id == "indoor_room"
@@ -54,7 +82,7 @@ def test_object_type_on_surface_count_contract() -> None:
 
 
 def test_counter_objects_rest_on_surface_baseline() -> None:
-    out = create_task("task_illustrations__indoor_room__surface_object_count").generate(
+    out = create_task(SURFACE_TASK_ID).generate(
         hash64(2026052401, "type-on-counter", 0),
         params={"object_type": "mug", "surface_type": "counter", "target_count": 3, "object_count": 13, "theme_id": "kitchen"},
         max_attempts=80,
@@ -91,7 +119,8 @@ def test_indoor_object_pool_uses_small_tabletop_items() -> None:
 
 
 def test_furniture_side_count_contract() -> None:
-    out = create_task("task_illustrations__indoor_room__furniture_side_count").generate(
+    _assert_scene_packaged_task(FURNITURE_TASK_ID)
+    out = create_task(FURNITURE_TASK_ID).generate(
         hash64(2026052401, "furniture-side", 0),
         params={
             "object_type": "mug",
@@ -104,6 +133,7 @@ def test_furniture_side_count_contract() -> None:
         max_attempts=80,
     )
     trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
     execution = trace["execution_trace"]
     placements = trace["render_map"]["placements"]
     furniture_id = execution["furniture_id"]
@@ -121,7 +151,7 @@ def test_furniture_side_count_contract() -> None:
 
 
 def test_furniture_side_count_calibration_sampling_is_decoupled() -> None:
-    task = create_task("task_illustrations__indoor_room__furniture_side_count")
+    task = create_task(FURNITURE_TASK_ID)
     answer_counts: Counter[int] = Counter()
     object_type_counts: Counter[str] = Counter()
     furniture_relation_counts: Counter[tuple[str, str]] = Counter()

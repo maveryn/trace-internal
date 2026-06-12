@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -45,7 +45,7 @@ def _same_suit_descending_run_ids(cards: dict[str, dict], marked_card_id: str) -
 
 
 def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "solitaire")
+    cfg = get_scene_defaults("games", "solitaire")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_games__solitaire__move_legality_label",

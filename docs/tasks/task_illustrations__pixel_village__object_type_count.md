@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `pixel_village`
-- Implementation task group: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/pixel_village_count.py`
+- Implementation scene package: `pixel_village`
+- Implementation source: `trace/tasks/illustrations/pixel_village/object_type_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__pixel_village__object_type_count` -> `task_illustrations__pixel_village__object_type_count`
 - Status: `pending_v0_manual_review_and_solve_rate`
@@ -27,7 +27,7 @@ This public task id is a stable contract-v0 unit: one renderer scene id plus one
 - Arguments:
   - `entity`: semantic_role; allowed `pixel_village_entity`; source `program_schema_concrete`
   - `pixel_village_entities`: semantic_role; allowed `visible_pixel_village_entities`; source `program_schema_concrete`
-  - `target_object`: semantic_role; allowed `building`, `person`, `tree`, `crate`, `lamp_post`, `well`, `pond`; source `parameter_axes`
+  - `target_object`: semantic_role; allowed `building`, `person`, `tree`, `lamp_post`, `well`, `pond`; source `parameter_axes`
 - Argument metadata status: `curated`
 - Supported query ids: `object_type_count`
 

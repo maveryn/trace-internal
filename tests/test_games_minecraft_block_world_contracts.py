@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.minecraft.block_world_tasks import (
+from trace.tasks.games.minecraft.resource_route_cost import (
     AT_LEAST_HEIGHT_QUERY_ID,
     EXACT_HEIGHT_QUERY_ID,
     REACHABLE_ORE_STACK_QUERY_ID,
@@ -316,5 +316,5 @@ def test_games_minecraft_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 6
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "minecraft" for row in rows)
+    assert all(row.get("scene_id") == "minecraft" for row in rows)
     assert {row["scene_id"] for row in rows} == {"minecraft"}

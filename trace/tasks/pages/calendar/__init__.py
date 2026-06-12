@@ -1,1 +1,1 @@
-"""Pages calendar task group."""
+"""Pages calendar scene."""

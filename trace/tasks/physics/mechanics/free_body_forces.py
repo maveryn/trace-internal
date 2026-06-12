@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -24,7 +24,6 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, clamp_unit_interval, normalize_linear, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.label_tags import draw_text_tag
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
@@ -32,7 +31,7 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__free_body_forces__net_force_direction_choice"
-FAMILY_ID = "physics_mechanics_free_body_forces_family"
+TASK_NAMESPACE = "physics_mechanics_free_body_forces"
 SCENE_ID = "free_body_forces"
 QUERY_ID = "net_force_direction_choice"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
@@ -67,12 +66,12 @@ CARDINAL_VECTORS: Dict[str, Tuple[int, int]] = {
 VECTOR_TO_DIRECTION = {value: key for key, value in DIRECTION_VECTORS.items()}
 FORCE_SLOT_ORDER: Tuple[str, ...] = ("east", "north", "west", "south", "northeast", "northwest", "southwest", "southeast")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -190,7 +189,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
-        namespace=f"{FAMILY_ID}.scene_variant",
+        namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     query_id, query_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -199,7 +198,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="query_id",
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
-        namespace=f"{FAMILY_ID}.query_id",
+        namespace=f"{TASK_NAMESPACE}.query_id",
     )
     net_direction, net_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -208,7 +207,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="net_force_direction",
         weights_key="net_force_direction_weights",
         balance_flag_key="balanced_net_force_direction_sampling",
-        namespace=f"{FAMILY_ID}.net_force_direction",
+        namespace=f"{TASK_NAMESPACE}.net_force_direction",
     )
     correct_letter, letter_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -217,7 +216,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
         balance_flag_key="balanced_correct_option_letter_sampling",
-        namespace=f"{FAMILY_ID}.correct_option_letter",
+        namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     accent_color, accent_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -226,7 +225,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
         balance_flag_key="balanced_accent_color_name_sampling",
-        namespace=f"{FAMILY_ID}.accent_color_name",
+        namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return _Axes(
         scene_variant=str(scene_variant),
@@ -244,7 +243,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
 
 def _option_directions(*, instance_seed: int, net_force_direction: str, correct_option_letter: str) -> Dict[str, str]:
     remaining_directions = [direction for direction in DIRECTION_NAMES if str(direction) != str(net_force_direction)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_directions")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_directions")
     rng.shuffle(remaining_directions)
     mapping: Dict[str, str] = {}
     cursor = 0
@@ -286,7 +285,7 @@ def _make_force_specs(instance_seed: int, params: Mapping[str, Any], *, net_forc
             raise ValueError("explicit force_specs do not match net_force_direction")
         return tuple(specs)
 
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.force_specs")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.force_specs")
     dx_sign, dy_sign = DIRECTION_VECTORS[str(net_force_direction)]
     residual_options = tuple(int(value) for value in group_default(_GEN_DEFAULTS, "resultant_component_support", (2, 3, 4, 5, 6)))
     base_options = tuple(int(value) for value in group_default(_GEN_DEFAULTS, "base_force_support", (2, 3, 4, 5, 6, 7, 8)))
@@ -651,22 +650,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(scenario: _Scenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    force_count = len(scenario.force_specs)
-    visual_scan = clamp_unit_interval(0.28 + 0.12 * normalize_linear(float(force_count), min_value=4.0, max_value=6.0))
-    vector_reasoning = clamp_unit_interval(0.42 + (0.12 if scenario.net_force_direction in {"northeast", "northwest", "southwest", "southeast"} else 0.0))
-    ambiguity = clamp_unit_interval(0.16 + 0.03 * normalize_linear(float(force_count), min_value=4.0, max_value=6.0))
-    output_burden = 0.18
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "vector_reasoning": float(vector_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 def _prompt_examples() -> Tuple[str, str]:
@@ -682,7 +665,7 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -694,7 +677,6 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", 760)))
         background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),
             instance_seed=int(instance_seed),
@@ -703,7 +685,7 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -738,7 +720,7 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
         json_example, json_example_answer_only = _prompt_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -855,7 +837,6 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scenario),
             task_versions=default_task_versions(),
             query_id=QUERY_ID,
             scene_id=SCENE_ID,

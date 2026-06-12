@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.hex.connection_tasks import (
+from trace.tasks.games.hex.connection_gap_count import (
     GamesHexBoardTask,
     GamesHexCandidateNeighborCountTask,
     GamesHexConnectionGapCountTask,
     GamesHexWinningMoveCellLabelTask,
 )
-from trace.tasks.games.shared.hex_common import (
+from trace.tasks.games.hex.shared.common import (
     BLUE,
     EMPTY,
     RED,
@@ -287,4 +287,4 @@ def test_games_hex_board_build_smoke(tmp_path) -> None:
 
     assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "hex" for row in rows)
+    assert all(row.get("scene_id") == "hex" for row in rows)

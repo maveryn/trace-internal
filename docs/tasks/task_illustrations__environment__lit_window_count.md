@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation task group: `counting`
+- Implementation scene: `counting`
 - Implementation source: `trace/tasks/illustrations/counting/building_window_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__environment__lit_window_count` -> `task_illustrations__environment__lit_window_count`

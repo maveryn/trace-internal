@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.cone_sector_net import (
+from trace.tasks.geometry.cone_net.base_radius_from_sector_angle import (
     SCENE_ID,
     GeometryConeNetBaseRadiusFromSectorAngleTask,
-    GeometryConeNetHeightFromSectorAngleTask,
 )
+from trace.tasks.geometry.cone_net.height_from_sector_angle import GeometryConeNetHeightFromSectorAngleTask
 
 TASK_CLASSES = (
     GeometryConeNetBaseRadiusFromSectorAngleTask,

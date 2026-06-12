@@ -44,7 +44,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--strata",
         default="task,query_id,bucket_id_str",
-        help="Comma-separated strata columns. Supported: domain, task_group, task, query_id, scene_variant, difficulty_bin, bucket_id_str.",
+        help="Comma-separated strata columns. Supported: domain, scene_id, task, query_id, scene_variant, difficulty_bin, bucket_id_str.",
     )
     parser.add_argument("--batch-size", type=int, default=2048)
     parser.add_argument(
@@ -74,7 +74,7 @@ def _parse_json_mapping(value: Any) -> dict[str, Any]:
 
 def _read_source_metadata(source: Path) -> tuple[pq.ParquetFile, dict[str, list[Any]], list[RowTraceRef]]:
     parquet_file = pq.ParquetFile(source)
-    needed = ["domain", "task_group", "task", "difficulty_bin", "bucket_id_str", "trace_ref"]
+    needed = ["domain", "scene_id", "task", "difficulty_bin", "bucket_id_str", "trace_ref"]
     missing = [name for name in needed if name not in parquet_file.schema_arrow.names]
     if missing:
         raise SystemExit(f"Source parquet is missing required columns: {missing}")

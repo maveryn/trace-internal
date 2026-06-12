@@ -31,7 +31,7 @@ def test_pages_concept_map_tasks_are_registered_in_public_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "concept_map"
-        assert taxonomy.source_task_group == "concept_map"
+        assert taxonomy.source_scene_id == "concept_map"
 
 
 def test_pages_concept_map_branch_item_count_contract() -> None:

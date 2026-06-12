@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
 from trace.tasks.puzzles.cell_board.path_shortest_path import TileShortestPathTask
 
@@ -29,8 +30,8 @@ def test_domain_post_noise_policy_defaults_are_mild_and_explicit() -> None:
     }
     coordinate_preserving_edits = {"blur", "downsample", "jpeg", "noise"}
 
-    for (domain, task_group), expected_prob in expected_apply_probs.items():
-        cfg = get_task_group_defaults(domain, task_group)
+    for (domain, scene_id), expected_prob in expected_apply_probs.items():
+        cfg = get_scene_defaults(domain, scene_id)
         noise = cfg["visual"]["noise"]
         assert float(noise["apply_prob"]) == pytest.approx(expected_prob, rel=1e-9)
         edit_types = set(noise.get("edit_types", noise.get("value_ranges", {}).keys()))
@@ -40,8 +41,14 @@ def test_domain_post_noise_policy_defaults_are_mild_and_explicit() -> None:
 
 
 def test_icon_domain_uses_per_icon_noise_not_global_post_noise() -> None:
-    for task_group in ("counting", "pattern", "relation", "sequence", "transformation"):
-        cfg = get_task_group_defaults("icons", task_group)
+    for scene_id in ("counting", "pattern", "relation", "sequence"):
+        cfg = get_scene_defaults("icons", scene_id)
+        assert "noise" not in cfg.get("visual", {})
+        rendering_defaults = cfg["rendering"]["shared"]
+        assert "icon_noise_edit_types" in rendering_defaults
+        assert set(rendering_defaults["icon_noise_edit_types"]) == {"blur", "downsample", "jpeg", "noise"}
+    for scene_id in ("pair_grid", "paired_canvas", "single_transform_options"):
+        cfg = get_scene_defaults("icons", scene_id)
         assert "noise" not in cfg.get("visual", {})
         rendering_defaults = cfg["rendering"]["shared"]
         assert "icon_noise_edit_types" in rendering_defaults

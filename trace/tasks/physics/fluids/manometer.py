@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -28,16 +28,16 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__manometer__pressure_difference_value"
-FAMILY_ID = "physics_fluids_manometer_family"
+TASK_NAMESPACE = "physics_fluids_manometer"
 SCENE_ID = "manometer"
 QUERY_ID = "u_tube_pressure_difference"
 SUPPORTED_HIGHER_PRESSURE_SIDES: Tuple[str, ...] = ("A", "B")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="fluids", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "fluids")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="fluids", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "fluids")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -132,7 +132,7 @@ def _resolve_higher_pressure_side(instance_seed: int, params: Mapping[str, Any])
         if selected not in SUPPORTED_HIGHER_PRESSURE_SIDES:
             raise ValueError(f"unsupported higher_pressure_side: {explicit}")
         return selected, {side: (1.0 if side == selected else 0.0) for side in SUPPORTED_HIGHER_PRESSURE_SIDES}
-    selected = SUPPORTED_HIGHER_PRESSURE_SIDES[int(hash64(int(instance_seed), f"{FAMILY_ID}.higher_pressure_side", 0) % 2)]
+    selected = SUPPORTED_HIGHER_PRESSURE_SIDES[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.higher_pressure_side", 0) % 2)]
     probability = 1.0 / float(len(SUPPORTED_HIGHER_PRESSURE_SIDES))
     return str(selected), {side: float(probability) for side in SUPPORTED_HIGHER_PRESSURE_SIDES}
 
@@ -166,7 +166,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Manomet
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer_pair",
+            namespace=f"{TASK_NAMESPACE}.target_answer_pair",
         )
         height_cm, kpa_per_cm = candidates[int(index) % len(candidates)]
     elif explicit_height is not None:
@@ -178,7 +178,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Manomet
             support_key="kpa_per_cm_support",
             explicit_key="kpa_per_cm",
             fallback_support=_DEFAULTS.kpa_per_cm_support,
-            namespace=f"{FAMILY_ID}.kpa_per_cm",
+            namespace=f"{TASK_NAMESPACE}.kpa_per_cm",
             balanced_flag_key="balanced_kpa_per_cm_sampling",
         )
     elif explicit_conversion is not None:
@@ -190,7 +190,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Manomet
             support_key="height_cm_support",
             explicit_key="height_cm",
             fallback_support=_DEFAULTS.height_cm_support,
-            namespace=f"{FAMILY_ID}.height_cm",
+            namespace=f"{TASK_NAMESPACE}.height_cm",
             balanced_flag_key="balanced_height_sampling",
         )
     else:
@@ -199,17 +199,17 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Manomet
             answer_index = resolve_selection_index(
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{FAMILY_ID}.target_answer",
+                namespace=f"{TASK_NAMESPACE}.target_answer",
             )
             target_answer = int(answer_support[int(answer_index) % len(answer_support)])
         else:
-            rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.target_answer")
+            rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.target_answer")
             target_answer = int(answer_support[int(rng.randrange(len(answer_support)))])
         candidates = [(height, conversion) for height, conversion, answer in _feasible_scenarios(params) if int(answer) == target_answer]
         pair_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer_pair",
+            namespace=f"{TASK_NAMESPACE}.target_answer_pair",
         )
         height_cm, kpa_per_cm = candidates[int(pair_index) % len(candidates)]
 
@@ -310,17 +310,16 @@ def _render_manometer(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="fluids",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
     )
     draw = ImageDraw.Draw(background)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.render")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.render")
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
 
@@ -367,7 +366,7 @@ def _render_manometer(
         (211, 142, 66),
         (154, 120, 190),
     )
-    fluid_rgb = fluid_palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.fluid_color", 0) % len(fluid_palette))]
+    fluid_rgb = fluid_palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.fluid_color", 0) % len(fluid_palette))]
     _draw_tube_outline(
         draw,
         left_x=left_x,
@@ -559,7 +558,7 @@ class PhysicsManometerPressureDifferenceValueTask:
     """Compute the absolute pressure difference from a U-tube manometer."""
 
     domain = "physics"
-    task_group = "fluids"
+    scene_id = "fluids"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -598,7 +597,7 @@ class PhysicsManometerPressureDifferenceValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -619,7 +618,7 @@ class PhysicsManometerPressureDifferenceValueTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -695,16 +694,6 @@ class PhysicsManometerPressureDifferenceValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.44,
-                complexity_components={
-                    "visual_height_readout": 0.36,
-                    "hydrostatic_relation": 0.30,
-                    "arithmetic": 0.16,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.10,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

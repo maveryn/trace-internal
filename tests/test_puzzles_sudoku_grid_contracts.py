@@ -9,14 +9,14 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.shared.sudoku_common import (
+from trace.tasks.puzzles.shared.sudoku_common import (
     candidate_digits,
     coord_to_cell_id,
     missing_digits_in_unit,
     repeated_digits_in_unit,
     unit_coords,
 )
-from trace.tasks.games.shared.style import SUPPORTED_SUDOKU_STYLE_VARIANTS
+from trace.tasks.puzzles.shared.sudoku_style import SUPPORTED_SUDOKU_STYLE_VARIANTS
 from trace.tasks.puzzles.sudoku.grid_tasks import (
     PuzzlesSudokuGridTask,
     PuzzlesSudokuMarkedCellCandidateCountTask,
@@ -235,7 +235,7 @@ def test_puzzles_sudoku_grid_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "puzzles" for record in train_records)
-    assert all(record["task_group"] == "sudoku" for record in train_records)
+    assert all(record["scene_id"] == "sudoku" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_puzzles__sudoku__marked_cell_value"]) == 4

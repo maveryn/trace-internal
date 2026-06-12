@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -25,7 +25,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import build_icons_pattern_grid_color_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
@@ -190,7 +189,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "pattern")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "pattern")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -763,7 +762,7 @@ class IconsPatternGridColorViolationTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "pattern"
+    scene_id = "pattern"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon-grid color-pattern violation instance."""
@@ -822,7 +821,7 @@ class IconsPatternGridColorViolationTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -992,22 +991,6 @@ class IconsPatternGridColorViolationTask:
         }
         expected_color_level = int(scene_payload.expected_grid_color_levels[scene_payload.violation_cell_index])
         violation_level_delta = abs(int(expected_color_level) - int(scene_payload.violation_color_level))
-        complexity = build_icons_pattern_grid_color_violation_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            grid_rows=int(scene_payload.grid_rows),
-            grid_cols=int(scene_payload.grid_cols),
-            row_step_color_levels=int(scene_payload.row_step_color_levels),
-            col_step_color_levels=int(scene_payload.col_step_color_levels),
-            distinct_expected_color_level_count=len(set(int(value) for value in scene_payload.expected_grid_color_levels)),
-            plausible_rule_count=int(scene_payload.plausible_rule_count),
-            total_rule_support=int(scene_payload.total_rule_support),
-            violation_cell_index=int(scene_payload.violation_cell_index),
-            violation_level_delta=int(violation_level_delta),
-            max_violation_level_delta=max(1, len(scene_payload.color_levels) - 1),
-            scene_icon_instances=scene_payload.scene_icon_instances,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -1015,7 +998,6 @@ class IconsPatternGridColorViolationTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=QUERY_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1071,7 +1053,7 @@ class IconsPatternGridAttributePatternViolationTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "pattern"
+    scene_id = "pattern"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query_id, probabilities = _resolve_query_id(int(instance_seed), params)

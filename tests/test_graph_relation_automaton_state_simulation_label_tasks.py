@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.automaton_state_simulation_label import (
+from trace.tasks.graph.automaton.state_after_input_label import (
     GraphRelationAutomatonStateSimulationLabelTask,
 )
 from tests.helpers import read_jsonl
@@ -178,8 +178,8 @@ def test_graph_relation_automaton_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["task_group"] == "relation" for record in train_records)
     assert all(record["scene_id"] == "automaton" for record in train_records)
+    assert all("scene_id" not in record for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_graph__automaton__state_after_input_label"]) == 4

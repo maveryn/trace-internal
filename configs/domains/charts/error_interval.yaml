@@ -6,21 +6,10 @@ generation:
     reference_value_max: 62
     reference_answer_count_min: 1
     reference_answer_count_max: 5
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
-    query_id_weights:
-      contains_reference_count: 1.0
-      entirely_above_reference_count: 1.0
-      entirely_below_reference_count: 1.0
-      widest_interval_label: 1.0
-      narrowest_interval_label: 1.0
-      second_widest_interval_label: 1.0
-      second_narrowest_interval_label: 1.0
     scene_variant_weights:
       horizontal_forest: 1.0
       vertical_dot_whisker: 1.0
       bar_with_error: 1.0
-
 rendering:
   shared:
     canvas_width: 1320
@@ -101,28 +90,8 @@ rendering:
     text_stroke_rgb_options:
       - [255, 255, 255]
       - [252, 254, 255]
-
 prompt:
   shared:
-    bundle_id: charts_error_interval_v0
+    bundle_id: charts_error_interval_v1
     scene_key: error_interval_scene
     task_key: error_interval_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_horizontal_forest: a horizontal interval chart with labeled categories, point estimates, and lower-to-upper interval whiskers
-    object_description_vertical_dot_whisker: a vertical dot-and-whisker interval chart with labeled categories and printed interval endpoints
-    object_description_bar_with_error: a bar chart with error bars, labeled categories, and printed interval endpoints
-    annotation_hint: set "annotation" to an array of [x0, y0, x1, y1] boxes around the interval mark or marks used for the answer
-    answer_hint_count: set "answer" to the requested integer count
-    answer_hint_label: set "answer" to the requested category label as a string
-    json_example_reference_count: '{"annotation":[[220,260,520,292],[220,430,540,462]],"answer":2}'
-    json_example_relation_label: '{"annotation":[[320,250,590,286]],"answer":"Cedar"}'
-    json_example_answer_only_reference_count: '{"answer":2}'
-    json_example_answer_only_relation_label: '{"answer":"Cedar"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.36
-      reasoning_load: 0.44
-      scene_variant_load: 0.20

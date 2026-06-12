@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `solitaire`
+2. Scene: `solitaire`
 3. Scene id: `solitaire`
 4. Public task id: `task_games__solitaire__same_suit_run_length_value`
 5. Supported `query_id` values: `same_suit_descending_run_length`

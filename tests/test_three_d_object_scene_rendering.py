@@ -19,7 +19,7 @@ from trace.tasks.three_d.shared.object_resources import (
     scene_profile_ids,
 )
 from trace.tasks.three_d.shared.scene_schema import ThreeDPlacementSpec, ThreeDSceneStyleSpec
-from trace.tasks.three_d.spatial import camera_distance
+from trace.tasks.three_d.object_scene import camera_distance_extremum_label as camera_distance
 
 
 def _called_names_in_function(path: str, function_name: str) -> set[str]:

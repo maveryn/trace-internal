@@ -749,7 +749,6 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             execution = trace["execution_trace"]
             render = trace["render_spec"]
             render_map = trace["render_map"]
-            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
             supporting_ids = [str(value) for value in execution["supporting_item_ids"]]
 
             assert str(out.query_id) == str(query_id)
@@ -759,15 +758,9 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert str(render["layout"]) == "isometric_voxel_platforms_with_ladders"
-            assert out.annotation_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
             assert str(render_map["annotation_source"]) == str(execution["supporting_annotation_source"])
-            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
-            assert annotation_bboxes == [
-                [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
-                for item_id in supporting_ids
-            ]
 
             checkpoint_specs = [dict(item) for item in execution["checkpoints"]]
             route_checkpoint_labels = [str(value) for value in execution["route_checkpoint_sequence"]]
@@ -791,6 +784,36 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             ]
 
             if str(query_id) == "checkpoint_sequence_label":
+                annotation_bboxes_by_role = {
+                    str(role): [
+                        [float(value) for value in bbox]
+                        for bbox in bboxes
+                    ]
+                    for role, bboxes in out.annotation_gt.value.items()
+                }
+                route_ladder_ids = [
+                    str(ladder["ladder_id"])
+                    for ladder in execution["ladders"]
+                    if bool(ladder["on_goal_route"])
+                ]
+                expected_annotation = {
+                    "start": [[float(value) for value in render_map["item_bboxes_px"]["cube_start"]]],
+                    "route_checkpoints": [
+                        [float(value) for value in render_map["item_bboxes_px"][f"checkpoint_{label}"]]
+                        for label in route_checkpoint_labels
+                    ],
+                    "route_ladders": [
+                        [float(value) for value in render_map["item_bboxes_px"][ladder_id]]
+                        for ladder_id in route_ladder_ids
+                    ],
+                    "goal": [[float(value) for value in render_map["item_bboxes_px"]["cube_goal"]]],
+                }
+                assert out.annotation_gt.type == "keyed_bbox_set_map"
+                assert set(annotation_bboxes_by_role) == {"start", "route_checkpoints", "route_ladders", "goal"}
+                assert trace["projected_annotation"]["type"] == "keyed_bbox_set_map"
+                assert trace["projected_annotation"]["keyed_bbox_set_map"] == annotation_bboxes_by_role
+                assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == annotation_bboxes_by_role
+                assert annotation_bboxes_by_role == expected_annotation
                 assert out.answer_gt.type == "option_letter"
                 correct_options = [
                     str(option["option_label"])
@@ -798,7 +821,8 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
                     if bool(option["is_correct"])
                 ]
                 assert correct_options == [str(out.answer_gt.value)]
-                assert len(execution["option_specs"]) in {4, 5}
+                assert len(execution["option_specs"]) == 6
+                assert [str(option["option_label"]) for option in execution["option_specs"]] == list("ABCDEF")
                 for option in execution["option_specs"]:
                     assert set(str(item) for item in option["sequence_items"]).issubset(canonical_color_names)
                     assert str(option["sequence_text"]) == " > ".join(str(item) for item in option["sequence_items"])
@@ -806,23 +830,45 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
                 assert supporting_ids[-1] == "cube_goal"
                 for label in route_checkpoint_labels:
                     assert f"checkpoint_{label}" in supporting_ids
+                for bboxes in annotation_bboxes_by_role.values():
+                    for bbox in bboxes:
+                        x1, y1, x2, y2 = bbox
+                        assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
+                        assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
             elif str(query_id) == "unreachable_checkpoint_label":
+                annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
+                assert out.annotation_gt.type == "bbox_set"
+                assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+                assert annotation_bboxes == [
+                    [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
+                    for item_id in supporting_ids
+                ]
                 assert out.answer_gt.type == "string"
                 assert str(out.answer_gt.value) in unreachable_labels
                 assert str(out.answer_gt.value) in canonical_color_names
                 assert supporting_ids == [f"checkpoint_{out.answer_gt.value}"]
+                for bbox in annotation_bboxes:
+                    x1, y1, x2, y2 = bbox
+                    assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
+                    assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
             elif str(query_id) == "reachable_checkpoint_count":
+                annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
+                assert out.annotation_gt.type == "bbox_set"
+                assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+                assert annotation_bboxes == [
+                    [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
+                    for item_id in supporting_ids
+                ]
                 assert out.answer_gt.type == "integer"
                 assert int(out.answer_gt.value) == len(reachable_labels)
                 assert 2 <= int(out.answer_gt.value) <= 5
                 assert supporting_ids == [f"checkpoint_{label}" for label in reachable_labels]
+                for bbox in annotation_bboxes:
+                    x1, y1, x2, y2 = bbox
+                    assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
+                    assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
             else:
                 raise AssertionError(f"unhandled voxel-ladder query {query_id}")
-
-            for bbox in annotation_bboxes:
-                x1, y1, x2, y2 = bbox
-                assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
-                assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
 
 
 def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -> None:
@@ -830,13 +876,12 @@ def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -
         "checkpoint_sequence_label": (
             PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(),
             {
-                "annotation": [
-                    [128, 522, 206, 590],
-                    [318, 404, 390, 474],
-                    [472, 276, 544, 346],
-                    [592, 206, 626, 336],
-                    [664, 128, 736, 198],
-                ],
+                "annotation": {
+                    "start": [[128, 522, 206, 590]],
+                    "route_checkpoints": [[318, 404, 390, 474], [472, 276, 544, 346]],
+                    "route_ladders": [[592, 206, 626, 336]],
+                    "goal": [[664, 128, 736, 198]],
+                },
                 "answer": "B",
             },
             {"answer": "B"},

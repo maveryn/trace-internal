@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `polygon_angle_chase`
 3. Scene id: `polygon_angle_chase`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `single_transversal_chain`, `two_transversal_angle_sum`
@@ -13,7 +13,7 @@
 - `derive_geometry_metric(visible_parallel_line_angle_measurements, derivation_rule=parallel_transversal_angle_relations, output_role=angle_measure); scene=polygon_angle_chase; scope=parallel_line_angle_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `polygon_angle_chase`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,6 +23,6 @@ Prompt-facing annotation uses keyed pixel points at the target angle vertex and 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
+- Config: `configs/domains/geometry/polygon_angle_chase.yaml`
 - Prompt bundle: `prompts/geometry/measurement/geometry_polygon_angle_chase_v0.json`
-- Task module: `trace/tasks/geometry/measurement/polygon_angle_chase.py`
+- Task module: `trace/tasks/geometry/polygon_angle_chase/parallel_line_angle_value.py`

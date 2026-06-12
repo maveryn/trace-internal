@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.color_format import format_named_color_with_hex
@@ -199,7 +199,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -868,28 +868,6 @@ def _serialize_distance_icon(icon: _RenderedDistanceIcon) -> Dict[str, Any]:
     }
 
 
-def _build_complexity(*, scene_payload: _ScenePayload, render_params: Mapping[str, Any]) -> TaskComplexity:
-    rank_load = {
-        "closest_to_named_reference_label": 0.35,
-        "second_closest_to_named_reference_label": 0.75,
-        "farthest_from_named_reference_label": 0.45,
-    }.get(str(scene_payload.query_id), 0.50)
-    clutter = min(1.0, float(len(scene_payload.candidate_icons) + len(scene_payload.distractor_icons)) / 14.0)
-    distance_gap = float(render_params["distance_rank_margin_px"])
-    ambiguity = max(0.0, min(1.0, 1.0 - (distance_gap / 60.0)))
-    score = (0.45 * rank_load) + (0.30 * clutter) + (0.25 * ambiguity)
-    return TaskComplexity(
-        complexity_score=max(0.0, min(1.0, float(score))),
-        complexity_components={
-            "spatial_reasoning": float(rank_load),
-            "visual_scan": float(clutter),
-            "ambiguity": float(ambiguity),
-            "clutter": float(clutter),
-            "candidate_count": int(len(scene_payload.candidate_icons)),
-            "distractor_count": int(len(scene_payload.distractor_icons)),
-            "distance_rank_margin_px": float(distance_gap),
-        },
-    )
 
 
 @register_task
@@ -898,7 +876,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic named-reference distance-rank instance."""
@@ -968,7 +946,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1124,7 +1102,6 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scene_payload=scene_payload, render_params=render_params),
             task_versions=default_task_versions(),
             query_id=str(PUBLIC_QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

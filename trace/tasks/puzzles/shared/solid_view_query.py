@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -24,11 +24,6 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from ...geometry.shared.graph_paper import resolve_square_canvas_size
 from ...geometry.shared.render_variation import sample_int_render_param
 from ...geometry.shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
-from .complexity import (
-    build_puzzle_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-)
 from .solid_view_scene import (
     FRONT_VIEW_QUERY,
     RIGHT_VIEW_QUERY,
@@ -79,8 +74,8 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "cube_stack": SUPPORTED_QUERY_IDS,
 }
 
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="spatial")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="spatial")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.0)
 
 
 @dataclass(frozen=True)
@@ -144,17 +139,11 @@ class _RenderedSolidScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = {
-    "visual_scan": 0.24,
-    "projection_reasoning": 0.46,
-    "ambiguity": 0.20,
-    "output_burden": 0.10,
-}
 _TARGET_COUNT_BALANCE_SALT = 48518
 
 
@@ -778,38 +767,6 @@ def _solid_view_reasoning_score(*, query_id: str, max_height: int) -> float:
     return clamp_unit_interval(float(base_by_query[normalized_query]) + float(height_bonus))
 
 
-def _build_solid_view_complexity(
-    *,
-    query_id: str,
-    cube_count: int,
-    max_height: int,
-    target_count: int,
-    annotation_count: int,
-):
-    """Build one normalized complexity payload for cube-stack view counting."""
-
-    visual_scan = clamp_unit_interval(
-        (0.65 * normalize_int_with_bounds(int(cube_count), [4, 8]))
-        + (0.35 * normalize_int_with_bounds(int(max_height), [2, 3]))
-    )
-    ambiguity = clamp_unit_interval(
-        (0.50 * normalize_int_with_bounds(int(target_count), [2, 7]))
-        + (0.30 * normalize_int_with_bounds(int(cube_count - target_count), [0, 5]))
-        + (0.12 if str(query_id) != TOP_VIEW_QUERY else 0.0)
-    )
-    output_burden = normalize_int_with_bounds(int(annotation_count), [2, 7])
-    return build_puzzle_complexity(
-        weights=_COMPLEXITY_WEIGHTS,
-        components={
-            "visual_scan": float(visual_scan),
-            "projection_reasoning": _solid_view_reasoning_score(
-                query_id=str(query_id),
-                max_height=int(max_height),
-            ),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 @dataclass(frozen=True)
@@ -1173,30 +1130,6 @@ def _render_projection_match_scene(
     )
 
 
-def _build_projection_match_complexity(
-    *,
-    query_id: str,
-    cube_count: int,
-    max_height: int,
-    option_count: int,
-    target_count: int,
-):
-    visual_scan = clamp_unit_interval(
-        (0.60 * normalize_int_with_bounds(int(cube_count), [4, 9]))
-        + (0.25 * normalize_int_with_bounds(int(option_count), [4, 6]))
-        + (0.15 * normalize_int_with_bounds(int(max_height), [2, 3]))
-    )
-    reasoning_load = clamp_unit_interval(_solid_view_reasoning_score(query_id=str(query_id), max_height=int(max_height)) + 0.08)
-    ambiguity = clamp_unit_interval(normalize_int_with_bounds(int(target_count), [3, 7]))
-    return build_puzzle_complexity(
-        weights=_COMPLEXITY_WEIGHTS,
-        components={
-            "visual_scan": float(visual_scan),
-            "projection_reasoning": float(reasoning_load),
-            "ambiguity": float(ambiguity),
-            "output_burden": 0.20,
-        },
-    )
 
 
 @dataclass(frozen=True)
@@ -1621,28 +1554,6 @@ def _render_candidate_stack_from_views_scene(
     )
 
 
-def _build_projection_consistency_complexity(
-    *,
-    consistency_query: str,
-    cube_count: int,
-    max_height: int,
-    option_count: int,
-):
-    visual_scan = clamp_unit_interval(
-        (0.54 * normalize_int_with_bounds(int(cube_count), [4, 9]))
-        + (0.28 * normalize_int_with_bounds(int(option_count), [3, 5]))
-        + (0.18 * normalize_int_with_bounds(int(max_height), [2, 3]))
-    )
-    query_bonus = 0.18 if str(consistency_query) == "candidate_stack_from_views_label" else 0.08
-    return build_puzzle_complexity(
-        weights=_COMPLEXITY_WEIGHTS,
-        components={
-            "visual_scan": float(visual_scan),
-            "projection_reasoning": clamp_unit_interval(0.58 + float(query_bonus)),
-            "ambiguity": clamp_unit_interval(0.42 + (0.10 * normalize_int_with_bounds(int(option_count), [3, 5]))),
-            "output_burden": 0.20,
-        },
-    )
 
 
 class SolidViewCountGenerator:
@@ -1650,7 +1561,7 @@ class SolidViewCountGenerator:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query = _resolve_axes(int(instance_seed), params=params)
@@ -1774,7 +1685,7 @@ class SolidViewCountGenerator:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1879,16 +1790,8 @@ class SolidViewCountGenerator:
             },
         }
 
-        complexity = _build_solid_view_complexity(
-            query_id=str(query.query_id),
-            cube_count=int(rendered_scene.stack.cube_count),
-            max_height=int(rendered_scene.stack.max_height),
-            target_count=int(query.target_count),
-            annotation_count=len(rendered_scene.annotation_bboxes),
-        )
         trace_payload["answer_gt"] = answer_gt.to_dict()
         trace_payload["annotation_gt"] = annotation_gt.to_dict()
-        trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1897,7 +1800,6 @@ class SolidViewCountGenerator:
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query.public_query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1909,7 +1811,7 @@ class SolidViewProjectionMatchGenerator:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query = _resolve_projection_match_axes(int(instance_seed), params=params)
@@ -2050,7 +1952,7 @@ class SolidViewProjectionMatchGenerator:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -2154,16 +2056,8 @@ class SolidViewProjectionMatchGenerator:
                 "selected_option_bbox": list(rendered_scene.annotation_bboxes[0]),
             },
         }
-        complexity = _build_projection_match_complexity(
-            query_id=str(query.query_id),
-            cube_count=int(rendered_scene.stack.cube_count),
-            max_height=int(rendered_scene.stack.max_height),
-            option_count=len(rendered_scene.option_panel_bboxes),
-            target_count=int(query.target_count),
-        )
         trace_payload["answer_gt"] = answer_gt.to_dict()
         trace_payload["annotation_gt"] = annotation_gt.to_dict()
-        trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -2172,7 +2066,6 @@ class SolidViewProjectionMatchGenerator:
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=PROJECTION_MATCH_QUERY,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -2184,7 +2077,7 @@ class SolidViewProjectionConsistencyGenerator:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         consistency_query, consistency_query_probabilities = _resolve_projection_consistency_query(
@@ -2342,7 +2235,7 @@ class SolidViewProjectionConsistencyGenerator:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -2430,15 +2323,8 @@ class SolidViewProjectionConsistencyGenerator:
                 "selected_option_bbox": list(rendered_scene.annotation_bboxes[0]),
             },
         }
-        complexity = _build_projection_consistency_complexity(
-            consistency_query=str(rendered_scene.consistency_query),
-            cube_count=int(rendered_scene.reference_stack.cube_count),
-            max_height=int(rendered_scene.reference_stack.max_height),
-            option_count=int(rendered_scene.option_count),
-        )
         trace_payload["answer_gt"] = answer_gt.to_dict()
         trace_payload["annotation_gt"] = annotation_gt.to_dict()
-        trace_payload["complexity"] = complexity.to_dict()
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -2447,7 +2333,6 @@ class SolidViewProjectionConsistencyGenerator:
             image=out_image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=PROJECTION_CONSISTENCY_QUERY,
             prompt_variants=dict(prompt_artifacts.prompt_variants),

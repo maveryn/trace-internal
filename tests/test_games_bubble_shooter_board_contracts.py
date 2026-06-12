@@ -8,19 +8,16 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.bubble_shooter.board_tasks import (
-    GamesBubbleShooterBoardTask,
-    GamesBubbleShooterDropCountTask,
-    GamesBubbleShooterPopColorLabelTask,
-    GamesBubbleShooterPopCountTask,
-)
-from trace.tasks.games.shared.bubble_shooter_common import (
+from trace.tasks.games.bubble_shooter.drop_count import GamesBubbleShooterDropCountTask
+from trace.tasks.games.bubble_shooter.pop_color_label import GamesBubbleShooterPopColorLabelTask
+from trace.tasks.games.bubble_shooter.pop_count import GamesBubbleShooterPopCountTask
+from trace.tasks.games.bubble_shooter.shared.common import (
     BUBBLE_OPTION_LABELS,
     bubble_entity_id,
     compute_shot_outcome,
     sorted_coords,
 )
-from trace.tasks.games.shared.bubble_shooter_common import landing_slot_entity_id
+from trace.tasks.games.bubble_shooter.shared.common import landing_slot_entity_id
 from tests.helpers import read_jsonl
 
 
@@ -39,21 +36,21 @@ def _board_from_trace(execution: dict) -> tuple[tuple[str | None, ...], ...]:
     (
         (
             GamesBubbleShooterPopCountTask,
-            {"query_id": "pop_count", "target_answer": 5, "row_count": 8, "col_count": 9},
-            "pop_count",
+            {"target_answer": 5, "row_count": 7, "col_count": 9},
+            "default",
             "integer",
         ),
         (
             GamesBubbleShooterDropCountTask,
-            {"query_id": "drop_count", "target_answer": 4, "row_count": 8, "col_count": 9},
-            "drop_count",
+            {"target_answer": 4, "row_count": 7, "col_count": 9},
+            "default",
             "integer",
         ),
-        (GamesBubbleShooterPopColorLabelTask, {"target_label": "E", "option_count": 6}, "pop_color_label", "string"),
+        (GamesBubbleShooterPopColorLabelTask, {"target_label": "E", "option_count": 6}, "default", "string"),
     ),
 )
 def test_games_bubble_shooter_public_tasks_emit_expected_contract(
-    task_cls: type[GamesBubbleShooterBoardTask],
+    task_cls: type[GamesBubbleShooterPopCountTask | GamesBubbleShooterDropCountTask | GamesBubbleShooterPopColorLabelTask],
     params: dict[str, int | str],
     expected_query: str,
     answer_type: str,
@@ -91,7 +88,7 @@ def test_games_bubble_shooter_public_tasks_emit_expected_contract(
 def test_games_bubble_shooter_pop_count_matches_computed_outcome() -> None:
     out = GamesBubbleShooterPopCountTask().generate(
         102010,
-        params={"query_id": "pop_count", "target_answer": 5, "row_count": 9, "col_count": 10},
+        params={"target_answer": 5, "row_count": 7, "col_count": 10},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -111,19 +108,19 @@ def test_games_bubble_shooter_pop_count_matches_computed_outcome() -> None:
 def test_games_bubble_shooter_pop_count_prompt_excludes_non_board_bubbles() -> None:
     out = GamesBubbleShooterPopCountTask().generate(
         102012,
-        params={"query_id": "pop_count", "target_answer": 3, "row_count": 8, "col_count": 9},
+        params={"target_answer": 3, "row_count": 7, "col_count": 9},
         max_attempts=256,
     )
     prompt = str(out.prompt).lower()
 
-    assert "do not include the marked landing target" in prompt
+    assert "do not count the shot bubble" in prompt
     assert "placed shot bubble" not in prompt
 
 
 def test_games_bubble_shooter_pop_count_allows_zero_pop_case() -> None:
     out = GamesBubbleShooterPopCountTask().generate(
         102015,
-        params={"query_id": "pop_count", "target_answer": 0, "row_count": 8, "col_count": 9},
+        params={"target_answer": 0, "row_count": 7, "col_count": 9},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -139,7 +136,7 @@ def test_games_bubble_shooter_pop_count_allows_zero_pop_case() -> None:
 def test_games_bubble_shooter_drop_count_matches_computed_outcome() -> None:
     out = GamesBubbleShooterDropCountTask().generate(
         102020,
-        params={"query_id": "drop_count", "target_answer": 4, "row_count": 9, "col_count": 10},
+        params={"target_answer": 4, "row_count": 7, "col_count": 10},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -154,7 +151,7 @@ def test_games_bubble_shooter_drop_count_matches_computed_outcome() -> None:
 def test_games_bubble_shooter_drop_count_allows_zero_drop_case() -> None:
     out = GamesBubbleShooterDropCountTask().generate(
         102025,
-        params={"query_id": "drop_count", "target_answer": 0, "row_count": 8, "col_count": 9},
+        params={"target_answer": 0, "row_count": 7, "col_count": 9},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -200,13 +197,22 @@ def test_games_bubble_shooter_pop_color_prompt_excludes_non_board_bubbles() -> N
     )
     prompt = str(out.prompt).lower()
 
-    assert "do not include the marked landing target" in prompt
     assert "placed shot bubble" not in prompt
     assert "selected color option" not in prompt
 
 
-def test_games_bubble_shooter_query_cycle_covers_support() -> None:
-    task = GamesBubbleShooterBoardTask()
+@pytest.mark.parametrize(
+    "task_cls",
+    (GamesBubbleShooterPopCountTask, GamesBubbleShooterDropCountTask, GamesBubbleShooterPopColorLabelTask),
+)
+def test_games_bubble_shooter_fixed_tasks_reject_unsupported_query_id(task_cls) -> None:
+    task = task_cls()
+    assert task.generate(102090, params={"query_id": "default"}, max_attempts=256).query_id == "default"
+    with pytest.raises(ValueError, match="unsupported query_id"):
+        task.generate(102090, params={"query_id": "pop_count"}, max_attempts=256)
+
+
+def test_games_bubble_shooter_task_axes_cover_support() -> None:
     queries: set[str] = set()
     rows: set[int] = set()
     cols: set[int] = set()
@@ -214,21 +220,22 @@ def test_games_bubble_shooter_query_cycle_covers_support() -> None:
     counts: set[int] = set()
 
     for sampling_index in range(180):
-        out = task.generate(
-            102100 + sampling_index,
-            params={},
-            max_attempts=256,
-        )
-        execution = out.trace_payload["execution_trace"]
-        queries.add(str(out.query_id))
-        rows.add(int(execution["row_count"]))
-        cols.add(int(execution["col_count"]))
-        if out.answer_gt.type == "string":
-            labels.add(str(out.answer_gt.value))
-        else:
-            counts.add(int(out.answer_gt.value))
+        for task_cls in (GamesBubbleShooterPopCountTask, GamesBubbleShooterDropCountTask, GamesBubbleShooterPopColorLabelTask):
+            out = task_cls().generate(
+                102100 + sampling_index,
+                params={},
+                max_attempts=256,
+            )
+            execution = out.trace_payload["execution_trace"]
+            queries.add(str(out.query_id))
+            rows.add(int(execution["row_count"]))
+            cols.add(int(execution["col_count"]))
+            if out.answer_gt.type == "string":
+                labels.add(str(out.answer_gt.value))
+            else:
+                counts.add(int(out.answer_gt.value))
 
-    assert queries == {"pop_count", "drop_count", "pop_color_label"}
+    assert queries == {"default"}
     assert rows <= {7, 8, 9}
     assert 7 in rows
     assert cols == {8, 9, 10}
@@ -255,4 +262,4 @@ def test_games_bubble_shooter_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "bubble_shooter" for row in rows)
+    assert all(row.get("scene_id") == "bubble_shooter" for row in rows)

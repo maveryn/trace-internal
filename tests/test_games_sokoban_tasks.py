@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.games.sokoban.grid_tasks import (
-    GamesSokobanBoxTargetManhattanRankLabelTask,
+from trace.tasks.games.sokoban.box_target_manhattan_rank_label import GamesSokobanBoxTargetManhattanRankLabelTask
+from trace.tasks.games.sokoban.nearest_counterpart_label import (
     GamesSokobanNearestCounterpartLabelTask,
-    GamesSokobanPathValiditySequenceLabelTask,
-    GamesSokobanShortestPathSequenceLabelTask,
 )
+from trace.tasks.games.sokoban.path_validity_sequence_label import GamesSokobanPathValiditySequenceLabelTask
+from trace.tasks.games.sokoban.shortest_path_sequence_label import GamesSokobanShortestPathSequenceLabelTask
 
 
 TASKS = (
@@ -42,7 +42,7 @@ def test_sokoban_tasks_are_registered() -> None:
         assert TASK_REGISTRY[task_id] is task_cls
         task = task_cls()
         assert task.domain == "games"
-        assert task.task_group == "sokoban"
+        assert task.scene_id == "sokoban"
 
 
 def test_sokoban_tasks_emit_public_contracts() -> None:

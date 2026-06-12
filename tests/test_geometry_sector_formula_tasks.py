@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.sector_formula import (
+from trace.tasks.geometry.sector.angle_from_sector_measure_angle_from_arc_length_and_radius import GeometrySectorAngleFromArcLengthAndRadiusTask
+from trace.tasks.geometry.sector.angle_from_sector_measure_angle_from_area_and_radius import GeometrySectorAngleFromAreaAndRadiusTask
+from trace.tasks.geometry.sector.arc_length_value_arc_length_from_area_and_radius import (
     SCENE_ID,
-    GeometrySectorAngleFromArcLengthAndRadiusTask,
-    GeometrySectorAngleFromAreaAndRadiusTask,
     GeometrySectorArcLengthFromAreaAndRadiusTask,
-    GeometrySectorArcLengthFromRadiusAndSupplementAngleTask,
-    GeometrySectorAreaFromArcLengthAndRadiusTask,
-    GeometrySectorAreaFromRadiusAndComplementAngleTask,
-    GeometrySectorRelatedComplementAngleFromArcLengthTask,
-    GeometrySectorRelatedRemainingAngleFromSectorMeasureTask,
-    GeometrySectorRelatedSupplementAngleFromAreaTask,
 )
+from trace.tasks.geometry.sector.arc_length_value_arc_length_from_radius_and_supplement_angle import GeometrySectorArcLengthFromRadiusAndSupplementAngleTask
+from trace.tasks.geometry.sector.related_angle_from_sector_measure_complement_angle_from_arc_length import GeometrySectorRelatedComplementAngleFromArcLengthTask
+from trace.tasks.geometry.sector.related_angle_from_sector_measure_remaining_angle_from_sector_measure import GeometrySectorRelatedRemainingAngleFromSectorMeasureTask
+from trace.tasks.geometry.sector.related_angle_from_sector_measure_supplement_angle_from_area import GeometrySectorRelatedSupplementAngleFromAreaTask
+from trace.tasks.geometry.sector.sector_area_value_area_from_arc_length_and_radius import GeometrySectorAreaFromArcLengthAndRadiusTask
+from trace.tasks.geometry.sector.sector_area_value_area_from_radius_and_complement_angle import GeometrySectorAreaFromRadiusAndComplementAngleTask
 
 
 TASK_CLASSES = (

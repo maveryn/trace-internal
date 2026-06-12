@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -22,14 +22,13 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__circuit_state_change__bulb_brightness_change_label"
-FAMILY_ID = "physics_circuits_state_change_bulb_brightness_family"
+TASK_NAMESPACE = "physics_circuits_state_change_bulb_brightness"
 SCENE_ID = "circuit_state_change"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "brightens_after_switch_change",
@@ -48,12 +47,12 @@ BULB_ROLES: Tuple[str, ...] = (
 DEFAULT_RESISTANCE_OPTIONS: Tuple[int, ...] = (2, 3, 4, 5, 6, 8, 10, 12)
 EPS = 1e-9
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -119,7 +118,7 @@ def _probability_map(values: Sequence[str], selected: str | None = None) -> Dict
 
 def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_QUERY_IDS,
@@ -136,7 +135,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -162,13 +161,13 @@ def _resolve_switch_action(instance_seed: int, params: Mapping[str, Any], *, que
         return str(explicit), _probability_map(allowed, selected=str(explicit))
     if len(allowed) == 1:
         return str(allowed[0]), _probability_map(allowed, selected=str(allowed[0]))
-    index = int(hash64(int(instance_seed), f"{FAMILY_ID}.switch_action", 0) % len(allowed))
+    index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.switch_action", 0) % len(allowed))
     return str(allowed[index]), _probability_map(allowed)
 
 
 def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{FAMILY_ID}.accent_color_name"),
+        spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.accent_color_name"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_PHYSICS_COLOR_NAMES,
@@ -185,7 +184,7 @@ def _resolve_accent_color(instance_seed: int, params: Mapping[str, Any]) -> Tupl
         balance_flag_key="balanced_accent_color_name_sampling",
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
-        sampling_namespace=f"{FAMILY_ID}.accent_color_name",
+        sampling_namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -196,7 +195,7 @@ def _resolve_target_label(instance_seed: int, params: Mapping[str, Any]) -> Tupl
         if explicit not in set(BULB_LABELS):
             raise ValueError(f"target label must be one of {BULB_LABELS}")
         return str(explicit), _probability_map(BULB_LABELS, selected=str(explicit))
-    index = int(hash64(int(instance_seed), f"{FAMILY_ID}.target_label", 0) % len(BULB_LABELS))
+    index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.target_label", 0) % len(BULB_LABELS))
     return str(BULB_LABELS[index]), _probability_map(BULB_LABELS)
 
 
@@ -227,7 +226,7 @@ def _resolve_resistances(instance_seed: int, params: Mapping[str, Any]) -> Dict[
             raise ValueError("resistance_values must be positive")
         return dict(values)
     options = list(_resistance_options(params))
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.resistances")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.resistances")
     sampled = rng.sample(options, k=len(BULB_ROLES))
     return {str(role): int(value) for role, value in zip(BULB_ROLES, sampled)}
 
@@ -306,7 +305,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Scenario:
     label_by_role = {str(answer_role): str(target_label)}
     remaining_roles = [role for role in BULB_ROLES if str(role) != str(answer_role)]
     remaining_labels = [label for label in BULB_LABELS if str(label) != str(target_label)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.label_assignment")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.label_assignment")
     rng.shuffle(remaining_roles)
     rng.shuffle(remaining_labels)
     for role, label in zip(remaining_roles, remaining_labels):
@@ -680,17 +679,6 @@ def _build_prompt_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(scenario: _Scenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": 0.42,
-            "state_change_reasoning": 0.46,
-            "ambiguity": 0.12,
-            "output_burden": 0.10,
-        },
-    )
 
 
 @register_task
@@ -699,7 +687,7 @@ class PhysicsCircuitStateChangeBulbBrightnessLabelTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -711,7 +699,6 @@ class PhysicsCircuitStateChangeBulbBrightnessLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -719,7 +706,7 @@ class PhysicsCircuitStateChangeBulbBrightnessLabelTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -756,7 +743,7 @@ class PhysicsCircuitStateChangeBulbBrightnessLabelTask:
         json_example, json_example_answer_only = _build_prompt_examples()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -867,7 +854,6 @@ class PhysicsCircuitStateChangeBulbBrightnessLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scenario),
             task_versions=default_task_versions(),
             query_id=str(scenario.query_id),
             scene_id=SCENE_ID,

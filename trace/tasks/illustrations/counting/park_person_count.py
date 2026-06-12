@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Tuple, Type
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ...base import Task, TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
@@ -29,7 +29,7 @@ _BRANCH_BY_QUERY: Dict[str, Type[Task]] = {
     **{query_id: ParkPersonEquipmentUseBranch for query_id in EQUIPMENT_USAGE_QUERY_IDS},
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
 def _public_generation_defaults(public_task_id: str) -> Mapping[str, Any]:
     gen_defaults, _render_defaults, _prompt_defaults = split_generation_rendering_prompt_defaults(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -71,7 +71,7 @@ class IllustrationsCountingParkActivityPersonCountTask:
 
     task_id = ACTIVITY_TASK_ID
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -91,7 +91,7 @@ class IllustrationsCountingParkAreaPersonCountTask:
 
     task_id = AREA_TASK_ID
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -111,7 +111,7 @@ class IllustrationsCountingParkEquipmentUsePersonCountTask:
 
     task_id = EQUIPMENT_USE_TASK_ID
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

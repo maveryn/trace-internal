@@ -24,6 +24,7 @@ from PIL import ImageOps as PILImageOps
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
+from trace.core.scene_package_migration import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.task_review_paths import task_review_dir
 from trace.core.taxonomy import resolve_task_taxonomy
@@ -33,7 +34,7 @@ from trace.tasks import TASK_REGISTRY, create_task
 _FIELD_LABELS: Dict[str, str] = {
     "domain": "domain",
     "scene_id": "scene_id",
-    "task_group": "task_group",
+    "scene_id": "scene_id",
     "task": "task",
     "sample_index": "sample_index",
     "instance_seed": "instance_seed",
@@ -58,7 +59,7 @@ _TASK_SHEET_FIELDS: List[str] = [
     "ground_truth_answer_and_annotation",
     "domain",
     "scene_id",
-    "task_group",
+    "scene_id",
     "sample_index",
     "instance_seed",
     "image_path",
@@ -70,7 +71,7 @@ _TASK_SHEET_FIELDS: List[str] = [
 _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "domain": 12,
     "scene_id": 18,
-    "task_group": 16,
+    "scene_id": 16,
     "task": 24,
     "sample_index": 12,
     "instance_seed": 20,
@@ -138,6 +139,14 @@ def _task_review_dir(*, out_root: Path, task: Any) -> Path:
         task_id=str(task.task_id),
         task_obj=task,
     )
+
+
+def _registered_scene_id(task_id: str, task: Any) -> str | None:
+    """Return legacy scene routing for unmigrated tasks."""
+
+    if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
+        return None
+    return str(getattr(task, "scene_id", ""))
 
 
 def _json_cell(value: Any) -> str:
@@ -771,10 +780,11 @@ def _generate_samples_for_task(
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """Generate image/data sample artifacts for one task id."""
     task = create_task(task_id)
+    scene_id = _registered_scene_id(str(task.task_id), task)
     taxonomy = resolve_task_taxonomy(
         str(task.task_id),
         source_domain=str(getattr(task, "domain", "")),
-        source_task_group=str(getattr(task, "task_group", "")),
+        source_scene_id=str(scene_id or ""),
     )
     task_dir = _task_review_dir(out_root=out_root, task=task)
     image_dir = task_dir / "images"
@@ -825,7 +835,6 @@ def _generate_samples_for_task(
         payload = {
             "domain": str(taxonomy.domain),
             "scene_id": str(taxonomy.scene_id),
-            "task_group": task.task_group,
             "task": task.task_id,
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
@@ -836,7 +845,6 @@ def _generate_samples_for_task(
             "prompt_variants": prompt_variants,
             "answer_gt": output.answer_gt.to_dict(),
             "annotation_gt": output.annotation_gt.to_dict(),
-            "complexity": output.complexity.to_dict(),
             "image": {
                 "path": rel_image_path,
                 "format": image_format,
@@ -844,6 +852,8 @@ def _generate_samples_for_task(
             "versions": dict(output.task_versions),
             "trace_payload": trace_payload,
         }
+        if scene_id is not None:
+            payload["scene_id"] = str(scene_id)
         write_json_file(data_path, payload)
 
         distribution_hints = _extract_query_id_distribution_hints(trace_payload)
@@ -859,36 +869,36 @@ def _generate_samples_for_task(
         answer_only_ground_truth = {
             "answer": output.answer_gt.value,
         }
-        rows.append(
-            {
-                "domain": str(taxonomy.domain),
-                "scene_id": str(taxonomy.scene_id),
-                "task_group": task.task_group,
-                "task": task.task_id,
-                "sample_index": int(accepted),
-                "instance_seed": int(instance_seed),
-                "query_id": str(getattr(output, "query_id", "default")),
-                "image_path": rel_image_path,
-                "data_path": rel_data_path,
-                "prompt": prompt_answer_and_annotation,
-                "prompt_answer": prompt_answer,
-                "prompt_answer_only": prompt_answer,
-                "prompt_answer_and_annotation": prompt_answer_and_annotation,
-                "ground_truth_answer": answer_only_ground_truth,
-                "ground_truth_answer_and_annotation": canonical_answer,
-                "answer": canonical_answer,
-                "answer_type": output.answer_gt.type,
-                "answer_value": output.answer_gt.value,
-                "annotation_type": output.annotation_gt.type,
-                "answer_annotation": output.annotation_gt.value,
-                "_overlay_annotation_type": overlay_annotation_type,
-                "_overlay_annotation_value": overlay_annotation_value,
-                "_query_id_probabilities": dict(distribution_hints.get("query_id_probabilities", {})),
-                "_source_kind": str(distribution_hints.get("source_kind", "")),
-                "_source_kind_probabilities": dict(distribution_hints.get("source_kind_probabilities", {})),
-                "_answer_option_labels": list(distribution_hints.get("answer_option_labels", [])),
-            }
-        )
+        row = {
+            "domain": str(taxonomy.domain),
+            "scene_id": str(taxonomy.scene_id),
+            "task": task.task_id,
+            "sample_index": int(accepted),
+            "instance_seed": int(instance_seed),
+            "query_id": str(getattr(output, "query_id", "default")),
+            "image_path": rel_image_path,
+            "data_path": rel_data_path,
+            "prompt": prompt_answer_and_annotation,
+            "prompt_answer": prompt_answer,
+            "prompt_answer_only": prompt_answer,
+            "prompt_answer_and_annotation": prompt_answer_and_annotation,
+            "ground_truth_answer": answer_only_ground_truth,
+            "ground_truth_answer_and_annotation": canonical_answer,
+            "answer": canonical_answer,
+            "answer_type": output.answer_gt.type,
+            "answer_value": output.answer_gt.value,
+            "annotation_type": output.annotation_gt.type,
+            "answer_annotation": output.annotation_gt.value,
+            "_overlay_annotation_type": overlay_annotation_type,
+            "_overlay_annotation_value": overlay_annotation_value,
+            "_query_id_probabilities": dict(distribution_hints.get("query_id_probabilities", {})),
+            "_source_kind": str(distribution_hints.get("source_kind", "")),
+            "_source_kind_probabilities": dict(distribution_hints.get("source_kind_probabilities", {})),
+            "_answer_option_labels": list(distribution_hints.get("answer_option_labels", [])),
+        }
+        if scene_id is not None:
+            row["scene_id"] = str(scene_id)
+        rows.append(row)
         accepted += 1
         accepted_by_query_id[str(getattr(output, "query_id", "default"))] += 1
 
@@ -907,7 +917,6 @@ def _generate_samples_for_task(
     summary = {
         "domain": str(taxonomy.domain),
         "scene_id": str(taxonomy.scene_id),
-        "task_group": task.task_group,
         "task": task.task_id,
         "requested_samples": int(requested_samples),
         "accepted_samples": int(accepted),
@@ -923,6 +932,8 @@ def _generate_samples_for_task(
         },
         "answer_distribution": dict(distribution_report),
     }
+    if scene_id is not None:
+        summary["scene_id"] = str(scene_id)
     write_json_file(task_dir / "summary.json", summary)
     write_json_file(task_dir / "distribution_report.json", distribution_report)
     return summary, rows

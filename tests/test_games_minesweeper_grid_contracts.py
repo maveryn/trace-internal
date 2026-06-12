@@ -9,14 +9,14 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.minesweeper.grid_tasks import (
+from trace.tasks.games.minesweeper.forced_cell_count import (
     GamesMinesweeperForcedCellCountTask,
     GamesMinesweeperGridTask,
     GamesMinesweeperRemainingMineCountValueTask,
     GamesMinesweeperRevealOutcomeLabelTask,
     GamesMinesweeperSatisfiedClueCountTask,
 )
-from trace.tasks.games.shared.minesweeper_common import (
+from trace.tasks.games.minesweeper.shared.common import (
     adjacent_flag_count,
     clue_number,
     forced_mine_supports,
@@ -33,6 +33,17 @@ def _coords(values: list[list[int]]) -> tuple[tuple[int, int], ...]:
     """Return trace coordinate lists as stable coordinate tuples."""
 
     return tuple((int(row), int(col)) for row, col in values)
+
+
+def _bbox_row_counts(bboxes: dict[str, list[float]], *, tolerance_px: float = 4.0) -> tuple[int, ...]:
+    centers = sorted((float(bbox[1]) + float(bbox[3])) / 2.0 for bbox in bboxes.values())
+    rows: list[list[float]] = []
+    for center_y in centers:
+        if rows and abs(float(rows[-1][0]) - center_y) <= float(tolerance_px):
+            rows[-1].append(center_y)
+        else:
+            rows.append([center_y])
+    return tuple(len(row) for row in rows)
 
 
 @pytest.mark.parametrize(
@@ -327,6 +338,18 @@ def test_games_minesweeper_reveal_outcome_matches_marked_hidden_cell(target_answ
         assert actual_count == expected_count
 
 
+def test_games_minesweeper_reveal_outcome_lays_out_four_options_as_two_by_two() -> None:
+    out = GamesMinesweeperRevealOutcomeLabelTask().generate(
+        51270,
+        params={"target_answer": 0, "scene_variant": "mixed_grid", "board_size": 6, "option_count": 4},
+        max_attempts=256,
+    )
+    option_bboxes = out.trace_payload["render_map"]["reveal_outcome_option_bboxes_px"]
+
+    assert set(option_bboxes) == {"A", "B", "C", "D"}
+    assert _bbox_row_counts(option_bboxes) == (2, 2)
+
+
 def test_games_minesweeper_grid_query_cycle_covers_answer_scene_status_board_and_style_support() -> None:
     task = GamesMinesweeperGridTask()
     answers_by_query: dict[str, set[int | str]] = {
@@ -450,7 +473,7 @@ def test_games_minesweeper_grid_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "minesweeper" for record in train_records)
+    assert all(record.get("scene_id") == "minesweeper" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__minesweeper__forced_cell_count"]) == 4

@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -26,7 +26,6 @@ from ...shared.prompt_variants import (
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.visual_style.information_scene import make_information_scene_background
-from ..shared.complexity import build_pages_complexity, normalize_int_with_bounds, resolve_pages_complexity_weights
 from ..shared.information_style import resolve_pages_information_style
 from ..shared.legible_text import darken_surface_for_light_text, draw_required_page_text
 from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
@@ -60,8 +59,8 @@ SCENE_VARIANTS: Tuple[str, ...] = (
 FIELD_LABELS: Tuple[str, ...] = ("Score", "Count", "Reach", "Rate", "Cost", "Rank")
 CONDITION_OPERATORS: Tuple[str, ...] = ("above", "below", "at_least")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", TASK_GROUP)
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group=TASK_GROUP, apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", TASK_GROUP)
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id=TASK_GROUP, apply_prob=0.5)
 _ACCENTS: Tuple[Tuple[int, int, int], ...] = (
     (47, 112, 184),
     (34, 144, 116),
@@ -148,7 +147,6 @@ class _HeroSceneContext:
     gen_defaults: Dict[str, Any]
     render_defaults: Dict[str, Any]
     prompt_defaults: Dict[str, Any]
-    complexity_weights: Dict[str, float]
     query_id_probabilities: Dict[str, float]
     scene_variant: str
     scene_variant_probabilities: Dict[str, float]
@@ -169,12 +167,6 @@ def _hero_task_defaults(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], D
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
-    )
-    return (
-        dict(gen_defaults),
-        dict(render_defaults),
-        dict(prompt_defaults),
-        resolve_pages_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=str(task_id)),
     )
 
 
@@ -767,7 +759,6 @@ def _resolve_scene_context(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _HeroSceneContext:
-    gen_defaults, render_defaults, prompt_defaults, complexity_weights = _hero_task_defaults(str(task_id))
     query_id, query_id_probabilities = _resolve_named_variant(
         task_id=str(task_id),
         gen_defaults=gen_defaults,
@@ -816,7 +807,6 @@ def _resolve_scene_context(
         instance_seed=int(instance_seed),
         params=render_defaults,
         scene_id=SCENE_ID,
-        task_group=TASK_GROUP,
         allow_dark=True,
     )
     background, background_meta = make_information_scene_background(
@@ -839,28 +829,6 @@ def _resolve_scene_context(
         instance_seed=int(instance_seed),
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
-    )
-    return _HeroSceneContext(
-        task_id=str(task_id),
-        query_id=str(query_id),
-        gen_defaults=dict(gen_defaults),
-        render_defaults=dict(render_defaults),
-        prompt_defaults=dict(prompt_defaults),
-        complexity_weights=dict(complexity_weights),
-        query_id_probabilities=dict(query_id_probabilities),
-        scene_variant=str(scene_variant),
-        scene_variant_probabilities=dict(scene_variant_probabilities),
-        callout_count=int(callout_count),
-        callout_count_support=tuple(callout_count_support),
-        callout_count_probabilities=dict(callout_count_probabilities),
-        field_count_support=tuple(field_count_support),
-        spec=spec,
-        rendered=rendered,
-        image=image,
-        render_params=render_params,
-        background_meta=dict(background_meta),
-        style_meta=dict(style_meta),
-        post_noise_meta=dict(post_noise_meta),
     )
 
 
@@ -1139,7 +1107,7 @@ def _render_prompt(*, ctx: _HeroSceneContext, slots: Mapping[str, Any], instance
     prompt_slots.update({str(key): value for key, value in slots.items()})
     prompt_selection = render_task_prompt_variants(
         domain="pages",
-        task_group=TASK_GROUP,
+        scene_id=TASK_GROUP,
         bundle_id=str(defaults["bundle_id"]),
         scene_key=str(defaults["scene_key"]),
         task_key=str(defaults["task_key"]),
@@ -1291,21 +1259,6 @@ def _trace_payload(
     }
 
 
-def _complexity(ctx: _HeroSceneContext, *, lookup_reasoning: float) -> Any:
-    return build_pages_complexity(
-        weights=ctx.complexity_weights,
-        components={
-            "lookup_reasoning": float(lookup_reasoning),
-            "visual_scan": normalize_int_with_bounds(int(ctx.callout_count), [min(ctx.callout_count_support), max(ctx.callout_count_support)]),
-            "layout_load": {
-                "radial_halo": 0.78,
-                "side_rail_poster": 0.64,
-                "diagonal_chain": 0.82,
-                "split_poster": 0.70,
-                "stacked_feature": 0.68,
-            }.get(str(ctx.scene_variant), 0.72),
-        },
-    )
 
 
 @register_task
@@ -1315,7 +1268,7 @@ class PagesHeroCalloutFieldValueLabelTask:
     task_id = CALLOUT_FIELD_VALUE_TASK_ID
     domain = "pages"
     scene_id = SCENE_ID
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1370,7 +1323,6 @@ class PagesHeroCalloutFieldValueLabelTask:
             image=ctx.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(ctx, lookup_reasoning=0.44),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(ctx.query_id),
@@ -1385,7 +1337,7 @@ class PagesHeroCalloutMetricExtremumLabelTask:
     task_id = CALLOUT_METRIC_EXTREMUM_TASK_ID
     domain = "pages"
     scene_id = SCENE_ID
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1442,7 +1394,6 @@ class PagesHeroCalloutMetricExtremumLabelTask:
             image=ctx.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(ctx, lookup_reasoning=0.56),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(ctx.query_id),
@@ -1457,7 +1408,7 @@ class PagesHeroCalloutConditionCountTask:
     task_id = CALLOUT_CONDITION_COUNT_TASK_ID
     domain = "pages"
     scene_id = SCENE_ID
-    task_group = TASK_GROUP
+    scene_id = TASK_GROUP
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1514,7 +1465,6 @@ class PagesHeroCalloutConditionCountTask:
             image=ctx.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(ctx, lookup_reasoning=0.50),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(ctx.query_id),

@@ -1,0 +1,28 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_geometry__volume_equivalence_conversion__equal_volume_option_label:
+      option_count_weights:
+        "4": 1.0
+        "6": 1.0
+rendering:
+  shared:
+    canvas_width: 860
+    canvas_height: 640
+    line_width: 3
+    label_font_size: 22
+    small_label_font_size: 17
+prompt:
+  shared:
+    bundle_id: geometry_volume_equivalence_conversion_v0
+    scene_key: volume_equivalence_conversion_scene
+    task_key: missing_dimension_value_query
+  task_overrides:
+    task_geometry__volume_equivalence_conversion__missing_dimension_value:
+      bundle_id: geometry_volume_equivalence_conversion_v0
+      scene_key: volume_equivalence_conversion_scene
+      task_key: missing_dimension_value_query
+    task_geometry__volume_equivalence_conversion__equal_volume_option_label:
+      bundle_id: geometry_volume_equivalence_conversion_v0
+      scene_key: volume_equivalence_conversion_scene
+      task_key: equal_volume_option_label_query

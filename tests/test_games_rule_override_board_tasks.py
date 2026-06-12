@@ -6,7 +6,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.rule_override_board.board_tasks import (
+from trace.tasks.games.rule_override_board.line_result_count import (
     LINE_LOSS_QUERY_ID,
     LINE_WIN_QUERY_ID,
     PIECE_LOSS_QUERY_ID,
@@ -109,5 +109,5 @@ def test_games_rule_override_board_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "rule_override_board" for row in rows)
+    assert all(row.get("scene_id") == "rule_override_board" for row in rows)
     assert {row["scene_id"] for row in rows} == {"rule_override_board"}

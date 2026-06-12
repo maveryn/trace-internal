@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
-from trace.tasks.games.chess_variant.board_tasks import (
-    GamesChessVariantMarkedPieceDestinationCountTask,
-    GamesChessVariantTargetSquareReacherCountTask,
-    _evaluate_board,
-    _evaluate_target_square_reachers,
-    _with_query_annotation,
+from trace.tasks.games.chess_variant.marked_piece_destination_count import GamesChessVariantMarkedPieceDestinationCountTask
+from trace.tasks.games.chess_variant.shared.mechanics import (
+    evaluate_marked_piece_board,
+    evaluate_target_square_reachers,
+    with_destination_annotation,
 )
-from trace.tasks.games.shared.chess_common import ChessPiece, freeze_board, validate_square_chess_material
+from trace.tasks.games.chess_variant.shared.prompts import prompt_defaults
+from trace.tasks.games.chess_variant.target_square_reacher_count import GamesChessVariantTargetSquareReacherCountTask
+from trace.tasks.games.shared.piece_board_rules import ChessPiece, freeze_board, validate_square_chess_material
 
 
 def _board_from_execution(execution: dict) -> tuple[tuple[ChessPiece | None, ...], ...]:
@@ -64,15 +63,14 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
     execution = trace["execution_trace"]
     board = _board_from_execution(execution)
     marked = tuple(int(v) for v in execution["marked_coord"])
-    evaluated = _with_query_annotation(
-        board,
-        _evaluate_board(
+    evaluated = with_destination_annotation(
+        evaluate_marked_piece_board(
             board,
             marked_coord=marked,
             rule_family=str(execution["rule_family"]),
             range_k=int(execution["range_k"]),
         ),
-        query_id="marked_piece_move_count",
+        destination_mode="move",
     )
 
     assert out.scene_id == "chess_variant"
@@ -96,15 +94,14 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
     execution = out.trace_payload["execution_trace"]
     board = _board_from_execution(execution)
     marked = tuple(int(v) for v in execution["marked_coord"])
-    evaluated = _with_query_annotation(
-        board,
-        _evaluate_board(
+    evaluated = with_destination_annotation(
+        evaluate_marked_piece_board(
             board,
             marked_coord=marked,
             rule_family=str(execution["rule_family"]),
             range_k=int(execution["range_k"]),
         ),
-        query_id="marked_piece_capture_count",
+        destination_mode="capture",
     )
 
     assert out.scene_id == "chess_variant"
@@ -129,10 +126,10 @@ def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule
     execution = trace["execution_trace"]
     board = _board_from_execution(execution)
     target = tuple(int(v) for v in execution["target_coord"])
-    evaluated = _evaluate_target_square_reachers(
+    evaluated = evaluate_target_square_reachers(
         board,
         target_coord=target,
-        query_id="white_piece_reaches_target_count",
+        target_color="white",
         rule_family=str(execution["rule_family"]),
         range_k=int(execution["range_k"]),
     )
@@ -165,10 +162,10 @@ def test_games_chess_variant_black_target_square_reacher_count_contract_and_rule
     execution = out.trace_payload["execution_trace"]
     board = _board_from_execution(execution)
     target = tuple(int(v) for v in execution["target_coord"])
-    evaluated = _evaluate_target_square_reachers(
+    evaluated = evaluate_target_square_reachers(
         board,
         target_coord=target,
-        query_id="black_piece_reaches_target_count",
+        target_color="black",
         rule_family=str(execution["rule_family"]),
         range_k=int(execution["range_k"]),
     )
@@ -209,11 +206,7 @@ def test_games_chess_variant_taxonomy() -> None:
 
 
 def test_games_chess_variant_prompt_is_marker_color_neutral() -> None:
-    cfg = get_task_group_defaults("games", "chess_variant")
-    _generation, _rendering, prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_games__chess_variant__marked_piece_destination_count",
-    )
+    prompt = prompt_defaults()
 
     assert "outlined square" in str(prompt["marked_piece_rule_text"]).lower()
     assert "red outlined square" in str(prompt["marked_piece_rule_text"]).lower()

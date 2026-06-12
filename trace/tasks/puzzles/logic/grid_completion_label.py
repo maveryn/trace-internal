@@ -6,7 +6,7 @@ from dataclasses import replace
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -21,8 +21,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import temporary_default_font_family
 from ..shared.common import decouple_axis_sampling, projected_puzzle_keyed_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
-from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin, forced_puzzle_query_params, rewrite_fixed_puzzle_query_output
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin, forced_puzzle_query_params, rewrite_fixed_puzzle_query_output
 from ..shared.logic_common import (
     PuzzleLogicDefaults,
     SUPPORTED_PUZZLE_LOGIC_SCENE_VARIANTS,
@@ -71,14 +70,13 @@ _SCENE_LOAD_BY_VARIANT = {
 }
 
 _DEFAULTS = PuzzleLogicDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "logic")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "logic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="logic")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="logic")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="logic", apply_prob=0.0)
 
 
 def _sample_logic_grid_font(
@@ -217,7 +215,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "logic"
+    scene_id = "logic"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -353,7 +351,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -529,14 +527,6 @@ class _PuzzlesLogicGridCompletionBaseTask:
             (0.75 * float(_REASONING_LOAD_BASE_BY_VARIANT[str(internal_query_id)]))
             + (0.25 * float(board_size_norm)),
         )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": normalize_int_with_bounds(int(dataset["cell_count"]), list(dataset["cell_count_range"])),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -544,7 +534,6 @@ class _PuzzlesLogicGridCompletionBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -591,7 +580,6 @@ class PuzzlesLogicGridUniquenessCompletionLabelTask(_PuzzlesLogicGridCompletionB
             image=rewritten.image,
             image_id=rewritten.image_id,
             trace_payload=trace_payload,
-            complexity=rewritten.complexity,
             task_versions=rewritten.task_versions,
             prompt_variants=rewritten.prompt_variants,
             scene_id=rewritten.scene_id,

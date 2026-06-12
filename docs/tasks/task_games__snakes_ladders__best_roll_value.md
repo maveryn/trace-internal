@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `snakes_ladders`
+2. Scene: `snakes_ladders`
 3. Scene id: `snakes_ladders`
 4. Public task id: `task_games__snakes_ladders__best_roll_value`
 5. Supported `query_id` values: `best_roll_value`

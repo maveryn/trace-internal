@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `graph_paper`
 3. Scene id: `graph_paper`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `area`
@@ -13,7 +13,7 @@
 - `solve_formula(visible_graph_paper_measurements, unknown_role=area_measure, formula_schema=area); scene=graph_paper; scope=ellipse_area_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `graph_paper`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/value.py`
+- Config: `configs/domains/geometry/graph_paper.yaml`
+- Task module: `trace/tasks/geometry/graph_paper/ellipse_area_value.py`

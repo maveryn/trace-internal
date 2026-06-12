@@ -10,13 +10,13 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.go.group_property_count import (
+from trace.tasks.games.go.group_liberty_count import (
     GamesGoGroupLibertyConditionCountTask,
     GamesGoGroupPropertyCountTask,
     GamesGoStoneGroupCountTask,
 )
-from trace.tasks.games.shared.go_common import BLACK, WHITE, stone_groups
-from trace.tasks.games.shared.go_scene import GO_MARKED_GROUP_RED_RGB
+from trace.tasks.games.go.shared.common import BLACK, WHITE, stone_groups
+from trace.tasks.games.go.shared.scene import GO_MARKED_GROUP_RED_RGB
 from trace.tasks.games.shared.style import SUPPORTED_GO_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
@@ -193,7 +193,7 @@ def test_games_go_group_property_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "go" for record in train_records)
+    assert all(record.get("scene_id") == "go" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__go__group_liberty_count"]) == 4
@@ -330,7 +330,7 @@ def test_games_go_stone_group_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "go" for record in train_records)
+    assert all(record.get("scene_id") == "go" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__go__stone_group_count"]) == 4

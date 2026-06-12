@@ -9,15 +9,12 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.crossing.lane_tasks import (
-    GamesCrossingLaneTask,
-    GamesCrossingMovingObjectDirectionCountTask,
-    GamesCrossingMovingObjectCountTask,
-)
-from trace.tasks.games.shared.crossing_common import (
+from trace.tasks.games.crossing.moving_object_count import GamesCrossingMovingObjectCountTask
+from trace.tasks.games.crossing.moving_object_direction_count import GamesCrossingMovingObjectDirectionCountTask
+from trace.tasks.games.crossing.shared.mechanics import route_collision_vehicle_ids
+from trace.tasks.games.crossing.shared.state import (
     CrossingRouteOption,
     CrossingVehicle,
-    route_collision_vehicle_ids,
 )
 from tests.helpers import read_jsonl
 
@@ -71,7 +68,7 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
     ),
 )
 def test_games_crossing_public_tasks_emit_expected_contract(
-    task_cls: type[GamesCrossingLaneTask],
+    task_cls: type,
     params: dict[str, int | str],
     expected_query: str,
     expected_answer: int | str,
@@ -169,4 +166,4 @@ def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "crossing" for row in rows)
+    assert all(row.get("scene_id") == "crossing" for row in rows)

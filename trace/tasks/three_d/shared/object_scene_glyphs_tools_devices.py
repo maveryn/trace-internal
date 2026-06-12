@@ -72,26 +72,112 @@ def _draw_pencil_object(
         for offset in (0.18, 0.82):
             bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.10, y0 + h * offset), (x1 - w * 0.10, y0 + h * (offset - 0.04))], fill=_shade(fill, 0.62), width=1))
         return _bbox_union(*bboxes)
-    if shape_type in {"pen", "marker"}:
-        body = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.06, 0.0), dimensions_xyz=(width * 0.34, depth * 0.72, height * 0.50))
-        cap = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.48, 0.0), dimensions_xyz=(width * 0.42, depth * 0.18, height * 0.54))
-        tip = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.40, 0.0), dimensions_xyz=(width * 0.22, depth * 0.18, height * 0.34))
-        clip = _sub_box_spec(spec, offset_xyz=(width * 0.22, -depth * 0.30, 0.0), dimensions_xyz=(width * 0.08, depth * 0.30, height * 0.20))
-        body_bbox = _draw_box_object(draw, body, camera=camera, frame=frame, fill=_tint(fill, 0.18))
-        cap_bbox = _draw_box_object(draw, cap, camera=camera, frame=frame, fill=(44, 55, 70))
-        tip_bbox = _draw_box_object(draw, tip, camera=camera, frame=frame, fill=(36, 43, 51))
-        clip_bbox = _draw_box_object(draw, clip, camera=camera, frame=frame, fill=(218, 224, 228))
+    if shape_type == "pen":
+        x, y, _z = (float(value) for value in spec["world_xyz"])
+        raw_base = spec.get("base_xyz", (x, y, 0.0))
+        base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+        center = _project_xy((x, y, base_z + height * 0.58), camera, frame)
+        length_px = max(56.0, min(96.0, float(frame.scale) * depth * 0.78))
+        radius = max(2.8, min(4.8, length_px * 0.052))
+        direction = (0.945, -0.327)
+        normal = (-direction[1], direction[0])
+
+        def point_at(axis_frac: float) -> Tuple[float, float]:
+            return (
+                center[0] + direction[0] * length_px * float(axis_frac),
+                center[1] + direction[1] * length_px * float(axis_frac),
+            )
+
+        def strip_between(a: Sequence[float], b: Sequence[float], ra: float, rb: float | None = None) -> List[Tuple[float, float]]:
+            rb = float(ra if rb is None else rb)
+            return [
+                (float(a[0]) + normal[0] * float(ra), float(a[1]) + normal[1] * float(ra)),
+                (float(b[0]) + normal[0] * rb, float(b[1]) + normal[1] * rb),
+                (float(b[0]) - normal[0] * rb, float(b[1]) - normal[1] * rb),
+                (float(a[0]) - normal[0] * float(ra), float(a[1]) - normal[1] * float(ra)),
+            ]
+
+        bboxes: List[List[float]] = []
+        rear = point_at(-0.50)
+        cap_end = point_at(-0.34)
+        rear_plug_end = point_at(-0.44)
+        body_end = point_at(0.18)
+        grip_end = point_at(0.34)
+        metal_end = point_at(0.46)
+        nib = point_at(0.52)
+        body_poly = strip_between(cap_end, body_end, radius)
+        cap_poly = strip_between(rear, cap_end, radius * 1.05)
+        rear_plug_poly = strip_between(rear, rear_plug_end, radius * 1.08)
+        grip_poly = strip_between(body_end, grip_end, radius * 0.94, radius * 0.72)
+        metal_poly = strip_between(grip_end, metal_end, radius * 0.70, radius * 0.38)
+        nib_poly = strip_between(metal_end, nib, radius * 0.42, radius * 0.12)
+        for poly, color, outline in (
+            (body_poly, _tint(fill, 0.18), (35, 43, 52)),
+            (cap_poly, (64, 73, 85), (28, 34, 42)),
+            (rear_plug_poly, (28, 33, 40), (18, 22, 27)),
+            (grip_poly, (42, 48, 56), (22, 26, 31)),
+            (metal_poly, (184, 191, 198), (74, 83, 92)),
+            (nib_poly, (42, 47, 53), (22, 26, 31)),
+        ):
+            draw.polygon(poly, fill=color, outline=outline)
+            bboxes.append(_bbox_from_screen_points(poly))
+        for frac, color in ((-0.35, (35, 43, 52)), (0.20, (85, 92, 100)), (0.27, (85, 92, 100)), (0.33, (85, 92, 100))):
+            p = point_at(frac)
+            line = [
+                (p[0] + normal[0] * radius * 0.98, p[1] + normal[1] * radius * 0.98),
+                (p[0] - normal[0] * radius * 0.98, p[1] - normal[1] * radius * 0.98),
+            ]
+            draw.line(line, fill=color, width=1)
+            bboxes.append(_padded_screen_line_bbox(line, pad_px=1.0))
+        clip_start = point_at(-0.31)
+        clip_mid = point_at(-0.08)
+        clip_end = point_at(0.12)
+        clip_points = [
+            (clip_start[0] + normal[0] * radius * 0.96, clip_start[1] + normal[1] * radius * 0.96),
+            (clip_mid[0] + normal[0] * radius * 1.18, clip_mid[1] + normal[1] * radius * 1.18),
+            (clip_end[0] + normal[0] * radius * 0.72, clip_end[1] + normal[1] * radius * 0.72),
+        ]
+        draw.line(clip_points, fill=(238, 243, 246), width=max(3, int(round(radius * 0.58))), joint="curve")
+        draw.line(clip_points, fill=(70, 80, 90), width=1)
+        bboxes.append(_padded_screen_line_bbox(clip_points, pad_px=max(2.0, radius * 0.55)))
+        shine_start = point_at(-0.18)
+        shine_end = point_at(0.14)
+        shine = [
+            (shine_start[0] - normal[0] * radius * 0.42, shine_start[1] - normal[1] * radius * 0.42),
+            (shine_end[0] - normal[0] * radius * 0.42, shine_end[1] - normal[1] * radius * 0.42),
+        ]
+        draw.line(shine, fill=(247, 250, 251), width=1)
+        bboxes.append(_padded_screen_line_bbox(shine, pad_px=1.0))
+        nib_radius = max(1.3, radius * 0.20)
+        draw.ellipse((nib[0] - nib_radius, nib[1] - nib_radius, nib[0] + nib_radius, nib[1] + nib_radius), fill=(18, 22, 26))
+        bboxes.append([nib[0] - nib_radius, nib[1] - nib_radius, nib[0] + nib_radius, nib[1] + nib_radius])
+        return _bbox_union(*bboxes)
+    if shape_type == "marker":
+        body_scale = 0.44 if shape_type == "marker" else 0.38
+        body = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.04, 0.0), dimensions_xyz=(width * body_scale, depth * 0.76, height * 0.44))
+        cap = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.48, 0.0), dimensions_xyz=(width * 0.48, depth * 0.16, height * 0.46))
+        tip = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.43, 0.0), dimensions_xyz=(width * 0.16, depth * 0.12, height * 0.26))
+        clip = _sub_box_spec(spec, offset_xyz=(width * 0.24, -depth * 0.26, height * 0.08), dimensions_xyz=(width * 0.06, depth * 0.34, height * 0.12))
+        body_bbox = _draw_box_object(draw, body, camera=camera, frame=frame, fill=_tint(fill, 0.26))
+        cap_bbox = _draw_box_object(draw, cap, camera=camera, frame=frame, fill=_shade(_tint(fill, 0.10), 0.68))
+        tip_bbox = _draw_cone_object(draw, tip, camera=camera, frame=frame, fill=(182, 188, 194))
+        clip_bbox = _draw_box_object(draw, clip, camera=camera, frame=frame, fill=(224, 229, 232))
         x0, y0, x1, y1 = (float(value) for value in body_bbox)
         w = max(1.0, x1 - x0)
         h = max(1.0, y1 - y0)
         bboxes = [body_bbox, cap_bbox, tip_bbox, clip_bbox]
-        bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.20, y0 + h * 0.20), (x1 - w * 0.14, y0 + h * 0.14)], fill=(245, 249, 250), width=2))
-        bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.50, y0 + h * 0.08), (x0 + w * 0.50, y1 - h * 0.12)], fill=_shade(fill, 0.58), width=1))
+        bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.22, y0 + h * 0.18), (x1 - w * 0.18, y0 + h * 0.13)], fill=(245, 249, 250), width=2))
+        bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.50, y0 + h * 0.12), (x0 + w * 0.50, y1 - h * 0.12)], fill=_shade(fill, 0.62), width=1))
         cx0, cy0, cx1, cy1 = (float(value) for value in clip_bbox)
         bboxes.append(_draw_detail_line(draw, [(cx0 + (cx1 - cx0) * 0.50, cy0 + (cy1 - cy0) * 0.10), (cx0 + (cx1 - cx0) * 0.50, cy1 - (cy1 - cy0) * 0.10)], fill=(76, 86, 96), width=1))
-        barrel = [x0 + w * 0.33, y0 + h * 0.08, x1 - w * 0.33, y1 - h * 0.12]
-        draw.rounded_rectangle(barrel, radius=max(2, int(min(w, h) * 0.08)), outline=(33, 39, 48), width=2)
-        bboxes.append(barrel)
+        tx0, ty0, tx1, ty1 = (float(value) for value in tip_bbox)
+        nib = [
+            (tx0 + (tx1 - tx0) * 0.42, ty1 - (ty1 - ty0) * 0.18),
+            (tx1 - (tx1 - tx0) * 0.42, ty1 - (ty1 - ty0) * 0.18),
+            ((tx0 + tx1) * 0.5, ty1 + (ty1 - ty0) * 0.12),
+        ]
+        draw.polygon(nib, fill=(35, 42, 49), outline=(22, 26, 31))
+        bboxes.append(_bbox_from_screen_points(nib))
         if shape_type == "marker":
             color_band = [x0 + w * 0.26, y0 + h * 0.62, x1 - w * 0.26, y0 + h * 0.76]
             draw.rounded_rectangle(color_band, radius=max(2, int(w * 0.04)), fill=_tint(fill, 0.18), outline=_shade(fill, 0.52), width=1)
@@ -99,25 +185,68 @@ def _draw_pencil_object(
             draw.polygon([(broad_tip[0], broad_tip[1]), (broad_tip[2], broad_tip[1]), ((broad_tip[0] + broad_tip[2]) * 0.5, broad_tip[3])], fill=(34, 40, 48))
             bboxes.extend([color_band, broad_tip])
         return _bbox_union(*bboxes)
-    body = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.08, 0.0), dimensions_xyz=(width * 0.34, depth * 0.66, height * 0.58))
-    eraser = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.46, 0.0), dimensions_xyz=(width * 0.36, depth * 0.16, height * 0.58))
-    tip = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.38, 0.0), dimensions_xyz=(width * 0.38, depth * 0.22, height * 0.54))
-    body_bbox = _draw_box_object(draw, body, camera=camera, frame=frame, fill=(219, 176, 63))
-    eraser_bbox = _draw_box_object(draw, eraser, camera=camera, frame=frame, fill=(210, 105, 124))
-    tip_bbox = _draw_cone_object(draw, tip, camera=camera, frame=frame, fill=(182, 139, 83))
-    x0, y0, x1, y1 = (float(value) for value in body_bbox)
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    bboxes = [body_bbox, eraser_bbox, tip_bbox]
-    for offset in (0.22, 0.50, 0.78):
-        bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.18, y0 + h * offset), (x1 - w * 0.16, y0 + h * (offset - 0.06))], fill=(164, 123, 34), width=1))
-    ex0, ey0, ex1, ey1 = (float(value) for value in eraser_bbox)
-    ferrule = [ex0 + (ex1 - ex0) * 0.08, ey1 - (ey1 - ey0) * 0.18, ex1 - (ex1 - ex0) * 0.08, ey1 - (ey1 - ey0) * 0.04]
-    draw.rectangle(ferrule, fill=(182, 188, 193), outline=(76, 84, 92), width=1)
-    bboxes.append(ferrule)
-    graphite = [x0 + w * 0.42, y1 - h * 0.08, x1 - w * 0.42, y1 + h * 0.05]
-    draw.polygon([(graphite[0], graphite[1]), (graphite[2], graphite[1]), ((graphite[0] + graphite[2]) * 0.5, graphite[3])], fill=(32, 36, 42))
-    bboxes.append(graphite)
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+    center_z = base_z + height * 0.56
+
+    def point_at(y_frac: float, *, z_frac: float = 0.0) -> Tuple[float, float]:
+        return _project_xy((x, y + depth * float(y_frac), center_z + height * float(z_frac)), camera, frame)
+
+    axis_start = point_at(-0.52)
+    axis_end = point_at(0.54)
+    axis_dx = axis_end[0] - axis_start[0]
+    axis_dy = axis_end[1] - axis_start[1]
+    axis_len = max(1e-6, math.hypot(axis_dx, axis_dy))
+    normal = (-axis_dy / axis_len, axis_dx / axis_len)
+    radius = max(3.3, min(6.2, float(frame.scale) * width * 0.078))
+
+    def strip_between(a: Sequence[float], b: Sequence[float], ra: float, rb: float | None = None) -> List[Tuple[float, float]]:
+        rb = float(ra if rb is None else rb)
+        return [
+            (float(a[0]) + normal[0] * float(ra), float(a[1]) + normal[1] * float(ra)),
+            (float(b[0]) + normal[0] * rb, float(b[1]) + normal[1] * rb),
+            (float(b[0]) - normal[0] * rb, float(b[1]) - normal[1] * rb),
+            (float(a[0]) - normal[0] * float(ra), float(a[1]) - normal[1] * float(ra)),
+        ]
+
+    bboxes: List[List[float]] = []
+    eraser_rear = point_at(-0.52)
+    eraser_front = point_at(-0.42)
+    ferrule_front = point_at(-0.32)
+    body_front = point_at(0.32)
+    wood_front = point_at(0.48)
+    graphite_tip = point_at(0.55)
+    parts = [
+        (strip_between(eraser_rear, eraser_front, radius * 0.95), (214, 108, 126), (95, 58, 66)),
+        (strip_between(eraser_front, ferrule_front, radius * 1.02), (180, 187, 194), (70, 78, 86)),
+        (strip_between(ferrule_front, body_front, radius), _tint(fill, 0.16), (122, 91, 24)),
+        (strip_between(body_front, wood_front, radius * 0.98, radius * 0.34), (188, 139, 78), (91, 61, 35)),
+        (strip_between(wood_front, graphite_tip, radius * 0.34, radius * 0.10), (34, 38, 43), (20, 24, 28)),
+    ]
+    for poly, color, outline in parts:
+        draw.polygon(poly, fill=color, outline=outline)
+        bboxes.append(_bbox_from_screen_points(poly))
+    for frac, color in ((-0.40, (82, 91, 99)), (-0.36, (226, 230, 232))):
+        p = point_at(frac)
+        line = [
+            (p[0] + normal[0] * radius * 1.08, p[1] + normal[1] * radius * 1.08),
+            (p[0] - normal[0] * radius * 1.08, p[1] - normal[1] * radius * 1.08),
+        ]
+        draw.line(line, fill=color, width=1)
+        bboxes.append(_padded_screen_line_bbox(line, pad_px=1.0))
+    for offset in (-0.45, 0.0, 0.45):
+        start = point_at(-0.26 + offset * 0.03, z_frac=0.02)
+        end = point_at(0.24 + offset * 0.03, z_frac=0.02)
+        line = [
+            (start[0] + normal[0] * radius * offset, start[1] + normal[1] * radius * offset),
+            (end[0] + normal[0] * radius * offset, end[1] + normal[1] * radius * offset),
+        ]
+        draw.line(line, fill=(170, 126, 33), width=1)
+        bboxes.append(_padded_screen_line_bbox(line, pad_px=1.0))
+    tip_radius = max(1.1, radius * 0.18)
+    draw.ellipse((graphite_tip[0] - tip_radius, graphite_tip[1] - tip_radius, graphite_tip[0] + tip_radius, graphite_tip[1] + tip_radius), fill=(22, 25, 29))
+    bboxes.append([graphite_tip[0] - tip_radius, graphite_tip[1] - tip_radius, graphite_tip[0] + tip_radius, graphite_tip[1] + tip_radius])
     return _bbox_union(*bboxes)
 
 
@@ -296,24 +425,40 @@ def _draw_puzzle_piece_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     footprint = [
-        (-0.75, -0.75),
-        (-0.18, -0.75),
-        (-0.18, -0.98),
-        (0.18, -0.98),
-        (0.18, -0.75),
-        (0.75, -0.75),
-        (0.75, -0.18),
-        (0.98, -0.18),
-        (0.98, 0.18),
-        (0.75, 0.18),
-        (0.75, 0.75),
-        (0.18, 0.75),
-        (0.18, 0.52),
-        (-0.18, 0.52),
-        (-0.18, 0.75),
-        (-0.75, 0.75),
+        (-0.82, -0.82),
+        (-0.28, -0.82),
+        (-0.28, -1.10),
+        (0.28, -1.10),
+        (0.28, -0.82),
+        (0.82, -0.82),
+        (0.82, -0.28),
+        (1.10, -0.28),
+        (1.10, 0.28),
+        (0.82, 0.28),
+        (0.82, 0.82),
+        (0.28, 0.82),
+        (0.28, 0.54),
+        (-0.28, 0.54),
+        (-0.28, 0.82),
+        (-0.82, 0.82),
+        (-0.82, 0.28),
+        (-0.56, 0.28),
+        (-0.56, -0.28),
+        (-0.82, -0.28),
     ]
-    return _draw_footprint_prism_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.10), footprint_xy=footprint)
+    bbox = _draw_footprint_prism_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.10), footprint_xy=footprint)
+    x0, y0, x1, y1 = (float(value) for value in bbox)
+    w = max(1.0, x1 - x0)
+    h = max(1.0, y1 - y0)
+    socket = [x0 + w * 0.08, y0 + h * 0.38, x0 + w * 0.30, y0 + h * 0.62]
+    top_tab = [x0 + w * 0.38, y0 + h * 0.04, x0 + w * 0.62, y0 + h * 0.28]
+    side_tab = [x1 - w * 0.28, y0 + h * 0.38, x1 - w * 0.04, y0 + h * 0.62]
+    draw.arc(socket, start=90, end=270, fill=(35, 43, 54), width=2)
+    draw.arc(top_tab, start=180, end=360, fill=(35, 43, 54), width=2)
+    draw.arc(side_tab, start=270, end=90, fill=(35, 43, 54), width=2)
+    inner = [x0 + w * 0.20, y0 + h * 0.20, x1 - w * 0.20, y1 - h * 0.20]
+    draw.line([(inner[0], inner[1]), (inner[2], inner[3])], fill=_shade(fill, 0.62), width=1)
+    return _bbox_union(bbox, socket, top_tab, side_tab, inner)
 
 
 def _draw_candy_disc_object(
@@ -498,24 +643,61 @@ def _draw_screw_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    metal = (164, 170, 176)
-    shaft = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.06, 0.0), dimensions_xyz=(width * 0.30, depth * 0.72, height * 0.48))
-    head = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.42, 0.0), dimensions_xyz=(width * 0.72, depth * 0.20, height * 0.64))
-    shaft_bbox = _draw_box_object(draw, shaft, camera=camera, frame=frame, fill=metal)
-    head_bbox = _draw_cylinder_object(draw, head, camera=camera, frame=frame, fill=(190, 195, 200))
-    x0, y0, x1, y1 = (float(value) for value in head_bbox)
-    slot = [(x0 + (x1 - x0) * 0.25, y0 + (y1 - y0) * 0.50), (x1 - (x1 - x0) * 0.25, y0 + (y1 - y0) * 0.50)]
-    draw.line(slot, fill=(43, 50, 59), width=2)
-    cross_slot = [((x0 + x1) * 0.5, y0 + (y1 - y0) * 0.28), ((x0 + x1) * 0.5, y1 - (y1 - y0) * 0.28)]
-    draw.line(cross_slot, fill=(43, 50, 59), width=2)
-    sx0, sy0, sx1, sy1 = (float(value) for value in shaft_bbox)
+    center = _project_xy((x, y, base_z + height * 0.58), camera, frame)
+    length_px = max(50.0, min(86.0, float(frame.scale) * depth * 0.72))
+    shaft_width = max(3, int(round(length_px * 0.055)))
+    direction = (0.952, -0.306)
+    normal = (-direction[1], direction[0])
+
+    def point_at(axis_frac: float) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac),
+            center[1] + direction[1] * length_px * float(axis_frac),
+        )
+
+    head_center = point_at(-0.44)
+    shaft_start = point_at(-0.34)
+    shaft_end = point_at(0.40)
+    tip = point_at(0.50)
+    shaft_points = [shaft_start, shaft_end]
+    draw.line(shaft_points, fill=(63, 72, 82), width=shaft_width + 2)
+    draw.line(shaft_points, fill=(166, 174, 181), width=shaft_width)
+    head_rx = max(3.2, float(shaft_width) * 1.25)
+    head_ry = max(2.2, float(shaft_width) * 0.78)
+    head_bbox = [head_center[0] - head_rx, head_center[1] - head_ry, head_center[0] + head_rx, head_center[1] + head_ry]
+    draw.ellipse(head_bbox, fill=(194, 200, 205), outline=(55, 64, 74), width=1)
+    slot = [
+        (head_center[0] - direction[0] * head_rx * 0.54, head_center[1] - direction[1] * head_rx * 0.54),
+        (head_center[0] + direction[0] * head_rx * 0.54, head_center[1] + direction[1] * head_rx * 0.54),
+    ]
+    draw.line(slot, fill=(43, 50, 59), width=1)
+    tip_poly = [
+        (shaft_end[0] + normal[0] * shaft_width * 0.62, shaft_end[1] + normal[1] * shaft_width * 0.62),
+        (shaft_end[0] - normal[0] * shaft_width * 0.62, shaft_end[1] - normal[1] * shaft_width * 0.62),
+        (tip[0], tip[1]),
+    ]
+    draw.polygon(tip_poly, fill=(118, 126, 134), outline=(54, 63, 72))
     thread_boxes: List[List[float]] = []
-    for offset in (0.18, 0.30, 0.42, 0.54, 0.66, 0.78, 0.88):
-        line = [(sx0 + (sx1 - sx0) * 0.15, sy0 + (sy1 - sy0) * offset), (sx1 - (sx1 - sx0) * 0.12, sy0 + (sy1 - sy0) * (offset - 0.07))]
+    for offset in (0.12, 0.24, 0.36, 0.48, 0.60, 0.72, 0.84):
+        cx = shaft_start[0] * (1.0 - offset) + shaft_end[0] * offset
+        cy = shaft_start[1] * (1.0 - offset) + shaft_end[1] * offset
+        line = [
+            (cx - normal[0] * shaft_width * 0.72 - direction[0] * shaft_width * 0.45, cy - normal[1] * shaft_width * 0.72 - direction[1] * shaft_width * 0.45),
+            (cx + normal[0] * shaft_width * 0.72 + direction[0] * shaft_width * 0.45, cy + normal[1] * shaft_width * 0.72 + direction[1] * shaft_width * 0.45),
+        ]
         draw.line(line, fill=(95, 103, 112), width=1)
         thread_boxes.append(_padded_screen_line_bbox(line, pad_px=1.0))
-    return _bbox_union(shaft_bbox, head_bbox, _padded_screen_line_bbox(slot, pad_px=1.0), _padded_screen_line_bbox(cross_slot, pad_px=1.0), *thread_boxes)
+    return _bbox_union(
+        _padded_screen_line_bbox(shaft_points, pad_px=float(shaft_width + 2)),
+        head_bbox,
+        _bbox_from_screen_points(tip_poly),
+        _padded_screen_line_bbox(slot, pad_px=1.0),
+        *thread_boxes,
+    )
 
 
 def _draw_bolt_object(
@@ -682,14 +864,39 @@ def _draw_stick_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(126, 84, 47))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    marks: List[List[float]] = []
-    for offset in (0.26, 0.48, 0.70):
-        mark = [(x0 + (x1 - x0) * 0.18, y0 + (y1 - y0) * offset), (x1 - (x1 - x0) * 0.22, y0 + (y1 - y0) * (offset - 0.05))]
-        draw.line(mark, fill=(76, 51, 31), width=2)
-        marks.append(_padded_screen_line_bbox(mark, pad_px=1.0))
-    return _bbox_union(bbox, *marks)
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    center_z = base_z + height * 0.62
+    world_points = [
+        (x - width * 0.10, y - depth * 0.50, center_z),
+        (x + width * 0.04, y - depth * 0.22, center_z + height * 0.08),
+        (x - width * 0.06, y + depth * 0.08, center_z - height * 0.03),
+        (x + width * 0.12, y + depth * 0.50, center_z + height * 0.04),
+    ]
+    points = [_project_xy(point, camera, frame) for point in world_points]
+    main_width = max(5, int(round(float(frame.scale) * max(width, height) * 0.18)))
+    draw.line(points, fill=(71, 43, 23), width=main_width + 2, joint="curve")
+    draw.line(points, fill=(132, 84, 43), width=main_width, joint="curve")
+    bboxes: List[List[float]] = [_padded_screen_line_bbox(points, pad_px=float(main_width + 2))]
+    branch_world = [
+        (x - width * 0.02, y + depth * 0.05, center_z),
+        (x + width * 0.58, y + depth * 0.20, center_z + height * 0.10),
+    ]
+    branch = [_project_xy(point, camera, frame) for point in branch_world]
+    draw.line(branch, fill=(83, 50, 26), width=max(3, main_width - 2), joint="curve")
+    bboxes.append(_padded_screen_line_bbox(branch, pad_px=float(main_width)))
+    for offset in (0.22, 0.48, 0.72):
+        index = min(len(points) - 2, int(offset * (len(points) - 1)))
+        p0 = points[index]
+        p1 = points[index + 1]
+        mark = [
+            (p0[0] * (1.0 - offset) + p1[0] * offset - 3.0, p0[1] * (1.0 - offset) + p1[1] * offset - 2.0),
+            (p0[0] * (1.0 - offset) + p1[0] * offset + 4.0, p0[1] * (1.0 - offset) + p1[1] * offset + 1.0),
+        ]
+        bboxes.append(_draw_detail_line(draw, mark, fill=(53, 31, 18), width=2))
+    return _bbox_union(*bboxes)
 
 
 def _draw_straw_object(
@@ -700,19 +907,20 @@ def _draw_straw_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.18))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
+    screen_points = _project_face(list(_object_vertices(spec).values()), camera, frame)
+    x0, y0, x1, y1 = (float(value) for value in _bbox_from_screen_points(screen_points))
     w = max(1.0, x1 - x0)
     h = max(1.0, y1 - y0)
-    bboxes = [bbox]
-    for offset in (0.22, 0.44, 0.66):
-        stripe = [(x0 + w * 0.18, y0 + h * offset), (x1 - w * 0.14, y0 + h * (offset - 0.10))]
+    tube = [(x0 + w * 0.22, y1 - h * 0.18), (x0 + w * 0.50, y0 + h * 0.36), (x1 - w * 0.16, y0 + h * 0.22)]
+    draw.line(tube, fill=_shade(fill, 0.52), width=9, joint="curve")
+    draw.line(tube, fill=_tint(fill, 0.30), width=6, joint="curve")
+    bboxes = [_padded_screen_line_bbox(tube, pad_px=5.0)]
+    for frac in (0.26, 0.42, 0.60, 0.76):
+        stripe = [(x0 + w * (frac - 0.035), y0 + h * (1.02 - frac)), (x0 + w * (frac + 0.055), y0 + h * (0.92 - frac))]
         draw.line(stripe, fill=(236, 244, 248), width=2)
         bboxes.append(_padded_screen_line_bbox(stripe, pad_px=1.0))
-    elbow = [(x0 + w * 0.18, y0 + h * 0.25), (x0 + w * 0.44, y0 + h * 0.12), (x0 + w * 0.62, y0 + h * 0.23)]
-    bboxes.append(_draw_detail_line(draw, elbow, fill=_shade(fill, 0.58), width=3, joint="curve"))
-    for end_x, end_y in ((x0 + w * 0.15, y0 + h * 0.38), (x1 - w * 0.14, y1 - h * 0.22)):
-        end = [end_x - w * 0.07, end_y - h * 0.08, end_x + w * 0.07, end_y + h * 0.08]
+    for end_x, end_y in ((tube[0][0], tube[0][1]), (tube[-1][0], tube[-1][1])):
+        end = [end_x - w * 0.045, end_y - h * 0.045, end_x + w * 0.045, end_y + h * 0.045]
         draw.ellipse(end, fill=(48, 61, 70), outline=(237, 244, 246), width=1)
         bboxes.append(end)
     return _bbox_union(*bboxes)
@@ -791,14 +999,12 @@ def _draw_socket_object(
     ]
     for hole in holes:
         draw.ellipse(hole, fill=(38, 45, 54))
-    face = [x0 + w * 0.14, y0 + h * 0.10, x1 - w * 0.14, y1 - h * 0.10]
-    draw.rounded_rectangle(face, radius=max(3, int(min(w, h) * 0.06)), outline=(100, 108, 114), width=2)
     screws = []
     for cy in (y0 + h * 0.18, y1 - h * 0.18):
         screw = [x0 + w * 0.47, cy - h * 0.035, x0 + w * 0.53, cy + h * 0.035]
         draw.ellipse(screw, fill=(176, 182, 186), outline=(72, 80, 88), width=1)
         screws.append(screw)
-    return _bbox_union(bbox, face, *holes, *screws)
+    return _bbox_union(bbox, *holes, *screws)
 
 
 def _draw_magnet_object(
@@ -967,21 +1173,25 @@ def _draw_can_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=(190, 196, 198))
+    bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.04))
     x0, y0, x1, y1 = (float(value) for value in bbox)
     w = max(1.0, x1 - x0)
     h = max(1.0, y1 - y0)
-    label = [x0 + w * 0.08, y0 + h * 0.36, x1 - w * 0.08, y0 + h * 0.68]
-    pull_tab = [x0 + w * 0.40, y0 + h * 0.14, x0 + w * 0.60, y0 + h * 0.25]
-    top_rim = [x0 + w * 0.10, y0 + h * 0.10, x1 - w * 0.10, y0 + h * 0.30]
-    bottom_rim = [x0 + w * 0.11, y1 - h * 0.24, x1 - w * 0.11, y1 - h * 0.08]
+    label = [x0 + w * 0.10, y0 + h * 0.34, x1 - w * 0.10, y0 + h * 0.70]
+    pull_tab = [x0 + w * 0.38, y0 + h * 0.13, x0 + w * 0.62, y0 + h * 0.26]
+    top_rim = [x0 + w * 0.09, y0 + h * 0.08, x1 - w * 0.09, y0 + h * 0.30]
+    bottom_rim = [x0 + w * 0.10, y1 - h * 0.22, x1 - w * 0.10, y1 - h * 0.06]
+    top_fill = [x0 + w * 0.12, y0 + h * 0.10, x1 - w * 0.12, y0 + h * 0.28]
+    draw.ellipse(top_fill, fill=(205, 211, 214), outline=(70, 80, 89), width=1)
     draw.ellipse(top_rim, outline=(92, 101, 108), width=2)
     draw.ellipse(bottom_rim, outline=(92, 101, 108), width=1)
-    draw.rectangle(label, fill=_tint(fill, 0.12), outline=(50, 58, 66), width=1)
-    stripe = [label[0] + w * 0.08, label[1] + h * 0.05, label[0] + w * 0.18, label[3] - h * 0.05]
+    draw.rectangle(label, fill=_shade(fill, 0.88), outline=(42, 50, 58), width=1)
+    stripe = [label[0] + w * 0.08, label[1] + h * 0.04, label[0] + w * 0.20, label[3] - h * 0.04]
+    shine = [(x0 + w * 0.26, y0 + h * 0.18), (x0 + w * 0.20, y1 - h * 0.16)]
     draw.rectangle(stripe, fill=(246, 246, 232))
+    draw.line(shine, fill=(244, 249, 249), width=2)
     draw.ellipse(pull_tab, outline=(82, 91, 99), width=2)
-    return _bbox_union(bbox, label, stripe, pull_tab, top_rim, bottom_rim)
+    return _bbox_union(bbox, label, stripe, pull_tab, top_fill, top_rim, bottom_rim, _padded_screen_line_bbox(shine, pad_px=1.0))
 
 
 def _draw_lid_object(
@@ -1008,14 +1218,14 @@ def _draw_pillow_cushion_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "pillow"))
-    body = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.24))
-    x0, y0, x1, y1 = (float(value) for value in body)
+    screen_points = _project_face(list(_object_vertices(spec).values()), camera, frame)
+    x0, y0, x1, y1 = (float(value) for value in _bbox_from_screen_points(screen_points))
     w = max(1.0, x1 - x0)
     h = max(1.0, y1 - y0)
-    radius = max(4, int(min(w, h) * (0.22 if shape_type == "pillow" else 0.16)))
-    soft_rect = [x0 + w * 0.04, y0 + h * 0.05, x1 - w * 0.04, y1 - h * 0.05]
+    radius = max(5, int(min(w, h) * (0.34 if shape_type == "pillow" else 0.26)))
+    soft_rect = [x0 + w * 0.03, y0 + h * 0.04, x1 - w * 0.03, y1 - h * 0.04]
     draw.rounded_rectangle(soft_rect, radius=radius, fill=_tint(fill, 0.32), outline=_shade(fill, 0.64), width=2)
-    bboxes: List[List[float]] = [body, soft_rect]
+    bboxes: List[List[float]] = [soft_rect]
     seam = [soft_rect[0] + w * 0.07, soft_rect[1] + h * 0.10, soft_rect[2] - w * 0.07, soft_rect[3] - h * 0.10]
     draw.rounded_rectangle(seam, radius=max(3, int(radius * 0.62)), outline=_shade(fill, 0.72), width=1)
     bboxes.append(seam)
@@ -1148,16 +1358,22 @@ def _draw_bucket_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    profile = [(-0.60, -0.92), (0.60, -0.92), (0.78, 0.66), (0.58, 0.86), (-0.58, 0.86), (-0.78, 0.66)]
-    bucket_bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.14), profile_xz=profile, inset_scale=0.72)
+    profile = [(-0.54, -0.92), (0.54, -0.92), (0.86, 0.60), (0.68, 0.88), (-0.68, 0.88), (-0.86, 0.60)]
+    bucket_bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.12), profile_xz=profile, inset_scale=0.58)
     x0, y0, x1, y1 = (float(value) for value in bucket_bbox)
     w = max(1.0, x1 - x0)
     h = max(1.0, y1 - y0)
-    opening = [x0 + w * 0.16, y0 + h * 0.12, x1 - w * 0.16, y0 + h * 0.34]
-    draw.ellipse(opening, fill=_shade(fill, 0.58), outline=(43, 52, 62), width=2)
-    handle = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.70, 0.46), (-0.34, 1.02), (0.0, 1.12), (0.34, 1.02), (0.70, 0.46)])
-    draw.line(handle, fill=(95, 103, 111), width=3, joint="curve")
-    return _bbox_union(bucket_bbox, opening, _padded_screen_line_bbox(handle, pad_px=3.0))
+    opening = [x0 + w * 0.09, y0 + h * 0.08, x1 - w * 0.09, y0 + h * 0.36]
+    inner = [x0 + w * 0.18, y0 + h * 0.15, x1 - w * 0.18, y0 + h * 0.31]
+    draw.ellipse(opening, fill=_shade(fill, 0.70), outline=(41, 50, 60), width=3)
+    draw.ellipse(inner, fill=_shade(fill, 0.50), outline=(36, 44, 54), width=1)
+    handle = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.82, 0.36), (-0.48, 1.10), (0.0, 1.24), (0.48, 1.10), (0.82, 0.36)])
+    draw.line(handle, fill=(82, 90, 98), width=4, joint="curve")
+    lugs = [
+        _draw_small_ellipse(draw, (x0 + w * 0.14, y0 + h * 0.44), max(2.0, w * 0.035), max(2.0, h * 0.035), fill=(78, 88, 98), outline=(36, 42, 50)),
+        _draw_small_ellipse(draw, (x1 - w * 0.14, y0 + h * 0.44), max(2.0, w * 0.035), max(2.0, h * 0.035), fill=(78, 88, 98), outline=(36, 42, 50)),
+    ]
+    return _bbox_union(bucket_bbox, opening, inner, _padded_screen_line_bbox(handle, pad_px=4.0), *lugs)
 
 
 def _draw_tray_object(
@@ -1687,12 +1903,18 @@ def _draw_spoon_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.18, 0.0), dimensions_xyz=(width * 0.16, depth * 0.60, height * 0.42))
-    bowl = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.32, 0.0), dimensions_xyz=(width * 0.66, depth * 0.32, height * 0.58))
-    return _bbox_union(
-        _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(156, 166, 176)),
-        _draw_upright_profile_object(draw, bowl, camera=camera, frame=frame, fill=(188, 198, 206), profile_xz=_oval_profile_points(32, z_scale=0.72), inset_scale=0.72),
-    )
+    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.20, 0.0), dimensions_xyz=(width * 0.14, depth * 0.58, height * 0.40))
+    bowl = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.30, 0.0), dimensions_xyz=(width * 0.92, depth * 0.42, height * 0.62))
+    handle_bbox = _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(158, 168, 178))
+    bowl_bbox = _draw_upright_profile_object(draw, bowl, camera=camera, frame=frame, fill=(190, 200, 208), profile_xz=_oval_profile_points(32, z_scale=0.72), inset_scale=0.58)
+    x0, y0, x1, y1 = (float(value) for value in bowl_bbox)
+    w = max(1.0, x1 - x0)
+    h = max(1.0, y1 - y0)
+    inner = [x0 + w * 0.18, y0 + h * 0.18, x1 - w * 0.18, y1 - h * 0.18]
+    shine = [(x0 + w * 0.25, y0 + h * 0.30), (x1 - w * 0.22, y0 + h * 0.22)]
+    draw.ellipse(inner, outline=(104, 116, 126), width=2)
+    draw.line(shine, fill=(244, 248, 249), width=2)
+    return _bbox_union(handle_bbox, bowl_bbox, inner, _padded_screen_line_bbox(shine, pad_px=1.0))
 
 
 def _draw_calculator_object(

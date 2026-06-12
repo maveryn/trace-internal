@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -31,7 +31,6 @@ from ...shared.variant_sampling import (
     resolve_compatible_scene_query_ids,
     resolve_variant,
 )
-from ..shared.complexity import build_physics_electrostatics_field_map_complexity
 from ..shared.diagram_style import (
     PHYSICS_ELECTROSTATICS_SEMANTIC_COLORS,
     PhysicsDiagramStyle,
@@ -39,14 +38,14 @@ from ..shared.diagram_style import (
     physics_electrostatics_theme_from_diagram_style,
     resolve_physics_diagram_style,
 )
-from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_support
 from ..shared.vector_arrows import SEMANTIC_DIRECTION_VECTORS, arrow_bbox, centered_arrow_endpoints, draw_arrow_with_bbox
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "physics_electrostatics_field_map_family"
+TASK_ID = "physics_electrostatics_field_map"
 SCENE_ID = "electrostatic_field"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "clean_grid",
@@ -234,12 +233,12 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "electrostatics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "electrostatics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="electrostatics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="electrostatics", apply_prob=0.5)
 
 
 def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_keys: Sequence[str]) -> Mapping[str, Any]:
@@ -1919,7 +1918,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "electrostatics"
+    scene_id = "electrostatics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -1975,14 +1974,13 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 instance_seed=int(instance_seed),
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 protected_colors=PHYSICS_ELECTROSTATICS_SEMANTIC_COLORS,
                 allow_dark=False,
             )
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -2053,7 +2051,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
             json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -2102,17 +2100,6 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
             elif scene_spec.potential_scenario is not None:
                 charge_count = len(scene_spec.potential_scenario.charges)
 
-            complexity = build_physics_electrostatics_field_map_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=TASK_ID,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                direction_mode=axes.direction_mode,
-                charge_count=int(charge_count),
-                option_count=int(option_count),
-                target_answer_magnitude=int(answer_magnitude),
-                annotation_count=len(rendered_scene.annotation_points),
-            )
 
             direction_payload: Dict[str, Any] = {}
             if scene_spec.direction_scenario is not None:
@@ -2287,7 +2274,6 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=str(axes.query_id),

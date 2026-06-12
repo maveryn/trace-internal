@@ -1,0 +1,146 @@
+{
+  "bundle_id": "charts_errorbar_series_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "errorbar_series_scene": [
+        "The image shows {object_description}.",
+        "The chart shows {object_description}.",
+        "The image shows {object_description}.",
+        "The chart shows {object_description}.",
+        "The image shows {object_description}."
+      ]
+    },
+    "task": {
+      "errorbar_series_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "entirely_above_threshold_count": [
+        "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+        "Count the x positions where series \"{target_series_label}\" has its whole error bar {threshold_relation_phrase} {threshold_value}.",
+        "Using the error bars for \"{target_series_label}\", how many are {threshold_relation_phrase} the reference value {threshold_value}?",
+        "How many \"{target_series_label}\" error bars lie {threshold_relation_phrase} {threshold_value}?",
+        "For \"{target_series_label}\", count the x-axis labels whose error bar is {threshold_relation_phrase} {threshold_value}."
+      ],
+      "entirely_below_threshold_count": [
+        "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+        "Count the x positions where series \"{target_series_label}\" has its whole error bar {threshold_relation_phrase} {threshold_value}.",
+        "Using the error bars for \"{target_series_label}\", how many are {threshold_relation_phrase} the reference value {threshold_value}?",
+        "How many \"{target_series_label}\" error bars lie {threshold_relation_phrase} {threshold_value}?",
+        "For \"{target_series_label}\", count the x-axis labels whose error bar is {threshold_relation_phrase} {threshold_value}."
+      ],
+      "contains_threshold_count": [
+        "For series \"{target_series_label}\", how many x-axis positions have an error bar {threshold_relation_phrase} the reference value {threshold_value}?",
+        "Count the x positions where series \"{target_series_label}\" has an error bar {threshold_relation_phrase} {threshold_value}.",
+        "Using the error bars for \"{target_series_label}\", how many include the reference value {threshold_value}?",
+        "How many \"{target_series_label}\" error bars contain {threshold_value}?",
+        "For \"{target_series_label}\", count the x-axis labels whose error bar contains {threshold_value}."
+      ],
+      "highest_upper_bound_x_label": [
+        "For series \"{target_series_label}\", which x-axis label has the {extremum_phrase} {bound_phrase}?",
+        "Find the x-axis label where \"{target_series_label}\" has the {extremum_phrase} {bound_phrase}.",
+        "Looking only at \"{target_series_label}\", which x label has the {extremum_phrase} {bound_phrase}?",
+        "Which visible x-axis label corresponds to the {extremum_phrase} {bound_phrase} for \"{target_series_label}\"?",
+        "For \"{target_series_label}\", identify the x-axis label with the {extremum_phrase} {bound_phrase}."
+      ],
+      "lowest_lower_bound_x_label": [
+        "For series \"{target_series_label}\", which x-axis label has the {extremum_phrase} {bound_phrase}?",
+        "Find the x-axis label where \"{target_series_label}\" has the {extremum_phrase} {bound_phrase}.",
+        "Looking only at \"{target_series_label}\", which x label has the {extremum_phrase} {bound_phrase}?",
+        "Which visible x-axis label corresponds to the {extremum_phrase} {bound_phrase} for \"{target_series_label}\"?",
+        "For \"{target_series_label}\", identify the x-axis label with the {extremum_phrase} {bound_phrase}."
+      ],
+      "overlap_target_errorbar_at_x_count": [
+        "At x-axis label \"{target_x_label}\", how many other series have error bars that overlap the error bar for \"{target_series_label}\"?",
+        "Compare all series at \"{target_x_label}\". How many other error bars overlap \"{target_series_label}\"?",
+        "At \"{target_x_label}\", count the other series whose error-bar interval overlaps the interval for \"{target_series_label}\".",
+        "Using the error bars at x label \"{target_x_label}\", how many non-target series overlap \"{target_series_label}\"?",
+        "For x label \"{target_x_label}\", how many other series share any error-bar range with \"{target_series_label}\"?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:entirely_above_threshold_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around each counted error-bar mark for the named series",
+      "json_example": "{\"annotation\":[[244,250,268,390],[518,210,542,360],[792,280,816,430]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:entirely_below_threshold_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around each counted error-bar mark for the named series",
+      "json_example": "{\"annotation\":[[244,250,268,390],[518,210,542,360],[792,280,816,430]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:contains_threshold_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around each counted error-bar mark for the named series",
+      "json_example": "{\"annotation\":[[244,250,268,390],[518,210,542,360],[792,280,816,430]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:highest_upper_bound_x_label": {
+      "answer_hint": "set \"answer\" to the exact visible x-axis label as a string",
+      "annotation_hint": "set \"annotation\" to an object mapping \"selected_bound_endpoint\" to the [x,y] pixel point on the selected error-bar endpoint",
+      "json_example": "{\"annotation\":{\"selected_bound_endpoint\":[612,188]},\"answer\":\"FY24\"}",
+      "json_example_answer_only": "{\"answer\":\"FY24\"}"
+    },
+    "query:lowest_lower_bound_x_label": {
+      "answer_hint": "set \"answer\" to the exact visible x-axis label as a string",
+      "annotation_hint": "set \"annotation\" to an object mapping \"selected_bound_endpoint\" to the [x,y] pixel point on the selected error-bar endpoint",
+      "json_example": "{\"annotation\":{\"selected_bound_endpoint\":[612,188]},\"answer\":\"FY24\"}",
+      "json_example_answer_only": "{\"answer\":\"FY24\"}"
+    },
+    "query:overlap_target_errorbar_at_x_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an object mapping \"target_errorbar\" to the [x0,y0,x1,y1] box around the target error bar and each counted series label to its overlapping error-bar box",
+      "json_example": "{\"annotation\":{\"target_errorbar\":[508,260,532,402],\"Vega\":[536,280,560,420],\"Orly\":[564,248,588,392]},\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    },
+    "target_series_label": {
+      "type": "string"
+    },
+    "threshold_relation_phrase": {
+      "type": "string"
+    },
+    "threshold_value": {
+      "type": "integer"
+    },
+    "target_x_label": {
+      "type": "string"
+    },
+    "bound_phrase": {
+      "type": "string"
+    },
+    "extremum_phrase": {
+      "type": "string"
+    }
+  }
+}

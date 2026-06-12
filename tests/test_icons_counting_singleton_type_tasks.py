@@ -1,14 +1,10 @@
 """Behavior tests for icon singleton-type counting task."""
-
 from __future__ import annotations
-
 import json
 from collections import Counter
-
 from trace.core.seed import hash64
 from trace.tasks.icons.counting.most_frequent_type import IconsIconFieldTypeFrequencyCountTask
 from trace.tasks.icons.counting.singleton_type import IconsCountingSingletonTypeTask
-
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -22,148 +18,109 @@ def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     right_area = max(1, int(right[2]) - int(right[0])) * max(1, int(right[3]) - int(right[1]))
     return float(inter) / float(min(left_area, right_area))
 
-
 def _extract_prompt_json_example(prompt: str) -> dict:
-    marker = "Example JSON:\n"
+    marker = 'Example JSON:\n'
     assert marker in str(prompt)
     payload = str(prompt).split(marker, 1)[1].strip()
     return json.loads(payload)
 
-
 def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     task = IconsCountingSingletonTypeTask()
-    out = task.generate(
-        18310,
-        params={"object_count": 9, "target_count": 3, "query_id": "singleton_type_count"},
-        max_attempts=200,
-    )
+    out = task.generate(18310, params={'object_count': 9, 'target_count': 3, 'query_id': 'singleton_type_count'}, max_attempts=200)
     trace = out.trace_payload
-    execution = trace["execution_trace"]
-    scene_entities = trace["scene_ir"]["entities"]
-    assert out.answer_gt.type == "integer"
+    execution = trace['execution_trace']
+    scene_entities = trace['scene_ir']['entities']
+    assert out.answer_gt.type == 'integer'
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 3
     assert out.annotation_gt.value == sorted(out.annotation_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
-    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
-    assert trace["scene_ir"]["scene_kind"] == "icons_singleton_type_counting"
-    assert out.query_id == "singleton_type_count"
-    assert execution["question_format"] == "count_singleton_type_icons"
-    assert execution["query_id"] == "singleton_type_count"
-    assert execution["scene_variant"] == "single_panel_scene"
-    assert int(execution["object_count"]) == 9
-    assert int(execution["target_count"]) == 3
-    assert int(execution["repeated_type_count"]) >= 1
-    assert int(execution["distinct_type_count"]) >= 4
+    assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
+    assert trace['query_spec']['prompt_variant_active_key'] == 'answer_and_annotation'
+    assert trace['scene_ir']['scene_kind'] == 'icons_singleton_type_counting'
+    assert out.query_id == 'singleton_type_count'
+    assert execution['question_format'] == 'count_singleton_type_icons'
+    assert execution['query_id'] == 'singleton_type_count'
+    assert execution['scene_variant'] == 'single_panel_scene'
+    assert int(execution['object_count']) == 9
+    assert int(execution['target_count']) == 3
+    assert int(execution['repeated_type_count']) >= 1
+    assert int(execution['distinct_type_count']) >= 4
     assert len(scene_entities) == 9
-    assert "reference_panel_xyxy" not in trace["render_spec"]["panel_geometry"]
-    sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
+    assert 'reference_panel_xyxy' not in trace['render_spec']['panel_geometry']
+    sampled_palette = [tuple((int(channel) for channel in color)) for color in trace['render_spec']['style']['sampled_palette_rgb']]
     assert 8 <= len(sampled_palette) <= 12
-    assert list(trace["render_spec"]["style"]["icon_noise_edit_count_range"]) == [0, 2]
-    assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.10
-    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
-    assert set(out.complexity.complexity_components.keys()) == {
-        "visual_scan",
-        "semantic_match",
-        "ambiguity",
-        "clutter",
-    }
-    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-
-    singleton_indices = {int(value) for value in execution["singleton_indices"]}
-    type_frequencies = {str(key): int(value) for key, value in execution["type_frequencies"].items()}
+    assert list(trace['render_spec']['style']['icon_noise_edit_count_range']) == [0, 2]
+    assert float(trace['render_spec']['style']['scene_max_overlap_fraction']) == 0.1
+    singleton_indices = {int(value) for value in execution['singleton_indices']}
+    type_frequencies = {str(key): int(value) for key, value in execution['type_frequencies'].items()}
     assert len(singleton_indices) == 3
-    assert sum(1 for value in execution["scene_icon_ids"] if type_frequencies[str(value)] == 1) == 3
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    annotation_boxes = {tuple(int(value) for value in box) for box in out.annotation_gt.value}
+    assert sum((1 for value in execution['scene_icon_ids'] if type_frequencies[str(value)] == 1)) == 3
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    annotation_boxes = {tuple((int(value) for value in box)) for box in out.annotation_gt.value}
     for index, entity in enumerate(scene_entities):
-        icon_id = str(entity["icon_id"])
-        assert int(entity["type_frequency"]) == int(type_frequencies[icon_id])
-        assert bool(entity["is_singleton_type"]) == (int(index) in singleton_indices)
-        assert tuple(int(channel) for channel in entity["tint_rgb"]) in sampled_palette
-        assert int(entity["rotation_degrees"]) in {0, 90, 180, 270}
-        assert isinstance(entity["noise_edits"], list)
-        if bool(entity["is_singleton_type"]):
-            assert tuple(int(value) for value in entity["bbox_xyxy"]) in annotation_boxes
+        icon_id = str(entity['icon_id'])
+        assert int(entity['type_frequency']) == int(type_frequencies[icon_id])
+        assert bool(entity['is_singleton_type']) == (int(index) in singleton_indices)
+        assert tuple((int(channel) for channel in entity['tint_rgb'])) in sampled_palette
+        assert int(entity['rotation_degrees']) in {0, 90, 180, 270}
+        assert isinstance(entity['noise_edits'], list)
+        if bool(entity['is_singleton_type']):
+            assert tuple((int(value) for value in entity['bbox_xyxy'])) in annotation_boxes
             assert int(type_frequencies[icon_id]) == 1
         else:
             assert int(type_frequencies[icon_id]) >= 2
     for left_index, left in enumerate(scene_entities):
-        for right in scene_entities[left_index + 1 :]:
-            assert _overlap_fraction_smaller(left["bbox_xyxy"], right["bbox_xyxy"]) <= 0.10 + 1e-6
-
+        for right in scene_entities[left_index + 1:]:
+            assert _overlap_fraction_smaller(left['bbox_xyxy'], right['bbox_xyxy']) <= 0.1 + 1e-06
 
 def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
     task = IconsCountingSingletonTypeTask()
-    out = task.generate(
-        18311,
-        params={"object_count": 8, "target_count": 0, "query_id": "singleton_type_count"},
-        max_attempts=200,
-    )
-    execution = out.trace_payload["execution_trace"]
+    out = task.generate(18311, params={'object_count': 8, 'target_count': 0, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    execution = out.trace_payload['execution_trace']
     assert int(out.answer_gt.value) == 0
     assert out.annotation_gt.value == []
-    assert execution["singleton_indices"] == []
-
+    assert execution['singleton_indices'] == []
 
 def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None:
     task = IconsCountingSingletonTypeTask()
-    out = task.generate(
-        18312,
-        params={"object_count": 9, "target_count": 2, "query_id": "singleton_type_count"},
-        max_attempts=200,
-    )
-    answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
-    assert answer_only == {"answer": 2}
-    assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert isinstance(answer_and_annotation["annotation"], list)
-    assert len(answer_and_annotation["annotation"]) == 2
-    assert answer_and_annotation["answer"] == 2
-
+    out = task.generate(18312, params={'object_count': 9, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+    assert answer_only == {'answer': 2}
+    assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
+    assert isinstance(answer_and_annotation['annotation'], list)
+    assert len(answer_and_annotation['annotation']) == 2
+    assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_singleton_type_repeated_distractors_share_visual_style() -> None:
     task = IconsCountingSingletonTypeTask()
-    out = task.generate(
-        18314,
-        params={"object_count": 8, "target_count": 2, "query_id": "singleton_type_count"},
-        max_attempts=200,
-    )
+    out = task.generate(18314, params={'object_count': 8, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
     trace = out.trace_payload
-    execution = trace["execution_trace"]
+    execution = trace['execution_trace']
     assert int(out.answer_gt.value) == 2
     assert len(out.annotation_gt.value) == 2
-    assert execution["question_format"] == "count_singleton_type_icons"
-    assert int(execution["object_count"]) == 8
-    assert int(execution["target_count"]) == 2
-    assert int(execution["singleton_count"]) == 2
-    assert int(execution["repeated_icon_count"]) == 6
-    assert len(execution["repeated_indices"]) == 6
-    assert len(execution["annotation_indices"]) == 2
-    assert trace["scene_ir"]["relations"]["counting_rule"] == "singleton_icon_type_frequency"
-    annotation_boxes = {tuple(int(value) for value in box) for box in out.annotation_gt.value}
+    assert execution['question_format'] == 'count_singleton_type_icons'
+    assert int(execution['object_count']) == 8
+    assert int(execution['target_count']) == 2
+    assert int(execution['singleton_count']) == 2
+    assert int(execution['repeated_icon_count']) == 6
+    assert len(execution['repeated_indices']) == 6
+    assert len(execution['annotation_indices']) == 2
+    assert trace['scene_ir']['relations']['counting_rule'] == 'singleton_icon_type_frequency'
+    annotation_boxes = {tuple((int(value) for value in box)) for box in out.annotation_gt.value}
     repeated_styles: dict[str, set[tuple[object, ...]]] = {}
-    for entity in trace["scene_ir"]["entities"]:
-        bbox = tuple(int(value) for value in entity["bbox_xyxy"])
-        if bool(entity["is_repeated_type"]):
+    for entity in trace['scene_ir']['entities']:
+        bbox = tuple((int(value) for value in entity['bbox_xyxy']))
+        if bool(entity['is_repeated_type']):
             assert bbox not in annotation_boxes
-            assert int(entity["type_frequency"]) >= 2
-            repeated_styles.setdefault(str(entity["icon_id"]), set()).add(
-                (
-                    int(entity["rotation_degrees"]),
-                    int(entity["nominal_size_px"]),
-                    tuple(int(channel) for channel in entity["tint_rgb"]),
-                    json.dumps(entity["noise_edits"], sort_keys=True),
-                    entity["noise_seed"],
-                )
-            )
+            assert int(entity['type_frequency']) >= 2
+            repeated_styles.setdefault(str(entity['icon_id']), set()).add((int(entity['rotation_degrees']), int(entity['nominal_size_px']), tuple((int(channel) for channel in entity['tint_rgb'])), json.dumps(entity['noise_edits'], sort_keys=True), entity['noise_seed']))
         else:
             assert bbox in annotation_boxes
-            assert int(entity["type_frequency"]) == 1
+            assert int(entity['type_frequency']) == 1
     assert repeated_styles
-    assert all(len(styles) == 1 for styles in repeated_styles.values())
-
+    assert all((len(styles) == 1 for styles in repeated_styles.values()))
 
 def test_icons_counting_type_frequency_sampling_defaults() -> None:
     task = IconsIconFieldTypeFrequencyCountTask()
@@ -173,28 +130,24 @@ def test_icons_counting_type_frequency_sampling_defaults() -> None:
     singleton_targets: Counter[int] = Counter()
     most_frequent_targets: Counter[int] = Counter()
     for index in range(80):
-        out = task.generate(
-            hash64(18313, "icons_counting_singleton_type", index),
-            params={},
-            max_attempts=200,
-        )
-        execution = out.trace_payload["execution_trace"]
-        object_count = int(execution["object_count"])
-        target_count = int(execution["target_count"])
-        query_id = str(execution["query_id"])
+        out = task.generate(hash64(18313, 'icons_counting_singleton_type', index), params={}, max_attempts=200)
+        execution = out.trace_payload['execution_trace']
+        object_count = int(execution['object_count'])
+        target_count = int(execution['target_count'])
+        query_id = str(execution['query_id'])
         object_counts[object_count] += 1
         query_id_counts[query_id] += 1
         target_counts[target_count] += 1
-        if query_id == "singleton_type_count":
+        if query_id == 'singleton_type_count':
             singleton_targets[target_count] += 1
             assert 5 <= object_count <= 10
             assert 0 <= target_count <= 4
         else:
             most_frequent_targets[target_count] += 1
-            assert query_id == "most_frequent_type_count"
+            assert query_id == 'most_frequent_type_count'
             assert 7 <= object_count <= 12
             assert 2 <= target_count <= 6
-    assert set(query_id_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}
+    assert set(query_id_counts.keys()) == {'singleton_type_count', 'most_frequent_type_count'}
     assert set(singleton_targets.keys()) == set(range(0, 5))
     assert set(most_frequent_targets.keys()) == set(range(2, 7))
     assert min(object_counts.keys()) >= 5

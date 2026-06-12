@@ -1,1 +1,1 @@
-"""Puzzle spatial task group."""
+"""Puzzle spatial scene."""

@@ -8,7 +8,9 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.measurement.rectangular_solid import (
+from trace.tasks.geometry.rectangular_solid.cube_edge_from_frame_length_value import GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask
+from trace.tasks.geometry.rectangular_solid.cuboid_surface_area_value import GeometryRectangularSolidCuboidSurfaceAreaValueTask
+from trace.tasks.geometry.rectangular_solid.cuboid_volume_missing_dimension_value import (
     ANNOTATION_KEYS,
     FRAME_ANNOTATION_KEYS,
     NET_ANNOTATION_KEYS,
@@ -26,11 +28,9 @@ from trace.tasks.geometry.measurement.rectangular_solid import (
     TASK_ID_MISSING_DIMENSION,
     TASK_ID_OPEN_BOX_NET,
     TASK_ID_SURFACE_AREA,
-    GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask,
-    GeometryRectangularSolidCuboidSurfaceAreaValueTask,
     GeometryRectangularSolidCuboidVolumeMissingDimensionValueTask,
-    GeometryRectangularSolidOpenBoxNetDimensionValueTask,
 )
+from trace.tasks.geometry.rectangular_solid.open_box_net_dimension_value import GeometryRectangularSolidOpenBoxNetDimensionValueTask
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID, **params):
@@ -51,7 +51,7 @@ def test_rectangular_solid_missing_dimension_registered() -> None:
         taxonomy = lookup_task_taxonomy(task_id)
         assert taxonomy.domain == "geometry"
         assert taxonomy.scene_id == SCENE_ID
-        assert taxonomy.source_task_group == "measurement"
+        assert taxonomy.source_scene_id == "measurement"
 
 
 @pytest.mark.parametrize(

@@ -6,16 +6,20 @@ from io import BytesIO
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.graph.counting.phylogeny_tree_count import TASK_ID as CLADE_COUNT_TASK_ID
-from trace.tasks.graph.relation.phylogeny_tree_relation import (
+from trace.tasks.graph.phylogeny_tree.clade_leaf_count import TASK_ID as CLADE_COUNT_TASK_ID
+from trace.tasks.graph.phylogeny_tree.mrca_clade_membership_count import (
     MRCA_TASK_ID,
-    SISTER_TASK_ID,
-    TOPOLOGY_TASK_ID,
     GraphRelationPhylogenyMrcaCladeMembershipCountTask,
+)
+from trace.tasks.graph.phylogeny_tree.sister_leaf_label import (
+    SISTER_TASK_ID,
     GraphRelationPhylogenySisterLeafLabelTask,
+)
+from trace.tasks.graph.phylogeny_tree.topology_outlier_label import (
+    TOPOLOGY_TASK_ID,
     GraphRelationPhylogenyTopologyOutlierLabelTask,
 )
-from trace.tasks.graph.shared.phylogeny_tree_scene import sample_topology_outlier_options
+from trace.tasks.graph.phylogeny_tree.shared.scene import sample_topology_outlier_options
 from trace.tasks.registry import TASK_REGISTRY, create_task
 
 
@@ -40,6 +44,8 @@ def test_phylogeny_tasks_are_registered_and_taxonomized() -> None:
         assert taxonomy.domain == "graph"
         assert taxonomy.scene_id == "phylogeny_tree"
         assert taxonomy.source_domain == "graph"
+        assert taxonomy.source_scene_id == "phylogeny_tree"
+        assert not hasattr(TASK_REGISTRY[task_id], "scene_id")
 
 
 def test_phylogeny_clade_leaf_count_contract() -> None:

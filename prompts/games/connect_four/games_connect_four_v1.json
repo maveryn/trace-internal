@@ -1,0 +1,148 @@
+{
+  "bundle_id": "games_connect_four_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "visible_connect_four_board": [
+        "The image shows {object_description}.",
+        "The visual shows {object_description}.",
+        "You are shown {object_description}.",
+        "The figure shows {object_description}.",
+        "The scene contains {object_description}."
+      ]
+    },
+    "task": {
+      "connect_four_move_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "winning_move_count": [
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} How many legal drop columns let {current_player_name} win immediately?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} Count the legal drop columns that would win at once for {current_player_name}.",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} What is the number of immediate-winning legal drop columns for {current_player_name}?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} How many columns give {current_player_name} an immediate win on this move?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} Determine how many legal drop columns would complete a win immediately for {current_player_name}."
+      ],
+      "winning_move_column_label": [
+        "It is {current_player_name}'s turn. Use the column labels shown below the board. {legal_drop_rule_text} {winning_rule_text} Which column lets {current_player_name} win immediately?",
+        "It is {current_player_name}'s turn. Use the labels under the columns. {legal_drop_rule_text} {winning_rule_text} Which labeled column gives {current_player_name} an immediate win?",
+        "It is {current_player_name}'s turn. Read the column labels below the board. {legal_drop_rule_text} {winning_rule_text} Select the column where {current_player_name} can win on this move.",
+        "It is {current_player_name}'s turn. The columns are labeled below the board. {legal_drop_rule_text} {winning_rule_text} Which column should {current_player_name} drop in to win immediately?",
+        "It is {current_player_name}'s turn. Use the visible column labels. {legal_drop_rule_text} {winning_rule_text} Which labeled column completes an immediate win for {current_player_name}?"
+      ],
+      "safe_move_count": [
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} {safety_rule_text} How many legal drop columns are safe for {current_player_name}?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} {safety_rule_text} Count the safe legal drop columns for {current_player_name}.",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} {safety_rule_text} What is the number of safe legal drop columns for {current_player_name}?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} {safety_rule_text} How many legal drop columns leave {opponent_player_name} without an immediate winning reply?",
+        "It is {current_player_name}'s turn. {legal_drop_rule_text} {winning_rule_text} {safety_rule_text} Determine the number of safe legal drop columns for {current_player_name}."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:visible_connect_four_board": [
+      "object_description"
+    ],
+    "query:winning_move_count": [
+      "current_player_name",
+      "legal_drop_rule_text",
+      "winning_rule_text"
+    ],
+    "query:winning_move_column_label": [
+      "current_player_name",
+      "legal_drop_rule_text",
+      "winning_rule_text"
+    ],
+    "query:safe_move_count": [
+      "current_player_name",
+      "opponent_player_name",
+      "legal_drop_rule_text",
+      "winning_rule_text",
+      "safety_rule_text"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "current_player_name": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "legal_drop_rule_text": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "opponent_player_name": {
+      "type": "string"
+    },
+    "safety_rule_text": {
+      "type": "string"
+    },
+    "winning_rule_text": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_midgame_board": "a Connect Four board in a midgame position with red and yellow discs",
+    "object_description_crowded_board": "a Connect Four board in a crowded late-game position with red and yellow discs",
+    "legal_drop_rule_text": "A legal drop chooses one non-full column and lands in its lowest empty square.",
+    "winning_rule_text": "A horizontal, vertical, or diagonal line of four matching discs wins.",
+    "safety_rule_text": "For each non-full column, imagine dropping the current player's disc into its lowest empty square. A safe drop is one where the opponent then has no immediate winning drop on their next single move.",
+    "annotation_hint_winning_move_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every immediate-winning landing square",
+    "annotation_hint_winning_move_column_label": "set \"annotation\" to a JSON array containing the bounding box [x0, y0, x1, y1] for the landing square in the selected winning column",
+    "annotation_hint_safe_move_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every safe legal landing square",
+    "answer_hint_winning_move_count": "set \"answer\" to the number of legal drop columns that win immediately",
+    "answer_hint_winning_move_column_label": "set \"answer\" to the selected column label as a capital letter shown below the board",
+    "answer_hint_safe_move_count": "set \"answer\" to the number of legal drop columns that are safe"
+  }
+}

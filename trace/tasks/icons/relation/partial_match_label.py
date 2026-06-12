@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageChops, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -24,7 +24,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.complexity import build_icon_task_complexity, icon_scene_clutter_score, icon_visual_scan_score
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_assets import icon_transform_signature, render_icon_rgba, resolve_icon_pool
@@ -138,7 +137,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__icon_cutout__partial_match_label",
@@ -527,53 +526,6 @@ def _scene_style_trace(
     return style
 
 
-def _build_complexity(
-    *,
-    scene_payload: _ScenePayload,
-    render_params: Mapping[str, Any],
-) -> TaskComplexity:
-    """Build relation-task complexity for partial icon matching."""
-
-    object_count_min = int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min))
-    object_count_max = int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max))
-    visible_min, visible_max = [float(value) for value in render_params["fragment_visible_alpha_ratio_range"]]
-    crop_difficulty = 1.0 - _normalize_linear(
-        float(scene_payload.fragment_visible_alpha_ratio),
-        min_value=float(visible_min),
-        max_value=float(visible_max),
-    )
-    style_difficulty = float(_WINDOW_STYLE_DIFFICULTY.get(str(scene_payload.fragment_window_style), 0.40))
-    visual_scan = icon_visual_scan_score(
-        object_count=int(scene_payload.object_count),
-        object_count_min=int(object_count_min),
-        object_count_max=max(int(object_count_min) + 1, int(object_count_max)),
-    )
-    spatial_reasoning = _clip01((0.70 * float(crop_difficulty)) + (0.30 * float(style_difficulty)))
-    ambiguity = _clip01((0.60 * float(crop_difficulty)) + (0.25 * float(style_difficulty)) + (0.15 * float(visual_scan)))
-    option_instances = [
-        {
-            "bbox_xyxy": list(cell.get("icon_bbox_xyxy", ())),
-            "noise_edits": list(cell.get("noise_edits", ())),
-        }
-        for cell in scene_payload.scene_cells
-    ]
-    clutter = icon_scene_clutter_score(
-        scene_instances=option_instances,
-        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
-        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
-        scene_max_overlap_fraction=0.05,
-        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
-    )
-    return build_icon_task_complexity(
-        task_group_defaults=_TASK_GROUP_DEFAULTS,
-        task_id=IconsRelationPartialMatchLabelTask.task_id,
-        criterion_values={
-            "visual_scan": float(visual_scan),
-            "spatial_reasoning": float(spatial_reasoning),
-            "ambiguity": float(ambiguity),
-            "clutter": float(clutter),
-        },
-    )
 
 
 def _sample_scene(
@@ -748,7 +700,7 @@ class IconsRelationPartialMatchLabelTask:
 
     task_id = "task_icons__icon_cutout__partial_match_label"
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic partial-icon matching instance."""
@@ -795,7 +747,7 @@ class IconsRelationPartialMatchLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -923,7 +875,6 @@ class IconsRelationPartialMatchLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scene_payload=scene_payload, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id="icon_cutout",
             query_id=str(_QUERY_ID),

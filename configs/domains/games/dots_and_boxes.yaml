@@ -8,15 +8,6 @@ generation:
     - 4
     scene_variant_weights:
       single_board: 1.0
-    query_id_weights:
-      three_sided_box_count: 1.0
-      capture_move_count: 1.0
-      highlighted_candidate_capture_count: 1.0
-      player_a_owned_box_count: 1.0
-      player_b_owned_box_count: 1.0
-    capture_move_query_id_weights:
-      capture_move_count: 1.0
-      highlighted_candidate_capture_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -25,48 +16,52 @@ generation:
       slate: 1.0
       wood_panel: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
-    balanced_capture_move_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_target_answer_sampling: true
     balanced_board_shape_sampling: true
-    balanced_candidate_edge_count_sampling: true
-    three_sided_box_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    capture_move_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    highlighted_candidate_capture_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    owned_box_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    candidate_edge_count_support:
-    - 5
-    - 6
-    - 7
-    - 8
+  task_overrides:
+    task_games__dots_and_boxes__capture_move_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_edge_count_sampling: true
+      capture_move_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      highlighted_candidate_capture_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      candidate_edge_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+    task_games__dots_and_boxes__owned_box_count:
+      balanced_target_answer_sampling: true
+      owned_box_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    task_games__dots_and_boxes__three_sided_box_count:
+      balanced_target_answer_sampling: true
+      three_sided_box_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
 rendering:
   shared:
     canvas_width: 1180
@@ -88,40 +83,8 @@ rendering:
     canvas_min_height_px: 520
     canvas_side_padding_px: 150
     canvas_vertical_padding_px: 110
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.24
-      state_reasoning: 0.46
-      ambiguity: 0.12
-      output_burden: 0.18
 prompt:
   shared:
-    bundle_id: games_dots_and_boxes_v0
+    bundle_id: games_dots_and_boxes_v1
     scene_key: visible_dots_and_boxes_board
     task_key: dots_and_boxes_capture_query
-    object_description_single_board: a dots-and-boxes grid with some edges already
-      drawn
-    annotation_hint_three_sided_box_count: set "annotation" to a JSON array of full-cell
-      bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides
-    answer_hint_three_sided_box_count: set "answer" to the number of boxes with exactly
-      three drawn sides
-    annotation_hint_capture_move_count: set "annotation" to a JSON array of endpoint
-      point-pairs, with each endpoint as a pixel-space point [x, y], for every
-      missing edge that would complete at least one box if drawn
-    answer_hint_capture_move_count: set "answer" to the number of missing edges that
-      would complete at least one box if drawn
-    annotation_hint_highlighted_candidate_capture_count: set "annotation" to a JSON
-      array of endpoint point-pairs, with each endpoint as a pixel-space point
-      [x, y], for every highlighted missing edge that would complete at least
-      one box if drawn
-    answer_hint_highlighted_candidate_capture_count: set "answer" to the number of
-      highlighted missing edges that would complete at least one box if drawn
-    annotation_hint_player_a_owned_box_count: set "annotation" to a JSON array of full-cell
-      bounding boxes [x0, y0, x1, y1] for every box marked with player A
-    answer_hint_player_a_owned_box_count: set "answer" to the number of boxes marked
-      with player A
-    annotation_hint_player_b_owned_box_count: set "annotation" to a JSON array of full-cell
-      bounding boxes [x0, y0, x1, y1] for every box marked with player B
-    answer_hint_player_b_owned_box_count: set "answer" to the number of boxes marked
-      with player B

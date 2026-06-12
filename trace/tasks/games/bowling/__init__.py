@@ -1,1 +1,1 @@
-"""Bowling lane games tasks."""
+"""Bowling scene package for games-domain tasks."""

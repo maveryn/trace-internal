@@ -44,7 +44,6 @@ generation:
       child_count_max: 8
       query_weights:
         nth_child_label: 1.0
-
 rendering:
   shared:
     canvas_width: 1500
@@ -74,56 +73,74 @@ rendering:
     layout_jitter_y_px_min: -16
     layout_jitter_y_px_max: 16
     layout_jitter_min_margin_px: 18
-
-complexity:
-  shared:
-    criteria_weights:
-      concept_size: 0.36
-      visual_search: 0.30
-      reasoning_load: 0.34
-
 prompt:
   shared:
     bundle_id: pages_concept_map_v0
     scene_key: concept_map_diagram
-    object_description: a concept map with a central topic, labeled branches, and child items
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description: a concept map with a central topic, labeled branches, and
+      child items
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     integer_answer_hint: set "answer" to the requested integer count
     label_answer_hint: set "answer" to the exact visible child-item label as a string
-    annotation_hint_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted child-item nodes
-    annotation_hint_label: set "annotation" to an object mapping parent_branch and answer_child to [x0,y0,x1,y1] pixel bounding boxes
-
+    annotation_hint_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding
+      boxes for the counted child-item nodes
+    annotation_hint_label: set "annotation" to an object mapping parent_branch and
+      answer_child to [x0,y0,x1,y1] pixel bounding boxes
 visual:
   background:
     enabled: true
     styles:
       paper_light:
         kind: solid
-        color: [247, 248, 244]
+        color:
+        - 247
+        - 248
+        - 244
       paper_cool:
         kind: solid
-        color: [238, 244, 248]
+        color:
+        - 238
+        - 244
+        - 248
       paper_warm:
         kind: solid
-        color: [249, 243, 234]
+        color:
+        - 249
+        - 243
+        - 234
       paper_mint:
         kind: solid
-        color: [239, 247, 241]
+        color:
+        - 239
+        - 247
+        - 241
     weights:
       paper_light: 1.0
       paper_cool: 1.0
       paper_warm: 1.0
       paper_mint: 1.0
   noise:
-    apply_prob: 0.30
-    edit_count_range: [1, 1]
+    apply_prob: 0.3
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.03, 0.14]
+        radius:
+        - 0.03
+        - 0.14
       downsample:
-        scale: [0.96, 0.99]
+        scale:
+        - 0.96
+        - 0.99
       jpeg:
-        quality: [90.0, 98.0]
+        quality:
+        - 90.0
+        - 98.0
       noise:
-        alpha: [0.003, 0.010]
+        alpha:
+        - 0.003
+        - 0.01

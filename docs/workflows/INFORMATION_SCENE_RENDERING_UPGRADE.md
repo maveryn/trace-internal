@@ -74,7 +74,7 @@ Charts, pages, and graph use the shared `information_scene_style` family under
   domain-specific renderers.
 - Domain adapters should build a `VisualStyleRequest` through the shared
   visual-style request helper before calling the concrete style resolver. The
-  request records the domain, scene, task group, style family, dark/colored
+  request records the domain, scene, scene, style family, dark/colored
   surface permissions, protected semantic colors, and required text roles.
 - Scene renderers still own semantic geometry, layout, entity tracing, visible
   values, chart marks, graph topology, and annotation projection.

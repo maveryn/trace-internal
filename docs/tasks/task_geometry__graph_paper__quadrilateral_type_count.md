@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `counting`
+2. Scene id: `graph_paper`
 3. Scene id: `graph_paper`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `quadrilateral_type_count`
@@ -13,7 +13,7 @@
 - `count(filter(graph_paper_quadrilaterals, quadrilateral_type(shape)=target_quadrilateral_type)); scene=graph_paper; scope=quadrilateral_type_count`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `graph_paper`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/counting.yaml`
-- Task module: `trace/tasks/geometry/counting/value.py`
+- Config: `configs/domains/geometry/graph_paper.yaml`
+- Task module: `trace/tasks/geometry/graph_paper/quadrilateral_type_count.py`

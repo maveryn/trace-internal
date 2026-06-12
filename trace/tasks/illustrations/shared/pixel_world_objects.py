@@ -1228,6 +1228,242 @@ def draw_pixel_torch(
     draw.point((cx, y0 + 2), fill=(255, 238, 124))
 
 
+def draw_pixel_stone_column(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    stone_rgb: RGB = (126, 123, 114),
+) -> None:
+    """Draw a reusable one-tile dungeon stone column."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    outline = _shade(stone_rgb, -58)
+    dark = _shade(stone_rgb, -34)
+    light = _shade(stone_rgb, 38)
+    cx = (x0 + x1) // 2
+    draw.ellipse((cx - 6, y1 - 4, cx + 6, y1), fill=(62, 61, 58), outline=None)
+    draw.rectangle((cx - 4, y0 + 5, cx + 4, y1 - 4), fill=stone_rgb, outline=outline)
+    draw.rectangle((cx - 6, y0 + 2, cx + 6, y0 + 6), fill=_shade(stone_rgb, 12), outline=outline)
+    draw.rectangle((cx - 6, y1 - 8, cx + 6, y1 - 4), fill=_shade(stone_rgb, 6), outline=outline)
+    draw.line((cx - 2, y0 + 7, cx - 2, y1 - 6), fill=light)
+    draw.line((cx + 3, y0 + 7, cx + 3, y1 - 6), fill=dark)
+    for yy in (y0 + 8, y0 + 13):
+        draw.line((cx - 4, yy, cx + 4, yy), fill=_shade(stone_rgb, -18))
+    draw.point((cx - 3, y0 + 4), fill=_shade(light, 18))
+
+
+def draw_pixel_archway(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    stone_rgb: RGB = (120, 118, 110),
+    shadow_rgb: RGB = (37, 36, 39),
+) -> None:
+    """Draw a reusable two-tile dungeon archway."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    outline = _shade(stone_rgb, -58)
+    dark = _shade(stone_rgb, -34)
+    light = _shade(stone_rgb, 36)
+    cx = (x0 + x1) // 2
+    draw.rectangle((x0 + 2, y0 + 6, x0 + 8, y1 - 1), fill=stone_rgb, outline=outline)
+    draw.rectangle((x1 - 8, y0 + 6, x1 - 2, y1 - 1), fill=stone_rgb, outline=outline)
+    draw.pieslice((cx - 15, y0 - 2, cx + 15, y0 + 28), 180, 360, fill=stone_rgb, outline=outline)
+    draw.rectangle((cx - 15, y0 + 12, cx + 15, y0 + 17), fill=stone_rgb, outline=outline)
+    opening_top = min(y0 + 11, y1 - 1)
+    draw.pieslice((cx - 9, y0 + 4, cx + 9, y0 + 24), 180, 360, fill=shadow_rgb, outline=_shade(shadow_rgb, -18))
+    draw.rectangle((cx - 9, opening_top, cx + 9, y1 - 2), fill=shadow_rgb, outline=_shade(shadow_rgb, -18))
+    for px in (x0 + 5, x0 + 8, x1 - 8, x1 - 5):
+        draw.line((px, y0 + 8, px, y1 - 3), fill=dark)
+    draw.line((x0 + 5, y0 + 8, cx - 4, y0 + 3, x1 - 5, y0 + 8), fill=light)
+    draw.point((x0 + 4, y0 + 10), fill=_shade(light, 14))
+    draw.point((x1 - 5, y0 + 12), fill=dark)
+
+
+def draw_pixel_sealed_door(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    stone_rgb: RGB = (134, 87, 45),
+    seal_rgb: RGB = (94, 74, 55),
+    orientation: str = "horizontal",
+) -> None:
+    """Draw a reusable sealed dungeon door."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    outline = _shade(stone_rgb, -56)
+    dark = _shade(stone_rgb, -30)
+    light = _shade(stone_rgb, 34)
+    seal_dark = _shade(seal_rgb, -46)
+    iron = (60, 58, 54)
+    if str(orientation) == "vertical":
+        panel = (x0 + 3, y0 + 1, x1 - 3, y1 - 1)
+        draw.rectangle(panel, fill=stone_rgb, outline=outline)
+        for yy in range(panel[1] + 4, panel[3] - 1, 5):
+            draw.line((panel[0] + 2, yy, panel[2] - 2, yy), fill=dark)
+        cx = (x0 + x1) // 2
+        draw.line((cx, panel[1] + 2, cx, panel[3] - 2), fill=seal_dark, width=2)
+        draw.rectangle((panel[0] + 2, panel[1] + 3, panel[2] - 2, panel[1] + 5), fill=iron, outline=seal_dark)
+        draw.rectangle((panel[0] + 2, panel[3] - 5, panel[2] - 2, panel[3] - 3), fill=iron, outline=seal_dark)
+        draw.rectangle((cx - 3, (y0 + y1) // 2 - 3, cx + 3, (y0 + y1) // 2 + 3), fill=seal_rgb, outline=seal_dark)
+        draw.point((cx + 4, (y0 + y1) // 2), fill=light)
+    else:
+        panel = (x0 + 1, y0 + 2, x1 - 1, y1 - 2)
+        draw.rectangle(panel, fill=stone_rgb, outline=outline)
+        for xx in range(panel[0] + 5, panel[2] - 1, 5):
+            draw.line((xx, panel[1] + 1, xx, panel[3] - 1), fill=dark)
+        cy = (y0 + y1) // 2
+        draw.rectangle((panel[0] + 2, cy - 3, panel[2] - 2, cy - 1), fill=iron, outline=seal_dark)
+        draw.rectangle((panel[0] + 2, cy + 2, panel[2] - 2, cy + 4), fill=iron, outline=seal_dark)
+        draw.line((x0 + 4, cy, x1 - 4, cy), fill=seal_dark, width=2)
+        draw.rectangle(((x0 + x1) // 2 - 3, cy - 3, (x0 + x1) // 2 + 3, cy + 3), fill=seal_rgb, outline=seal_dark)
+    draw.line((panel[0] + 2, panel[1] + 1, panel[2] - 2, panel[1] + 1), fill=light)
+
+
+def draw_pixel_floor_switch(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    plate_rgb: RGB = (142, 126, 88),
+    switch_state: str = "raised",
+) -> None:
+    """Draw a reusable one-tile floor switch or pressure plate."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=2)
+    outline = _shade(plate_rgb, -56)
+    dark = _shade(plate_rgb, -28)
+    light = _shade(plate_rgb, 38)
+    cx = (x0 + x1) // 2
+    cy = (y0 + y1) // 2
+    base = (x0 + 1, y0 + 2, x1 - 1, y1 - 2)
+    if str(switch_state) == "pressed":
+        draw.rectangle(base, fill=dark, outline=outline)
+        draw.rectangle((base[0] + 2, base[1] + 2, base[2] - 2, base[3] - 2), fill=_shade(plate_rgb, -8), outline=_shade(plate_rgb, -32))
+        draw.line((base[0] + 3, base[3] - 1, base[2] - 3, base[3] - 1), fill=light)
+    else:
+        draw.rectangle(base, fill=plate_rgb, outline=outline)
+        draw.line((base[0] + 2, base[1] + 1, base[2] - 2, base[1] + 1), fill=light)
+        draw.line((base[0] + 2, base[3] - 1, base[2] - 2, base[3] - 1), fill=dark)
+        draw.rectangle((base[0] + 4, base[1] + 3, base[2] - 4, base[3] - 3), fill=_shade(plate_rgb, 16), outline=outline)
+    draw.rectangle((cx - 1, cy - 1, cx + 1, cy + 1), fill=_shade(plate_rgb, 35), outline=outline)
+
+
+def draw_pixel_brazier(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    metal_rgb: RGB = (93, 91, 88),
+    flame_rgb: RGB = (238, 126, 45),
+    fire_state: str = "lit",
+) -> None:
+    """Draw a reusable one-tile dungeon brazier."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    metal_dark = _shade(metal_rgb, -48)
+    metal_light = _shade(metal_rgb, 38)
+    cx = (x0 + x1) // 2
+    draw.ellipse((cx - 6, y1 - 5, cx + 6, y1), fill=(54, 52, 49), outline=None)
+    stem_top = min(y0 + 9, y1 - 5)
+    stem_bottom = max(stem_top, y1 - 4)
+    draw.rectangle((cx - 2, stem_top, cx + 2, stem_bottom), fill=metal_rgb, outline=metal_dark)
+    draw.rectangle((cx - 5, y1 - 4, cx + 5, y1 - 2), fill=metal_rgb, outline=metal_dark)
+    bowl = (cx - 7, y0 + 7, cx + 7, y0 + 14)
+    draw.ellipse(bowl, fill=metal_rgb, outline=metal_dark)
+    draw.rectangle((cx - 6, y0 + 9, cx + 6, y0 + 13), fill=metal_rgb, outline=metal_dark)
+    draw.line((cx - 5, y0 + 8, cx + 5, y0 + 8), fill=metal_light)
+    if str(fire_state) == "lit":
+        flame_dark = _shade(flame_rgb, -48)
+        flame_light = (255, 224, 82)
+        draw.polygon([(cx, y0 + 1), (cx - 4, y0 + 7), (cx - 1, y0 + 11), (cx + 3, y0 + 7)], fill=flame_rgb, outline=flame_dark)
+        draw.polygon([(cx + 1, y0 + 4), (cx - 1, y0 + 8), (cx + 1, y0 + 10), (cx + 2, y0 + 7)], fill=flame_light)
+    else:
+        draw.line((cx - 4, y0 + 8, cx + 4, y0 + 8), fill=(55, 54, 52))
+
+
+def draw_pixel_broken_wall(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    stone_rgb: RGB = (132, 132, 124),
+    break_style: str = "cracked",
+) -> None:
+    """Draw a reusable two-tile broken wall segment."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    outline = _shade(stone_rgb, -58)
+    dark = _shade(stone_rgb, -34)
+    light = _shade(stone_rgb, 34)
+    wall = (x0 + 1, y0 + 2, x1 - 1, y1 - 2)
+    draw.rectangle(wall, fill=stone_rgb, outline=outline)
+    mortar_y = (wall[1] + wall[3]) // 2
+    draw.line((wall[0] + 1, mortar_y, wall[2] - 1, mortar_y), fill=dark)
+    for xx in range(wall[0] + 5, wall[2] - 3, 7):
+        draw.line((xx, wall[1] + 1, xx, mortar_y - 1), fill=dark)
+        draw.line((xx + 3, mortar_y + 1, xx + 3, wall[3] - 1), fill=dark)
+    crack = [(x0 + 8, wall[1] + 1), (x0 + 12, wall[1] + 4), (x0 + 10, wall[1] + 7), (x0 + 17, wall[3] - 1)]
+    draw.line(crack, fill=(46, 45, 43), width=1)
+    if str(break_style) == "gap":
+        gap_x = (x0 + x1) // 2
+        rubble = [(gap_x - 6, wall[1] + 1), (gap_x + 1, wall[1] + 4), (gap_x + 1, wall[3] - 1), (gap_x - 8, wall[3])]
+        draw.polygon(rubble, fill=(45, 44, 42), outline=outline)
+        draw.rectangle((gap_x + 2, wall[1] + 2, gap_x + 8, wall[3]), fill=dark, outline=outline)
+    draw.line((wall[0] + 2, wall[1] + 1, wall[2] - 3, wall[1] + 1), fill=light)
+    draw.rectangle((wall[0] + 1, wall[3] - 1, wall[2] - 1, wall[3] + 1), fill=_shade(stone_rgb, -20), outline=outline)
+
+
+def draw_pixel_rubble(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    stone_rgb: RGB = (116, 113, 105),
+) -> None:
+    """Draw a reusable one-tile rubble pile."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    outline = _shade(stone_rgb, -58)
+    dark = _shade(stone_rgb, -36)
+    light = _shade(stone_rgb, 36)
+    draw.ellipse((x0 + 2, y1 - 5, x1 - 2, y1), fill=(57, 55, 52), outline=None)
+    stones = (
+        (x0 + 2, y1 - 7, x0 + 7, y1 - 2, _shade(stone_rgb, -8)),
+        (x0 + 6, y1 - 10, x0 + 12, y1 - 3, stone_rgb),
+        (x0 + 10, y1 - 7, x1 - 1, y1 - 1, dark),
+        (x0 + 4, y1 - 13, x0 + 9, y1 - 8, _shade(stone_rgb, 8)),
+    )
+    for sx0, sy0, sx1, sy1, color in stones:
+        draw.polygon([(sx0, sy1), ((sx0 + sx1) // 2, sy0), (sx1, sy0 + 2), (sx1 - 1, sy1)], fill=color, outline=outline)
+    draw.point((x0 + 6, y1 - 11), fill=light)
+    draw.point((x1 - 4, y1 - 5), fill=outline)
+
+
+def draw_pixel_magic_circle(
+    draw: ImageDraw.ImageDraw,
+    tile_xywh: TileBox,
+    *,
+    rune_rgb: RGB = (92, 214, 232),
+    glow_rgb: RGB = (84, 79, 186),
+) -> None:
+    """Draw a reusable flat magic-circle floor marking."""
+
+    x0, y0, x1, y1 = _base_rect(tile_xywh, inset=1)
+    cx = (x0 + x1) // 2
+    cy = (y0 + y1) // 2
+    rx = max(6, (x1 - x0) // 2 - 1)
+    ry = max(5, (y1 - y0) // 2 - 2)
+    rune_dark = _shade(rune_rgb, -56)
+    glow = _shade(glow_rgb, 8)
+    draw.ellipse((cx - rx - 2, cy - ry - 2, cx + rx + 2, cy + ry + 2), outline=_shade(glow_rgb, -28))
+    draw.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), outline=glow, width=2)
+    draw.ellipse((cx - rx + 4, cy - ry + 3, cx + rx - 4, cy + ry - 3), outline=rune_rgb, width=1)
+    draw.line((cx - rx + 2, cy, cx + rx - 2, cy), fill=_shade(glow_rgb, 20))
+    draw.line((cx, cy - ry + 1, cx, cy + ry - 1), fill=_shade(glow_rgb, 20))
+    draw.line((cx, cy - ry + 3, cx + rx - 4, cy + ry - 2), fill=rune_dark)
+    draw.line((cx + rx - 4, cy + ry - 2, cx - rx + 4, cy + ry - 2), fill=rune_dark)
+    draw.line((cx - rx + 4, cy + ry - 2, cx, cy - ry + 3), fill=rune_dark)
+    for px, py in ((cx, cy - ry), (cx + rx - 2, cy), (cx, cy + ry), (cx - rx + 2, cy)):
+        draw.rectangle((px - 1, py - 1, px + 1, py + 1), fill=rune_rgb)
+
+
 def draw_pixel_ladder(
     draw: ImageDraw.ImageDraw,
     tile_xywh: TileBox,
@@ -3009,13 +3245,16 @@ __all__ = [
     "PixelShelfGoods",
     "PixelTreeStyle",
     "draw_pixel_animal",
+    "draw_pixel_archway",
     "draw_pixel_autumn_overlay",
     "draw_pixel_barrel",
     "draw_pixel_basket",
     "draw_pixel_barn",
     "draw_pixel_bench",
     "draw_pixel_boulder",
+    "draw_pixel_brazier",
     "draw_pixel_bridge",
+    "draw_pixel_broken_wall",
     "draw_pixel_castle",
     "draw_pixel_cave_entrance",
     "draw_pixel_chicken_coop",
@@ -3031,6 +3270,7 @@ __all__ = [
     "draw_pixel_farm_gate",
     "draw_pixel_fence",
     "draw_pixel_flower_patch",
+    "draw_pixel_floor_switch",
     "draw_pixel_fountain",
     "draw_pixel_gazebo",
     "draw_pixel_grave_marker",
@@ -3040,6 +3280,7 @@ __all__ = [
     "draw_pixel_jar",
     "draw_pixel_lamp_post",
     "draw_pixel_ladder",
+    "draw_pixel_magic_circle",
     "draw_pixel_market_stall",
     "draw_pixel_mine_cart",
     "draw_pixel_notice_board",
@@ -3050,14 +3291,17 @@ __all__ = [
     "draw_pixel_produce_bin",
     "draw_pixel_rail_track",
     "draw_pixel_rock",
+    "draw_pixel_rubble",
     "draw_pixel_rug",
     "draw_pixel_sack",
     "draw_pixel_scarecrow",
+    "draw_pixel_sealed_door",
     "draw_pixel_shelf",
     "draw_pixel_sign",
     "draw_pixel_stairs",
     "draw_pixel_stalagmite",
     "draw_pixel_statue",
+    "draw_pixel_stone_column",
     "draw_pixel_torch",
     "draw_pixel_tree",
     "draw_pixel_trough",

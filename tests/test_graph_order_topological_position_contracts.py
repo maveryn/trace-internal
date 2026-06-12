@@ -48,7 +48,7 @@ def test_graph_order_topological_position_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["task_group"] == "order" for record in train_records)
+    assert all(record["scene_id"] == "order" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__topological_position_value"]) == 4

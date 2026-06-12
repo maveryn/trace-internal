@@ -9,7 +9,7 @@ from typing import Any, Callable, Iterable, Mapping, MutableMapping, Sequence, T
 from PIL import ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults, get_scene_defaults
 from ...base import TaskOutput
 from ...shared.context_text_assets import sample_context_text
 from ...shared.font_assets import font_asset_version, font_role_trace, sample_font_family
@@ -37,7 +37,7 @@ def wrap_pages_generation(
     original_generate: Callable[..., TaskOutput],
     *,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> Callable[..., TaskOutput]:
     """Wrap one pages task generator with domain-wide render audit defaults."""
 
@@ -45,7 +45,7 @@ def wrap_pages_generation(
     def _generate_with_pages_render_defaults(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
         font_family = resolve_pages_default_font_family(
             task_id=str(task_id),
-            task_group=str(task_group),
+            scene_id=str(scene_id),
             instance_seed=int(instance_seed),
             params=params,
         )
@@ -55,14 +55,50 @@ def wrap_pages_generation(
             output,
             font_family=str(font_family),
             task_id=str(task_id),
-            task_group=str(task_group),
+            scene_id=str(scene_id),
         )
         add_pages_safe_context_text(
             output,
             instance_seed=int(instance_seed),
             params=params,
             task_id=str(task_id),
-            task_group=str(task_group),
+            scene_id=str(scene_id),
+        )
+        return output
+
+    return _generate_with_pages_render_defaults
+
+
+def wrap_pages_scene_generation(
+    original_generate: Callable[..., TaskOutput],
+    *,
+    task_id: str,
+    scene_id: str,
+) -> Callable[..., TaskOutput]:
+    """Wrap one migrated pages scene task with render audit defaults."""
+
+    @wraps(original_generate)
+    def _generate_with_pages_render_defaults(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
+        font_family = resolve_pages_scene_default_font_family(
+            task_id=str(task_id),
+            scene_id=str(scene_id),
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+        with temporary_default_font_family(str(font_family)):
+            output = original_generate(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
+        annotate_pages_scene_font_assets(
+            output,
+            font_family=str(font_family),
+            task_id=str(task_id),
+            scene_id=str(scene_id),
+        )
+        add_pages_scene_safe_context_text(
+            output,
+            instance_seed=int(instance_seed),
+            params=params,
+            task_id=str(task_id),
+            scene_id=str(scene_id),
         )
         return output
 
@@ -72,16 +108,54 @@ def wrap_pages_generation(
 def resolve_pages_default_font_family(
     *,
     task_id: str,
-    task_group: str,
+    scene_id: str,
     instance_seed: int,
     params: Mapping[str, Any] | None,
 ) -> str:
     """Sample one default page font family for read-required page text."""
 
+    return _resolve_pages_default_font_family_for_route(
+        task_id=str(task_id),
+        route_id=str(scene_id),
+        config_kind="scene_id",
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+
+
+def resolve_pages_scene_default_font_family(
+    *,
+    task_id: str,
+    scene_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any] | None,
+) -> str:
+    """Sample one default page font family for a migrated pages scene task."""
+
+    return _resolve_pages_default_font_family_for_route(
+        task_id=str(task_id),
+        route_id=str(scene_id),
+        config_kind="scene",
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+
+
+def _resolve_pages_default_font_family_for_route(
+    *,
+    task_id: str,
+    route_id: str,
+    config_kind: str,
+    instance_seed: int,
+    params: Mapping[str, Any] | None,
+) -> str:
+    """Sample one default page font family for a config-routing unit."""
+
     resolved_params = _resolve_context_text_params(
         params=params,
         task_id=str(task_id),
-        task_group=str(task_group),
+        route_id=str(route_id),
+        config_kind=str(config_kind),
     )
     if "pages_font_family" not in resolved_params and "font_family" in resolved_params:
         resolved_params["pages_font_family"] = resolved_params["font_family"]
@@ -90,7 +164,7 @@ def resolve_pages_default_font_family(
     return sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.{task_group}.pages_default_font",
+        namespace=f"{task_id}.{route_id}.pages_default_font",
         params=resolved_params,
         explicit_key="pages_font_family",
         weights_key="pages_font_family_weights",
@@ -102,7 +176,44 @@ def annotate_pages_font_assets(
     *,
     font_family: str,
     task_id: str,
-    task_group: str,
+    scene_id: str,
+) -> None:
+    """Record the pages default font family in render metadata."""
+
+    _annotate_pages_font_assets_for_route(
+        output,
+        font_family=str(font_family),
+        task_id=str(task_id),
+        route_kind="scene_id",
+        route_id=str(scene_id),
+    )
+
+
+def annotate_pages_scene_font_assets(
+    output: TaskOutput,
+    *,
+    font_family: str,
+    task_id: str,
+    scene_id: str,
+) -> None:
+    """Record the pages default font family in migrated scene render metadata."""
+
+    _annotate_pages_font_assets_for_route(
+        output,
+        font_family=str(font_family),
+        task_id=str(task_id),
+        route_kind="scene",
+        route_id=str(scene_id),
+    )
+
+
+def _annotate_pages_font_assets_for_route(
+    output: TaskOutput,
+    *,
+    font_family: str,
+    task_id: str,
+    route_kind: str,
+    route_id: str,
 ) -> None:
     """Record the pages default font family in render metadata."""
 
@@ -122,7 +233,10 @@ def annotate_pages_font_assets(
     font_assets["pages_default_font_trace"] = font_role_trace(str(font_family), role="readout")
     font_assets["pages_font_sampling_policy"] = "readout_pool_single_family_per_page_instance"
     font_assets["task_id"] = str(task_id)
-    font_assets["task_group"] = str(task_group)
+    if str(route_kind) == "scene":
+        font_assets["scene_id"] = str(route_id)
+    else:
+        font_assets["scene_id"] = str(route_id)
 
 
 def add_pages_safe_context_text(
@@ -131,9 +245,50 @@ def add_pages_safe_context_text(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> None:
     """Draw non-answer context text into safe empty page margins and trace it."""
+
+    _add_pages_safe_context_text_for_route(
+        output,
+        instance_seed=int(instance_seed),
+        params=params,
+        task_id=str(task_id),
+        route_id=str(scene_id),
+        config_kind="scene_id",
+    )
+
+
+def add_pages_scene_safe_context_text(
+    output: TaskOutput,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any] | None,
+    task_id: str,
+    scene_id: str,
+) -> None:
+    """Draw non-answer context text for a migrated pages scene task."""
+
+    _add_pages_safe_context_text_for_route(
+        output,
+        instance_seed=int(instance_seed),
+        params=params,
+        task_id=str(task_id),
+        route_id=str(scene_id),
+        config_kind="scene",
+    )
+
+
+def _add_pages_safe_context_text_for_route(
+    output: TaskOutput,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any] | None,
+    task_id: str,
+    route_id: str,
+    config_kind: str,
+) -> None:
+    """Draw non-answer context text using scene or scene config routing."""
 
     trace_payload = output.trace_payload if isinstance(output.trace_payload, MutableMapping) else None
     if trace_payload is None or output.image is None:
@@ -142,7 +297,8 @@ def add_pages_safe_context_text(
     resolved_params = _resolve_context_text_params(
         params=params,
         task_id=str(task_id),
-        task_group=str(task_group),
+        route_id=str(route_id),
+        config_kind=str(config_kind),
     )
     enabled = bool(resolved_params.get("pages_context_text_enabled", resolved_params.get("context_text_enabled", True)))
     if not enabled:
@@ -159,11 +315,11 @@ def add_pages_safe_context_text(
     draw = ImageDraw.Draw(image)
     width, height = image.size
     occupied = _collect_occupied_bboxes(trace_payload)
-    rng = spawn_rng(int(instance_seed), f"{task_id}.{task_group}.pages_context_text")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.{route_id}.pages_context_text")
     context_font_family = sample_font_family(
         role="context",
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.{task_group}.pages_context_text_font",
+        namespace=f"{task_id}.{route_id}.pages_context_text_font",
         params=_context_font_params(resolved_params),
         explicit_key="pages_context_text_font_family",
         weights_key="pages_context_text_font_family_weights",
@@ -303,17 +459,26 @@ def _resolve_context_text_params(
     *,
     params: Mapping[str, Any] | None,
     task_id: str,
-    task_group: str,
+    route_id: str,
+    config_kind: str = "scene_id",
 ) -> dict[str, Any]:
     """Merge task-config context text defaults with explicit generation params."""
 
-    resolved = _context_text_config_defaults(task_id=str(task_id), task_group=str(task_group))
+    resolved = _context_text_config_defaults(
+        task_id=str(task_id),
+        route_id=str(route_id),
+        config_kind=str(config_kind),
+    )
     resolved.update(dict(params or {}))
     return resolved
 
 
-def _context_text_config_defaults(*, task_id: str, task_group: str) -> dict[str, Any]:
-    cfg = get_task_group_defaults("pages", str(task_group))
+def _context_text_config_defaults(*, task_id: str, route_id: str, config_kind: str) -> dict[str, Any]:
+    cfg = (
+        get_scene_defaults("pages", str(route_id))
+        if str(config_kind) == "scene"
+        else get_scene_defaults("pages", str(route_id))
+    )
     visual = cfg.get("visual", {}) if isinstance(cfg, Mapping) else {}
     if not isinstance(visual, Mapping):
         return {}
@@ -904,7 +1069,11 @@ def _coerce_rgb(value: Any, *, fallback: Tuple[int, int, int]) -> Tuple[int, int
 
 __all__ = [
     "add_pages_safe_context_text",
+    "add_pages_scene_safe_context_text",
     "annotate_pages_font_assets",
+    "annotate_pages_scene_font_assets",
     "resolve_pages_default_font_family",
+    "resolve_pages_scene_default_font_family",
     "wrap_pages_generation",
+    "wrap_pages_scene_generation",
 ]

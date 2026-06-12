@@ -15,7 +15,7 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `unknown_annotation_schema`.
+2. Annotation schema: `keyed_point_map`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `top_k_by_segment_then_sum_other_segment_count` | `numeric.aggregate_sum` | `integer_count` | `unknown_annotation_schema` |
+| `top_k_by_segment_then_sum_other_segment_count` | `numeric.aggregate_sum` | `integer_count` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

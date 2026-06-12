@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `command_matrix`
 4. Task id: `task_pages__command_matrix__dual_guide_command_label`
 5. Objective: Identify the command cell matching both an action cue and an object cue.

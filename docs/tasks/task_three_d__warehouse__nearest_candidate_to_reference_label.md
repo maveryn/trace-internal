@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `warehouse`
-- Task group: `warehouse`
+- Scene: `warehouse`
 - Query ids: `closest_robot_to_reference`, `closest_object_to_robot`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`

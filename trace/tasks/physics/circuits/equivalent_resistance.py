@@ -8,7 +8,7 @@ from fractions import Fraction
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -21,15 +21,14 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_compatible_scene_query_ids, resolve_variant
 from ..shared.circuit_scene import RenderedCircuitScene, render_component_network_scene
-from ..shared.complexity import build_physics_circuit_resistance_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
-from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "physics_circuits_equivalent_component_family"
+TASK_ID = "physics_circuits_equivalent_component"
 PUBLIC_SCENE_ID = "circuit_equivalent"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "series_parallel",
@@ -109,12 +108,12 @@ class _CircuitLayout:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "circuits")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "circuits")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="circuits", apply_prob=0.5)
 
 
 def _resolve_int_options(params: Mapping[str, Any], *, key: str, fallback: Sequence[int]) -> Tuple[int, ...]:
@@ -670,7 +669,7 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "circuits"
+    scene_id = "circuits"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -697,7 +696,6 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
             )
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id=PUBLIC_SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=int(render_defaults["canvas_width"]),
                 canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
@@ -706,7 +704,7 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -752,7 +750,7 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
             json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -785,14 +783,6 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                 "pixel_keyed_bbox_map": dict(annotation_value),
             }
             component_count = len(rendered_scene.component_specs)
-            complexity = build_physics_circuit_resistance_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=TASK_ID,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                resistor_count=int(component_count),
-                target_answer=int(axes.target_answer),
-            )
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": f"physics_equivalent_circuit_{str(axes.component_kind)}_{str(axes.scene_variant)}",
@@ -892,7 +882,6 @@ class _PhysicsCircuitsEquivalentComponentBaseTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 query_id=str(axes.query_id),
                 scene_id=PUBLIC_SCENE_ID,

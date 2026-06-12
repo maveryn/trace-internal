@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -30,9 +30,9 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__gear_train__output_direction_label"
-FAMILY_ID = "physics_mechanics_gear_train_family"
+TASK_NAMESPACE = "physics_mechanics_gear_train"
 SPEED_TASK_ID = "task_physics__gear_train__output_speed_value"
-SPEED_FAMILY_ID = "physics_mechanics_gear_train_speed_family"
+SPEED_TASK_NAMESPACE = "physics_mechanics_gear_train_speed"
 SCENE_ID = "gear_train"
 QUERY_ID = "marked_output_direction"
 SPEED_QUERY_ID = "simple_gear_ratio_output_speed"
@@ -40,15 +40,15 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("straight_chain", "staggered_chain"
 SUPPORTED_DIRECTIONS: Tuple[str, ...] = ("clockwise", "counterclockwise")
 SUPPORTED_SPEED_RELATIONS: Tuple[str, ...] = ("faster", "slower")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 _SPEED_GEN_DEFAULTS, _SPEED_RENDER_DEFAULTS, _SPEED_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=SPEED_FAMILY_ID,
+    task_id=SPEED_TASK_NAMESPACE,
 )
 
 
@@ -196,11 +196,11 @@ def _resolve_scene_variant(
     instance_seed: int,
     params: Mapping[str, Any],
     *,
-    family_id: str = FAMILY_ID,
+    task_namespace: str = TASK_NAMESPACE,
     gen_defaults: Mapping[str, Any] | None = None,
 ) -> Tuple[str, Dict[str, float]]:
     resolved_defaults = _GEN_DEFAULTS if gen_defaults is None else gen_defaults
-    rng = spawn_rng(int(instance_seed), f"{family_id}.scene_variant")
+    rng = spawn_rng(int(instance_seed), f"{task_namespace}.scene_variant")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -219,7 +219,7 @@ def _resolve_scene_variant(
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{family_id}.scene_variant",
+        sampling_namespace=f"{task_namespace}.scene_variant",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -256,11 +256,11 @@ def _resolve_gear_count(
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.gear_count",
+            namespace=f"{TASK_NAMESPACE}.gear_count",
         )
         gear_count = int(candidates[int(index) % len(candidates)])
     else:
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.gear_count")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.gear_count")
         gear_count = int(candidates[int(rng.randrange(len(candidates)))])
     return int(gear_count), _integer_probability_map(support)
 
@@ -288,7 +288,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _GearSce
         answer_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer",
+            namespace=f"{TASK_NAMESPACE}.target_answer",
         )
         selected_target = str(SUPPORTED_DIRECTIONS[int(answer_index) % len(SUPPORTED_DIRECTIONS)])
         input_direction = str(selected_target) if (int(gear_count) - 1) % 2 == 0 else _opposite_direction(str(selected_target))
@@ -296,7 +296,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _GearSce
         direction_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.input_direction",
+            namespace=f"{TASK_NAMESPACE}.input_direction",
         )
         input_direction = str(SUPPORTED_DIRECTIONS[int(direction_index) % len(SUPPORTED_DIRECTIONS)])
 
@@ -305,7 +305,7 @@ def _resolve_scenario(instance_seed: int, params: Mapping[str, Any]) -> _GearSce
         raise ValueError("explicit gear train parameters do not produce the requested output direction")
 
     radius_support = _integer_support(params, "gear_radius_px_support", _DEFAULTS.gear_radius_px_support)
-    radius_rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.radii")
+    radius_rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.radii")
     radii = tuple(float(radius_rng.choice(radius_support)) for _ in range(int(gear_count)))
 
     return _GearScenario(
@@ -413,7 +413,7 @@ def _resolve_speed_scenario(instance_seed: int, params: Mapping[str, Any]) -> _G
     scene_variant, scene_variant_probabilities = _resolve_scene_variant(
         int(instance_seed),
         params,
-        family_id=SPEED_FAMILY_ID,
+        task_namespace=SPEED_TASK_NAMESPACE,
         gen_defaults=_SPEED_GEN_DEFAULTS,
     )
     feasible = list(_feasible_speed_scenarios(params))
@@ -462,7 +462,7 @@ def _resolve_speed_scenario(instance_seed: int, params: Mapping[str, Any]) -> _G
         relation_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{SPEED_FAMILY_ID}.speed_relation",
+            namespace=f"{SPEED_TASK_NAMESPACE}.speed_relation",
         )
         selected_relation = str(relations[int(relation_index) % len(relations)])
         candidates = [item for item in candidates if str(item[5]) == selected_relation]
@@ -474,7 +474,7 @@ def _resolve_speed_scenario(instance_seed: int, params: Mapping[str, Any]) -> _G
         answer_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{SPEED_FAMILY_ID}.target_answer",
+            namespace=f"{SPEED_TASK_NAMESPACE}.target_answer",
         )
         selected_answer = int(answers[int(answer_index) % len(answers)])
         candidates = [item for item in candidates if int(item[4]) == int(selected_answer)]
@@ -482,7 +482,7 @@ def _resolve_speed_scenario(instance_seed: int, params: Mapping[str, Any]) -> _G
     tuple_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{SPEED_FAMILY_ID}.scenario_tuple",
+        namespace=f"{SPEED_TASK_NAMESPACE}.scenario_tuple",
     )
     gear_count, input_teeth, output_teeth, input_rpm, output_rpm, relation = candidates[int(tuple_index) % len(candidates)]
     teeth_support = _integer_support(
@@ -492,7 +492,7 @@ def _resolve_speed_scenario(instance_seed: int, params: Mapping[str, Any]) -> _G
         gen_defaults=_SPEED_GEN_DEFAULTS,
         task_id=SPEED_TASK_ID,
     )
-    idler_rng = spawn_rng(int(instance_seed), f"{SPEED_FAMILY_ID}.idler_teeth")
+    idler_rng = spawn_rng(int(instance_seed), f"{SPEED_TASK_NAMESPACE}.idler_teeth")
     idler_teeth = tuple(int(idler_rng.choice(teeth_support)) for _ in range(max(0, int(gear_count) - 2)))
     all_teeth = (int(input_teeth),) + idler_teeth + (int(output_teeth),)
     radii = tuple(_radius_from_teeth(value) for value in all_teeth)
@@ -523,18 +523,18 @@ def _layout_centers(
     scenario: _GearScenario | _GearSpeedScenario,
     panel: Sequence[float],
     instance_seed: int,
-    family_id: str = FAMILY_ID,
+    task_namespace: str = TASK_NAMESPACE,
 ) -> Tuple[Tuple[Tuple[float, float], ...], Tuple[float, ...]]:
     radii = [float(value) for value in scenario.radii_px]
     coords: List[Tuple[float, float]] = [(0.0, 0.0)]
-    rng = spawn_rng(int(instance_seed), f"{family_id}.layout")
+    rng = spawn_rng(int(instance_seed), f"{task_namespace}.layout")
     if str(scenario.scene_variant) == "straight_chain":
         segment_angles = [0.0 for _ in range(max(0, int(scenario.gear_count) - 1))]
     elif str(scenario.scene_variant) == "staggered_chain":
-        sign = -1.0 if int(hash64(int(instance_seed), f"{family_id}.stagger_sign", 0) % 2) else 1.0
+        sign = -1.0 if int(hash64(int(instance_seed), f"{task_namespace}.stagger_sign", 0) % 2) else 1.0
         segment_angles = [math.radians(sign * (24.0 if index % 2 == 0 else -24.0)) for index in range(max(0, int(scenario.gear_count) - 1))]
     else:
-        reverse = -1.0 if int(hash64(int(instance_seed), f"{family_id}.arc_sign", 0) % 2) else 1.0
+        reverse = -1.0 if int(hash64(int(instance_seed), f"{task_namespace}.arc_sign", 0) % 2) else 1.0
         count = max(1, int(scenario.gear_count) - 1)
         if count == 1:
             segment_angles = [math.radians(reverse * rng.choice([-18.0, 18.0]))]
@@ -694,7 +694,6 @@ def _render_gear_train(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="mechanics",
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
         require_grid=True,
@@ -703,7 +702,7 @@ def _render_gear_train(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     label_font = load_font(int(_RENDER_DEFAULTS.get("label_font_size_px", _DEFAULTS.label_font_size_px)), bold=True, font_family=str(font_family))
@@ -737,7 +736,7 @@ def _render_gear_train(
         (209, 91, 110),
         (78, 164, 180),
     )
-    color_offset = int(hash64(int(instance_seed), f"{FAMILY_ID}.color_offset", 0) % len(gear_palette))
+    color_offset = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.color_offset", 0) % len(gear_palette))
     gear_bboxes: Dict[str, List[float]] = {}
     scene_entities: List[Dict[str, Any]] = []
     for index, (center, radius) in enumerate(zip(centers, radii)):
@@ -853,7 +852,6 @@ def _render_gear_train_speed(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="mechanics",
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
         require_grid=True,
@@ -862,7 +860,7 @@ def _render_gear_train_speed(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{SPEED_FAMILY_ID}.font",
+        namespace=f"{SPEED_TASK_NAMESPACE}.font",
         params=params,
     )
     label_font = load_font(int(_SPEED_RENDER_DEFAULTS.get("label_font_size_px", _DEFAULTS.label_font_size_px)), bold=True, font_family=str(font_family))
@@ -892,7 +890,7 @@ def _render_gear_train_speed(
         scenario=scenario,
         panel=panel,
         instance_seed=int(instance_seed),
-        family_id=SPEED_FAMILY_ID,
+        task_namespace=SPEED_TASK_NAMESPACE,
     )
     gear_palette = (
         (91, 145, 217),
@@ -902,7 +900,7 @@ def _render_gear_train_speed(
         (209, 91, 110),
         (78, 164, 180),
     )
-    color_offset = int(hash64(int(instance_seed), f"{SPEED_FAMILY_ID}.color_offset", 0) % len(gear_palette))
+    color_offset = int(hash64(int(instance_seed), f"{SPEED_TASK_NAMESPACE}.color_offset", 0) % len(gear_palette))
     tooth_counts = (int(scenario.input_teeth),) + tuple(int(value) for value in scenario.idler_teeth) + (int(scenario.output_teeth),)
     gear_bboxes: Dict[str, List[float]] = {}
     tooth_label_bboxes: Dict[str, List[float]] = {}
@@ -1019,7 +1017,7 @@ class PhysicsGearTrainOutputDirectionLabelTask:
     """Infer the marked output gear's rotation direction."""
 
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -1060,7 +1058,7 @@ class PhysicsGearTrainOutputDirectionLabelTask:
                 )
                 prompt_selection = render_task_prompt_variants(
                     domain=self.domain,
-                    task_group=self.task_group,
+                    scene_id=self.scene_id,
                     bundle_id=str(prompt_defaults["bundle_id"]),
                     scene_key=str(prompt_defaults["scene_key"]),
                     task_key=str(prompt_defaults["task_key"]),
@@ -1081,7 +1079,7 @@ class PhysicsGearTrainOutputDirectionLabelTask:
                 font_family = sample_font_family(
                     role="readout",
                     instance_seed=int(attempt_seed),
-                    namespace=f"{FAMILY_ID}.font",
+                    namespace=f"{TASK_NAMESPACE}.font",
                     params=params,
                 )
                 font_record = get_font_family_record(str(font_family))
@@ -1164,15 +1162,6 @@ class PhysicsGearTrainOutputDirectionLabelTask:
                     image=rendered.image,
                     image_id="img0",
                     trace_payload=trace_payload,
-                    complexity=TaskComplexity(
-                        complexity_score=0.36 + 0.04 * min(4, max(0, int(scenario.gear_count) - 2)),
-                        complexity_components={
-                            "visual_scan": min(1.0, 0.20 + 0.08 * float(int(scenario.gear_count) - 2)),
-                            "gear_reasoning": min(1.0, 0.34 + 0.07 * float(int(scenario.gear_count) - 2)),
-                            "ambiguity": 0.10,
-                            "output_burden": 0.10,
-                        },
-                    ),
                     task_versions=default_task_versions(),
                     scene_id=SCENE_ID,
                     query_id=QUERY_ID,
@@ -1188,7 +1177,7 @@ class PhysicsGearTrainOutputSpeedValueTask:
     """Compute the marked output gear's rotational speed."""
 
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
     task_id = SPEED_TASK_ID
     default_dataset_enabled = True
 
@@ -1229,7 +1218,7 @@ class PhysicsGearTrainOutputSpeedValueTask:
                 )
                 prompt_selection = render_task_prompt_variants(
                     domain=self.domain,
-                    task_group=self.task_group,
+                    scene_id=self.scene_id,
                     bundle_id=str(prompt_defaults["bundle_id"]),
                     scene_key=str(prompt_defaults["scene_key"]),
                     task_key=str(prompt_defaults["task_key"]),
@@ -1250,7 +1239,7 @@ class PhysicsGearTrainOutputSpeedValueTask:
                 font_family = sample_font_family(
                     role="readout",
                     instance_seed=int(attempt_seed),
-                    namespace=f"{SPEED_FAMILY_ID}.font",
+                    namespace=f"{SPEED_TASK_NAMESPACE}.font",
                     params=params,
                 )
                 font_record = get_font_family_record(str(font_family))
@@ -1346,16 +1335,6 @@ class PhysicsGearTrainOutputSpeedValueTask:
                     image=rendered.image,
                     image_id="img0",
                     trace_payload=trace_payload,
-                    complexity=TaskComplexity(
-                        complexity_score=min(0.72, 0.40 + 0.05 * float(int(scenario.gear_count) - 2) + min(0.16, ratio_gap * 0.10)),
-                        complexity_components={
-                            "visual_scan": min(1.0, 0.22 + 0.10 * float(int(scenario.gear_count) - 2)),
-                            "gear_ratio_reasoning": min(1.0, 0.42 + 0.04 * float(int(scenario.gear_count) - 2)),
-                            "arithmetic": min(1.0, 0.18 + min(0.20, ratio_gap * 0.12)),
-                            "ambiguity": 0.10,
-                            "output_burden": 0.10,
-                        },
-                    ),
                     task_versions=default_task_versions(),
                     scene_id=SCENE_ID,
                     query_id=SPEED_QUERY_ID,

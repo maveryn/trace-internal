@@ -2,18 +2,16 @@
 
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 
 import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.pool.table_tasks import (
-    GamesPoolBlockingBallCountTask,
-    GamesPoolGroupBallCountTask,
-    GamesPoolTableTask,
-)
-from trace.tasks.games.shared.pool_common import (
+from trace.tasks.games.pool.blocking_ball_count import GamesPoolBlockingBallCountTask, GamesPoolTableTask
+from trace.tasks.games.pool.group_ball_count import GamesPoolGroupBallCountTask
+from trace.tasks.games.pool.shared.common import (
     POOL_POCKETS,
     PoolBall,
     balls_on_segment,
@@ -36,6 +34,19 @@ def _balls_from_execution(execution: dict) -> tuple[PoolBall, ...]:
         )
         for row in execution["balls"]
     )
+
+
+def test_games_pool_table_scene_package_source_layout() -> None:
+    expected_sources = {
+        GamesPoolBlockingBallCountTask: Path("trace/tasks/games/pool/blocking_ball_count.py"),
+        GamesPoolGroupBallCountTask: Path("trace/tasks/games/pool/group_ball_count.py"),
+    }
+
+    for task_cls, relative_path in expected_sources.items():
+        source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
+        assert source_path == (Path.cwd() / relative_path).resolve()
+        assert getattr(task_cls, "scene_id", "")
+        assert getattr(task_cls, "scene_id") == "pool"
 
 
 @pytest.mark.parametrize(
@@ -198,4 +209,5 @@ def test_games_pool_table_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "pool" for row in rows)
+    assert all(row["scene_id"] == "pool" for row in rows)
+    assert all(row.get("scene_id") for row in rows)

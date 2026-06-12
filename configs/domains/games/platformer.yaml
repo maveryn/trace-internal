@@ -2,10 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       side_scroller: 1.0
-    query_id_weights:
-      jump_landing_label: 1.0
-      collectible_count: 1.0
-      jump_collectible_score_value: 1.0
     style_variant_weights:
       day: 1.0
       cave: 1.0
@@ -13,31 +9,33 @@ generation:
       snow: 1.0
       sunset: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_platform_count_sampling: true
     balanced_hazard_count_sampling: true
     balanced_distractor_collectible_count_sampling: true
-    balanced_target_platform_label_sampling: true
-    balanced_target_collectible_count_sampling: true
     platform_count_support:
-      - 4
-      - 5
-      - 6
-      - 7
+    - 4
+    - 5
+    - 6
+    - 7
     hazard_count_support:
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
     distractor_collectible_count_support:
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-    target_platform_label_support:
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    jump_visible_after_peak_min: 0.08
+    jump_visible_after_peak_max: 0.14
+  task_overrides:
+    task_games__platformer__jump_landing_label:
+      balanced_target_platform_label_sampling: true
+      target_platform_label_support:
       - A
       - B
       - C
@@ -46,33 +44,34 @@ generation:
       - F
       - G
       - H
-    target_collectible_count_support:
+    task_games__platformer__collectible_count:
+      balanced_target_collectible_count_sampling: true
+      target_collectible_count_support:
       - 2
       - 3
       - 4
       - 5
       - 6
       - 7
-    score_on_arc_coin_count_support:
+    task_games__platformer__jump_collectible_score_value:
+      score_on_arc_coin_count_support:
       - 1
       - 2
       - 3
       - 4
-    score_on_arc_bonus_count_support:
+      score_on_arc_bonus_count_support:
       - 1
       - 2
       - 3
-    score_off_arc_bonus_count_support:
+      score_off_arc_bonus_count_support:
       - 1
       - 2
       - 3
-    score_bonus_value_support:
+      score_bonus_value_support:
       - 2
       - 3
       - 5
       - 10
-    jump_visible_after_peak_min: 0.08
-    jump_visible_after_peak_max: 0.14
 rendering:
   shared:
     canvas_width: 1000
@@ -90,25 +89,8 @@ rendering:
     collectible_radius_px: 18
     path_width_px: 6
     label_font_size_px: 24
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      motion_reasoning: 0.34
-      path_reasoning: 0.24
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_platformer_v0
+    bundle_id: games_platformer_v1
     scene_key: visible_platformer_level
     task_key: platformer_level_query
-    object_description_side_scroller: a side-scroller platformer level with a player character, platforms, hazards, coins, bonus items, and a dashed jump arc
-    platformer_short_arc_rule_text: The dashed arc shows the first part of the jump; extend the same smooth arc forward.
-    platformer_full_arc_rule_text: The dashed arc shows the jump path to follow.
-    platformer_score_rule_text: Coins score 1; bonus items score their printed value.
-    annotation_hint_jump_landing_label: set "annotation" to one bounding box [x0, y0, x1, y1] around the labeled platform where the jump lands
-    answer_hint_jump_landing_label: set "answer" to the selected platform label as a string
-    annotation_hint_collectible_count: set "annotation" to one pixel point [x,y] at the center of each coin lying on the dashed jump arc
-    answer_hint_collectible_count: set "answer" to the number of coins lying on the dashed jump arc as an integer
-    annotation_hint_jump_collectible_score_value: set "annotation" to one pixel point [x,y] at the center of every coin and printed-value bonus item included in the dashed-arc score
-    answer_hint_jump_collectible_score_value: set "answer" to the integer total score from collectibles on the dashed jump arc

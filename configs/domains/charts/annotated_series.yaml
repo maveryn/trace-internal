@@ -4,32 +4,13 @@ generation:
     mark_count_max: 14
     value_min: 10
     value_max: 90
-    window_size_min: 3
-    window_size_max: 6
-    threshold_count_min: 1
-    threshold_count_max: 5
-    callout_gap_min: 3
-    callout_gap_max: 9
     scene_variant_weights:
       line: 1.0
       bar: 1.0
       area: 1.0
       dot_plot: 1.0
       lollipop: 1.0
-    extremum_direction_weights:
-      highest: 1.0
-      lowest: 1.0
-    threshold_comparison_weights:
-      greater_than: 1.0
-      less_than: 1.0
-    endpoint_side_weights:
-      first: 1.0
-      last: 1.0
     balanced_scene_variant_sampling: true
-    balanced_extremum_direction_sampling: true
-    balanced_threshold_comparison_sampling: true
-    balanced_endpoint_side_sampling: true
-
 rendering:
   shared:
     canvas_width: 1100
@@ -55,36 +36,10 @@ rendering:
     value_axis_major_tick_step: 5
     guide_line_mode: always
     guide_line_styles:
-      - dashed
-      - dotted
-      - solid
+    - dashed
+    - dotted
+    - solid
     guide_line_width_px: 1
-    annotation_label_font_size_px: 18
-    annotation_label_manifest_path: phrases/callout_phrases.txt
-    annotation_label_max_chars: 18
-    annotation_label_sample_attempts: 160
-    annotation_fill_alpha: 46
-    annotation_outline_width_px: 3
-    annotation_corner_radius_px_min: 0
-    annotation_corner_radius_px_max: 10
-    annotation_label_position_options:
-      - top_left
-      - top_right
-      - bottom_left
-    annotation_label_radius_px_min: 3
-    annotation_label_radius_px_max: 9
-    annotation_fill_rgb_options:
-      - [250, 177, 73]
-      - [110, 178, 230]
-      - [126, 199, 143]
-      - [206, 144, 224]
-      - [230, 130, 112]
-    annotation_outline_rgb_options:
-      - [168, 87, 28]
-      - [45, 104, 164]
-      - [54, 128, 74]
-      - [128, 72, 156]
-      - [162, 70, 58]
     callout_box_width_px: 138
     callout_box_height_px: 48
     callout_font_size_px: 20
@@ -96,25 +51,47 @@ rendering:
     callout_arrow_width_px_min: 2
     callout_arrow_width_px_max: 4
     callout_fill_rgb_options:
-      - [255, 255, 255]
-      - [253, 250, 244]
-      - [246, 251, 255]
-      - [248, 252, 248]
+    - - 255
+      - 255
+      - 255
+    - - 253
+      - 250
+      - 244
+    - - 246
+      - 251
+      - 255
+    - - 248
+      - 252
+      - 248
     callout_outline_rgb_options:
-      - [42, 98, 176]
-      - [154, 82, 44]
-      - [68, 128, 84]
-      - [132, 74, 154]
+    - - 42
+      - 98
+      - 176
+    - - 154
+      - 82
+      - 44
+    - - 68
+      - 128
+      - 84
+    - - 132
+      - 74
+      - 154
     callout_text_rgb_options:
-      - [36, 42, 52]
-      - [42, 47, 58]
-      - [48, 44, 38]
+    - - 36
+      - 42
+      - 52
+    - - 42
+      - 47
+      - 58
+    - - 48
+      - 44
+      - 38
     context_text_enabled: true
     context_text_mode_weights:
       clean: 0.45
-      light_context: 0.30
+      light_context: 0.3
       right_sidebar: 0.15
-      bottom_band: 0.10
+      bottom_band: 0.1
     context_text_top_reserved_px: 64
     context_text_bottom_reserved_px: 28
     context_text_sidebar_width_min_px: 180
@@ -125,36 +102,6 @@ rendering:
     context_text_bottom_band_gap_px: 14
     context_text_box_count_min: 1
     context_text_box_count_max: 2
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.32
-      reasoning_load: 0.34
-      scene_variant_load: 0.14
-      annotation_scope: 0.20
-
 prompt:
   shared:
-    bundle_id: charts_annotated_series_v0
-    scene_key: annotated_series_chart
-    task_key: annotated_series_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_line: a labeled line chart with a visible highlight or callout marking part of the series
-    object_description_bar: a labeled bar chart with a visible highlight or callout marking part of the series
-    object_description_area: a labeled area chart with a visible highlight or callout marking part of the series
-    object_description_dot_plot: a labeled dot plot with a visible highlight or callout marking part of the series
-    object_description_lollipop: a labeled lollipop chart with a visible highlight or callout marking part of the series
-    answer_hint_label: set "answer" to the exact visible chart label as a string
-    answer_hint_count: set "answer" to the count as an integer
-    answer_hint_value: set "answer" to the requested absolute change as an integer
-    annotation_hint_event_window_extremum_label: set "annotation" to an array of [x,y] pixel points for the answer mark in the highlighted region
-    annotation_hint_event_window_threshold_count: set "annotation" to an array of [x,y] pixel points for every matching mark in the highlighted region
-    annotation_hint_callout_endpoint_change_value: set "annotation" to an object with keys "callout_mark" and "endpoint_mark", each mapped to that mark's [x,y] pixel point
-    json_example_event_window_extremum_label: '{"annotation":[[402,180]],"answer":"K4M8"}'
-    json_example_event_window_threshold_count: '{"annotation":[[302,220],[452,150]],"answer":2}'
-    json_example_callout_endpoint_change_value: '{"annotation":{"callout_mark":[510,180],"endpoint_mark":[130,300]},"answer":24}'
-    json_example_answer_only_event_window_extremum_label: '{"answer":"K4M8"}'
-    json_example_answer_only_event_window_threshold_count: '{"answer":2}'
-    json_example_answer_only_callout_endpoint_change_value: '{"answer":24}'
+    bundle_id: charts_annotated_series_v1

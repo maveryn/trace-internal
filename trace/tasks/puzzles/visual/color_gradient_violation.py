@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -28,7 +28,6 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
@@ -204,14 +203,13 @@ class _TaskDefaults:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "visual")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "visual")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="visual")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="visual", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="visual")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="visual", apply_prob=0.0)
 
 
 def _sample_color_gradient_font(
@@ -1202,7 +1200,7 @@ def _build_prompt(
     }
     prompt_selection = render_task_prompt_variants(
         domain="puzzles",
-        task_group="visual",
+        scene_id="visual",
         bundle_id=str(prompt_values["bundle_id"]),
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
@@ -1226,15 +1224,14 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "visual"
+    scene_id = "visual"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
-            get_task_group_defaults("puzzles", "visual"),
+            get_scene_defaults("puzzles", "visual"),
             task_id=TASK_ID,
         )
-        complexity_weights = resolve_puzzle_complexity_weights(get_task_group_defaults("puzzles", "visual"), task_id=TASK_ID)
         last_error: Exception | None = None
         dataset: _Dataset | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -1439,14 +1436,6 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
         }
         grid_area = int(dataset.rows * dataset.cols)
         visual_scan = normalize_int_with_bounds(int(grid_area), [9, 16])
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(_RULE_LOAD_BY_VARIANT[str(dataset.rule_variant)]),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -1454,7 +1443,6 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
@@ -1468,16 +1456,12 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
 
     task_id = COMPLETION_TASK_ID
     domain = "puzzles"
-    task_group = "visual"
+    scene_id = "visual"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
-            get_task_group_defaults("puzzles", "visual"),
-            task_id=COMPLETION_TASK_ID,
-        )
-        complexity_weights = resolve_puzzle_complexity_weights(
-            get_task_group_defaults("puzzles", "visual"),
+            get_scene_defaults("puzzles", "visual"),
             task_id=COMPLETION_TASK_ID,
         )
         last_error: Exception | None = None
@@ -1717,14 +1701,6 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             },
         }
         visual_scan = normalize_int_with_bounds(int(dataset.sequence_length + dataset.option_count), [9, 13])
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(_COMPLETION_RULE_LOAD_BY_VARIANT[str(dataset.rule_variant)]),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -1732,7 +1708,6 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=COMPLETION_QUERY_ID,

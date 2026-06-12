@@ -24,7 +24,7 @@ This means:
 Read these before changing a domain:
 
 1. `docs/README.md`
-2. `docs/core/TRACE_TAXONOMY_DESIGN.md`
+2. `docs/core/TAXONOMY.md`
 3. `docs/core/TASK_UNIT_POLICY.md`
 4. `docs/workflows/DOMAIN_AUDIT_REVIEW.md`
 5. `docs/workflows/TASK_REVIEW_WEB_APP.md`
@@ -55,7 +55,7 @@ The public task id form is:
 task_<domain>__<scene_id>__<task_slug>
 ```
 
-`task_group` is implementation/config routing only. It is not the public
+`scene_id` is implementation/config routing only. It is not the public
 taxonomy unit.
 
 ## No Compatibility Layer
@@ -160,7 +160,7 @@ For every changed task id, update all applicable surfaces:
 1. task module and registered class/task id;
 2. package imports in `trace/tasks/**/__init__.py` or equivalent;
 3. `trace/core/taxonomy.py`;
-4. domain/task-group config YAML under `configs/domains/<domain>/`;
+4. domain/scene config YAML under `configs/domains/<domain>/`;
 5. prompt bundle and prompt config keys under `prompts/`;
 6. task docs under `docs/tasks/`;
 7. domain setup doc under `docs/domains/`;

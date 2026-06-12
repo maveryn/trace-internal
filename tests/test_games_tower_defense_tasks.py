@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
@@ -22,7 +22,7 @@ def _distance(point_a: list[float], point_b: list[float]) -> float:
 
 
 def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "tower_defense")
+    cfg = get_scene_defaults("games", "tower_defense")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id=TOWER_COVERAGE_TASK_ID,
@@ -134,10 +134,10 @@ def test_games_tower_defense_taxonomy_mapping() -> None:
     assert taxonomy.domain == "games"
     assert taxonomy.scene_id == "tower_defense"
     assert taxonomy.source_domain == "games"
-    assert taxonomy.source_task_group == "tower_defense"
+    assert taxonomy.source_scene_id == "tower_defense"
 
     path_taxonomy = resolve_task_taxonomy(COVERED_PATH_TASK_ID)
     assert path_taxonomy.domain == "games"
     assert path_taxonomy.scene_id == "tower_defense"
     assert path_taxonomy.source_domain == "games"
-    assert path_taxonomy.source_task_group == "tower_defense"
+    assert path_taxonomy.source_scene_id == "tower_defense"

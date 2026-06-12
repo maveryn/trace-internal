@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `rectangular_solid`
 3. Scene id: `rectangular_solid`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query ids: `missing_length_from_volume`, `missing_width_from_volume`, `missing_height_from_volume`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/rectangular_solid.py`
+- Config: `configs/domains/geometry/rectangular_solid.yaml`
+- Task module: `trace/tasks/geometry/rectangular_solid/cuboid_volume_missing_dimension_value.py`

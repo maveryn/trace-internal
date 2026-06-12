@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `map`
+2. Scene: `map`
 3. Scene id: `map`
 4. Task id: `task_pages__map__landmark_after_route_step_label`
 5. Objective: Identify the landmark reached after a named step on the visible route.

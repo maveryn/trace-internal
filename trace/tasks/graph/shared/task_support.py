@@ -418,7 +418,6 @@ def resolve_graph_render_params(
         instance_seed=int(instance_seed),
         params=information_style_params,
         scene_id=str(graph_scene_id),
-        task_group=str(information_style_params.get("task_group", "shared")),
         protected_colors=(tuple(int(value) for value in named_color(str(node_color_name))),),
         allow_dark=False,
     )

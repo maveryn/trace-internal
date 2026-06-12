@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -29,15 +29,14 @@ from ...shared.variant_sampling import (
     resolve_compatible_scene_query_ids,
     resolve_variant,
 )
-from ..shared.complexity import build_physics_sticky_collision_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
-from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES, build_physics_collision_theme
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "physics_mechanics_sticky_collision_family"
+TASK_ID = "physics_mechanics_sticky_collision"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "wide_table",
     "compact_table",
@@ -164,12 +163,12 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 
 
 def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_keys: Sequence[str]) -> Mapping[str, Any]:
@@ -1380,7 +1379,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -1406,7 +1405,6 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="collision",
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 instance_seed=int(instance_seed),
@@ -1415,7 +1413,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -1512,7 +1510,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             negative_direction = "left" if str(axes.component_axis) == "x" else "down"
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -1546,16 +1544,6 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             annotation_gt = TypedValue(
                 type="keyed_point_map",
                 value={str(key): list(point) for key, point in rendered_scene.annotation_point_map.items()},
-            )
-            complexity = build_physics_sticky_collision_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=TASK_ID,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                component_abs_sum=int(abs(scene_spec.scenario.final_vx) + abs(scene_spec.scenario.final_vy)),
-                total_mass=int(scene_spec.scenario.total_mass),
-                option_count=len(OPTION_LETTERS),
-                annotation_count=len(rendered_scene.annotation_point_map),
             )
             scenario_payload = {
                 "horizontal_mass": int(scene_spec.scenario.horizontal_mass),
@@ -1687,7 +1675,6 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 query_id=str(axes.query_id),
                 scene_id="collision",

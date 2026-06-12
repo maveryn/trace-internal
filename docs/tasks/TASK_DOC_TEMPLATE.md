@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain:
-2. Task group:
+2. Scene:
 3. Task id:
 4. Objective:
 

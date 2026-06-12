@@ -51,7 +51,6 @@ generation:
       table_count_max: 8
       relationship_count_min: 6
       relationship_count_max: 9
-
 rendering:
   shared:
     canvas_width: 1300
@@ -81,48 +80,65 @@ rendering:
     layout_jitter_y_px_min: -18
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 18
-
-complexity:
-  shared:
-    criteria_weights:
-      schema_size: 0.34
-      relationship_density: 0.30
-      reasoning_load: 0.36
-
 prompt:
   shared:
     bundle_id: pages_schema_v0
     scene_key: database_schema_diagram
-    object_description: database tables with field rows, key markers, and relationship lines
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description: database tables with field rows, key markers, and relationship
+      lines
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     integer_answer_hint: set "answer" to the requested integer count
     string_answer_hint: set "answer" to the exact target table label as shown
-    cardinality_answer_hint: set "answer" to the normalized cardinality label, one of "one_to_one", "one_to_many", or "optional_many"
-    annotation_hint_field_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted field rows
-    annotation_hint_relationship_count: set "annotation" to an array of pixel point pairs for the counted relationship lines, with each pair formatted as [[x, y], [x, y]]
-    annotation_hint_relationship_endpoint: set "annotation" to an object with keys "source_table", "relationship_label", and "target_table", each mapped to a [x0,y0,x1,y1] pixel bounding box
-    annotation_hint_relationship_cardinality: set "annotation" to an object with keys "source_table", "target_table", "source_cardinality_marker", and "target_cardinality_marker", each mapped to a [x0,y0,x1,y1] pixel bounding box
-
+    cardinality_answer_hint: set "answer" to the normalized cardinality label, one
+      of "one_to_one", "one_to_many", or "optional_many"
+    annotation_hint_field_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
+      bounding boxes for the counted field rows
+    annotation_hint_relationship_count: set "annotation" to an array of pixel point
+      pairs for the counted relationship lines, with each pair formatted as [[x, y],
+      [x, y]]
+    annotation_hint_relationship_endpoint: set "annotation" to an object with keys
+      "source_table", "relationship_label", and "target_table", each mapped to a [x0,y0,x1,y1]
+      pixel bounding box
+    annotation_hint_relationship_cardinality: set "annotation" to an object with keys
+      "source_table", "target_table", "source_cardinality_marker", and "target_cardinality_marker",
+      each mapped to a [x0,y0,x1,y1] pixel bounding box
 visual:
   background:
     enabled: true
     styles:
       paper_light:
         kind: solid
-        color: [244, 245, 241]
+        color:
+        - 244
+        - 245
+        - 241
       paper_cool:
         kind: solid
-        color: [236, 242, 246]
+        color:
+        - 236
+        - 242
+        - 246
       paper_warm:
         kind: solid
-        color: [248, 241, 230]
+        color:
+        - 248
+        - 241
+        - 230
       paper_mint:
         kind: solid
-        color: [238, 246, 240]
+        color:
+        - 238
+        - 246
+        - 240
       paper_lavender:
         kind: solid
-        color: [242, 239, 249]
+        color:
+        - 242
+        - 239
+        - 249
     weights:
       paper_light: 1.0
       paper_cool: 1.0
@@ -131,13 +147,23 @@ visual:
       paper_lavender: 1.0
   noise:
     apply_prob: 0.35
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.04, 0.18]
+        radius:
+        - 0.04
+        - 0.18
       downsample:
-        scale: [0.95, 0.99]
+        scale:
+        - 0.95
+        - 0.99
       jpeg:
-        quality: [88.0, 97.0]
+        quality:
+        - 88.0
+        - 97.0
       noise:
-        alpha: [0.004, 0.014]
+        alpha:
+        - 0.004
+        - 0.014

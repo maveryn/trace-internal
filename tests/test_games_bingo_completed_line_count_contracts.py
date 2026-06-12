@@ -1,4 +1,4 @@
-"""Contract tests for the games bingo completed-line count task."""
+"""Contract tests for the games bingo scene tasks."""
 
 from __future__ import annotations
 
@@ -12,12 +12,11 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.registry import create_task
-from trace.tasks.games.bingo.completed_line_count import (
-    GamesBingoCalledNumberMarkCountTask,
-    GamesBingoCompletedLineCountTask,
-    GamesBingoNearCompleteLineCountTask,
-)
-from trace.tasks.games.shared.bingo_common import build_bingo_card_state
+from trace.tasks.games.bingo.called_number_mark_count import GamesBingoCalledNumberMarkCountTask
+from trace.tasks.games.bingo.completed_column_label import GamesBingoCompletedColumnLabelTask
+from trace.tasks.games.bingo.line_sum_extremum_value import GamesBingoLineSumExtremumValueTask
+from trace.tasks.games.bingo.near_complete_line_count import GamesBingoNearCompleteLineCountTask
+from trace.tasks.games.bingo.shared.rules import build_completed_column_label_card_state
 from tests.helpers import read_jsonl
 
 
@@ -64,67 +63,60 @@ def _near_complete_gap_cell_ids(mark_grid: list[list[bool]], *, query_id: str) -
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer"),
+    ("params", "expected_answer", "expected_column_index"),
     (
-        (
-            {
-                "query_id": "completed_axis_line_count",
-                "line_axis": "row",
-                "target_answer": 0,
-            },
-            0,
-        ),
-        (
-            {
-                "query_id": "completed_axis_line_count",
-                "line_axis": "row",
-                "target_answer": 3,
-            },
-            3,
-        ),
-        (
-            {
-                "query_id": "completed_column_count",
-                "target_answer": 4,
-            },
-            4,
-        ),
+        ({"query_id": "completed_column_label", "target_column_label": "B"}, "B", 0),
+        ({"query_id": "completed_column_label", "target_column_label": "N"}, "N", 2),
+        ({"query_id": "completed_column_label", "target_column_label": "O"}, "O", 4),
     ),
 )
-def test_games_bingo_completed_line_count_emits_expected_contract(
-    params: dict[str, int | str],
-    expected_answer: int,
+def test_games_bingo_completed_column_label_emits_expected_contract(
+    params: dict[str, str],
+    expected_answer: str,
+    expected_column_index: int,
 ) -> None:
-    out = GamesBingoCompletedLineCountTask().generate(27001, params=params, max_attempts=24)
+    out = GamesBingoCompletedColumnLabelTask().generate(27001, params=params, max_attempts=24)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     cells = execution["cell_specs"]
 
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.answer_gt.type == "string"
+    assert str(out.answer_gt.value) == str(expected_answer)
+    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.value == [
+        [
+            list(trace["render_map"]["cell_mark_centers_px"][f"cell_r0_c{expected_column_index}"]),
+            list(trace["render_map"]["cell_mark_centers_px"][f"cell_r4_c{expected_column_index}"]),
+        ]
+    ]
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
-    assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    assert out.query_id == "completed_column_label"
+    assert execution["target_answer"] == str(expected_answer)
+    assert execution["target_column_label"] == str(expected_answer)
+    assert int(execution["target_column_index"]) == int(expected_column_index)
+    assert execution["completed_column_indices"] == [int(expected_column_index)]
+    assert execution["completed_row_indices"] == []
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert execution["annotation_entity_ids"] == [
+        f"cell_r0_c{expected_column_index}",
+        f"cell_r4_c{expected_column_index}",
+    ]
+    assert execution["annotation_entity_id_pairs"] == [
+        [f"cell_r0_c{expected_column_index}", f"cell_r4_c{expected_column_index}"]
+    ]
     assert trace["render_spec"]["canvas_width"] <= 1180
     assert trace["render_spec"]["canvas_height"] <= 760
     assert float(trace["render_spec"]["effective_cell_size_px"]) >= 28.0
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert any(not bool(cell["is_marked"]) for cell in cells)
-    for x0, y0, x1, y1 in out.annotation_gt.value:
-        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
-        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
+    for point_pair in out.annotation_gt.value:
+        for x, y in point_pair:
+            assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+            assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
 
-    if str(out.query_id) == "completed_axis_line_count":
-        if str(execution["line_axis"]) == "row":
-            assert len(execution["completed_row_indices"]) == int(expected_answer)
-            assert len(out.annotation_gt.value) == 5 * int(expected_answer)
-        else:
-            assert str(execution["line_axis"]) == "column"
-            assert len(execution["completed_column_indices"]) == int(expected_answer)
-            assert len(out.annotation_gt.value) == 5 * int(expected_answer)
+
 @pytest.mark.parametrize(
     ("line_axis", "extremum", "completed_line_count"),
     (
@@ -137,10 +129,9 @@ def test_games_bingo_line_sum_extremum_value_has_unique_extremum_line(
     extremum: str,
     completed_line_count: int,
 ) -> None:
-    out = GamesBingoCompletedLineCountTask().generate(
+    out = GamesBingoLineSumExtremumValueTask().generate(
         27023,
         params={
-            "query_id": "line_sum_extremum_value",
             "line_axis": line_axis,
             "extremum": extremum,
             "target_answer": completed_line_count,
@@ -310,13 +301,12 @@ def test_games_bingo_called_number_mark_count_taxonomy() -> None:
     assert resolve_task_taxonomy("task_games__bingo__called_number_mark_count").scene_id == "bingo"
 
 
-def test_games_bingo_completed_line_count_is_deterministic() -> None:
+def test_games_bingo_completed_column_label_is_deterministic() -> None:
     params = {
-        "query_id": "completed_axis_line_count",
-        "line_axis": "column",
-        "target_answer": 2,
+        "query_id": "completed_column_label",
+        "target_column_label": "G",
     }
-    task = GamesBingoCompletedLineCountTask()
+    task = GamesBingoCompletedColumnLabelTask()
     out_a = task.generate(27031, params=params, max_attempts=24)
     out_b = task.generate(27031, params=params, max_attempts=24)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -327,45 +317,48 @@ def test_games_bingo_completed_line_count_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def test_games_bingo_builder_rejects_all_marked_card_state() -> None:
-    with pytest.raises(ValueError, match="at least one unmarked cell"):
-        build_bingo_card_state(
+def test_games_bingo_builder_rejects_unknown_completed_column_label() -> None:
+    with pytest.raises(ValueError, match="unsupported Bingo column label"):
+        build_completed_column_label_card_state(
             rng=random.Random(27041),
-            query_id="completed_axis_line_count",
-            line_axis="row",
-            target_answer=5,
+            target_column_label="Z",
         )
 
 
-def test_games_bingo_completed_line_count_prompt_bundle_requires_rule_text_by_variant() -> None:
-    bundle = json.loads(Path("prompts/games/bingo/games_bingo_v0.json").read_text(encoding="utf-8"))
-    required = bundle["required_slots_by_key"]
-    assert required["query:completed_axis_line_count"] == ["completed_axis_rule_text", "line_axis"]
-    assert required["query:line_sum_extremum_value"] == [
-        "line_sum_extremum_rule_text",
-        "line_axis",
-        "extremum",
-    ]
-    assert required["query:near_complete_row_count"] == ["near_complete_line_rule_text"]
-    assert required["query:near_complete_column_count"] == ["near_complete_line_rule_text"]
-    assert required["query:called_marked_number_count"] == ["called_marked_number_rule_text"]
+def test_games_bingo_completed_column_label_prompt_bundle_requires_rule_text_by_variant() -> None:
+    bundle = json.loads(Path("prompts/games/bingo/games_bingo_v1.json").read_text(encoding="utf-8"))
+    assert bundle["schema_version"] == "v1"
+    assert bundle["dynamic_slots"]["line_axis"]["type"] == "string"
+    assert bundle["dynamic_slots"]["extremum"]["type"] == "string"
+    assert bundle["required_slots_by_key"]["query:line_sum_extremum_value"] == ["line_axis", "extremum"]
+    slots = bundle["static_slots_by_key"]
+    assert "completed_column_rule_text" in slots["query:completed_column_label"]
+    assert "line_sum_extremum_rule_text" in slots["query:line_sum_extremum_value"]
+    assert "near_complete_line_rule_text" in slots["query:near_complete_row_count"]
+    assert "near_complete_line_rule_text" in slots["query:near_complete_column_count"]
+    assert "called_marked_number_rule_text" in slots["query:called_marked_number_count"]
 
 
-def test_games_bingo_completed_line_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games__bingo__completed_line_count"
+def test_games_bingo_completed_column_label_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__bingo__completed_column_label"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games__bingo__completed_line_count",
+        dataset_name="build_smoke_task_games__bingo__completed_column_label",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games__bingo__completed_line_count",
+                task_id="task_games__bingo__completed_column_label",
                 count=4,
                 params={},
             ),
             BuildTaskConfig(
                 task_id="task_games__bingo__near_complete_line_count",
+                count=2,
+                params={},
+            ),
+            BuildTaskConfig(
+                task_id="task_games__bingo__line_sum_extremum_value",
                 count=2,
                 params={},
             ),
@@ -382,13 +375,14 @@ def test_games_bingo_completed_line_count_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-bingo-completed-line-count-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
-    assert len(train_records) == 8
+    assert len(train_records) == 10
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "bingo" for record in train_records)
+    assert all(record.get("scene_id") == "bingo" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games__bingo__completed_line_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__bingo__completed_column_label"]) == 4
     assert int(build_report["accepted_counts_by_task"]["task_games__bingo__near_complete_line_count"]) == 2
+    assert int(build_report["accepted_counts_by_task"]["task_games__bingo__line_sum_extremum_value"]) == 2
     assert int(build_report["accepted_counts_by_task"]["task_games__bingo__called_number_mark_count"]) == 2
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))

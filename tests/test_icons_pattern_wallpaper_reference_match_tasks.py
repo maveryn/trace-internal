@@ -127,7 +127,7 @@ def test_icons_wallpaper_reference_match_build_smoke(tmp_path: Path) -> None:
     assert len(train_records) == 3
     assert all(record["domain"] == "icons" for record in train_records)
     assert all(record["scene_id"] == "wallpaper_panels" for record in train_records)
-    assert all(record["task_group"] == "pattern" for record in train_records)
+    assert all(record["scene_id"] == "pattern" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][TASK_ID]) == 3

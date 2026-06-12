@@ -1,0 +1,94 @@
+{
+  "bundle_id": "geometry_circle_centerline_overlap_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "circle_centerline_overlap_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The image shows {object_description}.",
+        "This diagram shows {object_description}.",
+        "This figure shows {object_description}."
+      ]
+    },
+    "task": {
+      "segment_length_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "center_distance_from_overlap": [
+        "Find {target_name}.",
+        "Find the length of {target_name}.",
+        "What is {target_name}?",
+        "Determine {target_name}.",
+        "Solve for {target_name}."
+      ],
+      "boundary_segment_from_overlap": [
+        "Find {target_name}.",
+        "Find the length of {target_name}.",
+        "What is {target_name}?",
+        "Determine {target_name}.",
+        "Solve for {target_name}."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Return a JSON object with an \"answer\" field only.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Return only a JSON object containing \"answer\".\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Respond with JSON only.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Return a JSON object.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Respond with JSON only.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return a JSON object.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:circle_centerline_overlap_scene": {
+      "object_description": "three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, radius or diameter labels, and centerline segment labels"
+    }
+  },
+  "dynamic_slots": {
+    "target_name": {
+      "type": "string"
+    },
+    "annotation_keys": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:circle_centerline_overlap_scene": [
+      "object_description"
+    ],
+    "query:center_distance_from_overlap": [
+      "target_name"
+    ],
+    "query:boundary_segment_from_overlap": [
+      "target_name"
+    ],
+    "output:answer_only": [
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "annotation_keys",
+      "json_example"
+    ]
+  }
+}

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `pulley`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/pulley_mechanical_advantage.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__pulley__pulley_mechanical_advantage` -> `task_physics__pulley__pulley_mechanical_advantage`

@@ -3,12 +3,6 @@ generation:
     scene_variant_weights:
       open_grid: 1.0
       mixed_grid: 1.0
-    query_id_weights:
-      forced_mine_count: 1.0
-      forced_safe_count: 1.0
-      remaining_mine_count: 1.0
-      reveal_outcome_label: 1.0
-      satisfied_clue_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -17,63 +11,79 @@ generation:
       dark: 1.0
       retro: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_board_size_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_reveal_outcome_option_count_sampling: true
-    board_size_support:
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    forced_cell_board_size_support:
-    - 4
-    - 5
-    reveal_outcome_board_size_support:
-    - 5
-    - 6
-    - 7
-    - 8
-    forced_mine_count_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    forced_safe_count_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    remaining_mine_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    reveal_outcome_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    reveal_outcome_option_count_support:
-    - 4
-    - 6
-    satisfied_clue_count_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
+  task_overrides:
+    task_games__minesweeper__forced_cell_count:
+      balanced_board_size_sampling: true
+      balanced_target_answer_sampling: true
+      forced_cell_board_size_support:
+      - 4
+      - 5
+      forced_mine_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      forced_safe_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    task_games__minesweeper__remaining_mine_count_value:
+      balanced_board_size_sampling: true
+      balanced_target_answer_sampling: true
+      board_size_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      remaining_mine_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    task_games__minesweeper__reveal_outcome_label:
+      balanced_board_size_sampling: true
+      balanced_target_answer_sampling: true
+      balanced_reveal_outcome_option_count_sampling: true
+      reveal_outcome_board_size_support:
+      - 5
+      - 6
+      - 7
+      - 8
+      reveal_outcome_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      reveal_outcome_option_count_support:
+      - 4
+      - 6
+    task_games__minesweeper__satisfied_clue_count:
+      balanced_board_size_sampling: true
+      balanced_target_answer_sampling: true
+      board_size_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      satisfied_clue_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
 rendering:
   shared:
     canvas_width: 900
@@ -86,48 +96,8 @@ rendering:
     grid_line_width_px: 2
     cell_padding_px: 6
     number_font_size_px: 48
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      state_reasoning: 0.44
-      ambiguity: 0.14
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_minesweeper_v0
+    bundle_id: games_minesweeper_v1
     scene_key: visible_minesweeper_grid
     task_key: minesweeper_grid_query
-    object_description_open_grid: a Minesweeper grid with opened number cells,
-      hidden cells, and a few flags
-    object_description_mixed_grid: a Minesweeper grid with opened number cells,
-      hidden cells, flags, and extra hidden distractor cells
-    minesweeper_rule_text: In Minesweeper, each opened number tells how many mines
-      are in its eight neighboring cells, and each flag marks a known mine. If
-      a number already has that many adjacent flags, its other hidden neighbors
-      are safe. If the number still needs exactly all remaining hidden neighbors,
-      those hidden neighbors are mines.
-    annotation_hint_forced_mine_count: set "annotation" to bounding boxes [x0, y0,
-      x1, y1] for the hidden cells forced to be mines
-    answer_hint_forced_mine_count: set "answer" to the count of hidden cells that
-      must be mines
-    annotation_hint_forced_safe_count: set "annotation" to bounding boxes [x0, y0,
-      x1, y1] for the hidden cells forced to be safe
-    answer_hint_forced_safe_count: set "answer" to the count of hidden cells that
-      must be safe
-    annotation_hint_remaining_mine_count: set "annotation" to a JSON array containing
-      one bounding box [x0, y0, x1, y1] for the marked opened number cell
-    answer_hint_remaining_mine_count: set "answer" to the number of additional
-      mines that must be adjacent to the marked opened number cell
-    annotation_hint_reveal_outcome_label: set "annotation" to a JSON object with keys
-      "target_cell", "supporting_clues", and "supporting_flags"; each key maps to
-      an array of bounding boxes [x0, y0, x1, y1] for the marked hidden cell and
-      the visible cells used to infer the reveal result
-    answer_hint_reveal_outcome_label: set "answer" to the single option letter shown
-      beside the reveal result
-    annotation_hint_satisfied_clue_count: set "annotation" to bounding boxes [x0,
-      y0, x1, y1] for the opened number cells whose clue equals the count of adjacent
-      flags
-    answer_hint_satisfied_clue_count: set "answer" to the count of opened number
-      cells whose clue equals the count of adjacent flags; do not count numbered
-      cells with too few adjacent flags

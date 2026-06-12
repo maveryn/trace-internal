@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -21,7 +21,6 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import resolve_variant
-from ..shared.complexity import build_icon_task_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
@@ -168,7 +167,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -790,26 +789,6 @@ def _serialize_icon(icon: _RenderedRingIcon) -> Dict[str, Any]:
     }
 
 
-def _complexity(sample: _SampleSpec, *, scene: _ScenePayload, render_params: Mapping[str, Any]) -> TaskComplexity:
-    visual_scan = (float(sample.ring_icon_count) - float(_DEFAULTS.ring_icon_count_min)) / max(1.0, float(_DEFAULTS.ring_icon_count_max - _DEFAULTS.ring_icon_count_min))
-    arc_scan = float(sample.arc_span_count) / max(1.0, float(sample.ring_icon_count - 2))
-    answer_load = float(sample.answer_count) / max(1.0, float(_DEFAULTS.answer_count_max))
-    noise_cap = max((int(value) for value in render_params["icon_noise_edit_count_range"]), default=0)
-    clutter = (
-        min(1.0, sum(len(icon.noise_edits) for icon in scene.icons) / float(max(1, len(scene.icons) * noise_cap)))
-        if int(noise_cap) > 0
-        else 0.0
-    )
-    return build_icon_task_complexity(
-        task_group_defaults=_TASK_GROUP_DEFAULTS,
-        task_id=TASK_ID,
-        criterion_values={
-            "semantic_match": 0.50,
-            "visual_scan": max(0.0, min(1.0, visual_scan)),
-            "ambiguity": max(0.0, min(1.0, (0.55 * arc_scan) + (0.45 * answer_load))),
-            "clutter": max(0.0, min(1.0, clutter)),
-        },
-    )
 
 
 @register_task
@@ -818,7 +797,7 @@ class IconsCountingNamedRingArcShapeCountTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = _resolve_named_ring_render_params(params=params, instance_seed=int(instance_seed))
@@ -871,7 +850,7 @@ class IconsCountingNamedRingArcShapeCountTask:
         question_key = f"question_text_{sample.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1012,7 +991,6 @@ class IconsCountingNamedRingArcShapeCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, scene=scene, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

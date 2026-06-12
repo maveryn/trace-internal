@@ -9,9 +9,9 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.shared.darts_scene import dartboard_anchor_colors
+from trace.tasks.games.darts.shared.scene import dartboard_anchor_colors
 from trace.tasks.shared.color_distance import color_distance
-from trace.tasks.games.darts.score_count import GamesDartsScoreCountTask
+from trace.tasks.games.darts.ring_count import GamesDartsScoreCountTask
 from tests.helpers import read_jsonl
 
 
@@ -244,7 +244,7 @@ def test_games_darts_score_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "darts" for record in train_records)
+    assert all(record.get("scene_id") == "darts" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__darts__total_score_option_label"]) == 4

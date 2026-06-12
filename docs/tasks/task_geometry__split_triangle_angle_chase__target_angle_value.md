@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `split_triangle_angle_chase`
 3. Scene id: `split_triangle_angle_chase`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `single_cevian_triangle_angle_sum`, `shared_vertex_split_angle_sum`, or `two_step_adjacent_triangle_angle_sum`
@@ -31,5 +31,5 @@ Angle labels, vertex labels, shaded subtriangles, and split-segment linework rem
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/split_triangle_patterns.py`
+- Config: `configs/domains/geometry/split_triangle_angle_chase.yaml`
+- Task module: `trace/tasks/geometry/split_triangle_angle_chase/target_angle_value.py`

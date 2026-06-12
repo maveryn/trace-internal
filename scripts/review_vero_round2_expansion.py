@@ -47,7 +47,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
                 "task_id": "proposal:charts/callout_annotation/condition_count",
                 "answer_type": "integer",
                 "annotation_type": "bbox_set",
-                "difficulty_knobs": "number of panels, callout density, condition complexity",
+                "difficulty_knobs": "number of panels, callout density, condition difficulty",
                 "rationale": "Count callouts or highlighted marks satisfying a visual/value condition.",
             },
         ],
@@ -404,7 +404,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
                 "task_id": "proposal:puzzles/strip_reconstruction/order_label",
                 "answer_type": "ordered_label_sequence",
                 "annotation_type": "bbox_set",
-                "difficulty_knobs": "strip count, orientation, edge texture complexity, distractor continuity",
+                "difficulty_knobs": "strip count, orientation, edge texture detail, distractor continuity",
                 "rationale": "Return the correct left-to-right/top-to-bottom strip order.",
             },
             {
@@ -531,14 +531,14 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "overlap_risk": "High with `clock_collection` and `day_schedule_layout`; prefer adding tasks to existing scenes first.",
         "tasks": [
             {
-                "task_id": "proposal:misc/clock_collection/event_clock_order_label",
+                "task_id": "proposal:symbolic/clock_collection/event_clock_order_label",
                 "answer_type": "label",
                 "annotation_type": "bbox_set",
                 "difficulty_knobs": "clock count, minute offsets, event label count, AM/PM ambiguity",
                 "rationale": "Identify which named event happens first/last based on clocks.",
             },
             {
-                "task_id": "proposal:misc/clock_collection/clock_schedule_gap_value",
+                "task_id": "proposal:symbolic/clock_collection/clock_schedule_gap_value",
                 "answer_type": "integer",
                 "annotation_type": "bbox_set",
                 "difficulty_knobs": "clock count, interval count, minute arithmetic",
@@ -712,7 +712,7 @@ EXISTING_SCENE_TASK_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "clock_collection",
         "support_configs": ["knowledge_recognition-iconqa", "stem-mmk12"],
         "pattern": r"\b(clock|time|earlier|later|first|last)\b",
-        "task_id": "proposal:misc/clock_collection/named_event_order_label",
+        "task_id": "proposal:symbolic/clock_collection/named_event_order_label",
         "answer_type": "label",
         "annotation_type": "bbox_set",
         "difficulty_knobs": "clock count, minute offsets, labels, AM/PM markers",
@@ -1062,7 +1062,7 @@ def write_round2_markdown(
             "1. `games/minesweeper` and `puzzles/strip_reconstruction`: high novelty, clean annotation, strong Vero support.",
             "2. `pages/science_process` and `icons/icon_field` multi-hop tasks: broad Vero coverage and clear synthetic proxies.",
             "3. `puzzles/color_sudoku`, `puzzles/tents`, and `games/arcade_grid`: good coverage but need careful difficulty tuning.",
-            "4. `geometry/composite_measurement` and `charts/table_combo`: strong coverage but higher implementation complexity.",
+            "4. `geometry/composite_measurement` and `charts/table_combo`: strong coverage but higher implementation effort.",
             "5. P2 scenes (`measurement_tool`, `semantic_node_link`, `experiment_setup`, clock-collection expansions): defer until P0/P1 candidates are inspected visually.",
             "",
         ]

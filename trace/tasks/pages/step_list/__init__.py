@@ -1,1 +1,1 @@
-"""Pages step-list task group."""
+"""Pages step-list scene."""

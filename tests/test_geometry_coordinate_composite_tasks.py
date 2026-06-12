@@ -7,7 +7,7 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.coordinate.composite_intersections import (
+from trace.tasks.geometry.coordinate_composite.intersection_point_count import (
     QUERY_IDS,
     SCENE_ID,
     TASK_ID,

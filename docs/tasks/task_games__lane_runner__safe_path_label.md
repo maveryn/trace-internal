@@ -3,7 +3,6 @@
 ## Contract
 1. Domain: `games`
 2. Scene id: `lane_runner`
-3. Task group: `lane_runner`
 4. Public task id: `task_games__lane_runner__safe_path_label`
 5. Supported `query_id` values: `safe_path_label`
 

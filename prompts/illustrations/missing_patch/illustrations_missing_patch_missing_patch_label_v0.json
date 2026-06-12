@@ -1,0 +1,81 @@
+{
+  "bundle_id": "illustrations_missing_patch_missing_patch_label_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:illustration_missing_patch_options": [
+      "option_labels"
+    ],
+    "query:plain_patch_label": [],
+    "query:transformed_patch_label": [],
+    "query:irregular_cutout_patch_label": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "illustration_missing_patch_options": [
+      "The image shows a Source illustration with a missing region and option panels labeled {option_labels}.",
+      "A source picture has one blacked-out missing patch; labeled options {option_labels} are shown below.",
+      "The canvas contains a source illustration with a missing patch and choices {option_labels}.",
+      "The top source image has one missing region, with patch options {option_labels} underneath.",
+      "The image asks which labeled option from {option_labels} completes the missing patch in the source picture."
+    ]
+  },
+  "query_templates": {
+    "plain_patch_label": [
+      "Which option exactly fills the missing region?",
+      "Choose the labeled patch that completes the source image.",
+      "What option label matches the missing patch?",
+      "Find the option that fits the blacked-out region in the source image.",
+      "Which labeled option should replace the missing region?"
+    ],
+    "transformed_patch_label": [
+      "Which option matches the missing patch if rotation or reflection is allowed?",
+      "Choose the patch option that completes the source image, allowing the option to be rotated or flipped.",
+      "What option label matches the missing region up to rotation or reflection?",
+      "Find the option that would fit the blacked-out region after a possible rotation or flip.",
+      "Which labeled option completes the missing region when rotations or reflections are allowed?"
+    ],
+    "irregular_cutout_patch_label": [
+      "Which option matches the axis-aligned missing region?",
+      "Choose the labeled patch that completes the rectangular cutout in the source image.",
+      "What option label fits the axis-aligned missing patch?",
+      "Find the option that matches the blacked-out rectangular region.",
+      "Which labeled option should fill the axis-aligned missing region?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

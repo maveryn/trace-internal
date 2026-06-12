@@ -14,23 +14,26 @@ generation:
     combined_threshold_step: 10
     threshold_count_min: 2
     threshold_count_max: 9
-    age_band_width_options: [5, 10]
-    age_start_options: [0, 5, 10]
+    age_band_width_options:
+    - 5
+    - 10
+    age_start_options:
+    - 0
+    - 5
+    - 10
     series_label_pairs:
-      - [Female, Male]
-      - [Group A, Group B]
-      - [Urban, Rural]
-      - [North, South]
-      - [Baseline, Scenario]
-      - [Left cohort, Right cohort]
-    balanced_query_id_sampling: true
-    query_id_weights:
-      largest_side_gap_label: 1.0
-      smallest_nonzero_side_gap_label: 1.0
-      left_side_threshold_count: 1.0
-      right_side_threshold_count: 1.0
-      combined_total_threshold_count: 1.0
-
+    - - Female
+      - Male
+    - - Group A
+      - Group B
+    - - Urban
+      - Rural
+    - - North
+      - South
+    - - Baseline
+      - Scenario
+    - - Left cohort
+      - Right cohort
 rendering:
   shared:
     canvas_width: 1280
@@ -63,39 +66,30 @@ rendering:
     layout_jitter_y_px_max: 10
     layout_jitter_min_margin_px: 24
     title_options:
-      - Population Pyramid
-      - Age Profile Comparison
-      - Cohort Balance Chart
-      - Mirrored Age Distribution
-      - Demographic Profile
+    - Population Pyramid
+    - Age Profile Comparison
+    - Cohort Balance Chart
+    - Mirrored Age Distribution
+    - Demographic Profile
     series_palette_rgb:
-      - [45, 112, 190]
-      - [215, 96, 72]
-      - [54, 148, 122]
-      - [132, 91, 186]
-      - [194, 136, 42]
-      - [36, 134, 164]
-
+    - - 45
+      - 112
+      - 190
+    - - 215
+      - 96
+      - 72
+    - - 54
+      - 148
+      - 122
+    - - 132
+      - 91
+      - 186
+    - - 194
+      - 136
+      - 42
+    - - 36
+      - 134
+      - 164
 prompt:
   shared:
-    bundle_id: charts_population_pyramid_v0
-    scene_key: population_pyramid_scene
-    task_key: population_pyramid_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description: a mirrored horizontal bar chart with one row per age group. The left and right bars show the two legend series on the same positive scale
-    answer_hint_label: set "answer" to the exact visible age-group label as a string
-    answer_hint_count: set "answer" to the requested integer count
-    annotation_hint_label: set "annotation" to an array containing one [x0,y0,x1,y1] pixel box around the two bars in the answer row
-    annotation_hint_count: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes, one around the two bars for each counted age-group row
-    json_example_label: '{"annotation":[[278,312,1038,344]],"answer":"40-44"}'
-    json_example_count: '{"annotation":[[278,214,1038,246],[278,338,1038,370],[278,524,1038,556]],"answer":3}'
-    json_example_answer_only_label: '{"answer":"40-44"}'
-    json_example_answer_only_count: '{"answer":3}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.40
-      reasoning_load: 0.42
-      scene_variant_load: 0.18
+    bundle_id: charts_population_pyramid_v1

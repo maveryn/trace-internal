@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `node_link`
 4. Task id: `task_graph__node_link__named_node_degree_value`
 5. Objective: ask for the degree, in-degree, out-degree, or total degree of one specific labeled node.
@@ -61,4 +61,4 @@
 
 ## 7) Complexity + tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
-2. Tests: `tests/test_graph_counting_named_node_degree_value_contracts.py`, `tests/test_graph_counting_named_node_degree_value_tasks.py`, `tests/test_task_group_config.py`
+2. Tests: `tests/test_graph_counting_named_node_degree_value_contracts.py`, `tests/test_graph_counting_named_node_degree_value_tasks.py`, `tests/test_scene_config.py`

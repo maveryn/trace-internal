@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -30,7 +30,7 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_fluids_buoyancy_density_family"
+TASK_NAMESPACE = "physics_fluids_buoyancy_density"
 SCENE_ID = "buoyancy_density"
 TASK_ID = "task_physics__buoyancy_density__object_density_value"
 QUERY_ID = "floating_object_density_value"
@@ -53,11 +53,11 @@ DEFAULT_FRACTIONS: Tuple[Tuple[int, int], ...] = (
     (9, 10),
 )
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="fluids", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "fluids")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="fluids", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "fluids")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -188,7 +188,7 @@ def _answer_support_tenths(params: Mapping[str, Any]) -> Tuple[int, ...]:
 
 
 def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scene_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scene_variant")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -207,13 +207,13 @@ def _resolve_scene_variant(instance_seed: int, params: Mapping[str, Any]) -> Tup
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{FAMILY_ID}.scene_variant",
+        sampling_namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def _resolve_object_shape(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.object_shape")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.object_shape")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -232,7 +232,7 @@ def _resolve_object_shape(instance_seed: int, params: Mapping[str, Any]) -> Tupl
         balance_flag_key="balanced_object_shape_sampling",
         explicit_key="object_shape",
         weights_key="object_shape_weights",
-        sampling_namespace=f"{FAMILY_ID}.object_shape",
+        sampling_namespace=f"{TASK_NAMESPACE}.object_shape",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -250,10 +250,10 @@ def _resolve_target_answer_tenths(instance_seed: int, params: Mapping[str, Any])
     if not feasible_answers:
         raise ValueError("no feasible target answers for configured buoyancy-density supports")
     if bool(params.get("balanced_target_answer_sampling", group_default(_GEN_DEFAULTS, "balanced_target_answer_sampling", True))):
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{FAMILY_ID}.target_answer")
+        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_NAMESPACE}.target_answer")
         selected = int(feasible_answers[index % len(feasible_answers)])
     else:
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.target_answer")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.target_answer")
         selected = int(rng.choice(feasible_answers))
     probability = 1.0 / float(len(feasible_answers))
     return selected, {str(float(value) / 10.0): float(probability) for value in feasible_answers}
@@ -266,7 +266,7 @@ def _make_scenario(instance_seed: int, *, params: Mapping[str, Any]) -> _Buoyanc
     matching = [item for item in _feasible_scenarios(params) if int(item[3]) == int(target_tenths)]
     if not matching:
         raise ValueError("target answer has no matching buoyancy scenario")
-    choice_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{FAMILY_ID}.scenario") % len(matching)
+    choice_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_NAMESPACE}.scenario") % len(matching)
     num, den, liquid_tenths, object_tenths = matching[int(choice_index)]
     answer_support = tuple(float(value) / 10.0 for value in _answer_support_tenths(params))
     return _BuoyancyScenario(
@@ -430,9 +430,9 @@ def _render_scene(
         (177, 139, 221),
         (219, 180, 82),
     )
-    color_index = int(hash64(int(scenario.object_density_tenths), f"{FAMILY_ID}.color", int(scenario.liquid_density_tenths)) % len(liquid_palette))
+    color_index = int(hash64(int(scenario.object_density_tenths), f"{TASK_NAMESPACE}.color", int(scenario.liquid_density_tenths)) % len(liquid_palette))
     liquid_rgb = liquid_palette[color_index]
-    object_rgb = object_palette[int(hash64(int(scenario.liquid_density_tenths), f"{FAMILY_ID}.object_color", 0) % len(object_palette))]
+    object_rgb = object_palette[int(hash64(int(scenario.liquid_density_tenths), f"{TASK_NAMESPACE}.object_color", 0) % len(object_palette))]
 
     if str(scenario.scene_variant) == "beaker_tank":
         lip = 34.0
@@ -576,7 +576,7 @@ def _resolve_layout_placement(
         params,
         _RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.layout",
+        namespace=f"{TASK_NAMESPACE}.layout",
     )
     min_margin = int(jitter.get("min_margin_px", 18))
     requested_dx = int(jitter.get("requested_dx_px", 0))
@@ -621,7 +621,7 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "fluids"
+    scene_id = "fluids"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -641,7 +641,6 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
                 instance_seed=attempt_seed,
                 params=params,
                 scene_id=SCENE_ID,
-                task_group=self.task_group,
                 canvas_width=canvas_width,
                 canvas_height=canvas_height,
                 require_grid=True,
@@ -649,7 +648,7 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=attempt_seed,
-                namespace=f"{FAMILY_ID}.font",
+                namespace=f"{TASK_NAMESPACE}.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -660,7 +659,7 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
                     key,
                     int(getattr(_DEFAULTS, key)),
                     instance_seed=attempt_seed,
-                    namespace=FAMILY_ID,
+                    namespace=TASK_NAMESPACE,
                 )
                 for key in (
                     "panel_left_px",
@@ -727,7 +726,7 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -823,15 +822,6 @@ class PhysicsBuoyancyDensityObjectDensityValueTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=TaskComplexity(
-                    complexity_score=0.50,
-                    complexity_components={
-                        "visual_fraction_readout": 0.44,
-                        "buoyancy_rule": 0.30,
-                        "arithmetic": 0.14,
-                        "output_burden": 0.12,
-                    },
-                ),
                 task_versions=default_task_versions(),
                 scene_id=SCENE_ID,
                 query_id=QUERY_ID,

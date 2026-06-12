@@ -112,4 +112,4 @@ def test_wall_mounted_object_count_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "room"
+    assert taxonomy.source_scene_id == "room"

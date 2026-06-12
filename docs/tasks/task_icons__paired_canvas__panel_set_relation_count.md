@@ -3,9 +3,9 @@
 ## Identity
 - domain: `icons`
 - scene_id: `paired_canvas`
-- task_group: `counting`
-- module: `trace/tasks/icons/counting/panel_set_relation_count.py`
-- prompt bundle: `icons_counting_v0`
+- scene package: `paired_canvas`
+- module: `trace/tasks/icons/paired_canvas/panel_set_relation_count.py`
+- prompt bundle: `icons_paired_canvas_v0`
 
 ## Contract
 Renders two icon panels labeled `Left` and `Right`, then asks for a set relation

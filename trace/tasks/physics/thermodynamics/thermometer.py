@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -28,15 +28,15 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__thermometer__temperature_conversion_value"
-FAMILY_ID = "physics_thermodynamics_thermometer_family"
+TASK_NAMESPACE = "physics_thermodynamics_thermometer"
 SCENE_ID = "thermometer"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("celsius_to_fahrenheit_value", "fahrenheit_to_celsius_value")
 
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="thermodynamics", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "thermodynamics")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="thermodynamics", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "thermodynamics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -251,7 +251,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         if explicit not in SUPPORTED_QUERY_IDS:
             raise ValueError(f"unsupported query_id for {TASK_ID}: {explicit}")
         return explicit, _probability_map(SUPPORTED_QUERY_IDS, selected=explicit)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.query_id")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -270,7 +270,7 @@ def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[st
         balance_flag_key="balanced_query_id_sampling",
         explicit_key="query_id",
         weights_key="query_id_weights",
-        sampling_namespace=f"{FAMILY_ID}.query_id",
+        sampling_namespace=f"{TASK_NAMESPACE}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
@@ -287,11 +287,11 @@ def _resolve_profile(instance_seed: int, params: Mapping[str, Any], query_id: st
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.scale_profile.{query_id}",
+            namespace=f"{TASK_NAMESPACE}.scale_profile.{query_id}",
         )
         selected = supported[int(index) % len(supported)]
     else:
-        rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.scale_profile.{query_id}")
+        rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.scale_profile.{query_id}")
         weights = group_default(_GEN_DEFAULTS, "scale_profile_weights", {})
         weighted = [max(0.0, float(weights.get(profile_id, 1.0))) for profile_id in supported]
         total = sum(weighted) or float(len(supported))
@@ -335,11 +335,11 @@ def _resolve_source_temperature(
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.target_answer.{profile.profile_id}",
+            namespace=f"{TASK_NAMESPACE}.target_answer.{profile.profile_id}",
         )
         source = support[int(index) % len(support)]
     else:
-        source = support[int(hash64(int(instance_seed), f"{FAMILY_ID}.source_temperature.{profile.profile_id}", 0) % len(support))]
+        source = support[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.source_temperature.{profile.profile_id}", 0) % len(support))]
     target = _convert_temperature(str(query_id), source)
     return int(source), int(target), _probability_map([str(value) for value in target_support], selected=str(target))
 
@@ -475,13 +475,12 @@ def _render_thermometer(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=SCENE_ID,
-        task_group="thermodynamics",
         canvas_width=canvas_width,
         canvas_height=canvas_height,
         require_grid=True,
     )
     draw = ImageDraw.Draw(background)
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.layout")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.layout")
     panel_left = int(_RENDER_DEFAULTS.get("panel_left_px", _DEFAULTS.panel_left_px))
     panel_top = int(_RENDER_DEFAULTS.get("panel_top_px", _DEFAULTS.panel_top_px))
     panel_right = int(canvas_width - int(_RENDER_DEFAULTS.get("panel_right_margin_px", _DEFAULTS.panel_right_margin_px)))
@@ -497,19 +496,19 @@ def _render_thermometer(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{FAMILY_ID}.font",
+        namespace=f"{TASK_NAMESPACE}.font",
         params=params,
     )
     font_record = get_font_family_record(str(font_family))
     palette = ((218, 64, 80), (224, 92, 48), (198, 54, 92), (230, 116, 58))
-    liquid_rgb = palette[int(hash64(int(instance_seed), f"{FAMILY_ID}.liquid", 0) % len(palette))]
+    liquid_rgb = palette[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.liquid", 0) % len(palette))]
     geometry = _ThermometerGeometry(
         center_x=float(int(_RENDER_DEFAULTS.get("thermometer_center_x_px", _DEFAULTS.thermometer_center_x_px)) + rng.randint(-16, 16)),
         scale_top=float(int(_RENDER_DEFAULTS.get("thermometer_scale_top_px", _DEFAULTS.thermometer_scale_top_px)) + rng.randint(-8, 8)),
         scale_bottom=float(int(_RENDER_DEFAULTS.get("thermometer_scale_bottom_px", _DEFAULTS.thermometer_scale_bottom_px)) + rng.randint(-6, 8)),
         tube_width=float(int(_RENDER_DEFAULTS.get("tube_width_px", _DEFAULTS.tube_width_px))),
         bulb_radius=float(int(_RENDER_DEFAULTS.get("bulb_radius_px", _DEFAULTS.bulb_radius_px))),
-        scale_left=bool(hash64(int(instance_seed), f"{FAMILY_ID}.scale_side", 0) % 2),
+        scale_left=bool(hash64(int(instance_seed), f"{TASK_NAMESPACE}.scale_side", 0) % 2),
     )
     rendered = _draw_thermometer(
         draw,
@@ -581,7 +580,7 @@ class PhysicsThermometerTemperatureConversionValueTask:
     """Read a thermometer and convert the source temperature to the other unit."""
 
     domain = "physics"
-    task_group = "thermodynamics"
+    scene_id = "thermodynamics"
     task_id = TASK_ID
     default_dataset_enabled = True
 
@@ -613,7 +612,7 @@ class PhysicsThermometerTemperatureConversionValueTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -666,7 +665,7 @@ class PhysicsThermometerTemperatureConversionValueTask:
                 "canvas_width": int(rendered.image.size[0]),
                 "canvas_height": int(rendered.image.size[1]),
                 "font": {
-                    "font_family": str(rendered.render_map["font"]["font_family"]),
+                    "font_family": str(rendered.render_map["font"]["font"]),
                     "font_asset_version": str(rendered.render_map["font"]["font_asset_version"]),
                     "font_asset": dict(rendered.render_map["font"]["font_asset"]),
                     "scope": "thermometer_diagram",
@@ -706,16 +705,6 @@ class PhysicsThermometerTemperatureConversionValueTask:
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.45,
-                complexity_components={
-                    "visual_readout": 0.36,
-                    "unit_conversion": 0.34,
-                    "scale_mapping": 0.10,
-                    "ambiguity": 0.08,
-                    "output_burden": 0.12,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

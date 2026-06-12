@@ -8,7 +8,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.seed import spawn_rng
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.three_d.spatial.camera_distance import (
+from trace.tasks.three_d.object_scene.camera_distance_extremum_label import (
     CAMERA_YAW_BANDS_DEGREES,
     LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
@@ -100,7 +100,7 @@ def test_camera_distance_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_task_group == "spatial"
+    assert taxonomy.source_scene_id == "object_scene"
 
 
 def test_three_d_camera_sampler_uses_multiple_orbit_families() -> None:

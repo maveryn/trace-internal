@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `pipe_network`
 4. Task id: `task_graph__pipe_network__bridge_count`
 5. Objective: count open pipes whose removal disconnects part of the open-pipe network.

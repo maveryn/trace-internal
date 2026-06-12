@@ -1,11 +1,12 @@
 # Core Docs
 
-Use this folder for repo-wide source-of-truth contracts and runtime architecture.
+This folder contains repo-wide contracts that should change only when TRACE
+runtime semantics change. Keep workflow instructions, migration plans, generated
+inventories, and domain-specific policy outside `docs/core/`.
 
-- `BLUEPRINT.md` — normative ABI/contracts.
-- `SYSTEM_ARCHITECTURE.md` — module boundaries, lifecycle, and architecture invariants.
-- `TAXONOMY.md` — public `domain -> scene_id -> task_id` taxonomy and source alias policy.
-- `TRACE_TAXONOMY_DESIGN.md` — canonical semantic task/query taxonomy and concrete program-contract policy beyond public task ids.
-- `TASK_UNIT_POLICY.md` — policy for what should count as one TRACE task under uniform task-level sampling.
-- `RLVR_REWARD_CONTRACTS.md` — public reward-contract metadata for RLVR dispatch.
-- `PROMPT_SYSTEM.md` — prompt bundle structure, composition, and metadata.
+- `BLUEPRINT.md` — dataset ABI, determinism, build, and quality gates.
+- `SYSTEM_ARCHITECTURE.md` — runtime layers, module boundaries, and lifecycle.
+- `TAXONOMY.md` — public `domain -> scene_id -> task_id` taxonomy.
+- `TASK_UNIT_POLICY.md` — task/query boundary and merge/split rules.
+- `PROMPT_SYSTEM.md` — prompt asset schema, composition, and metadata.
+- `RLVR_REWARD_CONTRACTS.md` — answer/annotation reward dispatch contract.

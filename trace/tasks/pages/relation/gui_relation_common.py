@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw, ImageFont
 
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.text_legibility import draw_text_traced
@@ -26,7 +26,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 )
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("standard", "compact", "contrast", "cool", "warm", "sage")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
 )

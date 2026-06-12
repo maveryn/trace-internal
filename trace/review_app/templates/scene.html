@@ -9,6 +9,14 @@
 <section class="summary-grid">
   <div class="metric"><span>{{ scene.task_count }}</span><label>tasks</label></div>
   <div class="metric"><span>{{ scene.sample_count }}</span><label>samples</label></div>
+  <div class="metric">
+    <span>{% if scene.migration_test_pass %}PASS{% elif scene.migration_test_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>migration tests</label>
+  </div>
+  <div class="metric">
+    <span>{% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>code audit</label>
+  </div>
   <a class="metric metric-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">
     <span>{{ scene_open_feedback|length }}</span>
     <label>open scene issues</label>
@@ -19,6 +27,71 @@
   <strong>Scene-level review.</strong>
   <span class="muted">Inspect two samples per query across every task in this scene and file scene-level issues.</span>
   <a class="button-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">Open Scene Review</a>
+</section>
+
+{% set manual_code_audit = scene.manual_code_audit_summary %}
+<section class="table-panel compact migration-test-panel">
+  <h2>Manual Code Audit</h2>
+  <div class="migration-test-summary">
+    <span class="{% if scene.manual_code_audit_pass %}status ok{% else %}status warn{% endif %}">
+      {% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}
+    </span>
+    {% if manual_code_audit %}
+      <span class="muted">{{ manual_code_audit.summary or 'no summary recorded' }}</span>
+      <span class="muted">{{ manual_code_audit.checked_at or 'no timestamp' }}</span>
+      {% if manual_code_audit.checked_by %}
+        <span class="muted">by {{ manual_code_audit.checked_by }}</span>
+      {% endif %}
+      {% if scene.manual_code_audit_status_rel_path %}
+        <span class="muted">{{ scene.manual_code_audit_status_rel_path }}</span>
+      {% endif %}
+    {% else %}
+      <span class="muted">No manual_code_audit_status.json was indexed for this scene.</span>
+    {% endif %}
+  </div>
+  {% if manual_code_audit %}
+    {% if manual_code_audit.notes %}
+      <p>{{ manual_code_audit.notes }}</p>
+    {% endif %}
+    {% if manual_code_audit.checklist %}
+      <p class="muted">
+        Checklist:
+        {% for key, value in manual_code_audit.checklist.items() %}
+          {{ key }}={{ 'true' if value else 'false' }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if manual_code_audit.files_reviewed %}
+      <p class="muted">Files reviewed: {{ manual_code_audit.files_reviewed|join(', ') }}</p>
+    {% endif %}
+  {% endif %}
+</section>
+
+{% set migration_tests = scene.migration_test_summary %}
+<section class="table-panel compact migration-test-panel">
+  <h2>Migration Tests</h2>
+  <div class="migration-test-summary">
+    <span class="{% if scene.migration_test_pass %}status ok{% else %}status warn{% endif %}">
+      {% if scene.migration_test_pass %}PASS{% elif scene.migration_test_pass is none %}MISSING{% else %}FAIL{% endif %}
+    </span>
+    {% if migration_tests %}
+      <span class="muted">{{ migration_tests.summary or 'no summary recorded' }}</span>
+      <span class="muted">{{ migration_tests.checked_at or 'no timestamp' }}</span>
+      {% if scene.migration_test_status_rel_path %}
+        <span class="muted">{{ scene.migration_test_status_rel_path }}</span>
+      {% endif %}
+    {% else %}
+      <span class="muted">No migration_test_status.json was indexed for this scene.</span>
+    {% endif %}
+  </div>
+  {% if migration_tests %}
+    {% if migration_tests.command %}
+      <p class="migration-test-command"><code>{{ migration_tests.command }}</code></p>
+    {% endif %}
+    {% if migration_tests.test_files %}
+      <p class="muted">Test files: {{ migration_tests.test_files|join(', ') }}</p>
+    {% endif %}
+  {% endif %}
 </section>
 
 <section class="table-panel">
@@ -59,7 +132,7 @@
               <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">
                 review {% if task_status.review_pass %}done{% else %}pending{% endif %}
               </span>
-              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(4) }}</span>
+              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(5) }}</span>
               <span class="{% if task_status.solve_rate_pass %}status ok{% else %}status warn{% endif %}">
                 solve rate {% if task_status.solve_rate_pass %}done{% else %}pending{% endif %}
               </span>
@@ -70,6 +143,7 @@
               <label><input type="checkbox" name="image_pass" value="1" {% if audit.image_pass %}checked{% endif %}> Image</label>
               <label><input type="checkbox" name="annotation_pass" value="1" {% if audit.annotation_pass %}checked{% endif %}> Annotation</label>
               <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
+              <label><input type="checkbox" name="code_review_pass" value="1" {% if audit.code_review_pass %}checked{% endif %}> Code review</label>
               <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
               <button type="submit">Save</button>
             </form>

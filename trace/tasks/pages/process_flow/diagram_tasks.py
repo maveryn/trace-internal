@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -35,12 +35,6 @@ from ..shared.diagram.common import (
     projected_diagram_bbox_annotation,
     resolve_jittered_diagram_panel_geometry,
     round_diagram_bbox,
-)
-from ..shared.diagram.complexity import (
-    build_diagrams_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_diagrams_complexity_weights,
 )
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
 from ..shared.public_query_task import rewrite_pages_query_output
@@ -327,13 +321,13 @@ _ROLE_FILL_ADJUST: Dict[str, Tuple[int, int, int]] = {
     "output": (230, 239, 223),
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "process_flow")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "process_flow")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_SHARED = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=None,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="process_flow")
-POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="process_flow", apply_prob=0.5)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(scene_id="process_flow")
+POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(scene_id="process_flow", apply_prob=0.5)
 
 
 def _resolve_defaults_for_task(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
@@ -341,11 +335,18 @@ def _resolve_defaults_for_task(task_id: str) -> tuple[Dict[str, Any], Dict[str, 
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
-    weights = resolve_diagrams_complexity_weights(
-        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-        task_id=str(task_id),
-    )
-    return gen_defaults, render_defaults, prompt_defaults, weights
+    return gen_defaults, render_defaults, prompt_defaults, {}
+
+
+def clamp_unit_interval(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
+
+
+def normalize_int_with_bounds(value: int, bounds: tuple[int, int] | list[int]) -> float:
+    low, high = int(bounds[0]), int(bounds[1])
+    if high <= low:
+        return 0.0
+    return clamp_unit_interval((int(value) - low) / float(high - low))
 
 
 def _resolve_axis(
@@ -1630,13 +1631,12 @@ def _build_output(
     *,
     task_id: str,
     domain: str,
-    task_group: str,
+    scene_id: str,
     instance_seed: int,
     params: Dict[str, Any],
     max_attempts: int,
 ) -> TaskOutput:
     del max_attempts
-    gen_defaults, render_defaults, prompt_defaults, complexity_weights = _resolve_defaults_for_task(str(task_id))
     scene, query, query_probabilities, context_probabilities, layout_probabilities, style_probabilities = _build_scene_and_query(
         task_id=str(task_id),
         instance_seed=int(instance_seed),
@@ -1719,7 +1719,7 @@ def _build_output(
 
     prompt_selection = render_task_prompt_variants(
         domain=str(domain),
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(query["task_key"]),
@@ -1814,15 +1814,6 @@ def _build_output(
         LANE_FILTERED_HANDOFF_COUNT_TASK_ID: 0.52,
     }[str(task_id)]
     reasoning_load = clamp_unit_interval(float(base_reasoning) + (0.18 * answer_load) + (0.10 * branch_scan))
-    complexity = build_diagrams_complexity(
-        weights=complexity_weights,
-        components={
-            "visual_scan": float(node_scan),
-            "reasoning_load": float(reasoning_load),
-            "lane_count": float(lane_scan),
-            "branch_count": float(branch_scan),
-        },
-    )
 
     node_specs = [
         {
@@ -1944,7 +1935,6 @@ def _build_output(
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
-        complexity=complexity,
         task_versions=default_task_versions(),
         query_id="default",
     )
@@ -1962,13 +1952,13 @@ class PagesProcessFlowFilteredNodeCountTask:
 
     task_id = FILTERED_NODE_COUNT_TASK_ID
     domain = "pages"
-    task_group = "process_flow"
+    scene_id = "process_flow"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -1981,13 +1971,13 @@ class PagesProcessFlowConditionPathEndpointLabelTask:
 
     task_id = CONDITION_PATH_ENDPOINT_TASK_ID
     domain = "pages"
-    task_group = "process_flow"
+    scene_id = "process_flow"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -2000,13 +1990,13 @@ class PagesProcessFlowAllCrossLaneHandoffCountTask:
 
     task_id = ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID
     domain = "pages"
-    task_group = "process_flow"
+    scene_id = "process_flow"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -2019,13 +2009,13 @@ class PagesProcessFlowLaneFilteredHandoffCountTask:
 
     task_id = LANE_FILTERED_HANDOFF_COUNT_TASK_ID
     domain = "pages"
-    task_group = "process_flow"
+    scene_id = "process_flow"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),

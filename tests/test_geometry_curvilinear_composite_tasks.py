@@ -4,19 +4,19 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.curvilinear_composite import (
+from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cap_area import GeometryMissingWidthFromSemicircleCapAreaTask
+from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cutout_area import GeometryMissingWidthFromSemicircleCutoutAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import (
     SCENE_ID,
-    GeometryMissingWidthFromSemicircleCapAreaTask,
-    GeometryMissingWidthFromSemicircleCutoutAreaTask,
     GeometryRectangleQuarterSectorCutoutAreaTask,
-    GeometryRectangleQuarterSectorCutoutPerimeterTask,
-    GeometryRectangleSemicircleCapAreaTask,
-    GeometryRectangleSemicircleCapPerimeterTask,
-    GeometryRectangleSemicircleCutoutAreaTask,
-    GeometryRectangleSemicircleCutoutPerimeterTask,
-    GeometrySectorAngleFromArcLengthTask,
-    GeometrySectorAngleFromAreaTask,
 )
+from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_perimeter import GeometryRectangleQuarterSectorCutoutPerimeterTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_area import GeometryRectangleSemicircleCapAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_perimeter import GeometryRectangleSemicircleCapPerimeterTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_area import GeometryRectangleSemicircleCutoutAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_perimeter import GeometryRectangleSemicircleCutoutPerimeterTask
+from trace.tasks.geometry.composite_shape.sector_angle_from_arc_length import GeometrySectorAngleFromArcLengthTask
+from trace.tasks.geometry.composite_shape.sector_angle_from_area import GeometrySectorAngleFromAreaTask
 
 
 TASK_CLASSES = (

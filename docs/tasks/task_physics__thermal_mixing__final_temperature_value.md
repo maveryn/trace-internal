@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `thermal_mixing`
-- Implementation task group: `thermodynamics`
+- Implementation scene: `thermodynamics`
 - Implementation source: `trace/tasks/physics/thermodynamics/thermal_mixing.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__thermal_mixing__final_temperature_value` -> `task_physics__thermal_mixing__final_temperature_value`

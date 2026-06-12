@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `web_action`
 4. Task id: `task_pages__web_action__type_field_label`
 5. Objective: Identify the input field described by a visible action instruction.

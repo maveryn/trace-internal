@@ -31,11 +31,14 @@ from trace.tasks.illustrations.shared.object_variants import (  # noqa: E402
 
 
 _FOOTPRINTS: dict[str, tuple[int, int]] = {
+    "archway": (2, 1),
     "barn": (4, 3),
     "basket": (1, 1),
     "bed": (2, 3),
     "bench": (2, 1),
     "boulder": (1, 1),
+    "brazier": (1, 1),
+    "broken_wall": (2, 1),
     "cart": (2, 1),
     "castle": (5, 4),
     "cave_entrance": (4, 3),
@@ -51,12 +54,14 @@ _FOOTPRINTS: dict[str, tuple[int, int]] = {
     "dead_tree": (1, 2),
     "domestic_animal": (2, 1),
     "fireplace": (2, 1),
+    "floor_switch": (1, 1),
     "gazebo": (3, 3),
     "house": (4, 3),
     "inn": (4, 3),
     "jar": (1, 1),
     "lamp_post": (1, 2),
     "ladder": (1, 1),
+    "magic_circle": (2, 2),
     "market_stall": (3, 2),
     "mine_cart": (2, 1),
     "notice_board": (2, 1),
@@ -66,15 +71,18 @@ _FOOTPRINTS: dict[str, tuple[int, int]] = {
     "pot": (1, 1),
     "produce_bin": (2, 1),
     "rail_track": (1, 1),
+    "rubble": (1, 1),
     "room_divider": (3, 1),
     "rug": (3, 2),
     "sack": (1, 1),
     "scarecrow": (1, 2),
+    "sealed_door": (2, 1),
     "shelf": (3, 1),
     "shop": (4, 3),
     "stairs": (2, 2),
     "stalagmite": (1, 1),
     "statue": (2, 2),
+    "stone_column": (1, 1),
     "stool": (1, 1),
     "table": (2, 2),
     "tower": (3, 4),
@@ -120,6 +128,14 @@ def _spec_for(object_type: str) -> IllustrationObjectSpec:
         visual_attributes = {"track_shape": "horizontal"}
     if object_type == "stairs":
         visual_attributes = {"stair_direction": "down"}
+    if object_type == "floor_switch":
+        visual_attributes = {"switch_state": "raised"}
+    if object_type == "broken_wall":
+        visual_attributes = {"break_style": "cracked"}
+    if object_type == "sealed_door":
+        visual_attributes = {"door_orientation": "horizontal"}
+    if object_type == "brazier":
+        visual_attributes = {"fire_state": "lit"}
     return IllustrationObjectSpec(
         object_id=f"{object_type}_00",
         object_type=object_type,
@@ -140,12 +156,15 @@ def _project_tile_center(tile_xywh: tuple[int, int, int, int], level: int) -> tu
 
 def test_current_village_and_farm_prop_inventory_has_shared_pixel_rpg_object_support() -> None:
     expected = {
+        "archway",
         "barrel",
         "barn",
         "basket",
         "bed",
         "bench",
         "boulder",
+        "brazier",
+        "broken_wall",
         "bridge",
         "candle",
         "cart",
@@ -165,6 +184,7 @@ def test_current_village_and_farm_prop_inventory_has_shared_pixel_rpg_object_sup
         "farm_gate",
         "fence",
         "fireplace",
+        "floor_switch",
         "flower",
         "fountain",
         "gazebo",
@@ -176,6 +196,7 @@ def test_current_village_and_farm_prop_inventory_has_shared_pixel_rpg_object_sup
         "jar",
         "lamp_post",
         "ladder",
+        "magic_circle",
         "market_stall",
         "mine_cart",
         "notice_board",
@@ -187,16 +208,19 @@ def test_current_village_and_farm_prop_inventory_has_shared_pixel_rpg_object_sup
         "produce_bin",
         "rail_track",
         "rock",
+        "rubble",
         "room_divider",
         "rug",
         "sack",
         "scarecrow",
+        "sealed_door",
         "shelf",
         "shop",
         "sign",
         "stairs",
         "stalagmite",
         "statue",
+        "stone_column",
         "stool",
         "table",
         "tower",
@@ -250,6 +274,147 @@ def test_shared_pixel_rpg_objects_render_in_top_down_and_isometric_styles() -> N
         assert iso_visual["shadow_policy"] == "none"
         assert iso_visual["shadow_enabled"] is False
         assert iso_visual["shadow_kind"] == "none"
+
+
+def test_feedback_target_top_down_dungeon_variants_render() -> None:
+    specs = (
+        IllustrationObjectSpec(
+            object_id="floor_switch_pressed",
+            object_type="floor_switch",
+            public_name="floor switch",
+            tile_xywh=(1, 1, 1, 1),
+            visual_attributes={"switch_state": "pressed"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="floor_switch_raised",
+            object_type="floor_switch",
+            public_name="floor switch",
+            tile_xywh=(1, 1, 1, 1),
+            visual_attributes={"switch_state": "raised"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="magic_circle",
+            object_type="magic_circle",
+            public_name="magic circle",
+            tile_xywh=(1, 1, 2, 2),
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="broken_wall_cracked",
+            object_type="broken_wall",
+            public_name="broken wall",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"break_style": "cracked"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="broken_wall_gap",
+            object_type="broken_wall",
+            public_name="broken wall",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"break_style": "gap"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="sealed_door_horizontal",
+            object_type="sealed_door",
+            public_name="sealed door",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"door_orientation": "horizontal"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="sealed_door_vertical",
+            object_type="sealed_door",
+            public_name="sealed door",
+            tile_xywh=(1, 1, 1, 2),
+            visual_attributes={"door_orientation": "vertical"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+    )
+    for spec in specs:
+        image = Image.new("RGBA", (128, 112), (0, 0, 0, 0))
+        render_illustration_object(
+            spec,
+            RenderContext(
+                renderer_style=RENDERER_STYLE_TOP_DOWN_PIXEL_RPG,
+                draw=ImageDraw.Draw(image, "RGBA"),
+            ),
+        )
+        assert image.getbbox() is not None, spec.object_id
+
+
+def test_feedback_target_isometric_dungeon_variants_render() -> None:
+    specs = (
+        IllustrationObjectSpec(
+            object_id="floor_switch_pressed",
+            object_type="floor_switch",
+            public_name="floor switch",
+            tile_xywh=(1, 1, 1, 1),
+            visual_attributes={"switch_state": "pressed"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="floor_switch_raised",
+            object_type="floor_switch",
+            public_name="floor switch",
+            tile_xywh=(1, 1, 1, 1),
+            visual_attributes={"switch_state": "raised"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="archway",
+            object_type="archway",
+            public_name="archway",
+            tile_xywh=(1, 1, 2, 1),
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="broken_wall_cracked",
+            object_type="broken_wall",
+            public_name="broken wall",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"break_style": "cracked"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="broken_wall_gap",
+            object_type="broken_wall",
+            public_name="broken wall",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"break_style": "gap"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="sealed_door_horizontal",
+            object_type="sealed_door",
+            public_name="sealed door",
+            tile_xywh=(1, 1, 2, 1),
+            visual_attributes={"door_orientation": "horizontal"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+        IllustrationObjectSpec(
+            object_id="sealed_door_vertical",
+            object_type="sealed_door",
+            public_name="sealed door",
+            tile_xywh=(1, 1, 1, 2),
+            visual_attributes={"door_orientation": "vertical"},
+            source_entity_type="pixel_rpg_object_test",
+        ),
+    )
+    for spec in specs:
+        image = Image.new("RGBA", (180, 140), (0, 0, 0, 0))
+        render_illustration_object(
+            spec,
+            RenderContext(
+                renderer_style=RENDERER_STYLE_ISOMETRIC_PIXEL_RPG,
+                image=image,
+                project_tile_center=_project_tile_center,
+            ),
+        )
+        assert image.getbbox() is not None, spec.object_id
 
 
 def test_pixel_rpg_chair_facings_render_in_rpg_styles() -> None:

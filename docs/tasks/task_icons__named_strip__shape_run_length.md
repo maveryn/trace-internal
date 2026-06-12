@@ -2,7 +2,7 @@
 
 - domain: `icons`
 - scene_id: `named_strip`
-- task_group: `sequence`
+- scene_id: `sequence`
 - task: `shape_run_length`
 - module: `trace/tasks/icons/sequence/named_shape_run_length.py`
 

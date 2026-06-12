@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `overlap_grid`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_icons__overlap_grid__occlusion_order_count`
 5. Objective: count how many labeled Scene cells show the same front-to-back icon order as the Reference cell.
 
@@ -47,7 +47,7 @@
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_occlusion_order_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_occlusion_order_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`
 
 ## 6) Current review status
 Current browser-review sidecars live under

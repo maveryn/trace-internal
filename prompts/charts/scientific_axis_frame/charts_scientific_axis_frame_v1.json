@@ -1,0 +1,101 @@
+{
+  "bundle_id": "charts_scientific_axis_frame_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "scientific_axis_frame": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This plot shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The chart shows {object_description}."
+      ]
+    },
+    "task": {
+      "axis_frame_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "x_tick_spacing_value": [
+        "On the {axis_name}, the two highlighted tick labels are adjacent. What is the numeric spacing between them?",
+        "Using the highlighted adjacent tick labels on the {axis_name}, compute their numeric spacing.",
+        "What is the difference between the two highlighted adjacent tick labels on the {axis_name}?",
+        "Read the highlighted neighboring tick labels on the {axis_name}. What spacing do they show?",
+        "For the highlighted adjacent tick labels on the {axis_name}, what is the tick interval?"
+      ],
+      "y_tick_spacing_value": [
+        "On the {axis_name}, the two highlighted tick labels are adjacent. What is the numeric spacing between them?",
+        "Using the highlighted adjacent tick labels on the {axis_name}, compute their numeric spacing.",
+        "What is the difference between the two highlighted adjacent tick labels on the {axis_name}?",
+        "Read the highlighted neighboring tick labels on the {axis_name}. What spacing do they show?",
+        "For the highlighted adjacent tick labels on the {axis_name}, what is the tick interval?"
+      ],
+      "x_axis_span_value": [
+        "What is the numeric span from the smallest to largest visible tick label on the {axis_name}?",
+        "Using the visible tick labels on the {axis_name}, compute max tick minus min tick.",
+        "Find the difference between the largest and smallest visible tick labels on the {axis_name}.",
+        "What range width is shown by the visible tick labels on the {axis_name}?",
+        "Compute the visible tick-label span on the {axis_name}."
+      ],
+      "y_axis_span_value": [
+        "What is the numeric span from the smallest to largest visible tick label on the {axis_name}?",
+        "Using the visible tick labels on the {axis_name}, compute max tick minus min tick.",
+        "Find the difference between the largest and smallest visible tick labels on the {axis_name}.",
+        "What range width is shown by the visible tick labels on the {axis_name}?",
+        "Compute the visible tick-label span on the {axis_name}."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:x_tick_spacing_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to an object mapping \"first_tick\" and \"next_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the lower-value highlighted tick label and the next higher highlighted tick label",
+      "json_example": "{\"annotation\":{\"first_tick\":[210,638,232,656],\"next_tick\":[358,638,381,656]},\"answer\":10}",
+      "json_example_answer_only": "{\"answer\":10}"
+    },
+    "query:y_tick_spacing_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to an object mapping \"first_tick\" and \"next_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the lower-value highlighted tick label and the next higher highlighted tick label",
+      "json_example": "{\"annotation\":{\"first_tick\":[210,638,232,656],\"next_tick\":[358,638,381,656]},\"answer\":10}",
+      "json_example_answer_only": "{\"answer\":10}"
+    },
+    "query:x_axis_span_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to an object mapping \"min_tick\" and \"max_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the smallest and largest visible tick labels on the requested axis",
+      "json_example": "{\"annotation\":{\"min_tick\":[72,620,94,638],\"max_tick\":[71,112,102,130]},\"answer\":48}",
+      "json_example_answer_only": "{\"answer\":48}"
+    },
+    "query:y_axis_span_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to an object mapping \"min_tick\" and \"max_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the smallest and largest visible tick labels on the requested axis",
+      "json_example": "{\"annotation\":{\"min_tick\":[72,620,94,638],\"max_tick\":[71,112,102,130]},\"answer\":48}",
+      "json_example_answer_only": "{\"answer\":48}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "axis_name": {"type": "string"}
+  }
+}

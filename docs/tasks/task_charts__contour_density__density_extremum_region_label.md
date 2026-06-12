@@ -14,7 +14,7 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `string`.
+1. Answer schema: `string_label`.
 2. Annotation schema: `keyed_bbox_map`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `density_extremum_region_label` | `select.metric_extremum_label` | `string` | `keyed_bbox_map` |
+| `density_extremum_region_label` | `select.metric_extremum_label` | `string_label` | `keyed_bbox_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

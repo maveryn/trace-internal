@@ -11,6 +11,7 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 
 LEN_EQ_ANSWER_TASKS = {
+    "task_graph__adjacency__directed_pair_reciprocity_count",
     "task_graph__adjacency__directed_strong_component_count",
     "task_graph__adjacency__undirected_component_count",
     "task_graph__binary_tree__child_structure_node_count",
@@ -59,10 +60,7 @@ SINGLE_ANNOTATION_LABEL_TASKS = {
 
 GRAPH_QUERY_IDS = {
     "task_graph__adjacency__directed_strong_component_count": ("directed_strong_component_count",),
-    "task_graph__adjacency__directed_pair_reciprocity_count": (
-        "mutual_pair_count",
-        "one_way_pair_count",
-    ),
+    "task_graph__adjacency__directed_pair_reciprocity_count": ("mutual_pair_count",),
     "task_graph__adjacency__mst_weight": ("weighted_matrix_mst_weight",),
     "task_graph__adjacency__traversal_kth_label": (
         "bfs_kth_visit_label",
@@ -541,16 +539,14 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     if task_id == "task_graph__adjacency__directed_pair_reciprocity_count":
         counted_pairs = execution_trace.get("counted_pairs") or []
         annotation_cell_keys = execution_trace.get("annotation_cell_keys") or []
+        if annotation_type != "point_pair_set":
+            errors.append("adjacency reciprocity annotation must be point_pair_set")
         if int(answer_value) != len(counted_pairs):
             errors.append("adjacency reciprocity answer does not match counted_pairs length")
-        if annotation_len != 2 * int(answer_value):
-            errors.append("adjacency reciprocity annotation length must be twice the answer")
-        _check_len(
-            errors,
-            name="annotation_cell_keys",
-            annotation_len=annotation_len,
-            values=annotation_cell_keys,
-        )
+        if annotation_len != int(answer_value):
+            errors.append("adjacency reciprocity annotation length must equal the answer")
+        if len(annotation_cell_keys) != 2 * annotation_len:
+            errors.append("adjacency reciprocity annotation_cell_keys length must be twice annotation length")
         for key in annotation_cell_keys:
             if "||" not in str(key):
                 errors.append(f"invalid matrix cell key: {key!r}")

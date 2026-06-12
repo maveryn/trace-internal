@@ -70,7 +70,6 @@ generation:
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
       balanced_travel_mode_sampling: true
-
 rendering:
   task_overrides:
     task_three_d__street__intersection_nearest_label:
@@ -85,13 +84,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb: [214, 222, 218]
-      asphalt_rgb: [86, 93, 101]
-      road_mark_rgb: [236, 210, 86]
-      crosswalk_rgb: [240, 243, 238]
-      curb_rgb: [157, 168, 171]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
+      sidewalk_rgb:
+      - 214
+      - 222
+      - 218
+      asphalt_rgb:
+      - 86
+      - 93
+      - 101
+      road_mark_rgb:
+      - 236
+      - 210
+      - 86
+      crosswalk_rgb:
+      - 240
+      - 243
+      - 238
+      curb_rgb:
+      - 157
+      - 168
+      - 171
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__street__same_road_arm_reference_label:
       canvas_width: 1180
       canvas_height: 920
@@ -104,13 +124,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb: [214, 222, 218]
-      asphalt_rgb: [86, 93, 101]
-      road_mark_rgb: [236, 210, 86]
-      crosswalk_rgb: [240, 243, 238]
-      curb_rgb: [157, 168, 171]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
+      sidewalk_rgb:
+      - 214
+      - 222
+      - 218
+      asphalt_rgb:
+      - 86
+      - 93
+      - 101
+      road_mark_rgb:
+      - 236
+      - 210
+      - 86
+      crosswalk_rgb:
+      - 240
+      - 243
+      - 238
+      curb_rgb:
+      - 157
+      - 168
+      - 171
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__street__lane_ahead_object_label:
       canvas_width: 1180
       canvas_height: 920
@@ -123,35 +164,34 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb: [214, 222, 218]
-      asphalt_rgb: [86, 93, 101]
-      road_mark_rgb: [236, 210, 86]
-      crosswalk_rgb: [240, 243, 238]
-      curb_rgb: [157, 168, 171]
-      text_rgb: [24, 28, 36]
-      text_stroke_rgb: [255, 255, 255]
-
-complexity:
-  task_overrides:
-    task_three_d__street__intersection_nearest_label:
-      criteria_weights:
-        visual_scan: 0.34
-        ground_plane_distance: 0.36
-        perspective_depth: 0.18
-        ambiguity: 0.12
-    task_three_d__street__same_road_arm_reference_label:
-      criteria_weights:
-        visual_scan: 0.32
-        road_arm_topology: 0.34
-        reference_binding: 0.20
-        perspective_depth: 0.14
-    task_three_d__street__lane_ahead_object_label:
-      criteria_weights:
-        visual_scan: 0.28
-        lane_direction: 0.34
-        road_corridor_binding: 0.24
-        perspective_depth: 0.14
-
+      sidewalk_rgb:
+      - 214
+      - 222
+      - 218
+      asphalt_rgb:
+      - 86
+      - 93
+      - 101
+      road_mark_rgb:
+      - 236
+      - 210
+      - 86
+      crosswalk_rgb:
+      - 240
+      - 243
+      - 238
+      curb_rgb:
+      - 157
+      - 168
+      - 171
+      text_rgb:
+      - 24
+      - 28
+      - 36
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
 prompt:
   shared:
     bundle_id: three_d_street_v0
@@ -159,24 +199,34 @@ prompt:
     task_three_d__street__intersection_nearest_label:
       scene_key: street
       task_key: street_intersection_nearest_query
-      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, candidate street objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      object_description: a perspective street intersection or T intersection with
+        roads, sidewalks, crosswalk markings, street context, candidate street objects,
+        and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__lane_ahead_object_label:
       scene_key: street
       task_key: street_lane_ahead_object_query
-      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, one red-boxed reference street object with a red travel-direction arrow, candidate street objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      object_description: a perspective street intersection or T intersection with
+        roads, sidewalks, crosswalk markings, street context, one red-boxed reference
+        street object with a red travel-direction arrow, candidate street objects,
+        and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__same_road_arm_reference_label:
       scene_key: street
       task_key: street_same_road_arm_reference_query
-      object_description: a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, one red-boxed reference street object, candidate street objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street object in the scene
+      object_description: a perspective street intersection or T intersection with
+        roads, sidewalks, crosswalk markings, street context, one red-boxed reference
+        street object, candidate street objects, and an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected street
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

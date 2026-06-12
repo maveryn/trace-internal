@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Task id: `task_puzzles__voxel_cube__cube_projection_match_label`
 4. Objective: select the orthographic projection option matching a cube stack from a requested view.
 

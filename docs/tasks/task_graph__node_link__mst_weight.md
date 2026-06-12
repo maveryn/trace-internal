@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `optimization`
+2. Scene: `optimization`
 3. Scene id: `weighted_node_link`
 4. Task id: `task_graph__node_link__mst_weight`
 5. Objective: return the total weight of the graph's unique minimum spanning tree.
@@ -112,4 +112,4 @@
 1. Complexity definition/components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
 2. Determinism/build tests: `tests/test_graph_optimization_minimum_spanning_tree_weight_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_graph_optimization_minimum_spanning_tree_weight_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

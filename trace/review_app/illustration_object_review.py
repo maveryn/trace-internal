@@ -4,11 +4,31 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 import random
 import re
+import sys
+import types
 from typing import Any, Mapping
 
 from PIL import Image, ImageDraw
+
+
+def _install_trace_tasks_namespace() -> None:
+    """Avoid importing the repo-wide task registry for object previews."""
+
+    if "trace.tasks" in sys.modules:
+        return
+    repo_root = Path(__file__).resolve().parents[2]
+    tasks_module = types.ModuleType("trace.tasks")
+    tasks_module.__path__ = [str(repo_root / "trace" / "tasks")]  # type: ignore[attr-defined]
+    sys.modules["trace.tasks"] = tasks_module
+    trace_module = sys.modules.get("trace")
+    if trace_module is not None:
+        setattr(trace_module, "tasks", tasks_module)
+
+
+_install_trace_tasks_namespace()
 
 from trace.tasks.illustrations.shared.object_catalog import CATALOG_ENTRIES, CatalogEntry
 from trace.tasks.illustrations.shared.object_library import (
@@ -47,11 +67,14 @@ VALID_REVIEW_DECISIONS = ("approve", "remove", "improve")
 
 _PREVIEW_SIZE = (260, 210)
 _PIXEL_FOOTPRINTS: Mapping[str, tuple[int, int]] = {
+    "archway": (2, 1),
     "barn": (4, 3),
     "basket": (1, 1),
     "bed": (2, 3),
     "bench": (2, 1),
     "boulder": (1, 1),
+    "brazier": (1, 1),
+    "broken_wall": (2, 1),
     "cart": (2, 1),
     "castle": (5, 4),
     "cave_entrance": (4, 3),
@@ -69,6 +92,7 @@ _PIXEL_FOOTPRINTS: Mapping[str, tuple[int, int]] = {
     "domestic_animal": (2, 1),
     "farm_gate": (3, 1),
     "fireplace": (2, 1),
+    "floor_switch": (1, 1),
     "fountain": (2, 2),
     "gazebo": (3, 3),
     "grave_marker": (1, 1),
@@ -78,6 +102,7 @@ _PIXEL_FOOTPRINTS: Mapping[str, tuple[int, int]] = {
     "jar": (1, 1),
     "lamp_post": (1, 2),
     "ladder": (1, 1),
+    "magic_circle": (2, 2),
     "market_stall": (3, 2),
     "mine_cart": (2, 1),
     "notice_board": (2, 1),
@@ -87,15 +112,18 @@ _PIXEL_FOOTPRINTS: Mapping[str, tuple[int, int]] = {
     "pot": (1, 1),
     "produce_bin": (2, 1),
     "rail_track": (1, 1),
+    "rubble": (1, 1),
     "room_divider": (3, 1),
     "rug": (3, 2),
     "sack": (1, 1),
     "scarecrow": (1, 2),
+    "sealed_door": (2, 1),
     "shelf": (3, 1),
     "shop": (4, 3),
     "stairs": (2, 2),
     "stalagmite": (1, 1),
     "statue": (2, 2),
+    "stone_column": (1, 1),
     "stool": (1, 1),
     "table": (2, 2),
     "tower": (3, 4),
@@ -466,6 +494,11 @@ def _pixel_variants(
             ("lit", "lit", {}, {"fire_state": "lit"}),
             ("unlit", "unlit", {}, {"fire_state": "unlit"}),
         )
+    if object_type == "brazier":
+        return (
+            ("lit", "lit", {}, {"fire_state": "lit"}),
+            ("unlit", "unlit", {}, {"fire_state": "unlit"}),
+        )
     if object_type == "candle":
         return (
             ("lit", "lit", {}, {"flame_state": "lit"}),
@@ -497,6 +530,21 @@ def _pixel_variants(
             ("up", "up", {}, {"stair_direction": "up"}),
             ("left", "left", {}, {"stair_direction": "left"}),
             ("right", "right", {}, {"stair_direction": "right"}),
+        )
+    if object_type == "floor_switch":
+        return (
+            ("raised", "raised", {}, {"switch_state": "raised"}),
+            ("pressed", "pressed", {}, {"switch_state": "pressed"}),
+        )
+    if object_type == "broken_wall":
+        return (
+            ("cracked", "cracked", {}, {"break_style": "cracked"}),
+            ("gap", "gap", {}, {"break_style": "gap"}),
+        )
+    if object_type == "sealed_door":
+        return (
+            ("horizontal", "horizontal", {}, {"door_orientation": "horizontal"}),
+            ("vertical", "vertical", {}, {"door_orientation": "vertical"}),
         )
     return (("", "", {}, _default_pixel_visuals(object_type)),)
 
@@ -836,6 +884,14 @@ def _default_pixel_visuals(object_type: str) -> Mapping[str, Any]:
         return {"track_shape": "horizontal"}
     if object_type == "stairs":
         return {"stair_direction": "down"}
+    if object_type == "floor_switch":
+        return {"switch_state": "raised"}
+    if object_type == "broken_wall":
+        return {"break_style": "cracked"}
+    if object_type == "sealed_door":
+        return {"door_orientation": "horizontal"}
+    if object_type == "brazier":
+        return {"fire_state": "lit"}
     return {}
 
 
@@ -861,6 +917,8 @@ def _pixel_footprint_for_item(item: IllustrationObjectReviewItem) -> tuple[int, 
         return (3, 2) if str((item.visual_attributes or {}).get("table_shape", "")) == "long" else (2, 2)
     if item.object_type == "bed":
         return (3, 3) if str((item.visual_attributes or {}).get("bed_size", "")) == "double" else (2, 3)
+    if item.object_type == "sealed_door":
+        return (1, 2) if str((item.visual_attributes or {}).get("door_orientation", "")) == "vertical" else (2, 1)
     return _pixel_footprint(item.object_type)
 
 
@@ -875,11 +933,11 @@ def _pixel_family(object_type: str) -> str:
         return "animal"
     if object_type == "person":
         return "person"
-    if object_type in {"barn", "castle", "chicken_coop", "church", "coop", "gazebo", "house", "inn", "shop", "tower", "well", "windmill", "wood_support"}:
+    if object_type in {"archway", "barn", "broken_wall", "castle", "chicken_coop", "church", "coop", "gazebo", "house", "inn", "sealed_door", "shop", "stone_column", "tower", "well", "windmill", "wood_support"}:
         return "structure"
     if object_type == "cave_entrance":
         return "terrain_feature"
-    if object_type in {"boulder", "stalagmite"}:
+    if object_type in {"boulder", "rubble", "stalagmite"}:
         return "obstacle"
     if object_type in {"ore_vein", "crystal_cluster"}:
         return "resource"
@@ -890,6 +948,7 @@ def _pixel_family(object_type: str) -> str:
     if object_type in {
         "bed",
         "bench",
+        "brazier",
         "bridge",
         "candle",
         "chair",
@@ -898,11 +957,13 @@ def _pixel_family(object_type: str) -> str:
         "farm_gate",
         "fence",
         "fireplace",
+        "floor_switch",
         "fountain",
         "grave_marker",
         "iron_fence",
         "lamp_post",
         "market_stall",
+        "magic_circle",
         "notice_board",
         "pond",
         "produce_bin",

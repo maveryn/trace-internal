@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -124,7 +124,7 @@ class _SampleSpec:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -389,28 +389,6 @@ def _build_scene_specs(
     return tuple(specs), tuple(tuple(int(channel) for channel in color) for color in palette)
 
 
-def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any]) -> TaskComplexity:
-    visual_scan = (int(sample.object_count) - _DEFAULTS.object_count_min) / max(1, _DEFAULTS.object_count_max - _DEFAULTS.object_count_min)
-    answer_load = (int(sample.target_count) - _DEFAULTS.target_count_min) / max(1, _DEFAULTS.target_count_max - _DEFAULTS.target_count_min)
-    shape_diversity = len(set(sample.shape_ids)) / max(1.0, float(sample.object_count))
-    clutter = min(1.0, float(sample.object_count) / 34.0)
-    structural_bonus = 0.0 if str(sample.arrangement_mode) in {"shape_stacks", "target_stack_with_oddballs", "mixed_stacks"} else 0.15
-    score = 0.30 * max(0.0, min(1.0, visual_scan)) + 0.25 * max(0.0, min(1.0, answer_load)) + 0.20 * max(0.0, min(1.0, shape_diversity)) + 0.15 * clutter + 0.10 * structural_bonus
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "shape_diversity": round(float(shape_diversity), 6),
-            "clutter": round(float(clutter), 6),
-            "object_count": int(sample.object_count),
-            "target_count": int(sample.target_count),
-            "target_shape_id": str(sample.target_shape_id),
-            "arrangement_mode": str(sample.arrangement_mode),
-            "scene_icon_size_min_px": int(render_params["scene_icon_size_min_px"]),
-            "scene_icon_size_max_px": int(render_params["scene_icon_size_max_px"]),
-        },
-    )
 
 
 @register_task
@@ -419,7 +397,7 @@ class IconsCountingNamedShapeCountTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         last_error: Exception | None = None
@@ -503,7 +481,7 @@ class IconsCountingNamedShapeCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -624,7 +602,6 @@ class IconsCountingNamedShapeCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

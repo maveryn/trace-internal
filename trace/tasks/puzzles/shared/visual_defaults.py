@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from ...shared.visual_defaults import default_noise_fallback, load_task_group_background_defaults, load_task_group_noise_defaults
+from ...shared.visual_defaults import default_noise_fallback, load_scene_background_defaults, load_scene_noise_defaults
 
 
 def solid_light_background_fallback() -> Dict[str, Any]:
@@ -22,23 +22,23 @@ def solid_light_background_fallback() -> Dict[str, Any]:
     }
 
 
-def load_puzzle_background_defaults(*, task_group: str) -> Dict[str, Any]:
+def load_puzzle_background_defaults(*, scene_id: str) -> Dict[str, Any]:
     """Load puzzle-task background config with the canonical fallback."""
 
-    return load_task_group_background_defaults(
+    return load_scene_background_defaults(
         domain="puzzles",
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         fallback=solid_light_background_fallback(),
         merge_with_fallback=True,
     )
 
 
-def load_puzzle_noise_defaults(*, task_group: str, apply_prob: float) -> Dict[str, Any]:
+def load_puzzle_noise_defaults(*, scene_id: str, apply_prob: float) -> Dict[str, Any]:
     """Load puzzle-task post-image noise config with the canonical fallback."""
 
-    return load_task_group_noise_defaults(
+    return load_scene_noise_defaults(
         domain="puzzles",
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         fallback=default_noise_fallback(apply_prob=float(apply_prob)),
         merge_with_fallback=False,
     )

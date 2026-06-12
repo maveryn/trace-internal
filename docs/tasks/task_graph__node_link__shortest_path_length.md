@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `path`
+2. Scene: `path`
 3. Scene id: `node_link`
 4. Task id: `task_graph__node_link__shortest_path_length`
 5. Objective: count how many edges lie on the unique shortest path between two labeled nodes in an undirected or directed graph.
@@ -62,4 +62,4 @@
 
 ## 7) Complexity + tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
-2. Tests: `tests/test_graph_path_shortest_path_length_contracts.py`, `tests/test_graph_path_shortest_path_length_tasks.py`, `tests/test_task_group_config.py`
+2. Tests: `tests/test_graph_path_shortest_path_length_contracts.py`, `tests/test_graph_path_shortest_path_length_tasks.py`, `tests/test_scene_config.py`

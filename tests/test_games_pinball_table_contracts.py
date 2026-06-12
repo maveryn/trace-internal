@@ -2,30 +2,46 @@
 
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.core.task_group_config import get_task_group_defaults
-from trace.tasks.games.pinball_table.table_tasks import (
+from trace.tasks.games.pinball_table.first_hit_object_label import (
     GamesPinballFirstHitObjectLabelTask,
-    GamesPinballPathScoreValueTask,
     _first_hit_object_id,
     _turn_angle_degrees,
 )
-from trace.tasks.games.shared.pinball_common import (
+from trace.tasks.games.pinball_table.path_score_value import GamesPinballPathScoreValueTask
+from trace.tasks.games.pinball_table.shared.common import (
     SUPPORTED_PINBALL_QUERY_IDS,
     SUPPORTED_PINBALL_SCENE_VARIANTS,
     SUPPORTED_PINBALL_STYLE_VARIANTS,
     PinballObject,
 )
+from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from tests.helpers import read_jsonl
 
 
+def test_games_pinball_table_scene_package_source_layout() -> None:
+    expected_sources = {
+        GamesPinballFirstHitObjectLabelTask: Path("trace/tasks/games/pinball_table/first_hit_object_label.py"),
+        GamesPinballPathScoreValueTask: Path("trace/tasks/games/pinball_table/path_score_value.py"),
+    }
+
+    for task_cls, relative_path in expected_sources.items():
+        source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
+        assert source_path == (Path.cwd() / relative_path).resolve()
+        assert getattr(task_cls, "scene_id", "")
+        assert getattr(task_cls, "scene_id") == "pinball_table"
+
+
 def test_games_pinball_table_defaults_present() -> None:
-    cfg = get_task_group_defaults("games", "pinball_table")
-    generation = cfg["generation"]["shared"]
-    prompt = cfg["prompt"]["shared"]
+    generation, _rendering, prompt = load_scene_generation_rendering_prompt_defaults(
+        "games",
+        "pinball_table",
+        task_id="task_games__pinball_table__first_hit_object_label",
+    )
 
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_PINBALL_SCENE_VARIANTS)
     assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_PINBALL_QUERY_IDS)
@@ -220,4 +236,5 @@ def test_games_pinball_build_smoke(tmp_path: Path) -> None:
         "task_games__pinball_table__path_score_value",
     }
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "pinball_table" for row in rows)
+    assert all(row["scene_id"] == "pinball_table" for row in rows)
+    assert all(row.get("scene_id") for row in rows)

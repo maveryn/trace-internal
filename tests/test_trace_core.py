@@ -28,7 +28,7 @@ from trace.core.taxonomy import (
     resolve_task_taxonomy,
 )
 from trace.core.trace_store import read_trace_shard
-from trace.core.types import TaskComplexity, TypedValue
+from trace.core.types import TypedValue
 from trace.tasks import create_task
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, list_default_task_ids, list_task_ids, register_task
@@ -72,7 +72,7 @@ def _register_dummy_tasks() -> None:
         class DummyWeightedTaskA:
             task_id = "task_dummy__weights__weighted_a"
             domain = "dummy"
-            task_group = "weights"
+            scene_id = "weights"
             default_dataset_enabled = False
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
@@ -113,7 +113,6 @@ def _register_dummy_tasks() -> None:
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_annotation": {"pixel_point_set": point},
                     },
-                    complexity=TaskComplexity(complexity_score=0.1, complexity_components={"variant": "a"}),
                     task_versions={
                         "dsl_spec_version": "v0",
                         "template_version": "v0",
@@ -130,7 +129,7 @@ def _register_dummy_tasks() -> None:
         class DummyWeightedTaskB:
             task_id = "task_dummy__weights__weighted_b"
             domain = "dummy"
-            task_group = "weights"
+            scene_id = "weights"
             default_dataset_enabled = False
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
@@ -171,7 +170,6 @@ def _register_dummy_tasks() -> None:
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_annotation": {"pixel_point_set": point},
                     },
-                    complexity=TaskComplexity(complexity_score=0.2, complexity_components={"variant": "b"}),
                     task_versions={
                         "dsl_spec_version": "v0",
                         "template_version": "v0",
@@ -188,7 +186,7 @@ def _register_dummy_tasks() -> None:
         class DummyWeightedQueryVariantSupport:
             task_id = "task_dummy__weights__variant_support"
             domain = "dummy"
-            task_group = "weights"
+            scene_id = "weights"
             default_dataset_enabled = False
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
@@ -232,7 +230,6 @@ def _register_dummy_tasks() -> None:
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_annotation": {"pixel_point_set": point},
                     },
-                    complexity=TaskComplexity(complexity_score=0.3, complexity_components={"variant": "support"}),
                     task_versions={
                         "dsl_spec_version": "v0",
                         "template_version": "v0",
@@ -295,7 +292,7 @@ def test_instance_id_ignores_image_path() -> None:
         "instance_version": "v0",
         "instance_seed": 42,
         "domain": "puzzles",
-        "task_group": "cell_board",
+        "scene_id": "cell_board",
         "task": "task_puzzles__cell_board__shortest_path_length_value",
         "scene_id": "cell_board",
         "query_id": "shortest_path",
@@ -348,7 +345,7 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     for instance in train_instances:
         assert instance["trace_ref"]["shard_id"] == "trace_shard_0001.jsonl.zst"
         assert instance["domain"] == "puzzles"
-        assert instance["task_group"] == "cell_board"
+        assert instance["scene_id"] == "cell_board"
         assert instance["scene_id"] == "cell_board"
         assert instance["query_id"] == "shortest_path"
         assert not Path(instance["images"][0]["path"]).is_absolute()
@@ -486,9 +483,9 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         "task_pages__timeline__interval_membership_count",
     }
     active_puzzle_clock_tasks = {
-        "task_misc__clock_collection__compare",
-        "task_misc__clock_match_panel__equivalent_time_label",
-        "task_misc__analog_clock__offset_readout",
+        "task_symbolic__clock_collection__compare",
+        "task_symbolic__clock_match_panel__equivalent_time_label",
+        "task_symbolic__analog_clock__offset_readout",
     }
     active_brick_breaker_tasks = {
         "task_games__brick_breaker__hit_row_remaining_count",
@@ -517,7 +514,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         "graph",
         "icons",
         "illustrations",
-        "misc",
+        "symbolic",
         "pages",
         "physics",
         "puzzles",
@@ -527,7 +524,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     assert resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value").domain == "puzzles"
     assert resolve_task_taxonomy("task_pages__control_board__disabled_controls_in_group_count").domain == "pages"
     assert resolve_task_taxonomy("task_pages__calendar__marked_day_class_count").domain == "pages"
-    assert resolve_task_taxonomy("task_misc__clock_collection__compare").domain == "misc"
+    assert resolve_task_taxonomy("task_symbolic__clock_collection__compare").domain == "symbolic"
 
     taxonomy = resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value")
     injected = inject_taxonomy_metadata(
@@ -535,10 +532,10 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
             "query_spec": {
                 "source_task_id": "cell_board_shortest_path_internal",
                 "source_domain": "puzzles",
-                "source_task_group": "cell_board_path",
+                "source_scene_id": "cell_board_path",
                 "prompt_variant": {
                     "prompt_domain": "puzzles",
-                    "prompt_task_group": "cell_board_path",
+                    "prompt_scene_id": "cell_board_path",
                 },
             },
             "execution_trace": {"query_id": "shortest_path"},
@@ -547,7 +544,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         taxonomy=taxonomy,
         query_id="shortest_path",
         registered_domain="puzzles",
-        registered_task_group="cell_board",
+        registered_scene_id="cell_board",
     )
     metadata = injected["taxonomy"]
     assert metadata["public"] == {
@@ -559,16 +556,16 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     assert metadata["registered"] == {
         "task_id": "task_puzzles__cell_board__shortest_path_length_value",
         "domain": "puzzles",
-        "task_group": "cell_board",
+        "scene_id": "cell_board",
     }
     assert metadata["source"] == {
         "implementation_task_id": "cell_board_shortest_path_internal",
         "implementation_domain": "puzzles",
-        "implementation_task_group": "cell_board_path",
+        "implementation_scene_id": "cell_board_path",
         "config_domain": "puzzles",
-        "config_task_group": "cell_board",
+        "config_scene_id": "cell_board",
         "prompt_domain": "puzzles",
-        "prompt_task_group": "cell_board_path",
+        "prompt_scene_id": "cell_board_path",
     }
 
     per_task = resolve_equal_split_task_count(num_instances=len(default_task_ids) * 2, task_count=len(default_task_ids))
@@ -671,7 +668,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
         class DummyPromptMissingTask:
             task_id = "task_dummy__query__prompt_missing"
             domain = "dummy"
-            task_group = "query"
+            scene_id = "query"
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
                 image = Image.new("RGB", (32, 32), (230, 230, 230))
@@ -691,7 +688,6 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_annotation": {"pixel_point_set": point},
                     },
-                    complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
                         "dsl_spec_version": "v0",
                         "template_version": "v0",
@@ -708,7 +704,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
         class DummyPromptUnresolvedTask:
             task_id = "task_dummy__weights__prompt_unresolved"
             domain = "dummy"
-            task_group = "weights"
+            scene_id = "weights"
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
                 image = Image.new("RGB", (32, 32), (225, 225, 225))
@@ -748,7 +744,6 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_annotation": {"pixel_point_set": point},
                     },
-                    complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
                         "dsl_spec_version": "v0",
                         "template_version": "v0",

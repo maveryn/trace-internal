@@ -2,20 +2,6 @@
   "bundle_id": "pages_document_lookup_v0",
   "schema_version": "v0",
   "task_templates": {
-    "comparison_panel_lookup_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "category_grid_lookup_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "profile_attribute_lookup_query": [
       "",
       "",
@@ -32,12 +18,6 @@
     ]
   },
   "required_slots_by_key": {
-    "scene:comparison_panel": [
-      "object_description"
-    ],
-    "scene:category_grid": [
-      "object_description"
-    ],
     "scene:profile_card_grid": [
       "object_description"
     ],
@@ -47,19 +27,6 @@
     "query:value_for_named_profile_field": [
       "profile_name",
       "field_label"
-    ],
-    "query:side_attribute_value_label": [
-      "side_label",
-      "attribute_label"
-    ],
-    "query:category_slot_item_label": [
-      "category_label",
-      "subcategory_label",
-      "slot_ordinal"
-    ],
-    "query:category_item_count": [
-      "category_label",
-      "subcategory_label"
     ],
     "query:profile_for_field_value": [
       "field_label",
@@ -91,6 +58,21 @@
       "section_title",
       "source_item"
     ],
+    "query:lookup_identifier": [
+      "question_name"
+    ],
+    "query:lookup_name": [
+      "question_name"
+    ],
+    "query:lookup_date": [
+      "question_name"
+    ],
+    "query:lookup_contact": [
+      "question_name"
+    ],
+    "query:lookup_amount": [
+      "question_name"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -120,20 +102,6 @@
     ]
   },
   "scene_templates": {
-    "comparison_panel": [
-      "The image shows {object_description}.",
-      "The page shows {object_description}.",
-      "This page shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}."
-    ],
-    "category_grid": [
-      "The image shows {object_description}.",
-      "The page shows {object_description}.",
-      "This page shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}."
-    ],
     "profile_card_grid": [
       "The image shows {object_description}.",
       "The page shows {object_description}.",
@@ -150,27 +118,6 @@
     ]
   },
   "query_templates": {
-    "side_attribute_value_label": [
-      "For side {side_label}, what value is shown in the {attribute_label} row?",
-      "For column {side_label}, what does the {attribute_label} row show?",
-      "Read the cell where {side_label} meets the {attribute_label} attribute.",
-      "In the comparison panel, what value is listed for {attribute_label} under {side_label}?",
-      "Using the {attribute_label} row, what is the visible value for side {side_label}?"
-    ],
-    "category_slot_item_label": [
-      "In category {category_label}, under subcategory {subcategory_label}, what item is listed {slot_ordinal}?",
-      "Find {category_label} and then {subcategory_label}. What is the {slot_ordinal} item in that block?",
-      "Read the {slot_ordinal} item under {subcategory_label} within category {category_label}.",
-      "Within {category_label}, what item appears {slot_ordinal} in the {subcategory_label} section?",
-      "Using the {subcategory_label} block in category {category_label}, what is the {slot_ordinal} visible item?"
-    ],
-    "category_item_count": [
-      "How many items are listed under subcategory {subcategory_label} within category {category_label}?",
-      "Find {category_label} and then {subcategory_label}. How many item rows are in that block?",
-      "Count the visible items in the {subcategory_label} section of category {category_label}.",
-      "Within category {category_label}, how many items appear under {subcategory_label}?",
-      "Using the category grid, what is the item count for {subcategory_label} under {category_label}?"
-    ],
     "value_for_named_profile_field": [
       "In the profile card for {profile_name}, what {field_label} is listed?",
       "For {profile_name}, what is the visible {field_label} value?",
@@ -233,6 +180,41 @@
       "Which item appears directly after {source_item} under {section_title}?",
       "Read the item immediately following {source_item} in section {section_title}.",
       "After {source_item} in {section_title}, what item is listed next?"
+    ],
+    "lookup_identifier": [
+      "What is the {question_name}?",
+      "Read the visible {question_name}.",
+      "Which value is shown for the {question_name}?",
+      "Find the {question_name} field and report its value.",
+      "Using the document, what value is listed for the {question_name}?"
+    ],
+    "lookup_name": [
+      "What is the {question_name}?",
+      "Read the visible {question_name}.",
+      "Which value is shown for the {question_name}?",
+      "Find the {question_name} field and report its value.",
+      "Using the document, what value is listed for the {question_name}?"
+    ],
+    "lookup_date": [
+      "What is the {question_name}?",
+      "Read the visible {question_name}.",
+      "Which value is shown for the {question_name}?",
+      "Find the {question_name} field and report its value.",
+      "Using the document, what value is listed for the {question_name}?"
+    ],
+    "lookup_contact": [
+      "What is the {question_name}?",
+      "Read the visible {question_name}.",
+      "Which value is shown for the {question_name}?",
+      "Find the {question_name} field and report its value.",
+      "Using the document, what value is listed for the {question_name}?"
+    ],
+    "lookup_amount": [
+      "What is the {question_name}?",
+      "Read the visible {question_name}.",
+      "Which value is shown for the {question_name}?",
+      "Find the {question_name} field and report its value.",
+      "Using the document, what value is listed for the {question_name}?"
     ]
   },
   "allow_empty_task_templates": true

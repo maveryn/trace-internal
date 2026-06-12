@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `infographic`
+2. Scene: `infographic`
 3. Scene id: `infographic`
 4. Task id: `task_pages__infographic__detail_for_named_item`
 5. Objective: Read the detail text associated with one named infographic item.

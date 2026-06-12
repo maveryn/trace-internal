@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__nonogram__nonogram_line_completion_label`
 4. Scene id: `nonogram`
 5. Goal: choose the row-strip option that satisfies the marked nonogram row clue and the visible partial cells.

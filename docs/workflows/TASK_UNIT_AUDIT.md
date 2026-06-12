@@ -4,13 +4,13 @@ Use this workflow when auditing whether a proposed or active TRACE task is the r
 
 Read these policy docs first for the task-boundary rules:
 
-1. `docs/core/TRACE_TAXONOMY_DESIGN.md`
+1. `docs/core/TAXONOMY.md`
 2. `docs/core/TASK_UNIT_POLICY.md`
-3. `docs/domains/SCENE_TASK_QUERY_GUIDE.md`
+3. the matching domain contract doc under `docs/domains/`
 
-`docs/core/TRACE_TAXONOMY_DESIGN.md` is the canonical source for program
-contract design. Inferred or generic program rows are draft-only; refine them
-before approving any taxonomy decision.
+`docs/core/TASK_UNIT_POLICY.md` is the canonical source for program-contract
+design. Inferred or generic program rows are draft-only; refine them before
+approving any taxonomy decision.
 
 Domain setup docs, task modules, prompts, configs, tests, and review artifacts
 are factual inputs for what each task currently does. Repo-local skills are not
@@ -27,13 +27,13 @@ the public sampling unit.
 3. Catch tasks that should be broadened, merged, split, or removed before they distort benchmark balance.
 
 ## 2) Core principle
-1. In TRACE, `task_group` is mostly an implementation and organization aid.
-2. The important benchmark unit is the `task`.
+1. In TRACE, the important benchmark unit is the public `task_id`.
+2. The domain and scene are grouping/reporting axes.
 3. A good TRACE task should therefore represent one stable visual-grounding family with enough internal scene/query variety to justify uniform sampling alongside the other tasks.
 4. Tasks do **not** need equal reasoning difficulty.
 5. Tasks **do** need roughly comparable within-task visual variety and grounding breadth.
 6. Audits must use the hard task boundary in
-   `docs/core/TRACE_TAXONOMY_DESIGN.md`: stable scene contract plus stable
+   `docs/core/TASK_UNIT_POLICY.md`: stable scene contract plus stable
    `answer_schema`, `annotation_schema`, and concrete `program_schema`.
 7. If any one of those task-contract fields differs between two active task ids,
    or if the scene/view contract would no longer be stable, the default

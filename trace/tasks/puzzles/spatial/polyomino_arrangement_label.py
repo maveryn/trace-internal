@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -42,12 +42,6 @@ from ..shared.assembly_common import (
 )
 from ..shared.assembly_scene import _draw_polyomino
 from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import (
-    build_puzzle_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_puzzle_complexity_weights,
-)
 from ..shared.drawing import draw_rounded_rect
 from ..shared.option_layout import centered_option_grid_shape, centered_option_row_counts
 from ..shared.option_panels import render_puzzle_option_panel
@@ -136,13 +130,12 @@ class _RenderedPolyominoScene:
 _DEFAULTS = _PolyominoArrangementDefaults()
 _ASSEMBLY_DEFAULTS = PuzzleAssemblyDefaults()
 _SHAPE_COMPLEMENT_DEFAULTS = PuzzleShapeComplementDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.0)
 
 
 def _resolve_query_id(
@@ -922,7 +915,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
     """Answer static polyomino arrangement questions from options or board state."""
 
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
     supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1050,7 +1043,7 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
                 matching_policy_instruction = "Do not rotate or reflect any option piece."
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1091,14 +1084,6 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + 0.10 * normalize_int_with_bounds(target_cell_count, [8, 16])
             + 0.08 * normalize_int_with_bounds(option_count, [3, 6])
-        )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -1185,7 +1170,6 @@ class _PuzzlesSpatialPolyominoArrangementBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=POLYOMINO_MISSING_REGION_SCENE_ID,
             query_id=str(query_id),

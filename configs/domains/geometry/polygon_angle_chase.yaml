@@ -1,0 +1,50 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_geometry__polygon_angle_chase__polygon_interior_angle_value:
+      angle_min: 40
+      angle_max: 150
+      angle_step: 1
+    task_geometry__polygon_angle_chase__parallel_line_angle_value:
+      support_angle_min: 40
+      support_angle_max: 75
+      answer_angle_min: 45
+      answer_angle_max: 110
+      angle_step: 5
+    task_geometry__polygon_angle_chase__symmetry_angle_value:
+      rectangle_known_angle_min: 25
+      rectangle_known_angle_max: 65
+      reflection_support_angle_min: 25
+      reflection_support_angle_max: 50
+      isosceles_apex_angle_min: 40
+      isosceles_apex_angle_max: 90
+      isosceles_base_angle_min: 45
+      isosceles_base_angle_max: 70
+      angle_step: 5
+rendering:
+  shared:
+    canvas_width: 760
+    canvas_height: 560
+    line_width: 3
+    label_font_size: 22
+    small_label_font_size: 18
+    label_stroke_width: 1
+    single_object_scene_rotation:
+      enabled: true
+      probability: 0.5
+      angle_abs_min: 15
+      angle_abs_max: 75
+      margin_px: 48
+      min_scale_after_fit: 0.86
+      max_attempts: 6
+prompt:
+  shared:
+    bundle_id: geometry_polygon_angle_chase_v0
+    scene_key: polygon_angle_chase_scene
+  task_overrides:
+    task_geometry__polygon_angle_chase__polygon_interior_angle_value:
+      task_key: polygon_interior_angle_value_query
+    task_geometry__polygon_angle_chase__parallel_line_angle_value:
+      task_key: parallel_line_angle_value_query
+    task_geometry__polygon_angle_chase__symmetry_angle_value:
+      task_key: symmetry_angle_value_query

@@ -1,2 +1,2 @@
-"""Puzzle logic task group."""
+"""Puzzle logic scene."""
 

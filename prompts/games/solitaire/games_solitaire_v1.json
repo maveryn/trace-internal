@@ -1,0 +1,146 @@
+{
+  "bundle_id": "games_solitaire_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "solitaire_tableau": [
+        "The image shows {object_description}.",
+        "The solitaire layout shows {object_description}.",
+        "This tableau shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "solitaire_tableau_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "move_legality_label": [
+        "{tableau_rule_text} {foundation_rule_text} Which visible move option letter is legal?",
+        "{tableau_rule_text} {foundation_rule_text} Select the option letter for the legal move.",
+        "{tableau_rule_text} {foundation_rule_text} Which move option can be made now?",
+        "{tableau_rule_text} {foundation_rule_text} Identify the only legal source-to-target option.",
+        "{tableau_rule_text} {foundation_rule_text} Which option letter shows a legal solitaire move?"
+      ],
+      "foundation_ready_count": [
+        "{foundation_rule_text} How many labeled exposed tableau cards can move to a foundation pile now?",
+        "{foundation_rule_text} Count the labeled exposed tableau cards that are ready for a foundation.",
+        "{foundation_rule_text} What is the number of exposed tableau cards that can be moved to a foundation now?",
+        "{foundation_rule_text} How many labeled exposed cards are legal foundation moves?",
+        "{foundation_rule_text} Count the exposed tableau cards whose suit and rank match a foundation move."
+      ],
+      "tableau_sequence_count": [
+        "{tableau_rule_text} Count adjacent visible card pairs in the same column where the lower card can legally sit on the card directly above it.",
+        "{tableau_rule_text} How many directly stacked visible pairs in the columns are descending by one rank and alternate color?",
+        "{tableau_rule_text} What is the number of adjacent same-column visible pairs where the lower card is exactly one rank lower than the card above and opposite color?",
+        "{tableau_rule_text} How many neighboring visible cards within columns already form a legal tableau sequence from upper card to lower card?",
+        "{tableau_rule_text} Count the adjacent same-column pairs where the lower card can sit on the card immediately above it."
+      ],
+      "same_suit_descending_run_length": [
+        "{same_suit_run_rule_text} Starting at the marked card, how many cards are in that run?",
+        "{same_suit_run_rule_text} Count the run that begins with the marked card.",
+        "{same_suit_run_rule_text} What is the length of the run starting at the marked card?",
+        "{same_suit_run_rule_text} From the marked card, count downward until the same-suit descending pattern stops.",
+        "{same_suit_run_rule_text} How many cards belong to the same-suit descending run that starts at the marked card?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:solitaire_tableau": [
+      "object_description"
+    ],
+    "query:move_legality_label": [
+      "tableau_rule_text",
+      "foundation_rule_text"
+    ],
+    "query:foundation_ready_count": [
+      "foundation_rule_text"
+    ],
+    "query:tableau_sequence_count": [
+      "tableau_rule_text"
+    ],
+    "query:same_suit_descending_run_length": [
+      "same_suit_run_rule_text"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "foundation_rule_text": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "same_suit_run_rule_text": {
+      "type": "string"
+    },
+    "tableau_rule_text": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_solitaire_tableau": "a solitaire tableau with visible columns, foundation piles, and labeled exposed cards",
+    "tableau_rule_text": "In tableau moves, a card can be placed on another tableau card only if the target is exactly one rank higher and the opposite color.",
+    "foundation_rule_text": "A card can move to a foundation only if it matches that foundation suit and is exactly one rank above the foundation's current top card; an Ace can move to an empty foundation.",
+    "same_suit_run_rule_text": "A same-suit descending run follows cards downward in one column, with each next card the same suit and exactly one rank lower.",
+    "annotation_hint_move_legality_label": "set \"annotation\" to an object mapping \"source_card\" and \"target\" to their bounding boxes [x0, y0, x1, y1]",
+    "annotation_hint_foundation_ready_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards and the foundation piles used to decide the count",
+    "annotation_hint_tableau_sequence_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the cards that belong to counted adjacent tableau pairs; use an empty array when the count is 0",
+    "annotation_hint_same_suit_descending_run_length": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the same-suit descending run that starts at the marked card",
+    "answer_hint_move_legality_label": "set \"answer\" to only the visible move option letter, for example \"C\"",
+    "answer_hint_foundation_ready_count": "set \"answer\" to the number of exposed tableau cards that can move to a foundation pile now",
+    "answer_hint_tableau_sequence_count": "set \"answer\" to the number of adjacent visible card pairs in the same column where the lower card is exactly one rank lower than the card directly above it and has the opposite color",
+    "answer_hint_same_suit_descending_run_length": "set \"answer\" to the number of cards in the same-suit descending run that starts at the marked card, including the marked card"
+  }
+}

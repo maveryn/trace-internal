@@ -8,7 +8,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.spatial.height_extremum import SUPPORTED_QUERY_IDS, TASK_ID
+from trace.tasks.three_d.object_scene.height_extremum_label import SUPPORTED_QUERY_IDS, TASK_ID
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
@@ -90,4 +90,4 @@ def test_height_extremum_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_task_group == "spatial"
+    assert taxonomy.source_scene_id == "object_scene"

@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `record_table`
 4. Task id: `task_pages__record_table__value_threshold_in_group_count`
 5. Objective: Count record-table rows in a named group whose visible numeric value crosses the stated threshold.

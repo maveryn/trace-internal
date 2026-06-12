@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `path`
+2. Scene: `path`
 3. Scene id: `pipe_network`
 4. Task id: `task_graph__pipe_network__shortest_path_length`
 5. Objective: count open pipe segments in the unique shortest open route between two labeled junctions.

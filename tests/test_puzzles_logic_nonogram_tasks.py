@@ -30,7 +30,7 @@ def test_nonogram_tasks_are_registered() -> None:
         assert TASK_REGISTRY[task_id] is task_cls
         task = task_cls()
         assert task.domain == "puzzles"
-        assert task.task_group == "logic"
+        assert task.scene_id == "logic"
 
 
 def test_nonogram_tasks_emit_public_contracts() -> None:

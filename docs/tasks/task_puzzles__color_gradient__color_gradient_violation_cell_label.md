@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `visual`
+2. Scene: `visual`
 3. Scene id: `color_gradient`
 4. Task id: `task_puzzles__color_gradient__color_gradient_violation_cell_label`
 5. Goal: identify the labeled swatch cell whose color breaks a smooth grid progression.

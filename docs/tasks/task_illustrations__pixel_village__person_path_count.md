@@ -3,8 +3,8 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `pixel_village`
-- Implementation task group: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/pixel_village_count.py`
+- Implementation scene package: `pixel_village`
+- Implementation source: `trace/tasks/illustrations/pixel_village/person_path_count.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_illustrations__pixel_village__person_path_count` -> `task_illustrations__pixel_village__person_path_count`
 - Status: `pending_v0_manual_review_and_solve_rate`

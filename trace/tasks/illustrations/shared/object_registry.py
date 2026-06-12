@@ -99,6 +99,27 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         semantic_attributes=_attrs("region_id"),
         visual_attributes=_attrs("stone_rgb", "renderer_style", "renderer_variant_id"),
     ),
+    "archway": ObjectTypeDef(
+        "archway",
+        "archway",
+        "structure",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("stone_rgb", "shadow_rgb", "renderer_style", "renderer_variant_id"),
+    ),
+    "brazier": ObjectTypeDef(
+        "brazier",
+        "brazier",
+        "fixture",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("metal_rgb", "flame_rgb", "fire_state", "renderer_style", "renderer_variant_id"),
+    ),
+    "broken_wall": ObjectTypeDef(
+        "broken_wall",
+        "broken wall",
+        "structure",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("stone_rgb", "break_style", "renderer_style", "renderer_variant_id"),
+    ),
     "cave_entrance": ObjectTypeDef(
         "cave_entrance",
         "cave entrance",
@@ -160,6 +181,13 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         semantic_attributes=_attrs("zone_id"),
         visual_attributes=_attrs("stone_rgb", "fire_state", "flame_rgb", "renderer_style", "renderer_variant_id"),
     ),
+    "floor_switch": ObjectTypeDef(
+        "floor_switch",
+        "floor switch",
+        "fixture",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("plate_rgb", "switch_state", "renderer_style", "renderer_variant_id"),
+    ),
     "furniture": ObjectTypeDef(
         "furniture",
         "furniture",
@@ -210,6 +238,13 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         "market stall",
         "fixture",
         visual_attributes=_attrs("canopy_rgb", "wood_rgb", "goods_type", "theme_id", "snow_intensity", "snow_coverage", "snow_style", "autumn_intensity", "leaf_coverage", "leaf_style", "leaf_overlay_rgb", "leaf_shadow_rgb", "leaf_accent_rgb", "renderer_style", "renderer_variant_id"),
+    ),
+    "magic_circle": ObjectTypeDef(
+        "magic_circle",
+        "magic circle",
+        "fixture",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("rune_rgb", "glow_rgb", "renderer_style", "renderer_variant_id"),
     ),
     "mine_cart": ObjectTypeDef(
         "mine_cart",
@@ -286,6 +321,13 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         semantic_attributes=_attrs("region_id", "route_id"),
         visual_attributes=_attrs("wood_rgb", "rail_rgb", "track_shape", "renderer_style", "renderer_variant_id"),
     ),
+    "rubble": ObjectTypeDef(
+        "rubble",
+        "rubble",
+        "obstacle",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("stone_rgb", "renderer_style", "renderer_variant_id"),
+    ),
     "room_divider": ObjectTypeDef(
         "room_divider",
         "room divider",
@@ -307,6 +349,13 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         semantic_attributes=_attrs("zone_id", "surface_id"),
         visual_attributes=_attrs("goods_type", "wood_rgb", "renderer_style", "renderer_variant_id"),
     ),
+    "sealed_door": ObjectTypeDef(
+        "sealed_door",
+        "sealed door",
+        "structure",
+        semantic_attributes=_attrs("region_id", "route_id"),
+        visual_attributes=_attrs("stone_rgb", "seal_rgb", "door_orientation", "renderer_style", "renderer_variant_id"),
+    ),
     "stairs": ObjectTypeDef(
         "stairs",
         "stairs",
@@ -325,6 +374,13 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         "stalagmite",
         "stalagmite",
         "obstacle",
+        semantic_attributes=_attrs("region_id"),
+        visual_attributes=_attrs("stone_rgb", "renderer_style", "renderer_variant_id"),
+    ),
+    "stone_column": ObjectTypeDef(
+        "stone_column",
+        "stone column",
+        "structure",
         semantic_attributes=_attrs("region_id"),
         visual_attributes=_attrs("stone_rgb", "renderer_style", "renderer_variant_id"),
     ),

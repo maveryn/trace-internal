@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `phylogeny_tree`
-3. Task group: `relation`
+3. Source package: `phylogeny_tree`
 4. Task id: `task_graph__phylogeny_tree__mrca_clade_membership_count`
 5. Objective: count descendant taxa of the most recent common ancestor of two queried taxa.
 
@@ -23,6 +23,6 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from `prompts/graph/phylogeny_tree/phylogeny_tree_v0.json` and `configs/domains/graph/phylogeny_tree.yaml`, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

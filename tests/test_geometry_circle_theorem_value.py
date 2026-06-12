@@ -6,18 +6,13 @@ import math
 
 import pytest
 
-from trace.core.task_group_config import get_task_group_defaults
-from trace.tasks.geometry.circle.theorem_value import (
-    GeometryCircleCyclicQuadrilateralAngleValueTask,
-    GeometryCircleExternalSecantAngleValueTask,
-    GeometryCircleTheoremValueTask,
-)
-from trace.tasks.geometry.circle.chord_length import (
-    GeometryCircleChordLengthFromRadiusAngleValueTask,
-)
-from trace.tasks.geometry.circle.tangent_radius import (
-    GeometryCircleTangentRadiusRightTriangleLengthValueTask,
-)
+from trace.core.scene_config import get_scene_defaults
+from trace.tasks.geometry.circle_theorem.shared.circle import theorem_builders
+from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_angle_value import GeometryCircleCyclicQuadrilateralAngleValueTask
+from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_value import GeometryCircleTheoremValueTask
+from trace.tasks.geometry.circle_theorem.external_secant_angle_value import GeometryCircleExternalSecantAngleValueTask
+from trace.tasks.geometry.circle_theorem.chord_length_from_radius_angle_value import GeometryCircleChordLengthFromRadiusAngleValueTask
+from trace.tasks.geometry.circle_theorem.tangent_radius_right_triangle_length_value import GeometryCircleTangentRadiusRightTriangleLengthValueTask
 from trace.tasks.shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
@@ -70,6 +65,28 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
         math.hypot(float(x) - cx, float(y) - cy) for x in (x0, x1) for y in (y0, y1)
     )
     return bool(float(nearest) <= float(radius) <= float(farthest))
+
+
+def test_circle_theorem_builder_facade_exports_private_compatibility_surface() -> None:
+    expected_names = {
+        "_resolve_query",
+        "_build_scene_payload",
+        "_build_diameter_perpendicular_chord_scene",
+        "_build_tangent_secant_scene",
+        "_build_secant_secant_scene",
+        "_build_secant_secant_variable_scene",
+        "_build_intersecting_chords_arc_scene",
+        "_build_multi_step_angle_scene",
+        "_build_inscribed_angle_scene",
+        "_build_tangent_chord_angle_scene",
+        "_build_external_secant_angle_scene",
+        "_build_cyclic_quadrilateral_angle_scene",
+        "_circle_point",
+    }
+
+    assert expected_names <= set(theorem_builders.__all__)
+    for name in expected_names:
+        assert callable(getattr(theorem_builders, name))
 
 
 @pytest.mark.parametrize(
@@ -801,137 +818,14 @@ def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
                 ), (query_id, seed, label, bbox)
 
 
-def test_geometry_circle_task_group_config_exposes_variants_and_prompts() -> None:
-    cfg = get_task_group_defaults("geometry", "circle")
+def test_geometry_circle_scene_config_keeps_render_and_prompt_defaults_only() -> None:
+    cfg = get_scene_defaults("geometry", "circle_theorem")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="geometry_circle_theorem_value_base",
     )
 
-    assert bool(generation["balanced_query_id_sampling"]) is True
-    assert bool(generation["balanced_answer_sampling"]) is True
-    assert set(generation["query_id_weights"].keys()) == {
-        "diameter_perpendicular_chord_length",
-        "secant_secant_variable_segment_length",
-        "tangent_secant_length",
-        "secant_secant_length",
-        "intersecting_chords_arc_measure",
-        "multi_step_angle_value",
-        "inscribed_angle_from_central",
-        "central_angle_from_inscribed",
-        "inscribed_angle_from_arc",
-        "tangent_chord_angle_from_arc",
-        "tangent_chord_angle_from_inscribed",
-        "external_two_secants_angle_from_arcs",
-        "opposite_angle_supplement",
-        "exterior_angle_from_opposite_interior",
-    }
-    assert list(
-        generation["secant_secant_variable_segment_length_answer_support"]
-    ) == list(range(4, 61))
-    assert min(generation["tangent_secant_length_answer_support"]) >= 11
-    assert max(generation["tangent_secant_length_answer_support"]) == 100
-    assert list(generation["intersecting_chords_arc_measure_answer_support"]) == [
-        40,
-        50,
-        60,
-        70,
-        80,
-        90,
-        100,
-        110,
-        120,
-        130,
-        140,
-        150,
-        160,
-        170,
-        180,
-    ]
-    assert list(generation["multi_step_angle_value_answer_support"]) == [
-        45,
-        50,
-        55,
-        60,
-        65,
-        70,
-        75,
-        80,
-        85,
-        90,
-        95,
-        100,
-        105,
-        110,
-        115,
-        120,
-        125,
-        130,
-        135,
-    ]
-    assert list(generation["inscribed_angle_from_central_answer_support"]) == [
-        20,
-        25,
-        30,
-        35,
-        40,
-        45,
-        50,
-        55,
-        60,
-        65,
-        70,
-        75,
-        80,
-    ]
-    assert list(generation["central_angle_from_inscribed_answer_support"]) == [
-        40,
-        50,
-        60,
-        70,
-        80,
-        90,
-        100,
-        110,
-        120,
-        130,
-        140,
-        150,
-        160,
-    ]
-    assert list(generation["tangent_chord_angle_from_arc_answer_support"]) == [
-        25,
-        30,
-        35,
-        40,
-        45,
-        50,
-        55,
-        60,
-        65,
-        70,
-        75,
-    ]
-    assert list(generation["external_two_secants_angle_from_arcs_answer_support"]) == [
-        20,
-        25,
-        30,
-        35,
-        40,
-        45,
-        50,
-        55,
-        60,
-        65,
-        70,
-        75,
-    ]
-    assert list(generation["opposite_angle_supplement_answer_support"]) == list(
-        range(45, 136, 5)
-    )
-    assert list(generation["exterior_angle_from_opposite_interior_answer_support"]) == list(
-        range(45, 136, 5)
-    )
+    assert generation == {}
     assert int(rendering["line_width"]) > 0
     assert str(prompt["bundle_id"]) == "geometry_circle_theorem_v0"
 
@@ -939,13 +833,7 @@ def test_geometry_circle_task_group_config_exposes_variants_and_prompts() -> Non
         cfg,
         task_id="task_geometry__circle_theorem__chord_length_from_radius_angle_value",
     )
-    assert set(chord_generation["query_id_weights"].keys()) == {
-        "chord_length_from_radius_and_central_angle",
-        "chord_length_from_radius_and_inscribed_angle",
-    }
-    assert list(chord_generation["radius_support"]) == list(range(6, 17))
-    assert list(chord_generation["central_angle_support"]) == [60, 90, 120, 150]
-    assert list(chord_generation["inscribed_angle_support"]) == [30, 45, 60, 75]
+    assert chord_generation == {}
     assert str(chord_prompt["answer_hint_number"]).strip()
     assert str(chord_prompt["annotation_hint_chord_length_points"]).strip()
 
@@ -955,17 +843,6 @@ def test_geometry_circle_task_group_config_exposes_variants_and_prompts() -> Non
             task_id="task_geometry__circle_theorem__tangent_radius_right_triangle_length_value",
         )
     )
-    assert set(tangent_radius_generation["query_id_weights"].keys()) == {
-        "radius_from_external_distance_and_angle",
-        "tangent_length_from_radius_and_external_distance",
-    }
-    assert list(
-        tangent_radius_generation["tangent_radius_external_distance_support"]
-    ) == [8, 10, 12, 14, 16, 18, 20]
-    assert list(tangent_radius_generation["tangent_radius_angle_support"]) == [
-        30,
-        45,
-        60,
-    ]
+    assert tangent_radius_generation == {}
     assert str(tangent_radius_prompt["answer_hint_tangent_radius_number"]).strip()
     assert str(tangent_radius_prompt["annotation_hint_tangent_radius_points"]).strip()

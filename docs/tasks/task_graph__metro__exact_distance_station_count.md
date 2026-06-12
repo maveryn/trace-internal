@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `metro`
 4. Task id: `task_graph__metro__exact_distance_station_count`
 5. Objective: count stations at shortest metro-route distance exactly `k` route segments from a queried station.

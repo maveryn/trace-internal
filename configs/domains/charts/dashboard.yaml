@@ -11,28 +11,43 @@ generation:
       line: 1.0
       donut: 1.0
       radar: 1.0
-    rank_n_support: [1, 2, 3]
-    condition_count_support: [1, 2, 3, 4, 5]
-    top_k_support: [2, 3, 4, 5, 6]
-    top_k_overlap_count_support: [1, 2, 3, 4, 5]
-    panel_condition_count_support: [1, 2, 3, 4, 5]
-    statement_option_count_support: [4, 6]
+    rank_n_support:
+      - 1
+      - 2
+      - 3
+    condition_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    top_k_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    top_k_overlap_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    panel_condition_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    statement_option_count_support:
+      - 4
+      - 6
     panel_label_variant_weights:
       named_compact: 1.0
       report_topics: 1.0
       technical_topics: 1.0
       condition_labels: 0.75
       temporal_sequence: 0.25
-    query_id_weights:
-      source_rank_target_value: 1.0
-      source_rank_difference_value: 1.0
-      dual_source_target_sum_value: 1.0
-      dual_condition_count: 1.0
-      panel_gap_extremum_category_label: 1.0
-      shared_label_rank_gap_extremum: 1.0
-      statement_option_selection_label: 1.0
-      top_k_overlap_count: 1.0
-      category_panel_condition_count: 1.0
     rank_direction_weights:
       largest: 1.0
       smallest: 1.0
@@ -45,30 +60,6 @@ generation:
     statement_requested_truth_weights:
       true: 1.0
       false: 1.0
-    balanced_query_id_sampling: true
-  task_overrides:
-    task_charts__dashboard__dual_source_target_sum_value:
-      panel_count_max: 5
-      category_count_max: 10
-      rank_n_support: [1]
-      panel_kind_weights:
-        bar: 1.0
-        line: 0.0
-        donut: 0.0
-        radar: 0.0
-    task_charts__dashboard__top_k_overlap_count:
-      category_count_min: 6
-    task_charts__dashboard__statement_option_selection_label:
-      canvas_height: 1120
-      panel_count_max: 6
-      category_count_max: 8
-      context_text_enabled: false
-      option_panel_height_px: 244
-      option_panel_gap_px: 16
-      option_panel_padding_px: 16
-      option_panel_font_size_px: 15
-      option_panel_letter_font_size_px: 16
-
 rendering:
   shared:
     canvas_width: 1260
@@ -103,10 +94,16 @@ rendering:
     context_text_placement_weights:
       right_sidebar: 0.45
       left_sidebar: 0.25
-      bottom_band: 0.30
+      bottom_band: 0.3
     dashboard_title_drop_probability: 0.18
-    connector_color_rgb: [80, 87, 99]
-    donut_hole_fill_rgb: [255, 255, 255]
+    connector_color_rgb:
+      - 80
+      - 87
+      - 99
+    donut_hole_fill_rgb:
+      - 255
+      - 255
+      - 255
     category_palette_rgb:
       - [35, 99, 180]
       - [218, 88, 72]
@@ -124,39 +121,8 @@ rendering:
       - [126, 133, 39]
       - [186, 70, 98]
       - [69, 132, 204]
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.42
-      scene_variant_load: 0.16
-
 prompt:
   shared:
-    bundle_id: charts_dashboard_v0
+    bundle_id: charts_dashboard_v1
     scene_key: dashboard_mixed_chart
     task_key: dashboard_cross_panel_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint_value: set "answer" to the requested integer value
-    answer_hint_count: set "answer" to the requested integer count
-    answer_hint_label: set "answer" to the requested visible category label as a string
-    answer_hint_option_letter: set "answer" to the selected option letter as a capital letter
-    unanswerable_instruction: If either named panel is not shown, answer exactly "unanswerable".
-    annotation_hint_source_rank_metric: set "annotation" to an object mapping "source_panel" and "target_panel" to [x,y] pixel points on the selected category marks in those panels
-    annotation_hint_dual_source_target_sum: set "annotation" to an object mapping "first_source_panel", "second_source_panel", "target_first_category", and "target_second_category" to [x,y] pixel points on the corresponding category marks
-    annotation_hint_count: set "annotation" to an array of [x,y] pixel points on each counted category mark
-    annotation_hint_label: set "annotation" to an object mapping "first_panel" and "second_panel" to [x,y] pixel points on the compared category marks; if the answer is "unanswerable", use an empty object
-    annotation_hint_shared_label_pair: set "annotation" to an object mapping "first_panel" and "second_panel" to [x,y] pixel points on the answer category marks in those panels
-    annotation_hint_statement_option: set "annotation" to an object mapping "first_mark" and "second_mark" to [x,y] pixel points on the two chart marks that verify the selected statement
-    json_example_source_rank_metric: '{"annotation":{"source_panel":[180,220],"target_panel":[860,260]},"answer":47}'
-    json_example_dual_source_target_sum: '{"annotation":{"first_source_panel":[180,220],"second_source_panel":[410,250],"target_first_category":[760,260],"target_second_category":[880,300]},"answer":91}'
-    json_example_count: '{"annotation":[[190,240],[790,245],[845,298]],"answer":3}'
-    json_example_label: '{"annotation":{"first_panel":[175,240],"second_panel":[805,250]},"answer":"Flint"}'
-    json_example_statement_option: '{"annotation":{"first_mark":[175,240],"second_mark":[805,250]},"answer":"C"}'
-    json_example_answer_only_value: '{"answer":47}'
-    json_example_answer_only_count: '{"answer":3}'
-    json_example_answer_only_label: '{"answer":"Flint"}'
-    json_example_answer_only_option_letter: '{"answer":"C"}'
-    object_description_mixed_dashboard: a dashboard with {panel_count} titled panels named {panel_name_list}. Styles may be bar, line, donut, or radar, and a style may repeat. All panels share the same {category_count} category labels and colors, with exact integer values shown

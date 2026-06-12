@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.pythagorean_square_dissection import (
+from trace.tasks.geometry.pythagorean_dissection.pythagorean_square_area_value import (
     SCENE_ID,
     GeometryPythagoreanSquareAreaValueTask,
 )

@@ -1,1 +1,0 @@
-"""Chart trend task group."""

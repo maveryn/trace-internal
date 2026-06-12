@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `concept_map`
+2. Scene: `concept_map`
 3. Scene id: `concept_map`
 4. Task id: `task_pages__concept_map__branch_child_count`
 5. Objective: Count child item nodes under one named concept-map branch.

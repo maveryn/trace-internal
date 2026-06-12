@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `hierarchy`
-3. Task group: `hierarchy`
+3. Scene: `hierarchy`
 
 ## Contract
 Counts parent-child hops on the path between two queried nodes in one rooted hierarchy diagram.

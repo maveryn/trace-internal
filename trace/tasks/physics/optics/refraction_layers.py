@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -22,17 +22,11 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ..shared.complexity import (
-    build_physics_complexity,
-    clamp_unit_interval,
-    normalize_linear,
-    resolve_physics_complexity_weights,
-)
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_optics_refraction_layers_family"
+TASK_NAMESPACE = "physics_optics_refraction_layers"
 SCENE_ID = "refraction_layers"
 QUERY_ID = "three_medium_speed_order"
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
@@ -40,12 +34,12 @@ MEDIUM_LABELS: Tuple[str, ...] = ("M1", "M2", "M3")
 ALL_SPEED_ORDERS: Tuple[Tuple[str, str, str], ...] = tuple(itertools.permutations(MEDIUM_LABELS))
 SPEED_VALUES_BY_RANK: Tuple[float, float, float] = (1.0, 0.76, 0.52)
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "optics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "optics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="optics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -141,7 +135,7 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Refraction
             ("horizontal", "vertical"),
             _GEN_DEFAULTS.get("layer_orientation_weights", {}),
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.orientation",
+            namespace=f"{TASK_NAMESPACE}.orientation",
         )
     if orientation == "horizontal":
         entry_options = ("top", "bottom")
@@ -149,12 +143,12 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Refraction
         entry_options = ("left", "right")
     entry_side = str(params.get("entry_side") or "").strip()
     if entry_side not in set(entry_options):
-        entry_side = str(entry_options[int(hash64(int(instance_seed), f"{FAMILY_ID}.entry_side", 0) % 2)])
-    transverse_sign = 1 if int(hash64(int(instance_seed), f"{FAMILY_ID}.transverse_sign", 0) % 2) == 0 else -1
+        entry_side = str(entry_options[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.entry_side", 0) % 2)])
+    transverse_sign = 1 if int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.transverse_sign", 0) % 2) == 0 else -1
 
     explicit_order = _parse_speed_order(params.get("speed_order") or params.get("target_order"))
     if explicit_order is None:
-        order_index = int(hash64(int(instance_seed), f"{FAMILY_ID}.speed_order", 0) % len(ALL_SPEED_ORDERS))
+        order_index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.speed_order", 0) % len(ALL_SPEED_ORDERS))
         speed_order = tuple(ALL_SPEED_ORDERS[order_index])
     else:
         speed_order = explicit_order
@@ -164,16 +158,16 @@ def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _Refraction
         for rank, label in enumerate(speed_order)
     }
     max_angle_options = (40.0, 42.0, 44.0) if orientation == "horizontal" else (34.0, 36.0, 38.0)
-    max_angle_deg = float(max_angle_options[int(hash64(int(instance_seed), f"{FAMILY_ID}.max_angle", 0) % len(max_angle_options))])
+    max_angle_deg = float(max_angle_options[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.max_angle", 0) % len(max_angle_options))])
     invariant = math.sin(math.radians(max_angle_deg)) / max(medium_speeds.values())
     angle_by_medium_deg = {
         str(label): round(float(math.degrees(math.asin(max(-0.95, min(0.95, invariant * speed))))), 3)
         for label, speed in medium_speeds.items()
     }
 
-    correct_index = int(hash64(int(instance_seed), f"{FAMILY_ID}.correct_option", 0) % len(OPTION_LABELS))
+    correct_index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.correct_option", 0) % len(OPTION_LABELS))
     distractor_orders = [order for order in ALL_SPEED_ORDERS if tuple(order) != tuple(speed_order)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_shuffle")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_shuffle")
     rng.shuffle(distractor_orders)
     option_map: Dict[str, str] = {}
     distractor_index = 0
@@ -229,7 +223,7 @@ def _ray_geometry(
             x_mid = (left + right) * 0.5
         else:
             jitter_span = min(48.0, max(0.0, (x_high - x_low) * 0.34))
-            raw = (float(hash64(int(round(left + right + top + bottom)), f"{FAMILY_ID}.x_jitter", 0) % 10_000) / 10_000.0) - 0.5
+            raw = (float(hash64(int(round(left + right + top + bottom)), f"{TASK_NAMESPACE}.x_jitter", 0) % 10_000) / 10_000.0) - 0.5
             x_mid = ((x_low + x_high) * 0.5) + (raw * 2.0 * jitter_span)
         points = tuple((float(x_mid + coeffs[idx]), float(border_values[idx])) for idx in range(4))
     else:
@@ -258,7 +252,7 @@ def _ray_geometry(
             y_mid = (top + bottom) * 0.5
         else:
             jitter_span = min(36.0, max(0.0, (y_high - y_low) * 0.30))
-            raw = (float(hash64(int(round(left + right + top + bottom)), f"{FAMILY_ID}.y_jitter", 0) % 10_000) / 10_000.0) - 0.5
+            raw = (float(hash64(int(round(left + right + top + bottom)), f"{TASK_NAMESPACE}.y_jitter", 0) % 10_000) / 10_000.0) - 0.5
             y_mid = ((y_low + y_high) * 0.5) + (raw * 2.0 * jitter_span)
         points = tuple((float(border_values[idx]), float(y_mid + coeffs[idx])) for idx in range(4))
     return _RayGeometry(
@@ -287,7 +281,7 @@ def _draw_media_regions(
         (225, 246, 246),
         (255, 228, 233),
     ]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.medium_fills")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.medium_fills")
     rng.shuffle(fill_seeds)
     label_bboxes: Dict[str, List[float]] = {}
     outline = tuple(int(v) for v in style.panel_border_rgb)
@@ -530,23 +524,6 @@ def _render_scene(
     return image, annotation_map, render_map
 
 
-def _build_complexity(*, scenario: _RefractionScenario, bend_count: int) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    angle_values = [float(value) for value in scenario.angle_by_medium_deg.values()]
-    min_angle_gap = min(abs(a - b) for a, b in itertools.combinations(angle_values, 2))
-    visual_scan = clamp_unit_interval(0.34 + (0.08 if scenario.orientation == "vertical" else 0.0))
-    refraction_reasoning = clamp_unit_interval(0.56 + (0.18 * normalize_linear(float(bend_count), min_value=1.0, max_value=2.0)))
-    ambiguity = clamp_unit_interval(0.28 - (0.12 * normalize_linear(float(min_angle_gap), min_value=6.0, max_value=16.0)))
-    output_burden = 0.32
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "refraction_reasoning": float(refraction_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
 
 
 @register_task
@@ -555,7 +532,7 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
 
     task_id = "task_physics__refraction_layers__medium_speed_order_label"
     domain = "physics"
-    task_group = "optics"
+    scene_id = "optics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -567,7 +544,6 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -575,7 +551,7 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -616,7 +592,7 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -634,7 +610,6 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        complexity = _build_complexity(scenario=scenario, bend_count=2)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "physics_refraction_layers_three_media",
@@ -719,7 +694,6 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=QUERY_ID,
             scene_id=SCENE_ID,

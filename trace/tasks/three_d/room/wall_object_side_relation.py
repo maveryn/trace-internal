@@ -7,12 +7,12 @@ import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import (
+from ....core.scene_config import (
     get_domain_defaults,
-    get_task_group_defaults,
-    resolve_task_group_section_defaults,
+    get_scene_defaults,
+    resolve_scene_section_defaults,
 )
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -708,53 +708,14 @@ def _build_room_wall_side_relation_dataset(
     )
 
 
-def _build_complexity(
-    *,
-    candidate_count: int,
-    wall_object_count: int,
-    floor_object_count: int,
-    complexity_defaults: Mapping[str, Any],
-) -> TaskComplexity:
-    raw_weights = complexity_defaults.get("criteria_weights", {})
-    if not isinstance(raw_weights, Mapping):
-        raw_weights = {}
-    weights = {
-        "visual_scan": float(raw_weights.get("visual_scan", 0.34)),
-        "wall_plane_ordering": float(raw_weights.get("wall_plane_ordering", 0.42)),
-        "reference_binding": float(raw_weights.get("reference_binding", 0.18)),
-        "ambiguity": float(raw_weights.get("ambiguity", 0.10)),
-    }
-    total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
-    components = {
-        "visual_scan": _normalize_unit(
-            float(wall_object_count + floor_object_count), 12.0, 19.0
-        ),
-        "wall_plane_ordering": _normalize_unit(float(candidate_count), 4.0, 5.0),
-        "reference_binding": 0.72,
-        "ambiguity": 0.42,
-    }
-    score = sum(
-        float(components[key]) * max(0.0, float(weights[key])) for key in weights
-    ) / float(total)
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            key: round(float(value), 6) for key, value in components.items()
-        },
-    )
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "room")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("three_d", "room")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
     split_generation_rendering_prompt_defaults(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=TASK_ID,
     )
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
-    task_id=TASK_ID,
 )
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
 _VISUAL_DEFAULTS = (
@@ -776,7 +737,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    task_group = "room"
+    scene_id = "room"
     default_dataset_enabled = True
 
     def generate(
@@ -922,7 +883,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
         reference_name = str(dataset["reference_object"]["prompt_name"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -953,12 +914,6 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
             for bbox in rendered_scene.annotation_bboxes
         ]
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        complexity = _build_complexity(
-            candidate_count=int(dataset["candidate_count"]),
-            wall_object_count=int(dataset["wall_object_count"]),
-            floor_object_count=int(dataset["floor_object_count"]),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
-        )
         solver_trace = dict(dataset["solver_trace"])
         trace_payload = {
             "scene_ir": {
@@ -1177,7 +1132,6 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

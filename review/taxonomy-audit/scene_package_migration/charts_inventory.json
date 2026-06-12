@@ -1,0 +1,716 @@
+{
+  "active_scene_count_from_inventory": 44,
+  "active_task_count_from_inventory": 188,
+  "domain": "charts",
+  "generated_on": "2026-06-10",
+  "high_risk_scenes": [
+    "bar_3d",
+    "boxplot",
+    "combo_mark",
+    "curve_panels",
+    "density_curve",
+    "histogram",
+    "marker_map",
+    "parallel_coords",
+    "part_whole",
+    "radial_sankey",
+    "region_map",
+    "sankey",
+    "scatter_cluster",
+    "scatter_facet_grid",
+    "scatter_points",
+    "scatter_readout",
+    "scientific_axis_frame",
+    "single_series",
+    "small_multiple",
+    "style_legend",
+    "sunburst",
+    "surface_3d",
+    "table",
+    "treemap",
+    "violin"
+  ],
+  "inventory_csv": "review/taxonomy-audit/scene_package_migration/charts_inventory.csv",
+  "legacy_scene_ids": [
+    "annotated_series",
+    "area",
+    "candlestick",
+    "combo",
+    "composition",
+    "contour_density",
+    "counting",
+    "dashboard",
+    "distribution",
+    "dumbbell",
+    "error_interval",
+    "errorbar_series",
+    "flow",
+    "heatmap",
+    "hexbin_density",
+    "hypothetical",
+    "map",
+    "matrix",
+    "multiseries",
+    "parallel_coordinates",
+    "pictogram",
+    "population_pyramid",
+    "radar",
+    "radial_progress",
+    "scatter",
+    "scientific",
+    "size_encoding",
+    "statistics",
+    "table_counting",
+    "table_ranking",
+    "table_statistics",
+    "table_temporal",
+    "three_d",
+    "three_d_bar",
+    "trend",
+    "uncertainty_band",
+    "waterfall"
+  ],
+  "migrated_domain_allowlist": [],
+  "migrated_scenes": [
+    "candlestick",
+    "hexbin_density",
+    "population_pyramid",
+    "radar"
+  ],
+  "multi_group_scenes": [
+    "single_series",
+    "table"
+  ],
+  "pilot_scene": null,
+  "pilot_task_id": null,
+  "scene_summary": [
+    {
+      "current_module_count": 2,
+      "legacy_groups": [
+        "annotated_series"
+      ],
+      "risk": "low",
+      "scene_id": "annotated_series",
+      "source_packages": [
+        "annotated_series"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/annotated_series/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 4,
+      "legacy_groups": [
+        "area"
+      ],
+      "risk": "low",
+      "scene_id": "area",
+      "source_packages": [
+        "area"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/area/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "three_d_bar"
+      ],
+      "risk": "high",
+      "scene_id": "bar_3d",
+      "source_packages": [
+        "three_d_bar"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/bar_3d/",
+      "task_count": 8
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "distribution"
+      ],
+      "risk": "high",
+      "scene_id": "boxplot",
+      "source_packages": [
+        "distribution"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/boxplot/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 2,
+      "current_modules": 2,
+      "legacy_groups": [
+        "candlestick"
+      ],
+      "risk": "low",
+      "scene_id": "candlestick",
+      "source_packages": [
+        "candlestick"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/candlestick/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "combo"
+      ],
+      "risk": "high",
+      "scene_id": "combo_mark",
+      "source_packages": [
+        "combo"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/combo_mark/",
+      "task_count": 8
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "contour_density"
+      ],
+      "risk": "low",
+      "scene_id": "contour_density",
+      "source_packages": [
+        "contour_density"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/contour_density/",
+      "task_count": 5
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scientific"
+      ],
+      "risk": "high",
+      "scene_id": "curve_panels",
+      "source_packages": [
+        "scientific"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/curve_panels/",
+      "task_count": 8
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "dashboard"
+      ],
+      "risk": "low",
+      "scene_id": "dashboard",
+      "source_packages": [
+        "dashboard"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/dashboard/",
+      "task_count": 9
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "distribution"
+      ],
+      "risk": "high",
+      "scene_id": "density_curve",
+      "source_packages": [
+        "distribution"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/density_curve/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "dumbbell"
+      ],
+      "risk": "low",
+      "scene_id": "dumbbell",
+      "source_packages": [
+        "dumbbell"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/dumbbell/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "error_interval"
+      ],
+      "risk": "low",
+      "scene_id": "error_interval",
+      "source_packages": [
+        "error_interval"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/error_interval/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "errorbar_series"
+      ],
+      "risk": "low",
+      "scene_id": "errorbar_series",
+      "source_packages": [
+        "errorbar_series"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/errorbar_series/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "heatmap"
+      ],
+      "risk": "low",
+      "scene_id": "heatmap",
+      "source_packages": [
+        "heatmap"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/heatmap/",
+      "task_count": 5
+    },
+    {
+      "current_module_count": 1,
+      "current_modules": 1,
+      "legacy_groups": [
+        "hexbin_density"
+      ],
+      "risk": "low",
+      "scene_id": "hexbin_density",
+      "source_packages": [
+        "hexbin_density"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/hexbin_density/",
+      "task_count": 1
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "distribution"
+      ],
+      "risk": "high",
+      "scene_id": "histogram",
+      "source_packages": [
+        "distribution"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/histogram/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "map"
+      ],
+      "risk": "high",
+      "scene_id": "marker_map",
+      "source_packages": [
+        "map"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/marker_map/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "matrix"
+      ],
+      "risk": "low",
+      "scene_id": "matrix",
+      "source_packages": [
+        "matrix"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/matrix/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "multiseries"
+      ],
+      "risk": "low",
+      "scene_id": "multiseries",
+      "source_packages": [
+        "multiseries"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/multiseries/",
+      "task_count": 7
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "parallel_coordinates"
+      ],
+      "risk": "high",
+      "scene_id": "parallel_coords",
+      "source_packages": [
+        "parallel_coordinates"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/parallel_coords/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "composition"
+      ],
+      "risk": "high",
+      "scene_id": "part_whole",
+      "source_packages": [
+        "composition"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/part_whole/",
+      "task_count": 6
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "pictogram"
+      ],
+      "risk": "low",
+      "scene_id": "pictogram",
+      "source_packages": [
+        "pictogram"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/pictogram/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 2,
+      "legacy_groups": [
+        "population_pyramid"
+      ],
+      "risk": "low",
+      "scene_id": "population_pyramid",
+      "source_packages": [
+        "population_pyramid"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/population_pyramid/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 4,
+      "legacy_groups": [
+        "radar"
+      ],
+      "risk": "low",
+      "scene_id": "radar",
+      "source_packages": [
+        "radar"
+      ],
+      "status": "scene_package_migrated",
+      "target_package": "trace/tasks/charts/radar/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "radial_progress"
+      ],
+      "risk": "low",
+      "scene_id": "radial_progress",
+      "source_packages": [
+        "radial_progress"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/radial_progress/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "flow"
+      ],
+      "risk": "high",
+      "scene_id": "radial_sankey",
+      "source_packages": [
+        "flow"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/radial_sankey/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "map"
+      ],
+      "risk": "high",
+      "scene_id": "region_map",
+      "source_packages": [
+        "map"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/region_map/",
+      "task_count": 11
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "flow"
+      ],
+      "risk": "high",
+      "scene_id": "sankey",
+      "source_packages": [
+        "flow"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/sankey/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scatter"
+      ],
+      "risk": "high",
+      "scene_id": "scatter_cluster",
+      "source_packages": [
+        "scatter"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/scatter_cluster/",
+      "task_count": 5
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scatter"
+      ],
+      "risk": "high",
+      "scene_id": "scatter_facet_grid",
+      "source_packages": [
+        "scatter"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/scatter_facet_grid/",
+      "task_count": 1
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scatter"
+      ],
+      "risk": "high",
+      "scene_id": "scatter_points",
+      "source_packages": [
+        "scatter"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/scatter_points/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scatter"
+      ],
+      "risk": "high",
+      "scene_id": "scatter_readout",
+      "source_packages": [
+        "scatter"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/scatter_readout/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scientific"
+      ],
+      "risk": "high",
+      "scene_id": "scientific_axis_frame",
+      "source_packages": [
+        "scientific"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/scientific_axis_frame/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 4,
+      "legacy_groups": [
+        "counting",
+        "hypothetical",
+        "statistics",
+        "trend"
+      ],
+      "risk": "high",
+      "scene_id": "single_series",
+      "source_packages": [
+        "counting",
+        "hypothetical",
+        "statistics",
+        "trend"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/single_series/",
+      "task_count": 13
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "size_encoding"
+      ],
+      "risk": "low",
+      "scene_id": "size_encoding",
+      "source_packages": [
+        "size_encoding"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/size_encoding/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "composition"
+      ],
+      "risk": "high",
+      "scene_id": "small_multiple",
+      "source_packages": [
+        "composition"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/small_multiple/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "scientific"
+      ],
+      "risk": "high",
+      "scene_id": "style_legend",
+      "source_packages": [
+        "scientific"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/style_legend/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "composition"
+      ],
+      "risk": "high",
+      "scene_id": "sunburst",
+      "source_packages": [
+        "composition"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/sunburst/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "three_d"
+      ],
+      "risk": "high",
+      "scene_id": "surface_3d",
+      "source_packages": [
+        "three_d"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/surface_3d/",
+      "task_count": 4
+    },
+    {
+      "current_module_count": 4,
+      "legacy_groups": [
+        "table_counting",
+        "table_ranking",
+        "table_statistics",
+        "table_temporal"
+      ],
+      "risk": "high",
+      "scene_id": "table",
+      "source_packages": [
+        "table"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/table/",
+      "task_count": 8
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "composition"
+      ],
+      "risk": "high",
+      "scene_id": "treemap",
+      "source_packages": [
+        "composition"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/treemap/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "uncertainty_band"
+      ],
+      "risk": "low",
+      "scene_id": "uncertainty_band",
+      "source_packages": [
+        "uncertainty_band"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/uncertainty_band/",
+      "task_count": 2
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "distribution"
+      ],
+      "risk": "high",
+      "scene_id": "violin",
+      "source_packages": [
+        "distribution"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/violin/",
+      "task_count": 3
+    },
+    {
+      "current_module_count": 1,
+      "legacy_groups": [
+        "waterfall"
+      ],
+      "risk": "low",
+      "scene_id": "waterfall",
+      "source_packages": [
+        "waterfall"
+      ],
+      "status": "legacy_or_partial",
+      "target_package": "trace/tasks/charts/waterfall/",
+      "task_count": 4
+    }
+  ],
+  "temporary_pilot_task_ids": []
+}

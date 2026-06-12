@@ -3,7 +3,7 @@
 This module is intentionally not a public task. It is a renderer prototype for
 reviewing whether old-school pixel village map scenes are viable for future
 illustration tasks. The village is composed from optional semantic territories
-such as residential blocks, landmarks, farms, and cemetery/churchyard areas.
+such as residential blocks, landmarks, orchards, and cemetery/churchyard areas.
 """
 
 from __future__ import annotations
@@ -27,26 +27,21 @@ from trace.tasks.illustrations.shared.object_rendering import (
 )
 from trace.tasks.illustrations.shared.object_schema import json_safe
 from trace.tasks.illustrations.shared.pixel_world_objects import (
-    PIXEL_CROP_STYLES,
     PIXEL_GRAVE_MARKER_STYLES,
     PIXEL_TREE_STYLES,
-    PIXEL_VEGETABLE_STYLES,
     draw_pixel_barrel,
     draw_pixel_bench,
     draw_pixel_castle,
     draw_pixel_church,
     draw_pixel_cart,
     draw_pixel_dead_tree,
-    draw_pixel_farm_gate,
     draw_pixel_gazebo,
     draw_pixel_grave_marker,
-    draw_pixel_hay_bale,
     draw_pixel_lamp_post,
     draw_pixel_market_stall,
     draw_pixel_notice_board,
     draw_pixel_pond,
     draw_pixel_rock,
-    draw_pixel_scarecrow,
     draw_pixel_statue,
     draw_pixel_well,
     draw_pixel_windmill,
@@ -808,16 +803,6 @@ def _draw_cemetery_ground(draw: ImageDraw.ImageDraw, tile_xywh: TileBox) -> None
                 draw.point((px + 10, py + 4), fill=(101, 158, 91))
 
 
-def _draw_farm_plot_ground(draw: ImageDraw.ImageDraw, tile_xywh: TileBox) -> None:
-    x0, y0, x1, y1 = _base_rect(tile_xywh)
-    draw.rectangle((x0, y0, x1, y1), fill=(93, 142, 67), outline=(76, 104, 48))
-    for y in range(y0 + 6, y1 - 4, 8):
-        draw.line((x0 + 3, y, x1 - 3, y), fill=(113, 83, 50))
-    for x in range(x0 + 5, x1 - 4, 11):
-        draw.point((x, y0 + 4), fill=(126, 170, 72))
-        draw.point((x + 2, y1 - 6), fill=(67, 113, 51))
-
-
 def _draw_entity(draw: ImageDraw.ImageDraw, entity: PixelVillageEntity, *, rng: random.Random) -> None:
     kind = str(entity.metadata.get("variant", entity.public_name))
     spec = _shared_object_spec(
@@ -960,17 +945,6 @@ def _draw_entity(draw: ImageDraw.ImageDraw, entity: PixelVillageEntity, *, rng: 
         _draw_iron_fence(draw, entity.tile_xywh, orientation=str(entity.metadata.get("orientation", "horizontal")))
     elif kind == "cemetery_gate":
         _draw_cemetery_gate(draw, entity.tile_xywh, orientation=str(entity.metadata.get("orientation", "horizontal")))
-    elif kind == "farm_gate":
-        draw_pixel_farm_gate(draw, entity.tile_xywh, orientation=str(entity.metadata.get("orientation", "horizontal")))
-    elif kind == "hay_bale":
-        draw_pixel_hay_bale(draw, entity.tile_xywh)
-    elif kind == "scarecrow":
-        draw_pixel_scarecrow(
-            draw,
-            entity.tile_xywh,
-            shirt_rgb=tuple(entity.metadata.get("shirt_rgb", (182, 84, 60))),
-            hat_rgb=tuple(entity.metadata.get("hat_rgb", (154, 103, 50))),
-        )
     elif kind == "grave_marker":
         draw_pixel_grave_marker(
             draw,
@@ -1034,24 +1008,6 @@ def _sample_flower_metadata(rng: random.Random) -> dict[str, Any]:
     }
 
 
-def _sample_vegetable_patch_metadata(rng: random.Random) -> dict[str, Any]:
-    vegetable_style = str(_choose(rng, PIXEL_VEGETABLE_STYLES))
-    vegetable_palettes = {
-        "carrot": [(226, 112, 45), (238, 128, 52), (207, 94, 39)],
-        "cabbage": [(102, 180, 84), (124, 192, 93), (82, 158, 78)],
-        "corn": [(236, 195, 64), (226, 178, 53), (244, 211, 82)],
-        "tomato": [(213, 58, 49), (229, 74, 58), (188, 52, 48)],
-        "pumpkin": [(224, 124, 45), (238, 144, 53), (203, 102, 40)],
-    }
-    return {
-        "variant": "vegetable_patch",
-        "vegetable_style": vegetable_style,
-        "vegetable_rgb": list(_choose(rng, vegetable_palettes[vegetable_style])),
-        "leaf_rgb": list(_choose(rng, [(39, 128, 63), (48, 146, 72), (58, 136, 76)])),
-        "soil_rgb": list(_choose(rng, [(128, 82, 47), (139, 91, 52), (113, 78, 48)])),
-    }
-
-
 def _sample_building_render_style(rng: random.Random, variant: str) -> dict[str, str]:
     if variant not in {"house", "shop", "inn"}:
         return {"building_roof_style": "landmark", "building_wall_style": "landmark"}
@@ -1067,7 +1023,7 @@ def _sample_building_door_state(rng: random.Random) -> str:
 
 _WINTER_SHARED_VARIANTS = {"tree", "bench", "lamp_post", "market_stall", "wagon", "gazebo", "pond"}
 _WINTER_SCENE_VARIANTS = {"house", "shop", "inn", "tower", "church", "castle"}
-_AUTUMN_SHARED_VARIANTS = {"tree", "flower", "crop_row", "bench", "market_stall", "wagon", "gazebo", "pond"}
+_AUTUMN_SHARED_VARIANTS = {"tree", "flower", "bench", "market_stall", "wagon", "gazebo", "pond"}
 
 
 def _shared_object_spec(
@@ -1110,47 +1066,6 @@ def _shared_object_spec(
             tile_xywh=tile_xywh,
             variant_id=str(metadata.get("person_variant_id", "adult")),
             semantic_attributes={"role": str(metadata.get("role", "villager"))},
-            visual_attributes=dict(metadata),
-            source_entity_type="pixel_village_entity",
-        )
-    if variant == "crop_row":
-        return IllustrationObjectSpec(
-            object_id=str(entity_id),
-            object_type="crop_row",
-            public_name="crop row",
-            bbox_xyxy=bbox_xyxy,
-            tile_xywh=tile_xywh,
-            semantic_attributes={
-                "territory_id": str(metadata.get("territory_id", "")),
-                "region_id": str(metadata.get("region_id", "")),
-            },
-            visual_attributes=dict(metadata),
-            source_entity_type="pixel_village_entity",
-        )
-    if variant == "vegetable_patch":
-        return IllustrationObjectSpec(
-            object_id=str(entity_id),
-            object_type="vegetable_patch",
-            public_name="vegetable patch",
-            bbox_xyxy=bbox_xyxy,
-            tile_xywh=tile_xywh,
-            semantic_attributes={
-                "territory_id": str(metadata.get("territory_id", "")),
-                "region_id": str(metadata.get("region_id", "")),
-            },
-            visual_attributes=dict(metadata),
-            source_entity_type="pixel_village_entity",
-        )
-    if variant == "farm_gate":
-        return IllustrationObjectSpec(
-            object_id=str(entity_id),
-            object_type="farm_gate",
-            public_name="farm gate",
-            bbox_xyxy=bbox_xyxy,
-            tile_xywh=tile_xywh,
-            renderer_id="pixel_world_object",
-            renderer_variant_id="farm_gate",
-            semantic_attributes={"territory_id": str(metadata.get("territory_id", ""))},
             visual_attributes=dict(metadata),
             source_entity_type="pixel_village_entity",
         )
@@ -1226,7 +1141,6 @@ def _autumn_metadata_for_entity(
     style_options = {
         "tree": ["scattered", "ground_edge"],
         "flower": ["dry_heads", "scattered"],
-        "crop_row": ["harvested", "late_crop"],
         "market_stall": ["scattered"],
         "gazebo": ["scattered", "ground_edge"],
         "wagon": ["scattered"],
@@ -1273,9 +1187,6 @@ def _autumn_metadata_for_entity(
     elif variant == "flower":
         metadata["flower_rgb"] = list(_choose(rng, [(174, 119, 63), (189, 143, 70), (144, 103, 69)]))
         metadata["leaf_rgb"] = list(_choose(rng, [(76, 105, 57), (91, 108, 58), (82, 96, 55)]))
-    elif variant == "crop_row":
-        metadata["crop_rgb"] = list(_choose(rng, [(194, 157, 66), (179, 136, 58), (154, 125, 68)]))
-        metadata["soil_rgb"] = list(_choose(rng, [(119, 79, 49), (132, 87, 51), (105, 76, 52)]))
     return metadata
 
 
@@ -1442,25 +1353,43 @@ def _make_water(
     path_tiles: set[tuple[int, int]],
     *,
     layout: PixelVillageLayout,
+    river_mode: str = "auto",
+    river_orientation: str = "auto",
+    river_placement: str = "edge",
 ) -> tuple[set[tuple[int, int]], TileBox | None, str]:
-    if rng.random() > 0.55:
+    mode = str(river_mode).strip().lower()
+    if mode not in {"auto", "force", "none"}:
+        raise ValueError("river_mode must be 'auto', 'force', or 'none'")
+    orientation_pref = str(river_orientation).strip().lower()
+    if orientation_pref not in {"auto", "vertical", "horizontal"}:
+        raise ValueError("river_orientation must be 'auto', 'vertical', or 'horizontal'")
+    placement = str(river_placement).strip().lower()
+    if placement not in {"edge", "balanced"}:
+        raise ValueError("river_placement must be 'edge' or 'balanced'")
+    if mode == "none" or (mode == "auto" and rng.random() > 0.55):
         return set(), None, ""
     water_tiles: set[tuple[int, int]] = set()
-    orientation = rng.choice(["vertical", "horizontal"])
+    orientation = orientation_pref if orientation_pref != "auto" else rng.choice(["vertical", "horizontal"])
     if orientation == "vertical":
-        river_x = rng.choice([4, 5, layout.cols - 6, layout.cols - 5])
+        if placement == "balanced":
+            river_x = max(3, min(layout.cols - 4, layout.cols // 2 + rng.choice([-1, 0, 1])))
+        else:
+            river_x = rng.choice([4, 5, layout.cols - 6, layout.cols - 5])
         for y in range(layout.rows):
             water_tiles.add((river_x, y))
-            if rng.random() < 0.65:
+            if placement == "balanced" or rng.random() < 0.65:
                 water_tiles.add((river_x + 1, y))
         crossing_ys = sorted(y for x, y in path_tiles if x in {river_x - 1, river_x, river_x + 1, river_x + 2})
         bridge_y = crossing_ys[len(crossing_ys) // 2] if crossing_ys else layout.rows // 2
         bridge = (river_x, max(1, bridge_y), 2, 1)
     else:
-        river_y = rng.choice([4, 5, layout.rows - 6, layout.rows - 5])
+        if placement == "balanced":
+            river_y = max(3, min(layout.rows - 4, layout.rows // 2 + rng.choice([-1, 0, 1])))
+        else:
+            river_y = rng.choice([4, 5, layout.rows - 6, layout.rows - 5])
         for x in range(layout.cols):
             water_tiles.add((x, river_y))
-            if rng.random() < 0.65:
+            if placement == "balanced" or rng.random() < 0.65:
                 water_tiles.add((x, river_y + 1))
         crossing_xs = sorted(x for x, y in path_tiles if y in {river_y - 1, river_y, river_y + 1, river_y + 2})
         bridge_x = crossing_xs[len(crossing_xs) // 2] if crossing_xs else layout.cols // 2
@@ -1469,6 +1398,19 @@ def _make_water(
         water_tiles.discard(tile)
         path_tiles.add(tile)
     return water_tiles, bridge, orientation
+
+
+def _water_bounds(water_tiles: set[tuple[int, int]]) -> dict[str, int] | None:
+    if not water_tiles:
+        return None
+    xs = [int(x) for x, _ in water_tiles]
+    ys = [int(y) for _, y in water_tiles]
+    return {
+        "min_x": min(xs),
+        "max_x": max(xs),
+        "min_y": min(ys),
+        "max_y": max(ys),
+    }
 
 
 def _plan_cemetery_territory(
@@ -1646,107 +1588,6 @@ def _plan_orchard_territory(
 
     if mode == "force":
         raise ValueError("could not place forced orchard territory")
-    return None
-
-
-def _plan_farm_plot_territory(
-    rng: random.Random,
-    *,
-    layout: PixelVillageLayout,
-    path_tiles: set[tuple[int, int]],
-    water_tiles: set[tuple[int, int]],
-    reserved_tiles: set[tuple[int, int]],
-    farm_plot_mode: str,
-) -> Mapping[str, Any] | None:
-    mode = str(farm_plot_mode)
-    if mode not in {"auto", "force", "none"}:
-        raise ValueError("farm_plot_mode must be one of: auto, force, none")
-    if mode == "none" or (mode == "auto" and rng.random() > 0.32):
-        return None
-
-    max_w = min(9, layout.cols - 4)
-    max_h = min(7, layout.rows - 4)
-    sizes = [(w, h) for w in range(6, max_w + 1) for h in range(5, max_h + 1)]
-    rng.shuffle(sizes)
-    candidates: list[TileBox] = []
-    for w, h in sizes[:18]:
-        candidates.extend(
-            [
-                (2, 2, w, h),
-                (layout.cols - w - 2, 2, w, h),
-                (2, layout.rows - h - 2, w, h),
-                (layout.cols - w - 2, layout.rows - h - 2, w, h),
-                (max(2, layout.cols // 2 - w // 2), 2, w, h),
-                (max(2, layout.cols // 2 - w // 2), layout.rows - h - 2, w, h),
-                (rng.randint(2, max(2, layout.cols - w - 2)), rng.randint(2, max(2, layout.rows - h - 2)), w, h),
-            ]
-        )
-    rng.shuffle(candidates)
-
-    for allow_path_overlap in ([False, True] if mode == "force" else [False]):
-        blocked_tiles = set(water_tiles) | set(reserved_tiles)
-        if not allow_path_overlap:
-            blocked_tiles |= set(path_tiles)
-        for tile_box in candidates:
-            if not _inside_grid(tile_box, layout=layout, inset=1):
-                continue
-            footprint = set(_rect_tiles(tile_box))
-            padded = {
-                (x + dx, y + dy)
-                for x, y in footprint
-                for dx in (-1, 0, 1)
-                for dy in (-1, 0, 1)
-            }
-            if footprint & blocked_tiles:
-                continue
-            if (padded - footprint) & set(water_tiles):
-                continue
-
-            valid_sides: list[tuple[int, str, tuple[int, int], tuple[int, int]]] = []
-            for side in ("top", "bottom", "left", "right"):
-                outside_gate = _outside_gate_for_side(tile_box, side)
-                if outside_gate is None:
-                    continue
-                ox, oy = outside_gate
-                if ox <= 0 or oy <= 0 or ox >= layout.cols - 1 or oy >= layout.rows - 1:
-                    continue
-                if outside_gate in water_tiles or outside_gate in footprint or outside_gate in reserved_tiles:
-                    continue
-                nearest_path = min(path_tiles, key=lambda tile: abs(tile[0] - ox) + abs(tile[1] - oy))
-                valid_sides.append((abs(nearest_path[0] - ox) + abs(nearest_path[1] - oy), side, outside_gate, nearest_path))
-            if not valid_sides:
-                continue
-            valid_sides.sort(key=lambda item: (item[0], item[1]))
-            _, gate_side, outside_gate, nearest_path = valid_sides[0]
-            x, y, w, h = tile_box
-            if gate_side == "top":
-                gate_tile = (x + w // 2, y, 1, 1)
-            elif gate_side == "bottom":
-                gate_tile = (x + w // 2, y + h - 1, 1, 1)
-            elif gate_side == "left":
-                gate_tile = (x, y + h // 2, 1, 1)
-            else:
-                gate_tile = (x + w - 1, y + h // 2, 1, 1)
-            connector = {
-                tile
-                for tile in _connect_path_tiles(path_tiles, outside_gate, nearest_path)
-                if 0 <= tile[0] < layout.cols
-                and 0 <= tile[1] < layout.rows
-                and tile not in water_tiles
-                and tile not in footprint
-                and tile not in reserved_tiles
-            }
-            return {
-                "tile_xywh": tile_box,
-                "gate_tile": gate_tile,
-                "gate_side": gate_side,
-                "gate_outside_tile": outside_gate,
-                "connector_tiles": sorted(connector),
-                "allow_path_overlap": allow_path_overlap,
-            }
-
-    if mode == "force":
-        raise ValueError("could not place forced farm plot territory")
     return None
 
 
@@ -2509,199 +2350,6 @@ def _place_orchard_territory(
     )
 
 
-def _place_farm_plot_territory(
-    rng: random.Random,
-    draw: ImageDraw.ImageDraw,
-    entities: list[PixelVillageEntity],
-    territories: list[PixelVillageTerritory],
-    *,
-    farm_plot_plan: Mapping[str, Any] | None,
-    blocked: set[tuple[int, int]],
-    occupied: list[TileBox],
-    layout: PixelVillageLayout,
-    offset_xy: tuple[int, int],
-) -> None:
-    if farm_plot_plan is None:
-        return
-
-    tile_box = tuple(farm_plot_plan["tile_xywh"])  # type: ignore[arg-type]
-    x, y, w, h = tile_box
-    gate_tile = tuple(farm_plot_plan["gate_tile"])  # type: ignore[arg-type]
-    gate_side = str(farm_plot_plan.get("gate_side", "bottom"))
-    gate_orientation = "horizontal" if gate_side in {"top", "bottom"} else "vertical"
-
-    _draw_farm_plot_ground(draw, tile_box)
-
-    fence_tiles: list[tuple[TileBox, str]] = []
-    for fx in range(x, x + w):
-        top = (fx, y, 1, 1)
-        bottom = (fx, y + h - 1, 1, 1)
-        if top != gate_tile:
-            fence_tiles.append((top, "horizontal"))
-        if bottom != gate_tile:
-            fence_tiles.append((bottom, "horizontal"))
-    for fy in range(y + 1, y + h - 1):
-        left = (x, fy, 1, 1)
-        right = (x + w - 1, fy, 1, 1)
-        if left != gate_tile:
-            fence_tiles.append((left, "vertical"))
-        if right != gate_tile:
-            fence_tiles.append((right, "vertical"))
-
-    for fence_box, orientation in fence_tiles:
-        _draw_fence(draw, fence_box, orientation=orientation)
-        occupied.append(fence_box)
-        blocked.update(_rect_tiles(fence_box))
-
-    _add_entity(
-        entities,
-        entity_id="farm_plot_gate_00",
-        public_name="farm gate",
-        category="territory_feature",
-        tile_xywh=gate_tile,
-        layer="barrier",
-        layout=layout,
-        offset_xy=offset_xy,
-        metadata={"variant": "farm_gate", "orientation": gate_orientation, "territory_id": "farm_plot_0"},
-    )
-    occupied.append(gate_tile)
-    blocked.update(_rect_tiles(gate_tile))
-
-    crop_style = str(_choose(rng, PIXEL_CROP_STYLES))
-    crop_palette = {
-        "wheat": [(210, 171, 58), (226, 187, 75), (198, 153, 52)],
-        "leafy": [(61, 152, 72), (50, 136, 68), (76, 166, 82)],
-        "flowering": [(225, 78, 92), (232, 185, 66), (184, 89, 178)],
-    }
-    crop_rgb = _choose(rng, crop_palette.get(crop_style, crop_palette["wheat"]))
-    soil_rgb = _choose(rng, [(128, 82, 47), (139, 91, 52), (113, 78, 48)])
-
-    fixture_x = x + 1
-    crop_x = x + 2
-    crop_w = max(2, w - 4)
-    possible_rows = list(range(y + 1, y + h - 2))
-    row_count = min(len(possible_rows), rng.randint(2, min(4, max(2, len(possible_rows)))))
-    crop_rows = possible_rows[:row_count]
-    crop_row_count = 0
-    locally_used_tiles: set[tuple[int, int]] = set()
-    for row_y in crop_rows:
-        crop_box = (crop_x, row_y, crop_w, 1)
-        _add_entity(
-            entities,
-            entity_id=f"farm_crop_row_{crop_row_count:02d}",
-            public_name="crop row",
-            category="plant",
-            tile_xywh=crop_box,
-            layer="object",
-            layout=layout,
-            offset_xy=offset_xy,
-            metadata={
-                "variant": "crop_row",
-                "crop_style": crop_style,
-                "crop_rgb": list(crop_rgb),
-                "soil_rgb": list(soil_rgb),
-                "territory_id": "farm_plot_0",
-            },
-        )
-        occupied.append(crop_box)
-        locally_used_tiles.update(_rect_tiles(crop_box))
-        crop_row_count += 1
-
-    scarecrow_count = 0
-    scarecrow_box = (fixture_x, y + 1, 1, 2)
-    if y + 3 < y + h - 1:
-        _add_entity(
-            entities,
-            entity_id="farm_scarecrow_00",
-            public_name="scarecrow",
-            category="farm_fixture",
-            tile_xywh=scarecrow_box,
-            layer="object",
-            layout=layout,
-            offset_xy=offset_xy,
-            metadata={
-                "variant": "scarecrow",
-                "shirt_rgb": list(_choose(rng, [(182, 84, 60), (70, 116, 172), (132, 88, 157)])),
-                "hat_rgb": list(_choose(rng, [(154, 103, 50), (134, 92, 45), (174, 121, 54)])),
-                "territory_id": "farm_plot_0",
-            },
-        )
-        occupied.append(scarecrow_box)
-        locally_used_tiles.update(_rect_tiles(scarecrow_box))
-        scarecrow_count = 1
-
-    hay_bale_count = 0
-    hay_candidates = [(fixture_x, y + h - 2, 1, 1), (x + w - 2, y + h - 2, 1, 1)]
-    for hay_box in hay_candidates[: rng.randint(1, 2)]:
-        _add_entity(
-            entities,
-            entity_id=f"farm_hay_bale_{hay_bale_count:02d}",
-            public_name="hay bale",
-            category="farm_fixture",
-            tile_xywh=hay_box,
-            layer="object",
-            layout=layout,
-            offset_xy=offset_xy,
-            metadata={"variant": "hay_bale", "territory_id": "farm_plot_0"},
-        )
-        occupied.append(hay_box)
-        locally_used_tiles.update(_rect_tiles(hay_box))
-        hay_bale_count += 1
-
-    vegetable_patch_count = 0
-    vegetable_styles: list[str] = []
-    vegetable_candidates = [
-        (vx, vy, 1, 1)
-        for vy in range(y + 1, y + h - 1)
-        for vx in range(x + 1, x + w - 1)
-        if (vx, vy) not in locally_used_tiles
-    ]
-    rng.shuffle(vegetable_candidates)
-    vegetable_target = min(len(vegetable_candidates), rng.randint(2, min(5, max(2, len(vegetable_candidates)))))
-    for vegetable_box in vegetable_candidates[:vegetable_target]:
-        metadata = _sample_vegetable_patch_metadata(rng)
-        metadata["territory_id"] = "farm_plot_0"
-        _add_entity(
-            entities,
-            entity_id=f"farm_vegetable_patch_{vegetable_patch_count:02d}",
-            public_name="vegetable patch",
-            category="vegetable",
-            tile_xywh=vegetable_box,
-            layer="object",
-            layout=layout,
-            offset_xy=offset_xy,
-            metadata=metadata,
-        )
-        occupied.append(vegetable_box)
-        locally_used_tiles.update(_rect_tiles(vegetable_box))
-        vegetable_styles.append(str(metadata["vegetable_style"]))
-        vegetable_patch_count += 1
-
-    blocked.update(_rect_tiles(tile_box))
-    _add_territory(
-        territories,
-        territory_id="farm_plot_0",
-        territory_type="farm_plot",
-        public_name="farm plot",
-        tile_xywh=tile_box,
-        layout=layout,
-        offset_xy=offset_xy,
-        metadata={
-            "gate_tile": list(gate_tile),
-            "gate_side": gate_side,
-            "gate_outside_tile": list(farm_plot_plan.get("gate_outside_tile", [])),
-            "connector_tiles": [list(tile) for tile in farm_plot_plan.get("connector_tiles", [])],
-            "fence_tile_count": len(fence_tiles),
-            "crop_row_count": crop_row_count,
-            "crop_style": crop_style,
-            "vegetable_patch_count": vegetable_patch_count,
-            "vegetable_styles": sorted(set(vegetable_styles)),
-            "hay_bale_count": hay_bale_count,
-            "scarecrow_count": scarecrow_count,
-        },
-    )
-
-
 def _sample_layout(
     rng: random.Random,
     *,
@@ -2738,9 +2386,11 @@ def render_pixel_village_map(
     grid_rows: int | None = None,
     cemetery_mode: str = "auto",
     orchard_mode: str = "auto",
-    farm_plot_mode: str = "auto",
     windmill_mode: str = "auto",
     theme_mode: str = "temperate",
+    river_mode: str = "auto",
+    river_orientation: str = "auto",
+    river_placement: str = "edge",
     path_person_count: int = 0,
     background_person_path_clearance: int = 0,
 ) -> PixelVillageScene:
@@ -2762,7 +2412,14 @@ def render_pixel_village_map(
     draw = ImageDraw.Draw(base)
     grid = [["grass" for _ in range(layout.cols)] for _ in range(layout.rows)]
     path_tiles, street_x, street_y = _make_paths(rng, layout=layout)
-    water_tiles, bridge_box, water_orientation = _make_water(rng, path_tiles, layout=layout)
+    water_tiles, bridge_box, water_orientation = _make_water(
+        rng,
+        path_tiles,
+        layout=layout,
+        river_mode=str(river_mode),
+        river_orientation=str(river_orientation),
+        river_placement=str(river_placement),
+    )
     cemetery_plan = _plan_cemetery_territory(
         rng,
         layout=layout,
@@ -2783,21 +2440,10 @@ def render_pixel_village_map(
     )
     if orchard_plan is not None:
         planned_territory_tiles.update(_rect_tiles(orchard_plan.tile_xywh))
-    farm_plot_plan = _plan_farm_plot_territory(
-        rng,
-        layout=layout,
-        path_tiles=path_tiles,
-        water_tiles=water_tiles,
-        reserved_tiles=planned_territory_tiles,
-        farm_plot_mode=str(farm_plot_mode),
-    )
     if cemetery_plan is not None:
         path_tiles.update(tuple(tile) for tile in cemetery_plan.get("connector_tiles", []))
     if orchard_plan is not None:
         path_tiles.update(orchard_plan.connector_tiles)
-    if farm_plot_plan is not None:
-        path_tiles.update(tuple(tile) for tile in farm_plot_plan.get("connector_tiles", []))
-        planned_territory_tiles.update(_rect_tiles(tuple(farm_plot_plan["tile_xywh"])))  # type: ignore[arg-type]
     for _ in range(rng.randint(8, 16)):
         x = rng.randrange(1, layout.cols - 1)
         y = rng.randrange(1, layout.rows - 1)
@@ -2844,17 +2490,6 @@ def render_pixel_village_map(
         entities,
         territories,
         orchard_plan=orchard_plan,
-        blocked=blocked,
-        occupied=occupied,
-        layout=layout,
-        offset_xy=offset_xy,
-    )
-    _place_farm_plot_territory(
-        rng,
-        draw,
-        entities,
-        territories,
-        farm_plot_plan=farm_plot_plan,
         blocked=blocked,
         occupied=occupied,
         layout=layout,
@@ -2929,7 +2564,7 @@ def render_pixel_village_map(
     territories_sorted = tuple(sorted(territories, key=lambda item: item.territory_id))
     cemetery_territory = next((territory for territory in territories_sorted if territory.territory_type == "cemetery"), None)
     orchard_territory = next((territory for territory in territories_sorted if territory.territory_type == "orchard"), None)
-    farm_plot_territory = next((territory for territory in territories_sorted if territory.territory_type == "farm_plot"), None)
+    river_bounds = _water_bounds(water_tiles)
     trace = {
         "renderer_id": "pixel_village_map_v0",
         "seed": int(seed),
@@ -2985,6 +2620,12 @@ def render_pixel_village_map(
         "main_street_tile": {"x": int(street_x), "y": int(street_y)},
         "path_tiles": [[int(x), int(y)] for x, y in sorted(path_tiles)],
         "water_tiles": [[int(x), int(y)] for x, y in sorted(water_tiles)],
+        "river_mode": str(river_mode),
+        "river_orientation": str(water_orientation),
+        "river_placement": str(river_placement),
+        "river_present": bool(water_tiles),
+        "river_bounds": dict(river_bounds) if river_bounds is not None else None,
+        "bridge_box": [int(v) for v in bridge_box] if bridge_box is not None else None,
         "entity_count": len(entities_sorted),
         "entities": [entity.as_dict() for entity in entities_sorted],
         "territory_count": len(territories_sorted),
@@ -3001,20 +2642,6 @@ def render_pixel_village_map(
         "orchard_mode": str(orchard_mode),
         "orchard_present": orchard_territory is not None,
         "orchard_tree_count": int(orchard_territory.metadata.get("tree_count", 0)) if orchard_territory is not None else 0,
-        "farm_plot_mode": str(farm_plot_mode),
-        "farm_plot_present": farm_plot_territory is not None,
-        "farm_plot_crop_row_count": (
-            int(farm_plot_territory.metadata.get("crop_row_count", 0)) if farm_plot_territory is not None else 0
-        ),
-        "farm_plot_hay_bale_count": (
-            int(farm_plot_territory.metadata.get("hay_bale_count", 0)) if farm_plot_territory is not None else 0
-        ),
-        "farm_plot_vegetable_patch_count": (
-            int(farm_plot_territory.metadata.get("vegetable_patch_count", 0)) if farm_plot_territory is not None else 0
-        ),
-        "farm_plot_scarecrow_count": (
-            int(farm_plot_territory.metadata.get("scarecrow_count", 0)) if farm_plot_territory is not None else 0
-        ),
         "windmill_mode": str(windmill_mode),
         "windmill_present": bool(windmill_present),
         "path_person_requested_count": int(path_person_count),

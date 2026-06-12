@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 from typing import Any, Dict, Iterable, Mapping
 
+from trace.core.scene_package_migration import is_scene_package_review_target_scene
 from trace.core.taxonomy import ACTIVE_DOMAINS
 
 from .models import DomainRecord, ReviewIndex, SampleRecord, SceneRecord, SolveStats, TaskRecord
@@ -29,7 +30,12 @@ MODEL_RESPONSE_CAP_THRESHOLDS = {
 DIFFICULTY_TAIL_THRESHOLD = 0.50
 
 
-def build_review_index(review_root: Path | str, *, repo_root: Path | str | None = None) -> ReviewIndex:
+def build_review_index(
+    review_root: Path | str,
+    *,
+    repo_root: Path | str | None = None,
+    enforce_migration_registry: bool = True,
+) -> ReviewIndex:
     """Build an in-memory review index from ``review/task-reviews`` artifacts."""
 
     root = Path(review_root).resolve()
@@ -48,9 +54,11 @@ def build_review_index(review_root: Path | str, *, repo_root: Path | str | None 
         if not domain_dir.is_dir():
             continue
         domain_record = DomainRecord(domain=domain)
-        index.domains[domain] = domain_record
         for scene_dir in sorted(path for path in domain_dir.iterdir() if path.is_dir()):
             scene_id = scene_dir.name
+            if bool(enforce_migration_registry) and not is_scene_package_review_target_scene(domain, scene_id):
+                continue
+            index.domains.setdefault(domain, domain_record)
             _scan_scene(index=index, domain=domain, scene_id=scene_id, scene_dir=scene_dir)
 
     _attach_solve_stats(index)
@@ -78,12 +86,34 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
     scene_key = ReviewIndex.scene_key(domain, scene_id)
     scene_manifest_path = scene_dir / "scene_review_manifest.json"
     scene_manifest = _load_json_safe(scene_manifest_path, index.errors)
+    migration_test_status_path = scene_dir / "migration_test_status.json"
+    migration_test_status = _load_json_safe(migration_test_status_path, index.errors)
+    manual_code_audit_status_path = scene_dir / "manual_code_audit_status.json"
+    manual_code_audit_status = _load_json_safe(manual_code_audit_status_path, index.errors)
     scene_record = SceneRecord(
         domain=domain,
         scene_id=scene_id,
         manifest_rel_path=_rel_or_empty(scene_manifest_path, index.root),
         workbook_rel_path=str(scene_manifest.get("workbook", "") if isinstance(scene_manifest, Mapping) else ""),
         model_stats_count=int(scene_manifest.get("model_stats_count", 0) if isinstance(scene_manifest, Mapping) else 0),
+        migration_test_status_rel_path=(
+            _rel_or_empty(migration_test_status_path, index.root) if migration_test_status_path.exists() else ""
+        ),
+        migration_test_pass=(
+            bool(migration_test_status.get("passed"))
+            if isinstance(migration_test_status, Mapping) and "passed" in migration_test_status
+            else None
+        ),
+        migration_test_summary=_migration_test_summary(migration_test_status),
+        manual_code_audit_status_rel_path=(
+            _rel_or_empty(manual_code_audit_status_path, index.root) if manual_code_audit_status_path.exists() else ""
+        ),
+        manual_code_audit_pass=(
+            bool(manual_code_audit_status.get("passed"))
+            if isinstance(manual_code_audit_status, Mapping) and "passed" in manual_code_audit_status
+            else None
+        ),
+        manual_code_audit_summary=_manual_code_audit_summary(manual_code_audit_status),
     )
     index.scenes[scene_key] = scene_record
     index.domains.setdefault(domain, DomainRecord(domain=domain)).scenes.append(scene_id)
@@ -96,6 +126,53 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
         scene_record.tasks.append(task_record.task_id)
         if not scene_record.preview_uid and task_record.preview_uid:
             scene_record.preview_uid = task_record.preview_uid
+
+
+def _migration_test_summary(status: Any) -> Dict[str, Any]:
+    """Normalize a scene migration test-status artifact for template rendering."""
+
+    if not isinstance(status, Mapping):
+        return {}
+    test_files = status.get("test_files", [])
+    if isinstance(test_files, str):
+        test_files = [test_files]
+    elif not isinstance(test_files, Iterable):
+        test_files = []
+    return {
+        "schema": str(status.get("schema", "")),
+        "status": str(status.get("status", "")),
+        "passed": bool(status.get("passed")) if "passed" in status else None,
+        "summary": str(status.get("summary", "")),
+        "command": str(status.get("command", "")),
+        "checked_at": str(status.get("checked_at", status.get("timestamp", ""))),
+        "test_files": [str(item) for item in test_files if str(item).strip()],
+    }
+
+
+def _manual_code_audit_summary(status: Any) -> Dict[str, Any]:
+    """Normalize a pre-review manual code audit artifact for template rendering."""
+
+    if not isinstance(status, Mapping):
+        return {}
+    files_reviewed = status.get("files_reviewed", [])
+    if isinstance(files_reviewed, str):
+        files_reviewed = [files_reviewed]
+    elif not isinstance(files_reviewed, Iterable):
+        files_reviewed = []
+    checklist = status.get("checklist", {})
+    if not isinstance(checklist, Mapping):
+        checklist = {}
+    return {
+        "schema": str(status.get("schema", "")),
+        "status": str(status.get("status", "")),
+        "passed": bool(status.get("passed")) if "passed" in status else None,
+        "summary": str(status.get("summary", "")),
+        "checked_at": str(status.get("checked_at", status.get("timestamp", ""))),
+        "checked_by": str(status.get("checked_by", status.get("auditor", ""))),
+        "notes": str(status.get("notes", "")),
+        "files_reviewed": [str(item) for item in files_reviewed if str(item).strip()],
+        "checklist": {str(key): bool(value) for key, value in checklist.items()},
+    }
 
 
 def _scan_task(*, index: ReviewIndex, domain: str, scene_id: str, task_dir: Path) -> TaskRecord | None:

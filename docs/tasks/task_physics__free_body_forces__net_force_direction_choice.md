@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `free_body_forces`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/free_body_forces.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__free_body_forces__net_force_direction_choice` -> `task_physics__free_body_forces__net_force_direction_choice`

@@ -5,7 +5,7 @@ TRACE is a grounded visual reasoning task environment for RLVR.
 ## Docs
 
 Start with [docs/README.md](docs/README.md).  
-Current implementation snapshot is in [docs/project/STATUS.md](docs/project/STATUS.md).
+Current active task inventory is in [docs/ACTIVE_TASK_INVENTORY.md](docs/ACTIVE_TASK_INVENTORY.md).
 Contribution workflow/checklists are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Skills

@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `word_search`
-3. Task group: `word`
+3. Scene: `word`
 4. Task id: `task_puzzles__word_search__search_location_label`
 
 ## Query Contract

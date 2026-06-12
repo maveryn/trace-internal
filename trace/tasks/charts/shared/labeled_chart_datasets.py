@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .labeled_chart_count_datasets import build_value_count_dataset_for_variant
 from .labeled_chart_dataset_core import (
+    LabeledChartDefaults,
     _sample_int_values,
     _sample_values_from_pool,
     build_values_for_median,
@@ -24,6 +25,7 @@ from .labeled_chart_trend_datasets import (
 
 
 __all__ = [
+    "LabeledChartDefaults",
     "_sample_int_values",
     "_sample_values_from_pool",
     "build_summary_statistics_dataset_for_variant",

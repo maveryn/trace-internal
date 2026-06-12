@@ -1,0 +1,175 @@
+{
+  "bundle_id": "games_reversi_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "visible_reversi_board": [
+        "The image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This scene shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "reversi_move_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "legal_move_count": [
+        "{current_player_name} is to move. {legal_move_rule_text} How many legal move squares does {current_player_name} have?",
+        "{current_player_name} is to move. {legal_move_rule_text} Count the legal move squares available to {current_player_name}.",
+        "{current_player_name} is to move. {legal_move_rule_text} What is the number of legal move squares for {current_player_name}?",
+        "{current_player_name} is to move. {legal_move_rule_text} How many empty squares are legal moves for {current_player_name}?",
+        "{current_player_name} is to move. {legal_move_rule_text} Determine the number of legal move squares for {current_player_name}."
+      ],
+      "corner_move_count": [
+        "{current_player_name} is to move. {legal_move_rule_text} {corner_rule_text} How many legal move squares for {current_player_name} are corners?",
+        "{current_player_name} is to move. {legal_move_rule_text} {corner_rule_text} Count the legal corner moves available to {current_player_name}.",
+        "{current_player_name} is to move. {legal_move_rule_text} {corner_rule_text} What is the number of legal corner squares for {current_player_name}?",
+        "{current_player_name} is to move. {legal_move_rule_text} {corner_rule_text} How many corner squares are legal moves for {current_player_name}?",
+        "{current_player_name} is to move. {legal_move_rule_text} {corner_rule_text} Determine how many legal move squares for {current_player_name} lie on corners."
+      ],
+      "flip_count_for_marked_move": [
+        "{current_player_name} is to move. {legal_move_rule_text} {marked_move_rule_text} {flip_rule_text} If {current_player_name} plays on the marked square, how many discs flip?",
+        "{current_player_name} is to move. {legal_move_rule_text} {marked_move_rule_text} {flip_rule_text} Count the discs that would flip if {current_player_name} plays the marked move.",
+        "{current_player_name} is to move. {legal_move_rule_text} {marked_move_rule_text} {flip_rule_text} What is the number of discs that would change color if the marked move is played?",
+        "{current_player_name} is to move. {legal_move_rule_text} {marked_move_rule_text} {flip_rule_text} How many opponent discs would flip after the marked move?",
+        "{current_player_name} is to move. {legal_move_rule_text} {marked_move_rule_text} {flip_rule_text} Determine how many discs would flip if {current_player_name} plays on the marked square."
+      ],
+      "black_frontier_disc_count": [
+        "{frontier_rule_text} How many black discs are frontier discs?",
+        "{frontier_rule_text} Count the black discs that are frontier discs.",
+        "{frontier_rule_text} What is the number of black frontier discs?",
+        "{frontier_rule_text} How many black discs touch at least one empty square?",
+        "{frontier_rule_text} Determine the count of black frontier discs."
+      ],
+      "white_frontier_disc_count": [
+        "{frontier_rule_text} How many white discs are frontier discs?",
+        "{frontier_rule_text} Count the white discs that are frontier discs.",
+        "{frontier_rule_text} What is the number of white frontier discs?",
+        "{frontier_rule_text} How many white discs touch at least one empty square?",
+        "{frontier_rule_text} Determine the count of white frontier discs."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:visible_reversi_board": [
+      "object_description"
+    ],
+    "query:legal_move_count": [
+      "current_player_name",
+      "legal_move_rule_text"
+    ],
+    "query:corner_move_count": [
+      "current_player_name",
+      "legal_move_rule_text",
+      "corner_rule_text"
+    ],
+    "query:flip_count_for_marked_move": [
+      "current_player_name",
+      "legal_move_rule_text",
+      "marked_move_rule_text",
+      "flip_rule_text"
+    ],
+    "query:black_frontier_disc_count": [
+      "frontier_rule_text"
+    ],
+    "query:white_frontier_disc_count": [
+      "frontier_rule_text"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "corner_rule_text": {
+      "type": "string"
+    },
+    "current_player_name": {
+      "type": "string"
+    },
+    "flip_rule_text": {
+      "type": "string"
+    },
+    "frontier_rule_text": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "legal_move_rule_text": {
+      "type": "string"
+    },
+    "marked_move_rule_text": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_compact_board": "a 6 by 6 Reversi board with black and white discs",
+    "object_description_classic_board": "an 8 by 8 Reversi board with black and white discs",
+    "legal_move_rule_text": "A legal move is an empty square that brackets one or more opponent discs in at least one straight line.",
+    "corner_rule_text": "The corner squares are the four outermost corners.",
+    "marked_move_rule_text": "The red marked empty square is the marked move.",
+    "flip_rule_text": "The marked move flips every bracketed opponent disc.",
+    "frontier_rule_text": "A frontier disc touches at least one empty square horizontally, vertically, or diagonally.",
+    "annotation_hint_legal_move_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every legal move square",
+    "annotation_hint_corner_move_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every legal corner square",
+    "annotation_hint_flip_count_for_marked_move": "set \"annotation\" to one pixel point [x,y] at the center of every disc flipped by the marked move",
+    "annotation_hint_black_frontier_disc_count": "set \"annotation\" to one pixel point [x,y] at the center of every counted black frontier disc",
+    "annotation_hint_white_frontier_disc_count": "set \"annotation\" to one pixel point [x,y] at the center of every counted white frontier disc",
+    "answer_hint_legal_move_count": "set \"answer\" to the count of legal moves",
+    "answer_hint_corner_move_count": "set \"answer\" to the count of legal corner moves",
+    "answer_hint_flip_count_for_marked_move": "set \"answer\" to the count of discs flipped by the marked move",
+    "answer_hint_black_frontier_disc_count": "set \"answer\" to the count of black frontier discs",
+    "answer_hint_white_frontier_disc_count": "set \"answer\" to the count of white frontier discs"
+  }
+}

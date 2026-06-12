@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `step_list`
+2. Scene: `step_list`
 3. Scene id: `step_list`
 4. Task id: `task_pages__step_list__step_after_named_step_label`
 5. Objective: Return the step title immediately after a named source step.

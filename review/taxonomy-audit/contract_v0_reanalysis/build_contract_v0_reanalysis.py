@@ -324,9 +324,9 @@ def build_live_inventory() -> list[dict[str, Any]]:
                 "domain": domain,
                 "scene_id": scene_id,
                 "task_slug": task_slug,
-                "task_group": norm_text(getattr(cls, "task_group", "")),
+                "scene_id": norm_text(getattr(cls, "scene_id", "")),
                 "source_domain": norm_text(getattr(taxonomy, "source_domain", domain)) if taxonomy else domain,
-                "source_task_group": norm_text(getattr(taxonomy, "source_task_group", getattr(cls, "task_group", ""))) if taxonomy else norm_text(getattr(cls, "task_group", "")),
+                "source_scene_id": norm_text(getattr(taxonomy, "source_scene_id", getattr(cls, "scene_id", ""))) if taxonomy else norm_text(getattr(cls, "scene_id", "")),
                 "module": norm_text(cls.__module__),
                 "class_name": norm_text(cls.__name__),
                 "source_file": source_file,
@@ -3283,8 +3283,6 @@ def _chart_detailed_program_schema(*, scene_id: str, scope: str, query: str) -> 
     del query
     by_scope: dict[tuple[str, str], str] = {
         ("annotated_series", "callout_endpoint_change_value"): "difference(value(callout_mark), value(endpoint_mark), mode=absolute)",
-        ("annotated_series", "event_window_extremum_label"): "label(arg_extreme(marks_in_annotated_window, value(mark), direction))",
-        ("annotated_series", "event_window_threshold_count"): "count(filter(marks_in_annotated_window, compare(value(mark), threshold, direction)))",
         ("area", "interval_area_value"): "sum(pair_mean(adjacent_values(area_series, x_interval_start_label, x_interval_end_label)))",
         ("area", "stacked_band_interval_sum_value"): "sum(values(stacked_area_category, x_interval_start_label, x_interval_end_label))",
         ("area", "stacked_band_dominance_label"): "label(arg_extreme(stacked_area_categories, sum(values(category, x_interval_start_label, x_interval_end_label)), direction=highest))",
@@ -3833,7 +3831,7 @@ def build_analysis_rows() -> tuple[list[dict[str, Any]], list[dict[str, Any]], d
         row["decision"] = decision_by_task.get(current_task_id, "blocked_needs_inspection")
         row["split_from"] = current_task_id if row["decision"] == "split" else ""
         row["merge_with"] = ""
-        row["proposed_task_group_size"] = proposed_count_by_task.get(current_task_id, 1)
+        row["proposed_scene_id_size"] = proposed_count_by_task.get(current_task_id, 1)
     return rows, summary_rows, program_catalog
 
 

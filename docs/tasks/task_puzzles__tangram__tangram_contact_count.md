@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Task id: `task_puzzles__tangram__tangram_contact_count`
 4. Scene id: `tangram`
 5. Goal: count the marked tangram-style piece or pieces plus every unmarked piece touching them by sharing an edge.

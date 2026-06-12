@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -34,12 +34,6 @@ from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
-from ..shared.complexity import (
-    build_pages_complexity,
-    clamp_unit_interval,
-    normalize_int_with_bounds,
-    resolve_pages_complexity_weights,
-)
 from ..shared.diagram.common import (
     projected_diagram_bbox_annotation,
     resolve_jittered_diagram_panel_geometry,
@@ -314,17 +308,13 @@ _STYLE_PALETTES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "schema")
-POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="schema")
-POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="schema", apply_prob=0.35)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "schema")
+POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(scene_id="schema")
+POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(scene_id="schema", apply_prob=0.35)
 
 
 def _resolve_defaults_for_task(task_id: str) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
-        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-        task_id=str(task_id),
-    )
-    weights = resolve_pages_complexity_weights(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
@@ -1523,13 +1513,12 @@ def _build_output(
     *,
     task_id: str,
     domain: str,
-    task_group: str,
+    scene_id: str,
     instance_seed: int,
     params: Dict[str, Any],
     max_attempts: int,
 ) -> TaskOutput:
     del max_attempts
-    gen_defaults, render_defaults, prompt_defaults, complexity_weights = _resolve_defaults_for_task(str(task_id))
     scene, query, query_probabilities, context_probabilities, layout_probabilities, style_probabilities = _build_scene_and_query(
         task_id=str(task_id),
         instance_seed=int(instance_seed),
@@ -1615,7 +1604,7 @@ def _build_output(
     slots.update({str(key): value for key, value in query.items() if key not in {"answer", "annotation_field_ids", "annotation_table_ids", "annotation_relationship_ids"}})
     prompt_selection = render_task_prompt_variants(
         domain=str(domain),
-        task_group=str(task_group),
+        scene_id=str(scene_id),
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(query["task_key"]),
@@ -1746,14 +1735,6 @@ def _build_output(
         RELATIONSHIP_ENDPOINT_TASK_ID: 0.56,
         RELATIONSHIP_CARDINALITY_TASK_ID: 0.58,
     }[str(task_id)]
-    complexity = build_pages_complexity(
-        weights=complexity_weights,
-        components={
-            "schema_size": clamp_unit_interval((0.55 * field_scan) + (0.45 * table_scan)),
-            "relationship_density": float(rel_scan),
-            "reasoning_load": clamp_unit_interval(float(base_reasoning) + (0.18 * answer_load)),
-        },
-    )
 
     table_entities = []
     for table in scene["tables"]:
@@ -1905,7 +1886,6 @@ def _build_output(
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
-        complexity=complexity,
         task_versions=default_task_versions(),
         query_id="default",
     )
@@ -1923,13 +1903,13 @@ class PagesSchemaFieldRoleCountTask:
 
     task_id = FIELD_ROLE_COUNT_TASK_ID
     domain = "pages"
-    task_group = "schema"
+    scene_id = "schema"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -1942,13 +1922,13 @@ class PagesSchemaRelationshipCountTask:
 
     task_id = RELATIONSHIP_COUNT_TASK_ID
     domain = "pages"
-    task_group = "schema"
+    scene_id = "schema"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -1961,13 +1941,13 @@ class PagesSchemaRelationshipEndpointLabelTask:
 
     task_id = RELATIONSHIP_ENDPOINT_TASK_ID
     domain = "pages"
-    task_group = "schema"
+    scene_id = "schema"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),
@@ -1980,13 +1960,13 @@ class PagesSchemaRelationshipCardinalityLabelTask:
 
     task_id = RELATIONSHIP_CARDINALITY_TASK_ID
     domain = "pages"
-    task_group = "schema"
+    scene_id = "schema"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _build_output(
             task_id=self.task_id,
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             instance_seed=int(instance_seed),
             params=dict(params),
             max_attempts=int(max_attempts),

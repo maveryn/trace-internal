@@ -9,14 +9,14 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.minigolf.course_tasks import (
+from trace.tasks.games.minigolf.first_obstacle_label import (
     GamesMinigolfCourseTask,
     GamesMinigolfFirstObstacleLabelTask,
     GamesMinigolfShotPathLabelTask,
     _first_hit_obstacle_id,
     _trace_shot_path,
 )
-from trace.tasks.games.shared.minigolf_common import MinigolfObstacle
+from trace.tasks.games.minigolf.shared.common import MinigolfObstacle
 from tests.helpers import read_jsonl
 
 
@@ -157,4 +157,4 @@ def test_games_minigolf_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "minigolf" for row in rows)
+    assert all(row.get("scene_id") == "minigolf" for row in rows)

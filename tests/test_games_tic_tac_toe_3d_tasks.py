@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.tic_tac_toe_3d.board_tasks import WINNING_LINES, _immediate_winning_cells
+from trace.tasks.games.tic_tac_toe_3d.winning_move_cell_label import WINNING_LINES, _immediate_winning_cells
 from trace.tasks.registry import create_task, list_default_task_ids
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -22,7 +22,7 @@ def _trace_board_to_tuple(board_layers):
 
 
 def test_games_tic_tac_toe_3d_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "tic_tac_toe_3d")
+    cfg = get_scene_defaults("games", "tic_tac_toe_3d")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["winning_move_query_id_weights"].keys()) == {
@@ -71,7 +71,7 @@ def test_games_tic_tac_toe_3d_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "tic_tac_toe_3d"
-        assert taxonomy.source_task_group == "tic_tac_toe_3d"
+        assert taxonomy.source_scene_id == "tic_tac_toe_3d"
 
 
 def test_games_tic_tac_toe_3d_has_all_49_lines() -> None:

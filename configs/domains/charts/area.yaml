@@ -43,38 +43,24 @@ rendering:
     layout_jitter_y_px_max: 12
     layout_jitter_min_margin_px: 22
     series_palette_rgb:
-      - [72, 132, 204]
-      - [225, 127, 72]
-      - [92, 166, 106]
-      - [166, 114, 190]
-      - [214, 177, 69]
-      - [86, 170, 176]
-complexity:
-  task_overrides:
-    charts_area_panel_query_base:
-      criteria_weights:
-        visual_scan: 0.35
-        reasoning_load: 0.45
-        interval_span: 0.20
-        scene_variant_load: 0.0
-
+    - - 72
+      - 132
+      - 204
+    - - 225
+      - 127
+      - 72
+    - - 92
+      - 166
+      - 106
+    - - 166
+      - 114
+      - 190
+    - - 214
+      - 177
+      - 69
+    - - 86
+      - 170
+      - 176
 prompt:
   shared:
-    bundle_id: charts_area_v0
-    scene_key: area
-    task_key: area_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint_integer: set "answer" to the requested value as an integer
-    answer_hint_label: set "answer" to the requested category label as a string
-    object_description_single_area: one filled area chart with labeled x-axis positions and numeric values shown at the points
-    object_description_stacked_area: one stacked area chart with colored category bands, numeric band values, and a legend
-    annotation_hint_interval_area_value: set "annotation" to an array of [x,y] pixel points for every point value from the first queried x-axis label through the second queried x-axis label
-    annotation_hint_stacked_band_interval_sum_value: set "annotation" to an array of [x,y] pixel points for the queried category's band-value points from the first queried x-axis label through the second queried x-axis label
-    annotation_hint_stacked_dominance_label: set "annotation" to an array of [x,y] pixel points for the answer category's band-value points in the queried x-axis interval
-    json_example_interval_area_value: '{"annotation":[[180,420],[280,360],[380,300],[480,260]],"answer":72}'
-    json_example_stacked_band_interval_sum_value: '{"annotation":[[220,380],[330,340],[440,310]],"answer":36}'
-    json_example_stacked_dominance_label: '{"annotation":[[210,420],[330,390],[450,360]],"answer":"Orion"}'
-    json_example_answer_only_interval_area_value: '{"answer":72}'
-    json_example_answer_only_stacked_band_interval_sum_value: '{"answer":36}'
-    json_example_answer_only_stacked_dominance_label: '{"answer":"Orion"}'
+    bundle_id: charts_area_v1

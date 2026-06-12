@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `circuit_equivalent`
-- Implementation task group: `circuits`
+- Implementation scene: `circuits`
 - Implementation source: `trace/tasks/physics/circuits/equivalent_resistance.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__circuit_equivalent__total_resistance_value` -> `task_physics__circuit_equivalent__total_resistance_value`

@@ -748,17 +748,7 @@ def resolve_counting_target_and_distractor_triplet(
     )
 
 
-def counting_complexity_score(*, object_count: int, target_count: int) -> float:
-    """Return one lightweight complexity proxy for counting scenes."""
-
-    count_factor = min(1.0, max(0.0, (float(object_count) - 4.0) / 6.0))
-    density = float(target_count) / float(max(1, int(object_count)))
-    density_factor = 1.0 - abs(float(density) - 0.5) * 2.0
-    return max(0.0, min(1.0, 0.34 + (0.28 * count_factor) + (0.24 * density_factor)))
-
-
 __all__ = [
-    "counting_complexity_score",
     "resolve_counting_cardinality_pair",
     "resolve_counting_target_and_distractor_triplet",
     "resolve_counting_object_count",

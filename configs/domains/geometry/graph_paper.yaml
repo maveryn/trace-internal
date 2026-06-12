@@ -1,0 +1,604 @@
+generation:
+  shared:
+    object_count_min: 6
+    object_count_max: 10
+    balanced_sampling: true
+    min_normalized_gap: 0.2
+    answer_min: 8
+    polygon_allowed_sides:
+    - 3
+    - 4
+    - 5
+    - 6
+    circle_radius_min: 2
+    circle_radius_max: 10
+    ellipse_axis_min: 2
+    ellipse_axis_max: 10
+    ellipse_allow_circle: false
+  task_overrides:
+    geometry_comparison_value_base:
+      query_id_weights:
+        angle_extremum: 1.0
+        length_extremum: 1.0
+        area_extremum: 1.0
+        perimeter_extremum: 1.0
+      extremum_direction_weights:
+        largest: 1.0
+        smallest: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        segment: 1.0
+        rectangle: 1.0
+        triangle: 1.0
+      balanced_query_id_sampling: true
+      balanced_extremum_direction_sampling: true
+      balanced_scene_variant_sampling: true
+    source_geometry_comparison_angle:
+      min_angle: 30
+      max_angle: 150
+      angle_step: 1
+      max_catalog_quantization_error_degrees: 2.0
+      max_abs_vector_component: 8
+      min_ray_length_units: 2.0
+      min_absolute_gap_degrees: 10.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        '4': 1.0
+        '6': 1.0
+        '9': 1.0
+    source_geometry_comparison_area:
+      min_rectangle_width: 2
+      max_rectangle_width: 6
+      min_rectangle_height: 2
+      max_rectangle_height: 6
+      min_triangle_base: 2
+      max_triangle_base: 6
+      min_triangle_height: 2
+      max_triangle_height: 6
+      min_absolute_gap_square_units: 6.0
+      min_absolute_triangle_area_gap_square_units: 4.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        '4': 1.0
+        '6': 1.0
+        '9': 1.0
+    source_geometry_comparison_perimeter:
+      min_rectangle_width: 2
+      max_rectangle_width: 6
+      min_rectangle_height: 2
+      max_rectangle_height: 6
+      min_triangle_base: 2
+      max_triangle_base: 6
+      min_triangle_height: 2
+      max_triangle_height: 6
+      min_absolute_gap_units: 4.0
+      min_absolute_triangle_perimeter_gap_units: 3.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        '4': 1.0
+        '6': 1.0
+        '9': 1.0
+    source_geometry_comparison_length:
+      min_segment_length: 2
+      max_segment_length: 16
+      max_abs_vector_component: 16
+      min_absolute_gap_units: 2.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        '4': 1.0
+        '6': 1.0
+        '9': 1.0
+    geometry_counting_value_base:
+      object_count_min: 6
+      object_count_max: 12
+      object_count_weights:
+        '6': 1.0
+        '7': 1.0
+        '8': 1.0
+        '9': 1.0
+        '10': 1.0
+        '11': 1.0
+        '12': 1.0
+      target_count_min: 1
+      target_count_max: 11
+      query_id_weights:
+        angle_type_count: 1.0
+        triangle_type_count: 1.0
+        quadrilateral_type_count: 1.0
+        shape_type_count: 1.0
+        polygon_convexity_count: 1.0
+      angle_type_weights:
+        acute: 1.0
+        right: 1.0
+        obtuse: 1.0
+      triangle_type_weights:
+        equilateral: 1.0
+        isosceles: 1.0
+        scalene: 1.0
+        right: 1.0
+        acute: 1.0
+        obtuse: 1.0
+      quadrilateral_type_weights:
+        square: 1.0
+        rectangle_non_square: 1.0
+        rhombus_non_square: 1.0
+        parallelogram_only: 1.0
+      shape_type_weights:
+        triangle: 1.0
+        quadrilateral: 1.0
+        pentagon: 1.0
+        hexagon: 1.0
+        circle: 1.0
+        ellipse: 1.0
+      convexity_kind_weights:
+        convex: 1.0
+        concave: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        mixed_shape: 1.0
+        polygon: 1.0
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+      balanced_angle_type_sampling: true
+      balanced_triangle_type_sampling: true
+      balanced_quadrilateral_type_sampling: true
+      balanced_shape_type_sampling: true
+      balanced_convexity_kind_sampling: true
+    source_geometry_counting_angle:
+      min_angle: 25
+      max_angle: 155
+      angle_step: 1
+      max_catalog_quantization_error_degrees: 2.0
+      max_abs_vector_component: 8
+      min_ray_length_units: 2.0
+      boundary_margin_degrees: 10.0
+      variant_weights:
+        acute_angle: 1.0
+        right_angle: 1.0
+        obtuse_angle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        '6': 1.0
+        '7': 1.0
+        '8': 1.0
+        '9': 1.0
+        '10': 1.0
+    source_geometry_counting_triangle:
+      object_count_min: 5
+      object_count_max: 8
+      min_side_units: 3.0
+      max_side_units: 5.6
+      right_angle_margin_degrees: 8.0
+      max_acute_angle_degrees: 80.0
+      min_obtuse_angle_degrees: 102.0
+      min_side_gap_units: 0.8
+      variant_weights:
+        acute_triangle: 1.0
+        equilateral_triangle: 1.0
+        isosceles_triangle: 1.0
+        obtuse_triangle: 1.0
+        right_triangle: 1.0
+        scalene_triangle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        '5': 1.0
+        '6': 1.0
+        '7': 1.0
+        '8': 1.0
+    source_geometry_counting_quadrilateral:
+      object_count_min: 5
+      object_count_max: 7
+      min_extent_units: 3.0
+      max_extent_units: 5.8
+      min_side_gap_units: 0.8
+      min_slant_units: 1.0
+      variant_weights:
+        parallelogram_only: 1.0
+        rectangle_non_square: 1.0
+        rhombus_non_square: 1.0
+        square: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        '5': 1.0
+        '6': 1.0
+        '7': 1.0
+    source_geometry_counting_shape_type:
+      object_count_min: 6
+      object_count_max: 9
+      min_extent_units: 2.6
+      max_extent_units: 4.8
+      ellipse_axis_ratio_min: 1.35
+      min_side_gap_units: 0.8
+      min_slant_units: 1.0
+      variant_weights:
+        circle: 1.0
+        ellipse: 1.0
+        hexagon: 1.0
+        pentagon: 1.0
+        quadrilateral: 1.0
+        triangle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        '6': 1.0
+        '7': 1.0
+        '8': 1.0
+        '9': 1.0
+    source_geometry_counting_convexity:
+      object_count_min: 6
+      object_count_max: 9
+      side_count_weights:
+        '4': 1.0
+        '5': 1.0
+        '6': 1.0
+      variant_weights:
+        concave_polygon: 1.0
+        convex_polygon: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        '6': 1.0
+        '7': 1.0
+        '8': 1.0
+        '9': 1.0
+    geometry_measurement_value_base:
+      query_id_weights:
+        angle: 1.0
+        area: 1.0
+        perimeter: 1.0
+        slope: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        circle: 1.0
+        ellipse: 1.0
+        line: 1.0
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    source_geometry_measurement_angle:
+      min_angle: 30
+      max_angle: 150
+      angle_step: 1
+      quantization_tolerance_degrees: 0.05
+      max_abs_vector_component: 20
+      min_ray_length_units: 2
+      balanced_sampling: true
+      source_kind_weights:
+        primitive_angle: 1.0
+        intersection_lines: 1.0
+    source_geometry_measurement_area:
+      answer_min: 8
+      answer_max: 96
+      balanced_variant_sampling: true
+      variant_weights:
+        triangle: 1.0
+        quadrilateral: 1.0
+        ellipse: 1.0
+      ellipse_allow_circle: true
+    source_geometry_measurement_perimeter:
+      answer_min: 8
+      answer_max: 64
+      balanced_variant_sampling: true
+      variant_weights:
+        triangle: 1.0
+        quadrilateral: 1.0
+        circle: 1.0
+    source_geometry_measurement_length:
+      answer_min: 2
+      answer_max: 20
+      balanced_variant_sampling: true
+      variant_weights:
+        segment: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        pentagon: 1.0
+        circle_radius: 0.25
+        circle_diameter: 0.25
+        ellipse_major_axis: 0.25
+        ellipse_minor_axis: 0.25
+      segment_length_min: 2
+      segment_length_max: 20
+      segment_vector_max_abs_component: 20
+    source_geometry_measurement_slope:
+      slope_tenths_min: -40
+      slope_tenths_max: 40
+      balanced_sampling: true
+rendering:
+  shared:
+    graph_cells_min: 6
+    graph_cells_max: 20
+    line_width: 4
+    line_width_min: 2
+    line_width_max: 5
+    label_offset_px: 14
+    object_label_offset_px: 14
+    label_font_size_min: 14
+    label_font_size_max: 32
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 1
+    single_object_scene_rotation:
+      enabled: true
+      probability: 0.5
+      angle_abs_min: 15
+      angle_abs_max: 75
+      margin_px: 48
+      min_scale_after_fit: 0.86
+      max_attempts: 6
+  task_overrides:
+    geometry_counting_value_base:
+      graph_cells_min: 44
+      graph_cells_max: 52
+      object_label_offset_px: 20
+    source_geometry_comparison_area:
+      graph_cells_min: 24
+      graph_cells_max: 34
+      object_label_offset_px: 18
+    source_geometry_comparison_length:
+      graph_cells_min: 24
+      graph_cells_max: 34
+      object_label_offset_px: 18
+    source_geometry_counting_triangle:
+      graph_cells_min: 24
+      graph_cells_max: 32
+      object_label_offset_px: 16
+    source_geometry_counting_quadrilateral:
+      graph_cells_min: 26
+      graph_cells_max: 34
+      object_label_offset_px: 18
+    source_geometry_counting_shape_type:
+      graph_cells_min: 28
+      graph_cells_max: 36
+      object_label_offset_px: 18
+    source_geometry_counting_convexity:
+      graph_cells_min: 28
+      graph_cells_max: 36
+      object_label_offset_px: 18
+    source_geometry_measurement_perimeter:
+      graph_cells_max: 24
+prompt:
+  shared:
+    bundle_id: geometry_measurement_v0
+    scene_key: measurement_single_object
+    task_key: measurement_query
+    object_description_segment: a labeled line segment
+    object_description_polygon: a polygon
+    object_description_ellipse: an ellipse
+    object_description_circle: a circle
+    annotation_hint_point_map: set "annotation" to a JSON object mapping each required
+      label to one pixel point [x,y]
+    annotation_hint_segment: provide exactly two labels for the measured segment endpoints
+    annotation_hint_polygon_side: provide exactly two labels for the measured polygon
+      side endpoints
+    annotation_hint_circle_center: provide exactly one label for the circle center
+      point
+    annotation_hint_ellipse_axis: provide exactly two labels for the measured ellipse-axis
+      endpoints
+    answer_hint_integer: set "answer" to the measurement value as an integer
+    answer_hint_pi: set "answer" to the measurement value in the form kπ (for example
+      12π)
+    json_example_integer: '{"annotation":{"A":[120,180],"B":[260,180]},"answer":4}'
+    json_example_pi: '{"annotation":{"A":[160,220],"B":[280,220]},"answer":"6π"}'
+    json_example_answer_only_integer: '{"answer":8}'
+    json_example_answer_only_pi: '{"answer":"12π"}'
+  task_overrides:
+    source_geometry_comparison_angle:
+      object_description: several labeled angles
+      question_text_largest: Which labeled angle has the greatest measure?
+      question_text_smallest: Which labeled angle has the smallest measure?
+      annotation_hint: 'set "annotation" to an array of exactly three pixel points
+        [x,y] for the winning angle: the vertex and the two ray endpoints'
+      answer_hint: set "answer" to the single-letter label of the correct angle
+    source_geometry_comparison_area:
+      object_description: several labeled rectangles
+      object_description_triangle: several labeled triangles
+      question_text_largest: Which labeled rectangle has the greatest area?
+      question_text_smallest: Which labeled rectangle has the smallest area?
+      question_text_largest_triangle: Which labeled triangle has the greatest area?
+      question_text_smallest_triangle: Which labeled triangle has the smallest area?
+      annotation_hint: set "annotation" to an array of exactly four pixel points [x,y]
+        for the winning rectangle vertices
+      annotation_hint_triangle: set "annotation" to an array of exactly three pixel
+        points [x,y] for the winning triangle vertices
+      answer_hint: set "answer" to the single-letter label of the correct rectangle
+      answer_hint_triangle: set "answer" to the single-letter label of the correct
+        triangle
+    source_geometry_comparison_perimeter:
+      object_description: several labeled rectangles
+      object_description_triangle: several labeled triangles
+      question_text_largest: Which labeled rectangle has the greatest perimeter?
+      question_text_smallest: Which labeled rectangle has the smallest perimeter?
+      question_text_largest_triangle: Which labeled triangle has the greatest perimeter?
+      question_text_smallest_triangle: Which labeled triangle has the smallest perimeter?
+      annotation_hint: set "annotation" to an array of exactly four pixel points [x,y]
+        for the winning rectangle vertices
+      annotation_hint_triangle: set "annotation" to an array of exactly three pixel
+        points [x,y] for the winning triangle vertices
+      answer_hint: set "answer" to the single-letter label of the correct rectangle
+      answer_hint_triangle: set "answer" to the single-letter label of the correct
+        triangle
+    source_geometry_comparison_length:
+      object_description: several labeled line segments
+      question_text_largest: Which labeled segment is the longest?
+      question_text_smallest: Which labeled segment is the shortest?
+      annotation_hint: set "annotation" to an array of exactly two pixel points [x,y]
+        for the winning segment endpoints
+      answer_hint: set "answer" to the single-letter label of the correct segment
+    source_geometry_counting_angle:
+      object_description: several angles
+      question_text_acute_angle: How many angles are acute angles?
+      question_text_right_angle: How many angles are right angles?
+      question_text_obtuse_angle: How many angles are obtuse angles?
+      annotation_hint: set "annotation" to a JSON array of pixel boxes [x0,y0,x1,y1]
+        around all angles that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[120,180,210,260],[320,220,410,300]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    source_geometry_counting_triangle:
+      object_description: several triangles
+      question_text_equilateral_triangle: How many triangles are equilateral triangles?
+      question_text_isosceles_triangle: How many triangles are isosceles triangles
+        but not equilateral triangles?
+      question_text_scalene_triangle: How many triangles are scalene triangles?
+      question_text_right_triangle: How many triangles are right triangles?
+      question_text_acute_triangle: How many triangles are acute triangles?
+      question_text_obtuse_triangle: How many triangles are obtuse triangles?
+      annotation_hint: set "annotation" to a JSON array of pixel boxes [x0,y0,x1,y1]
+        around all triangles that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    source_geometry_counting_quadrilateral:
+      object_description: several quadrilaterals
+      question_text_square: How many quadrilaterals are squares?
+      question_text_rectangle_non_square: How many quadrilaterals are rectangles but
+        not squares?
+      question_text_rhombus_non_square: How many quadrilaterals are rhombuses but
+        not squares?
+      question_text_parallelogram_only: How many quadrilaterals are parallelograms
+        that are neither rectangles nor rhombuses?
+      annotation_hint: set "annotation" to a JSON array of pixel boxes [x0,y0,x1,y1]
+        around all quadrilaterals that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[120,180,220,280],[320,180,420,280]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    source_geometry_counting_shape_type:
+      object_description: several shapes
+      question_text_triangle: How many shapes are triangles?
+      question_text_quadrilateral: How many shapes are quadrilaterals?
+      question_text_pentagon: How many shapes are pentagons?
+      question_text_hexagon: How many shapes are hexagons?
+      question_text_circle: How many shapes are circles?
+      question_text_ellipse: How many shapes are ellipses?
+      annotation_hint: set "annotation" to a JSON array of pixel boxes [x0,y0,x1,y1]
+        around all shapes that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    source_geometry_counting_convexity:
+      object_description: several polygons
+      question_text_convex_polygon: How many polygons are convex polygons?
+      question_text_concave_polygon: How many polygons are concave polygons?
+      annotation_hint: set "annotation" to a JSON array of pixel boxes [x0,y0,x1,y1]
+        around all polygons that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    source_geometry_measurement_angle:
+      bundle_id: geometry_angle_measure_v0
+      task_key: measurement_angle_value
+      annotation_hint: 'set "annotation" to an array of exactly three pixel points
+        [x,y] for the queried angle: the vertex and the two ray endpoints'
+      answer_hint: set "answer" to the angle value rounded to the nearest integer
+      json_example: '{"annotation":[[180,120],[180,240],[300,240]],"answer":90}'
+      json_example_answer_only: '{"answer":45}'
+    source_geometry_measurement_area:
+      question_text_polygon: What is the area of the polygon in square units?
+      question_text_ellipse: What is the area of the ellipse in square units? Express
+        the answer in the form kπ.
+      annotation_hint_polygon: set "annotation" to an array of pixel points [x,y]
+        for all polygon vertices
+      annotation_hint_ellipse: set "annotation" to an array containing one pixel point
+        [x,y] for the ellipse center
+      json_example_triangle: '{"annotation":[[120,220],[260,220],[120,340]],"answer":6}'
+      json_example_quadrilateral: '{"annotation":[[120,180],[280,180],[280,260],[120,260]],"answer":8}'
+      json_example_ellipse: '{"annotation":[[220,220]],"answer":"6π"}'
+      json_example_integer: '{"annotation":[[120,220],[260,220],[120,340]],"answer":6}'
+      json_example_pi: '{"annotation":[[220,220]],"answer":"6π"}'
+    source_geometry_measurement_perimeter:
+      question_text_polygon: What is the perimeter of the polygon in graph units?
+      question_text_circle: What is the circumference of the circle in graph units?
+        Express the answer in the form kπ.
+      annotation_hint_polygon: set "annotation" to an array of pixel points [x,y]
+        for all polygon vertices
+      annotation_hint_circle: set "annotation" to an array containing one pixel point
+        [x,y] for the circle center
+      json_example_triangle: '{"annotation":[[120,220],[260,220],[120,340]],"answer":12}'
+      json_example_quadrilateral: '{"annotation":[[120,180],[280,180],[280,260],[120,260]],"answer":12}'
+      json_example_circle: '{"annotation":[[220,220]],"answer":"8π"}'
+      json_example_integer: '{"annotation":[[120,220],[260,220],[120,340]],"answer":12}'
+      json_example_pi: '{"annotation":[[220,220]],"answer":"8π"}'
+    source_geometry_measurement_length:
+      question_template_segment: What is the length of segment {label_a}{label_b}
+        in graph units?
+      question_template_polygon_side: What is the length of side {label_a}{label_b}
+        in graph units?
+      question_text_circle_radius: What is the radius of the circle in graph units?
+      question_text_circle_diameter: What is the diameter of the circle in graph units?
+      question_text_ellipse_major_axis: What is the length of the major axis of the
+        ellipse in graph units?
+      question_text_ellipse_minor_axis: What is the length of the minor axis of the
+        ellipse in graph units?
+      annotation_hint_segment: set "annotation" to an array of exactly two pixel points
+        [x,y] for the measured segment endpoints
+      annotation_hint_polygon_side: set "annotation" to an array of exactly two pixel
+        points [x,y] for the measured polygon-side endpoints
+      annotation_hint_circle_center: set "annotation" to an array containing exactly
+        one pixel point [x,y] for the circle center
+      annotation_hint_ellipse_axis: set "annotation" to an array of exactly two pixel
+        points [x,y] for the measured ellipse-axis endpoints
+      json_example_segment_integer: '{"annotation":[[120,180],[280,180]],"answer":5}'
+      json_example_polygon_side_integer: '{"annotation":[[140,180],[260,300]],"answer":5}'
+      json_example_circle_radius_integer: '{"annotation":[[220,220]],"answer":4}'
+      json_example_circle_diameter_integer: '{"annotation":[[220,220]],"answer":8}'
+      json_example_ellipse_major_axis_integer: '{"annotation":[[140,220],[300,220]],"answer":8}'
+      json_example_ellipse_minor_axis_integer: '{"annotation":[[220,160],[220,280]],"answer":6}'
+      json_example_integer: '{"annotation":[[120,180],[280,180]],"answer":5}'
+    source_geometry_measurement_slope:
+      object_description: a straight line
+      question_text: What is the slope of the line?
+      annotation_hint: set "annotation" to an array containing one pixel point [x,y]
+        where the line crosses the x-axis
+      answer_hint: set "answer" to the slope value rounded to one decimal place
+      json_example: '{"annotation":[[220,300]],"answer":-1.5}'
+      json_example_answer_only: '{"answer":-1.5}'
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_offwhite:
+        kind: solid
+        color:
+        - 252
+        - 252
+        - 252
+      solid_cool:
+        kind: solid
+        color:
+        - 246
+        - 248
+        - 252
+      solid_warm:
+        kind: solid
+        color:
+        - 252
+        - 249
+        - 245
+      solid_mist:
+        kind: solid
+        color:
+        - 248
+        - 252
+        - 249
+      solid_lavender:
+        kind: solid
+        color:
+        - 250
+        - 248
+        - 253
+    weights:
+      graph_paper: 0.0
+      solid_offwhite: 0.35
+      solid_cool: 0.2
+      solid_warm: 0.2
+      solid_mist: 0.15
+      solid_lavender: 0.1

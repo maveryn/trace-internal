@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `games`
-2. Task group: `sliding_block`
+2. Scene: `sliding_block`
 3. Task id: `task_games__sliding_block__sliding_block_blocker_count`
 4. Scene id: `sliding_block`
 5. Goal: count the rectangular blocks currently occupying the red target block's straight path to the exit arrow.

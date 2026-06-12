@@ -363,6 +363,69 @@ def _validate_annotation_value(
     return [f"{field} uses unsupported public pixel annotation type {kind!r}"]
 
 
+def _flatten_example_points(annotation_type: str, annotation_value: Any) -> list[tuple[float, float]]:
+    """Return all point coordinates from point-based Example JSON annotation."""
+
+    kind = str(annotation_type)
+    points: list[tuple[float, float]] = []
+    if kind in {"point_sequence", "point_set"} and isinstance(annotation_value, list):
+        for item in annotation_value:
+            parsed = _parse_point(item)
+            if parsed is not None:
+                points.append(parsed)
+    elif kind == "keyed_point_map" and isinstance(annotation_value, Mapping):
+        for item in annotation_value.values():
+            parsed = _parse_point(item)
+            if parsed is not None:
+                points.append(parsed)
+    elif kind == "keyed_point_set_map" and isinstance(annotation_value, Mapping):
+        for item in annotation_value.values():
+            if isinstance(item, list):
+                for point in item:
+                    parsed = _parse_point(point)
+                    if parsed is not None:
+                        points.append(parsed)
+    elif kind == "point_pair_set" and isinstance(annotation_value, list):
+        for pair in annotation_value:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                for endpoint in pair:
+                    parsed = _parse_point(endpoint)
+                    if parsed is not None:
+                        points.append(parsed)
+    return points
+
+
+def _find_degenerate_example_point_issues(
+    *,
+    annotation_type: str,
+    example: Mapping[str, Any],
+    mode: str,
+) -> list[dict[str, str]]:
+    """Flag keyed/sequence point examples that reuse one placeholder too heavily."""
+
+    points = _flatten_example_points(str(annotation_type), example.get("annotation"))
+    if len(points) < 4:
+        return []
+    counts = Counter(points)
+    most_common_point, most_common_count = counts.most_common(1)[0]
+    duplicate_limit = max(4, int(math.ceil(0.75 * float(len(points)))))
+    if int(most_common_count) < duplicate_limit:
+        return []
+    return [
+        _issue(
+            category="annotation_prompt",
+            code="degenerate_example_points",
+            severity="error",
+            mode=mode,
+            message=(
+                "Example JSON point annotation reuses one coordinate for most witness roles; "
+                "examples should use distinct non-degenerate pixel points."
+            ),
+            excerpt=f"point={list(most_common_point)} count={most_common_count}/{len(points)}",
+        )
+    ]
+
+
 def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) -> list[dict[str, str]]:
     issues: list[dict[str, str]] = []
     prompt_text = str(prompt)
@@ -495,6 +558,13 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 excerpt=json.dumps(example, ensure_ascii=True)[:220],
             )
         )
+    issues.extend(
+        _find_degenerate_example_point_issues(
+            annotation_type=str(annotation_type),
+            example=example,
+            mode=mode,
+        )
+    )
     return issues
 
 

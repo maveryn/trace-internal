@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `binary_tree`
-3. Task group: `counting`
+3. Scene: `counting`
 4. Task id: `task_graph__binary_tree__child_structure_node_count`
 5. Objective: count binary-tree nodes by child structure.
 
@@ -23,6 +23,6 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

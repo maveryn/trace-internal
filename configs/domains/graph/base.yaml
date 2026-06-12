@@ -1,29 +1,37 @@
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.40
-      ambiguity: 0.35
-      clutter: 0.25
-
 visual:
   background:
     enabled: true
     styles:
       solid_light:
         kind: solid
-        color: [248, 248, 248]
+        color:
+        - 248
+        - 248
+        - 248
       solid_cool:
         kind: solid
-        color: [243, 246, 252]
+        color:
+        - 243
+        - 246
+        - 252
       solid_warm:
         kind: solid
-        color: [250, 247, 242]
+        color:
+        - 250
+        - 247
+        - 242
       solid_mint:
         kind: solid
-        color: [244, 249, 246]
+        color:
+        - 244
+        - 249
+        - 246
       solid_lavender:
         kind: solid
-        color: [248, 246, 253]
+        color:
+        - 248
+        - 246
+        - 253
     weights:
       solid_light: 1.0
       solid_cool: 1.0
@@ -31,18 +39,27 @@ visual:
       solid_mint: 1.0
       solid_lavender: 1.0
   noise:
-    apply_prob: 0.50
-    edit_count_range: [1, 1]
+    apply_prob: 0.5
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.1, 0.3]
+        radius:
+        - 0.1
+        - 0.3
       downsample:
-        scale: [0.94, 0.98]
+        scale:
+        - 0.94
+        - 0.98
       jpeg:
-        quality: [86.0, 95.0]
+        quality:
+        - 86.0
+        - 95.0
       noise:
-        alpha: [0.008, 0.025]
-
+        alpha:
+        - 0.008
+        - 0.025
 rendering:
   shared:
     theme_tone_weights:

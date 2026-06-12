@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.cuboid_orthographic_views import (
+from trace.tasks.geometry.cuboid_views.cuboid_projection_surface_area_value import (
     SCENE_ID,
     GeometryCuboidProjectionSurfaceAreaValueTask,
 )

@@ -43,11 +43,47 @@ generation:
       balanced_target_sign_sampling: true
       balanced_correct_option_letter_sampling: true
       balanced_target_answer_sampling: true
-      pressure_support: [2, 3, 4, 5, 6]
-      volume_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      pressure_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      volume_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
       min_volume_delta: 2
       max_volume_delta: 6
-      work_answer_support: [-24, -20, -18, -16, -15, -12, -10, -9, -8, -6, -4, 4, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24]
+      work_answer_support:
+      - -24
+      - -20
+      - -18
+      - -16
+      - -15
+      - -12
+      - -10
+      - -9
+      - -8
+      - -6
+      - -4
+      - 4
+      - 6
+      - 8
+      - 9
+      - 10
+      - 12
+      - 15
+      - 16
+      - 18
+      - 20
+      - 24
     physics_thermodynamics_piston_cylinder_family:
       query_id_weights:
         constant_pressure_boundary_work: 1.0
@@ -56,11 +92,58 @@ generation:
         horizontal_pair: 1.0
       balanced_orientation_sampling: true
       balanced_target_answer_sampling: true
-      pressure_mpa_support: [1, 2, 3, 4, 5, 6]
-      volume_l_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      pressure_mpa_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      volume_l_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
       min_volume_delta: 2
       max_volume_delta: 6
-      boundary_work_answer_support: [-36, -30, -24, -20, -18, -16, -15, -12, -10, -9, -8, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 30, 36]
+      boundary_work_answer_support:
+      - -36
+      - -30
+      - -24
+      - -20
+      - -18
+      - -16
+      - -15
+      - -12
+      - -10
+      - -9
+      - -8
+      - -6
+      - -5
+      - -4
+      - -3
+      - -2
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 8
+      - 9
+      - 10
+      - 12
+      - 15
+      - 16
+      - 18
+      - 20
+      - 24
+      - 30
+      - 36
     physics_thermodynamics_thermometer_family:
       query_id_weights:
         celsius_to_fahrenheit_value: 1.0
@@ -80,11 +163,21 @@ generation:
         2: 1.0
         3: 1.0
         4: 1.0
-      final_temperature_support: [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]
+      final_temperature_support:
+      - 20
+      - 25
+      - 30
+      - 35
+      - 40
+      - 45
+      - 50
+      - 55
+      - 60
+      - 65
+      - 70
       balanced_query_id_sampling: true
       balanced_cup_count_sampling: true
       balanced_target_answer_sampling: true
-
 rendering:
   task_overrides:
     physics_thermodynamics_pv_diagram_family:
@@ -182,37 +275,6 @@ rendering:
       label_stroke_width_px: 2
       label_stroke_width_px_min: 1
       label_stroke_width_px_max: 3
-
-complexity:
-  task_overrides:
-    physics_thermodynamics_pv_diagram_family:
-      criteria_weights:
-        visual_scan: 0.26
-        pv_reasoning: 0.50
-        ambiguity: 0.14
-        output_burden: 0.10
-    physics_thermodynamics_piston_cylinder_family:
-      criteria_weights:
-        state_readout: 0.36
-        boundary_work_relation: 0.34
-        signed_delta_volume: 0.14
-        ambiguity: 0.06
-        output_burden: 0.10
-    physics_thermodynamics_thermometer_family:
-      criteria_weights:
-        visual_readout: 0.36
-        unit_conversion: 0.34
-        scale_mapping: 0.10
-        ambiguity: 0.08
-        output_burden: 0.12
-    physics_thermodynamics_thermal_mixing_family:
-      criteria_weights:
-        visual_scan: 0.32
-        thermal_equilibrium_reasoning: 0.32
-        arithmetic: 0.16
-        ambiguity: 0.08
-        output_burden: 0.12
-
 prompt:
   shared:
     bundle_id: physics_thermodynamics_v0
@@ -220,30 +282,58 @@ prompt:
     physics_thermodynamics_pv_diagram_family:
       scene_key: thermodynamics_pv_diagram
       task_key: pv_diagram_query
-      object_description_clean_grid: a pressure-volume diagram on a clean grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
-      object_description_paper_grid: a pressure-volume diagram on a paper-style grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
-      object_description_bold_grid: a pressure-volume diagram on a bold grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
-      annotation_hint_work_value: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] around the highlighted PV process or cycle used to compute work
-      annotation_hint_process_sign_choice: set "annotation" to an array containing one bounding box [x0, y0, x1, y1] around the process arrow in the correct labeled candidate mini diagram
-      answer_hint_work_value: set "answer" to the signed integer work in joules, using work done by the gas as positive
-      answer_hint_process_sign_choice: set "answer" to the option letter of the labeled process with the requested work sign
+      object_description_clean_grid: a pressure-volume diagram on a clean grid with
+        pressure in kPa, volume in liters, visible process arrows, and labeled state
+        points or option panels
+      object_description_paper_grid: a pressure-volume diagram on a paper-style grid
+        with pressure in kPa, volume in liters, visible process arrows, and labeled
+        state points or option panels
+      object_description_bold_grid: a pressure-volume diagram on a bold grid with
+        pressure in kPa, volume in liters, visible process arrows, and labeled state
+        points or option panels
+      annotation_hint_work_value: set "annotation" to an array containing one bounding
+        box [x0, y0, x1, y1] around the highlighted PV process or cycle used to compute
+        work
+      annotation_hint_process_sign_choice: set "annotation" to an array containing
+        one bounding box [x0, y0, x1, y1] around the process arrow in the correct
+        labeled candidate mini diagram
+      answer_hint_work_value: set "answer" to the signed integer work in joules, using
+        work done by the gas as positive
+      answer_hint_process_sign_choice: set "answer" to the option letter of the labeled
+        process with the requested work sign
     physics_thermodynamics_piston_cylinder_family:
       scene_key: piston_cylinder_apparatus
       task_key: piston_cylinder_boundary_work_query
-      object_description: a piston-cylinder apparatus shown in initial and final states, with constant pressure in MPa, initial and final volumes in liters, and a process arrow
-      annotation_hint_constant_pressure_boundary_work: set "annotation" to a keyed object with [x0, y0, x1, y1] pixel boxes for "piston_cylinder", "initial_state_label", "final_state_label", and "process_arrow"
-      answer_hint_constant_pressure_boundary_work: set "answer" to the signed integer boundary work in kJ, using work done by the gas as positive
+      object_description: a piston-cylinder apparatus shown in initial and final states,
+        with constant pressure in MPa, initial and final volumes in liters, and a
+        process arrow
+      annotation_hint_constant_pressure_boundary_work: set "annotation" to a keyed
+        object with [x0, y0, x1, y1] pixel boxes for "piston_cylinder", "initial_state_label",
+        "final_state_label", and "process_arrow"
+      answer_hint_constant_pressure_boundary_work: set "answer" to the signed integer
+        boundary work in kJ, using work done by the gas as positive
     physics_thermodynamics_thermometer_family:
       scene_key: thermometer_scale
       task_key: temperature_conversion_query
-      object_description: a vertical thermometer with a visible liquid level, numeric tick scale, and source temperature unit label
-      annotation_hint_celsius_to_fahrenheit_value: set "annotation" to a keyed object with [x0, y0, x1, y1] pixel boxes for "liquid_level", "scale_region", and "source_unit_label"
-      annotation_hint_fahrenheit_to_celsius_value: set "annotation" to a keyed object with [x0, y0, x1, y1] pixel boxes for "liquid_level", "scale_region", and "source_unit_label"
-      answer_hint_celsius_to_fahrenheit_value: set "answer" to the integer equivalent temperature in degrees Fahrenheit
-      answer_hint_fahrenheit_to_celsius_value: set "answer" to the integer equivalent temperature in degrees Celsius
+      object_description: a vertical thermometer with a visible liquid level, numeric
+        tick scale, and source temperature unit label
+      annotation_hint_celsius_to_fahrenheit_value: set "annotation" to a keyed object
+        with [x0, y0, x1, y1] pixel boxes for "liquid_level", "scale_region", and
+        "source_unit_label"
+      annotation_hint_fahrenheit_to_celsius_value: set "annotation" to a keyed object
+        with [x0, y0, x1, y1] pixel boxes for "liquid_level", "scale_region", and
+        "source_unit_label"
+      answer_hint_celsius_to_fahrenheit_value: set "answer" to the integer equivalent
+        temperature in degrees Fahrenheit
+      answer_hint_fahrenheit_to_celsius_value: set "answer" to the integer equivalent
+        temperature in degrees Celsius
     physics_thermodynamics_thermal_mixing_family:
       scene_key: thermal_mixing_setup
       task_key: thermal_mixing_query
-      object_description: separate liquid cups with visible Celsius temperature labels being poured into one insulated mixing container
-      annotation_hint_equal_amount_final_temperature: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the initial cups and their visible temperature labels
-      answer_hint_equal_amount_final_temperature: set "answer" to the integer final equilibrium temperature in degrees Celsius
+      object_description: separate liquid cups with visible Celsius temperature labels
+        being poured into one insulated mixing container
+      annotation_hint_equal_amount_final_temperature: set "annotation" to an array
+        of bounding boxes [x0, y0, x1, y1] around the initial cups and their visible
+        temperature labels
+      answer_hint_equal_amount_final_temperature: set "answer" to the integer final
+        equilibrium temperature in degrees Celsius

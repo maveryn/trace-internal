@@ -35,12 +35,59 @@ generation:
         outside: 1.0
       balanced_query_id_sampling: true
       balanced_interval_relation_sampling: true
-      event_count_support: [6, 7, 8, 9, 10, 11, 12]
-      between_count_support: [0, 1, 2, 3, 4, 5]
-      outside_count_support: [2, 3, 4, 5, 6, 7, 8]
-      date_gap_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24]
-      event_label_pool: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-
+      event_count_support:
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      between_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      outside_count_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      date_gap_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 14
+      - 16
+      - 18
+      - 20
+      - 24
+      event_label_pool:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      - G
+      - H
+      - I
+      - J
+      - K
+      - L
 rendering:
   shared:
     canvas_width: 1120
@@ -77,15 +124,6 @@ rendering:
     subtitle_font_size_px: 18
     event_vertical_gap_px: 16
     event_stem_length_px: 44
-
-complexity:
-  shared:
-    criteria_weights:
-      timeline_order_reasoning: 0.55
-      visual_scan: 0.20
-      ambiguity: 0.15
-      clutter: 0.10
-
 prompt:
   shared:
     bundle_id: pages_timeline_v0
@@ -93,16 +131,31 @@ prompt:
     pages_timeline_milestones_base:
       scene_key: milestone_timeline
       task_key: timeline_milestone_query
-      object_description_interval_membership_count: one labeled milestone timeline for {month_name_text} {year} with dated event cards and two highlighted reference events
-      object_description_event_date_gap_value: one labeled milestone timeline for {month_name_text} {year} with dated event cards and two highlighted endpoint events
-      interval_relation_description_between: strictly between the two highlighted reference events
-      interval_relation_description_outside: before the first highlighted reference event or after the second highlighted reference event, excluding the highlighted events
-      answer_hint_between: set "answer" to the integer count of events strictly between the two highlighted reference events
-      answer_hint_outside: set "answer" to the integer count of events in the two outer timeline ranges
-      answer_hint_event_date_gap_value: set "answer" to the nonnegative integer number of calendar days between the two named endpoint events
-      annotation_hint_between: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for all event cards strictly between the two highlighted reference events
-      annotation_hint_outside: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for all counted event cards in the two outer timeline ranges
-      annotation_hint_event_date_gap_value: set "annotation" to an object with keys "earlier_event" and "later_event", each mapped to the bounding box [x0, y0, x1, y1] of that endpoint event card
+      object_description_interval_membership_count: one labeled milestone timeline
+        for {month_name_text} {year} with dated event cards and two highlighted reference
+        events
+      object_description_event_date_gap_value: one labeled milestone timeline for
+        {month_name_text} {year} with dated event cards and two highlighted endpoint
+        events
+      interval_relation_description_between: strictly between the two highlighted
+        reference events
+      interval_relation_description_outside: before the first highlighted reference
+        event or after the second highlighted reference event, excluding the highlighted
+        events
+      answer_hint_between: set "answer" to the integer count of events strictly between
+        the two highlighted reference events
+      answer_hint_outside: set "answer" to the integer count of events in the two
+        outer timeline ranges
+      answer_hint_event_date_gap_value: set "answer" to the nonnegative integer number
+        of calendar days between the two named endpoint events
+      annotation_hint_between: set "annotation" to an array of bounding boxes [x0,
+        y0, x1, y1] for all event cards strictly between the two highlighted reference
+        events
+      annotation_hint_outside: set "annotation" to an array of bounding boxes [x0,
+        y0, x1, y1] for all counted event cards in the two outer timeline ranges
+      annotation_hint_event_date_gap_value: set "annotation" to an object with keys
+        "earlier_event" and "later_event", each mapped to the bounding box [x0, y0,
+        x1, y1] of that endpoint event card
       json_example_between: '{"annotation":[[412,410,516,480],[538,158,642,228]],"answer":2}'
       json_example_answer_only_between: '{"answer":2}'
       json_example_outside: '{"annotation":[[160,158,264,228],[790,410,894,480]],"answer":2}'

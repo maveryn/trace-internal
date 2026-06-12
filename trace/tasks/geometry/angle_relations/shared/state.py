@@ -1,0 +1,61 @@
+"""State contracts for the geometry angle-relations scene."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, Mapping, Tuple
+
+from PIL import Image
+
+from ...shared.composite_measurement_cases import (
+    BBox,
+    Point,
+    _RenderContext,
+)
+
+SCENE_ID = "angle_relations"
+DOMAIN = "geometry"
+
+@dataclass(frozen=True)
+class RenderedAngleRelationScene:
+    """Rendered angle-relations diagram plus scene-local metadata."""
+
+    image: Image.Image
+    answer: int
+    annotation_bboxes: Tuple[BBox, ...]
+    annotation_roles: Tuple[str, ...]
+    scene_entities: Tuple[Dict[str, Any], ...]
+    render_map: Dict[str, Any]
+    witness: Dict[str, Any]
+    reasoning_steps: int
+    annotation_keyed_points: Mapping[str, Point] | None = None
+    annotation_keyed_bboxes: Mapping[str, BBox] | None = None
+
+
+@dataclass(frozen=True)
+class AngleRelationCase:
+    """One constructively valid angle-relations diagram case."""
+
+    answer: int
+    build: Callable[[_RenderContext], RenderedAngleRelationScene]
+
+
+ANGLE_ABC = "ABC"
+ANGLE_BAC = "BAC"
+ANGLE_BCD = "BCD"
+ANGLE_AEF = "AEF"
+ANGLE_CFE = "CFE"
+
+__all__ = [
+    "ANGLE_AEF",
+    "ANGLE_ABC",
+    "ANGLE_BAC",
+    "ANGLE_BCD",
+    "ANGLE_CFE",
+    "AngleRelationCase",
+    "BBox",
+    "DOMAIN",
+    "Point",
+    "RenderedAngleRelationScene",
+    "SCENE_ID",
+]

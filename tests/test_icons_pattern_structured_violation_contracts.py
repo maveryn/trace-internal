@@ -60,7 +60,7 @@ def test_icons_pattern_violation_build_smoke(tmp_path: Path, task_id: str) -> No
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all(record["task_group"] == "pattern" for record in train_records)
+    assert all(record["scene_id"] == "pattern" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][str(task_id)]) == 4

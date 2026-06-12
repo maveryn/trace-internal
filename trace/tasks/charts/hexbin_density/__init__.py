@@ -1,8 +1,7 @@
-"""Hexbin-density chart tasks."""
+"""Chart scene package tasks."""
 
-from .hexbin_query import ChartsHexbinDensityThresholdBinCountTask, SUPPORTED_QUERY_IDS
+from .threshold_bin_count import ChartsHexbinDensityThresholdBinCountTask
 
 __all__ = [
     "ChartsHexbinDensityThresholdBinCountTask",
-    "SUPPORTED_QUERY_IDS",
 ]

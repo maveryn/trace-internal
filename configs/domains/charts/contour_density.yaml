@@ -2,12 +2,6 @@ generation:
   shared:
     region_count_min: 5
     region_count_max: 7
-    query_id_weights:
-      nearest_region_option_label: 1.0
-      density_extremum_region_label: 1.0
-      reference_distance_extremum_label: 1.0
-      density_threshold_region_count: 1.0
-      spread_extremum_region_label: 1.0
     scene_variant_weights:
       contour_rings: 1.0
       filled_density: 1.0
@@ -27,19 +21,18 @@ generation:
       below: 1.0
     density_threshold_level_min: 2
     density_threshold_level_max: 5
-    threshold_count_answer_support: [1, 2, 3, 4, 5]
-    option_count_support: [4, 6]
+    threshold_count_answer_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    option_count_support:
+    - 4
+    - 6
     spread_extremum_weights:
       widest: 1.0
       narrowest: 1.0
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
-    balanced_density_extremum_sampling: true
-    balanced_distance_extremum_sampling: true
-    balanced_reference_kind_sampling: true
-    balanced_density_threshold_direction_sampling: true
-    balanced_spread_extremum_sampling: true
-
 rendering:
   shared:
     canvas_width: 1280
@@ -56,51 +49,52 @@ rendering:
     label_font_size_px: 18
     title_font_size_px: 26
     reference_marker_radius_px: 8
-    plot_fill_rgb: [255, 255, 255]
-    axis_color_rgb: [55, 60, 70]
-    grid_color_rgb: [223, 227, 235]
-    text_color_rgb: [35, 40, 52]
-    muted_text_rgb: [83, 91, 105]
-    reference_rgb: [24, 26, 30]
+    plot_fill_rgb:
+    - 255
+    - 255
+    - 255
+    axis_color_rgb:
+    - 55
+    - 60
+    - 70
+    grid_color_rgb:
+    - 223
+    - 227
+    - 235
+    text_color_rgb:
+    - 35
+    - 40
+    - 52
+    muted_text_rgb:
+    - 83
+    - 91
+    - 105
+    reference_rgb:
+    - 24
+    - 26
+    - 30
     region_palette_rgb:
-      - [37, 99, 180]
-      - [210, 83, 73]
-      - [59, 145, 99]
-      - [143, 91, 184]
-      - [216, 145, 48]
-      - [65, 157, 183]
-      - [188, 88, 135]
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.45
-      reasoning_load: 0.40
-      scene_variant_load: 0.15
-
+    - - 37
+      - 99
+      - 180
+    - - 210
+      - 83
+      - 73
+    - - 59
+      - 145
+      - 99
+    - - 143
+      - 91
+      - 184
+    - - 216
+      - 145
+      - 48
+    - - 65
+      - 157
+      - 183
+    - - 188
+      - 88
+      - 135
 prompt:
   shared:
-    bundle_id: charts_contour_density_v0
-    scene_key: contour_density_scene
-    task_key: contour_density_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description: a contour-density chart with labeled regions, numeric axes, and visible reference marks when needed
-    answer_hint_label: set "answer" to the exact visible region label as a string
-    answer_hint_option: set "answer" to the selected option letter as a capital letter
-    answer_hint_count: set "answer" to the requested count as an integer
-    annotation_hint_nearest_region_option_label: set "annotation" to an object mapping "reference_point" to the [x0,y0,x1,y1] box around the black reference point and "selected_option_region" to the [x0,y0,x1,y1] box around the selected option region
-    annotation_hint_density_extremum_region_label: set "annotation" to an object mapping "answer_region" to the [x0,y0,x1,y1] box around the selected density region
-    annotation_hint_reference_distance_extremum_label: set "annotation" to an object mapping "reference_mark" to the [x0,y0,x1,y1] box around the reference mark and "answer_region" to the [x0,y0,x1,y1] box around the selected density region
-    annotation_hint_density_threshold_region_count: set "annotation" to an array of [x0,y0,x1,y1] boxes around every region matching the density-level threshold
-    annotation_hint_spread_extremum_region_label: set "annotation" to an object mapping "answer_region" to the [x0,y0,x1,y1] box around the selected footprint region
-    json_example_nearest_region_option_label: '{"annotation":{"reference_point":[345,285,361,301],"selected_option_region":[300,240,420,350]},"answer":"C"}'
-    json_example_density_extremum_region_label: '{"annotation":{"answer_region":[510,220,650,355]},"answer":"Delta"}'
-    json_example_reference_distance_extremum_label: '{"annotation":{"reference_mark":[100,120,104,710],"answer_region":[620,330,760,470]},"answer":"Lumen"}'
-    json_example_density_threshold_region_count: '{"annotation":[[210,180,330,300],[520,260,660,410]],"answer":2}'
-    json_example_spread_extremum_region_label: '{"annotation":{"answer_region":[510,220,650,355]},"answer":"Delta"}'
-    json_example_answer_only_nearest_region_option_label: '{"answer":"C"}'
-    json_example_answer_only_density_extremum_region_label: '{"answer":"Delta"}'
-    json_example_answer_only_reference_distance_extremum_label: '{"answer":"Lumen"}'
-    json_example_answer_only_density_threshold_region_count: '{"answer":2}'
-    json_example_answer_only_spread_extremum_region_label: '{"answer":"Delta"}'
+    bundle_id: charts_contour_density_v1

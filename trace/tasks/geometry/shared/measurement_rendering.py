@@ -104,11 +104,14 @@ def label_backing_fill(ctx: Any) -> Color:
 def readout_text_fill(ctx: Any, requested: Sequence[int] | None = None) -> Color:
     """Choose readout ink that remains high-contrast on the label backing."""
 
-    fallback = _coerce_color(getattr(ctx, "label_color", (10, 14, 22)), (10, 14, 22))
+    backing_rgb = label_backing_fill(ctx)
+    fallback = max(
+        ((10, 14, 22), (245, 247, 250)),
+        key=lambda candidate: float(contrast_ratio(candidate, backing_rgb)),
+    )
     if requested is None:
         return fallback
     requested_rgb = _coerce_color(requested, fallback)
-    backing_rgb = label_backing_fill(ctx)
     if float(contrast_ratio(requested_rgb, backing_rgb)) >= float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO):
         return requested_rgb
     return fallback
@@ -174,30 +177,47 @@ def draw_label(ctx: Any, text: str, center: Point, *, small: bool = False) -> BB
     return pad_bbox((left, top, left + text_w, top + text_h), 4.0, width=ctx.width, height=ctx.height)
 
 
-def draw_readout_centered(ctx: Any, text: str, center: Point, *, small: bool = True, required: bool = True) -> BBox:
-    """Draw centered readout text with the standard geometry label backing."""
+def draw_readout_centered(
+    ctx: Any,
+    text: str,
+    center: Point,
+    *,
+    small: bool = True,
+    required: bool = True,
+    backed: bool = False,
+) -> BBox:
+    """Draw centered readout text, with label backing only when explicitly requested."""
 
     font = ctx.small_font if bool(small) else ctx.font
+    stroke_width = max(0, int(getattr(ctx, "label_stroke_width", 0)))
     bbox = ctx.draw.textbbox(
         (float(center[0]), float(center[1])),
         str(text),
         anchor="mm",
         font=font,
-        stroke_width=max(0, int(getattr(ctx, "label_stroke_width", 0))),
+        stroke_width=stroke_width,
     )
-    draw_label_backplate(ctx, bbox)
+    if bool(backed):
+        draw_label_backplate(ctx, bbox)
+        fill = readout_text_fill(ctx, ctx.label_color)
+        stroke_fill = readout_text_fill(ctx, ctx.label_stroke_color)
+        extra_metadata = readout_text_metadata(ctx, fill)
+    else:
+        fill = _coerce_color(getattr(ctx, "label_color", (10, 14, 22)), (10, 14, 22))
+        stroke_fill = _coerce_color(getattr(ctx, "label_stroke_color", (255, 255, 255)), (255, 255, 255))
+        extra_metadata = None
     draw_text_traced(
         ctx.draw,
         (float(center[0]), float(center[1])),
         str(text),
         anchor="mm",
         font=font,
-        fill=ctx.label_color,
-        stroke_width=max(0, int(getattr(ctx, "label_stroke_width", 0))),
-        stroke_fill=ctx.label_stroke_color,
+        fill=fill,
+        stroke_width=stroke_width,
+        stroke_fill=stroke_fill,
         role="readout",
         required=bool(required),
-        extra_metadata=readout_text_metadata(ctx, ctx.label_color),
+        extra_metadata=extra_metadata,
     )
     return pad_bbox(bbox, 4.0, width=int(ctx.width), height=int(ctx.height))
 
@@ -211,8 +231,9 @@ def draw_dimension_line(
     label_offset: Point,
     color: Color | None = None,
     tick_px: float | None = None,
+    backed: bool = False,
 ) -> BBox:
-    """Draw a measured segment with endpoint ticks and a backed readout label."""
+    """Draw a measured segment with endpoint ticks and a plain label by default."""
 
     draw_color = color or ctx.secondary_color
     line_width = int(getattr(ctx, "line_width", 2))
@@ -226,7 +247,7 @@ def draw_dimension_line(
             fill=draw_color,
             width=max(1, line_width - 2),
         )
-    return draw_readout_centered(ctx, label, add(mid(start, end), label_offset), small=True)
+    return draw_readout_centered(ctx, label, add(mid(start, end), label_offset), small=True, backed=bool(backed))
 
 
 def draw_right_angle_marker(

@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -23,7 +23,6 @@ from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.complexity import build_physics_complexity, resolve_physics_complexity_weights
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.option_cards import OptionCardRenderResult, draw_lettered_option_cards
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
@@ -31,7 +30,7 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "task_physics__lens_optics__image_property_choice"
-FAMILY_ID = "physics_optics_lens_optics_family"
+TASK_NAMESPACE = "physics_optics_lens_optics"
 SCENE_ID = "lens_optics"
 QUERY_ID = "converging_lens_image_property_choice"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
@@ -55,12 +54,12 @@ PROPERTY_TEXT: Dict[str, str] = {
     "real_inverted_larger": "real, inverted,\nlarger",
     "virtual_upright_larger": "virtual, upright,\nlarger",
 }
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "optics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "optics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="optics", apply_prob=0.5)
 
 
 @dataclass(frozen=True)
@@ -155,7 +154,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
-        namespace=f"{FAMILY_ID}.scene_variant",
+        namespace=f"{TASK_NAMESPACE}.scene_variant",
     )
     query_id, query_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -164,7 +163,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="query_id",
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
-        namespace=f"{FAMILY_ID}.query_id",
+        namespace=f"{TASK_NAMESPACE}.query_id",
     )
     position_case, position_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -173,7 +172,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="object_position_case",
         weights_key="object_position_case_weights",
         balance_flag_key="balanced_object_position_case_sampling",
-        namespace=f"{FAMILY_ID}.object_position_case",
+        namespace=f"{TASK_NAMESPACE}.object_position_case",
     )
     correct_letter, letter_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -182,7 +181,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="correct_option_letter",
         weights_key="correct_option_letter_weights",
         balance_flag_key="balanced_correct_option_letter_sampling",
-        namespace=f"{FAMILY_ID}.correct_option_letter",
+        namespace=f"{TASK_NAMESPACE}.correct_option_letter",
     )
     accent_color, accent_probs = _resolve_axis(
         instance_seed=int(instance_seed),
@@ -191,7 +190,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
         explicit_key="accent_color_name",
         weights_key="accent_color_name_weights",
         balance_flag_key="balanced_accent_color_name_sampling",
-        namespace=f"{FAMILY_ID}.accent_color_name",
+        namespace=f"{TASK_NAMESPACE}.accent_color_name",
     )
     return _Axes(
         scene_variant=str(scene_variant),
@@ -209,7 +208,7 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any]) -> _Axes:
 
 def _option_map(*, instance_seed: int, image_property: str, correct_option_letter: str) -> Dict[str, str]:
     remaining = [property_id for property_id in PROPERTY_TEXT if str(property_id) != str(image_property)]
-    rng = spawn_rng(int(instance_seed), f"{FAMILY_ID}.option_map")
+    rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.option_map")
     rng.shuffle(remaining)
     result: Dict[str, str] = {}
     cursor = 0
@@ -495,18 +494,6 @@ def _render_scene(
     )
 
 
-def _build_complexity(scenario: _Scenario) -> TaskComplexity:
-    weights = resolve_physics_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=FAMILY_ID)
-    conceptual = 0.60 if scenario.object_position_case in {"between_f_2f", "inside_f"} else 0.52
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": 0.28,
-            "lens_reasoning": float(conceptual),
-            "ambiguity": 0.12,
-            "output_burden": 0.14,
-        },
-    )
 
 
 @register_task
@@ -515,7 +502,7 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "optics"
+    scene_id = "optics"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -529,7 +516,6 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),
             require_grid=True,
@@ -537,7 +523,7 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -576,7 +562,7 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -682,7 +668,6 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(scenario),
             task_versions=default_task_versions(),
             query_id=QUERY_ID,
             scene_id=SCENE_ID,

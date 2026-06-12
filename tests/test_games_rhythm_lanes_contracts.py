@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.rhythm.lane_tasks import (
+from trace.tasks.games.rhythm.lane_hit_count import (
     GamesRhythmEarliestHitLaneLabelTask,
     GamesRhythmLaneColorHitCountTask,
     GamesRhythmLanesTask,
@@ -150,4 +150,4 @@ def test_games_rhythm_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "rhythm" for row in rows)
+    assert all(row.get("scene_id") == "rhythm" for row in rows)

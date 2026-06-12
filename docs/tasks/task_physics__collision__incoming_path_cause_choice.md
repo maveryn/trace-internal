@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `collision`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/collision_aftermath.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__collision__incoming_path_cause_choice` -> `task_physics__collision__incoming_path_cause_choice`

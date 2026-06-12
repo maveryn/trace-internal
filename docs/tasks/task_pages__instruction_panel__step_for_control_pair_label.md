@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `instruction_panel`
-3. Source task group: `step_list`
+3. Source scene: `step_list`
 4. Task id: `task_pages__instruction_panel__step_for_control_pair_label`
 
 ## Contract

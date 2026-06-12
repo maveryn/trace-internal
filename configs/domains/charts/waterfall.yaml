@@ -21,7 +21,6 @@ generation:
       step_count_max: 10
       running_total_target_index_min: 4
       running_total_target_max_from_end: 1
-
 rendering:
   shared:
     canvas_width: 1180
@@ -44,47 +43,76 @@ rendering:
     threshold_font_size_px: 16
     bar_width_fraction: 0.56
     start_fill_rgb_options:
-      - [76, 118, 178]
-      - [87, 118, 160]
-      - [72, 132, 154]
+    - - 76
+      - 118
+      - 178
+    - - 87
+      - 118
+      - 160
+    - - 72
+      - 132
+      - 154
     final_fill_rgb_options:
-      - [58, 92, 150]
-      - [66, 96, 138]
-      - [58, 111, 136]
+    - - 58
+      - 92
+      - 150
+    - - 66
+      - 96
+      - 138
+    - - 58
+      - 111
+      - 136
     positive_fill_rgb_options:
-      - [74, 154, 98]
-      - [63, 143, 126]
-      - [88, 150, 84]
+    - - 74
+      - 154
+      - 98
+    - - 63
+      - 143
+      - 126
+    - - 88
+      - 150
+      - 84
     negative_fill_rgb_options:
-      - [206, 92, 74]
-      - [194, 103, 67]
-      - [188, 82, 108]
+    - - 206
+      - 92
+      - 74
+    - - 194
+      - 103
+      - 67
+    - - 188
+      - 82
+      - 108
     threshold_rgb_options:
-      - [102, 91, 168]
-      - [136, 86, 152]
-      - [92, 112, 168]
-
+    - - 102
+      - 91
+      - 168
+    - - 136
+      - 86
+      - 152
+    - - 92
+      - 112
+      - 168
 prompt:
   shared:
     bundle_id: charts_waterfall_v0
     scene_key: waterfall
     task_key: waterfall_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     answer_hint_value: set "answer" to the requested integer value
     answer_hint_label: set "answer" to the exact contribution-step label as a string
-    unanswerable_instruction: If no contribution step satisfies the threshold rule, answer exactly "unanswerable".
-    object_description_waterfall: a waterfall chart with a start bar, signed contribution bars, connector lines, and a final-total bar
-    annotation_hint_value: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the printed values and step label needed for the computation
-    annotation_hint_label: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around the printed values and threshold marker needed for the crossing; if the answer is "unanswerable", use an empty array
+    unanswerable_instruction: If no visible contribution step satisfies the threshold
+      rule, answer exactly "unanswerable".
+    object_description_waterfall: a waterfall chart with a start bar, signed contribution
+      bars, connector lines, and a final-total bar
+    annotation_hint_value: set "annotation" to an array of bounding boxes [x0, y0,
+      x1, y1] around the printed values and step label needed for the computation
+    annotation_hint_label: set "annotation" to an array of bounding boxes [x0, y0,
+      x1, y1] around the printed values and threshold marker needed for the crossing;
+      if the answer is "unanswerable", use an empty array
     json_example_value: '{"annotation":[[100,210,145,235],[250,300,295,326],[390,185,434,210]],"answer":57}'
     json_example_label: '{"annotation":[[100,210,145,235],[250,300,295,326],[810,180,854,205]],"answer":"G8F2"}'
     json_example_answer_only_value: '{"answer":57}'
     json_example_answer_only_label: '{"answer":"G8F2"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      reasoning_load: 0.50
-      scene_variant_load: 0.20

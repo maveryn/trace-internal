@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import hash64, spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
@@ -19,7 +19,6 @@ from ...shared.prompt_variants import (
   build_prompt_trace_artifacts,
   render_task_prompt_variants,
 )
-from ...shared.time_artifact_complexity import build_time_artifact_complexity, normalize_int_with_bounds, resolve_time_artifact_complexity_weights
 from ...shared.time_artifact_fixed_query import force_time_artifact_query_params, rewrite_time_artifact_query_output
 from ..shared.schedule_scene import (
   SUPPORTED_PAGE_SCHEDULE_SCENE_VARIANTS,
@@ -171,14 +170,13 @@ class _ResolvedQuery:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "schedule")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "schedule")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
   _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
   task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_time_artifact_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(task_group="schedule")
-POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="schedule", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_pages_background_defaults(scene_id="schedule")
+POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(scene_id="schedule", apply_prob=0.0)
 
 
 def _resolve_named_variant(
@@ -835,7 +833,7 @@ class _PagesScheduleDayPlannerBase:
 
   task_id = TASK_ID
   domain = "pages"
-  task_group = "schedule"
+  scene_id = "schedule"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     del max_attempts
@@ -926,7 +924,7 @@ class _PagesScheduleDayPlannerBase:
     }
     prompt_selection = render_task_prompt_variants(
       domain=self.domain,
-      task_group=self.task_group,
+      scene_id=self.scene_id,
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
@@ -1101,50 +1099,6 @@ class _PagesScheduleDayPlannerBase:
         if abs(int(raw_event.duration_slots) - int(reference_duration_slots)) <= 1:
           close_duration_count += 1
 
-    complexity = build_time_artifact_complexity(
-      weights=_COMPLEXITY_WEIGHTS,
-      components={
-        "interval_reasoning": min(
-          1.0,
-          float(_INTERVAL_REASONING_BASE_BY_VARIANT[str(query.query_id)])
-          + (0.14 * float(normalize_int_with_bounds(int(query.answer_value), [0, 5])))
-          + (0.12 * float(normalize_int_with_bounds(int(event_count), [3, 10]))),
-        ),
-        "visual_scan": min(
-          1.0,
-          float(_VISUAL_SCAN_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_VISUAL_SCAN_STYLE_BONUS[str(query.style_variant)])
-          + (0.18 * float(normalize_int_with_bounds(int(event_count), [3, 10])))
-          + (0.14 * float(normalize_int_with_bounds(int(lane_count), [1, int(query.max_lane_count)]))),
-        ),
-        "ambiguity": min(
-          1.0,
-          (
-            0.24
-            * float(
-              normalize_int_with_bounds(
-                int(
-                  touching_reference_count
-                  if str(query.query_id) == "overlap_count"
-                  else close_duration_count if str(query.query_id) == "longer_than_reference_count" else max(0, int(query.event_count - query.answer_value))
-                ),
-                [0, 5],
-              )
-            )
-          )
-          + (0.18 * float(normalize_int_with_bounds(int(query.answer_value), [0, 5])))
-          + (0.10 * float(normalize_int_with_bounds(int(lane_count), [1, int(query.max_lane_count)])))
-          + 0.08,
-        ),
-        "clutter": min(
-          1.0,
-          float(_CLUTTER_BASE_BY_SCENE[str(query.scene_variant)])
-          + float(_CLUTTER_STYLE_BONUS[str(query.style_variant)])
-          + (0.20 * float(normalize_int_with_bounds(int(event_count), [3, 10])))
-          + (0.16 * float(normalize_int_with_bounds(int(lane_count), [1, int(query.max_lane_count)]))),
-        ),
-      },
-    )
 
     return TaskOutput(
       prompt=str(prompt_artifacts.prompt),
@@ -1153,7 +1107,6 @@ class _PagesScheduleDayPlannerBase:
       image=image,
       image_id="img0",
       trace_payload=trace_payload,
-      complexity=complexity,
       task_versions=default_task_versions(),
       query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),

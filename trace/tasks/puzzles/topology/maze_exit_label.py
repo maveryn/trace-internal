@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -19,8 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, temporary_default_font_family
 from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
-from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
+from trace.tasks.shared.fixed_query import rewrite_fixed_puzzle_query_output
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
@@ -63,14 +62,13 @@ _SCENE_LOAD_BY_VARIANT = {
 }
 _EXIT_LABEL_POOL: Tuple[str, ...] = tuple("ABCDEFGH")
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "topology")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="topology")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.5)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(scene_id="topology")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="topology", apply_prob=0.5)
 
 Color = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
@@ -1113,7 +1111,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "topology"
+    scene_id = "topology"
     supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
     def _resolve_query_id(
@@ -1301,7 +1299,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1357,14 +1355,6 @@ class _PuzzlesTopologyMazeExitBaseTask:
             + float(_TARGET_REACHABILITY_LOAD.get(str(target_reachability), 0.0))
             + (0.08 * float(exit_scan))
             + (0.10 * float(annotation_load)),
-        )
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": max(float(exit_scan), 0.5 * (float(row_scan) + float(col_scan))),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
         )
 
         trace_payload = {
@@ -1469,7 +1459,6 @@ class _PuzzlesTopologyMazeExitBaseTask:
             "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
 
         if str(query_id) == "exit_reachability_label" and str(target_reachability) == "reachable" and str(answer_value) not in set(map(str, dataset["reachable_exit_labels"])):
@@ -1478,9 +1467,6 @@ class _PuzzlesTopologyMazeExitBaseTask:
             raise ValueError("unreachable-exit label answer drifted from unreachable exits")
         if str(query_id) == "reachable_exit_count" and int(answer_value) != int(len(dataset["reachable_exit_labels"])):
             raise ValueError("reachable-exit count answer drifted from reachable exits")
-        if not (0.0 <= float(complexity.complexity_score) <= 1.0):
-            raise ValueError("maze-exit complexity score is outside [0, 1]")
-        _ = clamp_unit_interval(float(complexity.complexity_score))
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1489,7 +1475,6 @@ class _PuzzlesTopologyMazeExitBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

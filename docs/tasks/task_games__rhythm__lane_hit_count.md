@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `rhythm`
+2. Scene: `rhythm`
 3. Scene id: `rhythm`
 4. Public task id: `task_games__rhythm__lane_hit_count`
 5. Supported `query_id` values: `lane_hit_count`

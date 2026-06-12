@@ -1,0 +1,72 @@
+generation:
+  shared:
+    sunburst_parent_count_min: 4
+    sunburst_parent_count_max: 5
+    sunburst_subgroup_count_min: 3
+    sunburst_subgroup_count_max: 3
+    sunburst_leaf_count_min: 2
+    sunburst_leaf_count_max: 2
+    sunburst_leaf_value_min: 5
+    sunburst_leaf_value_max: 45
+    sunburst_leaf_value_step: 5
+    sunburst_condition_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+rendering:
+  shared:
+    canvas_width: 1280
+    canvas_height: 1080
+    center_y_px: 560
+    center_x_jitter_px_min: -18
+    center_x_jitter_px_max: 18
+    center_y_jitter_px_min: -10
+    center_y_jitter_px_max: 10
+    inner_radius_px: 98
+    parent_outer_radius_px: 220
+    subgroup_outer_radius_px: 350
+    leaf_outer_radius_px: 480
+    title_font_size_px: 26
+    parent_font_size_px: 17
+    subgroup_font_size_px: 15
+    leaf_font_size_px: 13
+    value_font_size_px: 14
+    note_font_size_px: 14
+    panel_fill_rgb_options:
+    - - 252
+      - 253
+      - 250
+    - - 250
+      - 252
+      - 255
+    - - 255
+      - 252
+      - 248
+prompt:
+  shared:
+    bundle_id: charts_sunburst_v1
+    scene_key: composition_sunburst_hierarchy
+    task_key: sunburst_hierarchy_query
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
+    object_description_sunburst: a not-to-scale concentric hierarchy chart with parent
+      categories in the inner ring, subgroups in the middle ring, and outer leaves
+      with printed integer values
+    answer_hint_integer: set "answer" to the requested integer
+    answer_hint_label: set "answer" to the exact parent category label
+    annotation_hint_parent_total_from_leaves_value: set "annotation" to [x0,y0,x1,y1]
+      boxes for the outer leaf value labels under the requested parent category
+    annotation_hint_parent_total_extremum_label: set "annotation" to [x0,y0,x1,y1]
+      boxes for the outer leaf value labels used to compare all parent-category totals
+    annotation_hint_conditional_leaf_count: set "annotation" to [x0,y0,x1,y1] boxes
+      for the checked outer leaf value labels under the requested parent category
+    json_example_parent_total_from_leaves_value: '{"annotation":[[860,250,910,278],[930,312,980,340],[970,390,1020,418]],"answer":105}'
+    json_example_parent_total_extremum_label: '{"annotation":[[840,230,890,258],[920,320,970,348],[420,520,470,548],[650,210,700,238],[720,310,770,338],[540,590,590,618]],"answer":"Healthcare"}'
+    json_example_conditional_leaf_count: '{"annotation":[[840,230,890,258],[920,320,970,348],[970,410,1020,438]],"answer":2}'
+    json_example_answer_only_parent_total_from_leaves_value: '{"answer":105}'
+    json_example_answer_only_parent_total_extremum_label: '{"answer":"Healthcare"}'
+    json_example_answer_only_conditional_leaf_count: '{"answer":2}'

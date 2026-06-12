@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `schedule`
+2. Scene: `schedule`
 3. Scene id: `schedule`
 4. Task id: `task_pages__schedule__overlap_count`
 5. Objective: Count schedule events that overlap the highlighted reference event.

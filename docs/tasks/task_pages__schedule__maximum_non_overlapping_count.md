@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `schedule`
-3. Source task group: `schedule`
+3. Source scene: `schedule`
 4. Task id: `task_pages__schedule__maximum_non_overlapping_count`
 
 ## Contract

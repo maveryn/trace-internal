@@ -27,20 +27,6 @@ SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS: Tuple[str, ...] = (
     "sum_minus_amount_in_section",
 )
 SUPPORTED_DOCUMENT_ARITHMETIC_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_SECTIONED_DOCUMENT_SCENE_VARIANTS
-_QUESTION_TEXT_BY_VARIANT = {
-    "sum_two_amounts_in_section": (
-        "In the {section_label} section, what is {first_label} plus {second_label}? "
-        "Use currency notation with exactly two digits after the decimal point."
-    ),
-    "difference_two_amounts_in_section": (
-        "In the {section_label} section, what is {first_label} minus {second_label}? "
-        "Use currency notation with exactly two digits after the decimal point."
-    ),
-    "sum_minus_amount_in_section": (
-        "In the {section_label} section, what is {first_label} plus {second_label} minus {third_label}? "
-        "Use currency notation with exactly two digits after the decimal point."
-    ),
-}
 _OPERAND_COUNT_BY_VARIANT = {
     "sum_two_amounts_in_section": 2,
     "difference_two_amounts_in_section": 2,
@@ -198,17 +184,17 @@ def build_document_section_expression_dataset(
 
         section_specs = build_document_section_specs(field_specs)
 
-        question_text = str(_QUESTION_TEXT_BY_VARIANT[str(query_id)]).format(
-            section_label=str(target_section_label),
-            first_label=str(operand_specs[0]["field_label"]),
-            second_label=str(operand_specs[1]["field_label"]),
-            third_label=str(operand_specs[2]["field_label"]) if len(operand_specs) >= 3 else "",
-        )
+        query_prompt_slots = {
+            "section_label": str(target_section_label),
+            "first_label": str(operand_specs[0]["field_label"]),
+            "second_label": str(operand_specs[1]["field_label"]),
+            "third_label": str(operand_specs[2]["field_label"]) if len(operand_specs) >= 3 else "",
+        }
         return {
             "scene_variant": str(scene_variant),
             "query_id": str(query_id),
             "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
-            "question_text": str(question_text),
+            "query_prompt_slots": dict(query_prompt_slots),
             "question_format": "document_section_expression_value",
             "view_family": "structured_document",
             "field_specs": list(field_specs),

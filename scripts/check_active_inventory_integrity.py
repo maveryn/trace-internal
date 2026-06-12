@@ -75,9 +75,9 @@ def _config_bundle_failures() -> list[IntegrityFailure]:
     for path in sorted((REPO_ROOT / "configs" / "domains").glob("*/*.yaml")):
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         domain = path.parts[-2]
-        task_group = path.stem
+        scene_id = path.stem
         for bundle_id in sorted(set(_walk_bundle_ids(data))):
-            prompt_path = REPO_ROOT / "prompts" / domain / task_group / f"{bundle_id}.json"
+            prompt_path = REPO_ROOT / "prompts" / domain / scene_id / f"{bundle_id}.json"
             if not prompt_path.exists():
                 failures.append(
                     IntegrityFailure(
@@ -203,12 +203,12 @@ def collect_inventory_integrity_failures(*, include_local_cache: bool = False) -
     for task_id in default_task_ids:
         taxonomy = resolve_task_taxonomy(task_id)
         source_domain = taxonomy.source_domain
-        source_task_group = taxonomy.source_task_group
+        source_scene_id = taxonomy.source_scene_id
         config_candidates = {
             REPO_ROOT / "configs" / "domains" / source_domain / "base.yaml",
-            REPO_ROOT / "configs" / "domains" / source_domain / f"{source_task_group}.yaml",
+            REPO_ROOT / "configs" / "domains" / source_domain / f"{source_scene_id}.yaml",
             REPO_ROOT / "configs" / "domains" / taxonomy.domain / "base.yaml",
-            REPO_ROOT / "configs" / "domains" / taxonomy.domain / f"{source_task_group}.yaml",
+            REPO_ROOT / "configs" / "domains" / taxonomy.domain / f"{source_scene_id}.yaml",
         }
         if not any(path.exists() for path in config_candidates):
             failures.append(IntegrityFailure("task_config_missing", task_id))

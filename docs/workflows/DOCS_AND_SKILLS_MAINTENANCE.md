@@ -11,8 +11,7 @@ letting historical inventories or old task names become hidden policy.
    annotation policy, and scene-specific rules. They should not be the only
    exhaustive task inventory unless a generated check covers the list.
 4. Task docs in `docs/tasks/` define public task contracts.
-5. Project status lives in `docs/project/STATUS.md` and should stay compact.
-6. Repo-local skills under `skills/` are operational overlays. They point to
+5. Repo-local skills under `skills/` are operational overlays. They point to
    source-of-truth docs and may add short review checklists, but they must not
    redefine taxonomy, active task lists, calibration gates, or domain policy.
 
@@ -24,8 +23,8 @@ Update docs and skills in the same patch when changing any of these surfaces:
    output-mode examples.
 3. Prompt bundle path, bundle id, template layer behavior, or prompt wording
    policy.
-4. Domain/task-group config defaults for generation, rendering, visual style,
-   complexity, or prompt slots.
+4. Domain/scene config defaults for generation, rendering, visual style,
+   difficulty knobs, or prompt slots.
 5. Shared helper ownership, module boundaries, or reusable rendering/style
    infrastructure.
 6. Calibration gates, vLLM serving instructions, task-review workflow, or saved
@@ -39,14 +38,10 @@ For active task or taxonomy changes:
 2. Update `docs/tasks/README.md` and the affected `docs/tasks/<task_id>.md`
    files.
 3. Update the relevant domain setup doc under `docs/domains/`.
-4. Update `docs/project/STATUS.md` if counts, contracts, or validation guidance
-   changed.
-5. Update prompt docs only when the prompt-system contract changes; do not copy
+4. Update prompt docs only when the prompt-system contract changes; do not copy
    exhaustive prompt-bundle maps by hand.
-6. Update the matching `skills/domain-<domain>/SKILL.md` only if its short
+5. Update the matching `skills/domain-<domain>/SKILL.md` only if its short
    operational checklist or linked docs changed.
-7. Update `skills/task-complexity/references/<domain>.md` only if complexity
-   criteria or weighting intent changed.
 
 ## Anti-Drift Rules
 1. Do not add historical migration prose to active docs.

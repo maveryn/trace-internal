@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `minecraft`
-3. Scene id: `minecraft`
-4. Public task id: `task_games__minecraft__resource_route_cost`
-5. Supported `query_id` values: `resource_route_cost`
-6. Answer schema: `integer_value`
-7. Annotation schema: `point_set`
-8. Program schema: `sum(values(route_blocks, metric=resource_cost)); scene=minecraft; scope=resource_route_cost`
+2. Scene id: `minecraft`
+3. Public task id: `task_games__minecraft__resource_route_cost`
+4. Supported `query_id` values: `resource_route_cost`
+5. Answer schema: `integer_value`
+6. Annotation schema: `point_set`
+7. Program schema: `sum(values(route_blocks, metric=resource_cost)); scene=minecraft; scope=resource_route_cost`
 
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.

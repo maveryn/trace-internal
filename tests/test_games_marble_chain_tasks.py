@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
 def test_games_marble_chain_defaults_expose_axes_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "marble_chain")
+    cfg = get_scene_defaults("games", "marble_chain")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_games__marble_chain__max_pop_direction_label",

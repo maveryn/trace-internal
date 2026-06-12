@@ -4,10 +4,6 @@ generation:
       oval_loop: 1.0
       rounded_loop: 1.0
       kidney_loop: 1.0
-    query_id_weights:
-      closest_to_finish_label: 1.0
-      farthest_from_finish_label: 1.0
-      car_ahead_count: 1.0
     style_variant_weights:
       asphalt_day: 1.0
       rally_sand: 1.0
@@ -15,27 +11,30 @@ generation:
       blueprint_track: 1.0
       paper_race: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_car_count_sampling: true
-    balanced_target_answer_sampling: true
-    car_count_support:
-      - 4
+    min_progress_gap: 0.045
+  task_overrides:
+    task_games__racing_track__ahead_object_count:
+      balanced_car_count_sampling: true
+      balanced_target_answer_sampling: true
+      ahead_car_count_support:
       - 5
       - 6
       - 7
-    ahead_car_count_support:
-      - 5
-      - 6
-      - 7
-    target_answer_support:
+      target_answer_support:
       - 0
       - 1
       - 2
       - 3
       - 4
-    min_progress_gap: 0.045
-    min_remaining_gap: 0.08
+    task_games__racing_track__finish_distance_extremum_label:
+      balanced_car_count_sampling: true
+      car_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      min_remaining_gap: 0.08
 rendering:
   shared:
     canvas_width: 1000
@@ -48,29 +47,8 @@ rendering:
     car_width_px: 28
     marked_outline_width_px: 5
     label_font_size_px: 24
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.35
-      circular_order: 0.40
-      ambiguity: 0.12
-      output_burden: 0.13
 prompt:
   shared:
-    bundle_id: games_racing_track_v0
+    bundle_id: games_racing_track_v1
     scene_key: racing_track_loop
     task_key: racing_track_query
-    object_description_oval_loop: a top-down loop racing track with a checkered finish line, a direction arrow, and labeled cars
-    object_description_rounded_loop: a rounded loop racing track with a checkered finish line, a direction arrow, and labeled cars
-    object_description_kidney_loop: a curved loop racing track with a checkered finish line, a direction arrow, and labeled cars
-    object_description_oval_loop_ahead_count: a top-down loop racing track with a checkered finish line, a direction arrow, a marked car, and other labeled cars
-    object_description_rounded_loop_ahead_count: a rounded loop racing track with a checkered finish line, a direction arrow, a marked car, and other labeled cars
-    object_description_kidney_loop_ahead_count: a curved loop racing track with a checkered finish line, a direction arrow, a marked car, and other labeled cars
-    distance_rule_text: Measure distance along the track in the arrow direction.
-    ahead_rule_text: Follow the arrow direction from the marked car to the finish line. Do not count the marked car.
-    annotation_hint_closest_to_finish_label: set "annotation" to one [x, y] pixel point at the center of the selected car
-    answer_hint_closest_to_finish_label: set "answer" to the selected car label as a capital letter
-    annotation_hint_farthest_from_finish_label: set "annotation" to one [x, y] pixel point at the center of the selected car
-    answer_hint_farthest_from_finish_label: set "answer" to the selected car label as a capital letter
-    annotation_hint_car_ahead_count: set "annotation" to [x, y] pixel points at the centers of every counted car; use an empty array when none qualify
-    answer_hint_car_ahead_count: set "answer" to the integer count of other cars ahead of the marked car before the finish line

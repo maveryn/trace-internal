@@ -3,19 +3,19 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `radar`
-3. Source implementation domain/group: `charts/radar`
+3. Source implementation scene package: `charts/radar`
 4. Query id: `matching_condition_panel_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.radar.profile_query.ChartsRadarMatchingConditionPanelCountTask`
-2. Prompt lookup domain/group: `charts/radar`
+1. Registered class: `trace.tasks.charts.radar.matching_condition_panel_count.ChartsRadarMatchingConditionPanelCountTask`
+2. Prompt lookup domain/scene: `charts/radar`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `unknown_annotation_schema`.
+2. Annotation schema: `bbox_set`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `matching_condition_panel_count` | `count.group_predicate` | `integer_count` | `unknown_annotation_schema` |
+| `matching_condition_panel_count` | `count.group_predicate` | `integer_count` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

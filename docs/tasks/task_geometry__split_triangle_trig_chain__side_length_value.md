@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `split_triangle_trig_chain`
 3. Scene id: `split_triangle_trig_chain`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `shared_altitude_two_angles_side`, `shared_altitude_side_then_hypotenuse`, or `isosceles_altitude_trig_side`
@@ -34,5 +34,5 @@ Numeric side labels, angle labels, right-angle markers, and equal-side ticks rem
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/split_triangle_patterns.py`
+- Config: `configs/domains/geometry/split_triangle_trig_chain.yaml`
+- Task module: `trace/tasks/geometry/split_triangle_trig_chain/side_length_value.py`

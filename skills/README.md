@@ -21,7 +21,6 @@ Every domain skill should link to:
 
 - the active domain setup doc in `docs/domains/`
 - `docs/ACTIVE_TASK_INVENTORY.md`
-- `docs/project/STATUS.md`
 - `docs/workflows/TASK_AUTHORING.md`
 - `docs/workflows/SHARED_UTILITIES.md`
 
@@ -32,17 +31,6 @@ above should remain present and recognizable.
 `skills/domain-audit/` is a workflow skill, not a domain skill, even though its
 directory name starts with `domain-`.
 
-## Complexity References
-
-`skills/task-complexity/references/policy.md` owns the shared complexity policy.
-Each active domain must also have one matching complexity reference:
-
-`skills/task-complexity/references/<domain>.md`
-
-These references should define the domain-level criterion vocabulary and default
-weight intent only. Task-specific formulas remain in task/domain code and
-configs, following the source-of-truth docs.
-
 ## Update Discipline
 
 When active domains, setup docs, or domain boundaries change:
@@ -50,8 +38,7 @@ When active domains, setup docs, or domain boundaries change:
 1. Update `trace/core/taxonomy.py`.
 2. Update the relevant source-of-truth docs under `docs/`.
 3. Update or add the matching `skills/domain-<domain>/SKILL.md`.
-4. Update or add `skills/task-complexity/references/<domain>.md`.
-5. Run `PYTHONPATH=. python scripts/check_skill_consistency.py`.
+4. Run `PYTHONPATH=. python scripts/check_skill_consistency.py`.
 
 For repo-wide docs/skills hygiene and anti-drift validation, follow
 `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.

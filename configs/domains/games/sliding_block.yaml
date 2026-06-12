@@ -12,7 +12,9 @@ generation:
       movable_block_count_generation_attempts: 512
       non_target_block_count_min: 6
       non_target_block_count_max: 10
-      move_result_option_count_support: [4, 6]
+      move_result_option_count_support:
+      - 4
+      - 6
       balanced_move_result_option_count_sampling: true
       move_result_move_count_min: 1
       move_result_move_count_max: 2
@@ -28,7 +30,6 @@ generation:
         left: 1.0
         top: 1.0
         bottom: 1.0
-
 rendering:
   task_overrides:
     games_sliding_block_internal:
@@ -49,36 +50,21 @@ rendering:
       arrow_width_px: 8
       arrow_head_length_px: 28
       arrow_head_width_px: 28
-      text_color_rgb: [28, 32, 38]
-      text_stroke_rgb: [255, 255, 255]
-
-complexity:
-  task_overrides:
-    games_sliding_block_internal:
-      criteria_weights:
-        visual_scan: 0.40
-        reasoning_load: 0.42
-        scene_variant_load: 0.18
-
+      text_color_rgb:
+      - 28
+      - 32
+      - 38
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
 prompt:
   task_overrides:
     games_sliding_block_internal:
-      bundle_id: games_sliding_block_v0
+      bundle_id: games_sliding_block_v1
       scene_key: sliding_block
       task_key: sliding_block_query
-      object_description: a sliding-block board with a red target block labeled T and other labeled rectangular blocks
-      answer_hint_integer: set "answer" to the exact count as an integer
-      answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      annotation_hint_blocker_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around every block currently occupying the target block's straight path to the exit
-      annotation_hint_movable_block_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] around every non-target block that can slide at least one cell
-      annotation_hint_move_result_label: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] containing the original boxes of the moved blocks in first-seen move order, followed by the correct final-board option panel box
-      json_example_blocker_count: '{"annotation":[[520,284,604,496],[700,284,784,496]],"answer":2}'
-      json_example_movable_block_count: '{"annotation":[[160,220,312,296],[356,220,432,448],[510,370,662,446]],"answer":3}'
-      json_example_move_result_label: '{"annotation":[[128,322,220,414],[256,414,348,506],[520,195,720,445]],"answer":"C"}'
-      json_example_answer_only_blocker_count: '{"answer":2}'
-      json_example_answer_only_movable_block_count: '{"answer":3}'
-      json_example_answer_only_move_result_label: '{"answer":"C"}'
-
+  shared: {}
 visual:
   noise:
     apply_prob: 0.0

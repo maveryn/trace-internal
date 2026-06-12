@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `waveform_panel`
-- Implementation task group: `waves`
+- Implementation scene: `waves`
 - Implementation source: `trace/tasks/physics/waves/waveform_panel.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__waveform_panel__wave_property_extremum_label` -> `task_physics__waveform_panel__wave_property_extremum_label`

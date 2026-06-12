@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `ray_optics`
-- Implementation task group: `optics`
+- Implementation scene: `optics`
 - Implementation source: `trace/tasks/physics/optics/ray_trace.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__ray_optics__ray_target_hit_count` -> `task_physics__ray_optics__ray_target_hit_count`

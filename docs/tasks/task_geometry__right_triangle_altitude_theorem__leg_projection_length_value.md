@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `right_triangle_altitude_theorem`
 3. Scene id: `right_triangle_altitude_theorem`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `leg_from_hypotenuse_projection` or `projection_from_leg_and_hypotenuse`
@@ -30,5 +30,5 @@ Numeric labels, vertex labels, right-angle markers, and the unknown marker remai
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/right_triangle_altitude_theorem.py`
+- Config: `configs/domains/geometry/right_triangle_altitude_theorem.yaml`
+- Task module: `trace/tasks/geometry/right_triangle_altitude_theorem/leg_projection_length_value.py`

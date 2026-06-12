@@ -1,6 +1,6 @@
 ---
 name: domain-geometry
-description: Use when designing, implementing, or reviewing TRACE geometry-domain tasks, especially for task-group conventions, annotation projections, and geometry shared-helper reuse.
+description: Use when designing, implementing, or reviewing TRACE geometry-domain tasks, especially for scene contracts, annotation projections, and geometry shared-helper reuse.
 ---
 
 # Geometry Domain
@@ -8,15 +8,13 @@ description: Use when designing, implementing, or reviewing TRACE geometry-domai
 Use this whenever the task lives under `domain=geometry`.
 
 ## Read first
-1. `docs/domains/SCENE_TASK_QUERY_GUIDE.md`
-2. `docs/domains/GEOMETRY_TASK_SETUP.md`
-3. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
-4. `docs/project/STATUS.md`
-5. `docs/workflows/TASK_AUTHORING.md`
-6. `docs/workflows/SHARED_UTILITIES.md`
+1. `docs/domains/geometry.md`
+2. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/SCENE_TASK_QUERY_GUIDE.md` owns geometry family-boundary rules and the active geometry scene/query/annotation surface.
+- `docs/domains/geometry.md` owns geometry family-boundary rules and the active geometry scene/query/annotation surface.
 - Public identity follows `domain=geometry -> scene_id -> task_id`; task-internal semantic branches should be recorded in `query_id`.
 - `scene_variant` may record visual or object-family axes inside a task, but it is not a public sampling unit.
 - Measurement tasks use coordinate-grounded diagrams and geometry shared helpers.
@@ -24,7 +22,7 @@ Use this whenever the task lives under `domain=geometry`.
 - Comparison tasks use labeled objects with `option_letter` answers and winner annotation.
 - Counting tasks use non-graph-paper multi-object scenes with unordered `bbox_set` annotation over the matched objects.
 - Coordinate-relation tasks may use `point_set` annotation even for counting variants when the visible witness is an unlabeled point set on graph paper.
-- Shared geometry logic belongs in `trace/tasks/geometry/shared/`; task-group shared code belongs inside the task-group package.
+- Shared geometry logic belongs in `trace/tasks/geometry/shared/` when reused across scenes, or in scene-local `shared/` packages when scoped to one scene.
 
 ## Practical review checklist
 - Prefer coordinate-grounded annotation when geometry itself is the source of truth.

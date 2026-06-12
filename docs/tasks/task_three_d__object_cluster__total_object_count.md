@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_cluster`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_cluster/`
 - Query id: `total_object_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
@@ -30,7 +30,7 @@ counted object. The annotation set is unordered because all witnesses have the
 same semantic role and annotation cardinality matches the answer.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`.
+The prompt bundle is `three_d_object_cluster_v0` under `prompts/three_d/object_cluster/`.
 The trace records camera pose, projection frame, object world coordinates,
 sampled dimensions, primary object type metadata, all counted object ids,
 projected object boxes, and the solver count predicate.

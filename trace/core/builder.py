@@ -26,6 +26,7 @@ from .identity import compute_instance_id
 from .json_io import write_json_file
 from .reward_contracts import resolve_reward_contract
 from .sampling import normalize_positive_weights, weighted_choice
+from .scene_package_migration import is_scene_package_task
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
 from .taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
@@ -53,7 +54,6 @@ class _BuildStageResult:
     rejected_reason_by_task: Dict[str, Dict[str, int]]
     annotation_format_map: Dict[str, str]
     domain_sampling_probabilities: Dict[str, float]
-    task_group_sampling_probabilities: Dict[str, float]
     scene_sampling_probabilities: Dict[str, float]
     warnings: List[str]
 
@@ -102,6 +102,14 @@ _REQUIRED_TRACE_PAYLOAD_KEYS = (
 )
 _PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
 _BUILD_PROGRESS_ENABLED = os.environ.get("TRACE_BUILD_PROGRESS", "1").strip().lower() not in _PROGRESS_DISABLED_VALUES
+
+
+def _registered_scene_id(task_id: str, task: Any) -> str | None:
+    """Return the legacy scene for unmigrated tasks, otherwise None."""
+
+    if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
+        return None
+    return str(getattr(task, "scene_id", ""))
 
 
 def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
@@ -329,25 +337,23 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
 
 def _aggregate_sampling_probabilities(
     task_probabilities: Mapping[str, float],
-) -> tuple[Dict[str, float], Dict[str, float], Dict[str, float]]:
-    """Aggregate public domain/scene and source task-group probabilities from task weights."""
+) -> tuple[Dict[str, float], Dict[str, float]]:
+    """Aggregate public domain and scene probabilities from task weights."""
     domain_probs: Dict[str, float] = {}
-    task_group_probs: Dict[str, float] = {}
     scene_probs: Dict[str, float] = {}
     for task_id, probability in task_probabilities.items():
         task = create_task(task_id)
+        registered_scene_id = _registered_scene_id(str(task_id), task)
         taxonomy = resolve_task_taxonomy(
             str(task_id),
             source_domain=str(getattr(task, "domain", "")),
-            source_task_group=str(getattr(task, "task_group", "")),
+            source_scene_id=str(registered_scene_id or ""),
         )
         domain = str(taxonomy.domain)
-        task_group = str(getattr(task, "task_group"))
         scene_id = str(taxonomy.scene_id)
         domain_probs[domain] = domain_probs.get(domain, 0.0) + float(probability)
-        task_group_probs[task_group] = task_group_probs.get(task_group, 0.0) + float(probability)
         scene_probs[scene_id] = scene_probs.get(scene_id, 0.0) + float(probability)
-    return dict(sorted(domain_probs.items())), dict(sorted(task_group_probs.items())), dict(sorted(scene_probs.items()))
+    return dict(sorted(domain_probs.items())), dict(sorted(scene_probs.items()))
 
 
 def _finalize_generated_output(
@@ -365,10 +371,11 @@ def _finalize_generated_output(
     """Finalize one generated task output into train/trace records."""
 
     query_id_used = str(getattr(generated, "query_id", "") or "")
+    scene_id = _registered_scene_id(str(task.task_id), task)
     taxonomy = resolve_task_taxonomy(
         str(task.task_id),
         source_domain=str(getattr(task, "domain", "")),
-        source_task_group=str(getattr(task, "task_group", "")),
+        source_scene_id=str(scene_id or ""),
     )
     canonical_domain = str(taxonomy.domain)
     scene_id = str(getattr(generated, "scene_id", "") or taxonomy.scene_id)
@@ -376,7 +383,7 @@ def _finalize_generated_output(
         taxonomy = resolve_task_taxonomy(
             str(task.task_id),
             source_domain=str(getattr(task, "domain", "")),
-            source_task_group=str(getattr(task, "task_group", "")),
+            source_scene_id=str(scene_id or ""),
         )
         taxonomy = replace(taxonomy, scene_id=scene_id)
     query_id = str(
@@ -411,7 +418,6 @@ def _finalize_generated_output(
         "instance_version": config.instance_version,
         "instance_seed": int(instance_seed),
         "domain": canonical_domain,
-        "task_group": task.task_group,
         "task": task.task_id,
         "scene_id": scene_id,
         "query_id": query_id,
@@ -427,6 +433,8 @@ def _finalize_generated_output(
             "code_hash": code_hash,
         },
     }
+    if scene_id is not None:
+        partial_record["scene_id"] = scene_id
     instance_id = compute_instance_id(partial_record)
 
     trace_payload = sanitize_trace_payload_for_public_annotation(
@@ -444,7 +452,7 @@ def _finalize_generated_output(
         taxonomy=taxonomy,
         query_id=query_id,
         registered_domain=str(getattr(task, "domain", "")),
-        registered_task_group=str(getattr(task, "task_group", "")),
+        registered_scene_id=scene_id,
     )
 
     trace_instance = TraceInstance(
@@ -468,7 +476,6 @@ def _finalize_generated_output(
         instance_id=instance_id,
         instance_seed=int(instance_seed),
         domain=canonical_domain,
-        task_group=task.task_group,
         task=task.task_id,
         scene_id=scene_id,
         query_id=query_id,
@@ -478,7 +485,6 @@ def _finalize_generated_output(
         answer_gt=generated.answer_gt,
         annotation_gt=generated.annotation_gt,
         reward_contract=reward_contract,
-        task_complexity=generated.complexity,
         trace_ref=trace_ref,
         versions={
             "seed_derivation_version": SEED_DERIVATION_VERSION,
@@ -489,11 +495,9 @@ def _finalize_generated_output(
     curriculum_record = CurriculumIndex(
         instance_id=instance_id,
         domain=canonical_domain,
-        task_group=task.task_group,
         task=task.task_id,
         scene_id=scene_id,
         query_id=query_id,
-        task_complexity=generated.complexity,
     ).to_dict()
     return train.to_dict(), curriculum_record, str(generated.annotation_gt.type)
 
@@ -688,7 +692,7 @@ def _build_staging(
     stage_root.mkdir(parents=True, exist_ok=True)
 
     target_counts_by_task, task_probabilities, sampler_mode = _resolve_task_targets(config)
-    domain_probs, task_group_probs, scene_probs = _aggregate_sampling_probabilities(task_probabilities)
+    domain_probs, scene_probs = _aggregate_sampling_probabilities(task_probabilities)
 
     warning_messages: List[str] = []
     instances: List[Dict[str, Any]] = []
@@ -808,7 +812,6 @@ def _build_staging(
         rejected_reason_by_task=dict(sorted(rejected_reason_by_task.items())),
         annotation_format_map=dict(sorted(annotation_format_map.items())),
         domain_sampling_probabilities=domain_probs,
-        task_group_sampling_probabilities=task_group_probs,
         scene_sampling_probabilities=scene_probs,
         warnings=warning_messages,
     )
@@ -893,16 +896,19 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
             else 0.0
         )
 
+        sampler_report = {
+            "mode": primary.sampler_mode,
+            "task_sampling_probabilities": primary.task_sampling_probabilities,
+            "domain_sampling_probabilities": primary.domain_sampling_probabilities,
+            "scene_sampling_probabilities": primary.scene_sampling_probabilities,
+        }
+        if primary.scene_sampling_probabilities:
+            sampler_report["scene_sampling_probabilities"] = primary.scene_sampling_probabilities
+
         build_report = {
             "build_report_schema_version": "v0",
             "dataset_id": dataset_id,
-            "sampler": {
-                "mode": primary.sampler_mode,
-                "task_sampling_probabilities": primary.task_sampling_probabilities,
-                "domain_sampling_probabilities": primary.domain_sampling_probabilities,
-                "scene_sampling_probabilities": primary.scene_sampling_probabilities,
-                "task_group_sampling_probabilities": primary.task_group_sampling_probabilities,
-            },
+            "sampler": sampler_report,
             "accepted_counts_by_task": primary.accepted_by_task,
             "rejected_counts_by_task": primary.rejected_by_task,
             "rejection_reason_breakdown_by_task": primary.rejected_reason_by_task,

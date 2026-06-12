@@ -47,13 +47,6 @@ generation:
       distractor_count_max: 5
       distractor_margin_over_target: 0
       pool_manifest: all_icons.txt
-    task_icons__reference_canvas__anchor_position_count:
-      pool_manifest: all_icons.txt
-      direction_weights:
-        left: 1.0
-        right: 1.0
-        above: 1.0
-        below: 1.0
     task_icons__named_field__reference_distance_rank_label:
       candidate_count: 6
       distractor_count_min: 4
@@ -62,8 +55,22 @@ generation:
         closest_to_named_reference_label: 1.0
         second_closest_to_named_reference_label: 1.0
         farthest_from_named_reference_label: 1.0
-      named_color_support: [red, blue, green, yellow, orange, purple, brown, cyan, magenta, maroon]
-      named_icon_fill_style_support: [solid, striped, dotted, half_filled]
+      named_color_support:
+      - red
+      - blue
+      - green
+      - yellow
+      - orange
+      - purple
+      - brown
+      - cyan
+      - magenta
+      - maroon
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      - half_filled
       named_icon_fill_style_weights:
         solid: 0.55
         striped: 0.15
@@ -82,47 +89,27 @@ generation:
         before_last_shape_label: 1.0
         after_second_shape_label: 1.0
         before_second_shape_label: 1.0
-      named_color_support: [red, blue, green, yellow, orange, purple, brown, cyan, magenta, maroon]
-      named_icon_fill_style_support: [solid, striped, dotted, half_filled]
+      named_color_support:
+      - red
+      - blue
+      - green
+      - yellow
+      - orange
+      - purple
+      - brown
+      - cyan
+      - magenta
+      - maroon
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      - half_filled
       named_icon_fill_style_weights:
         solid: 0.55
         striped: 0.15
         dotted: 0.15
         half_filled: 0.15
-    task_icons__paired_canvas__original_attribute_label:
-      tracked_count: 6
-      distractor_count_min: 4
-      distractor_count_max: 8
-      original_attribute_query_weights:
-        original_shape_label: 1.0
-        original_color_shape_label: 1.0
-        original_fill_shape_label: 1.0
-      named_color_support: [red, blue, green, yellow, orange, purple, brown, cyan, magenta, maroon]
-      named_icon_fill_style_support: [solid, striped, dotted, half_filled]
-      queryable_named_icon_fill_style_support: [striped, dotted, half_filled]
-      named_icon_fill_style_weights:
-        solid: 0.55
-        striped: 0.15
-        dotted: 0.15
-        half_filled: 0.15
-    task_icons__paired_canvas__panel_movement_direction_count:
-      pool_manifest: all_icons.txt
-      object_count_min: 5
-      object_count_max: 10
-      target_count_min: 1
-      target_count_max: 5
-      distractor_count_min: 2
-      distractor_count_max: 5
-      distractor_margin_over_target: 0
-      movement_direction_query_weights:
-        moved_left_count: 1.0
-        moved_right_count: 1.0
-        moved_up_count: 1.0
-        moved_down_count: 1.0
-      movement_delta_min: 0.22
-      movement_delta_max: 0.34
-      rotation_candidates_degrees: [0, 90, 180, 270]
-
 rendering:
   shared:
     canvas_width: 960
@@ -138,7 +125,7 @@ rendering:
     scene_max_overlap_fraction: 0.05
     scene_placement_max_attempts: 120
     scene_size_shrink_rounds: 6
-    scene_size_shrink_factor: 0.90
+    scene_size_shrink_factor: 0.9
     palette_size_min: 8
     palette_size_max: 12
     color_channel_min: 24
@@ -146,42 +133,102 @@ rendering:
     min_color_distance: 40.0
     color_distance_space: lab
     panel_title_font_size_px: 24
-    background_color_rgb: [247, 248, 251]
+    background_color_rgb:
+    - 247
+    - 248
+    - 251
     background_color_rgb_options:
-      - [247, 248, 251]
-      - [243, 246, 252]
-      - [250, 247, 242]
-      - [244, 249, 246]
-      - [248, 246, 253]
-    panel_fill_rgb: [255, 255, 255]
+    - - 247
+      - 248
+      - 251
+    - - 243
+      - 246
+      - 252
+    - - 250
+      - 247
+      - 242
+    - - 244
+      - 249
+      - 246
+    - - 248
+      - 246
+      - 253
+    panel_fill_rgb:
+    - 255
+    - 255
+    - 255
     panel_fill_rgb_options:
-      - [255, 255, 255]
-      - [253, 254, 255]
-      - [255, 254, 250]
-      - [250, 253, 250]
-    panel_border_rgb: [205, 212, 224]
+    - - 255
+      - 255
+      - 255
+    - - 253
+      - 254
+      - 255
+    - - 255
+      - 254
+      - 250
+    - - 250
+      - 253
+      - 250
+    panel_border_rgb:
+    - 205
+    - 212
+    - 224
     panel_border_rgb_options:
-      - [205, 212, 224]
-      - [198, 209, 222]
-      - [218, 208, 197]
-      - [198, 218, 211]
-    header_text_rgb: [70, 78, 96]
+    - - 205
+      - 212
+      - 224
+    - - 198
+      - 209
+      - 222
+    - - 218
+      - 208
+      - 197
+    - - 198
+      - 218
+      - 211
+    header_text_rgb:
+    - 70
+    - 78
+    - 96
     header_text_rgb_options:
-      - [70, 78, 96]
-      - [63, 84, 112]
-      - [86, 73, 94]
-      - [68, 91, 79]
-    icon_noise_edit_types: [blur, downsample, jpeg, noise]
-    icon_noise_edit_count_range: [0, 2]
+    - - 70
+      - 78
+      - 96
+    - - 63
+      - 84
+      - 112
+    - - 86
+      - 73
+      - 94
+    - - 68
+      - 91
+      - 79
+    icon_noise_edit_types:
+    - blur
+    - downsample
+    - jpeg
+    - noise
+    icon_noise_edit_count_range:
+    - 0
+    - 2
     icon_noise_value_ranges:
       blur:
-        radius: [0.2, 0.6]
+        radius:
+        - 0.2
+        - 0.6
       downsample:
-        scale: [0.85, 0.95]
+        scale:
+        - 0.85
+        - 0.95
       jpeg:
-        quality: [70, 90]
+        quality:
+        - 70
+        - 90
       noise:
-        alpha: [0.03, 0.08]
+        alpha:
+        - 0.03
+        - 0.08
     anchor_gap_px_directional: 8
     anchor_target_area_ratio_min: 0.35
     anchor_target_area_ratio_max: 0.65
@@ -189,32 +236,76 @@ rendering:
     same_type_distractor_opposite_fraction_min: 0.75
     anchor_highlight_padding_px: 10
     anchor_highlight_radius_px: 14
-    anchor_outline_rgb: [74, 113, 188]
+    anchor_outline_rgb:
+    - 74
+    - 113
+    - 188
     anchor_outline_rgb_options:
-      - [74, 113, 188]
-      - [58, 137, 151]
-      - [139, 100, 176]
-      - [189, 100, 91]
-    anchor_label_color_rgb: [57, 87, 145]
+    - - 74
+      - 113
+      - 188
+    - - 58
+      - 137
+      - 151
+    - - 139
+      - 100
+      - 176
+    - - 189
+      - 100
+      - 91
+    anchor_label_color_rgb:
+    - 57
+    - 87
+    - 145
     anchor_label_color_rgb_options:
-      - [57, 87, 145]
-      - [48, 104, 115]
-      - [105, 77, 139]
-      - [145, 74, 72]
+    - - 57
+      - 87
+      - 145
+    - - 48
+      - 104
+      - 115
+    - - 105
+      - 77
+      - 139
+    - - 145
+      - 74
+      - 72
     anchor_label_font_size_px: 20
     cell_padding_px: 10
-    cell_border_rgb: [218, 223, 233]
+    cell_border_rgb:
+    - 218
+    - 223
+    - 233
     cell_border_rgb_options:
-      - [218, 223, 233]
-      - [208, 218, 232]
-      - [226, 216, 205]
-      - [207, 225, 217]
-    cell_label_color_rgb: [52, 60, 77]
+    - - 218
+      - 223
+      - 233
+    - - 208
+      - 218
+      - 232
+    - - 226
+      - 216
+      - 205
+    - - 207
+      - 225
+      - 217
+    cell_label_color_rgb:
+    - 52
+    - 60
+    - 77
     cell_label_color_rgb_options:
-      - [52, 60, 77]
-      - [48, 68, 93]
-      - [77, 61, 81]
-      - [53, 77, 67]
+    - - 52
+      - 60
+      - 77
+    - - 48
+      - 68
+      - 93
+    - - 77
+      - 61
+      - 81
+    - - 53
+      - 77
+      - 67
     cell_label_font_size_px: 22
   task_overrides:
     task_icons__mirror_grid__mirror_symmetry_count:
@@ -223,9 +314,16 @@ rendering:
       reference_panel_width_px: 296
       palette_size_min: 4
       palette_size_max: 7
-      symmetric_icon_count_choices: [2, 4, 6]
-      both_axes_icon_count_choices: [4]
-      nonsymmetric_icon_count_choices: [2, 4, 6]
+      symmetric_icon_count_choices:
+      - 2
+      - 4
+      - 6
+      both_axes_icon_count_choices:
+      - 4
+      nonsymmetric_icon_count_choices:
+      - 2
+      - 4
+      - 6
       patch_inner_margin_px: 8
       patch_min_gap_px: 6
       patch_sampling_attempts: 160
@@ -236,24 +334,37 @@ rendering:
       scene_icon_size_min_px: 96
       scene_icon_size_max_px: 112
       reference_icon_size_px: 224
-      fragment_window_styles: [rectangle, rounded, ellipse]
-      fragment_window_width_fraction_range: [0.44, 0.70]
-      fragment_window_height_fraction_range: [0.44, 0.70]
-      fragment_visible_alpha_ratio_range: [0.34, 0.64]
+      fragment_window_styles:
+      - rectangle
+      - rounded
+      - ellipse
+      fragment_window_width_fraction_range:
+      - 0.44
+      - 0.7
+      fragment_window_height_fraction_range:
+      - 0.44
+      - 0.7
+      fragment_visible_alpha_ratio_range:
+      - 0.34
+      - 0.64
       fragment_alpha_density_min: 0.08
       fragment_sampling_attempts: 240
-      fragment_frame_rgb: [78, 91, 116]
+      fragment_frame_rgb:
+      - 78
+      - 91
+      - 116
       fragment_frame_width_px: 3
       reference_content_padding_px: 18
       scene_content_side_padding_px: 14
       scene_content_bottom_padding_px: 14
       scene_content_top_offset_px: 42
-      rotation_candidates_degrees: [0]
+      rotation_candidates_degrees:
+      - 0
     task_icons__two_anchor__between_anchors_count:
       scene_max_overlap_fraction: 0.08
       strip_boundary_margin_px: 14
       strip_span_ratio_min: 0.32
-      strip_span_ratio_max: 0.60
+      strip_span_ratio_max: 0.6
       strip_outside_ratio_min: 0.12
       anchor_edge_padding_px: 10
     task_icons__overlap_grid__occlusion_order_count:
@@ -262,18 +373,9 @@ rendering:
       reference_panel_width_px: 296
       reference_icon_size_px: 110
       pair_min_color_distance: 80.0
-      overlap_ratio_range: [0.40, 0.60]
-    task_icons__paired_canvas__panel_movement_direction_count:
-      canvas_width: 1104
-      canvas_height: 640
-      reference_panel_width_px: 516
-      scene_icon_size_min_px: 42
-      scene_icon_size_max_px: 78
-      reference_icon_size_px: 78
-      reference_icon_size_min_px: 42
-      reference_icon_size_max_px: 78
-      scene_max_overlap_fraction: 0.04
-      min_center_gap_frac: 0.135
+      overlap_ratio_range:
+      - 0.4
+      - 0.6
     task_icons__named_field__reference_distance_rank_label:
       canvas_width: 960
       canvas_height: 560
@@ -290,9 +392,18 @@ rendering:
       candidate_label_font_size_px: 24
       candidate_label_padding_px: 5
       candidate_label_gap_px: 4
-      candidate_label_color_rgb: [52, 60, 77]
-      candidate_label_background_rgb: [255, 255, 255]
-      candidate_label_border_rgb: [172, 183, 204]
+      candidate_label_color_rgb:
+      - 52
+      - 60
+      - 77
+      candidate_label_background_rgb:
+      - 255
+      - 255
+      - 255
+      candidate_label_border_rgb:
+      - 172
+      - 183
+      - 204
     task_icons__named_path__path_neighbor_label:
       canvas_width: 1280
       canvas_height: 720
@@ -310,33 +421,39 @@ rendering:
       candidate_label_font_size_px: 24
       candidate_label_padding_px: 5
       candidate_label_gap_px: 5
-      candidate_label_color_rgb: [52, 60, 77]
-      candidate_label_background_rgb: [255, 255, 255]
-      candidate_label_border_rgb: [172, 183, 204]
-      path_color_rgb: [92, 108, 134]
-      stop_fill_rgb: [255, 255, 255]
-      stop_outline_rgb: [92, 108, 134]
+      candidate_label_color_rgb:
+      - 52
+      - 60
+      - 77
+      candidate_label_background_rgb:
+      - 255
+      - 255
+      - 255
+      candidate_label_border_rgb:
+      - 172
+      - 183
+      - 204
+      path_color_rgb:
+      - 92
+      - 108
+      - 134
+      stop_fill_rgb:
+      - 255
+      - 255
+      - 255
+      stop_outline_rgb:
+      - 92
+      - 108
+      - 134
       endpoint_label_font_size_px: 18
-      endpoint_label_color_rgb: [58, 68, 86]
-      endpoint_label_background_rgb: [255, 255, 255]
-    task_icons__paired_canvas__original_attribute_label:
-      canvas_width: 1120
-      canvas_height: 640
-      reference_panel_width_px: 516
-      panel_gap_px: 24
-      scene_icon_size_min_px: 44
-      scene_icon_size_max_px: 66
-      scene_max_overlap_fraction: 0.0
-      scene_placement_max_attempts: 420
-      icon_collision_gap_px: 8
-      paired_position_jitter_px: 14
-      candidate_label_font_size_px: 24
-      candidate_label_padding_px: 5
-      candidate_label_gap_px: 6
-      candidate_label_color_rgb: [52, 60, 77]
-      candidate_label_background_rgb: [255, 255, 255]
-      candidate_label_border_rgb: [172, 183, 204]
-
+      endpoint_label_color_rgb:
+      - 58
+      - 68
+      - 86
+      endpoint_label_background_rgb:
+      - 255
+      - 255
+      - 255
 prompt:
   shared:
     bundle_id: icons_relation_v0
@@ -346,95 +463,83 @@ prompt:
     task_icons__mirror_grid__mirror_symmetry_count:
       scene_key: reference_grid_mirror_symmetry_relation
       object_description: a Reference cell beside a labeled Scene grid
-      question_text: How many labeled Scene cells have the same mirror symmetry as the Reference cell? The symmetry may be vertical, horizontal, either diagonal, or both vertical and horizontal.
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every matching Scene cell
+      question_text: How many labeled Scene cells have the same mirror symmetry as
+        the Reference cell? The symmetry may be vertical, horizontal, either diagonal,
+        or both vertical and horizontal.
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
+        in image pixel coordinates around every matching Scene cell
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[360,120,560,320],[590,120,790,320]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__icon_cutout__partial_match_label:
       scene_key: icon_cutout_relation
       object_description: a partial icon fragment beside six labeled full-icon options
-      question_text_partial_icon_match_label: Which labeled full icon does the partial fragment come from?
-      annotation_hint: set "annotation" to a JSON object with keys "source_fragment" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      question_text_partial_icon_match_label: Which labeled full icon does the partial
+        fragment come from?
+      annotation_hint: set "annotation" to a JSON object with keys "source_fragment"
+        and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel
+        coordinates
       answer_hint: set "answer" to the selected option letter as a string
       json_example: '{"annotation":{"source_fragment":[84,168,248,332],"selected_option":[492,112,662,282]},"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_icons__two_anchor__between_anchors_count:
       scene_key: scene_two_anchor_relation
       object_description: a panel with two icons marked A and B
-      question_text_vertical_strip: How many other icons have centers in the vertical strip between A and B?
-      question_text_horizontal_strip: How many other icons have centers in the horizontal strip between A and B?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted icons other than A and B
+      question_text_vertical_strip: How many other icons have centers in the vertical
+        strip between A and B?
+      question_text_horizontal_strip: How many other icons have centers in the horizontal
+        strip between A and B?
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
+        in image pixel coordinates for all counted icons other than A and B
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[312,180,372,240],[540,286,612,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__overlap_grid__occlusion_order_count:
       scene_key: reference_grid_occlusion_relation
       object_description: a Reference cell beside a labeled Scene grid
-      question_text: How many labeled Scene cells match the Reference front-to-back order? Front-to-back order means which icon is on top.
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells
+      question_text: How many labeled Scene cells match the Reference front-to-back
+        order? Front-to-back order means which icon is on top.
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
+        in image pixel coordinates around all matching Scene cells
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
-    task_icons__reference_canvas__anchor_position_count:
-      object_description: a Reference icon beside a Scene panel with one icon marked Anchor
-      question_text_left: How many Scene icons match the Reference type and are to the left of the Anchor?
-      question_text_right: How many Scene icons match the Reference type and are to the right of the Anchor?
-      question_text_above: How many Scene icons match the Reference type and are above the Anchor?
-      question_text_below: How many Scene icons match the Reference type and are below the Anchor?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted Scene icons
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[438,162,498,222],[602,302,670,370]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__panel_movement_direction_count:
-      scene_key: paired_canvas_relation
-      object_description: two icon panels labeled Left and Right with the same icons in changed positions
-      question_text_moved_left_count: How many icons moved left from the Left panel to the Right panel?
-      question_text_moved_right_count: How many icons moved right from the Left panel to the Right panel?
-      question_text_moved_up_count: How many icons moved up from the Left panel to the Right panel?
-      question_text_moved_down_count: How many icons moved down from the Left panel to the Right panel?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted Right-panel icon
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
     task_icons__named_field__reference_distance_rank_label:
       scene_key: named_reference_distance_relation
-      object_description: a panel with one named reference icon, six option icons labeled A-F, and other icons
-      question_text_closest_to_named_reference_label: Which labeled icon is closest to the {reference_description}?
-      question_text_second_closest_to_named_reference_label: Which labeled icon is second closest to the {reference_description}?
-      question_text_farthest_from_named_reference_label: Which labeled icon is farthest from the {reference_description}?
-      annotation_hint: set "annotation" to a JSON object with keys "reference_icon" and "selected_candidate", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      object_description: a panel with one named reference icon, six option icons
+        labeled A-F, and other icons
+      question_text_closest_to_named_reference_label: Which labeled icon is closest
+        to the {reference_description}?
+      question_text_second_closest_to_named_reference_label: Which labeled icon is
+        second closest to the {reference_description}?
+      question_text_farthest_from_named_reference_label: Which labeled icon is farthest
+        from the {reference_description}?
+      annotation_hint: set "annotation" to a JSON object with keys "reference_icon"
+        and "selected_candidate", each mapped to a [x0, y0, x1, y1] box in image pixel
+        coordinates
       answer_hint: set "answer" to the selected option letter as a string
       json_example: '{"annotation":{"reference_icon":[172,238,244,310],"selected_candidate":[612,184,676,248]},"answer":"D"}'
       json_example_answer_only: '{"answer":"D"}'
     task_icons__named_path__path_neighbor_label:
       scene_key: named_path_relation
-      object_description: a START-to-END icon path with six option icons labeled A-F and other icons
-      question_text_after_first_shape_label: Which labeled icon comes immediately after the first "{target_shape_name}" icon along the path from START to END?
-      question_text_before_first_shape_label: Which labeled icon comes immediately before the first "{target_shape_name}" icon along the path from START to END?
-      question_text_after_last_shape_label: Which labeled icon comes immediately after the last "{target_shape_name}" icon along the path from START to END?
-      question_text_before_last_shape_label: Which labeled icon comes immediately before the last "{target_shape_name}" icon along the path from START to END?
-      question_text_after_second_shape_label: Which labeled icon comes immediately after the second "{target_shape_name}" icon along the path from START to END?
-      question_text_before_second_shape_label: Which labeled icon comes immediately before the second "{target_shape_name}" icon along the path from START to END?
-      annotation_hint: set "annotation" to a JSON object with keys "queried_icon" and "selected_neighbor"; values are [x0, y0, x1, y1] pixel boxes for the two witnessed icons
+      object_description: a START-to-END icon path with six option icons labeled A-F
+        and other icons
+      question_text_after_first_shape_label: Which labeled icon comes immediately
+        after the first "{target_shape_name}" icon along the path from START to END?
+      question_text_before_first_shape_label: Which labeled icon comes immediately
+        before the first "{target_shape_name}" icon along the path from START to END?
+      question_text_after_last_shape_label: Which labeled icon comes immediately after
+        the last "{target_shape_name}" icon along the path from START to END?
+      question_text_before_last_shape_label: Which labeled icon comes immediately
+        before the last "{target_shape_name}" icon along the path from START to END?
+      question_text_after_second_shape_label: Which labeled icon comes immediately
+        after the second "{target_shape_name}" icon along the path from START to END?
+      question_text_before_second_shape_label: Which labeled icon comes immediately
+        before the second "{target_shape_name}" icon along the path from START to
+        END?
+      annotation_hint: set "annotation" to a JSON object with keys "queried_icon"
+        and "selected_neighbor"; values are [x0, y0, x1, y1] pixel boxes for the two
+        witnessed icons
       answer_hint: set "answer" to the selected option letter as a string
       json_example: '{"annotation":{"queried_icon":[218,314,274,370],"selected_neighbor":[548,248,604,304]},"answer":"E"}'
       json_example_answer_only: '{"answer":"E"}'
-    task_icons__paired_canvas__original_attribute_label:
-      scene_key: paired_named_original_relation
-      object_description: two icon panels labeled Original and Right; the Right panel contains six option icons labeled A-F and other icons
-      question_text_original_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
-      question_text_original_color_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
-      question_text_original_fill_shape_label: Which labeled icon in the Right panel was originally a {target_description} icon in the Original panel?
-      annotation_hint: set "annotation" to a JSON object with keys "original_icon" and "right_icon"; values are [x0, y0, x1, y1] pixel boxes for the matched icons
-      answer_hint: set "answer" to the selected Right-panel option letter as a string
-      json_example: '{"annotation":{"original_icon":[168,210,224,266],"right_icon":[716,214,772,270]},"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      spatial_reasoning: 0.55
-      visual_scan: 0.05
-      ambiguity: 0.35
-      clutter: 0.05

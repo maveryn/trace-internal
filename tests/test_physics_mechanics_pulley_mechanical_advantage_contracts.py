@@ -308,7 +308,7 @@ def test_physics_mechanics_pulley_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["task_group"] == "mechanics" for record in train_records)
+    assert all(record["scene_id"] == "mechanics" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
 

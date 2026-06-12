@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.solid_formula import (
+from trace.tasks.geometry.solid_formula.cylinder_cone_height_from_volume_radius import (
     SCENE_ID,
     GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask,
-    GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask,
-    GeometrySolidFormulaHousePrismLengthFromVolumeTask,
-    GeometrySolidFormulaPrismPyramidHeightFromVolumeTask,
 )
+from trace.tasks.geometry.solid_formula.cylinder_cone_radius_from_volume_heights import GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask
+from trace.tasks.geometry.solid_formula.house_prism_length_from_volume import GeometrySolidFormulaHousePrismLengthFromVolumeTask
+from trace.tasks.geometry.solid_formula.prism_pyramid_height_from_volume import GeometrySolidFormulaPrismPyramidHeightFromVolumeTask
 
 TASK_CLASSES = (
     GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask,

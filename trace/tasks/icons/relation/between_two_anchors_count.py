@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -28,7 +28,6 @@ from ...shared.prompt_variants import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.anchor_marking import draw_anchor_marker
-from ..shared.complexity import build_icons_relation_between_two_anchors_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
@@ -138,7 +137,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__two_anchor__between_anchors_count",
@@ -730,7 +729,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
 
     task_id = "task_icons__two_anchor__between_anchors_count"
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic two-anchor strip relation instance."""
@@ -849,7 +848,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -989,27 +988,6 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             },
             "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
-        complexity = build_icons_relation_between_two_anchors_count_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
-            query_id=str(scene_payload.query_id),
-            object_count=int(scene_payload.object_count),
-            target_count=int(scene_payload.target_count),
-            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
-            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
-            scene_content_bbox=scene_payload.panel_geometry["scene_content_xyxy"],
-            anchor_a_center_xy=scene_payload.anchor_a_center_xy,
-            anchor_b_center_xy=scene_payload.anchor_b_center_xy,
-            strip_boundary_margin_px=int(scene_payload.strip_boundary_margin_px),
-            strip_span_ratio_min=float(
-                group_default(_RENDER_DEFAULTS, "strip_span_ratio_min", _DEFAULTS.strip_span_ratio_min)
-            ),
-            strip_span_ratio_max=float(
-                group_default(_RENDER_DEFAULTS, "strip_span_ratio_max", _DEFAULTS.strip_span_ratio_max)
-            ),
-            scene_instances=scene_payload.scene_instances,
-            render_params=render_params,
-        )
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
@@ -1021,7 +999,6 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(public_query_id),
         )

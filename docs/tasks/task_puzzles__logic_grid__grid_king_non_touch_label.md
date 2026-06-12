@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__logic_grid__grid_king_non_touch_label`
 4. Scene id: `logic_grid`
 5. Goal: choose the option that fills one missing cell while identical symbols do not touch by edge or corner.

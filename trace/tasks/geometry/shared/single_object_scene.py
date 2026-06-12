@@ -107,7 +107,6 @@ def resolve_graph_scene_context(
         instance_seed=int(instance_seed or 0),
         params=params,
         scene_id="graph_paper_panel",
-        task_group="shared",
         require_grid=False,
         allow_dark=False,
     )

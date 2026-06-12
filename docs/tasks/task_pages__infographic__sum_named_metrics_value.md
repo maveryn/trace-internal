@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `infographic`
+2. Scene: `infographic`
 3. Scene id: `infographic`
 4. Task id: `task_pages__infographic__sum_named_metrics_value`
 5. Objective: Compute the sum of named metric-card values in an infographic.

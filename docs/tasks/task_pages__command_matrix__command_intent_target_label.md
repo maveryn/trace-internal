@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Task id: `task_pages__command_matrix__command_intent_target_label`
 4. Objective: identify the labeled command cell matching referenced intent/object cues, a shuffled intent guide, object row cue chips, and coded action header.
 5. Answer type: `option_letter`

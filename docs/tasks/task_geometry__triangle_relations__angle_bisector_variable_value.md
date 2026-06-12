@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `triangle_relations`
 3. Scene id: `triangle_relations`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `split_segment_ratio_variable` or `adjacent_side_ratio_variable`
@@ -36,5 +36,5 @@ Expression labels, tick marks, vertex labels, and solved variable values remain 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/split_triangle_patterns.py`
+- Config: `configs/domains/geometry/triangle_relations.yaml`
+- Task module: `trace/tasks/geometry/triangle_relations/angle_bisector_variable_value.py`

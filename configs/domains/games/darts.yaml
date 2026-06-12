@@ -2,10 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       single_board: 1.0
-    query_id_weights:
-      total_score: 1.0
-      ring_count: 1.0
-      threshold_score_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -13,42 +9,32 @@ generation:
       league_blue: 1.0
       parchment: 1.0
       neon: 1.0
-    target_ring_weights:
-      single: 1.0
-      double: 1.0
-      triple: 1.0
-      bull: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_dart_count_sampling: true
-    balanced_target_ring_sampling: true
-    balanced_target_threshold_sampling: true
-    balanced_score_option_count_sampling: true
-    count_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    total_score_dart_count_support:
-    - 1
-    score_option_count_support:
-    - 4
-    - 6
-    count_query_dart_count_support:
-    - 5
-    - 6
-    - 7
-    - 8
-    target_threshold_support:
-    - 20
-    - 25
-    - 30
-    - 40
-    - 50
+  task_overrides:
+    task_games__darts__ring_count:
+      balanced_dart_count_sampling: true
+      balanced_target_answer_sampling: true
+      balanced_target_ring_sampling: true
+      count_query_dart_count_support: [5, 6, 7, 8]
+      count_target_answer_support: [0, 1, 2, 3, 4, 5]
+      target_ring_weights:
+        single: 1.0
+        double: 1.0
+        triple: 1.0
+        bull: 1.0
+    task_games__darts__threshold_score_count:
+      balanced_dart_count_sampling: true
+      balanced_target_answer_sampling: true
+      balanced_target_threshold_sampling: true
+      count_query_dart_count_support: [5, 6, 7, 8]
+      count_target_answer_support: [0, 1, 2, 3, 4, 5]
+      target_threshold_support: [20, 25, 30, 40, 50]
+    task_games__darts__total_score_option_label:
+      balanced_dart_count_sampling: true
+      balanced_score_option_count_sampling: true
+      total_score_dart_count_support: [1]
+      score_option_count_support: [4, 6]
 rendering:
   shared:
     canvas_width: 1040
@@ -59,37 +45,8 @@ rendering:
     marker_radius_px: 17
     number_font_size_px: 36
     title_font_size_px: 30
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.28
-      board_reasoning: 0.34
-      arithmetic_load: 0.26
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_darts_v0
+    bundle_id: games_darts_v1
     scene_key: visible_dartboard
     task_key: darts_score_query
-    object_description_single_board: a labeled dartboard with visible dart markers
-    scoring_rule_text: A dart in a numbered single area scores that number; a dart
-      in the double ring scores twice the number; a dart in the triple ring scores
-      three times the number; the outer bull scores 25 and the inner bull scores 50.
-    ring_rule_text: The yellow highlight marks the requested scoring area. The double
-      ring is the outer scoring band near the board edge. The triple ring is the
-      inner scoring band between the bull and the outer edge. The bull is the center
-      area. Single areas are the numbered wedge areas outside the bull that are not
-      in the double or triple ring.
-    annotation_hint_total_score: set "annotation" to a JSON array with one pixel point
-      [x, y] at the center of the marked dart
-    annotation_hint_ring_count: set "annotation" to a JSON array of pixel points [x,
-      y] at the center of every marked dart in the requested ring or area
-    annotation_hint_threshold_score_count: set "annotation" to a JSON array of pixel
-      points [x, y] at the center of every marked dart whose score is at least the
-      requested threshold
-    answer_hint_total_score: set "answer" to the option letter shown in the image
-      for the total score
-    answer_hint_ring_count: set "answer" to the number of marked darts in the requested
-      ring or area; use 0 if none are in that area
-    answer_hint_threshold_score_count: set "answer" to the number of marked darts
-      whose score is at least the requested threshold

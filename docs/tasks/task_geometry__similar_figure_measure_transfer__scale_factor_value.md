@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `similar_figure_measure_transfer`
 3. Scene id: `similar_figure_measure_transfer`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `scale_factor_from_side_pair`, `scale_factor_from_perimeter_pair`, or `scale_factor_from_area_pair`
@@ -32,5 +32,5 @@ Perimeter and area labels remain visible annotations plus verifier metadata, not
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/similar_figure_measure_transfer.py`
+- Config: `configs/domains/geometry/similar_figure_measure_transfer.yaml`
+- Task module: `trace/tasks/geometry/similar_figure_measure_transfer/scale_factor_value.py`

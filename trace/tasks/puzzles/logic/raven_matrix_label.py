@@ -8,7 +8,7 @@ from itertools import combinations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -23,8 +23,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, resolve_puzzle_complexity_weights
-from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin
 from ..shared.logic_common import PuzzleLogicDefaults, resolve_logic_render_params
 from ..shared.raven_scene import SUPPORTED_PUZZLE_RAVEN_SCENE_VARIANTS, render_puzzle_raven_scene
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -103,13 +102,12 @@ _POSITION_STEPS: Tuple[Tuple[int, int], ...] = (
 )
 
 _DEFAULTS = PuzzleLogicDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "logic")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "logic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="logic", apply_prob=0.0)
 
 
 def _canonical_panel_spec(panel_spec: Mapping[str, Any]) -> str:
@@ -974,7 +972,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "logic"
+    scene_id = "logic"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
@@ -1072,7 +1070,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1189,14 +1187,6 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 "bbox_set": list(annotation_bboxes),
             },
         }
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": 1.0,
-                "reasoning_load": float(_QUERY_ID_REASONING_LOAD[str(query_id)]),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -1204,7 +1194,6 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -3,7 +3,7 @@
 ## Identity
 - domain: `icons`
 - scene_id: `pattern_grid`
-- task_group: `pattern`
+- scene_id: `pattern`
 - module: `trace/tasks/icons/pattern/grid_color_violation.py`
 - prompt bundle: `icons_pattern_v0`
 

@@ -43,7 +43,6 @@ generation:
     task_pages__process_flow__lane_filtered_handoff_count:
       node_count_min: 11
       node_count_max: 14
-
 rendering:
   shared:
     canvas_width: 1200
@@ -71,60 +70,77 @@ rendering:
     layout_jitter_y_px_min: -18
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 18
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      reasoning_load: 0.42
-      lane_count: 0.14
-      branch_count: 0.14
-
 prompt:
   shared:
     bundle_id: pages_process_flow_v0
     scene_key: process_flow_diagram
-    object_description: a labeled process-flow diagram with lanes, step boxes, status badges, and arrows
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description: a labeled process-flow diagram with lanes, step boxes, status
+      badges, and arrows
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     integer_answer_hint: set "answer" to the requested integer count
     label_answer_hint: set "answer" to the exact visible step label as a string
-    annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted step boxes
-    annotation_hint_path_endpoint: set "annotation" to an object mapping start_step, first_decision_label, intermediate_step, second_decision_label, and endpoint_step to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
-    annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
+    annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
+      bounding boxes for the counted step boxes
+    annotation_hint_path_endpoint: set "annotation" to an object mapping start_step,
+      first_decision_label, intermediate_step, second_decision_label, and endpoint_step
+      to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
+    annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs
+      for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
   task_overrides:
     task_pages__process_flow__filtered_node_count:
       integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted step boxes
+      annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
+        bounding boxes for the counted step boxes
     task_pages__process_flow__condition_path_endpoint_label:
       label_answer_hint: set "answer" to the exact visible step label as a string
-      annotation_hint_path_endpoint: set "annotation" to an object mapping start_step, first_decision_label, intermediate_step, second_decision_label, and endpoint_step to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
+      annotation_hint_path_endpoint: set "annotation" to an object mapping start_step,
+        first_decision_label, intermediate_step, second_decision_label, and endpoint_step
+        to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
     task_pages__process_flow__all_cross_lane_handoff_count:
       integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
+      annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs
+        for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
     task_pages__process_flow__lane_filtered_handoff_count:
       integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
-
+      annotation_hint_handoff_count: set "annotation" to an array of pixel point pairs
+        for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
 visual:
   background:
     enabled: true
     styles:
       paper_light:
         kind: solid
-        color: [242, 243, 239]
+        color:
+        - 242
+        - 243
+        - 239
       paper_cool:
         kind: solid
-        color: [235, 241, 244]
+        color:
+        - 235
+        - 241
+        - 244
       paper_warm:
         kind: solid
-        color: [246, 240, 230]
+        color:
+        - 246
+        - 240
+        - 230
       paper_green:
         kind: solid
-        color: [237, 244, 238]
+        color:
+        - 237
+        - 244
+        - 238
       paper_lavender:
         kind: solid
-        color: [241, 239, 248]
+        color:
+        - 241
+        - 239
+        - 248
     weights:
       paper_light: 1.0
       paper_cool: 1.0
@@ -133,13 +149,23 @@ visual:
       paper_lavender: 1.0
   noise:
     apply_prob: 0.5
-    edit_count_range: [1, 1]
+    edit_count_range:
+    - 1
+    - 1
     value_ranges:
       blur:
-        radius: [0.05, 0.25]
+        radius:
+        - 0.05
+        - 0.25
       downsample:
-        scale: [0.94, 0.99]
+        scale:
+        - 0.94
+        - 0.99
       jpeg:
-        quality: [86.0, 96.0]
+        quality:
+        - 86.0
+        - 96.0
       noise:
-        alpha: [0.006, 0.018]
+        alpha:
+        - 0.006
+        - 0.018

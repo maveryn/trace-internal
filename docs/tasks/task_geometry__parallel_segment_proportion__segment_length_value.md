@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `parallel_segment_proportion`
 3. Scene id: `parallel_segment_proportion`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `triangle_side_splitter_segment_length` or `parallel_transversal_segment_length`
@@ -34,5 +34,5 @@ Expression labels, parallel marks, vertex labels, and solved variable values rem
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/geo3k_marked_equations.py`
+- Config: `configs/domains/geometry/parallel_segment_proportion.yaml`
+- Task module: `trace/tasks/geometry/parallel_segment_proportion/segment_length_value.py`

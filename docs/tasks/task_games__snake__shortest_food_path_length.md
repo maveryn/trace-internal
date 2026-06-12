@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `snake`
+2. Scene: `snake`
 3. Scene id: `snake`
 4. Public task id: `task_games__snake__shortest_food_path_length`
 5. Supported `query_id` values: `shortest_food_path_length`

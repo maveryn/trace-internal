@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `wave_interference`
-- Implementation task group: `waves`
+- Implementation scene: `waves`
 - Implementation source: `trace/tasks/physics/waves/interference_tank.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__wave_interference__interference_point_choice` -> `task_physics__wave_interference__interference_point_choice`

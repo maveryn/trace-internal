@@ -1,2 +1,2 @@
-"""Physics mechanics task group."""
+"""Physics mechanics scene."""
 

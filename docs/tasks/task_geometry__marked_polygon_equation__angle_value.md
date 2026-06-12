@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `marked_polygon_equation`
 3. Scene id: `marked_polygon_equation`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `marked_equal_angle_from_expression` or `isosceles_triangle_angle_from_expression`
@@ -32,5 +32,5 @@ Expression labels, angle arcs, tick marks, vertex labels, and solved variable va
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/geo3k_marked_equations.py`
+- Config: `configs/domains/geometry/marked_polygon_equation.yaml`
+- Task module: `trace/tasks/geometry/marked_polygon_equation/angle_value.py`

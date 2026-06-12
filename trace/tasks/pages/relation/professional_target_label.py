@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ...registry import register_task
-from ..shared.fixed_query_task import FixedPagesQueryTaskMixin
+from trace.tasks.shared.fixed_query import FixedPagesQueryTaskMixin
 from .professional_target_common import (
     ProfessionalGuiRelationTaskBase,
     ProfessionalTaskDefinition,
@@ -171,7 +171,7 @@ class PagesWorkspaceToolbarPaletteControlLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__workspace__toolbar_palette_control_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "workspace"
     fixed_query_id = "toolbar_palette_control_label"
     source_task_cls = PagesRelationProfessionalTargetLabelTask
@@ -183,7 +183,7 @@ class PagesWorkspacePropertyPanelControlLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__workspace__property_panel_control_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "workspace"
     fixed_query_id = "property_panel_control_label"
     source_task_cls = PagesRelationProfessionalTargetLabelTask
@@ -195,7 +195,7 @@ class PagesWorkspaceCanvasWorkspaceControlLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__workspace__canvas_workspace_control_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "workspace"
     fixed_query_id = "canvas_workspace_control_label"
     source_task_cls = PagesRelationProfessionalTargetLabelTask
@@ -207,7 +207,7 @@ class PagesWorkspaceCodeWorkspaceControlLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__workspace__code_workspace_control_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "workspace"
     fixed_query_id = "code_workspace_control_label"
     source_task_cls = PagesRelationProfessionalTargetLabelTask
@@ -219,7 +219,7 @@ class PagesWorkspaceFileDialogControlLabelTask(FixedPagesQueryTaskMixin):
 
     task_id = "task_pages__workspace__file_dialog_control_label"
     domain = "pages"
-    task_group = "relation"
+    scene_id = "relation"
     public_scene_id = "workspace"
     fixed_query_id = "file_dialog_control_label"
     source_task_cls = PagesRelationProfessionalTargetLabelTask

@@ -8,8 +8,8 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.shared.snake_common import safe_next_directions, shortest_static_path_to_food, simulate_snake_moves
-from trace.tasks.games.snake.grid_tasks import (
+from trace.tasks.games.snake.shared.common import safe_next_directions, shortest_static_path_to_food, simulate_snake_moves
+from trace.tasks.games.snake.safe_direction_count import (
     GamesSnakeGridTask,
     GamesSnakeMoveSafetyTask,
     GamesSnakePathOutcomeTask,
@@ -77,7 +77,7 @@ def test_games_snake_safe_count_matches_trace() -> None:
         max_attempts=512,
     )
     state_payload = out.trace_payload["execution_trace"]["state"]
-    from trace.tasks.games.shared.snake_common import SnakeState
+    from trace.tasks.games.snake.shared.common import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),
@@ -99,7 +99,7 @@ def test_games_snake_path_result_option_matches_simulation() -> None:
     )
     execution = out.trace_payload["execution_trace"]
     state_payload = execution["state"]
-    from trace.tasks.games.shared.snake_common import SnakeState
+    from trace.tasks.games.snake.shared.common import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),
@@ -124,7 +124,7 @@ def test_games_snake_shortest_food_path_length_matches_trace(target_length: int)
     )
     execution = out.trace_payload["execution_trace"]
     state_payload = execution["state"]
-    from trace.tasks.games.shared.snake_common import SnakeState
+    from trace.tasks.games.snake.shared.common import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),
@@ -163,4 +163,4 @@ def test_games_snake_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "snake" for row in rows)
+    assert all(row.get("scene_id") == "snake" for row in rows)

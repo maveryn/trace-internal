@@ -27,17 +27,6 @@ rendering:
       inset_tiles: 1.0
       thin_line: 1.0
       lab_matrix: 1.0
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.5
-      reasoning_load: 0.5
-      scene_variant_load: 0.0
-  task_overrides:
-    cell_board_symmetry_violation_count_internal:
-      criteria_weights:
-        visual_scan: 0.45
-        reasoning_load: 0.55
 visual:
   background:
     enabled: true
@@ -102,13 +91,15 @@ visual:
         - 0.04
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
     bundle_id: puzzles_cell_board_symmetry_v0
     scene_key: rectangular_tile_board
     task_key: symmetry_violation_count_query
     answer_hint: set "answer" to the number of violating tiles as an integer
-    annotation_hint: set "annotation" to an array of image pixel points [x, y] at the centers of every violating tile on the counted
-      side
+    annotation_hint: set "annotation" to an array of image pixel points [x, y] at
+      the centers of every violating tile on the counted side
     json_example: '{"annotation":[[216,120],[216,168]],"answer":2}'
     json_example_answer_only: '{"answer":2}'

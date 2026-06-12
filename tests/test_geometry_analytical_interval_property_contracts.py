@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.analytical.function_property_label import (
-    GeometryAnalyticalFunctionPropertyLabelTask,
-    GeometryFunctionPanelsSignIntervalLabelTask,
-)
+from trace.tasks.geometry.function_panels.function_status_label import GeometryAnalyticalFunctionPropertyLabelTask
+from trace.tasks.geometry.function_panels.sign_interval_label import GeometryFunctionPanelsSignIntervalLabelTask
 
 
 @pytest.mark.parametrize(

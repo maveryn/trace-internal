@@ -1,0 +1,154 @@
+{
+  "bundle_id": "illustrations_single_object_figure_visible_part_count_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "visible_part_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:single_object_figure": [
+      "object_description"
+    ],
+    "query:bird_visible_leg_count": [],
+    "query:quadruped_visible_leg_count": [],
+    "query:airplane_visible_wing_count": [],
+    "query:butterfly_visible_wing_count": [],
+    "query:bicycle_visible_wheel_count": [],
+    "query:traffic_light_visible_lens_count": [],
+    "query:clover_visible_leaf_count": [],
+    "query:star_visible_point_count": [],
+    "query:glove_visible_finger_count": [],
+    "query:fork_visible_tine_count": [],
+    "query:snowflake_visible_arm_count": [],
+    "query:chair_visible_leg_count": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "single_object_figure": [
+      "The image shows {object_description}.",
+      "This image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The scene shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "bird_visible_leg_count": [
+      "How many visible legs does the bird have?",
+      "Count the visible legs on the bird.",
+      "What is the bird's visible leg count?",
+      "How many bird legs can be seen?",
+      "How many legs are visible on the bird?"
+    ],
+    "quadruped_visible_leg_count": [
+      "How many visible legs does the animal have?",
+      "Count the visible legs on the animal.",
+      "What is the animal's visible leg count?",
+      "How many animal legs can be seen?",
+      "How many legs are visible on the animal?"
+    ],
+    "airplane_visible_wing_count": [
+      "How many visible wings does the airplane have?",
+      "Count the visible wings on the airplane.",
+      "What is the airplane's visible wing count?",
+      "How many airplane wings can be seen?",
+      "How many wings are visible on the airplane?"
+    ],
+    "butterfly_visible_wing_count": [
+      "How many visible wings does the butterfly have?",
+      "Count the visible wings on the butterfly.",
+      "What is the butterfly's visible wing count?",
+      "How many butterfly wings can be seen?",
+      "How many wings are visible on the butterfly?"
+    ],
+    "bicycle_visible_wheel_count": [
+      "How many visible wheels does the bicycle have?",
+      "Count the visible wheels on the bicycle.",
+      "What is the bicycle's visible wheel count?",
+      "How many bicycle wheels can be seen?",
+      "How many wheels are visible on the bicycle?"
+    ],
+    "traffic_light_visible_lens_count": [
+      "How many visible lenses does the traffic light have?",
+      "Count the visible lenses on the traffic light.",
+      "What is the traffic light's visible lens count?",
+      "How many traffic-light lenses can be seen?",
+      "How many lenses are visible on the traffic light?"
+    ],
+    "clover_visible_leaf_count": [
+      "How many visible leaves does the clover have?",
+      "Count the visible leaves on the clover.",
+      "What is the clover's visible leaf count?",
+      "How many clover leaves can be seen?",
+      "How many leaves are visible on the clover?"
+    ],
+    "star_visible_point_count": [
+      "How many visible points does the star have?",
+      "Count the visible points on the star.",
+      "What is the star's visible point count?",
+      "How many star points can be seen?",
+      "How many points are visible on the star?"
+    ],
+    "glove_visible_finger_count": [
+      "How many visible fingers does the glove have?",
+      "Count the visible fingers on the glove.",
+      "What is the glove's visible finger count?",
+      "How many glove fingers can be seen?",
+      "How many fingers are visible on the glove?"
+    ],
+    "fork_visible_tine_count": [
+      "How many visible tines does the fork have?",
+      "Count the visible tines on the fork.",
+      "What is the fork's visible tine count?",
+      "How many fork tines can be seen?",
+      "How many tines are visible on the fork?"
+    ],
+    "snowflake_visible_arm_count": [
+      "How many visible arms does the snowflake have?",
+      "Count the visible arms on the snowflake.",
+      "What is the snowflake's visible arm count?",
+      "How many snowflake arms can be seen?",
+      "How many arms are visible on the snowflake?"
+    ],
+    "chair_visible_leg_count": [
+      "How many visible legs does the chair have?",
+      "Count the visible legs on the chair.",
+      "What is the chair's visible leg count?",
+      "How many chair legs can be seen?",
+      "How many legs are visible on the chair?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}
+

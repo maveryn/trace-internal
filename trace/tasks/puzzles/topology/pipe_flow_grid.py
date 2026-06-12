@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -29,7 +29,6 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font
 from ..shared.common import projected_puzzle_bbox_annotation, resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_noise_defaults
@@ -193,8 +192,8 @@ class _Defaults:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "topology")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="topology", apply_prob=0.0)
 
 
 def _to_int(value: Any, fallback: int) -> int:
@@ -1388,7 +1387,7 @@ def _build_prompt(prompt_defaults: Mapping[str, Any], *, scene_variant: str, ins
     }
     prompt_selection = render_task_prompt_variants(
         domain="puzzles",
-        task_group="topology",
+        scene_id="topology",
         bundle_id=str(prompt_values["bundle_id"]),
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
@@ -1412,13 +1411,12 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "topology"
+    scene_id = "topology"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        group_defaults = get_task_group_defaults("puzzles", "topology")
+        group_defaults = get_scene_defaults("puzzles", "topology")
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(group_defaults, task_id=TASK_ID)
-        complexity_weights = resolve_puzzle_complexity_weights(group_defaults, task_id=TASK_ID)
         last_error: Exception | None = None
         dataset: _Dataset | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -1599,14 +1597,6 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
             + 0.20 * normalize_int_with_bounds(int(dataset.candidate_count), [6, 6])
         )
         reasoning_load = clamp_unit_interval(0.38 + (0.32 * normalize_int_with_bounds(int(len(dataset.path_cells)), [10, 24])))
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(reasoning_load),
-                "scene_variant_load": float(_SCENE_LOAD[str(dataset.scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -1614,7 +1604,6 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

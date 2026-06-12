@@ -2,14 +2,6 @@ generation:
   shared:
     scene_variant_weights:
       standard_board: 1.0
-    query_id_weights:
-      legal_move_count: 1.0
-      hit_move_count: 1.0
-      blocked_destination_count: 1.0
-      black_single_checker_point_count: 1.0
-      white_single_checker_point_count: 1.0
-      black_two_or_more_checker_point_count: 1.0
-      white_two_or_more_checker_point_count: 1.0
     style_variant_weights:
       classic: 1.0
       navy: 1.0
@@ -20,37 +12,16 @@ generation:
       black: 1.0
       white: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_active_player_sampling: true
     balanced_target_answer_sampling: true
-    legal_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-    hit_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-    blocked_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-    point_state_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
+  task_overrides:
+    task_games__backgammon__destination_count:
+      legal_count_support: [1, 2, 3, 4, 5]
+      hit_count_support: [0, 1, 2, 3, 4, 5]
+      blocked_count_support: [0, 1, 2, 3, 4]
+    task_games__backgammon__point_state_count:
+      point_state_count_support: [0, 1, 2, 3, 4, 5, 6]
 rendering:
   shared:
     canvas_width: 1000
@@ -70,31 +41,8 @@ rendering:
     canvas_min_height_px: 420
     canvas_side_padding_px: 90
     canvas_vertical_padding_px: 80
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      move_reasoning: 0.36
-      ambiguity: 0.14
-      output_burden: 0.16
 prompt:
   shared:
-    bundle_id: games_backgammon_v0
+    bundle_id: games_backgammon_v1
     scene_key: visible_backgammon_board
     task_key: backgammon_query
-    object_description_standard_board: a numbered backgammon board with black and white checker stacks and two dice
-    backgammon_rule_text: The board header shows which player moves and whether that player moves 24 to 1 or 1 to 24. For each occupied active-player point, use either shown die in that direction to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more opposing checkers is blocked.
-    annotation_hint_legal_move_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player can legally move
-    answer_hint_legal_move_count: set "answer" to the number of distinct legal destination points
-    annotation_hint_hit_move_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player would hit exactly one opposing checker
-    answer_hint_hit_move_count: set "answer" to the number of distinct hit destination points
-    annotation_hint_blocked_destination_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the distinct possible destination points blocked by two or more opposing checkers
-    answer_hint_blocked_destination_count: set "answer" to the number of distinct blocked destination points
-    annotation_hint_black_single_checker_point_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain exactly one black checker
-    answer_hint_black_single_checker_point_count: set "answer" to the number of numbered points that contain exactly one black checker
-    annotation_hint_white_single_checker_point_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain exactly one white checker
-    answer_hint_white_single_checker_point_count: set "answer" to the number of numbered points that contain exactly one white checker
-    annotation_hint_black_two_or_more_checker_point_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain two or more black checkers
-    answer_hint_black_two_or_more_checker_point_count: set "answer" to the number of numbered points that contain two or more black checkers
-    annotation_hint_white_two_or_more_checker_point_count: set "annotation" to bounding boxes [x0, y0, x1, y1] around the numbered points that contain two or more white checkers
-    answer_hint_white_two_or_more_checker_point_count: set "answer" to the number of numbered points that contain two or more white checkers

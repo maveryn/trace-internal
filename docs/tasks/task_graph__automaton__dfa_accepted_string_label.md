@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `automaton`
-3. Task group: `relation`
+3. Source package: `automaton`
 4. Task id: `task_graph__automaton__dfa_accepted_string_label`
 5. Objective: choose the candidate input string accepted by a deterministic finite automaton.
 
@@ -23,6 +23,12 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from `prompts/graph/automaton/automaton_v0.json` and `configs/domains/graph/automaton.yaml`, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.
+
+## Files
+1. Implementation: `trace/tasks/graph/automaton/dfa_accepted_string_label.py`
+2. Shared scene logic: `trace/tasks/graph/automaton/shared/string_acceptance.py`
+3. Config: `configs/domains/graph/automaton.yaml`
+4. Prompts: `prompts/graph/automaton/automaton_v0.json`

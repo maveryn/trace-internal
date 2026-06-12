@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `puzzles`
-2. Task group: `sudoku`
+2. Scene: `sudoku`
 3. Scene id: `sudoku`
 4. Public task id: `task_puzzles__sudoku__unit_missing_digits_count`
 5. Supported `query_id` values: `unit_missing_digits_count`

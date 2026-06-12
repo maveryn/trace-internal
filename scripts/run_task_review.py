@@ -14,6 +14,8 @@ from typing import Any, Dict, List, Mapping, Sequence
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import resolve_overlay_annotation
+from trace.core.scene_package_migration import is_scene_package_review_target_scene, is_scene_package_task
+from trace.core.scene_package_review_gate import audit_scene_package_review_candidate
 from trace.core.seed import hash64
 from trace.core.taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
 from trace.core.task_review_distribution import (
@@ -38,6 +40,14 @@ from trace.tasks import TASK_REGISTRY, create_task
 _SCENE_PREVIEW_ROWS_PER_TASK = 100
 
 
+def _registered_scene_id(task_id: str, task: Any) -> str | None:
+    """Return legacy scene routing for unmigrated tasks."""
+
+    if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
+        return None
+    return str(getattr(task, "scene_id", ""))
+
+
 def _resolve_task_ids(raw_tasks: str) -> List[str]:
     """Resolve selected task ids from CLI input."""
     if not str(raw_tasks).strip():
@@ -49,6 +59,74 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
     if unknown:
         raise ValueError(f"unknown task ids: {', '.join(sorted(unknown))}")
     return sorted(dict.fromkeys(task_ids))
+
+
+def _is_migration_review_root(path: Path) -> bool:
+    """Return whether the output root is the gated migration review workspace."""
+
+    parts = path.resolve().parts
+    return len(parts) >= 2 and parts[-2:] == ("review", "task-reviews")
+
+
+def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_root: Path) -> None:
+    """Refuse migration-review artifacts for scenes outside the central registry."""
+
+    if not _is_migration_review_root(out_root):
+        return
+
+    failures: list[str] = []
+    manual_audit_failures: list[str] = []
+    structural_audit_failures: list[str] = []
+    checked_scenes: set[tuple[str, str]] = set()
+    for task_id in task_ids:
+        task = create_task(str(task_id))
+        taxonomy = resolve_task_taxonomy(
+            str(task_id),
+            source_domain=str(getattr(task, "domain", "")),
+            source_scene_id=str(_registered_scene_id(str(task_id), task) or ""),
+        )
+        domain = str(taxonomy.domain)
+        scene_id = str(taxonomy.scene_id)
+        if not is_scene_package_review_target_scene(domain, scene_id):
+            failures.append(f"{task_id} -> {taxonomy.domain}/{taxonomy.scene_id}")
+            continue
+        scene_key = (domain, scene_id)
+        if scene_key in checked_scenes:
+            continue
+        checked_scenes.add(scene_key)
+        audit_path = out_root / domain / scene_id / "manual_code_audit_status.json"
+        try:
+            audit_status = json.loads(audit_path.read_text(encoding="utf-8"))
+        except Exception:
+            audit_status = None
+        if not isinstance(audit_status, Mapping) or not bool(audit_status.get("passed")):
+            manual_audit_failures.append(f"{domain}/{scene_id} -> {audit_path.relative_to(out_root)}")
+            continue
+        structural_audit = audit_scene_package_review_candidate(domain, scene_id)
+        if not bool(structural_audit.get("passed")):
+            scene_failures = structural_audit.get("failures")
+            if not isinstance(scene_failures, list):
+                scene_failures = ["unknown structural audit failure"]
+            structural_audit_failures.extend(f"{domain}/{scene_id}: {failure}" for failure in scene_failures)
+    if failures:
+        raise ValueError(
+            "refusing to write review/task-reviews artifacts for scenes that are not "
+            "centrally registered as scene-package review candidates:\n  "
+            + "\n  ".join(sorted(failures))
+        )
+    if manual_audit_failures:
+        raise ValueError(
+            "refusing to write review/task-reviews artifacts before manual code/role-boundary "
+            "audit passes. Create review/task-reviews/<domain>/<scene_id>/"
+            "manual_code_audit_status.json with passed: true after a real scene source audit:\n  "
+            + "\n  ".join(sorted(manual_audit_failures))
+        )
+    if structural_audit_failures:
+        raise ValueError(
+            "refusing to write review/task-reviews artifacts because automated scene-package "
+            "source audit failed:\n  "
+            + "\n  ".join(sorted(structural_audit_failures))
+        )
 
 
 def _parse_cli() -> argparse.Namespace:
@@ -151,9 +229,11 @@ def _inspection_rows_from_task_dir(*, out_root: Path, task_dir: Path) -> List[Di
         except ValueError:
             rel_data_path = data_path.as_posix()
 
+        task_id = str(payload.get("task_id") or payload.get("task") or task_dir.name)
         rows.append(
             {
-                "task": str(payload.get("task", task_dir.name)),
+                "task": task_id,
+                "task_id": task_id,
                 "scene_id": str(payload.get("scene_id", task_dir.parent.name)),
                 "query_id": str(payload.get("query_id", "")),
                 "prompt": prompt,
@@ -249,7 +329,7 @@ def build_scene_review_workbook(*, out_root: Path, domain: str, scene_id: str) -
         taxonomy = resolve_task_taxonomy(
             task_id,
             source_domain=str(getattr(task, "domain", "")),
-            source_task_group=str(getattr(task, "task_group", "")),
+            source_scene_id=str(_registered_scene_id(task_id, task) or ""),
         )
         if str(taxonomy.domain) != str(domain) or str(taxonomy.scene_id) != str(scene_id):
             continue
@@ -368,7 +448,7 @@ def _build_inspection_rows(
     taxonomy = resolve_task_taxonomy(
         str(task_id),
         source_domain=str(getattr(task, "domain", "")),
-        source_task_group=str(getattr(task, "task_group", "")),
+        source_scene_id=str(_registered_scene_id(str(task_id), task) or ""),
     )
     for artifact_subdir in ("images", "data"):
         shutil.rmtree(task_dir / artifact_subdir, ignore_errors=True)
@@ -471,9 +551,10 @@ def _build_inspection_rows(
                 taxonomy=taxonomy,
                 query_id=query_id,
                 registered_domain=str(getattr(task, "domain", "")),
-                registered_task_group=str(getattr(task, "task_group", "")),
+                registered_scene_id=_registered_scene_id(str(task_id), task),
             )
             data_payload = {
+                "task_id": str(task_id),
                 "task": str(task_id),
                 "domain": str(taxonomy.domain),
                 "scene_id": str(taxonomy.scene_id),
@@ -597,6 +678,7 @@ def main() -> int:
 
     task_ids = _resolve_task_ids(str(args.tasks))
     out_root = Path(str(args.out_root)).resolve()
+    _validate_tasks_may_write_review_artifacts(task_ids=task_ids, out_root=out_root)
     out_root.mkdir(parents=True, exist_ok=True)
 
     summary: Dict[str, Any] = {
@@ -624,7 +706,7 @@ def main() -> int:
         taxonomy = resolve_task_taxonomy(
             str(task_id),
             source_domain=str(getattr(task, "domain", "")),
-            source_task_group=str(getattr(task, "task_group", "")),
+            source_scene_id=str(_registered_scene_id(str(task_id), task) or ""),
         )
         task_dir = _resolve_task_review_dir(out_root=out_root, task_id=str(task_id), task_obj=task)
         task_dir.mkdir(parents=True, exist_ok=True)
@@ -634,9 +716,11 @@ def main() -> int:
             "domain": str(taxonomy.domain),
             "scene_id": str(taxonomy.scene_id),
             "source_domain": str(task.domain),
-            "task_group": str(task.task_group),
             "reports": {},
         }
+        scene_id = _registered_scene_id(str(task_id), task)
+        if scene_id is not None:
+            task_summary["scene_id"] = str(scene_id)
         touched_scene_keys.add((str(taxonomy.domain), str(taxonomy.scene_id)))
 
         random_rows: List[Dict[str, Any]] = []
@@ -690,7 +774,6 @@ def main() -> int:
 
             distribution_report = _build_distribution_review_report(
                 task_id=str(task_id),
-                task_group=str(task.task_group),
                 domain=str(taxonomy.domain),
                 scene_id=str(taxonomy.scene_id),
                 random_rows=random_rows,

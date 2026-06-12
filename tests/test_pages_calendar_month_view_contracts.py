@@ -68,7 +68,7 @@ def test_pages_calendar_marked_day_class_count_build_smoke(tmp_path: Path) -> No
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "pages" for record in train_records)
-    assert all(record["task_group"] == "calendar" for record in train_records)
+    assert all(record["scene_id"] == "calendar" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_pages__calendar__marked_day_class_count"]) == 4
@@ -100,7 +100,7 @@ def test_pages_calendar_workday_offset_date_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "pages" for record in train_records)
-    assert all(record["task_group"] == "calendar" for record in train_records)
+    assert all(record["scene_id"] == "calendar" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_pages__calendar__workday_offset_date"]) == 4

@@ -1,6 +1,6 @@
 {
   "approved_current_task_merge_count": 1,
-  "base_program_contract_count": 968,
+  "base_program_contract_count": 978,
   "domains": {
     "charts": {
       "current_tasks": 188,
@@ -45,9 +45,9 @@
       "split_tasks": 0
     },
     "misc": {
-      "current_tasks": 42,
+      "current_tasks": 41,
       "delta": 0,
-      "proposed_tasks": 42,
+      "proposed_tasks": 41,
       "rename_tasks": 0,
       "split_tasks": 0
     },
@@ -73,26 +73,26 @@
       "split_tasks": 0
     },
     "three_d": {
-      "current_tasks": 33,
+      "current_tasks": 44,
       "delta": 0,
-      "proposed_tasks": 33,
+      "proposed_tasks": 44,
       "rename_tasks": 0,
       "split_tasks": 0
     }
   },
   "duplicate_base_program_contract_count": 0,
-  "live_task_count": 968,
+  "live_task_count": 978,
   "merge_candidate_count": 0,
-  "program_argument_row_count": 1160,
+  "program_argument_row_count": 1210,
   "program_argument_status_counts": {
-    "curated": 1029,
-    "inferred": 105,
+    "curated": 1063,
+    "inferred": 121,
     "needs_review": 26
   },
-  "program_signature_count": 137,
-  "proposed_task_count": 968,
+  "program_signature_count": 138,
+  "proposed_task_count": 978,
   "proposed_tasks_with_multiple_base_program_contracts": 0,
-  "query_row_count": 1160,
+  "query_row_count": 1210,
   "rename_task_count": 0,
   "split_task_count": 0
 }

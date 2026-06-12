@@ -15,7 +15,7 @@ from trace.tasks.games.nine_mens_morris.pieces_in_mill_count import (
     GamesNineMensMorrisMillCompletionPointCountTask,
     GamesNineMensMorrisPiecesInMillCountTask,
 )
-from trace.tasks.games.shared.morris_common import MILL_POSITION_INDICES, POSITION_LAYOUT
+from trace.tasks.games.nine_mens_morris.shared.common import MILL_POSITION_INDICES, POSITION_LAYOUT
 from trace.tasks.games.shared.style import SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
@@ -269,7 +269,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path)
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 6
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record["task_group"] == "nine_mens_morris" for record in train_records)
+    assert all(record.get("scene_id") == "nine_mens_morris" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__nine_mens_morris__pieces_in_mill_count"]) == 4

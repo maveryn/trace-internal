@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `relation`
+2. Source package: `automaton`
 3. Scene id: `automaton`
 4. Task id: `task_graph__automaton__state_after_input_label`
 5. Objective: follow a short input string through a visible deterministic state-transition diagram and report the reached state label.
@@ -25,9 +25,9 @@
    - the simulation path is deterministic by construction for the shown input.
 
 ## 3) Prompt Contract
-1. Bundle: `graph_relation_v0`
-2. `scene_key`: `automaton_state_relation`
-3. `task_key`: `automaton_state_simulation_label_query`
+1. Bundle: `automaton_v0`
+2. `scene_key`: `automaton`
+3. `task_key`: `state_after_input_label_query`
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":"C"}`
 6. Answer+annotation JSON shape: `{"annotation":[[150,250],[310,190],[480,230]],"answer":"C"}`
@@ -59,3 +59,7 @@
 ## 7) Complexity + Tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
 2. Tests: `tests/test_graph_relation_automaton_state_simulation_label_tasks.py`
+3. Implementation: `trace/tasks/graph/automaton/state_after_input_label.py`
+4. Shared scene logic: `trace/tasks/graph/automaton/shared/state_simulation.py`
+5. Config: `configs/domains/graph/automaton.yaml`
+6. Prompts: `prompts/graph/automaton/automaton_v0.json`

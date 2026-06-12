@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `triangle_congruence_correspondence`
 3. Scene id: `triangle_congruence_correspondence`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `angle_mark_transfer`, `congruence_statement_angle_transfer`, or `overlapping_triangle_angle_transfer`
@@ -32,5 +32,5 @@ Angle arcs, degree labels, labels, and congruence statements remain visible anno
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/triangle_congruence_correspondence.py`
+- Config: `configs/domains/geometry/triangle_congruence_correspondence.yaml`
+- Task module: `trace/tasks/geometry/triangle_congruence_correspondence/corresponding_angle_value.py`

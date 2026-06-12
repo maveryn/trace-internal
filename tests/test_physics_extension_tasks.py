@@ -7,7 +7,7 @@ import math
 
 import trace.tasks  # noqa: F401
 from trace.core.task_review_distribution import extract_sampling_axes
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.physics.circuits.analog_meter import PhysicsAnalogMeterReadoutValueTask
 from trace.tasks.physics.circuits.bridge_balance import PhysicsBridgeCircuitMissingResistanceValueTask
 from trace.tasks.physics.circuits.bulb_brightness import PhysicsBulbCircuitBrightnessExtremumLabelTask
@@ -1072,13 +1072,13 @@ def test_physics_signal_transform_contracts() -> None:
 
 
 def test_physics_extension_defaults_expose_prompt_and_rendering_contracts() -> None:
-    mechanics = get_task_group_defaults("physics", "mechanics")
-    circuits = get_task_group_defaults("physics", "circuits")
-    fluids = get_task_group_defaults("physics", "fluids")
-    magnetism = get_task_group_defaults("physics", "magnetism")
-    optics = get_task_group_defaults("physics", "optics")
-    waves = get_task_group_defaults("physics", "waves")
-    measurement = get_task_group_defaults("physics", "measurement")
+    mechanics = get_scene_defaults("physics", "mechanics")
+    circuits = get_scene_defaults("physics", "circuits")
+    fluids = get_scene_defaults("physics", "fluids")
+    magnetism = get_scene_defaults("physics", "magnetism")
+    optics = get_scene_defaults("physics", "optics")
+    waves = get_scene_defaults("physics", "waves")
+    measurement = get_scene_defaults("physics", "measurement")
 
     orbital_generation, orbital_rendering, orbital_prompt = split_generation_rendering_prompt_defaults(
         mechanics,
@@ -1267,7 +1267,7 @@ def test_physics_extension_defaults_expose_prompt_and_rendering_contracts() -> N
     assert str(meter_prompt["scene_key"]) == "analog_meter_diagram"
     assert "scale_region" in str(meter_prompt["annotation_hint_ammeter_readout"])
 
-    thermodynamics = get_task_group_defaults("physics", "thermodynamics")
+    thermodynamics = get_scene_defaults("physics", "thermodynamics")
     piston_generation, piston_rendering, piston_prompt = split_generation_rendering_prompt_defaults(
         thermodynamics,
         task_id="physics_thermodynamics_piston_cylinder_family",

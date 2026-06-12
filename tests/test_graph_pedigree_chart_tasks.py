@@ -6,7 +6,8 @@ from io import BytesIO
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.graph.relation.pedigree_chart_relation import RELATEDNESS_TASK_ID, RELATIONSHIP_TASK_ID
+from trace.tasks.graph.pedigree_chart.relatedness_coefficient_label import RELATEDNESS_TASK_ID
+from trace.tasks.graph.pedigree_chart.relationship_label import RELATIONSHIP_TASK_ID
 from trace.tasks.registry import TASK_REGISTRY, create_task
 
 
@@ -35,7 +36,7 @@ def test_pedigree_public_task_set_is_relationship_and_relatedness_only() -> None
         assert taxonomy.domain == "graph"
         assert taxonomy.scene_id == "pedigree_chart"
         assert taxonomy.source_domain == "graph"
-        assert taxonomy.source_task_group == "relation"
+        assert taxonomy.source_scene_id == "pedigree_chart"
 
 
 def test_pedigree_relationship_label_branches() -> None:

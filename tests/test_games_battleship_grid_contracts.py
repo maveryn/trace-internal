@@ -4,18 +4,16 @@ from __future__ import annotations
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.battleship.sunk_ship_count import (
-    GamesBattleshipGridTask,
-    GamesBattleshipLastShipCellLabelTask,
-    GamesBattleshipShipCellStatusCountTask,
-    GamesBattleshipShipStatusCountTask,
-)
-from trace.tasks.games.shared.battleship_common import (
-    FLEET_SHAPES,
-    SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS,
-    SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS,
+from trace.tasks.games.battleship.last_ship_cell_label import GamesBattleshipLastShipCellLabelTask
+from trace.tasks.games.battleship.ship_cell_status_count import GamesBattleshipShipCellStatusCountTask, SHIP_CELL_STATUS_COUNT_QUERY_IDS
+from trace.tasks.games.battleship.ship_status_count import GamesBattleshipShipStatusCountTask
+from trace.tasks.games.battleship.shared.rules import (
     fleet_shape_by_id,
     matching_fleet_shape_ids,
+)
+from trace.tasks.games.battleship.shared.state import (
+    FLEET_SHAPES,
+    SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS,
 )
 from trace.tasks.games.shared.style import SUPPORTED_BATTLESHIP_STYLE_VARIANTS
 from tests.helpers import read_jsonl
@@ -271,21 +269,26 @@ def test_games_battleship_named_unhit_cell_count_emits_expected_contract() -> No
 
 
 def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support() -> None:
-    task = GamesBattleshipGridTask()
+    tasks = (
+        GamesBattleshipShipStatusCountTask(),
+        GamesBattleshipShipCellStatusCountTask(),
+        GamesBattleshipLastShipCellLabelTask(),
+    )
     query_ids: set[str] = set()
     boards: set[int] = set()
     styles: set[str] = set()
 
-    for sampling_index in range(192):
-        out = task.generate(
-            74201 + int(sampling_index),
-            params={},
-            max_attempts=128,
-        )
-        execution = out.trace_payload["execution_trace"]
-        query_ids.add(str(out.query_id))
-        boards.add(int(execution["board_size"]))
-        styles.add(str(execution["style_variant"]))
+    for task_index, task in enumerate(tasks):
+        for sampling_index in range(96):
+            out = task.generate(
+                74201 + (1000 * int(task_index)) + int(sampling_index),
+                params={},
+                max_attempts=128,
+            )
+            execution = out.trace_payload["execution_trace"]
+            query_ids.add(str(out.query_id))
+            boards.add(int(execution["board_size"]))
+            styles.add(str(execution["style_variant"]))
 
     assert query_ids == {
         "partial_ship_count",
@@ -299,18 +302,18 @@ def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support
 
     for query_id in ("partial_ship_count", "sunk_ship_count"):
         for target_answer in (0, 1, 2, 3, 4, 5):
-            out = task.generate(
+            out = GamesBattleshipShipStatusCountTask().generate(
                 74400 + (10 * target_answer),
                 params={"query_id": query_id, "target_answer": target_answer},
                 max_attempts=128,
             )
             assert int(out.answer_gt.value) == target_answer
 
-    for query_id in SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS:
+    for query_id in SHIP_CELL_STATUS_COUNT_QUERY_IDS:
         for target_ship_id in SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS:
             ship_size = len(fleet_shape_by_id()[str(target_ship_id)].offsets)
             for target_answer in (0, ship_size):
-                out = task.generate(
+                out = GamesBattleshipShipCellStatusCountTask().generate(
                     74790 + ship_size + target_answer,
                     params={
                         "query_id": query_id,
@@ -389,18 +392,18 @@ def test_games_battleship_named_cell_status_samples_supported_target_ships() -> 
         target_ship_ids.add(target_ship_id)
         ship_size = len(fleet_shape_by_id()[target_ship_id].offsets)
 
-        assert query_id in SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS
+        assert query_id in SHIP_CELL_STATUS_COUNT_QUERY_IDS
         assert target_ship_id in SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS
         assert 0 <= int(out.answer_gt.value) <= int(ship_size)
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
-    assert query_ids == set(SUPPORTED_BATTLESHIP_CELL_STATUS_QUERY_IDS)
+    assert query_ids == set(SHIP_CELL_STATUS_COUNT_QUERY_IDS)
     assert target_ship_ids == set(SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS)
 
 
 def test_games_battleship_grid_is_deterministic() -> None:
-    params = {"target_answer": 2, "board_size": 8, "style_variant": "radar"}
-    task = GamesBattleshipGridTask()
+    params = {"query_id": "sunk_ship_count", "target_answer": 2, "board_size": 8, "style_variant": "radar"}
+    task = GamesBattleshipShipStatusCountTask()
     out_a = task.generate(74121, params=params, max_attempts=128)
     out_b = task.generate(74121, params=params, max_attempts=128)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -475,7 +478,7 @@ def test_games_battleship_grid_build_dataset_smoke(tmp_path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "battleship" for row in rows)
+    assert all(row.get("scene_id") == "battleship" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
     assert all(row["annotation_gt"]["type"] == "keyed_point_set_map" for row in rows)
 
@@ -502,6 +505,6 @@ def test_games_battleship_named_cell_status_build_dataset_smoke(tmp_path) -> Non
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "battleship" for row in rows)
+    assert all(row.get("scene_id") == "battleship" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
     assert all(row["annotation_gt"]["type"] == "point_set" for row in rows)

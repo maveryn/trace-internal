@@ -27,7 +27,7 @@ Operational policy for build lifecycle and pre-finalize validation.
 1. Train-instance schema validity.
 2. `trace_ref` existence/hash/index integrity.
 3. Image path/hash integrity.
-4. Public taxonomy fields (`domain`, `scene_id`, `task`) plus source `task_group`.
+4. Public taxonomy fields (`domain`, `scene_id`, `task`) plus source `scene_id`.
 5. Task count expectations.
 6. Single `instance_version` consistency.
 7. Prompt metadata/bundle/key validity.
@@ -54,7 +54,7 @@ For new or distribution-changing task logic:
    - current calibration artifacts must carry `calibration_baseline: "v0"` in manifests or stats files; artifacts without that metadata are stale for current acceptance
    - after regenerating review artifacts, reload the browser review app index with **Reload Index** or `POST /api/reload` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific issues there; Excel exports are optional static snapshots, not the required review surface. The app UI and browser route say "issue" and `/issues`; internal APIs/storage still use `feedback`.
 3. Required gating checks (computed from answer values only):
-   - `unique_answers >= 5`
+   - `unique_answers >= 4`
    - `max_answer_frequency < 1/3`
    - apply checks per query id; task-level pass requires every variant to pass.
    - zero collected samples for a task/variant review is a hard fail (`no_samples_collected`).

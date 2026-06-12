@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -223,7 +223,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -907,26 +907,6 @@ def _serialize_path_icon(icon: _RenderedPathIcon) -> Dict[str, Any]:
     }
 
 
-def _build_complexity(*, sample: _SampleSpec, render_params: Mapping[str, Any]) -> TaskComplexity:
-    before_after_load = 0.55 if "second" not in str(sample.query_id) else 0.72
-    first_last_load = 0.55 if "first" in str(sample.query_id) else 0.65
-    clutter = min(1.0, float(sample.stop_count) / 18.0)
-    visual_density = max(0.0, 1.0 - (float(render_params["scene_icon_size_min_px"]) / 80.0))
-    score = (0.42 * before_after_load) + (0.28 * first_last_load) + (0.20 * clutter) + (0.10 * visual_density)
-    return TaskComplexity(
-        complexity_score=max(0.0, min(1.0, float(round(score, 6)))),
-        complexity_components={
-            "spatial_reasoning": float(before_after_load),
-            "order_reasoning": float(first_last_load),
-            "visual_scan": float(clutter),
-            "ambiguity": float(visual_density),
-            "clutter": float(clutter),
-            "stop_count": int(sample.stop_count),
-            "candidate_count": int(len(OPTION_LABELS)),
-            "distractor_count": int(sample.distractor_count),
-            "target_occurrence_count": int(sample.target_occurrence_count),
-        },
-    )
 
 
 @register_task
@@ -935,7 +915,7 @@ class IconsRelationNamedPathNeighborLabelTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "relation"
+    scene_id = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic named-path neighbor instance."""
@@ -996,7 +976,7 @@ class IconsRelationNamedPathNeighborLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1171,7 +1151,6 @@ class IconsRelationNamedPathNeighborLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample=sample, render_params=render_params),
             task_versions=default_task_versions(),
             query_id=str(PUBLIC_QUERY_ID),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},

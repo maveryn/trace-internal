@@ -8,14 +8,13 @@ description: Use when designing, implementing, or reviewing TRACE three_d-domain
 Use this whenever the task lives under `domain=three_d`.
 
 ## Read first
-1. `docs/domains/THREE_D_TASK_SETUP.md`
+1. `docs/domains/three_d.md`
 2. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/THREE_D_TASK_SETUP.md` owns the active three_d contract.
+- `docs/domains/three_d.md` owns the active three_d contract.
 - Scenes should read as proper 3D environments with explicit camera pose, world coordinates, projected pixel geometry, and metadata-grounded verifiers.
 - Keep this domain separate from abstract 3D puzzle boards; use natural room/platform/object-scene context when possible.
 - Answers must come from finalized 3D metadata such as camera distances, reference-object distances, heights, or occlusion order, not from pixel inference.

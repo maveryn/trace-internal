@@ -42,7 +42,7 @@ def test_toggle_grid_tasks_are_registered() -> None:
     for task_cls in (PuzzlesLogicToggleResultLabelTask, PuzzlesLogicToggleRepairSwitchLabelTask):
         task = task_cls()
         assert task.domain == "puzzles"
-        assert task.task_group == "logic"
+        assert task.scene_id == "logic"
 
 
 def test_toggle_result_contract() -> None:
@@ -53,9 +53,15 @@ def test_toggle_result_contract() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == RESULT_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 2
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert set(out.annotation_gt.value) == {"start_grid", "selected_option"}
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert execution["annotation_role_item_ids"] == {
+        "start_grid": "start_grid_bbox_px",
+        "selected_option": f"option_{execution['answer_value']}",
+    }
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
     recomputed = _apply_toggles(execution["start_state"], execution["pressed_cells"])
@@ -63,8 +69,11 @@ def test_toggle_result_contract() -> None:
     correct = next(option for option in execution["option_specs"] if option["option_label"] == execution["answer_value"])
     assert correct["state"] == execution["target_state"]
     assert str(out.answer_gt.value) == str(execution["answer_value"])
-    for bbox in out.annotation_gt.value:
+    assert out.annotation_gt.value["start_grid"] == trace["render_map"]["start_grid_bbox_px"]
+    assert out.annotation_gt.value["selected_option"] == trace["render_map"]["option_panel_bboxes_px"][f"option_{execution['answer_value']}"]
+    for bbox in out.annotation_gt.value.values():
         _assert_bbox_in_image(bbox, out.image.size)
+
 
 def test_toggle_repair_contract() -> None:
     out = PuzzlesLogicToggleRepairSwitchLabelTask().generate(2026053002, params={}, max_attempts=50)
@@ -74,14 +83,24 @@ def test_toggle_repair_contract() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == REPAIR_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 3
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert set(out.annotation_gt.value) == {"start_grid", "target_grid", "selected_switch"}
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
     correct = next(option for option in execution["candidate_switch_specs"] if option["option_label"] == execution["answer_value"])
     recomputed = _toggle_once(execution["start_state"], int(correct["row"]), int(correct["col"]))
     assert recomputed == execution["target_state"]
     assert str(out.answer_gt.value) == str(execution["answer_value"])
-    for bbox in out.annotation_gt.value:
+    assert execution["annotation_role_item_ids"] == {
+        "start_grid": "start_grid_bbox_px",
+        "target_grid": "target_grid_bbox_px",
+        "selected_switch": f"cell_{correct['row']}_{correct['col']}",
+    }
+    assert out.annotation_gt.value["start_grid"] == trace["render_map"]["start_grid_bbox_px"]
+    assert out.annotation_gt.value["target_grid"] == trace["render_map"]["target_grid_bbox_px"]
+    assert out.annotation_gt.value["selected_switch"] == trace["render_map"]["start_cell_bboxes_px"][f"cell_{correct['row']}_{correct['col']}"]
+    for bbox in out.annotation_gt.value.values():
         _assert_bbox_in_image(bbox, out.image.size)

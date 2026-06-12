@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `graph`
 1. Scene id: `automaton`
-1. Task group: `relation`
+1. Source package: `automaton`
 1. Task id: `task_graph__automaton__nondeterministic_state_count`
 1. Query id: `nondeterministic_state_count`
 
@@ -34,12 +34,14 @@ Missing outgoing transitions do not count as nondeterminism.
 1. Nondeterminism is introduced only through `eps` transitions or duplicate
    outgoing labels.
 1. Layout, transform, edge routing, node color, backgrounds, and post-image
-   noise follow the graph relation defaults.
+   noise follow `configs/domains/graph/automaton.yaml` and graph-domain base defaults.
 
 ## Files
 1. Implementation:
-   `trace/tasks/graph/relation/automaton_nondeterministic_state_count.py`
-1. Config: `configs/domains/graph/relation.yaml`
-1. Prompts: `prompts/graph/relation/graph_relation_v0.json`
+   `trace/tasks/graph/automaton/nondeterministic_state_count.py`
+1. Shared scene logic:
+   `trace/tasks/graph/automaton/shared/state_simulation.py`
+1. Config: `configs/domains/graph/automaton.yaml`
+1. Prompts: `prompts/graph/automaton/automaton_v0.json`
 1. Tests:
    `tests/test_graph_relation_automaton_nondeterministic_state_count_tasks.py`

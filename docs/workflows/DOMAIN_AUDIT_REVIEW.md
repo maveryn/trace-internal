@@ -12,7 +12,7 @@ For the domain being reviewed, inspect:
 1. Domain setup doc in `docs/domains/`.
 2. Active task inventory in `docs/ACTIVE_TASK_INVENTORY.md` and `docs/tasks/README.md`.
 3. Repo-local domain skill in `skills/domain-<domain>/`.
-4. Task modules, domain/task-group configs, prompt bundles, task docs, and tests.
+4. Task modules, domain/scene configs, prompt bundles, task docs, and tests.
 5. Existing task-review artifacts under `review/task-reviews/<domain>/<scene_id>/<task_id>/`,
    inspected through the browser review app unless an offline workbook export
    is explicitly needed.
@@ -23,7 +23,7 @@ For taxonomy design or task-boundary audit passes, use the core taxonomy and
 task-unit docs as policy sources. Domain setup docs, code, configs, prompts,
 tests, review artifacts, and skills may be inspected as factual inputs, but
 repo-local skills are not authority for merge/split decisions.
-`docs/core/TRACE_TAXONOMY_DESIGN.md` is the canonical source for concrete
+`docs/core/TASK_UNIT_POLICY.md` is the canonical source for concrete
 program-contract design.
 
 ## 3) Required audit checklist
@@ -66,7 +66,7 @@ program-contract design.
 3. Reference/context objects are not accidentally counted when the prompt only asks about the candidate pool.
 4. Candidate answer and input supports are continuous across the intended range unless task semantics require structured discontinuities.
 5. Overall answer-distribution checks are supplemented with breakdowns by `query_id`, scene/style variant, option count, object count, and other task-specific knobs.
-6. MCQ tasks render at least five options in the image rather than relying on prompt-only choices.
+6. MCQ tasks render at least four options in the image rather than relying on prompt-only choices, and answer-support checks should confirm at least four unique final answers for the task surface.
 7. Decimal-answer tasks state the exact formatting contract, such as one digit after the decimal point, and avoid approximation shortcuts unless the displayed approximation is itself the object being read.
 8. If a visible `?` or blank marker appears, treat it as a target locator by default, not prompt-facing annotation. Include it only when localizing the unknown slot is part of the grounding contract; otherwise annotation should point to the source givens/witnesses used to derive the answer, and optional locator boxes should stay in trace metadata.
 
@@ -118,7 +118,7 @@ program-contract design.
 ### F. Shared-infra audit
 1. Helpers still live at the narrowest reusable layer that fits.
 2. No task-local wrapper has silently become shared infrastructure.
-3. Config defaults live in domain/task-group config instead of repeated task-local literals.
+3. Config defaults live in domain/scene config instead of repeated task-local literals.
 4. Reusable font, object, icon, palette, background, and style resources have inspection sheets or review artifacts under a shared review location.
 5. Asset pools have documented provenance and compatible licenses before becoming generation inputs.
 6. Runtime renderer audits include marker legibility for touched domains when semantic markers are migrated or newly introduced.
@@ -157,7 +157,7 @@ program-contract design.
      remains; verify the affected page shows the updated local files before
      handoff
    - mark manual audit checkboxes only after prompt, image, annotation,
-     distribution, and solve-rate review are acceptable in the app
+     distribution, code review, and solve-rate review are acceptable in the app
    - when fixing reviewer issues, add a brief agent repair note to the
      relevant task-level or sample-level issue item; leave resolution for
      human verification unless explicitly instructed otherwise. The app UI says
@@ -167,8 +167,8 @@ program-contract design.
      record the scene as pending solve rate and stop there; do not mark the
      scene accepted or move to the next scene until solve-rate calibration has
      run.
-   - treat a task as complete only when manual audit passes and solve-rate is
-     accepted.
+   - treat a task as complete only when prompt, image, annotation,
+     distribution, code review, and solve-rate gates pass in the app.
 3. If the audit changes shared infrastructure, expand pytest coverage to the affected sibling tasks.
 
 ## 6) Recommended audit order inside one domain

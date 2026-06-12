@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `stack_stability`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/stack_stability.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__stack_stability__stability_status_label` -> `task_physics__stack_stability__stability_status_label`

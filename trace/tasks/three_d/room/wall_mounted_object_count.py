@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import (
+from ....core.scene_config import (
     get_domain_defaults,
-    get_task_group_defaults,
-    resolve_task_group_section_defaults,
+    get_scene_defaults,
+    resolve_scene_section_defaults,
 )
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -34,19 +34,13 @@ from .wall_mounted_common import (
     SUPPORTED_QUERY_IDS,
     SUPPORTED_SCENE_VARIANTS,
     TASK_ID,
-    _build_complexity,
 )
 from .wall_mounted_dataset import _build_room_dataset, _resolve_target_count
 from .wall_mounted_rendering import render_room_scene_3d
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "room")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("three_d", "room")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
     task_id=TASK_ID,
 )
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -61,7 +55,7 @@ class ThreeDRoomMultiAttributeAndCountTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    task_group = "room"
+    scene_id = "room"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -148,7 +142,7 @@ class ThreeDRoomMultiAttributeAndCountTask:
         target_plural = str(dataset["target_object_plural"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -173,13 +167,6 @@ class ThreeDRoomMultiAttributeAndCountTask:
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
         solver_trace = dict(dataset["solver_trace"])
-        complexity = _build_complexity(
-            target_count=int(answer_value),
-            wall_object_count=int(dataset["wall_object_count"]),
-            floor_object_count=int(dataset["floor_object_count"]),
-            same_type_floor_distractor_count=int(dataset["same_type_floor_distractor_count"]),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
-        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "three_d_room_scene",
@@ -293,7 +280,6 @@ class ThreeDRoomMultiAttributeAndCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

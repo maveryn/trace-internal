@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.area_partition import (
+from trace.tasks.geometry.area_partition.total_area_value import (
     AREA_PARTITION_SCENE_ID,
     GeometryAreaPartitionTotalAreaValueTask,
 )
@@ -46,7 +46,7 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
 
     assert out.scene_id == scene_id
     assert out.query_id == "total_area_from_shaded_partition"
-    assert out.answer_gt.type == "number"
+    assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "keyed_bbox_map"
     assert len(out.annotation_gt.value) == 2
     assert set(out.annotation_gt.value) == {"outer_shape", "shaded_region"}
@@ -54,6 +54,10 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
+    shape_type = str(trace["execution_trace"]["shape_type"])
+    assert f"in a {shape_type}" in out.prompt
+    assert "triangle or parallelogram" not in out.prompt
+    assert "equal-area regions" not in out.prompt
     assert trace["query_spec"]["scene_id"] == scene_id
     assert trace["scene_ir"]["scene_id"] == scene_id
     assert trace["witness_symbolic"]["scene_id"] == scene_id
@@ -72,15 +76,15 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     assert "partition_bbox" in trace["render_map"]
     assert "given_area" in trace["render_map"]["label_bboxes"]
     assert "target" in trace["render_map"]["label_bboxes"]
+    slot_values = trace["query_spec"]["prompt_variant"]["slot_values"]
+    assert slot_values["shape_type"] == shape_type
 
     shaded_area = int(trace["execution_trace"]["shaded_area"])
     denominator = int(trace["execution_trace"]["shaded_fraction_denominator"])
     assert denominator in DENOMINATORS_BY_TASK[task_cls]
     assert trace["execution_trace"]["shaded_fraction_numerator"] == 1
-    assert out.answer_gt.value == pytest.approx(float(shaded_area * denominator))
-    assert trace["execution_trace"]["answer_value"] == pytest.approx(
-        float(shaded_area * denominator)
-    )
+    assert out.answer_gt.value == int(shaded_area * denominator)
+    assert trace["execution_trace"]["answer_value"] == int(shaded_area * denominator)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -110,7 +114,7 @@ def test_area_partition_tasks_support_every_explicit_query(task_cls) -> None:
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type == "integer"
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}
@@ -147,6 +151,22 @@ def test_area_partition_annotation_stays_inside_canvas(task_cls) -> None:
         width, height = out.image.size
         assert out.annotation_gt.type == "keyed_bbox_map"
         for x0, y0, x1, y1 in out.annotation_gt.value.values():
+            assert 0.0 <= x0 < x1 <= float(width)
+            assert 0.0 <= y0 < y1 <= float(height)
+            assert (x1 - x0) > 8.0
+            assert (y1 - y0) > 8.0
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_readout_labels_stay_visible(task_cls) -> None:
+    task = task_cls()
+    seeds = (364306975400184, 62001, 62061, 62062, 62063)
+    for seed in seeds:
+        out = task.generate(seed, params={}, max_attempts=20)
+        width, height = out.image.size
+        label_bboxes = out.trace_payload["render_map"]["label_bboxes"]
+        assert set(label_bboxes) == {"given_area", "target"}
+        for x0, y0, x1, y1 in label_bboxes.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

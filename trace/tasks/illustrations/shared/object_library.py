@@ -96,7 +96,6 @@ OBJECT_TEMPLATES: Dict[str, ObjectTemplate] = {
     "airplane": ObjectTemplate("airplane", "vehicle", 2.10, {"wing": 2, "window": 4}),
     "boat": ObjectTemplate("boat", "vehicle", 1.85, {"window": 2}),
     "sailboat": ObjectTemplate("sailboat", "vehicle", 1.35, {}),
-    "canoe": ObjectTemplate("canoe", "vehicle", 2.05, {}),
     "buoy": ObjectTemplate("buoy", "object", 0.55, {}),
     "tree": ObjectTemplate("tree", "plant", 1.10, {"leaf": 6, "fruit": 4}),
     "flower": ObjectTemplate("flower", "plant", 0.80, {"flower": 1, "leaf": 3}),
@@ -404,17 +403,61 @@ def _draw_quadruped_like(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: s
 
 
 def _draw_fish(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
-    tail_pts = [(box[0] + 0.08 * (box[2] - box[0]), box[1] + 0.50 * (box[3] - box[1])), (box[0] + 0.00 * (box[2] - box[0]), box[1] + 0.24 * (box[3] - box[1])), (box[0] + 0.00 * (box[2] - box[0]), box[1] + 0.76 * (box[3] - box[1]))]
-    body = _rel_bbox(box, 0.10, 0.25, 0.92, 0.75)
-    fin = _rel_bbox(box, 0.42, 0.48, 0.58, 0.78)
-    _poly(draw, tail_pts, fill=accent, outline=outline, width=width, scale=scale)
+    x0, y0, x1, y1 = box
+    w = x1 - x0
+    h = y1 - y0
+    fin_rgb = _shade_rgb(primary, -16)
+    tail = [
+        (x0 + 0.18 * w, y0 + 0.50 * h),
+        (x0 + 0.02 * w, y0 + 0.28 * h),
+        (x0 + 0.05 * w, y0 + 0.50 * h),
+        (x0 + 0.02 * w, y0 + 0.72 * h),
+    ]
+    body = _rel_bbox(box, 0.14, 0.27, 0.93, 0.74)
+    dorsal = [
+        (x0 + 0.46 * w, y0 + 0.31 * h),
+        (x0 + 0.56 * w, y0 + 0.17 * h),
+        (x0 + 0.66 * w, y0 + 0.32 * h),
+    ]
+    belly_fin = [
+        (x0 + 0.48 * w, y0 + 0.66 * h),
+        (x0 + 0.56 * w, y0 + 0.82 * h),
+        (x0 + 0.63 * w, y0 + 0.65 * h),
+    ]
+    side_fin = [
+        (x0 + 0.56 * w, y0 + 0.50 * h),
+        (x0 + 0.43 * w, y0 + 0.60 * h),
+        (x0 + 0.57 * w, y0 + 0.65 * h),
+    ]
+    _poly(draw, tail, fill=fin_rgb, outline=outline, width=width, scale=scale)
+    _poly(draw, dorsal, fill=fin_rgb, outline=outline, width=max(1, width - 1), scale=scale)
+    _poly(draw, belly_fin, fill=fin_rgb, outline=outline, width=max(1, width - 1), scale=scale)
     _ellipse(draw, body, fill=primary, outline=outline, width=width, scale=scale)
-    _poly(draw, [(fin[0], fin[1]), (fin[2], fin[1]), (0.5 * (fin[0] + fin[2]), fin[3])], fill=accent, outline=outline, width=max(1, width - 1), scale=scale)
-    eye = _rel_bbox(box, 0.76, 0.42, 0.82, 0.48)
+    _poly(draw, side_fin, fill=fin_rgb, outline=outline, width=max(1, width - 1), scale=scale)
+    gill_x = x0 + 0.72 * w
+    _line(draw, [(gill_x, y0 + 0.37 * h), (gill_x - 0.035 * w, y0 + 0.50 * h), (gill_x, y0 + 0.63 * h)], fill=_shade_rgb(primary, -45), width=max(1, width - 1), scale=scale)
+    mouth_rgb = _shade_rgb(primary, -58)
+    _line(
+        draw,
+        [(x0 + 0.885 * w, y0 + 0.505 * h), (x0 + 0.93 * w, y0 + 0.49 * h)],
+        fill=mouth_rgb,
+        width=max(1, width - 1),
+        scale=scale,
+    )
+    _line(
+        draw,
+        [(x0 + 0.885 * w, y0 + 0.535 * h), (x0 + 0.925 * w, y0 + 0.545 * h)],
+        fill=mouth_rgb,
+        width=max(1, width - 1),
+        scale=scale,
+    )
+    eye = _rel_bbox(box, 0.78, 0.38, 0.84, 0.45)
     _ellipse(draw, eye, fill=(20, 24, 30), outline=None, width=1, scale=scale)
+    highlight = _rel_bbox(box, 0.80, 0.39, 0.815, 0.405)
+    _ellipse(draw, highlight, fill=(245, 248, 252), outline=None, width=1, scale=scale)
     parts.add("eye", _expand(eye, 2.0))
-    parts.add("tail", _rel_bbox(box, 0.00, 0.24, 0.11, 0.76))
-    return [body, _rel_bbox(box, 0.00, 0.24, 0.92, 0.78)]
+    parts.add("tail", _rel_bbox(box, 0.02, 0.28, 0.19, 0.72))
+    return [body, _rel_bbox(box, 0.02, 0.17, 0.98, 0.82)]
 
 
 def _draw_butterfly(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
@@ -603,36 +646,6 @@ def _draw_sailboat(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent
     _poly(draw, sail, fill=(248, 246, 231), outline=outline, width=width, scale=scale)
     _poly(draw, hull, fill=primary, outline=outline, width=width, scale=scale)
     return [_rel_bbox(box, 0.10, 0.18, 0.90, 0.84)]
-
-
-def _draw_canoe(draw: ImageDraw.ImageDraw, *, box: BBox, primary: RGB, accent: RGB, outline: RGB | None, width: int, scale: int, parts: _PartBuilder) -> List[BBox]:
-    x0, y0, x1, y1 = box
-    bw = x1 - x0
-    bh = y1 - y0
-    hull = (
-        (x0 + 0.04 * bw, y0 + 0.56 * bh),
-        (x0 + 0.17 * bw, y0 + 0.40 * bh),
-        (x0 + 0.50 * bw, y0 + 0.34 * bh),
-        (x0 + 0.83 * bw, y0 + 0.40 * bh),
-        (x0 + 0.96 * bw, y0 + 0.56 * bh),
-        (x0 + 0.84 * bw, y0 + 0.72 * bh),
-        (x0 + 0.50 * bw, y0 + 0.78 * bh),
-        (x0 + 0.16 * bw, y0 + 0.72 * bh),
-    )
-    inner = _rel_bbox(box, 0.20, 0.48, 0.80, 0.66)
-    _poly(draw, hull, fill=primary, outline=outline, width=width, scale=scale)
-    _ellipse(draw, inner, fill=_blend_rgb(primary, (0, 0, 0), 0.16), outline=outline, width=max(1, width - 1), scale=scale)
-    for tx in (0.34, 0.50, 0.66):
-        _line(
-            draw,
-            [(x0 + (tx - 0.06) * bw, y0 + 0.56 * bh), (x0 + (tx + 0.06) * bw, y0 + 0.56 * bh)],
-            fill=accent,
-            width=max(2, width),
-            scale=scale,
-        )
-    _line(draw, [(x0 + 0.16 * bw, y0 + 0.46 * bh), (x0 + 0.84 * bw, y0 + 0.46 * bh)], fill=_shade_rgb(primary, 28), width=max(1, width), scale=scale)
-    _line(draw, [(x0 + 0.18 * bw, y0 + 0.68 * bh), (x0 + 0.82 * bw, y0 + 0.68 * bh)], fill=_blend_rgb(primary, (0, 0, 0), 0.20), width=max(1, width), scale=scale)
-    return [_rel_bbox(box, 0.04, 0.34, 0.96, 0.78)]
 
 
 def _draw_person_like(
@@ -1519,8 +1532,6 @@ def draw_illustration_object(
         boxes = _draw_boat(draw, box=box, primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
     elif object_type == "sailboat":
         boxes = _draw_sailboat(draw, box=box, primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
-    elif object_type == "canoe":
-        boxes = _draw_canoe(draw, box=box, primary=primary_color_rgb, accent=accent_color_rgb, outline=outline, width=width, scale=int(render_scale), parts=parts)
     elif family == "person":
         gender = normalize_person_gender(gender_id)
         person_variant_id = normalize_object_variant_id("person", object_variant_id) if object_variant_id is not None else "adult"

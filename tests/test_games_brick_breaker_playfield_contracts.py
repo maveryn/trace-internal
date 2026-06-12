@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.brick_breaker.playfield_tasks import (
-    GamesBrickBreakerHitRowRemainingCountTask,
-    GamesBrickBreakerNextHitLabelTask,
-    GamesBrickBreakerPaddleCatchLabelTask,
-    GamesBrickBreakerPlayfieldTask,
-)
+from trace.tasks.games.brick_breaker.hit_row_remaining_count import GamesBrickBreakerHitRowRemainingCountTask
+from trace.tasks.games.brick_breaker.next_hit_label import GamesBrickBreakerNextHitLabelTask
+from trace.tasks.games.brick_breaker.paddle_catch_label import GamesBrickBreakerPaddleCatchLabelTask
 from tests.helpers import read_jsonl
 
 
@@ -41,7 +39,7 @@ from tests.helpers import read_jsonl
     ),
 )
 def test_games_brick_breaker_public_tasks_emit_expected_contract(
-    task_cls: type[GamesBrickBreakerPlayfieldTask],
+    task_cls: type[Any],
     params: dict[str, int | str],
     expected_query: str,
     expected_answer_type: str,
@@ -165,4 +163,4 @@ def test_games_brick_breaker_build_smoke(tmp_path: Path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["task_group"] == "brick_breaker" for row in rows)
+    assert all(row.get("scene_id") == "brick_breaker" for row in rows)

@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -22,7 +22,6 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.visual_defaults import load_puzzle_noise_defaults
 
@@ -30,7 +29,7 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 INTERNAL_TASK_ID = "puzzles_spatial_cube_surface_net_internal"
 FACE_RELATION_TASK_ID = "task_puzzles__cube_net__cube_net_face_relation_label"
 ROLLING_RESULT_TASK_ID = "task_puzzles__cube_net__cube_rolling_result_label"
-SURFACE_PATH_FAMILY_ID = "puzzles_spatial_cube_surface_net_path_internal"
+SURFACE_PATH_NAMESPACE_ID = "puzzles_spatial_cube_surface_net_path_internal"
 FOLDED_PATH_ENDPOINT_TASK_ID = "task_puzzles__cube_net__folded_path_endpoint_label"
 FOLDED_PATH_FACE_SEQUENCE_TASK_ID = "task_puzzles__cube_net__folded_path_face_sequence_label"
 SCENE_ID = "cube_net"
@@ -173,14 +172,13 @@ class SurfacePathDataset:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=INTERNAL_TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=INTERNAL_TASK_ID)
 POST_IMAGE_NOISE_DEFAULTS = {
-    **load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.5),
+    **load_puzzle_noise_defaults(scene_id="spatial", apply_prob=0.5),
     "apply_prob": 0.5,
     "edit_types": ["blur", "downsample", "jpeg", "noise"],
     "edit_count_range": [1, 1],
@@ -451,7 +449,7 @@ def _sample_surface_path_dataset(*, query_id: str, params: Mapping[str, Any], in
     rng = spawn_rng(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}.surface_path")
     step_min = _get_int(params, "surface_path_step_count_min", _DEFAULTS.surface_path_step_count_min)
     step_max = _get_int(params, "surface_path_step_count_max", _DEFAULTS.surface_path_step_count_max)
-    step_count = int(step_min + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_FAMILY_ID}.step_count") % max(1, step_max - step_min + 1)))
+    step_count = int(step_min + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_NAMESPACE_ID}.step_count") % max(1, step_max - step_min + 1)))
     face_labels = _sample_face_labels(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}")
 
     sides = tuple(SIDE_OFFSETS.keys())
@@ -478,13 +476,13 @@ def _sample_surface_path_dataset(*, query_id: str, params: Mapping[str, Any], in
         face_labels=face_labels,
         correct_face=str(sequence[-1]),
         instance_seed=int(instance_seed),
-        namespace=f"{SURFACE_PATH_FAMILY_ID}.{query_id}.endpoint",
+        namespace=f"{SURFACE_PATH_NAMESPACE_ID}.{query_id}.endpoint",
     )
     sequence_options, sequence_label = _surface_sequence_options(
         face_labels=face_labels,
         correct_sequence=tuple(sequence),
         instance_seed=int(instance_seed),
-        namespace=f"{SURFACE_PATH_FAMILY_ID}.{query_id}.sequence",
+        namespace=f"{SURFACE_PATH_NAMESPACE_ID}.{query_id}.sequence",
     )
     correct_label = str(endpoint_label if str(query_id) == "folded_path_endpoint_label" else sequence_label)
     if str(query_id) not in SURFACE_PATH_QUERY_IDS:
@@ -1314,7 +1312,7 @@ def _render_surface_path_scene(
 ) -> Tuple[Image.Image, Dict[str, Any]]:
     width = _get_int(params, "canvas_width", _DEFAULTS.canvas_width)
     height = _get_int(params, "rolling_canvas_height", _DEFAULTS.rolling_canvas_height)
-    style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_FAMILY_ID}.cube_surface_net")
+    style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_NAMESPACE_ID}.cube_surface_net")
     image, background_meta = make_puzzle_scene_background(canvas_width=int(width), canvas_height=int(height), style=style)
     draw = ImageDraw.Draw(image)
     net_panel = (54, 54, 520, 482)
@@ -1411,7 +1409,7 @@ def _prompt_defaults() -> Mapping[str, Any]:
 
 class _CubeSurfaceBaseTask:
     domain = "puzzles"
-    task_group = "spatial"
+    scene_id = "spatial"
     default_dataset_enabled = True
     supported_query_ids: Tuple[str, ...]
 
@@ -1467,7 +1465,7 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
         prompt_defaults = _prompt_defaults()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1493,14 +1491,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
         }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
         annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": 0.46,
-                "reasoning_load": 0.45 if str(query_id) == "opposite_face_label" else 0.58,
-                "scene_variant_load": {"clean_net": 0.18, "paper_model": 0.24, "game_mat": 0.26}.get(str(scene_variant), 0.2),
-            },
-        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "puzzle_cube_surface_net",
@@ -1578,7 +1568,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
             "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1587,7 +1576,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),
@@ -1627,7 +1615,7 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         prompt_defaults = _prompt_defaults()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1655,14 +1643,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         path_norm = normalize_int_with_bounds(len(dataset.path_directions), (_DEFAULTS.rolling_path_length_min, _DEFAULTS.rolling_path_length_max))
         grid_norm = normalize_int_with_bounds(dataset.grid_rows * dataset.grid_cols, (25, 36))
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": clamp_unit_interval(0.55 * grid_norm + 0.45 * path_norm),
-                "reasoning_load": clamp_unit_interval(0.50 + 0.28 * path_norm),
-                "scene_variant_load": {"clean_net": 0.18, "paper_model": 0.24, "game_mat": 0.26}.get(str(scene_variant), 0.2),
-            },
-        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "puzzle_cube_surface_net",
@@ -1746,7 +1726,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
             "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1755,7 +1734,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),
@@ -1792,7 +1770,7 @@ class _PuzzlesSpatialCubeSurfacePathTask(_CubeSurfaceBaseTask):
         prompt_defaults = _prompt_defaults()
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1819,14 +1797,6 @@ class _PuzzlesSpatialCubeSurfacePathTask(_CubeSurfaceBaseTask):
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
         annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bboxes))
         path_norm = normalize_int_with_bounds(len(dataset.path_sides), (_DEFAULTS.surface_path_step_count_min, _DEFAULTS.surface_path_step_count_max))
-        complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": clamp_unit_interval(0.50 + 0.20 * path_norm),
-                "reasoning_load": clamp_unit_interval(0.55 + 0.28 * path_norm + (0.08 if str(query_id) == "folded_path_face_sequence_label" else 0.0)),
-                "scene_variant_load": {"clean_net": 0.18, "paper_model": 0.24, "game_mat": 0.26}.get(str(scene_variant), 0.2),
-            },
-        )
         option_specs: List[Dict[str, Any]]
         if str(query_id) == "folded_path_endpoint_label":
             option_specs = [dict(item) for item in _option_specs_for_trace(dataset.endpoint_options)]
@@ -1915,7 +1885,6 @@ class _PuzzlesSpatialCubeSurfacePathTask(_CubeSurfaceBaseTask):
             "projected_annotation": _projected_keyed_bbox_map(annotation_bboxes),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -1924,7 +1893,6 @@ class _PuzzlesSpatialCubeSurfacePathTask(_CubeSurfaceBaseTask):
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

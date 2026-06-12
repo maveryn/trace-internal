@@ -1,15 +1,3 @@
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.42
-      reasoning_load: 0.34
-      scene_variant_load: 0.24
-  task_overrides:
-    pages_paired_forms_reconciliation_source:
-      criteria_weights:
-        visual_scan: 0.55
-        reasoning_load: 0.4
-        scene_variant_load: 0.05
 rendering:
   shared:
     layout_jitter_enabled: true
@@ -277,8 +265,8 @@ prompt:
       object_description_purchase_receipt_pair: two side-by-side business forms, a
         purchase order and a receiving slip, with matching item codes and visible
         quantities
-      annotation_hint_total_amount_delta: set "annotation" to an array of [x0, y0, x1, y1]
-        boxes for the full receiving-slip rows whose received quantity differs
+      annotation_hint_total_amount_delta: set "annotation" to an array of [x0, y0,
+        x1, y1] boxes for the full receiving-slip rows whose received quantity differs
         from the matching purchase-order quantity
       annotation_hint_shortfall_minus_overage_value: set "annotation" to an array
         of [x0, y0, x1, y1] boxes for the full receiving-slip rows whose received

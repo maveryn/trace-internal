@@ -1,7 +1,7 @@
 # charts Contract-v0 Taxonomy Reanalysis
 
-- Current tasks: 188
-- Proposed task units: 188
+- Current tasks: 186
+- Proposed task units: 186
 - Split tasks: 0
 - Rename-only tasks: 0
 - Canonical program signatures used: 29
@@ -9,8 +9,6 @@
 | Current task | Decision | Proposed task ids | Program signatures | Rationale |
 | --- | --- | --- | --- | --- |
 | `task_charts__annotated_series__callout_endpoint_change_value` | keep | `task_charts__annotated_series__callout_endpoint_change_value` | `numeric.difference_or_change` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: numeric.difference_or_change. Answer/annotation schemas: integer_value / keyed_point_map. |
-| `task_charts__annotated_series__event_window_extremum_label` | keep | `task_charts__annotated_series__event_window_extremum_label` | `selection.extreme_metric_label` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: selection.extreme_metric_label. Answer/annotation schemas: string_label / point_set. |
-| `task_charts__annotated_series__event_window_threshold_count` | keep | `task_charts__annotated_series__event_window_threshold_count` | `count.one_bound_threshold` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.one_bound_threshold. Answer/annotation schemas: integer_count / point_set. |
 | `task_charts__area__interval_area_value` | keep | `task_charts__area__interval_area_value` | `numeric.aggregate_sum` | No manual boundary seed row was available; current task inventory supplied the proposed task mapping. Contract-v0 program schema: numeric.aggregate_sum. Answer/annotation schemas: integer_value / unknown_annotation_schema. |
 | `task_charts__area__stacked_band_dominance_label` | keep | `task_charts__area__stacked_band_dominance_label` | `selection.extreme_metric_label` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: selection.extreme_metric_label. Answer/annotation schemas: string_label / point_set. |
 | `task_charts__area__stacked_band_interval_sum_value` | keep | `task_charts__area__stacked_band_interval_sum_value` | `numeric.aggregate_sum` | No manual boundary seed row was available; current task inventory supplied the proposed task mapping. Contract-v0 program schema: numeric.aggregate_sum. Answer/annotation schemas: integer_value / unknown_annotation_schema. |

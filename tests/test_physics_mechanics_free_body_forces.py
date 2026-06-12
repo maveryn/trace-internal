@@ -8,7 +8,7 @@ from collections import Counter
 import pytest
 import yaml
 
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.tasks.physics.mechanics.free_body_forces import (
     DIRECTION_NAMES,
     OPTION_LETTERS,
@@ -113,7 +113,7 @@ def test_free_body_forces_sampling_covers_letters_and_directions() -> None:
 
 
 def test_free_body_forces_defaults_and_prompt_bundle() -> None:
-    mechanics = get_task_group_defaults("physics", "mechanics")
+    mechanics = get_scene_defaults("physics", "mechanics")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         mechanics,
         task_id="physics_mechanics_free_body_forces_family",

@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -29,15 +29,14 @@ from ...shared.variant_sampling import (
     resolve_compatible_scene_query_ids,
     resolve_variant,
 )
-from ..shared.complexity import build_physics_lever_balance_complexity
 from ..shared.diagram_style import prepare_physics_diagram_style_and_background
-from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
+from trace.tasks.shared.fixed_query import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES, build_physics_lever_theme
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "physics_mechanics_lever_balance_family"
+TASK_ID = "physics_mechanics_lever_balance"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "center_fulcrum",
     "offset_fulcrum",
@@ -150,12 +149,12 @@ class _RenderedScene:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "mechanics")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "mechanics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="mechanics", apply_prob=0.5)
 LEVER_SEMANTIC_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (255, 238, 240),
     (192, 62, 84),
@@ -1015,7 +1014,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
 
     task_id = TASK_ID
     domain = "physics"
-    task_group = "mechanics"
+    scene_id = "mechanics"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -1038,7 +1037,6 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="lever",
-                task_group=self.task_group,
                 canvas_width=int(canvas_width),
                 canvas_height=int(canvas_height),
                 instance_seed=int(instance_seed),
@@ -1048,7 +1046,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             font_family = sample_font_family(
                 role="readout",
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.render.font_family",
+                namespace=f"{TASK_ID}.render.font",
                 params=params,
             )
             font_record = get_font_family_record(str(font_family))
@@ -1140,7 +1138,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             )
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -1169,16 +1167,6 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 TypedValue(type="keyed_bbox_set_map", value=dict(rendered_scene.annotation_keyed_bbox_set_map))
                 if is_missing_weight_query
                 else TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.annotation_bboxes])
-            )
-            complexity = build_physics_lever_balance_complexity(
-                task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=TASK_ID,
-                scene_variant=str(axes.scene_variant),
-                query_id=str(axes.query_id),
-                weight_count=len(rendered_scene.weight_specs),
-                relevant_weight_count=len(rendered_scene.relevant_weight_ids),
-                max_distance=int(rendered_scene.max_distance_units),
-                target_answer=int(axes.target_answer),
             )
             target_support_key = "missing_weight_support" if _is_missing_weight_query(str(axes.query_id)) else "torque_answer_support"
             trace_payload = {
@@ -1296,7 +1284,6 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 image=image,
                 image_id="img0",
                 trace_payload=trace_payload,
-                complexity=complexity,
                 task_versions=default_task_versions(),
                 query_id=str(axes.public_query_id),
                 scene_id="lever",

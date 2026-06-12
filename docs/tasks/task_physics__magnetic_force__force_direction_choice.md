@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `magnetic_force`
-- Implementation task group: `magnetism`
+- Implementation scene: `magnetism`
 - Implementation source: `trace/tasks/physics/magnetism/force_field.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__magnetic_force__force_direction_choice` -> `task_physics__magnetic_force__force_direction_choice`

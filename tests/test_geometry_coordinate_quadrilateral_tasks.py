@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks import create_task
-from trace.tasks.geometry.coordinate.quadrilateral import (
+from trace.tasks.geometry.coordinate_plane.quadrilateral_completion_label import (
     COMPLETION_QUERY_IDS,
     COMPLETION_SCENE_ID,
     COMPLETION_TASK_ID,

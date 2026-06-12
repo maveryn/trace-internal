@@ -3,7 +3,7 @@
 This module resolves the active public task surface:
 ``domain -> scene_id -> task_id``.
 
-``source_domain`` and ``source_task_group`` record implementation/config routing
+``source_domain`` and ``source_scene_id`` record implementation/config routing
 for current task classes. They are not public taxonomy levels.
 """
 
@@ -13,6 +13,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
+from .scene_package_migration import is_scene_package_task, parse_public_task_id
+
 
 @dataclass(frozen=True)
 class TaxonomyEntry:
@@ -21,7 +23,7 @@ class TaxonomyEntry:
     domain: str
     scene_id: str
     source_domain: str
-    source_task_group: str
+    source_scene_id: str
 
 
 ACTIVE_DOMAINS: tuple[str, ...] = (
@@ -31,7 +33,7 @@ ACTIVE_DOMAINS: tuple[str, ...] = (
     "graph",
     "icons",
     "illustrations",
-    "misc",
+    "symbolic",
     "pages",
     "physics",
     "puzzles",
@@ -43,21 +45,19 @@ def _entry(
     canonical_domain: str,
     scene_id: str,
     source_domain: str,
-    source_task_group: str,
+    source_scene_id: str,
 ) -> TaxonomyEntry:
     return TaxonomyEntry(
         domain=str(canonical_domain),
         scene_id=str(scene_id),
         source_domain=str(source_domain),
-        source_task_group=str(source_task_group),
+        source_scene_id=str(source_scene_id),
     )
 
 
 TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     # Charts and table-like data displays.
     "task_charts__annotated_series__callout_endpoint_change_value": _entry("charts", "annotated_series", "charts", "annotated_series"),
-    "task_charts__annotated_series__event_window_extremum_label": _entry("charts", "annotated_series", "charts", "annotated_series"),
-    "task_charts__annotated_series__event_window_threshold_count": _entry("charts", "annotated_series", "charts", "annotated_series"),
     "task_charts__area__interval_area_value": _entry("charts", "area", "charts", "area"),
     "task_charts__area__stacked_band_dominance_label": _entry("charts", "area", "charts", "area"),
     "task_charts__area__stacked_band_interval_sum_value": _entry("charts", "area", "charts", "area"),
@@ -247,14 +247,14 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__calendar__marked_day_class_count": _entry("pages", "calendar", "pages", "calendar"),
     "task_pages__calendar__workday_offset_date": _entry("pages", "calendar", "pages", "calendar"),
     "task_pages__calendar__weekday_occurrence_date": _entry("pages", "calendar", "pages", "calendar"),
-    "task_pages__calendar_event_grid__category_slot_day_count": _entry("pages", "calendar_event_grid", "pages", "calendar"),
-    "task_pages__calendar_event_grid__date_for_category_slot_label": _entry("pages", "calendar_event_grid", "pages", "calendar"),
-    "task_pages__calendar_event_grid__date_slot_category_label": _entry("pages", "calendar_event_grid", "pages", "calendar"),
+    "task_pages__calendar_event_grid__category_slot_day_count": _entry("pages", "calendar_event_grid", "pages", "calendar_event_grid"),
+    "task_pages__calendar_event_grid__date_for_category_slot_label": _entry("pages", "calendar_event_grid", "pages", "calendar_event_grid"),
+    "task_pages__calendar_event_grid__date_slot_category_label": _entry("pages", "calendar_event_grid", "pages", "calendar_event_grid"),
     "task_pages__command_matrix__command_intent_target_label": _entry("pages", "command_matrix", "pages", "relation"),
     "task_pages__command_matrix__dual_guide_command_label": _entry("pages", "command_matrix", "pages", "relation"),
     "task_pages__comparison_panel__side_attribute_value_label": _entry("pages", "comparison_panel", "pages", "document_lookup"),
-    "task_pages__category_grid__category_item_count": _entry("pages", "category_grid", "pages", "document_lookup"),
-    "task_pages__category_grid__category_slot_item_label": _entry("pages", "category_grid", "pages", "document_lookup"),
+    "task_pages__category_grid__category_item_count": _entry("pages", "category_grid", "pages", "category_grid"),
+    "task_pages__category_grid__category_slot_item_label": _entry("pages", "category_grid", "pages", "category_grid"),
     "task_pages__concept_map__branch_child_count": _entry("pages", "concept_map", "pages", "concept_map"),
     "task_pages__concept_map__marked_child_count": _entry("pages", "concept_map", "pages", "concept_map"),
     "task_pages__concept_map__ordered_child_label": _entry("pages", "concept_map", "pages", "concept_map"),
@@ -280,28 +280,28 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__infographic__sum_named_metrics_value": _entry("pages", "infographic", "pages", "infographic"),
     "task_pages__infographic__value_for_named_item": _entry("pages", "infographic", "pages", "infographic"),
     "task_pages__mixed_infographic_page__module_field_value_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__module_field_extremum_item_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__module_field_ranked_item_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__page_field_extremum_module_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__module_two_field_condition_item_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__module_condition_item_count": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__module_field_total_value": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "infographic"
+        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
     "task_pages__hero_callout_infographic__callout_field_value_label": _entry(
         "pages", "hero_callout_infographic", "pages", "infographic"
@@ -363,13 +363,12 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__2048__max_tile_value": _entry("games", "2048", "games", "2048"),
     "task_games__2048__merge_count": _entry("games", "2048", "games", "2048"),
     "task_games__2048__score_value": _entry("games", "2048", "games", "2048"),
-    "task_games__backgammon__blocked_destination_count": _entry("games", "backgammon", "games", "backgammon"),
-    "task_games__backgammon__legal_move_count": _entry("games", "backgammon", "games", "backgammon"),
+    "task_games__backgammon__destination_count": _entry("games", "backgammon", "games", "backgammon"),
     "task_games__backgammon__point_state_count": _entry("games", "backgammon", "games", "backgammon"),
     "task_games__battleship__last_ship_cell_label": _entry("games", "battleship", "games", "battleship"),
     "task_games__battleship__ship_cell_status_count": _entry("games", "battleship", "games", "battleship"),
     "task_games__battleship__ship_status_count": _entry("games", "battleship", "games", "battleship"),
-    "task_games__bingo__completed_line_count": _entry("games", "bingo", "games", "bingo"),
+    "task_games__bingo__completed_column_label": _entry("games", "bingo", "games", "bingo"),
     "task_games__bingo__called_number_mark_count": _entry("games", "bingo", "games", "bingo"),
     "task_games__bingo__line_sum_extremum_value": _entry("games", "bingo", "games", "bingo"),
     "task_games__bingo__near_complete_line_count": _entry("games", "bingo", "games", "bingo"),
@@ -521,8 +520,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__ultimate_tictactoe__macro_threat_board_count": _entry("games", "ultimate_tictactoe", "games", "ultimate_tictactoe"),
     "task_games__ultimate_tictactoe__small_board_status_count": _entry("games", "ultimate_tictactoe", "games", "ultimate_tictactoe"),
     # Geometry.
-    "task_geometry__angle_relations__algebraic_angle_value_triangle_double_extension_expression": _entry("geometry", "angle_relations", "geometry", "measurement"),
-    "task_geometry__angle_relations__algebraic_angle_value_triangle_single_extension_expression": _entry("geometry", "angle_relations", "geometry", "measurement"),
+    "task_geometry__angle_relations__algebraic_angle_value": _entry("geometry", "angle_relations", "geometry", "measurement"),
     "task_geometry__angle_relations__parallel_supplement_angle": _entry("geometry", "angle_relations", "geometry", "measurement"),
     "task_geometry__angle_relations__triangle_exterior_angle": _entry("geometry", "angle_relations", "geometry", "measurement"),
     "task_geometry__area_partition__total_area_value": _entry("geometry", "area_partition", "geometry", "measurement"),
@@ -714,75 +712,75 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__triangle_relations__right_triangle_missing_side_value_hypotenuse_from_angle_and_height": _entry("geometry", "triangle_relations", "geometry", "measurement"),
     "task_geometry__triangle_relations__similar_triangles_side_length": _entry("geometry", "triangle_relations", "geometry", "measurement"),
     # Graph.
-    "task_graph__node_link__degree_extremum_value": _entry("graph", "node_link", "graph", "comparison"),
-    "task_graph__node_link__largest_component_size": _entry("graph", "node_link", "graph", "comparison"),
-    "task_graph__adjacency__directed_strong_component_count": _entry("graph", "adjacency", "graph", "counting"),
-    "task_graph__adjacency__directed_pair_reciprocity_count": _entry("graph", "adjacency", "graph", "counting"),
-    "task_graph__adjacency__undirected_component_count": _entry("graph", "adjacency", "graph", "counting"),
-    "task_graph__node_link__articulation_point_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__binary_tree__child_structure_node_count": _entry("graph", "binary_tree", "graph", "counting"),
-    "task_graph__binary_tree__depth_level_node_count": _entry("graph", "binary_tree", "graph", "counting"),
-    "task_graph__node_link__bridge_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__cross_color_edge_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__degree_after_removal_filter_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__degree_value_filter_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__edge_color_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__edge_text_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__isolated_after_removal_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__named_node_degree_value": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__node_link__node_color_count": _entry("graph", "node_link", "graph", "counting"),
-    "task_graph__phylogeny_tree__clade_leaf_count": _entry("graph", "phylogeny_tree", "graph", "counting"),
-    "task_graph__pipe_network__bridge_count": _entry("graph", "pipe_network", "graph", "counting"),
-    "task_graph__metro__station_membership_count": _entry("graph", "metro", "graph", "counting"),
-    "task_graph__flow_network__max_flow_value": _entry("graph", "flow_network", "graph", "optimization"),
-    "task_graph__flow_network__min_cut_edge_count": _entry("graph", "flow_network", "graph", "optimization"),
+    "task_graph__node_link__degree_extremum_value": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__largest_component_size": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__adjacency__directed_strong_component_count": _entry("graph", "adjacency", "graph", "adjacency"),
+    "task_graph__adjacency__directed_pair_reciprocity_count": _entry("graph", "adjacency", "graph", "adjacency"),
+    "task_graph__adjacency__undirected_component_count": _entry("graph", "adjacency", "graph", "adjacency"),
+    "task_graph__node_link__articulation_point_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__binary_tree__child_structure_node_count": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__binary_tree__depth_level_node_count": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__node_link__bridge_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__cross_color_edge_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__degree_after_removal_filter_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__degree_value_filter_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__edge_color_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__edge_text_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__isolated_after_removal_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__named_node_degree_value": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__node_color_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__phylogeny_tree__clade_leaf_count": _entry("graph", "phylogeny_tree", "graph", "phylogeny_tree"),
+    "task_graph__pipe_network__bridge_count": _entry("graph", "pipe_network", "graph", "pipe_network"),
+    "task_graph__metro__station_membership_count": _entry("graph", "metro", "graph", "metro"),
+    "task_graph__flow_network__max_flow_value": _entry("graph", "flow_network", "graph", "flow_network"),
+    "task_graph__flow_network__min_cut_edge_count": _entry("graph", "flow_network", "graph", "flow_network"),
     "task_graph__adjacency__mst_weight": _entry(
         "graph", "adjacency", "graph", "optimization"
     ),
-    "task_graph__node_link__mst_weight": _entry("graph", "node_link", "graph", "optimization"),
-    "task_graph__adjacency__traversal_kth_label": _entry("graph", "adjacency", "graph", "order"),
-    "task_graph__binary_tree__traversal_kth_label": _entry("graph", "binary_tree", "graph", "order"),
-    "task_graph__node_link__topological_position_value": _entry("graph", "node_link", "graph", "order"),
-    "task_graph__node_link__longest_path_length": _entry("graph", "node_link", "graph", "path"),
-    "task_graph__metro__shortest_path_length": _entry("graph", "metro", "graph", "path"),
-    "task_graph__metro__transfer_count": _entry("graph", "metro", "graph", "path"),
-    "task_graph__pipe_network__shortest_path_length": _entry("graph", "pipe_network", "graph", "path"),
-    "task_graph__node_link__shortest_path_length": _entry("graph", "node_link", "graph", "path"),
-    "task_graph__automaton__state_after_input_label": _entry("graph", "automaton", "graph", "relation"),
-    "task_graph__automaton__dfa_accepted_string_label": _entry("graph", "automaton", "graph", "relation"),
-    "task_graph__automaton__nfa_accepted_string_label": _entry("graph", "automaton", "graph", "relation"),
-    "task_graph__automaton__nondeterministic_state_count": _entry("graph", "automaton", "graph", "relation"),
-    "task_graph__binary_tree__local_relative_node_label": _entry("graph", "binary_tree", "graph", "relation"),
-    "task_graph__binary_tree__lowest_common_ancestor_label": _entry("graph", "binary_tree", "graph", "relation"),
-    "task_graph__phylogeny_tree__mrca_clade_membership_count": _entry("graph", "phylogeny_tree", "graph", "relation"),
-    "task_graph__phylogeny_tree__sister_leaf_label": _entry("graph", "phylogeny_tree", "graph", "relation"),
-    "task_graph__phylogeny_tree__topology_outlier_label": _entry("graph", "phylogeny_tree", "graph", "relation"),
-    "task_graph__pedigree_chart__relatedness_coefficient_label": _entry("graph", "pedigree_chart", "graph", "relation"),
-    "task_graph__pedigree_chart__relationship_label": _entry("graph", "pedigree_chart", "graph", "relation"),
-    "task_graph__node_link__common_related_node_count": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__component_size_after_edge_edit": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__edge_between_nodes_label": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__reachable_count": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__reachable_count_after_edge_edit": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__same_component_count": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__shortest_path_first_edge_label": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__pipe_network__pipe_exact_distance_count": _entry("graph", "pipe_network", "graph", "relation"),
-    "task_graph__pipe_network__pipe_reachable_junction_count": _entry("graph", "pipe_network", "graph", "relation"),
-    "task_graph__metro__exact_distance_station_count": _entry("graph", "metro", "graph", "relation"),
-    "task_graph__binary_tree__bst_path_operation_label": _entry("graph", "binary_tree", "graph", "relation"),
-    "task_graph__binary_tree__heap_property_violation_label": _entry("graph", "binary_tree", "graph", "relation"),
-    "task_graph__graph_options__contained_subgraph_label": _entry("graph", "graph_options", "graph", "relation"),
-    "task_graph__graph_options__same_structure_label": _entry("graph", "graph_options", "graph", "relation"),
-    "task_graph__node_link__unique_related_node_label": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__hamiltonian_cycle_neighbor_label": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__largest_chordless_cycle_size": _entry("graph", "node_link", "graph", "relation"),
-    "task_graph__node_link__unique_cycle_size": _entry("graph", "node_link", "graph", "relation"),
+    "task_graph__node_link__mst_weight": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__adjacency__traversal_kth_label": _entry("graph", "adjacency", "graph", "adjacency"),
+    "task_graph__binary_tree__traversal_kth_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__node_link__topological_position_value": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__longest_path_length": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__metro__shortest_path_length": _entry("graph", "metro", "graph", "metro"),
+    "task_graph__metro__transfer_count": _entry("graph", "metro", "graph", "metro"),
+    "task_graph__pipe_network__shortest_path_length": _entry("graph", "pipe_network", "graph", "pipe_network"),
+    "task_graph__node_link__shortest_path_length": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__automaton__state_after_input_label": _entry("graph", "automaton", "graph", "automaton"),
+    "task_graph__automaton__dfa_accepted_string_label": _entry("graph", "automaton", "graph", "automaton"),
+    "task_graph__automaton__nfa_accepted_string_label": _entry("graph", "automaton", "graph", "automaton"),
+    "task_graph__automaton__nondeterministic_state_count": _entry("graph", "automaton", "graph", "automaton"),
+    "task_graph__binary_tree__local_relative_node_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__binary_tree__lowest_common_ancestor_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__phylogeny_tree__mrca_clade_membership_count": _entry("graph", "phylogeny_tree", "graph", "phylogeny_tree"),
+    "task_graph__phylogeny_tree__sister_leaf_label": _entry("graph", "phylogeny_tree", "graph", "phylogeny_tree"),
+    "task_graph__phylogeny_tree__topology_outlier_label": _entry("graph", "phylogeny_tree", "graph", "phylogeny_tree"),
+    "task_graph__pedigree_chart__relatedness_coefficient_label": _entry("graph", "pedigree_chart", "graph", "pedigree_chart"),
+    "task_graph__pedigree_chart__relationship_label": _entry("graph", "pedigree_chart", "graph", "pedigree_chart"),
+    "task_graph__node_link__common_related_node_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__component_size_after_edge_edit": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__edge_between_nodes_label": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__reachable_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__reachable_count_after_edge_edit": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__same_component_count": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__shortest_path_first_edge_label": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__pipe_network__pipe_exact_distance_count": _entry("graph", "pipe_network", "graph", "pipe_network"),
+    "task_graph__pipe_network__pipe_reachable_junction_count": _entry("graph", "pipe_network", "graph", "pipe_network"),
+    "task_graph__metro__exact_distance_station_count": _entry("graph", "metro", "graph", "metro"),
+    "task_graph__binary_tree__bst_path_operation_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__binary_tree__heap_property_violation_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
+    "task_graph__graph_options__contained_subgraph_label": _entry("graph", "graph_options", "graph", "graph_options"),
+    "task_graph__graph_options__same_structure_label": _entry("graph", "graph_options", "graph", "graph_options"),
+    "task_graph__node_link__unique_related_node_label": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__hamiltonian_cycle_neighbor_label": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__largest_chordless_cycle_size": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__unique_cycle_size": _entry("graph", "node_link", "graph", "node_link"),
     # Icons.
     "task_icons__icon_field__type_frequency_count": _entry("icons", "icon_field", "icons", "counting"),
     "task_icons__icon_cutout__partial_match_label": _entry("icons", "icon_cutout", "icons", "relation"),
-    "task_icons__reference_canvas__reference_attribute_match_count": _entry("icons", "reference_canvas", "icons", "counting"),
-    "task_icons__reference_canvas__reference_metric_relation_count": _entry("icons", "reference_canvas", "icons", "counting"),
-    "task_icons__reference_canvas__anchor_position_count": _entry("icons", "reference_canvas", "icons", "relation"),
+    "task_icons__reference_canvas__reference_attribute_match_count": _entry("icons", "reference_canvas", "icons", "reference_canvas"),
+    "task_icons__reference_canvas__reference_metric_relation_count": _entry("icons", "reference_canvas", "icons", "reference_canvas"),
+    "task_icons__reference_canvas__anchor_position_count": _entry("icons", "reference_canvas", "icons", "reference_canvas"),
     "task_icons__named_field__single_attribute_membership_count": _entry("icons", "named_field", "icons", "counting"),
     "task_icons__named_field__multi_attribute_and_count": _entry("icons", "named_field", "icons", "counting"),
     "task_icons__named_field__multi_attribute_complement_count": _entry("icons", "named_field", "icons", "counting"),
@@ -801,13 +799,13 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__named_ring__scoped_attribute_count": _entry("icons", "named_ring", "icons", "counting"),
     "task_icons__named_path__path_neighbor_label": _entry("icons", "named_path", "icons", "relation"),
     "task_icons__venn_field__scoped_attribute_count": _entry("icons", "venn_field", "icons", "counting"),
-    "task_icons__paired_canvas__panel_set_relation_count": _entry("icons", "paired_canvas", "icons", "counting"),
-    "task_icons__paired_canvas__panel_movement_direction_count": _entry("icons", "paired_canvas", "icons", "relation"),
-    "task_icons__paired_canvas__panel_attribute_change_count": _entry("icons", "paired_canvas", "icons", "transformation"),
-    "task_icons__paired_canvas__original_attribute_label": _entry("icons", "paired_canvas", "icons", "relation"),
-    "task_icons__pair_grid__attribute_delta_pair_count": _entry("icons", "pair_grid", "icons", "transformation"),
-    "task_icons__pair_grid__reference_transform_match_count": _entry("icons", "pair_grid", "icons", "transformation"),
-    "task_icons__single_transform_options__geometric_transform_result_label": _entry("icons", "single_transform_options", "icons", "transformation"),
+    "task_icons__paired_canvas__panel_set_relation_count": _entry("icons", "paired_canvas", "icons", "paired_canvas"),
+    "task_icons__paired_canvas__panel_movement_direction_count": _entry("icons", "paired_canvas", "icons", "paired_canvas"),
+    "task_icons__paired_canvas__panel_attribute_change_count": _entry("icons", "paired_canvas", "icons", "paired_canvas"),
+    "task_icons__paired_canvas__original_attribute_label": _entry("icons", "paired_canvas", "icons", "paired_canvas"),
+    "task_icons__pair_grid__attribute_delta_pair_count": _entry("icons", "pair_grid", "icons", "pair_grid"),
+    "task_icons__pair_grid__reference_transform_match_count": _entry("icons", "pair_grid", "icons", "pair_grid"),
+    "task_icons__single_transform_options__geometric_transform_result_label": _entry("icons", "single_transform_options", "icons", "single_transform_options"),
     "task_icons__mirror_grid__mirror_symmetry_count": _entry("icons", "mirror_grid", "icons", "relation"),
     "task_icons__overlap_grid__occlusion_order_count": _entry("icons", "overlap_grid", "icons", "relation"),
     "task_icons__two_anchor__between_anchors_count": _entry("icons", "two_anchor", "icons", "relation"),
@@ -837,7 +835,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__library__books_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
     "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
     "task_illustrations__indoor_room__surface_object_count": _entry(
-        "illustrations", "indoor_room", "illustrations", "counting"
+        "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),
     "task_illustrations__park_playground__activity_person_count": _entry(
         "illustrations", "park_playground", "illustrations", "counting"
@@ -852,16 +850,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "park_playground", "illustrations", "counting"
     ),
     "task_illustrations__pixel_village__object_type_count": _entry(
-        "illustrations", "pixel_village", "illustrations", "counting"
+        "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
     "task_illustrations__pixel_village__person_path_count": _entry(
-        "illustrations", "pixel_village", "illustrations", "counting"
+        "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
     "task_illustrations__pixel_village__territory_object_count": _entry(
-        "illustrations", "pixel_village", "illustrations", "counting"
+        "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
-    "task_illustrations__pixel_village__building_near_path_count": _entry(
-        "illustrations", "pixel_village", "illustrations", "counting"
+    "task_illustrations__pixel_village__river_side_object_count": _entry(
+        "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
     "task_illustrations__transit_terminal__person_in_boarding_area_count": _entry(
         "illustrations", "transit_terminal", "illustrations", "counting"
@@ -876,16 +874,20 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "construction_site", "illustrations", "counting"
     ),
     "task_illustrations__single_object_figure__visible_part_count": _entry(
-        "illustrations", "single_object_figure", "illustrations", "counterfactual"
+        "illustrations", "single_object_figure", "illustrations", "single_object_figure"
     ),
     "task_illustrations__source_scene_edit__object_count_after_edit": _entry(
-        "illustrations", "source_scene_edit", "illustrations", "counterfactual"
+        "illustrations", "source_scene_edit", "illustrations", "source_scene_edit"
     ),
-    "task_illustrations__indoor_room__furniture_side_count": _entry("illustrations", "indoor_room", "illustrations", "relation"),
-    "task_illustrations__image_cutout_board__jigsaw_piece_order": _entry("illustrations", "image_cutout_board", "illustrations", "visual"),
-    "task_illustrations__missing_patch__missing_patch_label": _entry("illustrations", "missing_patch", "illustrations", "visual"),
+    "task_illustrations__indoor_room__furniture_side_count": _entry(
+        "illustrations", "indoor_room", "illustrations", "indoor_room"
+    ),
+    "task_illustrations__image_cutout_board__jigsaw_piece_order": _entry(
+        "illustrations", "image_cutout_board", "illustrations", "image_cutout_board"
+    ),
+    "task_illustrations__missing_patch__missing_patch_label": _entry("illustrations", "missing_patch", "illustrations", "missing_patch"),
     "task_illustrations__image_cutout_board__rotated_tile_label": _entry(
-        "illustrations", "image_cutout_board", "illustrations", "visual"
+        "illustrations", "image_cutout_board", "illustrations", "image_cutout_board"
     ),
     # Physics.
     "task_physics__analog_meter__meter_readout_value": _entry("physics", "analog_meter", "physics", "circuits"),
@@ -974,29 +976,40 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "physics", "signal_transform", "physics", "waves"
     ),
     # Synthetic 3D scenes.
-    "task_three_d__object_scene__between_references_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__camera_distance_extremum_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__counterfactual_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__height_extremum_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__landmark_correspondence_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__marked_point_depth_extremum_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__marked_point_vertical_relation_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__multi_attribute_and_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__multi_attribute_exclusion_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__multi_attribute_or_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__multi_attribute_xor_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__multiview_object_match_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_cluster__multi_attribute_and_count": _entry("three_d", "object_cluster", "three_d", "spatial"),
-    "task_three_d__object_cluster__single_attribute_membership_count": _entry("three_d", "object_cluster", "three_d", "spatial"),
-    "task_three_d__object_cluster__total_object_count": _entry("three_d", "object_cluster", "three_d", "spatial"),
-    "task_three_d__surface_fixture__repeated_element_count": _entry("three_d", "surface_fixture", "three_d", "spatial"),
-    "task_three_d__object_scene__occlusion_order_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__object_relation_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__reference_nearest_label": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__relation_attribute_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__single_attribute_membership_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__image_plane_lateral_relation_count": _entry("three_d", "object_scene", "three_d", "spatial"),
-    "task_three_d__object_scene__camera_depth_relation_count": _entry("three_d", "object_scene", "three_d", "spatial"),
+    "task_three_d__object_scene__between_references_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__camera_distance_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__counterfactual_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__height_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__landmark_correspondence_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__marked_point_depth_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__marked_point_vertical_relation_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__multi_attribute_and_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__multi_attribute_exclusion_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__multi_attribute_or_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__multi_attribute_xor_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__multiview_object_match_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_cluster__multi_attribute_and_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__color_membership_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__count_arithmetic": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__multi_attribute_exclusion_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__multi_attribute_or_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__single_attribute_membership_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__type_frequency_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__type_union_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__total_object_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__surface_fixture__adjacent_to_reference_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__colored_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__empty_or_missing_cell_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__repeated_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__scoped_colored_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__state_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__object_scene__occlusion_order_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__object_relation_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__reference_nearest_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__relation_attribute_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__single_attribute_membership_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__image_plane_lateral_relation_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
+    "task_three_d__object_scene__camera_depth_relation_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__room__multi_attribute_and_count": _entry("three_d", "room", "three_d", "room"),
     "task_three_d__room__wall_object_camera_distance_label": _entry("three_d", "room", "three_d", "room"),
     "task_three_d__room__wall_object_side_relation_label": _entry("three_d", "room", "three_d", "room"),
@@ -1007,16 +1020,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__warehouse__robot_forward_path_label": _entry("three_d", "warehouse", "three_d", "warehouse"),
     "task_three_d__warehouse__nearest_candidate_to_reference_label": _entry("three_d", "warehouse", "three_d", "warehouse"),
     "task_three_d__warehouse__scoped_attribute_count": _entry("three_d", "warehouse", "three_d", "warehouse"),
-    # Misc and puzzle scenes split from the former combined puzzle/notation surface.
-    "task_misc__abacus_match_panel__target_value_match_label": _entry("misc", "abacus_match_panel", "misc", "abacus"),
-    "task_misc__abacus_readout__displayed_value_readout": _entry("misc", "abacus_readout", "misc", "abacus"),
-    "task_misc__agent_automaton__agent_cell_flip_count": _entry("misc", "agent_automaton", "misc", "automaton"),
-    "task_misc__agent_automaton__agent_final_pose_label": _entry("misc", "agent_automaton", "misc", "automaton"),
-    "task_misc__analog_clock__offset_readout": _entry("misc", "analog_clock", "misc", "clock"),
-    "task_misc__braille_cell__matching_pattern_label": _entry("misc", "braille_cell", "misc", "notation"),
-    "task_misc__braille_cell__raised_dot_count": _entry("misc", "braille_cell", "misc", "notation"),
-    "task_misc__logic_gate_circuit__output_value_count": _entry("misc", "logic_gate_circuit", "misc", "notation"),
-    "task_misc__logic_gate_circuit__satisfying_assignment_label": _entry("misc", "logic_gate_circuit", "misc", "notation"),
+    # Symbolic and puzzle scenes split from the former combined puzzle/notation surface.
+    "task_symbolic__abacus_match_panel__target_value_match_label": _entry("symbolic", "abacus_match_panel", "symbolic", "abacus"),
+    "task_symbolic__abacus_readout__displayed_value_readout": _entry("symbolic", "abacus_readout", "symbolic", "abacus"),
+    "task_symbolic__agent_automaton__agent_cell_flip_count": _entry("symbolic", "agent_automaton", "symbolic", "automaton"),
+    "task_symbolic__agent_automaton__agent_final_pose_label": _entry("symbolic", "agent_automaton", "symbolic", "automaton"),
+    "task_symbolic__analog_clock__offset_readout": _entry("symbolic", "analog_clock", "symbolic", "clock"),
+    "task_symbolic__braille_cell__matching_pattern_label": _entry("symbolic", "braille_cell", "symbolic", "notation"),
+    "task_symbolic__braille_cell__raised_dot_count": _entry("symbolic", "braille_cell", "symbolic", "notation"),
+    "task_symbolic__logic_gate_circuit__output_value_count": _entry("symbolic", "logic_gate_circuit", "symbolic", "notation"),
+    "task_symbolic__logic_gate_circuit__satisfying_assignment_label": _entry("symbolic", "logic_gate_circuit", "symbolic", "notation"),
     "task_puzzles__arithmetic_constraint__consecutive_window_sum_value": _entry("puzzles", "arithmetic_constraint", "puzzles", "logic"),
     "task_puzzles__arithmetic_constraint__equal_sum_line_constraint_value": _entry("puzzles", "arithmetic_constraint", "puzzles", "logic"),
     "task_puzzles__arithmetic_constraint__letter_digit_value": _entry("puzzles", "arithmetic_constraint", "puzzles", "logic"),
@@ -1037,8 +1050,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__cell_board__shortest_path_length_value": _entry("puzzles", "cell_board", "puzzles", "cell_board"),
     "task_puzzles__cell_board__single_attribute_membership_count": _entry("puzzles", "cell_board", "puzzles", "cell_board"),
     "task_puzzles__cell_board__symmetry_violation_count": _entry("puzzles", "cell_board", "puzzles", "cell_board"),
-    "task_misc__clock_collection__compare": _entry("misc", "clock_collection", "misc", "clock"),
-    "task_misc__clock_match_panel__equivalent_time_label": _entry("misc", "clock_match_panel", "misc", "clock"),
+    "task_symbolic__clock_collection__compare": _entry("symbolic", "clock_collection", "symbolic", "clock"),
+    "task_symbolic__clock_match_panel__equivalent_time_label": _entry("symbolic", "clock_match_panel", "symbolic", "clock"),
     "task_puzzles__color_gradient__color_gradient_completion_label": _entry("puzzles", "color_gradient", "puzzles", "visual"),
     "task_puzzles__color_gradient__color_gradient_violation_cell_label": _entry("puzzles", "color_gradient", "puzzles", "visual"),
     "task_puzzles__counterfactual_board__board_dimension_count": _entry("puzzles", "counterfactual_board", "puzzles", "counterfactual"),
@@ -1048,38 +1061,37 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__cube_net__folded_path_endpoint_label": _entry("puzzles", "cube_net", "puzzles", "spatial"),
     "task_puzzles__cube_net__folded_path_face_sequence_label": _entry("puzzles", "cube_net", "puzzles", "spatial"),
     "task_puzzles__cyclic_order__cyclic_order_equivalent_label": _entry("puzzles", "cyclic_order", "puzzles", "topology"),
-    "task_misc__dice_probability__dice_conditional_event_value": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__pair_attribute_combo_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__pair_difference_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__pair_sum_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__pair_sum_threshold_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__single_attribute_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__dice_probability__single_threshold_probability": _entry("misc", "dice_probability", "misc", "probability"),
-    "task_misc__life_automaton__life_future_grid_label": _entry("misc", "life_automaton", "misc", "automaton"),
-    "task_misc__life_automaton__life_population_count": _entry("misc", "life_automaton", "misc", "automaton"),
+    "task_symbolic__dice_probability__dice_conditional_event_value": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__pair_attribute_combo_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__pair_difference_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__pair_sum_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__pair_sum_threshold_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__single_attribute_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__dice_probability__single_threshold_probability": _entry("symbolic", "dice_probability", "symbolic", "probability"),
+    "task_symbolic__life_automaton__life_future_grid_label": _entry("symbolic", "life_automaton", "symbolic", "automaton"),
+    "task_symbolic__life_automaton__life_population_count": _entry("symbolic", "life_automaton", "symbolic", "automaton"),
     "task_puzzles__logic_grid__grid_king_non_touch_label": _entry("puzzles", "logic_grid", "puzzles", "logic"),
     "task_puzzles__logic_grid__grid_uniqueness_completion_label": _entry("puzzles", "logic_grid", "puzzles", "logic"),
     "task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label": _entry("puzzles", "matchstick", "puzzles", "logic"),
     "task_puzzles__matchstick__matchstick_number_transform_label": _entry("puzzles", "matchstick", "puzzles", "logic"),
     "task_puzzles__maze__exit_reachability_label": _entry("puzzles", "maze", "puzzles", "topology"),
     "task_puzzles__maze__reachable_exit_count": _entry("puzzles", "maze", "puzzles", "topology"),
-    "task_misc__music_staff__articulation_symbol_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__bar_count_value": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__chord_harmony_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__dominant_chord_count": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__duration_equivalence_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__interval_name_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__key_signature_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__meter_type_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__note_name_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__same_pitch_truth_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__scale_degree_function_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__scale_validation_truth_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__time_signature_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__music_staff__transposed_pitch_truth_label": _entry("misc", "music_staff", "misc", "notation"),
-    "task_misc__organic_structure__branch_point_count": _entry("misc", "organic_structure", "misc", "notation"),
-    "task_misc__organic_structure__bond_order_count": _entry("misc", "organic_structure", "misc", "notation"),
-    "task_misc__organic_structure__ring_size_count": _entry("misc", "organic_structure", "misc", "notation"),
+    "task_symbolic__music_staff__articulation_symbol_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__bar_count_value": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__chord_harmony_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__dominant_chord_count": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__duration_equivalence_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__interval_name_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__key_signature_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__meter_type_count": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__note_name_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__same_pitch_pair_count": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__scale_degree_function_label": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__scale_validation_count": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__music_staff__transposed_pitch_pair_count": _entry("symbolic", "music_staff", "symbolic", "notation"),
+    "task_symbolic__organic_structure__branch_point_count": _entry("symbolic", "organic_structure", "symbolic", "notation"),
+    "task_symbolic__organic_structure__bond_order_count": _entry("symbolic", "organic_structure", "symbolic", "notation"),
+    "task_symbolic__organic_structure__ring_size_count": _entry("symbolic", "organic_structure", "symbolic", "notation"),
     "task_puzzles__nonogram__nonogram_candidate_solution_label": _entry("puzzles", "nonogram", "puzzles", "logic"),
     "task_puzzles__nonogram__nonogram_line_completion_label": _entry("puzzles", "nonogram", "puzzles", "logic"),
     "task_puzzles__overlay__overlay_result_label": _entry("puzzles", "overlay", "puzzles", "spatial"),
@@ -1098,10 +1110,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__rubiks_net__rubiks_move_result_label": _entry("puzzles", "rubiks_net", "puzzles", "spatial"),
     "task_puzzles__rubiks_net__static_face_color_count_label": _entry("puzzles", "rubiks_net", "puzzles", "spatial"),
     "task_puzzles__rubiks_net__static_sticker_color_label": _entry("puzzles", "rubiks_net", "puzzles", "spatial"),
-    "task_misc__spinner_probability__multi_attribute_and_probability": _entry("misc", "spinner_probability", "misc", "probability"),
-    "task_misc__spinner_probability__multi_attribute_or_probability": _entry("misc", "spinner_probability", "misc", "probability"),
-    "task_misc__spinner_probability__single_attribute_probability": _entry("misc", "spinner_probability", "misc", "probability"),
-    "task_misc__spinner_probability__spinner_pair_event_value": _entry("misc", "spinner_probability", "misc", "probability"),
+    "task_symbolic__spinner_probability__multi_attribute_and_probability": _entry("symbolic", "spinner_probability", "symbolic", "probability"),
+    "task_symbolic__spinner_probability__multi_attribute_or_probability": _entry("symbolic", "spinner_probability", "symbolic", "probability"),
+    "task_symbolic__spinner_probability__single_attribute_probability": _entry("symbolic", "spinner_probability", "symbolic", "probability"),
+    "task_symbolic__spinner_probability__spinner_pair_event_value": _entry("symbolic", "spinner_probability", "symbolic", "probability"),
     "task_puzzles__star_battle__scoped_valid_cell_label": _entry("puzzles", "star_battle", "puzzles", "logic"),
     "task_puzzles__star_battle__star_battle_remaining_count": _entry("puzzles", "star_battle", "puzzles", "logic"),
     "task_puzzles__star_battle__valid_cell_anywhere_label": _entry("puzzles", "star_battle", "puzzles", "logic"),
@@ -1116,7 +1128,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__tents__tents_valid_candidate_count": _entry("puzzles", "tents", "puzzles", "logic"),
     "task_puzzles__toggle_grid__toggle_repair_switch_label": _entry("puzzles", "toggle_grid", "puzzles", "logic"),
     "task_puzzles__toggle_grid__toggle_result_label": _entry("puzzles", "toggle_grid", "puzzles", "logic"),
-    "task_misc__turing_tape__turing_written_symbol_count": _entry("misc", "turing_tape", "misc", "automaton"),
+    "task_symbolic__turing_tape__turing_written_symbol_count": _entry("symbolic", "turing_tape", "symbolic", "automaton"),
     "task_puzzles__voxel_cube__cube_count": _entry("puzzles", "voxel_cube", "puzzles", "spatial"),
     "task_puzzles__voxel_cube__cube_painted_face_count": _entry("puzzles", "voxel_cube", "puzzles", "spatial"),
     "task_puzzles__voxel_cube__cube_projection_consistency_label": _entry("puzzles", "voxel_cube", "puzzles", "spatial"),
@@ -1149,21 +1161,45 @@ def resolve_task_taxonomy(
     task_id: str,
     *,
     source_domain: str = "",
-    source_task_group: str = "",
+    source_scene_id: str = "",
 ) -> TaxonomyEntry:
     """Resolve taxonomy for known tasks, with a permissive fallback for tests/tools."""
 
     entry = lookup_task_taxonomy(str(task_id))
     if entry is not None:
+        if is_scene_package_task(str(task_id), domain=str(entry.domain)):
+            return TaxonomyEntry(
+                domain=str(entry.domain),
+                scene_id=str(entry.scene_id),
+                source_domain=str(source_domain or entry.source_domain or entry.domain),
+                source_scene_id="",
+            )
         return entry
 
-    fallback_domain = canonical_domain(str(source_domain or "unknown"))
-    fallback_scene = str(source_task_group or "unknown").strip() or "unknown"
+    parsed_domain = ""
+    parsed_scene = ""
+    try:
+        parsed = parse_public_task_id(str(task_id))
+        parsed_domain = str(parsed.domain)
+        parsed_scene = str(parsed.scene_id)
+    except ValueError:
+        pass
+
+    fallback_domain = canonical_domain(str(source_domain or parsed_domain or "unknown"))
+    fallback_scene = str(source_scene_id or parsed_scene or "unknown").strip() or "unknown"
+    if is_scene_package_task(str(task_id), domain=str(fallback_domain)):
+        fallback_scene = str(parsed_scene or fallback_scene)
+        return TaxonomyEntry(
+            domain=fallback_domain,
+            scene_id=fallback_scene,
+            source_domain=str(source_domain or fallback_domain),
+            source_scene_id="",
+        )
     return TaxonomyEntry(
         domain=fallback_domain,
         scene_id=fallback_scene,
         source_domain=str(source_domain or fallback_domain),
-        source_task_group=str(source_task_group or fallback_scene),
+        source_scene_id=str(source_scene_id or fallback_scene),
     )
 
 
@@ -1248,7 +1284,7 @@ def inject_taxonomy_metadata(
     taxonomy: TaxonomyEntry,
     query_id: str = "",
     registered_domain: str = "",
-    registered_task_group: str = "",
+    registered_scene_id: str | None = "",
 ) -> dict[str, Any]:
     """Return a trace payload copy with explicit taxonomy metadata injected.
 
@@ -1262,8 +1298,9 @@ def inject_taxonomy_metadata(
     payload = deepcopy(dict(trace_payload))
     public_task_id = str(task_id)
     public_query_id = str(query_id).strip()
+    migrated_domain = is_scene_package_task(public_task_id, domain=str(taxonomy.domain))
     registered_domain_text = _string_or_empty(registered_domain) or taxonomy.domain
-    registered_task_group_text = _string_or_empty(registered_task_group) or taxonomy.source_task_group
+    registered_scene_id_text = _string_or_empty(registered_scene_id) or taxonomy.source_scene_id
     source_task_id = _first_payload_value(payload, "source_task_id", "implementation_task_id")
     if not source_task_id:
         candidate_task_id = _first_payload_value(payload, "task_id")
@@ -1274,12 +1311,12 @@ def inject_taxonomy_metadata(
         _first_payload_value(payload, "source_domain", "implementation_domain")
         or registered_domain_text
     )
-    source_task_group = (
-        _first_payload_value(payload, "source_task_group", "implementation_task_group")
-        or registered_task_group_text
+    source_scene_id = (
+        _first_payload_value(payload, "source_scene_id", "implementation_scene_id")
+        or registered_scene_id_text
     )
     prompt_domain = _first_payload_value(payload, "prompt_domain") or source_domain
-    prompt_task_group = _first_payload_value(payload, "prompt_task_group") or source_task_group
+    prompt_scene_id = _first_payload_value(payload, "prompt_scene_id") or source_scene_id
 
     public_metadata = {
         "domain": taxonomy.domain,
@@ -1291,17 +1328,33 @@ def inject_taxonomy_metadata(
     registered_metadata = {
         "task_id": public_task_id,
         "domain": registered_domain_text,
-        "task_group": registered_task_group_text,
     }
+    if migrated_domain:
+        registered_metadata["scene_id"] = taxonomy.scene_id
+    else:
+        registered_metadata["scene_id"] = registered_scene_id_text
     source_metadata = {
         "implementation_task_id": source_task_id,
         "implementation_domain": source_domain,
-        "implementation_task_group": source_task_group,
         "config_domain": registered_domain_text,
-        "config_task_group": registered_task_group_text,
         "prompt_domain": prompt_domain,
-        "prompt_task_group": prompt_task_group,
     }
+    if migrated_domain:
+        source_metadata.update(
+            {
+                "implementation_scene_id": taxonomy.scene_id,
+                "config_scene_id": taxonomy.scene_id,
+                "prompt_scene_id": taxonomy.scene_id,
+            }
+        )
+    else:
+        source_metadata.update(
+            {
+                "implementation_scene_id": source_scene_id,
+                "config_scene_id": registered_scene_id_text,
+                "prompt_scene_id": prompt_scene_id,
+            }
+        )
     metadata = {
         "metadata_schema_version": "v0",
         "domain": taxonomy.domain,

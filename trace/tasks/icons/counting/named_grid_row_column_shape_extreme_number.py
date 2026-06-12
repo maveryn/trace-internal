@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -16,7 +16,6 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.variant_sampling import resolve_variant
-from ..shared.complexity import build_icon_task_complexity
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace
@@ -75,7 +74,7 @@ class _SampleSpec:
     fill_style_probabilities: Dict[str, float]
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -425,34 +424,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
     )
 
 
-def _complexity(sample: _SampleSpec, *, scene: _ScenePayload, render_params: Mapping[str, Any]) -> TaskComplexity:
-    cell_count = int(sample.grid_rows) * int(sample.grid_cols)
-    visual_scan = (float(cell_count) - 16.0) / max(1.0, 36.0 - 16.0)
-    active_counts = sample.row_target_counts if str(sample.queried_axis) == "row" else sample.column_target_counts
-    winner = int(sample.answer_line_number) - 1
-    winning_count = int(active_counts[int(winner)])
-    other_counts = [int(value) for index, value in enumerate(active_counts) if int(index) != int(winner)]
-    if str(sample.extremum) == "most":
-        margin = float(winning_count - max(other_counts))
-    else:
-        margin = float(min(other_counts) - winning_count)
-    ambiguity = 1.0 - min(1.0, margin / float(max(1, int(sample.grid_cols if sample.queried_axis == "row" else sample.grid_rows))))
-    noise_cap = max((int(value) for value in render_params["icon_noise_edit_count_range"]), default=0)
-    clutter = (
-        min(1.0, sum(len(icon.noise_edits) for icon in scene.icons) / float(max(1, len(scene.icons) * noise_cap)))
-        if int(noise_cap) > 0
-        else 0.0
-    )
-    return build_icon_task_complexity(
-        task_group_defaults=_TASK_GROUP_DEFAULTS,
-        task_id=TASK_ID,
-        criterion_values={
-            "semantic_match": 0.45,
-            "visual_scan": max(0.0, min(1.0, visual_scan)),
-            "ambiguity": max(0.0, min(1.0, ambiguity)),
-            "clutter": max(0.0, min(1.0, clutter)),
-        },
-    )
 
 
 @register_task
@@ -461,7 +432,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
 
     task_id = TASK_ID
     domain = "icons"
-    task_group = "counting"
+    scene_id = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = _resolve_named_grid_render_params(
@@ -522,7 +493,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
         question_key = f"question_text_{sample.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -670,7 +641,6 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_complexity(sample, scene=scene, render_params=render_params),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

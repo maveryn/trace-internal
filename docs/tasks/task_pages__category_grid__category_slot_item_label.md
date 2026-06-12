@@ -3,7 +3,7 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `category_grid`
-3. Source task group: `document_lookup`
+3. Source scene package: `category_grid`
 4. Task id: `task_pages__category_grid__category_slot_item_label`
 
 ## Contract
@@ -15,7 +15,7 @@
 6. Query knobs: target category, target subcategory, target slot, category count, subcategory count, item-count support, and scene layout variant.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_document_lookup_v0`
+1. Prompt bundle: `pages_category_grid_v0`
 2. Scene key: `category_grid`
 3. Task key: `category_grid_lookup_query`
 4. Internal prompt variant key: `category_slot_item_label`

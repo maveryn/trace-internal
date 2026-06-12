@@ -4,9 +4,6 @@ generation:
       balanced_midgame: 1.0
       center_crossroads_midgame: 1.0
       triangle_wing_midgame: 1.0
-    query_id_weights:
-      marked_piece_destination_count: 1.0
-      marked_piece_capture_count: 1.0
     style_variant_weights:
       ground_court: 1.0
       ink_court: 1.0
@@ -17,33 +14,32 @@ generation:
       red: 1.0
       blue: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_marked_piece_color_sampling: true
     balanced_target_answer_sampling: true
     balanced_piece_count_per_side_sampling: true
     marked_piece_destination_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
     marked_piece_capture_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
     piece_count_per_side_support:
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
 rendering:
   shared:
     canvas_width: 760
@@ -62,24 +58,8 @@ rendering:
     canvas_min_height_px: 760
     canvas_side_padding_px: 168
     canvas_vertical_padding_px: 136
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.34
-      movement_reasoning: 0.42
-      ambiguity: 0.10
-      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_sixteen_soldiers_v0
+    bundle_id: games_sixteen_soldiers_v1
     scene_key: sixteen_soldiers_board
     task_key: sixteen_soldiers_query
-    object_description_balanced_midgame: a Sixteen Soldiers board with red and blue pieces on points connected by drawn movement lines
-    object_description_center_crossroads_midgame: a Sixteen Soldiers board with red and blue pieces on points connected by drawn movement lines
-    object_description_triangle_wing_midgame: a Sixteen Soldiers board with red and blue pieces on points connected by drawn movement lines
-    move_rule_text: A piece can move along one drawn line to an adjacent empty point.
-    capture_rule_text: A capture is possible when the piece marked with an X can jump along one drawn straight line over an adjacent opponent piece and land on the empty point immediately beyond it.
-    annotation_hint_marked_piece_destination_count: set "annotation" to [x, y] pixel points at the centers of every legal empty destination for the piece marked with an X; use an empty array if there are none
-    answer_hint_marked_piece_destination_count: set "answer" to the number of legal adjacent destinations for the piece marked with an X
-    annotation_hint_marked_piece_capture_count: set "annotation" to [x, y] pixel points at the centers of every opponent piece that the X-marked piece can capture immediately; use an empty array if there are none
-    answer_hint_marked_piece_capture_count: set "answer" to the number of immediate captures available to the piece marked with an X

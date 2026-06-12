@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -21,7 +21,6 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
 from ..shared.common import resolve_puzzle_axis_variant
-from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.visual_defaults import load_puzzle_noise_defaults
 
@@ -85,7 +84,7 @@ class ToggleDefaults:
 
 
 _DEFAULTS = ToggleDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "logic")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "logic")
 _GEN_DEFAULTS_RESULT, _RENDER_DEFAULTS_RESULT, _PROMPT_DEFAULTS_RESULT = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TOGGLE_RESULT_TASK_ID,
@@ -94,8 +93,7 @@ _GEN_DEFAULTS_REPAIR, _RENDER_DEFAULTS_REPAIR, _PROMPT_DEFAULTS_REPAIR = split_g
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TOGGLE_REPAIR_TASK_ID,
 )
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TOGGLE_RESULT_TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="logic", apply_prob=0.0)
 
 
 def _get_int(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -491,9 +489,22 @@ def _option_specs_for_repair(options: Sequence[SwitchOption]) -> List[Dict[str, 
     ]
 
 
+def _round_bbox(bbox: Sequence[float]) -> List[float]:
+    return [round(float(value), 3) for value in bbox]
+
+
+def _keyed_bbox_projection(annotation_bboxes: Mapping[str, Sequence[float]]) -> Dict[str, Any]:
+    keyed = {str(role): _round_bbox(bbox) for role, bbox in annotation_bboxes.items()}
+    return {
+        "type": "keyed_bbox_map",
+        "keyed_bbox_map": dict(keyed),
+        "pixel_keyed_bbox_map": dict(keyed),
+    }
+
+
 class _ToggleBaseTask:
     domain = "puzzles"
-    task_group = "logic"
+    scene_id = "logic"
     default_dataset_enabled = True
     task_id: str
     query_id: str
@@ -502,7 +513,7 @@ class _ToggleBaseTask:
         return build_prompt_trace_artifacts(
             render_task_prompt_variants(
                 domain=self.domain,
-                task_group=self.task_group,
+                scene_id=self.scene_id,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
@@ -521,17 +532,6 @@ class _ToggleBaseTask:
             )
         )
 
-    def _complexity(self, dataset: ToggleDataset) -> Any:
-        grid_norm = normalize_int_with_bounds(int(dataset.rows) * int(dataset.cols), (16, 25))
-        step_norm = normalize_int_with_bounds(len(dataset.pressed_cells), (1, 4))
-        return build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
-            components={
-                "visual_scan": clamp_unit_interval(0.45 + 0.35 * grid_norm),
-                "reasoning_load": clamp_unit_interval(0.50 + 0.30 * step_norm),
-                "scene_variant_load": {"toggle_clean": 0.18, "toggle_notebook": 0.24, "toggle_console": 0.28}.get(str(dataset.scene_variant), 0.2),
-            },
-        )
 
 
 @register_task
@@ -549,13 +549,19 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
         prompt_defaults = _prompt_defaults(self.task_id)
         prompt_artifacts = self._prompt(prompt_defaults=prompt_defaults, instance_seed=int(instance_seed))
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        annotation_bboxes = [
-            [round(float(value), 3) for value in render_meta["start_grid_bbox_px"]],
-            [round(float(value), 3) for value in option_bbox],
-        ]
+        annotation_role_item_ids = {
+            "start_grid": "start_grid_bbox_px",
+            "selected_option": f"option_{dataset.correct_option_label}",
+        }
+        annotation_projection = _keyed_bbox_projection(
+            {
+                "start_grid": render_meta["start_grid_bbox_px"],
+                "selected_option": option_bbox,
+            }
+        )
+        annotation_keyed_bboxes = dict(annotation_projection["keyed_bbox_map"])
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        complexity = self._complexity(dataset)
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
         option_specs = _option_specs_for_result(dataset.result_options)
         trace_payload = {
             "scene_ir": {"scene_kind": "puzzle_toggle_grid", "scene_id": SCENE_ID, "task_id": self.task_id},
@@ -578,7 +584,7 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
                 "post_image_noise": dict(post_noise_meta),
                 **dict(render_meta),
             },
-            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "start_grid_bbox_px+option_panel_bboxes_px"},
+            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "keyed_start_grid_and_selected_option_bboxes_px"},
             "execution_trace": {
                 "scene_id": SCENE_ID,
                 "query_id": RESULT_QUERY_ID,
@@ -591,12 +597,16 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
                 "option_specs": option_specs,
                 "answer_value": str(dataset.correct_option_label),
                 "toggle_rule": "pressing a switch toggles that cell and its orthogonal neighbors",
+                "annotation_role_item_ids": dict(annotation_role_item_ids),
             },
-            "witness_symbolic": {"type": "toggle_grid_result", "value": {"pressed_cells": [[int(r), int(c)] for r, c in dataset.pressed_cells]}},
-            "projected_annotation": {"bbox_set": list(annotation_bboxes)},
+            "witness_symbolic": {
+                "type": "keyed_bbox_map",
+                "value": dict(annotation_keyed_bboxes),
+                "role_item_ids": dict(annotation_role_item_ids),
+            },
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -605,7 +615,6 @@ class PuzzlesLogicToggleResultLabelTask(_ToggleBaseTask):
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=RESULT_QUERY_ID,
@@ -629,14 +638,21 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
         prompt_artifacts = self._prompt(prompt_defaults=prompt_defaults, instance_seed=int(instance_seed))
         correct = next(option for option in dataset.switch_options if bool(option.is_correct))
         switch_bbox = render_meta["start_cell_bboxes_px"][f"cell_{correct.row}_{correct.col}"]
-        annotation_bboxes = [
-            [round(float(value), 3) for value in render_meta["start_grid_bbox_px"]],
-            [round(float(value), 3) for value in render_meta["target_grid_bbox_px"]],
-            [round(float(value), 3) for value in switch_bbox],
-        ]
+        annotation_role_item_ids = {
+            "start_grid": "start_grid_bbox_px",
+            "target_grid": "target_grid_bbox_px",
+            "selected_switch": f"cell_{correct.row}_{correct.col}",
+        }
+        annotation_projection = _keyed_bbox_projection(
+            {
+                "start_grid": render_meta["start_grid_bbox_px"],
+                "target_grid": render_meta["target_grid_bbox_px"],
+                "selected_switch": switch_bbox,
+            }
+        )
+        annotation_keyed_bboxes = dict(annotation_projection["keyed_bbox_map"])
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        complexity = self._complexity(dataset)
+        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
         option_specs = _option_specs_for_repair(dataset.switch_options)
         trace_payload = {
             "scene_ir": {"scene_kind": "puzzle_toggle_grid", "scene_id": SCENE_ID, "task_id": self.task_id},
@@ -659,7 +675,7 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
                 "post_image_noise": dict(post_noise_meta),
                 **dict(render_meta),
             },
-            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "start_grid_bbox_px+target_grid_bbox_px+start_cell_bboxes_px"},
+            "render_map": {"image_id": "img0", **dict(render_meta), "annotation_source": "keyed_start_target_and_selected_switch_bboxes_px"},
             "execution_trace": {
                 "scene_id": SCENE_ID,
                 "query_id": REPAIR_QUERY_ID,
@@ -672,12 +688,16 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
                 "pressed_cells": [[int(row), int(col)] for row, col in dataset.pressed_cells],
                 "answer_value": str(dataset.correct_option_label),
                 "toggle_rule": "pressing a switch toggles that cell and its orthogonal neighbors",
+                "annotation_role_item_ids": dict(annotation_role_item_ids),
             },
-            "witness_symbolic": {"type": "toggle_grid_repair_switch", "value": {"correct_cell": [int(correct.row), int(correct.col)]}},
-            "projected_annotation": {"bbox_set": list(annotation_bboxes)},
+            "witness_symbolic": {
+                "type": "keyed_bbox_map",
+                "value": dict(annotation_keyed_bboxes),
+                "role_item_ids": dict(annotation_role_item_ids),
+            },
+            "projected_annotation": dict(annotation_projection),
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
-            "complexity": complexity.to_dict(),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -686,7 +706,6 @@ class PuzzlesLogicToggleRepairSwitchLabelTask(_ToggleBaseTask):
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=REPAIR_QUERY_ID,

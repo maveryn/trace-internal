@@ -1,0 +1,137 @@
+{
+  "bundle_id": "games_darts_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "visible_dartboard": [
+        "The image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This scene shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "darts_score_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "total_score": [
+        "{scoring_rule_text} The image shows one marked dart and score options labeled in the image. Which option letter gives that dart's score?",
+        "Find the score of the marked dart, then choose the matching option letter from the image. {scoring_rule_text}",
+        "{scoring_rule_text} Determine the score of the single marked dart and use the matching option letter shown in the image.",
+        "Using the dartboard scoring rule, which visible option letter gives the score of the marked dart? {scoring_rule_text}",
+        "Score the marked dart and use the matching option letter shown in the image. {scoring_rule_text}"
+      ],
+      "ring_count": [
+        "{ring_rule_text} How many marked darts are in the yellow-highlighted {target_ring_text}? Use 0 if none are there.",
+        "Count the marked darts that land in the yellow-highlighted {target_ring_text}. {ring_rule_text} Use 0 if none are there.",
+        "{ring_rule_text} What is the number of marked darts in the yellow-highlighted {target_ring_text}?",
+        "Looking only at the marked darts, how many are in the yellow-highlighted {target_ring_text}? Use 0 if none are there. {ring_rule_text}",
+        "Use the yellow-highlighted region on the dartboard. {ring_rule_text} Count the marked darts in the {target_ring_text}."
+      ],
+      "threshold_score_count": [
+        "{scoring_rule_text} How many marked darts score at least {target_threshold_text} points?",
+        "Count the marked darts with score greater than or equal to {target_threshold_text}. {scoring_rule_text}",
+        "{scoring_rule_text} What is the number of marked darts scoring at least {target_threshold_text}?",
+        "Using the dartboard scoring rule, how many marked darts score {target_threshold_text} or more? {scoring_rule_text}",
+        "Score each marked dart. {scoring_rule_text} Count how many are at least {target_threshold_text}."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:visible_dartboard": [
+      "object_description"
+    ],
+    "query:total_score": [
+      "scoring_rule_text"
+    ],
+    "query:ring_count": [
+      "ring_rule_text",
+      "target_ring_text"
+    ],
+    "query:threshold_score_count": [
+      "scoring_rule_text",
+      "target_threshold_text"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "ring_rule_text": {
+      "type": "string"
+    },
+    "scoring_rule_text": {
+      "type": "string"
+    },
+    "target_ring_text": {
+      "type": "string"
+    },
+    "target_threshold_text": {
+      "type": "string"
+    }
+  },
+  "code_prompt_defaults": {
+    "object_description_single_board": "a labeled dartboard with visible dart markers",
+    "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50.",
+    "ring_rule_text": "The yellow highlight marks the requested scoring area. The double ring is the outer scoring band near the board edge. The triple ring is the inner scoring band between the bull and the outer edge. The bull is the center area. Single areas are the numbered wedge areas outside the bull that are not in the double or triple ring.",
+    "annotation_hint_total_score": "set \"annotation\" to a JSON array with one pixel point [x, y] at the center of the marked dart",
+    "annotation_hint_ring_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every marked dart in the requested ring or area",
+    "annotation_hint_threshold_score_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every marked dart whose score is at least the requested threshold",
+    "answer_hint_total_score": "set \"answer\" to the option letter shown in the image for the total score",
+    "answer_hint_ring_count": "set \"answer\" to the number of marked darts in the requested ring or area; use 0 if none are in that area",
+    "answer_hint_threshold_score_count": "set \"answer\" to the number of marked darts whose score is at least the requested threshold"
+  }
+}

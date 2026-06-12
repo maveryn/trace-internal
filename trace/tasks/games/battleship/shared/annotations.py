@@ -1,0 +1,114 @@
+"""Annotation projection helpers for the Battleship games scene."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Dict, Sequence
+
+from .rendering import RenderedBattleshipScene
+from .state import BattleshipShipPlacement, Coord, coord_to_cell_id, sorted_coords
+
+
+@dataclass(frozen=True)
+class BattleshipAnnotationProjection:
+    """Projected annotation geometry and trace ids."""
+
+    annotation_cell_ids: tuple[str, ...]
+    annotation_points: list[list[float]]
+    annotation_entity_ids: tuple[str, ...]
+    annotation_keyed_point_sets: Dict[str, list[list[float]]]
+    annotation_key_to_ship_id: Dict[str, str]
+    annotation_hit_cell_ids_by_key: Dict[str, list[str]]
+
+
+def bbox_center(bbox: Sequence[float]) -> list[float]:
+    """Return the rounded center of a pixel bbox."""
+
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
+def cell_ids_for_coords(coords: tuple[Coord, ...]) -> tuple[str, ...]:
+    """Return stable cell ids for sorted board coordinates."""
+
+    return tuple(coord_to_cell_id(coord) for coord in sorted_coords(coords))
+
+
+def project_point_set_annotation(
+    *,
+    annotation_coords: Sequence[Coord],
+    rendered_scene: RenderedBattleshipScene,
+) -> BattleshipAnnotationProjection:
+    """Project counted board cells to homogeneous point-set annotation."""
+
+    annotation_cell_ids = cell_ids_for_coords(tuple(annotation_coords))
+    annotation_points = [
+        bbox_center(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
+        for cell_id in annotation_cell_ids
+    ]
+    return BattleshipAnnotationProjection(
+        annotation_cell_ids=annotation_cell_ids,
+        annotation_points=annotation_points,
+        annotation_entity_ids=tuple(str(cell_id) for cell_id in annotation_cell_ids),
+        annotation_keyed_point_sets={},
+        annotation_key_to_ship_id={},
+        annotation_hit_cell_ids_by_key={},
+    )
+
+
+def project_ship_status_annotation(
+    *,
+    ship_placements: Sequence[BattleshipShipPlacement],
+    annotation_ship_ids: Sequence[str],
+    rendered_scene: RenderedBattleshipScene,
+) -> BattleshipAnnotationProjection:
+    """Project ship-status witness ships to keyed hit-cell point sets."""
+
+    ships_by_id = {str(ship.ship_id): ship for ship in ship_placements}
+    annotation_keyed_point_sets: Dict[str, list[list[float]]] = {}
+    annotation_key_to_ship_id: Dict[str, str] = {}
+    annotation_hit_cell_ids_by_key: Dict[str, list[str]] = {}
+    annotation_coords = tuple(
+        coord
+        for ship_id in annotation_ship_ids
+        for coord in ships_by_id[str(ship_id)].hit_coords
+    )
+    annotation_cell_ids = cell_ids_for_coords(annotation_coords)
+    annotation_points = [
+        bbox_center(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
+        for cell_id in annotation_cell_ids
+    ]
+    for ship_id in annotation_ship_ids:
+        ship = ships_by_id[str(ship_id)]
+        key = str(ship.display_name)
+        hit_cell_ids = [
+            coord_to_cell_id((int(row), int(col)))
+            for row, col in sorted_coords(ship.hit_coords)
+        ]
+        if not hit_cell_ids:
+            raise ValueError("cannot build annotation points for ship with no hit cells")
+        annotation_keyed_point_sets[str(key)] = [
+            bbox_center(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
+            for cell_id in hit_cell_ids
+        ]
+        annotation_key_to_ship_id[str(key)] = str(ship.ship_id)
+        annotation_hit_cell_ids_by_key[str(key)] = [str(cell_id) for cell_id in hit_cell_ids]
+    return BattleshipAnnotationProjection(
+        annotation_cell_ids=annotation_cell_ids,
+        annotation_points=annotation_points,
+        annotation_entity_ids=tuple(str(ship_id) for ship_id in annotation_ship_ids),
+        annotation_keyed_point_sets=annotation_keyed_point_sets,
+        annotation_key_to_ship_id=annotation_key_to_ship_id,
+        annotation_hit_cell_ids_by_key=annotation_hit_cell_ids_by_key,
+    )
+
+
+__all__ = [
+    "BattleshipAnnotationProjection",
+    "bbox_center",
+    "cell_ids_for_coords",
+    "project_point_set_annotation",
+    "project_ship_status_annotation",
+]

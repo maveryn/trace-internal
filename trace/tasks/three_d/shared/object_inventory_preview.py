@@ -23,6 +23,8 @@ from .object_resources import (
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE,
 )
 from .object_scene import resolve_object_scene_render_params
+from ..surface_fixture.shared.common import ELEMENT_TYPE_BY_SCENE_VARIANT, SEMANTIC_COLOR_RGB, SEMANTIC_COLOR_SUPPORT
+from ..surface_fixture.shared.rendering import render_surface_fixture
 from .warehouse_object_rendering import _draw_ground_shadow as _draw_warehouse_ground_shadow
 from .warehouse_object_rendering import _fill_for_object as _warehouse_fill_for_object
 from ..room import wall_mounted_common as room_scene
@@ -655,6 +657,104 @@ def _render_warehouse_profile(
     }
 
 
+def _render_surface_fixture_profile(
+    profile: ThreeDObjectProfile,
+    *,
+    canvas_width: int,
+    canvas_height: int,
+    instance_seed: int,
+) -> Tuple[Image.Image, List[float], Dict[str, Any]]:
+    scene_variant = str(profile.object_type)
+    if scene_variant not in ELEMENT_TYPE_BY_SCENE_VARIANT:
+        raise ValueError(f"unsupported surface fixture profile object_type: {scene_variant}")
+    element_type = str(ELEMENT_TYPE_BY_SCENE_VARIANT[scene_variant])
+    render_params = resolve_object_scene_render_params(
+        {
+            "canvas_width": int(canvas_width),
+            "canvas_height": int(canvas_height),
+            "scene_margin_left_px": 24,
+            "scene_margin_right_px": 24,
+            "scene_margin_top_px": 20,
+            "scene_margin_bottom_px": 20,
+            "grid_step": 0.0,
+        },
+        render_defaults={},
+    )
+    rows = 3
+    cols = 4
+    rng = _profile_rng(profile, int(instance_seed), "surface_fixture_preview")
+    cells: List[Dict[str, Any]] = []
+    for index in range(rows * cols):
+        row = index // cols
+        col = index % cols
+        color_name = str(SEMANTIC_COLOR_SUPPORT[(index + int(rng.randrange(len(SEMANTIC_COLOR_SUPPORT)))) % len(SEMANTIC_COLOR_SUPPORT)])
+        state = "normal"
+        if scene_variant in {"locker_bank", "mailbox_bank", "door_bank"} and index % 5 == 0:
+            state = "open"
+        elif scene_variant in {"server_rack", "control_panel", "window_grid"} and index % 4 == 1:
+            state = "lit"
+        elif scene_variant == "control_panel" and index % 5 == 2:
+            state = "pressed"
+        elif scene_variant == "solar_panel_array" and index % 6 == 3:
+            state = "cracked"
+        u_pad = 0.065
+        v_pad = 0.075
+        gap = 0.016
+        u0 = u_pad + (float(col) / float(cols)) * (1.0 - 2.0 * u_pad)
+        u1 = u_pad + (float(col + 1) / float(cols)) * (1.0 - 2.0 * u_pad)
+        v0 = v_pad + (float(row) / float(rows)) * (1.0 - 2.0 * v_pad)
+        v1 = v_pad + (float(row + 1) / float(rows)) * (1.0 - 2.0 * v_pad)
+        cells.append(
+            {
+                "element_id": f"{element_type}_{index:02d}",
+                "cell_id": f"cell_{index:02d}",
+                "flat_index": int(index),
+                "element_type": str(element_type),
+                "row": int(row),
+                "column": int(col),
+                "u0": float(u0 + gap),
+                "u1": float(u1 - gap),
+                "v0": float(v0 + gap),
+                "v1": float(v1 - gap),
+                "present": True,
+                "color_name": str(color_name),
+                "fill_rgb": list(SEMANTIC_COLOR_RGB[str(color_name)]),
+                "state": str(state),
+                "count_role": "target",
+            }
+        )
+    dataset = {
+        "query_id": "object_inventory_preview",
+        "scene_variant": str(scene_variant),
+        "target_element_type": str(element_type),
+        "target_count": int(rows * cols),
+        "surface_cells": list(cells),
+        "layout_rows": int(rows),
+        "layout_columns": int(cols),
+        "layout_style": "uniform_grid",
+        "surface_world_corners": [
+            [-2.0, 1.35, 2.55],
+            [2.0, 1.35, 2.55],
+            [2.0, 1.35, 0.15],
+            [-2.0, 1.35, 0.15],
+        ],
+    }
+    image = Image.new("RGB", (int(canvas_width), int(canvas_height)), (226, 232, 231))
+    rendered = render_surface_fixture(image, dataset=dataset, render_params=render_params)
+    return (
+        rendered.image,
+        list(rendered.fixture_bbox_px),
+        {
+            "preview_adapter": "surface_fixture",
+            "scene_variant": str(scene_variant),
+            "element_type": str(element_type),
+            "layout_rows": int(rows),
+            "layout_columns": int(cols),
+            "dimensions_xyz": list(profile.dimensions_xyz or ()),
+        },
+    )
+
+
 def _draw_simple_floor_grid(
     draw: ImageDraw.ImageDraw,
     *,
@@ -716,6 +816,13 @@ def render_three_d_object_profile_preview(
         )
     elif renderer == "warehouse_object":
         image, bbox, metadata = _render_warehouse_profile(
+            profile,
+            canvas_width=int(canvas_width),
+            canvas_height=int(canvas_height),
+            instance_seed=int(instance_seed),
+        )
+    elif renderer == "surface_fixture":
+        image, bbox, metadata = _render_surface_fixture_profile(
             profile,
             canvas_width=int(canvas_width),
             canvas_height=int(canvas_height),

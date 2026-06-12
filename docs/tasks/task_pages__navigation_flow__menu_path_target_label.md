@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `relation`
+2. Scene: `relation`
 3. Scene id: `navigation_flow`
 4. Task id: `task_pages__navigation_flow__menu_path_target_label`
 5. Objective: Identify the menu command reached by a visible menu path.

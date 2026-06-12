@@ -2,7 +2,7 @@
 
 - domain: `icons`
 - scene_id: `named_grid`
-- task_group: `counting`
+- scene_id: `counting`
 - task: `line_condition_count`
 - module: `trace/tasks/icons/counting/named_grid_line_condition_count.py`
 

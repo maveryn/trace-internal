@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -21,13 +21,12 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ...games.shared.complexity import build_games_sudoku_grid_complexity
-from ...games.shared.fixed_query_task import FixedQueryVariantTaskMixin
-from ...games.shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ...games.shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ...games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
-from ...games.shared.style import SUPPORTED_SUDOKU_STYLE_VARIANTS
-from ...games.shared.sudoku_common import (
+from ..shared.common import resolve_puzzle_axis_variant
+from trace.tasks.shared.fixed_query import FixedPuzzleQueryVariantTaskMixin
+from ..shared.layout import resolve_puzzle_layout_jitter
+from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
+from ..shared.sudoku_style import SUPPORTED_SUDOKU_STYLE_VARIANTS
+from ..shared.sudoku_common import (
     DIGITS,
     SIZE,
     SUPPORTED_SUDOKU_QUERY_IDS,
@@ -49,7 +48,8 @@ from ...games.shared.sudoku_common import (
     unit_coords,
     visible_cell_count,
 )
-from ...games.shared.sudoku_scene import SudokuRenderParams, render_sudoku_grid_scene
+from ..shared.sudoku_scene import SudokuRenderParams, render_sudoku_grid_scene
+from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
 from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
@@ -98,12 +98,12 @@ class _ResolvedAxes:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "sudoku")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "sudoku")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="sudoku", apply_prob=0.5)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="sudoku", apply_prob=0.5)
 
 
 def _target_support_key(query_id: str) -> str:
@@ -160,12 +160,19 @@ def _resolve_query_id(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced Sudoku query id."""
 
-    return resolve_games_query_id(
-        task_id=TASK_ID,
-        instance_seed=int(instance_seed),
-        params=params,
+    effective_params = dict(params)
+    if effective_params.get("query_id") is None and effective_params.get("query_variant") is not None:
+        effective_params["query_id"] = str(effective_params["query_variant"])
+    return resolve_puzzle_axis_variant(
+        params=effective_params,
         gen_defaults=_GEN_DEFAULTS,
+        instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_SUDOKU_QUERY_IDS,
+        task_id=TASK_ID,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -181,16 +188,16 @@ def _resolve_named_axis(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced named Sudoku axis."""
 
-    return resolve_games_named_axis(
-        task_id=TASK_ID,
-        instance_seed=int(instance_seed),
+    return resolve_puzzle_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+        supported_variants=supported,
+        task_id=TASK_ID,
         explicit_key=str(explicit_key),
         weights_key=str(weights_key),
         balance_flag_key=str(balance_flag_key),
-        supported_variants=supported,
+        axis_namespace=str(namespace),
     )
 
 
@@ -268,14 +275,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SudokuRenderParams:
     """Resolve Sudoku rendering parameters from config/defaults."""
 
-    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+    unit_scale, unit_scale_meta = resolve_puzzle_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
         namespace="puzzles.sudoku.unit_size",
     )
-    layout_jitter = attach_games_unit_size_jitter(
-        resolve_games_layout_jitter(
+    layout_jitter = with_puzzle_unit_size_jitter(
+        resolve_puzzle_layout_jitter(
             params,
             _RENDER_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -283,7 +290,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SudokuRe
         ),
         unit_scale_meta,
     )
-    max_board_size_px = scale_games_px(
+    max_board_size_px = scale_puzzle_px(
         params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
         unit_scale,
         min_px=380,
@@ -302,12 +309,12 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SudokuRe
         canvas_height=int(params.get("canvas_height", canvas_size)),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
         max_board_size_px=int(max_board_size_px),
-        board_border_width_px=scale_games_px(params.get("board_border_width_px", group_default(_RENDER_DEFAULTS, "board_border_width_px", _DEFAULTS.board_border_width_px)), unit_scale, min_px=2),
-        grid_line_width_px=scale_games_px(params.get("grid_line_width_px", group_default(_RENDER_DEFAULTS, "grid_line_width_px", _DEFAULTS.grid_line_width_px)), unit_scale, min_px=1),
-        box_line_width_px=scale_games_px(params.get("box_line_width_px", group_default(_RENDER_DEFAULTS, "box_line_width_px", _DEFAULTS.box_line_width_px)), unit_scale, min_px=2),
-        cell_padding_px=scale_games_px(params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px)), unit_scale, min_px=3),
-        digit_font_size_px=scale_games_px(params.get("digit_font_size_px", group_default(_RENDER_DEFAULTS, "digit_font_size_px", _DEFAULTS.digit_font_size_px)), unit_scale, min_px=18),
-        marked_cell_outline_width_px=scale_games_px(params.get("marked_cell_outline_width_px", group_default(_RENDER_DEFAULTS, "marked_cell_outline_width_px", _DEFAULTS.marked_cell_outline_width_px)), unit_scale, min_px=3),
+        board_border_width_px=scale_puzzle_px(params.get("board_border_width_px", group_default(_RENDER_DEFAULTS, "board_border_width_px", _DEFAULTS.board_border_width_px)), unit_scale, min_px=2),
+        grid_line_width_px=scale_puzzle_px(params.get("grid_line_width_px", group_default(_RENDER_DEFAULTS, "grid_line_width_px", _DEFAULTS.grid_line_width_px)), unit_scale, min_px=1),
+        box_line_width_px=scale_puzzle_px(params.get("box_line_width_px", group_default(_RENDER_DEFAULTS, "box_line_width_px", _DEFAULTS.box_line_width_px)), unit_scale, min_px=2),
+        cell_padding_px=scale_puzzle_px(params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px)), unit_scale, min_px=3),
+        digit_font_size_px=scale_puzzle_px(params.get("digit_font_size_px", group_default(_RENDER_DEFAULTS, "digit_font_size_px", _DEFAULTS.digit_font_size_px)), unit_scale, min_px=18),
+        marked_cell_outline_width_px=scale_puzzle_px(params.get("marked_cell_outline_width_px", group_default(_RENDER_DEFAULTS, "marked_cell_outline_width_px", _DEFAULTS.marked_cell_outline_width_px)), unit_scale, min_px=3),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
         instance_seed=int(instance_seed),
@@ -595,7 +602,7 @@ class PuzzlesSudokuGridTask:
 
     task_id = TASK_ID
     domain = "puzzles"
-    task_group = "sudoku"
+    scene_id = "sudoku"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
@@ -612,7 +619,7 @@ class PuzzlesSudokuGridTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        panel_style, panel_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace="puzzles.sudoku.panel_scene_style",
             treatment_weights=params.get(
@@ -624,7 +631,7 @@ class PuzzlesSudokuGridTask:
                 group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
             ),
         )
-        background, background_meta = make_panel_scene_background(
+        background, background_meta = make_puzzle_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             style=panel_style,
@@ -682,7 +689,7 @@ class PuzzlesSudokuGridTask:
         json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -711,15 +718,6 @@ class PuzzlesSudokuGridTask:
             "font_family": str(render_params.font_family),
             "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
         }
-        complexity = build_games_sudoku_grid_complexity(
-            task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=TASK_ID,
-            scene_variant=str(axes.scene_variant),
-            query_id=str(axes.query_id),
-            visible_count=int(sampled_scene.visible_count),
-            target_answer=int(sampled_scene.answer),
-            annotation_count=len(annotation_entity_ids),
-        )
 
         trace_payload = {
             "scene_ir": {
@@ -822,7 +820,6 @@ class PuzzlesSudokuGridTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id="sudoku",
             query_id=str(axes.query_id),
@@ -830,7 +827,7 @@ class PuzzlesSudokuGridTask:
 
 
 @register_task
-class PuzzlesSudokuMarkedCellValueTask(FixedQueryVariantTaskMixin, PuzzlesSudokuGridTask):
+class PuzzlesSudokuMarkedCellValueTask(FixedPuzzleQueryVariantTaskMixin, PuzzlesSudokuGridTask):
     """Find the unique digit for a marked empty Sudoku cell."""
 
     task_id = "task_puzzles__sudoku__marked_cell_value"
@@ -838,7 +835,7 @@ class PuzzlesSudokuMarkedCellValueTask(FixedQueryVariantTaskMixin, PuzzlesSudoku
 
 
 @register_task
-class PuzzlesSudokuMarkedCellCandidateCountTask(FixedQueryVariantTaskMixin, PuzzlesSudokuGridTask):
+class PuzzlesSudokuMarkedCellCandidateCountTask(FixedPuzzleQueryVariantTaskMixin, PuzzlesSudokuGridTask):
     """Count legal candidate digits for a marked empty Sudoku cell."""
 
     task_id = "task_puzzles__sudoku__marked_cell_candidate_count"
@@ -846,7 +843,7 @@ class PuzzlesSudokuMarkedCellCandidateCountTask(FixedQueryVariantTaskMixin, Puzz
 
 
 @register_task
-class PuzzlesSudokuUnitMissingDigitsCountTask(FixedQueryVariantTaskMixin, PuzzlesSudokuGridTask):
+class PuzzlesSudokuUnitMissingDigitsCountTask(FixedPuzzleQueryVariantTaskMixin, PuzzlesSudokuGridTask):
     """Count missing digit values in a highlighted Sudoku unit."""
 
     task_id = "task_puzzles__sudoku__unit_missing_digits_count"
@@ -854,7 +851,7 @@ class PuzzlesSudokuUnitMissingDigitsCountTask(FixedQueryVariantTaskMixin, Puzzle
 
 
 @register_task
-class PuzzlesSudokuRepeatedDigitCountTask(FixedQueryVariantTaskMixin, PuzzlesSudokuGridTask):
+class PuzzlesSudokuRepeatedDigitCountTask(FixedPuzzleQueryVariantTaskMixin, PuzzlesSudokuGridTask):
     """Count repeated digit values in a highlighted Sudoku unit."""
 
     task_id = "task_puzzles__sudoku__repeated_digit_count"

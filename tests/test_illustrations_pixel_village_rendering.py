@@ -17,11 +17,9 @@ def _install_trace_tasks_namespace() -> None:
 _install_trace_tasks_namespace()
 
 from trace.tasks.illustrations.shared.pixel_world_objects import (
-    PIXEL_CROP_STYLES,
     PIXEL_GRAVE_MARKER_STYLES,
     PIXEL_PERSON_VARIANTS,
     PIXEL_TREE_STYLES,
-    PIXEL_VEGETABLE_STYLES,
 )
 from trace.tasks.illustrations.shared.pixel_village_rendering import render_pixel_village_map
 
@@ -33,7 +31,6 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
         height=720,
         cemetery_mode="force",
         orchard_mode="force",
-        farm_plot_mode="force",
         windmill_mode="force",
     )
     second = render_pixel_village_map(
@@ -42,7 +39,6 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
         height=720,
         cemetery_mode="force",
         orchard_mode="force",
-        farm_plot_mode="force",
         windmill_mode="force",
     )
 
@@ -64,27 +60,20 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     ]
     assert first.trace["path_tiles"]
     assert int(first.trace["entity_count"]) >= 20
-    assert int(first.trace["territory_count"]) == 3
+    assert int(first.trace["territory_count"]) == 2
     assert first.trace["cemetery_mode"] == "force"
     assert first.trace["cemetery_present"] is True
     assert int(first.trace["cemetery_grave_marker_count"]) >= 5
     assert first.trace["orchard_mode"] == "force"
     assert first.trace["orchard_present"] is True
     assert int(first.trace["orchard_tree_count"]) >= 4
-    assert first.trace["farm_plot_mode"] == "force"
-    assert first.trace["farm_plot_present"] is True
-    assert int(first.trace["farm_plot_crop_row_count"]) >= 2
-    assert int(first.trace["farm_plot_hay_bale_count"]) >= 1
-    assert int(first.trace["farm_plot_scarecrow_count"]) == 1
     assert first.trace["windmill_mode"] == "force"
     assert first.trace["windmill_present"] is True
-    assert first.trace["territory_type_counts"] == {"cemetery": 1, "farm_plot": 1, "orchard": 1}
+    assert first.trace["territory_type_counts"] == {"cemetery": 1, "orchard": 1}
     assert int(first.trace["category_counts"]["building"]) >= 3
-    assert int(first.trace["category_counts"]["farm_fixture"]) >= 2
     assert int(first.trace["category_counts"]["grave_marker"]) >= 5
     assert first.trace["public_name_counts"]
     assert first.trace["public_name_counts"]["cemetery gate"] == 1
-    assert first.trace["public_name_counts"]["farm gate"] == 1
     assert first.trace["public_name_counts"]["windmill"] == 1
     assert first.territories
     territories = {territory.territory_type: territory for territory in first.territories}
@@ -92,13 +81,9 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert territories["orchard"].metadata["tree_count"] == first.trace["orchard_tree_count"]
     assert territories["orchard"].metadata["row_count"] >= 1
     assert territories["orchard"].metadata["column_count"] >= 1
-    assert territories["farm_plot"].metadata["crop_row_count"] == first.trace["farm_plot_crop_row_count"]
-    assert territories["farm_plot"].metadata["hay_bale_count"] == first.trace["farm_plot_hay_bale_count"]
-    assert territories["farm_plot"].metadata["scarecrow_count"] == first.trace["farm_plot_scarecrow_count"]
-    assert territories["farm_plot"].metadata["crop_style"] in PIXEL_CROP_STYLES
 
     categories = {entity.category for entity in first.entities}
-    assert {"building", "landmark", "plant", "person", "farm_fixture", "grave_marker", "territory_feature"}.issubset(categories)
+    assert {"building", "landmark", "plant", "person", "grave_marker", "territory_feature"}.issubset(categories)
     people = [entity for entity in first.entities if entity.category == "person"]
     assert people
     assert {entity.metadata["facing"] for entity in people}.issubset({"down", "up", "left", "right"})
@@ -153,35 +138,10 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
             assert entity.metadata.get("flower_rgb")
             assert entity.metadata.get("leaf_rgb")
             assert entity.metadata.get("object_record")["object_type"] == "flower"
-        if entity.public_name == "crop row":
-            assert entity.metadata.get("crop_style") in PIXEL_CROP_STYLES
-            assert entity.metadata.get("crop_rgb")
-            assert entity.metadata.get("soil_rgb")
-            assert entity.metadata.get("territory_id") == "farm_plot_0"
-            assert entity.metadata.get("object_record")["object_type"] == "crop_row"
-        if entity.public_name == "vegetable patch":
-            assert entity.metadata.get("vegetable_style") in PIXEL_VEGETABLE_STYLES
-            assert entity.metadata.get("vegetable_rgb")
-            assert entity.metadata.get("leaf_rgb")
-            assert entity.metadata.get("soil_rgb")
-            assert entity.metadata.get("territory_id") == "farm_plot_0"
-            assert entity.metadata.get("object_record")["object_type"] == "vegetable_patch"
-            assert entity.metadata.get("object_record")["semantic_attributes"] == {
-                "region_id": "",
-                "territory_id": "farm_plot_0",
-            }
-            assert entity.metadata.get("object_record")["visual_attributes"]["vegetable_style"] in PIXEL_VEGETABLE_STYLES
-        if entity.category == "person" or entity.public_name in {"tree", "flower", "crop row", "vegetable patch"}:
+        if entity.category == "person" or entity.public_name in {"tree", "flower"}:
             payload = entity.as_dict()
             assert "object_record" in payload
             assert "object_record" not in payload["metadata"]
-        if entity.category == "farm_fixture":
-            assert entity.metadata.get("territory_id") == "farm_plot_0"
-        if entity.public_name == "farm gate":
-            assert entity.category == "territory_feature"
-            assert entity.metadata.get("territory_id") == "farm_plot_0"
-            assert entity.metadata.get("object_record")["object_type"] == "farm_gate"
-            assert entity.metadata.get("object_record")["visual_attributes"]["renderer_style"] == "top_down_pixel_rpg"
         if entity.public_name == "windmill":
             assert entity.category == "landmark"
             assert entity.metadata.get("blade_pose") in {"plus", "diagonal"}
@@ -259,6 +219,45 @@ def test_pixel_village_tree_styles_cover_reusable_variants() -> None:
     assert styles == set(PIXEL_TREE_STYLES)
 
 
+def test_pixel_village_forced_balanced_river_orientation() -> None:
+    vertical = render_pixel_village_map(
+        20260610,
+        width=960,
+        height=720,
+        river_mode="force",
+        river_orientation="vertical",
+        river_placement="balanced",
+    )
+    horizontal = render_pixel_village_map(
+        20260611,
+        width=960,
+        height=720,
+        river_mode="force",
+        river_orientation="horizontal",
+        river_placement="balanced",
+    )
+
+    assert vertical.trace["river_present"] is True
+    assert vertical.trace["river_orientation"] == "vertical"
+    assert vertical.trace["river_placement"] == "balanced"
+    assert vertical.trace["river_bounds"]
+    assert vertical.trace["bridge_box"]
+    vertical_bounds = vertical.trace["river_bounds"]
+    vertical_mid = int(vertical.trace["grid_cols"]) // 2
+    assert abs(int(vertical_bounds["min_x"]) - vertical_mid) <= 2
+    assert int(vertical_bounds["max_x"]) - int(vertical_bounds["min_x"]) == 1
+
+    assert horizontal.trace["river_present"] is True
+    assert horizontal.trace["river_orientation"] == "horizontal"
+    assert horizontal.trace["river_placement"] == "balanced"
+    assert horizontal.trace["river_bounds"]
+    assert horizontal.trace["bridge_box"]
+    horizontal_bounds = horizontal.trace["river_bounds"]
+    horizontal_mid = int(horizontal.trace["grid_rows"]) // 2
+    assert abs(int(horizontal_bounds["min_y"]) - horizontal_mid) <= 2
+    assert int(horizontal_bounds["max_y"]) - int(horizontal_bounds["min_y"]) == 1
+
+
 def test_pixel_village_person_variants_cover_reusable_variants() -> None:
     variants: set[str] = set()
     for seed in range(20260604, 20260624):
@@ -270,7 +269,7 @@ def test_pixel_village_person_variants_cover_reusable_variants() -> None:
 
 def test_pixel_village_covers_new_building_and_plant_templates() -> None:
     public_names: set[str] = set()
-    for seed in range(20260604, 20260636):
+    for seed in range(20260604, 20260680):
         scene = render_pixel_village_map(seed, width=960, height=720)
         public_names.update(entity.public_name for entity in scene.entities)
 
@@ -288,7 +287,6 @@ def test_pixel_village_covers_small_path_side_prop_templates() -> None:
             height=720,
             cemetery_mode="none",
             orchard_mode="none",
-            farm_plot_mode="none",
             windmill_mode="none",
         )
         public_names.update(entity.public_name for entity in scene.entities)
@@ -315,7 +313,6 @@ def test_pixel_village_covers_large_prop_templates_and_pond_variants() -> None:
             height=720,
             cemetery_mode="none",
             orchard_mode="none",
-            farm_plot_mode="none",
             windmill_mode="none",
         )
         public_names.update(entity.public_name for entity in scene.entities)
@@ -336,7 +333,6 @@ def test_pixel_village_winter_theme_keeps_layout_and_records_visual_metadata() -
         "height": 720,
         "cemetery_mode": "none",
         "orchard_mode": "none",
-        "farm_plot_mode": "none",
         "windmill_mode": "none",
     }
     temperate = render_pixel_village_map(20260604, theme_mode="temperate", **kwargs)
@@ -379,7 +375,6 @@ def test_pixel_village_autumn_theme_keeps_layout_and_records_visual_metadata() -
         "height": 720,
         "cemetery_mode": "none",
         "orchard_mode": "none",
-        "farm_plot_mode": "force",
         "windmill_mode": "none",
     }
     temperate = render_pixel_village_map(20260604, theme_mode="temperate", **kwargs)
@@ -396,10 +391,10 @@ def test_pixel_village_autumn_theme_keeps_layout_and_records_visual_metadata() -
         (entity.public_name, entity.tile_xywh) for entity in autumn.entities
     ]
 
-    covered_public_names = {"tree", "flower", "crop row", "bench", "market stall", "wagon", "gazebo", "pond"}
+    covered_public_names = {"tree", "flower", "bench", "market stall", "wagon", "gazebo", "pond"}
     covered = [entity for entity in autumn.entities if entity.public_name in covered_public_names]
     assert covered
-    assert {"tree", "crop row"}.issubset({entity.public_name for entity in covered})
+    assert "tree" in {entity.public_name for entity in covered}
     for entity in covered:
         assert entity.metadata.get("theme_id") == "autumn"
         assert entity.metadata.get("autumn_intensity") == autumn.trace["autumn_intensity"]
@@ -421,7 +416,7 @@ def test_pixel_village_buildings_cover_front_facing_style_variants() -> None:
     wall_styles: set[str] = set()
     door_states: set[str] = set()
     for seed in range(20260604, 20260620):
-        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="none", farm_plot_mode="none")
+        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="none")
         for entity in scene.entities:
             if entity.category == "building":
                 facing = str(entity.metadata.get("building_facing"))
@@ -444,7 +439,6 @@ def test_pixel_village_supports_territory_absent_and_present_modes() -> None:
         height=720,
         cemetery_mode="none",
         orchard_mode="none",
-        farm_plot_mode="none",
         windmill_mode="none",
     )
     present = render_pixel_village_map(
@@ -453,7 +447,6 @@ def test_pixel_village_supports_territory_absent_and_present_modes() -> None:
         height=720,
         cemetery_mode="force",
         orchard_mode="force",
-        farm_plot_mode="force",
         windmill_mode="force",
     )
 
@@ -461,32 +454,24 @@ def test_pixel_village_supports_territory_absent_and_present_modes() -> None:
     assert absent.trace["cemetery_grave_marker_count"] == 0
     assert absent.trace["orchard_present"] is False
     assert absent.trace["orchard_tree_count"] == 0
-    assert absent.trace["farm_plot_present"] is False
-    assert absent.trace["farm_plot_crop_row_count"] == 0
-    assert absent.trace["farm_plot_hay_bale_count"] == 0
-    assert absent.trace["farm_plot_vegetable_patch_count"] == 0
-    assert absent.trace["farm_plot_scarecrow_count"] == 0
     assert absent.trace["windmill_present"] is False
     assert absent.territories == ()
     assert all(entity.category != "grave_marker" for entity in absent.entities)
     assert all(entity.metadata.get("territory_id") != "orchard_0" for entity in absent.entities)
-    assert all(entity.metadata.get("territory_id") != "farm_plot_0" for entity in absent.entities)
 
     assert present.trace["cemetery_present"] is True
     assert present.trace["orchard_present"] is True
-    assert present.trace["farm_plot_present"] is True
     assert present.trace["windmill_present"] is True
-    assert len(present.territories) == 3
+    assert len(present.territories) == 2
     assert any(entity.category == "grave_marker" for entity in present.entities)
     assert any(entity.metadata.get("territory_id") == "orchard_0" for entity in present.entities)
-    assert any(entity.metadata.get("territory_id") == "farm_plot_0" for entity in present.entities)
     assert any(entity.public_name == "windmill" for entity in present.entities)
 
 
 def test_pixel_village_orchard_uses_variable_sizes() -> None:
     sizes: set[tuple[int, int]] = set()
     for seed in range(20260604, 20260612):
-        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="force", farm_plot_mode="none")
+        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="force")
         orchards = [territory for territory in scene.territories if territory.territory_type == "orchard"]
         assert len(orchards) == 1
         _, _, w, h = orchards[0].tile_xywh
@@ -494,31 +479,6 @@ def test_pixel_village_orchard_uses_variable_sizes() -> None:
         assert int(orchards[0].metadata["tree_count"]) >= 4
 
     assert len(sizes) >= 3
-
-
-def test_pixel_village_farm_plot_uses_variable_sizes_and_crop_styles() -> None:
-    sizes: set[tuple[int, int]] = set()
-    crop_styles: set[str] = set()
-    vegetable_styles: set[str] = set()
-    for seed in range(20260604, 20260616):
-        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="none", farm_plot_mode="force")
-        farm_plots = [territory for territory in scene.territories if territory.territory_type == "farm_plot"]
-        assert len(farm_plots) == 1
-        _, _, w, h = farm_plots[0].tile_xywh
-        sizes.add((w, h))
-        crop_styles.add(str(farm_plots[0].metadata["crop_style"]))
-        assert int(farm_plots[0].metadata["crop_row_count"]) >= 2
-        assert int(farm_plots[0].metadata["vegetable_patch_count"]) >= 1
-        vegetable_styles.update(str(style) for style in farm_plots[0].metadata["vegetable_styles"])
-        assert scene.trace["farm_plot_vegetable_patch_count"] == farm_plots[0].metadata["vegetable_patch_count"]
-        assert int(farm_plots[0].metadata["hay_bale_count"]) >= 1
-        assert int(farm_plots[0].metadata["scarecrow_count"]) == 1
-
-    assert len(sizes) >= 3
-    assert crop_styles.issubset(set(PIXEL_CROP_STYLES))
-    assert len(crop_styles) >= 2
-    assert vegetable_styles.issubset(set(PIXEL_VEGETABLE_STYLES))
-    assert len(vegetable_styles) >= 3
 
 
 def test_pixel_village_renderer_supports_explicit_grid_and_tile_size() -> None:
@@ -531,7 +491,6 @@ def test_pixel_village_renderer_supports_explicit_grid_and_tile_size() -> None:
         grid_rows=19,
         cemetery_mode="none",
         orchard_mode="none",
-        farm_plot_mode="none",
         windmill_mode="none",
     )
 

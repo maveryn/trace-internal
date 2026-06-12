@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -28,7 +28,6 @@ from ..shared.common import (
     projected_puzzle_bbox_annotation,
     resolve_puzzle_axis_variant,
 )
-from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
 from ..shared.drawing import draw_centered_text, draw_rounded_rect
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -172,8 +171,8 @@ _PALETTE_COLORS = {
     },
 }
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "logic")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("puzzles", "logic")
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id="logic", apply_prob=0.5)
 
 
 Cell = Tuple[int, int]
@@ -1087,7 +1086,7 @@ def _build_prompt(
     }
     prompt_selection = render_task_prompt_variants(
         domain="puzzles",
-        task_group="logic",
+        scene_id="logic",
         bundle_id=str(prompt_values["bundle_id"]),
         scene_key=str(prompt_values["scene_key"]),
         task_key=str(prompt_values["task_key"]),
@@ -1109,7 +1108,7 @@ class _PuzzlesLogicTentsBaseTask:
     """Base implementation for one fixed public tents-grid task."""
 
     domain = "puzzles"
-    task_group = "logic"
+    scene_id = "logic"
     default_dataset_enabled = True
     query_id: str
 
@@ -1128,7 +1127,6 @@ class _PuzzlesLogicTentsBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         query_id = str(self.query_id)
-        gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(str(self.task_id))
         last_error: Exception | None = None
         dataset: Dict[str, Any] | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -1339,14 +1337,6 @@ class _PuzzlesLogicTentsBaseTask:
             )
 
         visual_scan = normalize_int_with_bounds(int(rows * cols), grid_area_range)
-        complexity = build_puzzle_complexity(
-            weights=complexity_weights,
-            components={
-                "visual_scan": float(visual_scan),
-                "reasoning_load": float(_REASONING_LOAD_BY_QUERY[str(query_id)]),
-                "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
-            },
-        )
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=answer_gt,
@@ -1354,7 +1344,6 @@ class _PuzzlesLogicTentsBaseTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

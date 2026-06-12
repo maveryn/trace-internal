@@ -2,13 +2,12 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `marble_chain`
-3. Scene id: `marble_chain`
-4. Public task id: `task_games__marble_chain__shot_effect_value`
-5. Supported `query_id` values: `pop_count_after_marked_shot`
-6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
-8. Program schema: `count(popped_chain_marbles(transform(chain, marked_shot))); scene=marble_chain; scope=shot_effect_value; query_branch=pop_count_after_marked_shot`
+2. Scene id: `marble_chain`
+3. Public task id: `task_games__marble_chain__shot_effect_value`
+4. Supported `query_id` values: `pop_count_after_marked_shot`
+5. Answer schema: `integer_count`
+6. Annotation schema: `point_set`
+7. Program schema: `count(popped_chain_marbles(transform(chain, marked_shot))); scene=marble_chain; scope=shot_effect_value; query_branch=pop_count_after_marked_shot`
 
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.

@@ -2,9 +2,8 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `irregular_link_board`
-3. Scene id: `irregular_link_board`
-4. Public task id: `task_games__irregular_link_board__marked_piece_destination_count`
+2. Scene id: `irregular_link_board`
+3. Public task id: `task_games__irregular_link_board__marked_piece_destination_count`
 5. Supported `query_id` values: `marked_piece_destination_count`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`

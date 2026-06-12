@@ -9,9 +9,9 @@ from typing import Any, Callable, Iterable, Mapping, MutableMapping, Sequence, T
 from PIL import ImageDraw
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
+from ....core.scene_config import get_scene_defaults
 from ...base import TaskOutput
-from ...shared.config_defaults import split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from ...shared.context_text_assets import sample_context_text
 from ...shared.font_assets import sample_font_family
 from ...shared.text_legibility import draw_text_traced
@@ -49,7 +49,7 @@ def wrap_charts_generation(
     original_generate: Callable[..., TaskOutput],
     *,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> Callable[..., TaskOutput]:
     """Wrap one chart task generator with domain-wide render audit defaults."""
 
@@ -61,7 +61,7 @@ def wrap_charts_generation(
             instance_seed=int(instance_seed),
             params=params,
             task_id=str(task_id),
-            task_group=str(task_group),
+            scene_id=str(scene_id),
         )
         return output
 
@@ -74,7 +74,7 @@ def add_chart_safe_context_text(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> None:
     """Draw shared non-answer chart context into safe empty margins."""
 
@@ -87,14 +87,14 @@ def add_chart_safe_context_text(
         _record_existing_context_policy(
             trace_payload,
             task_id=str(task_id),
-            task_group=str(task_group),
+            scene_id=str(scene_id),
         )
         return
 
     resolved_params = _resolve_chart_context_params(
         params=params,
         task_id=str(task_id),
-        task_group=str(task_group),
+        scene_id=str(scene_id),
     )
     enabled = bool(
         resolved_params.get(
@@ -111,12 +111,13 @@ def add_chart_safe_context_text(
             layout_spec={
                 "reason": "disabled",
                 "task_id": str(task_id),
-                "task_group": str(task_group),
-            },
+                "scene_id": str(scene_id),
+                },
         )
         return
 
-    rng = spawn_rng(int(instance_seed), f"{task_id}.{task_group}.chart_context_text")
+    routing_key = _chart_context_routing_key(task_id=task_id, scene_id=scene_id)
+    rng = spawn_rng(int(instance_seed), f"{task_id}.{routing_key}.chart_context_text")
     mode, normalized_weights = _resolve_context_mode(resolved_params, rng=rng)
     mode_config = _resolve_mode_count_config(str(mode), resolved_params)
 
@@ -131,7 +132,7 @@ def add_chart_safe_context_text(
     context_font_family = sample_font_family(
         role="context",
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.{task_group}.chart_context_text_font",
+        namespace=f"{task_id}.{routing_key}.chart_context_text_font",
         params=_context_font_params(resolved_params),
         explicit_key="chart_context_text_font_family",
         weights_key="chart_context_text_font_family_weights",
@@ -220,7 +221,7 @@ def add_chart_safe_context_text(
             "mode": str(mode),
             "mode_weights": dict(normalized_weights),
             "task_id": str(task_id),
-            "task_group": str(task_group),
+            "scene_id": str(scene_id),
             "font_family": str(context_font_family),
             "overlap_padding_px": int(padding_px),
             "occupied_bbox_count": int(len(occupied)),
@@ -237,7 +238,7 @@ def _record_existing_context_policy(
     trace_payload: MutableMapping[str, Any],
     *,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> None:
     render_spec = trace_payload.setdefault("render_spec", {})
     if not isinstance(render_spec, MutableMapping):
@@ -246,7 +247,7 @@ def _record_existing_context_policy(
         "source": "scene_specific_context_text_layer",
         "domain_wrapper": "skipped_existing_context_text_layer",
         "task_id": str(task_id),
-        "task_group": str(task_group),
+        "scene_id": str(scene_id),
     }
 
 
@@ -311,22 +312,37 @@ def _resolve_chart_context_params(
     *,
     params: Mapping[str, Any] | None,
     task_id: str,
-    task_group: str,
+    scene_id: str,
 ) -> dict[str, Any]:
-    resolved = _chart_context_config_defaults(task_id=str(task_id), task_group=str(task_group))
+    resolved = _chart_context_config_defaults(
+        task_id=str(task_id),
+        scene_id=str(scene_id),
+    )
     resolved.update(dict(params or {}))
     return resolved
 
 
-def _chart_context_config_defaults(*, task_id: str, task_group: str) -> dict[str, Any]:
+def _chart_context_config_defaults(
+    *,
+    task_id: str,
+    scene_id: str,
+) -> dict[str, Any]:
     try:
-        cfg = get_task_group_defaults("charts", str(task_group))
+        cfg = get_scene_defaults("charts", str(scene_id))
     except Exception:
         return {}
     if not isinstance(cfg, Mapping):
         return {}
-    _generation, rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id=str(task_id))
+    _generation, rendering, _prompt = split_scene_generation_rendering_prompt_defaults(cfg, task_id=str(task_id))
     return dict(rendering)
+
+
+def _chart_context_routing_key(
+    *,
+    task_id: str,
+    scene_id: str,
+) -> str:
+    return str(scene_id)
 
 
 def _context_font_params(params: Mapping[str, Any]) -> dict[str, Any]:

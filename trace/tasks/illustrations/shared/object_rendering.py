@@ -29,6 +29,9 @@ from .pixel_world_objects import (
     draw_pixel_boulder,
     draw_pixel_bottle,
     draw_pixel_bowl,
+    draw_pixel_archway,
+    draw_pixel_brazier,
+    draw_pixel_broken_wall,
     draw_pixel_bridge,
     draw_pixel_candle,
     draw_pixel_castle,
@@ -47,6 +50,7 @@ from .pixel_world_objects import (
     draw_pixel_farm_gate,
     draw_pixel_fence,
     draw_pixel_fireplace,
+    draw_pixel_floor_switch,
     draw_pixel_flower_patch,
     draw_pixel_fountain,
     draw_pixel_gazebo,
@@ -57,6 +61,7 @@ from .pixel_world_objects import (
     draw_pixel_jar,
     draw_pixel_lamp_post,
     draw_pixel_ladder,
+    draw_pixel_magic_circle,
     draw_pixel_market_stall,
     draw_pixel_mine_cart,
     draw_pixel_mug,
@@ -70,14 +75,17 @@ from .pixel_world_objects import (
     draw_pixel_rail_track,
     draw_pixel_rock,
     draw_pixel_room_divider,
+    draw_pixel_rubble,
     draw_pixel_rug,
     draw_pixel_sack,
     draw_pixel_scarecrow,
+    draw_pixel_sealed_door,
     draw_pixel_shelf,
     draw_pixel_sign,
     draw_pixel_stairs,
     draw_pixel_stalagmite,
     draw_pixel_statue,
+    draw_pixel_stone_column,
     draw_pixel_stool,
     draw_pixel_table,
     draw_pixel_torch,
@@ -104,6 +112,9 @@ PIXEL_RPG_SHARED_OBJECT_TYPES: tuple[str, ...] = (
     "bed",
     "bench",
     "boulder",
+    "archway",
+    "brazier",
+    "broken_wall",
     "bridge",
     "candle",
     "cart",
@@ -124,6 +135,7 @@ PIXEL_RPG_SHARED_OBJECT_TYPES: tuple[str, ...] = (
     "farm_gate",
     "fence",
     "fireplace",
+    "floor_switch",
     "flower",
     "fountain",
     "gazebo",
@@ -135,6 +147,7 @@ PIXEL_RPG_SHARED_OBJECT_TYPES: tuple[str, ...] = (
     "jar",
     "lamp_post",
     "ladder",
+    "magic_circle",
     "market_stall",
     "mine_cart",
     "notice_board",
@@ -146,16 +159,19 @@ PIXEL_RPG_SHARED_OBJECT_TYPES: tuple[str, ...] = (
     "produce_bin",
     "rail_track",
     "rock",
+    "rubble",
     "room_divider",
     "rug",
     "sack",
     "scarecrow",
+    "sealed_door",
     "shelf",
     "shop",
     "sign",
     "stairs",
     "stalagmite",
     "statue",
+    "stone_column",
     "stool",
     "table",
     "tower",
@@ -171,21 +187,29 @@ PIXEL_RPG_SHARED_OBJECT_TYPES: tuple[str, ...] = (
 )
 
 _ISO_NATIVE_PIXEL_OBJECT_TYPES = {
+    "archway",
     "barrel",
     "bed",
     "bench",
     "basket",
+    "brazier",
+    "broken_wall",
     "chair",
     "chest",
     "counter",
     "crate",
     "crop_row",
     "fireplace",
+    "floor_switch",
     "hay_bale",
+    "magic_circle",
     "produce_bin",
+    "rubble",
     "room_divider",
     "rug",
+    "sealed_door",
     "shelf",
+    "stone_column",
     "stool",
     "table",
     "trough",
@@ -654,6 +678,30 @@ def _draw_native_isometric_pixel_object(
     if kind == "fireplace":
         _draw_iso_fireplace(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
         return True
+    if kind == "stone_column":
+        _draw_iso_stone_column(draw, cx=cx, cy=cy, spec=spec)
+        return True
+    if kind == "archway":
+        _draw_iso_archway(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
+        return True
+    if kind == "sealed_door":
+        _draw_iso_sealed_door(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
+        return True
+    if kind == "brazier":
+        _draw_iso_brazier(draw, cx=cx, cy=cy, spec=spec)
+        return True
+    if kind == "floor_switch":
+        _draw_iso_floor_switch(draw, cx=cx, cy=cy, spec=spec)
+        return True
+    if kind == "broken_wall":
+        _draw_iso_broken_wall(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
+        return True
+    if kind == "rubble":
+        _draw_iso_rubble(draw, cx=cx, cy=cy, spec=spec)
+        return True
+    if kind == "magic_circle":
+        _draw_iso_magic_circle(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
+        return True
     if kind == "room_divider":
         _draw_iso_room_divider(draw, cx=cx, cy=cy, tile_xywh=tile_xywh, spec=spec)
         return True
@@ -789,22 +837,26 @@ def _draw_iso_basket(
     wicker_rgb = _rgb(spec.visual_attributes.get("wicker_rgb", (180, 121, 62)))
     wicker_dark = _shade_rgb(wicker_rgb, -48)
     wicker_light = _shade_rgb(wicker_rgb, 36)
-    rim = _iso_diamond(cx, cy - 4, 11, 5)
-    left = [rim[0], rim[3], (cx, cy + 10), (cx - 9, cy + 4)]
-    right = [rim[2], rim[3], (cx, cy + 10), (cx + 9, cy + 4)]
-    front = [(cx - 9, cy + 4), (cx, cy + 10), (cx + 9, cy + 4), rim[3]]
-    draw.arc((cx - 12, cy - 20, cx + 12, cy + 4), 205, 335, fill=wicker_dark, width=2)
-    draw.arc((cx - 9, cy - 17, cx + 9, cy + 2), 210, 330, fill=wicker_light, width=1)
-    draw.line((cx - 9, cy - 5, cx - 8, cy + 2), fill=wicker_dark, width=2)
-    draw.line((cx + 9, cy - 5, cx + 8, cy + 2), fill=wicker_dark, width=2)
+    inside_rgb = _shade_rgb(wicker_rgb, -70)
+    rim = _iso_diamond(cx, cy - 3, 13, 6)
+    lower = _iso_diamond(cx, cy + 8, 9, 4)
+    left = [rim[0], rim[3], lower[3], lower[0]]
+    right = [rim[2], rim[3], lower[3], lower[2]]
+    front = [lower[0], lower[3], lower[2], rim[3]]
     draw.polygon(left, fill=_shade_rgb(wicker_rgb, -12), outline=wicker_dark)
     draw.polygon(right, fill=wicker_rgb, outline=wicker_dark)
     draw.polygon(front, fill=_shade_rgb(wicker_rgb, 8), outline=wicker_dark)
-    draw.polygon(rim, fill=(95, 61, 37), outline=wicker_dark)
-    draw.line((cx - 8, cy - 4, cx, cy - 8, cx + 8, cy - 4), fill=wicker_light)
-    for start, end in (((cx - 6, cy + 1), (cx - 2, cy + 9)), ((cx, cy - 1), (cx, cy + 10)), ((cx + 6, cy + 1), (cx + 2, cy + 9))):
+    draw.polygon(rim, fill=inside_rgb, outline=wicker_dark)
+    draw.line((rim[0][0] + 2, rim[0][1], rim[1][0], rim[1][1] - 1, rim[2][0] - 2, rim[2][1]), fill=wicker_light, width=2)
+    draw.line((rim[0][0] + 2, rim[0][1] + 2, rim[3][0], rim[3][1] + 1, rim[2][0] - 2, rim[2][1] + 2), fill=_shade_rgb(wicker_rgb, 20))
+    for start, end in (
+        ((cx - 7, cy + 0), (cx - 4, cy + 10)),
+        ((cx - 1, cy - 1), (cx - 1, cy + 12)),
+        ((cx + 7, cy + 0), (cx + 4, cy + 10)),
+    ):
         draw.line((*start, *end), fill=_shade_rgb(wicker_rgb, -28))
-    draw.line((cx - 7, cy + 4, cx, cy + 7, cx + 7, cy + 4), fill=wicker_light)
+    for yy in (cy + 3, cy + 7):
+        draw.line((cx - 8, yy, cx, yy + 3, cx + 8, yy), fill=wicker_light)
 
 
 def _draw_iso_barrel(
@@ -841,26 +893,27 @@ def _draw_iso_bench(
     wood_light = _shade_rgb(wood_rgb, 34)
     _, _, width, height = tile_xywh
     long_axis = max(1, int(width)) >= max(1, int(height))
-    half_x = 24 if long_axis else 14
-    half_y = 7 if long_axis else 14
-    seat_cy = cy - 1
+    half_x = 25 if long_axis else 14
+    half_y = 8 if long_axis else 15
+    seat_cy = cy
     seat = _iso_diamond(cx, seat_cy, half_x, half_y)
     front_left = [seat[0], seat[3], (seat[3][0], seat[3][1] + 5), (seat[0][0], seat[0][1] + 5)]
     front_right = [seat[2], seat[3], (seat[3][0], seat[3][1] + 5), (seat[2][0], seat[2][1] + 5)]
-    back_bottom = [(cx - half_x + 2, seat_cy - half_y - 5), (cx, seat_cy - half_y - 9), (cx + half_x - 2, seat_cy - half_y - 5)]
-    back_top = [(cx - half_x + 2, seat_cy - half_y - 16), (cx, seat_cy - half_y - 20), (cx + half_x - 2, seat_cy - half_y - 16)]
-    back_panel = [back_top[0], back_top[1], back_top[2], back_bottom[2], back_bottom[1], back_bottom[0]]
-    for px, py in ((cx - half_x + 5, seat_cy - half_y - 15), (cx + half_x - 5, seat_cy - half_y - 15)):
-        draw.line((px, py, px, py + 20), fill=wood_dark, width=2)
-    draw.polygon(back_panel, fill=_shade_rgb(wood_rgb, 10), outline=wood_dark)
-    draw.line((back_top[0][0] + 3, back_top[0][1] + 1, back_top[2][0] - 3, back_top[2][1] + 1), fill=wood_light)
+    for leg_x, leg_y, lean in (
+        (seat[0][0] + 7, seat[0][1] + 1, -2),
+        (seat[2][0] - 7, seat[2][1] + 1, 2),
+        (seat[3][0] - 8, seat[3][1] - 1, -1),
+        (seat[3][0] + 8, seat[3][1] - 1, 1),
+    ):
+        draw.line((leg_x, leg_y, leg_x + lean, leg_y + 11), fill=(49, 44, 38), width=2)
+        draw.point((leg_x + lean, leg_y + 5), fill=(93, 81, 63))
     draw.polygon(front_left, fill=_shade_rgb(wood_rgb, -14), outline=wood_dark)
     draw.polygon(front_right, fill=_shade_rgb(wood_rgb, -2), outline=wood_dark)
     draw.polygon(seat, fill=wood_rgb, outline=wood_dark)
     draw.line((seat[0][0] + 5, seat[0][1], seat[2][0] - 5, seat[2][1]), fill=wood_light)
-    for lx, ly in ((cx - half_x + 6, seat_cy + 1), (cx + half_x - 6, seat_cy + 1), (cx - 5, seat_cy + half_y), (cx + 5, seat_cy + half_y)):
-        draw.line((lx, ly, lx, ly + 9), fill=(49, 44, 38), width=2)
-        draw.point((lx + 1, ly + 3), fill=(93, 81, 63))
+    draw.line((seat[0][0] + 4, seat[0][1] + 3, seat[3][0], seat[3][1] + 2, seat[2][0] - 4, seat[2][1] + 3), fill=_shade_rgb(wood_rgb, -22))
+    for offset in (-10, 0, 10) if long_axis else (-5, 5):
+        draw.line((cx + offset, seat_cy - half_y + 2, cx + offset, seat_cy + half_y - 2), fill=_shade_rgb(wood_rgb, -26))
 
 
 def _draw_iso_table(
@@ -985,28 +1038,56 @@ def _draw_iso_bed(
     blanket_rgb = _rgb(spec.visual_attributes.get("blanket_rgb", (97, 132, 173)))
     pillow_rgb = _rgb(spec.visual_attributes.get("pillow_rgb", (232, 222, 188)))
     is_double = str(spec.visual_attributes.get("bed_size", "single")) == "double"
-    half_x = 32 if is_double else 25
-    half_y = 15 if is_double else 13
+    half_x = 34 if is_double else 27
+    half_y = 16 if is_double else 13
     wood_dark = _shade_rgb(wood_rgb, -48)
+    wood_light = _shade_rgb(wood_rgb, 34)
     blanket_dark = _shade_rgb(blanket_rgb, -44)
-    top_y = cy - 6
+    pillow_dark = _shade_rgb(pillow_rgb, -44)
+    top_y = cy - 4
     frame = _iso_diamond(cx, top_y, half_x, half_y)
-    left = [frame[0], frame[3], (frame[3][0], frame[3][1] + 8), (frame[0][0], frame[0][1] + 8)]
-    right = [frame[2], frame[3], (frame[3][0], frame[3][1] + 8), (frame[2][0], frame[2][1] + 8)]
-    foot = [(frame[0][0] + 2, frame[3][1] - 1), frame[3], (frame[2][0] - 2, frame[3][1] - 1), (frame[2][0] - 2, frame[3][1] + 7), (frame[3][0], frame[3][1] + 10), (frame[0][0] + 2, frame[3][1] + 7)]
-    head = [(frame[0][0] + 2, frame[0][1] - 3), frame[1], (frame[2][0] - 2, frame[2][1] - 3), (frame[2][0] - 2, frame[2][1] - 13), (frame[1][0], frame[1][1] - 10), (frame[0][0] + 2, frame[0][1] - 13)]
+    left = [frame[0], frame[3], (frame[3][0], frame[3][1] + 9), (frame[0][0], frame[0][1] + 9)]
+    right = [frame[2], frame[3], (frame[3][0], frame[3][1] + 9), (frame[2][0], frame[2][1] + 9)]
+    foot = [
+        (frame[0][0] + 2, frame[3][1] - 1),
+        frame[3],
+        (frame[2][0] - 2, frame[3][1] - 1),
+        (frame[2][0] - 2, frame[3][1] + 8),
+        (frame[3][0], frame[3][1] + 12),
+        (frame[0][0] + 2, frame[3][1] + 8),
+    ]
     mattress = _iso_diamond(cx, top_y - 2, half_x - 5, half_y - 4)
-    blanket = [(cx - half_x + 10, top_y), (cx + 2, top_y - half_y + 5), (cx + half_x - 7, top_y), (cx, top_y + half_y - 5)]
-    pillow = [(cx - half_x + 6, top_y - 1), (cx - half_x + 17, top_y - half_y + 2), (cx - half_x + 25, top_y - half_y + 5), (cx - half_x + 13, top_y + 1)]
+    blanket = [
+        (cx - half_x + 8, top_y + 1),
+        (cx - 2, top_y - half_y + 6),
+        (cx + half_x - 7, top_y + 1),
+        (cx, top_y + half_y - 4),
+    ]
+    pillow_left = [
+        (cx - half_x + 7, top_y - 2),
+        (cx - half_x + 18, top_y - half_y + 4),
+        (cx - half_x + 29, top_y - half_y + 7),
+        (cx - half_x + 15, top_y + 2),
+    ]
+    pillow_right = [
+        (cx - 3, top_y - half_y + 4),
+        (cx + 9, top_y - half_y - 1),
+        (cx + 21, top_y + 1),
+        (cx + 8, top_y + 5),
+    ]
     draw.polygon(left, fill=_shade_rgb(wood_rgb, -12), outline=wood_dark)
     draw.polygon(right, fill=_shade_rgb(wood_rgb, 4), outline=wood_dark)
+    for px, py in ((frame[0][0] + 4, frame[0][1] + 1), (frame[2][0] - 4, frame[2][1] + 1), (frame[3][0] - 9, frame[3][1] + 2), (frame[3][0] + 9, frame[3][1] + 2)):
+        draw.line((px, py, px, py + 12), fill=wood_dark, width=2)
     draw.polygon(foot, fill=wood_rgb, outline=wood_dark)
-    draw.polygon(head, fill=_shade_rgb(wood_rgb, 18), outline=wood_dark)
     draw.polygon(frame, fill=_shade_rgb(wood_rgb, 10), outline=wood_dark)
     draw.polygon(mattress, fill=(231, 218, 187), outline=_shade_rgb(pillow_rgb, -48))
     draw.polygon(blanket, fill=blanket_rgb, outline=blanket_dark)
-    draw.polygon(pillow, fill=pillow_rgb, outline=_shade_rgb(pillow_rgb, -44))
+    draw.polygon(pillow_left, fill=pillow_rgb, outline=pillow_dark)
+    if is_double:
+        draw.polygon(pillow_right, fill=_shade_rgb(pillow_rgb, 8), outline=pillow_dark)
     draw.line((blanket[0][0] + 3, blanket[0][1] + 1, blanket[2][0] - 4, blanket[2][1] + 1), fill=_shade_rgb(blanket_rgb, 36))
+    draw.line((blanket[0][0] + 4, blanket[0][1] + 4, blanket[3][0] - 3, blanket[3][1] - 2), fill=_shade_rgb(blanket_rgb, -24))
     if is_double:
         draw.line((cx, top_y - half_y + 5, cx, top_y + half_y - 3), fill=_shade_rgb(blanket_rgb, -34))
 
@@ -1022,20 +1103,36 @@ def _draw_iso_chest(
     wood_rgb = _rgb(spec.visual_attributes.get("wood_rgb", (139, 82, 43)))
     metal_rgb = _rgb(spec.visual_attributes.get("metal_rgb", (189, 160, 80)))
     wood_dark = _shade_rgb(wood_rgb, -50)
+    wood_light = _shade_rgb(wood_rgb, 38)
+    metal_dark = _shade_rgb(metal_rgb, -50)
     half_x, half_y = _iso_extent(tile_xywh, min_half_x=20, min_half_y=8)
-    top_y = cy - 6
-    lid = _iso_diamond(cx, top_y - 5, half_x - 2, half_y)
+    top_y = cy - 2
     body_top = _iso_diamond(cx, top_y, half_x, half_y)
-    left = [body_top[0], body_top[3], (body_top[3][0], body_top[3][1] + 11), (body_top[0][0], body_top[0][1] + 8)]
-    right = [body_top[2], body_top[3], (body_top[3][0], body_top[3][1] + 11), (body_top[2][0], body_top[2][1] + 8)]
+    interior = _iso_diamond(cx, top_y - 2, half_x - 4, max(4, half_y - 3))
+    left = [body_top[0], body_top[3], (body_top[3][0], body_top[3][1] + 12), (body_top[0][0], body_top[0][1] + 8)]
+    right = [body_top[2], body_top[3], (body_top[3][0], body_top[3][1] + 12), (body_top[2][0], body_top[2][1] + 8)]
+    front = [(body_top[0][0] + 2, body_top[3][1] - 1), body_top[3], (body_top[2][0] - 2, body_top[3][1] - 1), (body_top[2][0] - 2, body_top[3][1] + 10), (body_top[3][0], body_top[3][1] + 14), (body_top[0][0] + 2, body_top[3][1] + 10)]
+
     draw.polygon(left, fill=_shade_rgb(wood_rgb, -8), outline=wood_dark)
     draw.polygon(right, fill=_shade_rgb(wood_rgb, 10), outline=wood_dark)
-    draw.polygon(lid, fill=_shade_rgb(wood_rgb, 34), outline=wood_dark)
-    draw.line((lid[0][0] + 4, lid[0][1], lid[2][0] - 4, lid[2][1]), fill=_shade_rgb(wood_rgb, 56))
-    draw.line((body_top[0][0] + 2, body_top[0][1] + 4, body_top[3][0], body_top[3][1] + 10, body_top[2][0] - 2, body_top[2][1] + 4), fill=wood_dark)
+    draw.polygon(front, fill=wood_rgb, outline=wood_dark)
+    draw.polygon(body_top, fill=_shade_rgb(wood_rgb, 12), outline=wood_dark)
+    draw.polygon(interior, fill=(48, 35, 27), outline=wood_dark)
+    rear_lid = [
+        (body_top[0][0] + 4, body_top[0][1] + 1),
+        (body_top[1][0], body_top[1][1] - 3),
+        (body_top[2][0] - 4, body_top[2][1] + 1),
+        (body_top[2][0] - 7, body_top[2][1] + 5),
+        (body_top[1][0], body_top[1][1] + 3),
+        (body_top[0][0] + 7, body_top[0][1] + 5),
+    ]
+    draw.polygon(rear_lid, fill=_shade_rgb(wood_rgb, 24), outline=wood_dark)
+    draw.line((rear_lid[0][0] + 4, rear_lid[0][1] + 1, rear_lid[2][0] - 4, rear_lid[2][1] + 1), fill=wood_light)
+    draw.line((body_top[0][0] + 2, body_top[0][1] + 3, body_top[3][0], body_top[3][1] + 10, body_top[2][0] - 2, body_top[2][1] + 3), fill=wood_dark)
     for offset in (-9, 9):
-        draw.line((cx + offset, top_y - half_y - 2, cx + offset // 2, top_y + half_y + 10), fill=metal_rgb, width=2)
-    draw.rectangle((cx - 3, top_y + half_y + 4, cx + 3, top_y + half_y + 9), fill=metal_rgb, outline=_shade_rgb(metal_rgb, -50))
+        draw.line((cx + offset, top_y - half_y + 1, cx + offset // 2, top_y + half_y + 11), fill=metal_rgb, width=2)
+    draw.rectangle((cx - 3, top_y + half_y + 4, cx + 3, top_y + half_y + 10), fill=metal_rgb, outline=metal_dark)
+    draw.point((cx, top_y + half_y + 7), fill=_shade_rgb(metal_rgb, 45))
 
 
 def _draw_iso_counter(
@@ -1093,6 +1190,295 @@ def _draw_iso_fireplace(
     if str(spec.visual_attributes.get("fire_state", "lit")) == "lit":
         draw.polygon([(cx, wall_y - 14), (cx - 5, wall_y - 6), (cx - 1, wall_y - 2), (cx + 4, wall_y - 5)], fill=flame_rgb, outline=_shade_rgb(flame_rgb, -46))
         draw.polygon([(cx, wall_y - 10), (cx - 2, wall_y - 5), (cx + 1, wall_y - 3), (cx + 2, wall_y - 7)], fill=(255, 226, 84))
+
+
+def _draw_iso_stone_column(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    spec: IllustrationObjectSpec,
+) -> None:
+    stone_rgb = _rgb(spec.visual_attributes.get("stone_rgb", (126, 123, 114)))
+    dark = _shade_rgb(stone_rgb, -58)
+    mid = _shade_rgb(stone_rgb, -18)
+    light = _shade_rgb(stone_rgb, 38)
+    top_y = cy - 26
+    base_y = cy + 5
+    base = _iso_diamond(cx, base_y, 13, 6)
+    shaft = [
+        (cx - 7, top_y + 4),
+        (cx - 2, top_y + 7),
+        (cx - 2, base_y + 2),
+        (cx - 7, base_y - 1),
+    ]
+    shaft_r = [
+        (cx + 7, top_y + 4),
+        (cx + 2, top_y + 7),
+        (cx + 2, base_y + 2),
+        (cx + 7, base_y - 1),
+    ]
+    draw.polygon(base, fill=_shade_rgb(stone_rgb, -8), outline=dark)
+    draw.polygon(shaft, fill=mid, outline=dark)
+    draw.polygon(shaft_r, fill=stone_rgb, outline=dark)
+    draw.rectangle((cx - 7, top_y + 5, cx + 7, base_y), fill=stone_rgb, outline=dark)
+    draw.ellipse((cx - 9, top_y - 2, cx + 9, top_y + 8), fill=_shade_rgb(stone_rgb, 12), outline=dark)
+    draw.line((cx - 4, top_y + 8, cx - 4, base_y - 1), fill=light)
+    draw.line((cx + 5, top_y + 8, cx + 5, base_y - 1), fill=_shade_rgb(stone_rgb, -34))
+    draw.line((cx - 7, base_y - 1, cx + 7, base_y - 1), fill=dark)
+
+
+def _draw_iso_archway(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    tile_xywh: TileBox,
+    spec: IllustrationObjectSpec,
+) -> None:
+    stone_rgb = _rgb(spec.visual_attributes.get("stone_rgb", (120, 118, 110)))
+    shadow_rgb = _rgb(spec.visual_attributes.get("shadow_rgb", (37, 36, 39)))
+    dark = _shade_rgb(stone_rgb, -58)
+    light = _shade_rgb(stone_rgb, 36)
+    half_x, half_y = _iso_extent(tile_xywh, min_half_x=23, min_half_y=8)
+    wall_y = cy - half_y
+    height = 31
+    left_col = [(cx - half_x, wall_y), (cx - half_x + 7, wall_y - 4), (cx - half_x + 7, wall_y - height + 9), (cx - half_x, wall_y - height + 5)]
+    right_col = [(cx + half_x, wall_y), (cx + half_x - 7, wall_y - 4), (cx + half_x - 7, wall_y - height + 9), (cx + half_x, wall_y - height + 5)]
+    top = [(cx - half_x + 5, wall_y - height + 8), (cx, wall_y - height - 5), (cx + half_x - 5, wall_y - height + 8), (cx + half_x - 10, wall_y - height + 14), (cx, wall_y - height + 3), (cx - half_x + 10, wall_y - height + 14)]
+    opening = [(cx - half_x + 9, wall_y - 3), (cx, wall_y - 8), (cx + half_x - 9, wall_y - 3), (cx + half_x - 9, wall_y - height + 11), (cx, wall_y - height + 2), (cx - half_x + 9, wall_y - height + 11)]
+    draw.polygon(left_col, fill=_shade_rgb(stone_rgb, -14), outline=dark)
+    draw.polygon(right_col, fill=stone_rgb, outline=dark)
+    draw.polygon(top, fill=_shade_rgb(stone_rgb, 10), outline=dark)
+    draw.polygon(opening, fill=shadow_rgb, outline=_shade_rgb(shadow_rgb, -18))
+    draw.line((cx - half_x + 10, wall_y - 2, cx + half_x - 10, wall_y - 2), fill=_shade_rgb(shadow_rgb, -24))
+    for offset in (-15, -5, 7):
+        draw.line((cx + offset, wall_y - height + 12, cx + offset + 5, wall_y - height + 17), fill=_shade_rgb(stone_rgb, -30))
+    draw.line((cx - half_x + 8, wall_y - height + 12, cx, wall_y - height + 2, cx + half_x - 8, wall_y - height + 12), fill=light)
+    draw.line((cx - half_x + 3, wall_y - 3, cx - half_x + 3, wall_y - height + 7), fill=_shade_rgb(stone_rgb, -34))
+    draw.line((cx + half_x - 4, wall_y - 3, cx + half_x - 4, wall_y - height + 7), fill=_shade_rgb(stone_rgb, -34))
+
+
+def _draw_iso_sealed_door(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    tile_xywh: TileBox,
+    spec: IllustrationObjectSpec,
+) -> None:
+    wood_rgb = _rgb(spec.visual_attributes.get("stone_rgb", (134, 87, 45)))
+    seal_rgb = _rgb(spec.visual_attributes.get("seal_rgb", (94, 74, 55)))
+    dark = _shade_rgb(wood_rgb, -56)
+    light = _shade_rgb(wood_rgb, 34)
+    iron = (58, 56, 52)
+    half_x, half_y = _iso_extent(tile_xywh, min_half_x=21, min_half_y=7)
+    orientation = str(spec.visual_attributes.get("door_orientation", spec.visual_attributes.get("orientation", "horizontal")))
+    if orientation == "vertical":
+        top_y = cy - half_y - 16
+        bottom_y = cy + half_y + 13
+        face = [
+            (cx - 13, top_y + 9),
+            (cx, top_y + 1),
+            (cx + 13, top_y + 9),
+            (cx + 13, bottom_y - 9),
+            (cx, bottom_y),
+            (cx - 13, bottom_y - 9),
+        ]
+        right = [
+            (cx + 13, top_y + 9),
+            (cx + 18, top_y + 12),
+            (cx + 18, bottom_y - 7),
+            (cx + 13, bottom_y - 9),
+        ]
+        draw.polygon(right, fill=_shade_rgb(wood_rgb, -22), outline=dark)
+        draw.polygon(face, fill=wood_rgb, outline=dark)
+        for offset in (-6, 0, 6):
+            draw.line((cx + offset, top_y + 7, cx + offset, bottom_y - 6), fill=_shade_rgb(wood_rgb, -26))
+        draw.line((cx - 9, top_y + 13, cx + 10, top_y + 13), fill=iron, width=2)
+        draw.line((cx - 10, bottom_y - 12, cx + 9, bottom_y - 12), fill=iron, width=2)
+        draw.line((cx, top_y + 5, cx, bottom_y - 5), fill=_shade_rgb(seal_rgb, -42), width=2)
+        draw.rectangle((cx - 4, cy - 1, cx + 4, cy + 7), fill=seal_rgb, outline=_shade_rgb(seal_rgb, -42))
+        draw.line((cx - 8, top_y + 7, cx + 2, top_y + 2, cx + 11, top_y + 8), fill=light)
+    else:
+        top_y = cy - half_y - 13
+        bottom_y = cy + half_y + 13
+        face = [
+            (cx - half_x + 5, top_y + 7),
+            (cx + half_x - 5, top_y + 7),
+            (cx + half_x - 9, bottom_y - 4),
+            (cx - half_x + 9, bottom_y - 4),
+        ]
+        top_lip = [
+            (cx - half_x + 5, top_y + 7),
+            (cx - half_x + 11, top_y + 2),
+            (cx + half_x - 11, top_y + 2),
+            (cx + half_x - 5, top_y + 7),
+        ]
+        right = [
+            (cx + half_x - 5, top_y + 7),
+            (cx + half_x + 1, top_y + 11),
+            (cx + half_x - 3, bottom_y),
+            (cx + half_x - 9, bottom_y - 4),
+        ]
+        left = [
+            (cx - half_x + 5, top_y + 7),
+            (cx - half_x - 1, top_y + 11),
+            (cx - half_x + 3, bottom_y),
+            (cx - half_x + 9, bottom_y - 4),
+        ]
+        draw.polygon(left, fill=_shade_rgb(wood_rgb, -18), outline=dark)
+        draw.polygon(right, fill=_shade_rgb(wood_rgb, -24), outline=dark)
+        draw.polygon(face, fill=wood_rgb, outline=dark)
+        draw.polygon(top_lip, fill=_shade_rgb(wood_rgb, 10), outline=dark)
+        for offset in (-14, -5, 5, 14):
+            draw.line((cx + offset, top_y + 8, cx + offset - 2, bottom_y - 5), fill=_shade_rgb(wood_rgb, -28))
+        draw.line((cx, top_y + 7, cx, bottom_y - 5), fill=_shade_rgb(wood_rgb, -38), width=2)
+        draw.line((cx - half_x + 8, top_y + 12, cx + half_x - 8, top_y + 12), fill=iron, width=2)
+        draw.line((cx - half_x + 10, bottom_y - 10, cx + half_x - 10, bottom_y - 10), fill=iron, width=2)
+        draw.rectangle((cx - 5, cy, cx + 5, cy + 8), fill=seal_rgb, outline=_shade_rgb(seal_rgb, -42))
+        draw.point((cx + 7, cy + 4), fill=light)
+
+
+def _draw_iso_brazier(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    spec: IllustrationObjectSpec,
+) -> None:
+    metal_rgb = _rgb(spec.visual_attributes.get("metal_rgb", (93, 91, 88)))
+    flame_rgb = _rgb(spec.visual_attributes.get("flame_rgb", (238, 126, 45)))
+    dark = _shade_rgb(metal_rgb, -48)
+    light = _shade_rgb(metal_rgb, 38)
+    draw.polygon(_iso_diamond(cx, cy + 6, 9, 4), fill=(49, 48, 46), outline=None)
+    draw.line((cx - 2, cy - 2, cx - 3, cy + 8), fill=dark, width=2)
+    draw.line((cx + 2, cy - 2, cx + 3, cy + 8), fill=dark, width=2)
+    bowl = _iso_diamond(cx, cy - 4, 13, 6)
+    left = [bowl[0], bowl[3], (bowl[3][0], bowl[3][1] + 5), (bowl[0][0], bowl[0][1] + 3)]
+    right = [bowl[2], bowl[3], (bowl[3][0], bowl[3][1] + 5), (bowl[2][0], bowl[2][1] + 3)]
+    draw.polygon(left, fill=_shade_rgb(metal_rgb, -8), outline=dark)
+    draw.polygon(right, fill=metal_rgb, outline=dark)
+    draw.polygon(bowl, fill=_shade_rgb(metal_rgb, 10), outline=dark)
+    draw.line((bowl[0][0] + 3, bowl[0][1] + 1, bowl[2][0] - 3, bowl[2][1] + 1), fill=light)
+    if str(spec.visual_attributes.get("fire_state", "lit")) == "lit":
+        draw.polygon([(cx, cy - 19), (cx - 5, cy - 9), (cx - 1, cy - 4), (cx + 5, cy - 9)], fill=flame_rgb, outline=_shade_rgb(flame_rgb, -48))
+        draw.polygon([(cx, cy - 14), (cx - 2, cy - 8), (cx + 1, cy - 5), (cx + 2, cy - 10)], fill=(255, 226, 84))
+
+
+def _draw_iso_floor_switch(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    spec: IllustrationObjectSpec,
+) -> None:
+    plate_rgb = _rgb(spec.visual_attributes.get("plate_rgb", (142, 126, 88)))
+    dark = _shade_rgb(plate_rgb, -56)
+    light = _shade_rgb(plate_rgb, 36)
+    pressed = str(spec.visual_attributes.get("switch_state", "raised")) == "pressed"
+    half_x = 13
+    half_y = 7
+    if pressed:
+        base = _iso_diamond(cx, cy + 1, half_x, half_y)
+        inner = _iso_diamond(cx, cy + 1, 6, 3)
+        draw.polygon(base, fill=_shade_rgb(plate_rgb, -24), outline=dark)
+        draw.polygon(inner, fill=_shade_rgb(plate_rgb, -4), outline=_shade_rgb(plate_rgb, -36))
+        draw.line((base[0][0] + 4, base[0][1], base[2][0] - 4, base[2][1]), fill=_shade_rgb(plate_rgb, 18))
+    else:
+        bottom = _iso_diamond(cx, cy + 4, half_x, half_y)
+        top = _iso_diamond(cx, cy - 2, half_x - 1, half_y - 1)
+        left = [bottom[0], bottom[3], top[3], top[0]]
+        right = [bottom[2], bottom[3], top[3], top[2]]
+        draw.polygon(left, fill=_shade_rgb(plate_rgb, -24), outline=dark)
+        draw.polygon(right, fill=_shade_rgb(plate_rgb, -12), outline=dark)
+        draw.polygon(top, fill=plate_rgb, outline=dark)
+        draw.polygon(_iso_diamond(cx, cy - 2, 6, 3), fill=_shade_rgb(plate_rgb, 18), outline=_shade_rgb(plate_rgb, -24))
+        draw.line((top[0][0] + 3, top[0][1], top[1][0], top[1][1] + 1, top[2][0] - 3, top[2][1]), fill=light)
+
+
+def _draw_iso_broken_wall(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    tile_xywh: TileBox,
+    spec: IllustrationObjectSpec,
+) -> None:
+    stone_rgb = _rgb(spec.visual_attributes.get("stone_rgb", (132, 132, 124)))
+    dark = _shade_rgb(stone_rgb, -58)
+    light = _shade_rgb(stone_rgb, 34)
+    half_x, half_y = _iso_extent(tile_xywh, min_half_x=24, min_half_y=7)
+    top_y = cy - half_y - 2
+    height = 21
+    top = [(cx - half_x + 4, top_y - height), (cx, top_y - height - 7), (cx + half_x - 4, top_y - height), (cx, top_y - height + 5)]
+    front = [(cx - half_x, top_y), (cx + half_x, top_y), (cx + half_x - 5, top_y - height), (cx - half_x + 5, top_y - height)]
+    side = [(cx + half_x, top_y), (cx + half_x - 5, top_y - height), (cx, top_y - height + 5), (cx, top_y + half_y + 1)]
+    draw.polygon(front, fill=stone_rgb, outline=dark)
+    draw.polygon(side, fill=_shade_rgb(stone_rgb, -12), outline=dark)
+    draw.polygon(top, fill=_shade_rgb(stone_rgb, 13), outline=dark)
+    mortar_y = top_y - 8
+    draw.line((cx - half_x + 3, mortar_y, cx + half_x - 5, mortar_y), fill=_shade_rgb(stone_rgb, -30))
+    for offset in (-15, -5, 6):
+        draw.line((cx + offset, top_y - 2, cx + offset + 6, top_y - 8), fill=_shade_rgb(stone_rgb, -30))
+    crack_x = cx - 4
+    draw.line((crack_x, top_y - height + 2, crack_x + 4, top_y - 10, crack_x + 1, top_y - 5, crack_x + 8, top_y - 1), fill=(45, 44, 42))
+    if str(spec.visual_attributes.get("break_style", "cracked")) == "gap":
+        draw.polygon([(cx + 4, top_y - height + 2), (cx + 16, top_y - 14), (cx + 14, top_y - 1), (cx + 4, top_y + 1)], fill=(45, 44, 42), outline=dark)
+        draw.polygon([(cx - 12, top_y - height + 5), (cx - 5, top_y - 12), (cx - 8, top_y - 2), (cx - 17, top_y - 1)], fill=_shade_rgb(stone_rgb, -20), outline=dark)
+    draw.line((front[0][0] + 4, front[0][1] - 3, front[1][0] - 5, front[1][1] - 3), fill=light)
+
+
+def _draw_iso_rubble(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    spec: IllustrationObjectSpec,
+) -> None:
+    stone_rgb = _rgb(spec.visual_attributes.get("stone_rgb", (116, 113, 105)))
+    dark = _shade_rgb(stone_rgb, -58)
+    light = _shade_rgb(stone_rgb, 36)
+    draw.polygon(_iso_diamond(cx, cy + 4, 13, 6), fill=(55, 53, 50), outline=None)
+    stones = (
+        ((cx - 11, cy + 2), 6, 4, _shade_rgb(stone_rgb, -10)),
+        ((cx - 2, cy - 3), 8, 5, stone_rgb),
+        ((cx + 8, cy + 1), 6, 4, _shade_rgb(stone_rgb, -28)),
+        ((cx - 5, cy - 8), 5, 3, _shade_rgb(stone_rgb, 8)),
+    )
+    for (sx, sy), hx, hy, color in stones:
+        top = _iso_diamond(sx, sy, hx, hy)
+        front = [(top[0][0] + 1, top[3][1]), top[3], (top[2][0] - 1, top[3][1]), (top[2][0] - 2, top[3][1] + 4), (top[3][0], top[3][1] + 6), (top[0][0] + 2, top[3][1] + 4)]
+        draw.polygon(front, fill=_shade_rgb(color, -16), outline=dark)
+        draw.polygon(top, fill=color, outline=dark)
+    draw.point((cx - 5, cy - 8), fill=light)
+
+
+def _draw_iso_magic_circle(
+    draw: ImageDraw.ImageDraw,
+    *,
+    cx: int,
+    cy: int,
+    tile_xywh: TileBox,
+    spec: IllustrationObjectSpec,
+) -> None:
+    rune_rgb = _rgb(spec.visual_attributes.get("rune_rgb", (92, 214, 232)))
+    glow_rgb = _rgb(spec.visual_attributes.get("glow_rgb", (84, 79, 186)))
+    half_x, half_y = _iso_extent(tile_xywh, min_half_x=24, min_half_y=10)
+    outer = _iso_diamond(cx, cy, half_x, half_y)
+    inner = _iso_diamond(cx, cy, max(9, half_x - 8), max(5, half_y - 4))
+    rune_dark = _shade_rgb(rune_rgb, -56)
+    draw.polygon(_iso_diamond(cx, cy, half_x + 3, half_y + 2), outline=_shade_rgb(glow_rgb, -28))
+    draw.polygon(outer, outline=_shade_rgb(glow_rgb, 8))
+    draw.line((outer[0][0] + 4, outer[0][1], outer[2][0] - 4, outer[2][1]), fill=_shade_rgb(glow_rgb, 20))
+    draw.line((outer[1][0], outer[1][1] + 2, outer[3][0], outer[3][1] - 2), fill=_shade_rgb(glow_rgb, 20))
+    draw.polygon(inner, outline=rune_rgb)
+    top, right, bottom, left = inner
+    draw.line((top[0], top[1], right[0] - 3, right[1] - 1), fill=rune_dark)
+    draw.line((right[0] - 3, right[1] - 1, left[0] + 3, left[1] - 1), fill=rune_dark)
+    draw.line((left[0] + 3, left[1] - 1, top[0], top[1]), fill=rune_dark)
+    for px, py in (top, right, bottom, left):
+        draw.rectangle((px - 1, py - 1, px + 1, py + 1), fill=rune_rgb)
 
 
 def _draw_iso_room_divider(
@@ -1535,6 +1921,62 @@ def _draw_pixel_object_on_tile(
             tile_xywh,
             wood_rgb=_rgb(visual.get("wood_rgb", (112, 72, 42))),
             flame_rgb=_rgb(visual.get("flame_rgb", (244, 153, 45))),
+        )
+    elif kind == "stone_column":
+        draw_pixel_stone_column(
+            draw,
+            tile_xywh,
+            stone_rgb=_rgb(visual.get("stone_rgb", (126, 123, 114))),
+        )
+    elif kind == "archway":
+        draw_pixel_archway(
+            draw,
+            tile_xywh,
+            stone_rgb=_rgb(visual.get("stone_rgb", (120, 118, 110))),
+            shadow_rgb=_rgb(visual.get("shadow_rgb", (37, 36, 39))),
+        )
+    elif kind == "sealed_door":
+        draw_pixel_sealed_door(
+            draw,
+            tile_xywh,
+            stone_rgb=_rgb(visual.get("stone_rgb", (134, 87, 45))),
+            seal_rgb=_rgb(visual.get("seal_rgb", (94, 74, 55))),
+            orientation=str(visual.get("door_orientation", visual.get("orientation", "horizontal"))),
+        )
+    elif kind == "floor_switch":
+        draw_pixel_floor_switch(
+            draw,
+            tile_xywh,
+            plate_rgb=_rgb(visual.get("plate_rgb", (142, 126, 88))),
+            switch_state=str(visual.get("switch_state", "raised")),
+        )
+    elif kind == "brazier":
+        draw_pixel_brazier(
+            draw,
+            tile_xywh,
+            metal_rgb=_rgb(visual.get("metal_rgb", (93, 91, 88))),
+            flame_rgb=_rgb(visual.get("flame_rgb", (238, 126, 45))),
+            fire_state=str(visual.get("fire_state", "lit")),
+        )
+    elif kind == "broken_wall":
+        draw_pixel_broken_wall(
+            draw,
+            tile_xywh,
+            stone_rgb=_rgb(visual.get("stone_rgb", (132, 132, 124))),
+            break_style=str(visual.get("break_style", "cracked")),
+        )
+    elif kind == "rubble":
+        draw_pixel_rubble(
+            draw,
+            tile_xywh,
+            stone_rgb=_rgb(visual.get("stone_rgb", (116, 113, 105))),
+        )
+    elif kind == "magic_circle":
+        draw_pixel_magic_circle(
+            draw,
+            tile_xywh,
+            rune_rgb=_rgb(visual.get("rune_rgb", (92, 214, 232))),
+            glow_rgb=_rgb(visual.get("glow_rgb", (84, 79, 186))),
         )
     elif kind == "ladder":
         draw_pixel_ladder(

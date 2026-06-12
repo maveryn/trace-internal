@@ -1,10 +1,10 @@
 import random
 
-from trace.tasks.charts.map import choropleth_assets
-from trace.tasks.charts.map import choropleth_geometry
-from trace.tasks.charts.map import choropleth_geography
-from trace.tasks.charts.map import choropleth_region_label
-from trace.tasks.charts.map import choropleth_style
+from trace.tasks.charts.region_map.shared import choropleth_assets
+from trace.tasks.charts.region_map.shared import choropleth_geometry
+from trace.tasks.charts.region_map.shared import choropleth_geography
+from trace.tasks.charts.region_map.shared import choropleth_region_label
+from trace.tasks.charts.region_map.shared import choropleth_style
 
 
 def test_choropleth_task_uses_shared_asset_loader_aliases() -> None:

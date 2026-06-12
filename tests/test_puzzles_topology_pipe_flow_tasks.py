@@ -18,7 +18,7 @@ def test_pipe_flow_task_is_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
     assert taxonomy.domain == "puzzles"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_task_group == "topology"
+    assert taxonomy.source_scene_id == "topology"
 
 
 def test_pipe_flow_repair_tile_contract() -> None:

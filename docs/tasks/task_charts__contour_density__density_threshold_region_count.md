@@ -14,7 +14,7 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
-1. Answer schema: `integer`.
+1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
 3. Annotation should mark every region matching the visible density-level threshold.
 4. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
@@ -23,7 +23,7 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `density_threshold_region_count` | `count.thresholded_visible_density_level` | `integer` | `bbox_set` |
+| `density_threshold_region_count` | `count.thresholded_visible_density_level` | `integer_count` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

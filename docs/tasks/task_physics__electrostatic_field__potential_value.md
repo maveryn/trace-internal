@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `electrostatic_field`
-- Implementation task group: `electrostatics`
+- Implementation scene: `electrostatics`
 - Implementation source: `trace/tasks/physics/electrostatics/field_map.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__electrostatic_field__potential_value` -> `task_physics__electrostatic_field__potential_value`

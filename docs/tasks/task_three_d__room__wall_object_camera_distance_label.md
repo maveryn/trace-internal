@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `room`
-- Task group: `room`
+- Scene: `room`
 - Query id: `closest_to_camera`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`

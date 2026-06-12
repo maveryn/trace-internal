@@ -3,19 +3,32 @@
   "schema_version": "v0",
   "task_templates": {
     "section_expression_query": [
-      "{question_text}",
-      "Question: {question_text}",
-      "Use the displayed information to answer: {question_text}",
-      "Determine the answer: {question_text}",
-      "Answer based on the displayed information: {question_text}"
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:structured_document_sections": [
       "object_description"
     ],
-    "task:section_expression_query": [
-      "question_text"
+    "query:sum_two_amounts_in_section": [
+      "section_label",
+      "first_label",
+      "second_label"
+    ],
+    "query:difference_two_amounts_in_section": [
+      "section_label",
+      "first_label",
+      "second_label"
+    ],
+    "query:sum_minus_amount_in_section": [
+      "section_label",
+      "first_label",
+      "second_label",
+      "third_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -56,25 +69,26 @@
   },
   "query_templates": {
     "sum_two_amounts_in_section": [
-      "Use only amount fields in the named section.",
-      "Apply the requested operation exactly as written.",
-      "Ignore values outside the queried section.",
-      "Read the referenced field values before computing.",
-      "Compute the resulting amount from the shown values."
+      "In the \"{section_label}\" section, what is \"{first_label}\" plus \"{second_label}\"? Use currency notation with exactly two digits after the decimal point.",
+      "Using only the \"{section_label}\" section, add \"{first_label}\" and \"{second_label}\". What amount results?",
+      "What is the sum of \"{first_label}\" and \"{second_label}\" in the \"{section_label}\" section?",
+      "Read the \"{section_label}\" section and compute \"{first_label}\" plus \"{second_label}\".",
+      "Find \"{first_label}\" and \"{second_label}\" in \"{section_label}\" and compute their total amount."
     ],
     "difference_two_amounts_in_section": [
-      "Use only amount fields in the named section.",
-      "Apply the requested operation exactly as written.",
-      "Ignore values outside the queried section.",
-      "Read the referenced field values before computing.",
-      "Compute the resulting amount from the shown values."
+      "In the \"{section_label}\" section, what is \"{first_label}\" minus \"{second_label}\"? Use currency notation with exactly two digits after the decimal point.",
+      "Using only the \"{section_label}\" section, subtract \"{second_label}\" from \"{first_label}\". What amount results?",
+      "What is the difference \"{first_label}\" minus \"{second_label}\" in the \"{section_label}\" section?",
+      "Read the \"{section_label}\" section and compute \"{first_label}\" minus \"{second_label}\".",
+      "Find \"{first_label}\" and \"{second_label}\" in \"{section_label}\" and compute the resulting difference."
     ],
     "sum_minus_amount_in_section": [
-      "Use only amount fields in the named section.",
-      "Apply the requested operation exactly as written.",
-      "Ignore values outside the queried section.",
-      "Read the referenced field values before computing.",
-      "Compute the resulting amount from the shown values."
+      "In the \"{section_label}\" section, what is \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\"? Use currency notation with exactly two digits after the decimal point.",
+      "Using only the \"{section_label}\" section, add \"{first_label}\" and \"{second_label}\", then subtract \"{third_label}\". What amount results?",
+      "What is \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\" in the \"{section_label}\" section?",
+      "Read the \"{section_label}\" section and compute \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\".",
+      "Find \"{first_label}\", \"{second_label}\", and \"{third_label}\" in \"{section_label}\" and compute the final amount."
     ]
-  }
+  },
+  "allow_empty_task_templates": true
 }

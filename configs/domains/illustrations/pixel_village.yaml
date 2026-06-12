@@ -1,0 +1,118 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    task_illustrations__pixel_village__object_type_count:
+      query_id_support:
+        - object_type_count
+      target_object_support:
+        - building
+        - person
+        - tree
+        - lamp_post
+        - well
+        - pond
+      target_answer_count_max: 8
+    task_illustrations__pixel_village__person_path_count:
+      query_id_support:
+        - people_on_path_count
+      path_person_count_min: 2
+      path_person_count_max: 6
+    task_illustrations__pixel_village__territory_object_count:
+      query_id_support:
+        - territory_object_count
+      territory_object_support:
+        - cemetery_grave_marker
+        - orchard_tree
+      target_answer_count_max: 8
+    task_illustrations__pixel_village__river_side_object_count:
+      query_id_support:
+        - river_side_object_count
+      river_side_target_object_support:
+        - building
+        - person
+        - tree
+      river_side_support:
+        - left
+        - right
+        - above
+        - below
+      target_answer_count_max: 8
+
+rendering:
+  task_overrides:
+    task_illustrations__pixel_village__object_type_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_windmill_mode: auto
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__person_path_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_windmill_mode: auto
+      background_person_path_clearance: 1
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__territory_object_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_windmill_mode: auto
+      annotation_padding_px: 0.0
+    task_illustrations__pixel_village__river_side_object_count:
+      pixel_village_canvas_width: 960
+      pixel_village_canvas_height: 720
+      pixel_village_tile_px: 32
+      pixel_village_theme_mode: temperate
+      pixel_village_cemetery_mode: auto
+      pixel_village_orchard_mode: auto
+      pixel_village_windmill_mode: auto
+      pixel_village_river_mode: force
+      pixel_village_river_orientation: auto
+      pixel_village_river_placement: balanced
+      annotation_padding_px: 0.0
+
+prompt:
+  task_overrides:
+    task_illustrations__pixel_village__object_type_count:
+      bundle_id: illustrations_pixel_village_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_object_type_count_task
+      answer_hint_pixel_village_object_type: set "answer" to the count of visible {target_plural} as an integer
+      annotation_hint_pixel_village_object_type: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit}
+      json_example_pixel_village_object_type: '{"annotation":[[128,224,256,320],[384,192,512,288],[640,352,768,448]],"answer":3}'
+      json_example_answer_only_pixel_village_object_type: '{"answer":3}'
+    task_illustrations__pixel_village__person_path_count:
+      bundle_id: illustrations_pixel_village_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_person_path_count_task
+      answer_hint_pixel_village_person_path: set "answer" to the count of people on the paths as an integer
+      annotation_hint_pixel_village_person_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person on a path
+      json_example_pixel_village_person_path: '{"annotation":[[304,336,336,368],[464,272,496,304],[592,400,624,432]],"answer":3}'
+      json_example_answer_only_pixel_village_person_path: '{"answer":3}'
+    task_illustrations__pixel_village__territory_object_count:
+      bundle_id: illustrations_pixel_village_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_territory_object_count_task
+      answer_hint_pixel_village_territory_object: set "answer" to the count of {target_plural} in the {territory_name} as an integer
+      annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit} in the {territory_name}
+      json_example_pixel_village_territory_object: '{"annotation":[[128,224,160,256],[192,224,224,256],[256,224,288,256]],"answer":3}'
+      json_example_answer_only_pixel_village_territory_object: '{"answer":3}'
+    task_illustrations__pixel_village__river_side_object_count:
+      bundle_id: illustrations_pixel_village_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_river_side_object_count_task
+      answer_hint_pixel_village_river_side_object: set "answer" to the count of visible {target_plural} {river_relation} the river as an integer
+      annotation_hint_pixel_village_river_side_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {target_unit} {river_relation} the river
+      json_example_pixel_village_river_side_object: '{"annotation":[[128,224,256,320],[384,192,512,288],[640,352,768,448]],"answer":3}'
+      json_example_answer_only_pixel_village_river_side_object: '{"answer":3}'

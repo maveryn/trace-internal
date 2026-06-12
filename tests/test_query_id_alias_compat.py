@@ -6,12 +6,15 @@ from random import Random
 
 import pytest
 
-from trace.tasks.charts.shared.fixed_query_task import merged_query_params
+from trace.tasks.shared.fixed_query import merged_query_params
 from trace.tasks.games.shared.sampling import resolve_games_query_id
-from trace.tasks.icons.shared.paired_canvas_common import choose_query_id
+from trace.tasks.icons.paired_canvas.shared.common import choose_query_id
 from trace.tasks.shared.fixed_query import (
     force_query_id_params,
     normalize_query_id_params,
+    resolve_task_query_id_param,
+    select_task_query_id,
+    strip_query_id_params,
 )
 from trace.tasks.three_d.shared.task_support import resolve_axis_variant
 
@@ -47,6 +50,108 @@ def test_force_query_id_params_checks_legacy_alias_conflicts() -> None:
     assert "query_variant_weights" not in forced
     with pytest.raises(ValueError, match="public task query_id must match"):
         force_query_id_params({"query_variant": "first"}, query_id="second")
+
+
+def test_resolve_task_query_id_param_validates_supported_ids_and_strips_aliases() -> None:
+    assert (
+        resolve_task_query_id_param(
+            {},
+            supported_query_ids=("default",),
+            default_query_id="default",
+            task_id="task_test__scene__fixed",
+        )
+        == "default"
+    )
+    assert (
+        resolve_task_query_id_param(
+            {"query_variant": "default"},
+            supported_query_ids=("default",),
+            default_query_id="default",
+            task_id="task_test__scene__fixed",
+        )
+        == "default"
+    )
+    assert (
+        resolve_task_query_id_param(
+            {"query_id": "right"},
+            supported_query_ids=("left", "right"),
+            default_query_id="left",
+            task_id="task_test__scene__multi",
+        )
+        == "right"
+    )
+    with pytest.raises(ValueError, match="unsupported query_id"):
+        resolve_task_query_id_param(
+            {"query_id": "other"},
+            supported_query_ids=("default",),
+            default_query_id="default",
+            task_id="task_test__scene__fixed",
+        )
+
+    assert strip_query_id_params({"query_id": "default", "query_variant": "default", "keep": 1}) == {"keep": 1}
+
+
+def test_select_task_query_id_handles_explicit_query_and_strips_selector() -> None:
+    selected, probabilities, task_params = select_task_query_id(
+        instance_seed=123,
+        params={"query_variant": "right", "keep": 7},
+        supported_query_ids=("left", "right"),
+        default_query_id="left",
+        task_id="task_test__scene__multi",
+    )
+
+    assert selected == "right"
+    assert probabilities == {"left": 0.0, "right": 1.0}
+    assert task_params == {"keep": 7}
+
+
+def test_select_task_query_id_cycles_sample_cursor_and_reduces_for_lower_axes() -> None:
+    selected, probabilities, task_params = select_task_query_id(
+        instance_seed=123,
+        params={"_sample_cursor": 5, "keep": "x"},
+        supported_query_ids=("a", "b", "c"),
+        default_query_id="a",
+        task_id="task_test__scene__multi",
+    )
+
+    assert selected == "c"
+    assert probabilities == {"a": 1.0 / 3.0, "b": 1.0 / 3.0, "c": 1.0 / 3.0}
+    assert task_params == {"_sample_cursor": 1, "keep": "x"}
+
+
+def test_select_task_query_id_random_fallback_is_uniform_and_deterministic() -> None:
+    first = select_task_query_id(
+        instance_seed=123,
+        params={"keep": 1},
+        supported_query_ids=("a", "b", "c"),
+        default_query_id="a",
+        task_id="task_test__scene__multi",
+        namespace="unit.query",
+    )
+    second = select_task_query_id(
+        instance_seed=123,
+        params={"keep": 1},
+        supported_query_ids=("a", "b", "c"),
+        default_query_id="a",
+        task_id="task_test__scene__multi",
+        namespace="unit.query",
+    )
+
+    assert first == second
+    assert first[0] in {"a", "b", "c"}
+    assert first[1] == {"a": 1.0 / 3.0, "b": 1.0 / 3.0, "c": 1.0 / 3.0}
+    assert first[2] == {"keep": 1}
+
+
+def test_select_task_query_id_rejects_conflicting_aliases() -> None:
+    with pytest.raises(ValueError, match="query_id conflicts with query_variant"):
+        select_task_query_id(
+            instance_seed=123,
+            params={"query_id": "a", "query_variant": "b"},
+            supported_query_ids=("a", "b"),
+            default_query_id="a",
+            task_id="task_test__scene__multi",
+        )
 
 
 def test_games_query_resolver_honors_legacy_query_variant() -> None:

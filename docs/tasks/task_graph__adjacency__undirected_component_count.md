@@ -3,9 +3,9 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `adjacency`
-3. Task group: `counting`
-4. Task id: `task_graph__adjacency__undirected_component_count`
-5. Objective: count connected components in an undirected adjacency representation.
+3. Task id: `task_graph__adjacency__undirected_component_count`
+4. Objective: count connected components in an undirected adjacency representation.
+5. Implementation: `trace/tasks/graph/adjacency/undirected_component_count.py`.
 
 ## Query IDs
 1. `undirected_component_count`
@@ -14,7 +14,7 @@
 ## Answer And Annotation
 1. Answer type: `integer`.
 2. Annotation type: `bbox_set`.
-3. Annotation marks minimal pixel-space visual witnesses for the answer, not answer labels or non-witness annotations.
+3. Annotation marks the topmost displayed row label in each connected component.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
 
 ## Rendering Contract
@@ -23,6 +23,6 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `control_board`
 4. Task id: `task_pages__control_board__selected_enabled_controls_in_group_count`
 5. Objective: Count selected enabled controls in one visible control group.

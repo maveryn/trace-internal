@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `sequence_strip`
-3. Task group: `pattern`
+3. Scene: `pattern`
 4. Task id: `task_icons__sequence_strip__rotation_sequence_violation_index`
 5. Objective: identify which numbered box breaks a constant-rotation icon sequence.
 
@@ -33,7 +33,7 @@
 4. Trace metadata records `scene_variant=sequence_row`, `query_id=row_rotation_violation`, sampled icon/noise styling, panel-header text-legibility metadata, and numbered-cell text draw records.
 
 ## 5) Complexity + Tests
-1. Complexity definition/components: row-rotation complexity based on the calibrated 10-cell sequence length, rotation step, answer position, and visual clutter.
+1. Difficulty calibration note: row-rotation difficulty based on the calibrated 10-cell sequence length, rotation step, answer position, and visual clutter.
 2. Determinism/build tests: `tests/test_icons_pattern_structured_violation_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_pattern_structured_violation_tasks.py`
 

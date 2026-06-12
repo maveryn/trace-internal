@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `analytical`
+2. Scene id: `function_panels`
 3. Scene id: `function_panels`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `range_match_label`
@@ -13,7 +13,7 @@
 - `label(select_panel(candidate_function_panels, property_rule=range_match_label)); scene=function_panels; scope=range_match_label`
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry prompt bundle configured for this task group/task override.
+- Prompt text is loaded from the scene prompt bundle configured for `function_panels`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is us
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/analytical.yaml`
-- Task module: `trace/tasks/geometry/analytical/function_property_label.py`
+- Config: `configs/domains/geometry/function_panels.yaml`
+- Task module: `trace/tasks/geometry/function_panels/range_match_label.py`

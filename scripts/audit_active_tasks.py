@@ -29,17 +29,17 @@ from trace.tasks.registry import TASK_REGISTRY, list_default_task_ids, list_task
 
 
 DOMAIN_DOCS: dict[str, str] = {
-    "charts": "CHART_TASK_SETUP.md",
-    "games": "GAMES_TASK_SETUP.md",
-    "geometry": "GEOMETRY_TASK_SETUP.md",
-    "graph": "GRAPH_TASK_SETUP.md",
-    "icons": "ICON_TASK_SETUP.md",
-    "illustrations": "ILLUSTRATIONS_TASK_SETUP.md",
-    "pages": "PAGES_TASK_SETUP.md",
-    "physics": "PHYSICS_TASK_SETUP.md",
-    "misc": "MISC_TASK_SETUP.md",
-    "puzzles": "PUZZLES_TASK_SETUP.md",
-    "three_d": "THREE_D_TASK_SETUP.md",
+    "charts": "charts.md",
+    "games": "games.md",
+    "geometry": "geometry.md",
+    "graph": "graph.md",
+    "icons": "icons.md",
+    "illustrations": "illustrations.md",
+    "pages": "pages.md",
+    "physics": "physics.md",
+    "symbolic": "symbolic.md",
+    "puzzles": "puzzles.md",
+    "three_d": "three_d.md",
 }
 
 REQUIRED_TRACE_KEYS: tuple[str, ...] = (
@@ -132,7 +132,7 @@ def _domain_skill_exists(domain: str) -> bool:
 
 
 def _domain_doc_path(domain: str) -> Path:
-    name = DOMAIN_DOCS.get(domain, f"{domain.upper()}_TASK_SETUP.md")
+    name = DOMAIN_DOCS.get(domain, f"{domain}.md")
     return Path("docs") / "domains" / name
 
 
@@ -172,7 +172,7 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
             taxonomy = resolve_task_taxonomy(
                 task_id,
                 source_domain=str(getattr(task, "domain", "")),
-                source_task_group=str(getattr(task, "task_group", "")),
+                source_scene_id=str(getattr(task, "scene_id", "")),
             )
             query_id = str(getattr(output, "query_id", "") or "default")
             trace_payload = getattr(output, "trace_payload", {})
@@ -188,7 +188,7 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
                 taxonomy=taxonomy,
                 query_id=query_id,
                 registered_domain=str(getattr(task, "domain", "")),
-                registered_task_group=str(getattr(task, "task_group", "")),
+                registered_scene_id=str(getattr(task, "scene_id", "")),
             )
             taxonomy_payload = injected.get("taxonomy", {})
             taxonomy_public = taxonomy_payload.get("public", {}) if isinstance(taxonomy_payload, Mapping) else {}
@@ -326,20 +326,20 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
         task_cls = TASK_REGISTRY[task_id]
         task_obj = task_cls()
         source_domain = str(getattr(task_obj, "domain", ""))
-        source_task_group = str(getattr(task_obj, "task_group", ""))
+        source_scene_id = str(getattr(task_obj, "scene_id", ""))
         taxonomy = resolve_task_taxonomy(
             task_id,
             source_domain=source_domain,
-            source_task_group=source_task_group,
+            source_scene_id=source_scene_id,
         )
         domain_doc = _domain_doc_path(taxonomy.domain)
         task_doc_name = f"{task_id}.md"
         task_doc_path = Path("docs/tasks") / task_doc_name
         relevant_config_paths = [
             Path("configs/domains") / source_domain / "base.yaml",
-            Path("configs/domains") / source_domain / f"{source_task_group}.yaml",
+            Path("configs/domains") / source_domain / f"{source_scene_id}.yaml",
             Path("configs/domains") / taxonomy.domain / "base.yaml",
-            Path("configs/domains") / taxonomy.domain / f"{source_task_group}.yaml",
+            Path("configs/domains") / taxonomy.domain / f"{source_scene_id}.yaml",
         ]
         config_paths = sorted({str(path) for path in relevant_config_paths if path.exists()})
         config_mentions = _contains_any(config_texts, task_id)
@@ -418,7 +418,7 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "domain": taxonomy.domain,
                 "scene_id": taxonomy.scene_id,
                 "source_domain": taxonomy.source_domain,
-                "source_task_group": taxonomy.source_task_group,
+                "source_scene_id": taxonomy.source_scene_id,
                 "registered": task_id in all_task_ids,
                 "default_enabled": task_id in active_set,
                 "taxonomy_present": task_id not in missing_taxonomy,

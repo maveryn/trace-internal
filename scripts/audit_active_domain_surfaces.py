@@ -22,7 +22,7 @@ ACTIVE_DOMAINS = {
     "illustrations",
     "pages",
     "physics",
-    "misc",
+    "symbolic",
     "puzzles",
     "three_d",
 }
@@ -30,20 +30,17 @@ ACTIVE_DOMAINS = {
 ALLOWED_TASK_TOP_LEVEL_EXTRAS = {"shared", "__pycache__"}
 ALLOWED_DOMAIN_DOCS = {
     "README.md",
-    "SCENE_TASK_QUERY_GUIDE.md",
-    "CHART_DOMAIN_PLAN.md",
-    "CHART_TASK_SETUP.md",
-    "GAMES_TASK_SETUP.md",
-    "GEOMETRY_TASK_SETUP.md",
-    "GRAPH_TASK_SETUP.md",
-    "ICON_TASK_SETUP.md",
-    "ILLUSTRATIONS_TASK_SETUP.md",
-    "PAGES_TASK_SETUP.md",
-    "PHYSICS_TASK_SETUP.md",
-    "MISC_TASK_SETUP.md",
-    "PUZZLES_TASK_SETUP.md",
-    "THREE_D_COUNTQA_OBJECT_REFERENCES.md",
-    "THREE_D_TASK_SETUP.md",
+    "charts.md",
+    "games.md",
+    "geometry.md",
+    "graph.md",
+    "icons.md",
+    "illustrations.md",
+    "pages.md",
+    "physics.md",
+    "symbolic.md",
+    "puzzles.md",
+    "three_d.md",
 }
 
 
@@ -84,12 +81,6 @@ def main() -> int:
     unexpected_skill_dirs = sorted(domain_skill_dirs - allowed_domain_skill_dirs)
     if unexpected_skill_dirs:
         failures.append(f"skills: unexpected domain skill directories: {unexpected_skill_dirs}")
-
-    complexity_refs = _file_names(REPO_ROOT / "skills/task-complexity/references")
-    allowed_complexity_refs = {f"{domain}.md" for domain in ACTIVE_DOMAINS} | {"policy.md"}
-    unexpected_complexity_refs = sorted(complexity_refs - allowed_complexity_refs)
-    if unexpected_complexity_refs:
-        failures.append(f"skills/task-complexity/references: unexpected files: {unexpected_complexity_refs}")
 
     if failures:
         for failure in failures:

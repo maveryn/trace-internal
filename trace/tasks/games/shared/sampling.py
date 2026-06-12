@@ -5,8 +5,38 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ...shared.config_defaults import group_default
 from ...shared.fixed_query import normalize_query_id_params
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+
+
+def get_games_int_param(
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+    key: str,
+    fallback: int,
+) -> int:
+    """Resolve one integer parameter using game task/group precedence."""
+
+    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
+
+
+def get_games_int_range(
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+    *,
+    min_key: str,
+    max_key: str,
+    fallback_min: int,
+    fallback_max: int,
+) -> Tuple[int, int]:
+    """Resolve and validate an inclusive integer range for games-domain samplers."""
+
+    lower = get_games_int_param(params, defaults, str(min_key), int(fallback_min))
+    upper = get_games_int_param(params, defaults, str(max_key), int(fallback_max))
+    if int(lower) > int(upper):
+        raise ValueError(f"{min_key} must be <= {max_key}")
+    return int(lower), int(upper)
 
 
 def resolve_games_query_id(
@@ -83,6 +113,8 @@ def resolve_games_named_axis(
 
 
 __all__ = [
+    "get_games_int_param",
+    "get_games_int_range",
     "resolve_games_named_axis",
     "resolve_games_query_id",
 ]

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.concentric_circle_chord import (
+from trace.tasks.geometry.concentric_chord.chord_length_from_radii import (
     SCENE_ID,
     GeometryConcentricChordLengthFromRadiiTask,
-    GeometryConcentricInnerRadiusFromChordTask,
 )
+from trace.tasks.geometry.concentric_chord.inner_radius_from_chord import GeometryConcentricInnerRadiusFromChordTask
 
 TASK_CLASSES = (
     GeometryConcentricChordLengthFromRadiiTask,

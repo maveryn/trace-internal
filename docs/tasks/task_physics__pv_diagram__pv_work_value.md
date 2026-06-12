@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `pv_diagram`
-- Implementation task group: `thermodynamics`
+- Implementation scene: `thermodynamics`
 - Implementation source: `trace/tasks/physics/thermodynamics/pv_diagram.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__pv_diagram__pv_work_value` -> `task_physics__pv_diagram__pv_work_value`

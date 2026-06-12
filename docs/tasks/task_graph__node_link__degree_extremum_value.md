@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `comparison`
+2. Scene: `comparison`
 3. Scene id: `node_link`
 4. Task id: `task_graph__node_link__degree_extremum_value`
 5. Objective: ask for the highest or lowest degree-style value present in one labeled node-link graph.
@@ -68,4 +68,4 @@
 
 ## 7) Complexity + tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
-2. Tests: `tests/test_graph_comparison_extreme_degree_value_contracts.py`, `tests/test_graph_comparison_extreme_degree_value_tasks.py`, `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+2. Tests: `tests/test_graph_comparison_extreme_degree_value_contracts.py`, `tests/test_graph_comparison_extreme_degree_value_tasks.py`, `tests/test_prompt_system.py`, `tests/test_scene_config.py`

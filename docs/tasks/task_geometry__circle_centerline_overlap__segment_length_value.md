@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `circle_centerline_overlap`
 3. Scene id: `circle_centerline_overlap`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `center_distance_from_overlap` or `boundary_segment_from_overlap`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses keyed pixel points for the minimal visible witness
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/circle_centerline_overlap.py`
+- Config: `configs/domains/geometry/circle_centerline_overlap.yaml`
+- Task module: `trace/tasks/geometry/circle_centerline_overlap/segment_length_value.py`

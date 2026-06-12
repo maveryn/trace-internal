@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `logic`
+2. Scene: `logic`
 3. Task id: `task_puzzles__nonogram__nonogram_candidate_solution_label`
 4. Scene id: `nonogram`
 5. Goal: choose the filled-grid candidate that satisfies all visible row and column nonogram clues.

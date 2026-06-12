@@ -197,7 +197,7 @@ def test_physics_circuits_equivalent_tasks_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "physics" for record in train_records)
-    assert all(record["task_group"] == "circuits" for record in train_records)
+    assert all(record["scene_id"] == "circuits" for record in train_records)
     assert {record["task"] for record in train_records} == {
         "task_physics__circuit_equivalent__total_resistance_value",
         "task_physics__circuit_equivalent__total_capacitance_value",

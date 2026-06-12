@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `thermometer`
-- Implementation task group: `thermodynamics`
+- Implementation scene: `thermodynamics`
 - Implementation source: `trace/tasks/physics/thermodynamics/thermometer.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__thermometer__temperature_conversion_value` -> `task_physics__thermometer__temperature_conversion_value`

@@ -3,7 +3,7 @@
 ## Identity
 - domain: `icons`
 - scene_id: `icon_field`
-- task_group: `counting`
+- scene_id: `counting`
 - module: `trace/tasks/icons/counting/most_frequent_type.py`
 - prompt bundle: `icons_counting_v0`
 

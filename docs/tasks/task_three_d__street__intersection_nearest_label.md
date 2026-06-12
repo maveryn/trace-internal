@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `street`
-- Task group: `street`
+- Scene: `street`
 - Query id: `closest_to_intersection`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`

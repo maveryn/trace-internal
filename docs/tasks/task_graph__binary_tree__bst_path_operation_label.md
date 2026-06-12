@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_graph__binary_tree__bst_path_operation_label`
 5. Objective: answer label-valued binary-search-tree path operation queries.
 

@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `puzzles`
-2. Task group: `spatial`
+2. Scene: `spatial`
 3. Task id: `task_puzzles__rubiks_net__rubiks_move_result_label`
 4. Scene id: `rubiks_net`
 5. Goal: choose the labeled candidate cube net that results from applying a Rubik-style move sequence.

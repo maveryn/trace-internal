@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `pages`
-2. Task group: `infographic`
+2. Scene: `infographic`
 3. Scene id: `infographic`
 4. Task id: `task_pages__infographic__section_extrema_arithmetic_value`
 5. Objective: Compute arithmetic using extrema-selected metric cards in sections.

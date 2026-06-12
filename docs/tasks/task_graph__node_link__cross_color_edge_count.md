@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `counting`
+2. Scene: `counting`
 3. Scene id: `node_link`
 4. Task id: `task_graph__node_link__cross_color_edge_count`
 5. Objective: count graph edges whose endpoint nodes have two queried semantic colors.

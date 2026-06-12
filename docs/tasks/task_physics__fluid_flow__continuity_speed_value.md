@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `fluid_flow`
-- Implementation task group: `fluids`
+- Implementation scene: `fluids`
 - Implementation source: `trace/tasks/physics/fluids/fluid_flow.py`
 - Contract-v0 migration decision: `rename_after_manual_override`
 - Public mapping: `task_physics__fluid_flow__continuity_speed_value` -> `task_physics__fluid_flow__continuity_speed_value`

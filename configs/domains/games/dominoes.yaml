@@ -3,13 +3,6 @@ generation:
     scene_variant_weights:
       single_row: 1.0
       two_row: 1.0
-    query_id_weights:
-      matching_end_count: 1.0
-      higher_sum_than_reference_count: 1.0
-      sum_to_target_count: 1.0
-      double_count: 1.0
-      second_play_candidate_count: 1.0
-      extendable_first_play_count: 1.0
     style_variant_weights:
       classic: 1.0
       soft: 1.0
@@ -18,68 +11,45 @@ generation:
       charcoal_tile: 1.0
       wood_tile: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
-    balanced_target_answer_sampling: true
-    balanced_candidate_count_sampling: true
-    matching_end_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    higher_sum_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    sum_to_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    double_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    second_play_candidate_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    extendable_first_play_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    single_row_candidate_count_support:
-    - 7
-    - 8
-    - 9
-    two_row_candidate_count_support:
-    - 10
-    - 11
-    - 12
-    sum_target_total_support:
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    - 9
-    - 10
+  task_overrides:
+    task_games__dominoes__double_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      double_target_answer_support: [0, 1, 2, 3, 4, 5]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+    task_games__dominoes__extendable_first_play_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      extendable_first_play_target_answer_support: [0, 1, 2, 3, 4]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+    task_games__dominoes__higher_sum_than_reference_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      higher_sum_target_answer_support: [0, 1, 2, 3, 4, 5]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+    task_games__dominoes__matching_end_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      matching_end_target_answer_support: [0, 1, 2, 3, 4, 5]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+    task_games__dominoes__second_play_candidate_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      second_play_candidate_target_answer_support: [0, 1, 2, 3, 4, 5]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+    task_games__dominoes__sum_to_target_count:
+      balanced_target_answer_sampling: true
+      balanced_candidate_count_sampling: true
+      sum_to_target_answer_support: [0, 1, 2, 3, 4]
+      single_row_candidate_count_support: [7, 8, 9]
+      two_row_candidate_count_support: [10, 11, 12]
+      sum_target_total_support: [2, 3, 4, 5, 6, 7, 8, 9, 10]
 rendering:
   shared:
     canvas_width: 1180
@@ -98,57 +68,8 @@ rendering:
     reference_tag_gap_px: 14
     section_label_font_size_px: 18
     section_separator_width_px: 2
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.28
-      card_reasoning: 0.44
-      ambiguity: 0.16
-      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_dominoes_v0
+    bundle_id: games_dominoes_v1
     scene_key: visible_domino_chain
     task_key: domino_chain_query
-    object_description_single_row: a short face-up domino chain across the top with
-      one row of loose face-up dominoes below
-    object_description_two_row: a short face-up domino chain across the top with
-      two rows of loose face-up dominoes below
-    connection_rule_text: A loose domino can connect to the open right end if either
-      half has the same number of pips as that open end.
-    pip_sum_rule_text: The pip sum of a domino is the total number of pips across
-      its two halves.
-    double_rule_text: A double has the same number of pips on both halves.
-    second_play_rule_text: Exactly one loose domino can connect directly to `REF`;
-      after playing it, count the remaining loose dominoes that could connect to the
-      new open end.
-    extendable_first_play_rule_text: Count loose dominoes that can connect directly
-      to `REF` and would leave a new open end that at least one remaining loose
-      domino could connect to.
-    annotation_hint_matching_end_count: set "annotation" to a JSON array of bounding
-      boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's
-      open right end
-    annotation_hint_higher_sum_than_reference_count: set "annotation" to a JSON array
-      of bounding boxes [x0, y0, x1, y1] for every loose domino with a larger pip
-      sum than `REF`
-    annotation_hint_sum_to_target_count: set "annotation" to a JSON array of bounding
-      boxes [x0, y0, x1, y1] for every loose domino with the target pip sum
-    annotation_hint_double_count: set "annotation" to a JSON array of bounding boxes
-      [x0, y0, x1, y1] for every loose domino that is a double
-    annotation_hint_second_play_candidate_count: set "annotation" to a JSON array of
-      bounding boxes [x0, y0, x1, y1] for every remaining loose domino that could
-      be played second on the new open end
-    annotation_hint_extendable_first_play_count: set "annotation" to a JSON array of
-      bounding boxes [x0, y0, x1, y1] for every loose domino that can be played on
-      `REF` and would allow a second play afterward
-    answer_hint_matching_end_count: set "answer" to the count of loose dominoes that
-      match the `REF` tile's open right end
-    answer_hint_higher_sum_than_reference_count: set "answer" to the count of loose
-      dominoes with a larger pip sum than `REF`
-    answer_hint_sum_to_target_count: set "answer" to the count of loose dominoes with
-      the target pip sum
-    answer_hint_double_count: set "answer" to the count of loose doubles
-    answer_hint_second_play_candidate_count: set "answer" to the count of remaining
-      loose dominoes that could be played second
-    answer_hint_extendable_first_play_count: set "answer" to the count of loose
-      dominoes that can be played first and would allow a second play afterward

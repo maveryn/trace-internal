@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `reversi`
+2. Scene: `reversi`
 3. Scene id: `reversi`
 4. Public task id: `task_games__reversi__frontier_disc_count`
 5. Supported `query_id` values: `black_frontier_disc_count`, `white_frontier_disc_count`

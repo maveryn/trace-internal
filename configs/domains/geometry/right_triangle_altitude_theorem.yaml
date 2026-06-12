@@ -1,0 +1,28 @@
+generation:
+  shared: {}
+rendering:
+  shared:
+    canvas_width: 820
+    canvas_height: 580
+    line_width: 3
+    label_font_size: 22
+    small_label_font_size: 18
+    readout_font_family: roboto
+    single_object_scene_rotation:
+      enabled: true
+      probability: 0.5
+      angle_abs_min: 15
+      angle_abs_max: 75
+      margin_px: 48
+      min_scale_after_fit: 0.86
+      max_attempts: 6
+prompt:
+  shared:
+    bundle_id: geometry_right_triangle_altitude_theorem_v0
+    scene_key: right_triangle_altitude_theorem_scene
+    task_key: altitude_to_hypotenuse_value_query
+  task_overrides:
+    task_geometry__right_triangle_altitude_theorem__altitude_to_hypotenuse_value:
+      task_key: altitude_to_hypotenuse_value_query
+    task_geometry__right_triangle_altitude_theorem__leg_projection_length_value:
+      task_key: leg_projection_length_value_query

@@ -10,12 +10,6 @@ generation:
     wick_size_max: 10
     counterfactual_change_min: 2
     counterfactual_change_max: 6
-    balanced_query_id_sampling: true
-    query_id_weights:
-      wick_range_extremum_label: 1.0
-      body_range_extremum_label: 1.0
-      close_after_body_change_value: 1.0
-
 rendering:
   shared:
     canvas_width: 1440
@@ -38,45 +32,45 @@ rendering:
     value_font_size_px: 15
     candle_width_fraction: 0.36
     up_fill_rgb_options:
-      - [59, 151, 119]
-      - [66, 143, 100]
-      - [54, 139, 154]
+    - - 59
+      - 151
+      - 119
+    - - 66
+      - 143
+      - 100
+    - - 54
+      - 139
+      - 154
     down_fill_rgb_options:
-      - [210, 93, 83]
-      - [196, 99, 70]
-      - [188, 82, 108]
+    - - 210
+      - 93
+      - 83
+    - - 196
+      - 99
+      - 70
+    - - 188
+      - 82
+      - 108
     wick_rgb_options:
-      - [54, 60, 70]
-      - [64, 66, 72]
-      - [50, 66, 78]
+    - - 54
+      - 60
+      - 70
+    - - 64
+      - 66
+      - 72
+    - - 50
+      - 66
+      - 78
     body_outline_rgb_options:
-      - [38, 44, 54]
-      - [50, 50, 54]
-      - [42, 52, 62]
-
+    - - 38
+      - 44
+      - 54
+    - - 50
+      - 50
+      - 54
+    - - 42
+      - 52
+      - 62
 prompt:
   shared:
-    bundle_id: charts_candlestick_v0
-    scene_key: candlestick
-    task_key: candlestick_ohlc_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint_value: set "answer" to the requested integer value
-    answer_hint_label: set "answer" to the exact period label as a string
-    object_description_candlestick: a candlestick OHLC chart with labeled periods; each candle has printed O, H, L, and C values for open, high, low, and close
-    annotation_hint_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
-    annotation_hint_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle mark
-    annotation_hint_wick_range_extremum_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle's high-low wick line
-    annotation_hint_body_range_extremum_label: set "annotation" to an array containing one [x,y] pixel point at the center of the answer candle's open-close body rectangle
-    annotation_hint_close_after_body_change_value: set "annotation" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body
-    json_example_value: '{"annotation":[[240,220,284,340]],"answer":42}'
-    json_example_label: '{"annotation":[[542,276]],"answer":"K4"}'
-    json_example_answer_only_value: '{"answer":42}'
-    json_example_answer_only_label: '{"answer":"K4"}'
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.30
-      reasoning_load: 0.50
-      scene_variant_load: 0.20
+    bundle_id: charts_candlestick_v1

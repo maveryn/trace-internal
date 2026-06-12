@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -85,7 +85,7 @@ class _SampleSpec:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("illustrations", "counting")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
@@ -203,19 +203,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     )
 
 
-def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
-    visual_scan = (int(sample.equipment_count) - _DEFAULTS.equipment_count_min) / max(1, _DEFAULTS.equipment_count_max - _DEFAULTS.equipment_count_min)
-    answer_load = (int(sample.target_count) - _DEFAULTS.target_count_min) / max(1, _DEFAULTS.target_count_max - _DEFAULTS.target_count_min)
-    scene_distractors = (int(sample.person_count) - _DEFAULTS.person_count_min) / max(1, _DEFAULTS.person_count_max - _DEFAULTS.person_count_min)
-    score = 0.46 * max(0.0, min(1.0, visual_scan)) + 0.34 * max(0.0, min(1.0, answer_load)) + 0.20 * max(0.0, min(1.0, scene_distractors))
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={
-            "visual_scan": round(float(visual_scan), 6),
-            "answer_load": round(float(answer_load), 6),
-            "scene_distractors": round(float(scene_distractors), 6),
-        },
-    )
 
 
 @register_task
@@ -224,7 +211,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
 
     task_id = TASK_ID
     domain = "illustrations"
-    task_group = "counting"
+    scene_id = "counting"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -299,7 +286,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -384,7 +371,6 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.shared.fixed_query_task import (
+from trace.tasks.shared.fixed_query import (
     geometry_probability_map,
     geometry_query_ids_for_task,
     geometry_selected_probability_map,

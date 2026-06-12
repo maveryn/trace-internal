@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import hash64
-from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.scene_config import get_scene_defaults
+from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -24,15 +24,15 @@ from ..shared.diagram_style import prepare_physics_diagram_style_and_background
 from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-FAMILY_ID = "physics_magnetism_wire_field_family"
+TASK_NAMESPACE = "physics_magnetism_wire_field"
 SCENE_ID = "wire_magnetism"
 QUERY_ID = "field_direction_at_point"
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="magnetism", apply_prob=0.5)
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("physics", "magnetism")
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id="magnetism", apply_prob=0.5)
+_TASK_GROUP_DEFAULTS = get_scene_defaults("physics", "magnetism")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=FAMILY_ID,
+    task_id=TASK_NAMESPACE,
 )
 
 
@@ -57,20 +57,20 @@ def _phys_to_screen_vector(vector: Tuple[int, int], length: float) -> Tuple[floa
 
 def _make_scenario(instance_seed: int, params: Mapping[str, Any]) -> _WireScenario:
     orientations = ("horizontal", "vertical")
-    orientation = str(params.get("orientation") or orientations[int(hash64(int(instance_seed), f"{FAMILY_ID}.orientation", 0) % 2)])
+    orientation = str(params.get("orientation") or orientations[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.orientation", 0) % 2)])
     if orientation == "horizontal":
         current_options = (("right", (1, 0)), ("left", (-1, 0)))
         offset_options = (("above", (0, 1)), ("below", (0, -1)))
     else:
         current_options = (("up", (0, 1)), ("down", (0, -1)))
         offset_options = (("right", (1, 0)), ("left", (-1, 0)))
-    current_name, current_vector = current_options[int(hash64(int(instance_seed), f"{FAMILY_ID}.current", 0) % len(current_options))]
-    _, point_offset = offset_options[int(hash64(int(instance_seed), f"{FAMILY_ID}.point_offset", 0) % len(offset_options))]
+    current_name, current_vector = current_options[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.current", 0) % len(current_options))]
+    _, point_offset = offset_options[int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.point_offset", 0) % len(offset_options))]
     z_sign = int(current_vector[0] * point_offset[1] - current_vector[1] * point_offset[0])
     field_direction = "out_of_page" if z_sign > 0 else "into_page"
     distractors = ["north", "south", "east", "west"]
     distractors.append("into_page" if field_direction == "out_of_page" else "out_of_page")
-    correct_index = int(hash64(int(instance_seed), f"{FAMILY_ID}.correct_option", 0) % len(OPTION_LABELS))
+    correct_index = int(hash64(int(instance_seed), f"{TASK_NAMESPACE}.correct_option", 0) % len(OPTION_LABELS))
     option_map: Dict[str, str] = {}
     distractor_index = 0
     for index, label in enumerate(OPTION_LABELS):
@@ -231,7 +231,7 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
 
     task_id = "task_physics__wire_magnetism__wire_field_direction_choice"
     domain = "physics"
-    task_group = "magnetism"
+    scene_id = "magnetism"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -243,7 +243,6 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
             instance_seed=int(instance_seed),
             params=params,
             scene_id=SCENE_ID,
-            task_group=self.task_group,
             canvas_width=canvas_width,
             canvas_height=canvas_height,
             require_grid=True,
@@ -251,7 +250,7 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
         font_family = sample_font_family(
             role="readout",
             instance_seed=int(instance_seed),
-            namespace=f"{FAMILY_ID}.font",
+            namespace=f"{TASK_NAMESPACE}.font",
             params=params,
         )
         font_record = get_font_family_record(str(font_family))
@@ -290,7 +289,7 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -375,15 +374,6 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=0.50,
-                complexity_components={
-                    "visual_scan": 0.24,
-                    "right_hand_rule": 0.50,
-                    "ambiguity": 0.14,
-                    "output_burden": 0.12,
-                },
-            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

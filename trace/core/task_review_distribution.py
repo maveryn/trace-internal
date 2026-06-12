@@ -390,7 +390,7 @@ def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         for row in rows
     ]
     support_size = _support_size_from_rows(rows)
-    min_unique_answers = 5 if support_size is None else min(5, int(support_size))
+    min_unique_answers = 4 if support_size is None else min(4, int(support_size))
     max_answer_frequency = 1.0 / 3.0
     if support_size is not None and int(support_size) > 1:
         max_answer_frequency = max(float(max_answer_frequency), (1.0 / float(support_size)) + 0.05)
@@ -417,7 +417,6 @@ def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
 def build_distribution_review_report(
     *,
     task_id: str,
-    task_group: str,
     domain: str,
     scene_id: str,
     random_rows: Sequence[Mapping[str, Any]],
@@ -432,11 +431,10 @@ def build_distribution_review_report(
 
     if not has_query_ids:
         single_report = evaluate_rows(random_rows)
-        return {
+        report = {
             "task_id": str(task_id),
             "calibration_baseline": CURRENT_CALIBRATION_BASELINE,
             "domain": str(domain),
-            "task_group": str(task_group),
             "scene_id": str(scene_id),
             "mode": "single_sample",
             "has_query_ids": False,
@@ -449,6 +447,9 @@ def build_distribution_review_report(
             "sampling_axes": dict(random_report.get("sampling_axes", {})),
             "warnings": list(random_report.get("warnings", []) or []),
         }
+        if str(scene_id).strip():
+            report["scene_id"] = str(scene_id)
+        return report
 
     query_id_rows = query_id_rows or {}
     query_id_collection_meta = query_id_collection_meta or {}
@@ -474,11 +475,10 @@ def build_distribution_review_report(
     no_samples_collected = not bool(combined_rows)
     task_pass = bool((not failed_query_ids) and (not incomplete_query_ids) and (not no_samples_collected))
 
-    return {
+    report = {
         "task_id": str(task_id),
         "calibration_baseline": CURRENT_CALIBRATION_BASELINE,
         "domain": str(domain),
-        "task_group": str(task_group),
         "scene_id": str(scene_id),
         "mode": "per_query_id",
         "has_query_ids": True,
@@ -500,6 +500,9 @@ def build_distribution_review_report(
             "generation_error_counts": dict(query_id_collection_meta.get("generation_error_counts", {})),
         },
     }
+    if str(scene_id).strip():
+        report["scene_id"] = str(scene_id)
+    return report
 
 
 __all__ = [

@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `similar_figure_measure_transfer`
 3. Scene id: `similar_figure_measure_transfer`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query id: `similar_triangles_target_side_from_expression` or `similar_polygons_target_side_from_expression`
@@ -34,5 +34,5 @@ Expression labels, tick marks, vertex labels, and solved variable values remain 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/geo3k_marked_equations.py`
+- Config: `configs/domains/geometry/similar_figure_measure_transfer.yaml`
+- Task module: `trace/tasks/geometry/similar_figure_measure_transfer/side_length_from_expression_value.py`

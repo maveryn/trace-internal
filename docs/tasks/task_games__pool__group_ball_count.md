@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `pool`
+2. Scene package: `trace/tasks/games/pool/`
 3. Scene id: `pool`
 4. Public task id: `task_games__pool__group_ball_count`
 5. Supported `query_id` values: `current_group_ball_count`

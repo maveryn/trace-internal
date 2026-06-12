@@ -2,7 +2,7 @@
 
 ## Summary
 1. Domain: `games`
-2. Task group: `sliding_block`
+2. Scene: `sliding_block`
 3. Task id: `task_games__sliding_block__sliding_block_move_result_label`
 4. Scene id: `sliding_block`
 5. Goal: apply a short ordered sequence of sliding-block moves and select the final board option.

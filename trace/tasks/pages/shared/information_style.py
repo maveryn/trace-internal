@@ -54,16 +54,16 @@ def resolve_pages_information_style(
     instance_seed: int,
     params: Mapping[str, Any] | None,
     scene_id: str,
-    task_group: str,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
 ) -> tuple[PagesInformationStyle, dict[str, Any]]:
     """Resolve one pages presentation style without changing visible values."""
 
     resolved_params = params or {}
+    route_id = str(scene_id) if scene_id is not None else str(scene_id)
     style, metadata = resolve_information_scene_style(
         instance_seed=int(instance_seed),
-        namespace=f"pages.{str(task_group)}.{str(scene_id)}.information_scene_style",
+        namespace=f"pages.{route_id}.{str(scene_id)}.information_scene_style",
         treatments=resolved_params.get("information_scene_treatments"),
         treatment_weights=resolved_params.get("information_scene_treatment_weights", {}),
         palettes=resolved_params.get("information_scene_palettes"),
@@ -110,7 +110,6 @@ def prepare_document_information_scene(
     instance_seed: int,
     params: Mapping[str, Any],
     scene_id: str,
-    task_group: str,
     render_params: DocumentRenderParams,
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
@@ -121,7 +120,6 @@ def prepare_document_information_scene(
         instance_seed=int(instance_seed),
         params=params,
         scene_id=str(scene_id),
-        task_group=str(task_group),
         protected_colors=protected_colors or (),
         allow_dark=bool(allow_dark),
     )
@@ -136,7 +134,7 @@ def prepare_document_information_scene(
         canvas_height=int(styled_render_params.canvas_height),
         style=style,
         instance_seed=int(instance_seed),
-        namespace=f"pages.{str(task_group)}.{str(scene_id)}.information_scene_background",
+        namespace=f"pages.{str(scene_id)}.{str(scene_id)}.information_scene_background",
     )
     return styled_render_params, background, background_meta, style_meta
 

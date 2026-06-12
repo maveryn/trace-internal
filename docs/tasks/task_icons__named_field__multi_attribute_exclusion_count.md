@@ -5,7 +5,7 @@ Status: pending taxonomy-v0 review refresh.
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- task_group: `counting`
+- scene_id: `counting`
 - task: `named_shape_color_boolean_count`
 - module: `trace/tasks/icons/counting/named_shape_color_boolean_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`

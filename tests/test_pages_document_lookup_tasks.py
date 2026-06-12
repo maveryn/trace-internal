@@ -18,16 +18,18 @@ from trace.tasks.pages.document_lookup.card_and_list_lookup import (
     PagesRankedListEntryAfterNamedEntryLabelTask,
     PagesRankedListOrdinalEntryLabelTask,
 )
-from trace.tasks.pages.document_lookup.category_grid import (
-    CATEGORY_ITEM_COUNT_QUERY_ID,
-    CATEGORY_ITEM_COUNT_TASK_ID,
-    CATEGORY_SLOT_ITEM_QUERY_ID,
-    CATEGORY_SLOT_ITEM_TASK_ID,
-    SCENE_VARIANTS as CATEGORY_GRID_SCENE_VARIANTS,
+from trace.tasks.pages.category_grid.category_item_count import (
+    QUERY_ID as CATEGORY_ITEM_COUNT_QUERY_ID,
+    TASK_ID as CATEGORY_ITEM_COUNT_TASK_ID,
     PagesCategoryGridCategoryItemCountTask,
+)
+from trace.tasks.pages.category_grid.category_slot_item_label import (
+    QUERY_ID as CATEGORY_SLOT_ITEM_QUERY_ID,
+    SCENE_VARIANTS as CATEGORY_GRID_SCENE_VARIANTS,
+    TASK_ID as CATEGORY_SLOT_ITEM_TASK_ID,
     PagesCategoryGridCategorySlotItemLabelTask,
 )
-from trace.tasks.pages.document_lookup.comparison_panel import (
+from trace.tasks.pages.comparison_panel.side_attribute_value_label import (
     COMPARISON_PANEL_TASK_ID,
     QUERY_ID as COMPARISON_QUERY_ID,
     SCENE_VARIANTS as COMPARISON_SCENE_VARIANTS,

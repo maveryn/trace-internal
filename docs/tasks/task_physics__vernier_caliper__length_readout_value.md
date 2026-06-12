@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `vernier_caliper`
-- Implementation task group: `measurement`
+- Implementation scene: `measurement`
 - Implementation source: `trace/tasks/physics/measurement/vernier_caliper.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__vernier_caliper__length_readout_value` -> `task_physics__vernier_caliper__length_readout_value`

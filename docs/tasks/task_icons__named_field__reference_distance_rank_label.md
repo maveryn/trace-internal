@@ -5,7 +5,7 @@ Status: pending taxonomy-v0 review refresh.
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- task_group: `relation`
+- scene_id: `relation`
 - task: `named_reference_distance_rank_label`
 - module: `trace/tasks/icons/relation/named_reference_distance_rank_label.py`
 - prompt bundle: `prompts/icons/relation/icons_relation_v0.json`

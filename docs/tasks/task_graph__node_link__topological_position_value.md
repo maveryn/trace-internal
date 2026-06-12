@@ -2,7 +2,7 @@
 
 ## 1) Identity
 1. Domain: `graph`
-2. Task group: `order`
+2. Scene: `order`
 3. Task id: `task_graph__node_link__topological_position_value`
 4. Objective: return the 1-based position of one queried node in the graph's unique topological order.
 
@@ -102,4 +102,4 @@
 1. Complexity definition/components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
 2. Determinism/build tests: `tests/test_graph_order_topological_position_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_graph_order_topological_position_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `street`
-- Task group: `street`
+- Scene: `street`
 - Query id: `same_road_arm_as_reference`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`

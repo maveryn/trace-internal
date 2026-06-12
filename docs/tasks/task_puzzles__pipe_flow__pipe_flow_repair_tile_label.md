@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `pipe_flow`
-3. Task group: `topology`
+3. Scene: `topology`
 4. Task id: `task_puzzles__pipe_flow__pipe_flow_repair_tile_label`
 
 ## Query Contract

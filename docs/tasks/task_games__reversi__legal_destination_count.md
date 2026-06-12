@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `reversi`
+2. Scene: `reversi`
 3. Scene id: `reversi`
 4. Public task id: `task_games__reversi__legal_destination_count`
 5. Supported `query_id` values: `corner_move_count`, `legal_move_count`

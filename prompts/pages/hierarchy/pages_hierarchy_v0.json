@@ -3,19 +3,33 @@
   "schema_version": "v0",
   "task_templates": {
     "tree_count_query": [
-      "{question_text}",
-      "Question: {question_text}",
-      "Use the displayed information to answer: {question_text}",
-      "Determine the answer: {question_text}",
-      "Answer based on the displayed information: {question_text}"
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:hierarchy_diagram": [
       "object_description"
     ],
-    "task:tree_count_query": [
-      "question_text"
+    "query:parent_of_node": [
+      "query_label"
+    ],
+    "query:lowest_common_ancestor_of_two_nodes": [
+      "query_label",
+      "right_query_label"
+    ],
+    "query:subtree_descendant_count": [
+      "query_label"
+    ],
+    "query:subtree_leaf_count": [
+      "query_label"
+    ],
+    "query:path_length_between_two_nodes": [
+      "query_label",
+      "right_query_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -55,26 +69,41 @@
     ]
   },
   "query_templates": {
+    "parent_of_node": [
+      "What is the parent of \"{query_label}\"?",
+      "Using the visible parent-child links, which node is the parent of \"{query_label}\"?",
+      "Find \"{query_label}\" in the hierarchy. What is its direct parent label?",
+      "Which visible node is immediately above \"{query_label}\"?",
+      "Read the direct parent label for \"{query_label}\"."
+    ],
+    "lowest_common_ancestor_of_two_nodes": [
+      "What is the lowest common ancestor of \"{query_label}\" and \"{right_query_label}\"?",
+      "Using the visible tree links, which node is the lowest common ancestor of \"{query_label}\" and \"{right_query_label}\"?",
+      "Find the closest shared ancestor of \"{query_label}\" and \"{right_query_label}\".",
+      "Which visible node is the nearest common ancestor for \"{query_label}\" and \"{right_query_label}\"?",
+      "Trace upward from \"{query_label}\" and \"{right_query_label}\". What is their lowest shared ancestor label?"
+    ],
     "subtree_descendant_count": [
-      "Use an integer count.",
-      "Count each qualifying node once.",
-      "Use only the visible parent-child links.",
-      "Do not include the queried node in the count.",
-      "Use the requested integer count."
+      "How many descendants does \"{query_label}\" have? Do not include \"{query_label}\" itself.",
+      "Count the descendants of \"{query_label}\". Do not count \"{query_label}\" itself.",
+      "Using the visible parent-child links, how many nodes descend from \"{query_label}\"?",
+      "What is the number of descendant nodes below \"{query_label}\"?",
+      "Find the subtree rooted at \"{query_label}\" and count its descendants only."
     ],
     "subtree_leaf_count": [
-      "Use an integer count.",
-      "Count each qualifying leaf node once.",
-      "Use only the visible parent-child links.",
-      "A leaf node has no children in the diagram.",
-      "Use the requested integer count."
+      "How many leaf nodes are in the subtree rooted at \"{query_label}\"?",
+      "Count the leaf nodes below \"{query_label}\" in its subtree.",
+      "Using the visible parent-child links, how many leaves descend from \"{query_label}\"?",
+      "What is the number of leaf descendants in the subtree rooted at \"{query_label}\"?",
+      "Find the subtree under \"{query_label}\" and count only nodes with no children."
     ],
     "path_length_between_two_nodes": [
-      "Use an integer count.",
-      "Count parent-child hops, not nodes.",
-      "Use only the visible parent-child links.",
-      "Follow the unique path between the two queried nodes.",
-      "Use the requested integer count."
+      "How many parent-child hops are on the path between \"{query_label}\" and \"{right_query_label}\"?",
+      "Count the edge hops on the unique path from \"{query_label}\" to \"{right_query_label}\".",
+      "Using the visible parent-child links, what is the path length between \"{query_label}\" and \"{right_query_label}\"?",
+      "What is the number of parent-child links connecting \"{query_label}\" and \"{right_query_label}\"?",
+      "Follow the unique tree path between \"{query_label}\" and \"{right_query_label}\" and count its hops."
     ]
-  }
+  },
+  "allow_empty_task_templates": true
 }

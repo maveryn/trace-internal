@@ -4,18 +4,18 @@
 
 1. Domain: `charts`
 2. Scene id: `population_pyramid`
-3. Source implementation domain/group: `charts/population_pyramid`
+3. Source implementation scene package: `charts/population_pyramid`
 4. Public task id: `task_charts__population_pyramid__age_group_threshold_count`
 
 ## Implementation
 
-1. Registered class: `trace.tasks.charts.population_pyramid.pyramid_query.ChartsPopulationPyramidAgeGroupThresholdCountTask`
-2. Prompt lookup domain/group: `charts/population_pyramid`
+1. Registered class: `trace.tasks.charts.population_pyramid.age_group_threshold_count.ChartsPopulationPyramidAgeGroupThresholdCountTask`
+2. Prompt lookup domain/scene: `charts/population_pyramid`
 3. Default dataset: enabled
 
 ## Contract
 
 1. Query ids: `left_side_threshold_count`, `right_side_threshold_count`, `combined_total_threshold_count`
-2. Answer type: integer count
-3. Annotation type: `bbox_set`
+2. Answer schema: `integer_count`.
+3. Annotation schema: `bbox_set`
 4. Annotation marks one bbox around the paired left/right bars for each counted age-group row.

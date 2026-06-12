@@ -1,1 +1,1 @@
-"""GUI counting task group."""
+"""GUI counting scene."""

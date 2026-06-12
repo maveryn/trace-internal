@@ -1,22 +1,16 @@
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-
-complexity:
-  shared:
-    criteria_weights:
-      visual_scan: 0.45
-      answer_load: 0.35
-      distractor_load: 0.20
-
+    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+      in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
+      the final answer.
 rendering:
   shared:
     art_style_support:
-      - flat_vector
-      - outlined_cartoon
-      - paper_cutout
-      - soft_shadow
+    - flat_vector
+    - outlined_cartoon
+    - paper_cutout
+    - soft_shadow
     art_style_weights:
       flat_vector: 1.0
       outlined_cartoon: 1.0

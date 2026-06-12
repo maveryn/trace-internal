@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `checkers`
+2. Scene package: `checkers`
 3. Scene id: `checkers`
 4. Public task id: `task_games__checkers__piece_mobility_count`
 5. Supported `query_id` values: `piece_with_capture_move_count`, `piece_with_legal_move_count`

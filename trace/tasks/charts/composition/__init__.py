@@ -1,1 +1,0 @@
-"""Composition chart tasks."""

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `refraction_layers`
-- Implementation task group: `optics`
+- Implementation scene: `optics`
 - Implementation source: `trace/tasks/physics/optics/refraction_layers.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__refraction_layers__medium_speed_order_label` -> `task_physics__refraction_layers__medium_speed_order_label`

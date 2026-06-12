@@ -30,10 +30,11 @@ from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.illustrations.counterfactual import visible_part_count as cf_visible
 from trace.tasks.illustrations.shared import construction_site_rendering as construction
 from trace.tasks.illustrations.shared import environment_object_rendering as environment
-from trace.tasks.illustrations.shared import indoor_room_rendering as indoor
+from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
 from trace.tasks.illustrations.shared import library_rendering as library
 from trace.tasks.illustrations.shared import object_library
 from trace.tasks.illustrations.shared.object_catalog import CatalogEntry, catalog_entries
+from trace.tasks.illustrations.shared.object_rendering import render_vector_scene_object
 from trace.tasks.illustrations.shared import park_playground_rendering as park
 from trace.tasks.illustrations.shared.person_rendering import PERSON_GENDER_IDS, sample_person_gender
 from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
@@ -230,23 +231,51 @@ def _draw_library_book(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequ
 
 
 def _draw_park_equipment(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    park._draw_equipment(draw, rng=rng, equipment_type=str(item["id"]), bbox=(bounds[0], bounds[1] + 14.0, bounds[2], bounds[3] + 8.0), scale=SCALE)
+    equipment_type = str(item["id"])
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{equipment_type}",
+        object_type="playground_equipment",
+        bbox_xyxy=(bounds[0], bounds[1] + 14.0, bounds[2], bounds[3] + 8.0),
+        renderer_id="park_equipment",
+        renderer_variant_id=equipment_type,
+        semantic_attributes={
+            "decor_type": equipment_type,
+            "equipment_type": equipment_type,
+            "equipment_label": park.park_equipment_display_name(equipment_type),
+            "zone": "playground",
+        },
+        visual_attributes=park._park_equipment_visual_attributes(rng, equipment_type, "outlined_cartoon"),
+        role="preview",
+        source_entity_type="park_decor",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
+    )
 
 
 def _draw_park_activity(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
     activity = str(item["id"])
     person_box = _object_box((bounds[0] + 26.0, bounds[1] + 5.0, bounds[2] - 26.0, bounds[3] + 4.0), 0.55)
-    park._draw_activity_support(draw, rng=rng, person_id=f"sheet_{activity}", activity=activity, bbox=person_box, scale=SCALE)
-    park._draw_activity_person(
+    park._draw_activity_support(draw, rng=rng, person_id=f"sheet_{activity}", activity=activity, bbox=person_box, scale=SCALE, style_id="outlined_cartoon")
+    render_vector_scene_object(
         draw,
-        bbox=person_box,
-        activity=activity,
-        primary=(78, 126, 178),
-        accent=(238, 173, 77),
-        skin=(178, 126, 83),
+        object_id=f"sheet_{activity}",
+        object_type="person",
+        bbox_xyxy=person_box,
+        renderer_id="park_person",
+        renderer_variant_id=activity,
+        semantic_attributes={"activity": activity, "activity_label": park.park_activity_display_name(activity)},
+        visual_attributes={
+            "primary_color_rgb": [78, 126, 178],
+            "accent_color_rgb": [238, 173, 77],
+            "skin_color_rgb": [178, 126, 83],
+            "style_id": "outlined_cartoon",
+            "gender_id": str(item.get("gender_id", "female" if activity == "sitting" else "male")),
+        },
+        role="preview",
+        source_entity_type="park_person",
+        render_scale=SCALE,
         style_id="outlined_cartoon",
-        gender_id=str(item.get("gender_id", "female" if activity == "sitting" else "male")),
-        scale=SCALE,
     )
 
 
@@ -268,26 +297,49 @@ def _draw_transit_luggage(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: S
     luggage_type = str(item["id"])
     aspect = 1.45 if luggage_type == "luggage_cart" else 0.86
     box = _object_box(bounds, aspect)
-    transit._draw_luggage_item(draw, bbox=box, luggage_type=luggage_type, color=(93, 126, 176), style_id="outlined_cartoon", scale=SCALE)
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{luggage_type}",
+        object_type="luggage",
+        bbox_xyxy=box,
+        renderer_id="transit_luggage",
+        renderer_variant_id=luggage_type,
+        semantic_attributes={"luggage_type": luggage_type},
+        visual_attributes={"color_rgb": [93, 126, 176], "style_id": "outlined_cartoon"},
+        role="preview",
+        source_entity_type="transit_luggage",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
+    )
 
 
 def _draw_transit_person(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
     box = _object_box(bounds, 0.54)
-    transit._draw_person(
+    pose_id = str(item["id"])
+    render_vector_scene_object(
         draw,
-        bbox=box,
-        pose_id=str(item["id"]),
-        primary=(82, 124, 178),
-        accent=(235, 172, 76),
-        skin=(178, 126, 83),
-        gender_id=str(item.get("gender_id", "female" if item["id"] == "seated" else "male")),
+        object_id=f"sheet_{pose_id}",
+        object_type="person",
+        bbox_xyxy=box,
+        renderer_id="transit_person",
+        renderer_variant_id=pose_id,
+        semantic_attributes={"pose_id": pose_id, "area_id": "preview"},
+        visual_attributes={
+            "primary_color_rgb": [82, 124, 178],
+            "accent_color_rgb": [235, 172, 76],
+            "skin_color_rgb": [178, 126, 83],
+            "gender_id": str(item.get("gender_id", "female" if pose_id == "seated" else "male")),
+            "style_id": "outlined_cartoon",
+        },
+        role="preview",
+        source_entity_type="transit_person",
+        render_scale=SCALE,
         style_id="outlined_cartoon",
-        scale=SCALE,
     )
 
 
 def _draw_transit_area(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    transit._draw_area(draw, rng=rng, setting_id="rail_station", area_id=str(item["id"]), area_box=(bounds[0], bounds[1] - 4.0, bounds[2], bounds[3] + 12.0), scale=SCALE)
+    transit._draw_area(draw, rng=rng, setting_id="rail_station", area_id=str(item["id"]), area_box=(bounds[0], bounds[1] - 4.0, bounds[2], bounds[3] + 12.0), scale=SCALE, style_id="outlined_cartoon")
 
 
 def _draw_transit_service(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
@@ -315,65 +367,99 @@ def _draw_transit_service(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: S
 
 
 def _draw_construction_worker(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    worker = construction.ConstructionWorker(
-        worker_id=f"sheet_{item['id']}",
-        hard_hat_color=str(item.get("hard_hat_color", "yellow")),
-        vest_color=str(item.get("vest_color", "orange")),
-        tool_type=item.get("tool_type"),
+    hard_hat_color = str(item.get("hard_hat_color", "yellow"))
+    vest_color = str(item.get("vest_color", "orange"))
+    tool_type = item.get("tool_type")
+    hat_rgb = construction.CONSTRUCTION_COLOR_RGB.get(hard_hat_color, (238, 194, 64))
+    vest_rgb = construction.CONSTRUCTION_COLOR_RGB.get(vest_color, (232, 126, 54))
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{item['id']}",
+        object_type="worker",
         bbox_xyxy=_object_box(bounds, 0.55),
-        style_id="outlined_cartoon",
-        gender_id=str(item.get("gender_id", "female" if item.get("tool_type") else "male")),
+        renderer_id="construction_worker",
+        renderer_variant_id="standing",
+        semantic_attributes={
+            "hard_hat_color": hard_hat_color,
+            "vest_color": vest_color,
+            "tool_type": str(tool_type) if tool_type else None,
+        },
+        visual_attributes={
+            "primary_color_rgb": [84, 118, 154],
+            "accent_color_rgb": [int(v) for v in vest_rgb],
+            "skin_color_rgb": [178, 126, 83],
+            "hard_hat_color_rgb": [int(v) for v in hat_rgb],
+            "vest_color_rgb": [int(v) for v in vest_rgb],
+            "style_id": "outlined_cartoon",
+            "gender_id": str(item.get("gender_id", "female" if tool_type else "male")),
+        },
         role="preview",
-        attributes={},
+        source_entity_type="construction_worker",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
     )
-    construction._draw_worker(draw, worker, scale=SCALE)
 
 
 def _draw_construction_material(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    material = construction.ConstructionMaterial(
-        material_id=f"sheet_{item['id']}",
-        material_type=str(item["id"]),
-        material_label=construction.construction_material_display_name(str(item["id"])),
+    material_type = str(item["id"])
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{material_type}",
+        object_type="construction_material",
         bbox_xyxy=(bounds[0] + 8.0, bounds[1] + 12.0, bounds[2] - 8.0, bounds[3] - 4.0),
-        style_id="outlined_cartoon",
+        renderer_id="construction_material",
+        renderer_variant_id=material_type,
+        semantic_attributes={
+            "material_type": material_type,
+            "material_label": construction.construction_material_display_name(material_type),
+        },
+        visual_attributes={"style_id": "outlined_cartoon"},
         role="preview",
-        attributes={},
+        source_entity_type="construction_material",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
     )
-    construction._draw_material(draw, material, scale=SCALE)
 
 
 def _draw_construction_equipment(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    equipment = construction.ConstructionEquipment(
-        equipment_id=f"sheet_{item['id']}",
-        equipment_type=str(item["id"]),
-        equipment_label=construction.construction_equipment_display_name(str(item["id"])),
-        zone_id="loading_zone",
+    equipment_type = str(item["id"])
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{equipment_type}",
+        object_type="construction_equipment",
         bbox_xyxy=(bounds[0] + 3.0, bounds[1] + 4.0, bounds[2] - 3.0, bounds[3] + 10.0),
-        style_id="outlined_cartoon",
+        renderer_id="construction_equipment",
+        renderer_variant_id=equipment_type,
+        semantic_attributes={
+            "equipment_type": equipment_type,
+            "equipment_label": construction.construction_equipment_display_name(equipment_type),
+            "zone_id": "loading_zone",
+        },
+        visual_attributes={"style_id": "outlined_cartoon"},
         role="preview",
-        attributes={},
+        source_entity_type="construction_equipment",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
     )
-    construction._draw_equipment(draw, equipment, scale=SCALE)
 
 
 def _draw_indoor_surface(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
     x0, y0, x1, y1 = [float(v) for v in bounds]
-    plane = {
-        "back_left": (x0 + 28.0, y0 + 35.0),
-        "back_right": (x1 - 28.0, y0 + 35.0),
-        "front_left": (x0 + 10.0, y0 + 68.0),
-        "front_right": (x1 - 10.0, y0 + 68.0),
-    }
-    surface = indoor.IndoorSurface(
-        surface_id=f"sheet_{item['id']}",
-        surface_type=str(item["id"]),
-        label=str(item["name"]),
+    surface_type = str(item["id"])
+    render_vector_scene_object(
+        draw,
+        object_id=f"sheet_{surface_type}",
+        object_type="surface",
         bbox_xyxy=(x0, y0, x1, y1),
-        support_bbox_xyxy=(x0, y0, x1, y1),
-        furniture_id=None,
-        attributes={"plane": plane, "lip_bottom_y": y0 + 103.0},
+        renderer_id="indoor_surface",
+        renderer_variant_id=surface_type,
+        semantic_attributes={"surface_type": surface_type, "surface_label": str(item["name"])},
+        visual_attributes={"style_id": "outlined_cartoon"},
+        role="preview",
+        source_entity_type="indoor_surface",
+        render_scale=SCALE,
+        style_id="outlined_cartoon",
     )
-    indoor._draw_surface_plane(draw, surface_type=surface, top_fill=(198, 154, 98), lip_fill=(126, 89, 58), outline=(68, 51, 37), scale=SCALE)
 
 
 def _draw_indoor_container(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:

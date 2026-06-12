@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query ids: `object_type_count`, `object_type_union_count`, `color_union_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
@@ -18,7 +18,7 @@ The prompt asks for the count of objects satisfying one visible attribute-member
 Annotation is a `bbox_set` containing one whole-object bounding box for each counted object. The annotation set is unordered because all witnesses have the same role and annotation cardinality equals the integer answer.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, object types, prompt colors, target predicate spec, target object ids, projected object boxes, and the solver count predicate.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records camera pose, projection frame, object world coordinates, object types, prompt colors, target predicate spec, target object ids, projected object boxes, and the solver count predicate.
 
 ## Calibration
 Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance annotation.

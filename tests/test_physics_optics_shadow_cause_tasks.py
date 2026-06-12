@@ -100,7 +100,7 @@ def test_physics_shadow_cause_build_smoke(tmp_path: Path) -> None:
 
     assert len(train_records) == 2
     assert all(record["domain"] == "physics" for record in train_records)
-    assert all(record["task_group"] == "optics" for record in train_records)
+    assert all(record["scene_id"] == "optics" for record in train_records)
     assert {record["task"] for record in train_records} == {"task_physics__shadow_cause__light_source_label"}
     assert {record["query_id"] for record in train_records} == {"source_from_shadow_label"}
 

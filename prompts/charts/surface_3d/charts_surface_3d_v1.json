@@ -1,0 +1,142 @@
+{
+  "bundle_id": "charts_surface_3d_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "surface_3d": [
+        "The image shows {object_description}.",
+        "The chart shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The plotted figure shows {object_description}.",
+        "The figure presents {object_description}."
+      ]
+    },
+    "task": {
+      "three_d_chart_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "reference_nearest_label": [
+        "Which labeled point has \"{target_axis_label}\" closest to {target_axis_value}?",
+        "Find the point label whose \"{target_axis_label}\" value is nearest to {target_axis_value}.",
+        "Which point is closest to {target_axis_value} on the \"{target_axis_label}\" axis?",
+        "Compare the labeled points by \"{target_axis_label}\". Which one is nearest to {target_axis_value}?",
+        "What label marks the point with \"{target_axis_label}\" value closest to {target_axis_value}?"
+      ],
+      "surface_extremum_label": [
+        "For group \"{target_y_category}\", which x-axis label has the {extremum_phrase} surface value?",
+        "Looking only at group \"{target_y_category}\", find the x-axis label with the {extremum_phrase} value.",
+        "In the \"{target_y_category}\" row of the surface, which x-axis label is {extremum_phrase}?",
+        "Which x-axis category has the {extremum_phrase} value for group \"{target_y_category}\"?",
+        "Within group \"{target_y_category}\", what x-axis label reaches the {extremum_phrase} surface height?"
+      ],
+      "series_trend_label": [
+        "Which series has the greatest overall {trend_direction_phrase} from the first year to the last year?",
+        "Compare each series from its first point to its last point. Which has the greatest {trend_direction_phrase}?",
+        "What series label shows the largest first-to-last {trend_direction_phrase}?",
+        "From start to finish, which series has the strongest {trend_direction_phrase}?",
+        "Which labeled series changes by the greatest {trend_direction_phrase} between the first and last year?"
+      ],
+      "panel_variation_label": [
+        "Which panel has the {panel_variation_phrase}?",
+        "Compare the panels by vertical range. Which panel has the {panel_variation_phrase}?",
+        "What panel label has the {panel_variation_phrase}?",
+        "Find the panel with the {panel_variation_phrase}.",
+        "Which small 3D chart panel shows the {panel_variation_phrase}?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "extremum_phrase": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "panel_variation_phrase": {
+      "type": "string"
+    },
+    "target_axis_label": {
+      "type": "string"
+    },
+    "target_axis_value": {
+      "type": "string"
+    },
+    "target_y_category": {
+      "type": "string"
+    },
+    "trend_direction_phrase": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:surface_3d": [
+      "object_description"
+    ],
+    "query:reference_nearest_label": [
+      "target_axis_label",
+      "target_axis_value"
+    ],
+    "query:surface_extremum_label": [
+      "target_y_category",
+      "extremum_phrase"
+    ],
+    "query:series_trend_label": [
+      "trend_direction_phrase"
+    ],
+    "query:panel_variation_label": [
+      "panel_variation_phrase"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

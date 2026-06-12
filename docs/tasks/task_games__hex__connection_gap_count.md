@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `games`
-2. Task group: `hex`
+2. Scene: `hex`
 3. Scene id: `hex`
 4. Public task id: `task_games__hex__connection_gap_count`
 5. Supported `query_id` values: `connection_gap_count`

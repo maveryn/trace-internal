@@ -1,4 +1,4 @@
-"""Deterministic task-group background-style helpers for TRACE tasks."""
+"""Deterministic scene background-style helpers for TRACE tasks."""
 
 from __future__ import annotations
 
@@ -372,7 +372,7 @@ def _normalize_weights(raw: Any, styles: Mapping[str, Mapping[str, Any]]) -> Dic
 
 
 def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[str, Any]:
-    """Normalize task-group background defaults against global fallbacks."""
+    """Normalize scene background defaults against global fallbacks."""
     base = deepcopy(_DEFAULT_BACKGROUND_CONFIG)
     if not isinstance(default_config, Mapping):
         return base

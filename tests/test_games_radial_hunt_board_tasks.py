@@ -6,9 +6,9 @@ from pathlib import Path
 import json
 
 import trace.tasks  # noqa: F401
-from trace.core.task_group_config import get_task_group_defaults
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.radial_hunt_board.board_tasks import (
+from trace.tasks.games.radial_hunt_board.marked_piece_destination_count import (
     CAPTURE_MOVE_TASK_ID,
     MARKED_DESTINATION_TASK_ID,
     CENTER,
@@ -25,7 +25,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_games_radial_hunt_board_defaults_and_prompt_bundle() -> None:
-    cfg = get_task_group_defaults("games", "radial_hunt_board")
+    cfg = get_scene_defaults("games", "radial_hunt_board")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
     assert set(generation["scene_variant_weights"].keys()) == {
@@ -81,7 +81,7 @@ def test_games_radial_hunt_board_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "radial_hunt_board"
-        assert taxonomy.source_task_group == "radial_hunt_board"
+        assert taxonomy.source_scene_id == "radial_hunt_board"
 
 
 def test_games_radial_hunt_board_destination_answer_matches_trace() -> None:

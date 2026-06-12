@@ -32,12 +32,6 @@
     "scene:named_path_relation": [
       "object_description"
     ],
-    "scene:paired_canvas_relation": [
-      "object_description"
-    ],
-    "scene:paired_named_original_relation": [
-      "object_description"
-    ],
     "task:relation_query": [
       "question_text"
     ],
@@ -113,20 +107,6 @@
       "The picture shows {object_description}."
     ],
     "named_path_relation": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "paired_canvas_relation": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "paired_named_original_relation": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

@@ -5,12 +5,12 @@ The source seed files provide hand-authored task/query boundary coverage; this p
 
 ## Totals
 
-- Live tasks audited: 968
-- Live task/query rows audited: 1160
-- Proposed task units: 968
-- Base program contracts: 968
+- Live tasks audited: 966
+- Live task/query rows audited: 1158
+- Proposed task units: 966
+- Base program contracts: 966
 - Duplicate base program contracts: 0
-- Program argument metadata rows: 1160
+- Program argument metadata rows: 1158
 - Program argument rows needing review: 26
 - Canonical program signatures: 137
 - Current tasks with split recommendation: 0
@@ -22,7 +22,7 @@ The source seed files provide hand-authored task/query boundary coverage; this p
 
 | Domain | Current tasks | Proposed task units | Split tasks | Rename-only | Delta |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| charts | 188 | 188 | 0 | 0 | +0 |
+| charts | 186 | 186 | 0 | 0 | +0 |
 | games | 161 | 161 | 0 | 0 | +0 |
 | geometry | 192 | 192 | 0 | 0 | +0 |
 | graph | 61 | 61 | 0 | 0 | +0 |

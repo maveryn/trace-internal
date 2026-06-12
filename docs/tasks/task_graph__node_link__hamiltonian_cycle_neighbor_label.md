@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
-3. Task group: `relation`
+3. Scene: `relation`
 4. Task id: `task_graph__node_link__hamiltonian_cycle_neighbor_label`
 5. Objective: return the node label immediately before or after a queried node along the graph's unique Hamiltonian cycle.
 

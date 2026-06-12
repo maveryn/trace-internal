@@ -5,7 +5,7 @@ Status: v0 inspection review refreshed; solve-rate calibration pending.
 ## Identity
 - domain: `icons`
 - scene_id: `venn_field`
-- task_group: `counting`
+- scene_id: `counting`
 - task: `named_shape_venn_region_count`
 - module: `trace/tasks/icons/counting/named_shape_venn_region_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`

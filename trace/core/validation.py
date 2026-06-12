@@ -14,9 +14,10 @@ from . import error_codes
 from .canonical import canonical_json_bytes
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
-from .prompts import load_prompt_bundle
+from .prompts import load_prompt_bundle, load_scene_prompt_bundle
 from .prompts.schema import REQUIRED_PROMPT_VARIANTS
 from .reward_contracts import validate_reward_contract_payload
+from .scene_package_migration import is_scene_package_task
 from .trace_store import read_trace_shard
 
 
@@ -59,7 +60,7 @@ _REQUIRED_INSTANCE_FIELDS = [
     "instance_id",
     "instance_seed",
     "domain",
-    "task_group",
+    "scene_id",
     "task",
     "scene_id",
     "query_id",
@@ -69,7 +70,6 @@ _REQUIRED_INSTANCE_FIELDS = [
     "answer_gt",
     "annotation_gt",
     "reward_contract",
-    "task_complexity",
     "trace_ref",
     "versions",
 ]
@@ -239,14 +239,25 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         or taxonomy_source.get("implementation_domain")
         or instance.get("domain", "")
     )
-    task_group = str(
-        prompt_variant.get("prompt_task_group")
-        or taxonomy_source.get("prompt_task_group")
-        or taxonomy_source.get("implementation_task_group")
-        or instance.get("task_group", "")
+    prompt_scene_id = str(
+        prompt_variant.get("prompt_scene_id")
+        or taxonomy_source.get("prompt_scene_id")
+        or taxonomy_source.get("config_scene_id")
+        or taxonomy_source.get("implementation_scene_id")
+        or instance.get("scene_id", "")
+        or ""
+    )
+    scene_id = str(
+        prompt_variant.get("prompt_scene_id")
+        or taxonomy_source.get("prompt_scene_id")
+        or taxonomy_source.get("implementation_scene_id")
+        or instance.get("scene_id", "")
     )
     try:
-        bundle = load_prompt_bundle(domain=domain, task_group=task_group, bundle_id=bundle_id)
+        if prompt_scene_id.strip() and is_scene_package_task(str(instance.get("task", "")), domain=domain):
+            bundle = load_scene_prompt_bundle(domain=domain, scene_id=prompt_scene_id, bundle_id=bundle_id)
+        else:
+            bundle = load_prompt_bundle(domain=domain, scene_id=scene_id, bundle_id=bundle_id)
     except FileNotFoundError as exc:
         errors.append(
             _err(
@@ -255,7 +266,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 domain=domain,
-                task_group=task_group,
+                scene_id=scene_id,
             )
         )
         return errors
@@ -267,7 +278,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 domain=domain,
-                task_group=task_group,
+                scene_id=scene_id,
             )
         )
         return errors
@@ -626,8 +637,11 @@ def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
     """Validate required TrainInstance fields and envelope-schema invariants."""
     errors: List[_ValidationError] = []
     iid = instance.get("instance_id", "<missing>")
+    required_fields = list(_REQUIRED_INSTANCE_FIELDS)
+    if is_scene_package_task(str(instance.get("task", "")), domain=str(instance.get("domain", ""))):
+        required_fields = [field for field in required_fields if field != "scene_id"]
 
-    for field in _REQUIRED_INSTANCE_FIELDS:
+    for field in required_fields:
         if field not in instance:
             errors.append(
                 _err(

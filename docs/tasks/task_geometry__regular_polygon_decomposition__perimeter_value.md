@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
-3. Task group: `measurement`
+3. Scene package: `measurement`
 4. Task id: `task_geometry__regular_polygon_decomposition__perimeter_value`
 5. Objective: compute the total perimeter of a regular polygon from a side length or from total area plus apothem.
 

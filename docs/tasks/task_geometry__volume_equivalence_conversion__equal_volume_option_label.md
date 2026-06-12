@@ -2,7 +2,7 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
+2. Scene id: `volume_equivalence_conversion`
 3. Scene id: `volume_equivalence_conversion`
 4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
 5. Query ids: `cone_matches_cylinder_option`, `cylinder_matches_cone_option`, `cuboid_matches_cylinder_option`
@@ -23,5 +23,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/volume_equivalence_conversion.py`
+- Config: `configs/domains/geometry/volume_equivalence_conversion.yaml`
+- Task module: `trace/tasks/geometry/volume_equivalence_conversion/equal_volume_option_label.py`

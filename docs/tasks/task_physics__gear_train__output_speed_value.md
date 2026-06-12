@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `gear_train`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/gear_train.py`
 - Contract-v0 migration decision: `new_extension_task`
 - Public mapping: `task_physics__gear_train__output_speed_value` -> `task_physics__gear_train__output_speed_value`

@@ -2,18 +2,17 @@
 
 ## Contract
 1. Domain: `geometry`
-2. Task group: `measurement`
-3. Scene id: `circle_pair_tangents`
-4. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
-5. Query id: `external_common_tangent_center_distance`
-6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+2. Scene id: `circle_pair_tangents`
+3. Public task id follows taxonomy-v0 `task_geometry__<scene_id>__<objective_contract>`.
+4. Query id: `external_common_tangent_center_distance`
+5. Answer schema: `integer_value`
+6. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `solve_formula(visible_external_common_tangent_measurements, unknown_role=center_distance, formula_schema=external_common_tangent_center_distance); scene=circle_pair_tangents; scope=center_distance_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_circle_pair_tangents_v0`.
+- Prompt text is loaded from `geometry_circle_pair_tangents_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -23,5 +22,5 @@ Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed 
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
-- Config: `configs/domains/geometry/measurement.yaml`
-- Task module: `trace/tasks/geometry/measurement/circle_pair_tangents.py`
+- Config: `configs/domains/geometry/circle_pair_tangents.yaml`
+- Task module: `trace/tasks/geometry/circle_pair_tangents/center_distance_value.py`

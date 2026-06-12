@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `collision`
-- Implementation task group: `mechanics`
+- Implementation scene: `mechanics`
 - Implementation source: `trace/tasks/physics/mechanics/sticky_collision.py`
 - Contract-v0 migration decision: `keep`
 - Public mapping: `task_physics__collision__sticky_collision_direction_choice` -> `task_physics__collision__sticky_collision_direction_choice`

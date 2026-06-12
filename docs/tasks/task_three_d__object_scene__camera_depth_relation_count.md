@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `three_d`
 - Scene id: `object_scene`
-- Task group: `spatial`
+- Package: `trace/tasks/three_d/object_scene/`
 - Query ids: `closer_to_camera_than_reference_count`, `farther_from_camera_than_reference_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
@@ -18,7 +18,7 @@ The prompt names one unique reference object and asks how many other small objec
 Annotation is a `bbox_set` containing one whole-object bounding box for each counted object. The named reference object is recorded in trace metadata but excluded from prompt-facing annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. Depth templates must explicitly say `closer/farther from the camera`. The trace records camera pose, reference id/name, per-object camera distance, per-object relation status, target object ids, projected boxes, and the solver count predicate.
+The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. Depth templates must explicitly say `closer/farther from the camera`. The trace records camera pose, reference id/name, per-object camera distance, per-object relation status, target object ids, projected boxes, and the solver count predicate.
 
 ## Calibration
 Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance annotation.

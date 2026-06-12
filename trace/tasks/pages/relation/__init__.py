@@ -1,1 +1,1 @@
-"""GUI relation task group."""
+"""GUI relation scene."""

@@ -6,9 +6,9 @@ from trace.tasks import TASK_REGISTRY
 
 
 AREA_TASKS = {
-    "task_charts__area__interval_area_value": {"interval_area_value"},
-    "task_charts__area__stacked_band_interval_sum_value": {"stacked_band_interval_sum_value"},
-    "task_charts__area__stacked_band_dominance_label": "stacked_dominance_label",
+    "task_charts__area__interval_area_value": {"default"},
+    "task_charts__area__stacked_band_interval_sum_value": {"default"},
+    "task_charts__area__stacked_band_dominance_label": {"default"},
 }
 
 
@@ -47,7 +47,7 @@ def test_area_tasks_generate_default_query_outputs() -> None:
 def test_area_interval_annotation_uses_curve_marker_not_value_label() -> None:
     output = TASK_REGISTRY["task_charts__area__interval_area_value"]().generate(
         74_200,
-        params={"query_id": "interval_area_value"},
+        params={},
         max_attempts=80,
     )
 
@@ -58,20 +58,20 @@ def test_area_interval_annotation_uses_curve_marker_not_value_label() -> None:
     assert all(trace["mark_center_px"] != trace["value_center_px"] for trace in queried_traces)
 
 
-def test_area_numeric_tasks_generate_their_public_queries() -> None:
-    task_ids_by_query = {
-        "interval_area_value": "task_charts__area__interval_area_value",
-        "stacked_band_interval_sum_value": "task_charts__area__stacked_band_interval_sum_value",
-    }
-    for seed_index, (query_id, task_id) in enumerate(sorted(task_ids_by_query.items())):
+def test_area_numeric_tasks_generate_default_query_outputs() -> None:
+    task_ids = (
+        "task_charts__area__interval_area_value",
+        "task_charts__area__stacked_band_interval_sum_value",
+    )
+    for seed_index, task_id in enumerate(sorted(task_ids)):
         task = TASK_REGISTRY[task_id]()
         output = task.generate(
             74_230 + seed_index,
-            params={"query_id": query_id},
+            params={},
             max_attempts=80,
         )
         assert output.scene_id == "area"
-        assert output.query_id == query_id
+        assert output.query_id == "default"
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "point_set"
         assert output.annotation_gt.value

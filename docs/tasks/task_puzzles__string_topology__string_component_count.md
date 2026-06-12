@@ -4,7 +4,7 @@ Status: accepted active default Puzzle task.
 
 ## Identity
 1. Domain: `puzzles`
-2. Task group: `topology`
+2. Scene: `topology`
 3. Scene id: `string_topology`
 4. Public query id: `default`
 5. Query id: `open_rope_count|closed_loop_count|knotted_component_count`

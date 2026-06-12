@@ -6,6 +6,7 @@ import pytest
 
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.prompt_annotation_contract_audit import _normalize_jsonable, _validate_annotation_value
+from trace.core.scene_package_migration import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,
@@ -208,6 +209,8 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     task = create_task(task_id)
     output = _generate_first_successful_output(task_id)
     taxonomy = resolve_task_taxonomy(task_id)
+    migrated_task = is_scene_package_task(task_id, domain=str(getattr(task, "domain", "")))
+    registered_scene_id = None if migrated_task else str(getattr(task, "scene_id", ""))
     query_id = str(
         output.query_id
         or resolve_task_query_id(query_id=output.query_id, trace_payload=output.trace_payload)
@@ -218,7 +221,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
         taxonomy=taxonomy,
         query_id=query_id,
         registered_domain=str(getattr(task, "domain", "")),
-        registered_task_group=str(getattr(task, "task_group", "")),
+        registered_scene_id=registered_scene_id,
     )
 
     assert taxonomy.domain in ACTIVE_DOMAINS
@@ -240,16 +243,28 @@ def test_active_default_task_public_contract(task_id: str) -> None:
         "task_id": task_id,
         "query_id": query_id,
     }
-    assert trace_taxonomy["registered"] == {
+    expected_registered = {
         "task_id": task_id,
         "domain": str(getattr(task, "domain", "")),
-        "task_group": str(getattr(task, "task_group", "")),
     }
+    if migrated_task:
+        expected_registered["scene_id"] = taxonomy.scene_id
+    else:
+        expected_registered["scene_id"] = str(registered_scene_id)
+    assert trace_taxonomy["registered"] == expected_registered
     assert trace_taxonomy["source"]["implementation_task_id"]
     assert trace_taxonomy["source"]["implementation_domain"]
-    assert trace_taxonomy["source"]["implementation_task_group"]
     assert trace_taxonomy["source"]["config_domain"] == str(getattr(task, "domain", ""))
-    assert trace_taxonomy["source"]["config_task_group"] == str(getattr(task, "task_group", ""))
     assert trace_taxonomy["source"]["prompt_domain"]
-    assert trace_taxonomy["source"]["prompt_task_group"]
+    if migrated_task:
+        assert trace_taxonomy["source"]["implementation_scene_id"] == taxonomy.scene_id
+        assert trace_taxonomy["source"]["config_scene_id"] == taxonomy.scene_id
+        assert trace_taxonomy["source"]["prompt_scene_id"] == taxonomy.scene_id
+        assert "implementation_scene_id" not in trace_taxonomy["source"]
+        assert "config_scene_id" not in trace_taxonomy["source"]
+        assert "prompt_scene_id" not in trace_taxonomy["source"]
+    else:
+        assert trace_taxonomy["source"]["implementation_scene_id"]
+        assert trace_taxonomy["source"]["config_scene_id"] == str(registered_scene_id)
+        assert trace_taxonomy["source"]["prompt_scene_id"]
     _assert_answer_annotation_consistency(output, task_id=task_id, query_id=query_id)

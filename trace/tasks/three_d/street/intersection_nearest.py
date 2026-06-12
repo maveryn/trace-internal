@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import (
+from ....core.scene_config import (
     get_domain_defaults,
-    get_task_group_defaults,
-    resolve_task_group_section_defaults,
+    get_scene_defaults,
+    resolve_scene_section_defaults,
 )
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -398,45 +398,11 @@ def _build_street_dataset(
 
 
 
-def _build_complexity(
-    *,
-    candidate_count: int,
-    context_object_count: int,
-    nearest_distance_margin: float,
-    complexity_defaults: Mapping[str, Any],
-) -> TaskComplexity:
-    raw_weights = complexity_defaults.get("criteria_weights", {})
-    if not isinstance(raw_weights, Mapping):
-        raw_weights = {}
-    weights = {
-        "visual_scan": float(raw_weights.get("visual_scan", 0.34)),
-        "ground_plane_distance": float(raw_weights.get("ground_plane_distance", 0.36)),
-        "perspective_depth": float(raw_weights.get("perspective_depth", 0.18)),
-        "ambiguity": float(raw_weights.get("ambiguity", 0.12)),
-    }
-    total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
-    ambiguity = 1.0 - _normalize_unit(float(nearest_distance_margin), 0.48, 1.30)
-    components = {
-        "visual_scan": _normalize_unit(float(candidate_count + context_object_count), 9.0, 15.0),
-        "ground_plane_distance": 0.74,
-        "perspective_depth": 0.62,
-        "ambiguity": max(0.0, min(1.0, float(ambiguity))),
-    }
-    score = sum(float(components[key]) * max(0.0, float(weights[key])) for key in weights) / float(total)
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={key: round(float(value), 6) for key, value in components.items()},
-    )
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "street")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("three_d", "street")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
     task_id=TASK_ID,
 )
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -451,7 +417,7 @@ class ThreeDStreetIntersectionNearestLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    task_group = "street"
+    scene_id = "street"
     default_dataset_enabled = True
 
     def generate(
@@ -593,7 +559,7 @@ class ThreeDStreetIntersectionNearestLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -619,12 +585,6 @@ class ThreeDStreetIntersectionNearestLabelTask:
             for bbox in rendered_scene.annotation_bboxes
         ]
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        complexity = _build_complexity(
-            candidate_count=int(dataset["candidate_count"]),
-            context_object_count=int(dataset["context_object_count"]),
-            nearest_distance_margin=float(dataset["nearest_distance_margin"]),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
-        )
         solver_trace = dict(dataset["solver_trace"])
         trace_payload = {
             "scene_ir": {
@@ -786,7 +746,6 @@ class ThreeDStreetIntersectionNearestLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

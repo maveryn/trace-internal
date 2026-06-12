@@ -52,8 +52,10 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_annotation() -> Non
         assert int(out.answer_gt.value) == int(execution["answer_count"])
         assert 16 <= int(execution["tree_node_count"]) <= 30
         assert 4 <= int(execution["tree_depth"]) <= 8
+        prompt_slots = dict(execution["query_prompt_slots"])
         for label in execution["query_node_labels"]:
-            assert f'"{label}"' in str(execution["question_text"])
+            assert str(label) in {str(value) for value in prompt_slots.values()}
+            assert f'"{label}"' in out.prompt
 
         expected_bboxes = [
             [float(value) for value in render_map["node_bboxes_px"][str(bbox_id)]]

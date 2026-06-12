@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `phylogeny_tree`
-3. Task group: `relation`
+3. Source package: `phylogeny_tree`
 4. Task id: `task_graph__phylogeny_tree__topology_outlier_label`
 5. Objective: choose the only option cladogram with a different rooted topology.
 
@@ -23,6 +23,6 @@
 3. Five options are topology-equivalent rotations/layout variants; one option has a different rooted clade signature over the same taxon labels.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and task-group config, not hardcoded user-facing text.
+1. Prompt text comes from `prompts/graph/phylogeny_tree/phylogeny_tree_v0.json` and `configs/domains/graph/phylogeny_tree.yaml`, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

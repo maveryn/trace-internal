@@ -327,7 +327,6 @@ def _sample_reference_and_objects(
         "barrel",
         "box_stack",
         "tire_stack",
-        "safety_barrier",
         "storage_bin",
         "rolling_bin",
         "wrapped_bundle",
@@ -446,7 +445,6 @@ def _sample_reference_and_objects(
         ("crate_stack", -2.72, -1.62),
         ("barrel", 3.34, -1.18),
         ("storage_bin", 3.24, 1.46),
-        ("safety_barrier", -2.84, 0.96),
         ("tool_cart", 0.18, 2.46),
         ("traffic_cone", 0.32, -2.46),
         ("pallet_load", 3.68, 1.88),
@@ -456,7 +454,6 @@ def _sample_reference_and_objects(
         ("warning_bollard", -0.08, 1.48),
         ("wrapped_bundle", 2.30, -2.54),
         ("fire_extinguisher", -1.84, 2.42),
-        ("hand_truck", 1.04, -2.62),
         ("stacked_pipes", 3.54, -2.08),
     ]
     rng.shuffle(optional_context_slots)

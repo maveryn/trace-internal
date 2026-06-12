@@ -7,12 +7,12 @@ from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.task_group_config import (
+from ....core.scene_config import (
     get_domain_defaults,
-    get_task_group_defaults,
-    resolve_task_group_section_defaults,
+    get_scene_defaults,
+    resolve_scene_section_defaults,
 )
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -795,38 +795,11 @@ def _build_dataset(
 
 
 
-def _build_complexity(*, candidate_count: int, context_object_count: int, complexity_defaults: Mapping[str, Any]) -> TaskComplexity:
-    raw_weights = complexity_defaults.get("criteria_weights", {})
-    if not isinstance(raw_weights, Mapping):
-        raw_weights = {}
-    weights = {
-        "robot_scan": float(raw_weights.get("robot_scan", 0.34)),
-        "reference_grounding": float(raw_weights.get("reference_grounding", 0.22)),
-        "depth_distance_reasoning": float(raw_weights.get("depth_distance_reasoning", 0.28)),
-        "distractor_load": float(raw_weights.get("distractor_load", 0.16)),
-    }
-    total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
-    components = {
-        "robot_scan": _normalize_unit(float(candidate_count), 4.0, 6.0),
-        "reference_grounding": 0.62,
-        "depth_distance_reasoning": 0.58,
-        "distractor_load": _normalize_unit(float(context_object_count), 7.0, 13.0),
-    }
-    score = sum(float(components[key]) * max(0.0, float(weights[key])) for key in weights) / float(total)
-    return TaskComplexity(
-        complexity_score=round(float(score), 6),
-        complexity_components={key: round(float(value), 6) for key, value in components.items()},
-    )
 
 
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("three_d", "warehouse")
+_TASK_GROUP_DEFAULTS = get_scene_defaults("three_d", "warehouse")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
-)
-_COMPLEXITY_DEFAULTS = resolve_task_group_section_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    "complexity",
     task_id=TASK_ID,
 )
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -917,7 +890,7 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    task_group = "warehouse"
+    scene_id = "warehouse"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -1053,7 +1026,7 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            task_group=self.task_group,
+            scene_id=self.scene_id,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -1076,11 +1049,6 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
         annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        complexity = _build_complexity(
-            candidate_count=int(dataset["candidate_count"]),
-            context_object_count=int(dataset["context_object_count"]),
-            complexity_defaults=_COMPLEXITY_DEFAULTS,
-        )
         solver_trace = dict(dataset["solver_trace"])
         trace_payload = {
             "scene_ir": {
@@ -1222,7 +1190,6 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=complexity,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query_id),

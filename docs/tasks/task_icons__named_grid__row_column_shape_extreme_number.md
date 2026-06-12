@@ -2,7 +2,7 @@
 
 - domain: `icons`
 - scene_id: `named_grid`
-- task_group: `counting`
+- scene_id: `counting`
 - task: `row_column_shape_extreme_number`
 - module: `trace/tasks/icons/counting/named_grid_row_column_shape_extreme_number.py`
 

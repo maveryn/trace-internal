@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
-3. Task group: `order`
+3. Scene: `order`
 4. Task id: `task_graph__binary_tree__traversal_kth_label`
 5. Objective: return the node label at a requested position in a binary-tree traversal.
 

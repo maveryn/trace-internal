@@ -64,7 +64,6 @@ generation:
       floor_context_count_max: 6
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-
 rendering:
   task_overrides:
     task_three_d__room__multi_attribute_and_count:
@@ -80,11 +79,26 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb: [232, 238, 240]
-      grid_rgb: [183, 195, 205]
-      edge_rgb: [88, 103, 119]
-      text_rgb: [30, 34, 42]
-      text_stroke_rgb: [255, 255, 255]
+      floor_rgb:
+      - 232
+      - 238
+      - 240
+      grid_rgb:
+      - 183
+      - 195
+      - 205
+      edge_rgb:
+      - 88
+      - 103
+      - 119
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__room__wall_object_camera_distance_label:
       canvas_width: 1180
       canvas_height: 900
@@ -98,11 +112,26 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb: [232, 238, 240]
-      grid_rgb: [183, 195, 205]
-      edge_rgb: [88, 103, 119]
-      text_rgb: [30, 34, 42]
-      text_stroke_rgb: [255, 255, 255]
+      floor_rgb:
+      - 232
+      - 238
+      - 240
+      grid_rgb:
+      - 183
+      - 195
+      - 205
+      edge_rgb:
+      - 88
+      - 103
+      - 119
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__room__wall_object_same_wall_reference_label:
       canvas_width: 1180
       canvas_height: 900
@@ -116,11 +145,26 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb: [232, 238, 240]
-      grid_rgb: [183, 195, 205]
-      edge_rgb: [88, 103, 119]
-      text_rgb: [30, 34, 42]
-      text_stroke_rgb: [255, 255, 255]
+      floor_rgb:
+      - 232
+      - 238
+      - 240
+      grid_rgb:
+      - 183
+      - 195
+      - 205
+      edge_rgb:
+      - 88
+      - 103
+      - 119
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
     task_three_d__room__wall_object_side_relation_label:
       canvas_width: 1180
       canvas_height: 900
@@ -134,39 +178,26 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb: [232, 238, 240]
-      grid_rgb: [183, 195, 205]
-      edge_rgb: [88, 103, 119]
-      text_rgb: [30, 34, 42]
-      text_stroke_rgb: [255, 255, 255]
-
-complexity:
-  task_overrides:
-    task_three_d__room__multi_attribute_and_count:
-      criteria_weights:
-        visual_scan: 0.38
-        wall_relation: 0.34
-        distractor_binding: 0.18
-        answer_load: 0.10
-    task_three_d__room__wall_object_camera_distance_label:
-      criteria_weights:
-        visual_scan: 0.34
-        depth_reasoning: 0.40
-        wall_plane_binding: 0.16
-        ambiguity: 0.10
-    task_three_d__room__wall_object_same_wall_reference_label:
-      criteria_weights:
-        visual_scan: 0.34
-        wall_plane_binding: 0.38
-        reference_binding: 0.18
-        ambiguity: 0.10
-    task_three_d__room__wall_object_side_relation_label:
-      criteria_weights:
-        visual_scan: 0.30
-        wall_plane_ordering: 0.42
-        reference_binding: 0.18
-        ambiguity: 0.10
-
+      floor_rgb:
+      - 232
+      - 238
+      - 240
+      grid_rgb:
+      - 183
+      - 195
+      - 205
+      edge_rgb:
+      - 88
+      - 103
+      - 119
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
 prompt:
   shared:
     bundle_id: three_d_room_v0
@@ -174,32 +205,44 @@ prompt:
     task_three_d__room__multi_attribute_and_count:
       scene_key: room
       task_key: wall_mounted_object_count_query
-      object_description: an indoor room shown in perspective, with floor, walls, furniture, non-wall objects on furniture or the floor, and objects mounted on the walls
-      annotation_hint: set "annotation" to bounding boxes around only the wall-mounted {target_plural}; use an empty array if there are none
+      object_description: an indoor room shown in perspective, with floor, walls,
+        furniture, non-wall objects on furniture or the floor, and objects mounted
+        on the walls
+      annotation_hint: set "annotation" to bounding boxes around only the wall-mounted
+        {target_plural}; use an empty array if there are none
       answer_hint: set "answer" to the number of wall-mounted {target_plural}
       json_example: '{"annotation":[[142,118,238,178],[318,126,410,184]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_three_d__room__wall_object_camera_distance_label:
       scene_key: room
       task_key: wall_object_camera_distance_query
-      object_description: a perspective indoor room with floor, walls, furniture, room objects, wall-mounted candidate objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      object_description: a perspective indoor room with floor, walls, furniture,
+        room objects, wall-mounted candidate objects, and an option list below the
+        scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__room__wall_object_same_wall_reference_label:
       scene_key: room
       task_key: wall_object_same_wall_reference_query
-      object_description: a perspective indoor room with floor, walls, furniture, one named reference object on a wall, wall-mounted candidate objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      object_description: a perspective indoor room with floor, walls, furniture,
+        one named reference object on a wall, wall-mounted candidate objects, and
+        an option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__room__wall_object_side_relation_label:
       scene_key: room
       task_key: wall_object_side_relation_query
-      object_description: a perspective indoor room with floor, walls, furniture, one TV on a wall, wall-mounted candidate objects on that same wall, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted object in the scene
+      object_description: a perspective indoor room with floor, walls, furniture,
+        one TV on a wall, wall-mounted candidate objects on that same wall, and an
+        option list below the scene
+      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted
+        object in the scene
       answer_hint: set "answer" to the selected option letter
       json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

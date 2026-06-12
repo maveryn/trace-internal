@@ -64,6 +64,16 @@ scene's public task modules. Registry-wide operations such as full inventory
 builds and all-task review generation may still import every task and fail on
 unrelated broken scenes.
 
+Global runtime-record ABI checks live separately in:
+
+```text
+tests/test_scene_package_global_runtime_contracts.py
+```
+
+Those checks are not part of the per-scene handoff gate. They should be run and
+fixed during global migration cleanup, not used to block review artifacts for a
+single scene that passed its scoped migration checks.
+
 ## Do Not
 
 Do not fix failures by:
